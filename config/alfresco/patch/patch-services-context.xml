@@ -1053,6 +1053,11 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>124</value></property>
         <property name="targetSchema"><value>125</value></property>
+          <property name="dependsOn" >
+            <list>
+                <ref bean="patch.fixNameCrcValues-2" />
+            </list>
+        </property>
         <property name="accessControlListDao">
             <ref bean="admNodeACLDAO"/>
         </property>
@@ -1632,7 +1637,6 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />
-                <ref bean="patch.fixNameCrcValues-2" />
             </list>
         </property>
         <property name="importerBootstrap">

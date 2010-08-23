@@ -158,13 +158,12 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         CounterSet result = new CounterSet();
         // Do the children first
 
+        Acl existingAcl = null;
         Long aclId = nodeDAO.getNodeAclId(nodeId);
-        if (aclId == null)
+        if (aclId != null)
         {
-            // TODO: What happens here?  It's causing NPEs
-            throw new IllegalStateException("Null aclId is causing NPEs.  Node: " + nodeId);
+            existingAcl = aclDaoComponent.getAcl(aclId);
         }
-        Acl existingAcl = aclDaoComponent.getAcl(aclId);
         
         Long toInherit = null;
         Long idToInheritFrom = null;
@@ -189,7 +188,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                 idToInheritFrom = newAcl.getId();
                 nodeDAO.setNodeAclId(nodeId, idToInheritFrom);
             }
-            if (existingAcl.getAclType() == ACLType.SHARED)
+            else if (existingAcl.getAclType() == ACLType.SHARED)
             {
                 // nothing to do just cascade into the children - we most likely did a bulk set above.
             }

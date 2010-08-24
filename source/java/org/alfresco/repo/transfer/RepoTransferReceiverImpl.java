@@ -205,6 +205,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
         
         /**
+         * For every copy of a transferred node run onCopyTransferred
+         */
+        this.getPolicyComponent().bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                TransferModel.ASPECT_TRANSFERRED, 
+                new JavaBehaviour(this, "onCopyTransferred", NotificationFrequency.EVERY_EVENT));
+        
+        /**
          * For every new child of a node with the trx:alien aspect run this.onCreateChildAssociation
          */
         this.getPolicyComponent().bindAssociationBehaviour(
@@ -237,13 +245,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
         
         /**
-         * For every copy of a transferred node
+         * For every copy of an alien node remove the alien aspect
          */
         this.getPolicyComponent().bindClassBehaviour(
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
-                TransferModel.ASPECT_TRANSFERRED, 
-                new JavaBehaviour(this, "onCopyTransferred", NotificationFrequency.EVERY_EVENT));
-                
+                TransferModel.ASPECT_ALIEN, 
+                new JavaBehaviour(this, "onCopyAlien", NotificationFrequency.EVERY_EVENT));      
     }
 
     /*
@@ -1067,6 +1074,15 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
     
     /**
+     * When an alien node is copied,  don't copy the alien aspect.
+     */
+    public CopyBehaviourCallback onCopyAlien(QName classRef,
+            CopyDetails copyDetails)
+    {
+        return AlienAspectCopyBehaviourCallback.INSTANCE;   
+    }
+        
+    /**
      * Extends the default copy behaviour to prevent copying of transferred aspect and properties.
      * 
      * @author Mark Rogers
@@ -1104,6 +1120,46 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
         }
     }
+    
+    /**
+     * Extends the default copy behaviour to prevent copying of alien aspect and properties.
+     * 
+     * @author Mark Rogers
+     * @since 3.4
+     */
+    private static class AlienAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new AlienAspectCopyBehaviourCallback();
+        
+        /**
+         * @return          Returns an empty map
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            return Collections.emptyMap();
+        }
+        
+        /**
+         * Don't copy the transferred aspect.
+         * 
+         * @return          Returns <tt>true</tt> always
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            if(classQName.equals(TransferModel.ASPECT_ALIEN))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
        
     public void setDescriptorService(DescriptorService descriptorService)
     {

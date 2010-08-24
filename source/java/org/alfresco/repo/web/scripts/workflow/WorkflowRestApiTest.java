@@ -435,6 +435,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(tasks.length() > 1);
     }
 
+    @SuppressWarnings("deprecation")
     public void testWorkflowInstancesGet() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
@@ -443,15 +444,15 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         Date dueDate = new Date();
-        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
         params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
         params.put(WorkflowModel.PROP_CONTEXT, packageRef);
 
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
-
         WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+        workflowService.endTask(startTask.getId(), null);
 
         // Get Workflow Instance Collection 
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES), 200);
@@ -489,7 +490,9 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         checkFiltering(URL_WORKFLOW_INSTANCES + "?startedBefore=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
 
         // filter by dueAfter
-        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
+        Date anHourAgo = new Date(dueDate.getTime());
+        anHourAgo.setHours(anHourAgo.getHours()-1);
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueAfter=" + ISO8601DateFormat.format(anHourAgo));
 
         // filter by dueBefore
         checkFiltering(URL_WORKFLOW_INSTANCES + "?dueBefore=" + ISO8601DateFormat.format(dueDate));

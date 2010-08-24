@@ -49,6 +49,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_DUE_BEFORE = "dueBefore";
     public static final String PARAM_DUE_AFTER = "dueAfter";
     public static final String PARAM_PROPERTIES = "properties";
+    public static final String PARAM_POOLED_TASKS = "pooledTasks";
     public static final String PARAM_DETAILED = "detailed";
 
     @Override
@@ -58,24 +59,47 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
 
         // authority is not included into filters list as it will be taken into account before filtering
         String authority = getAuthority(req);
+        
         // state is also not included into filters list, for the same reason
         WorkflowTaskState state = getState(req);
-        filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
-        filters.put(PARAM_DUE_BEFORE, getDateParameter(req, PARAM_DUE_BEFORE));
-        filters.put(PARAM_DUE_AFTER, getDateParameter(req, PARAM_DUE_AFTER));
-
+        
+        Boolean pooledTasksOnly = getPooledTasks(req);
         List<String> properties = getProperties(req);
         boolean detailed = "true".equals(req.getParameter(PARAM_DETAILED));
-
+        
+        // get filter param values
+        filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
+        processDateFilter(req, PARAM_DUE_BEFORE, filters);
+        processDateFilter(req, PARAM_DUE_AFTER, filters);
+        
         List<WorkflowTask> allTasks;
 
         if (authority != null)
         {
             List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
             List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority);
-            allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
-            allTasks.addAll(tasks);
-            allTasks.addAll(pooledTasks);
+            if (pooledTasksOnly != null)
+            {
+                if (pooledTasksOnly.booleanValue())
+                {
+                    // only return pooled tasks the user can claim
+                    allTasks = new ArrayList<WorkflowTask>(pooledTasks.size());
+                    allTasks.addAll(pooledTasks);
+                }
+                else
+                {
+                    // only return tasks assigned to the user
+                    allTasks = new ArrayList<WorkflowTask>(tasks.size());
+                    allTasks.addAll(tasks);
+                }
+            }
+            else
+            {
+                // include both assigned and unassigned tasks
+                allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
+                allTasks.addAll(tasks);
+                allTasks.addAll(pooledTasks);
+            }
         }
         else
         {
@@ -107,6 +131,12 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         return createResultModel(modelBuilder, req, "taskInstances", results);
     }
 
+    /**
+     * Retrieves the list of property names to include in the response.
+     * 
+     * @param req The WebScript request
+     * @return List of property names
+     */
     private List<String> getProperties(WebScriptRequest req)
     {
         String propertiesStr = req.getParameter(PARAM_PROPERTIES);
@@ -116,7 +146,26 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         }
         return null;
     }
-
+    
+    /**
+     * Retrieves the pooledTasks parameter.
+     * 
+     * @param req The WebScript request
+     * @return null if not present, Boolean object otherwise
+     */
+    private Boolean getPooledTasks(WebScriptRequest req)
+    {
+        Boolean result = null;
+        String includePooledTasks = req.getParameter(PARAM_POOLED_TASKS);
+        
+        if (includePooledTasks != null)
+        {
+            result = Boolean.valueOf(includePooledTasks);
+        }
+        
+        return result;
+    }
+    
     /**
      * Gets the specified {@link WorkflowTaskState}, defaults to IN_PROGRESS.
      * @param req
@@ -186,18 +235,38 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 {
                     Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
 
-                    if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (dueDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
                 {
                     Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
 
-                    if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (dueDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_PRIORITY))
@@ -214,5 +283,4 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
 
         return result;
     }
-
 }

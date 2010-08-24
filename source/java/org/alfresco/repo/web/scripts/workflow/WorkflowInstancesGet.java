@@ -51,7 +51,8 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_STARTED_AFTER = "startedAfter";
     public static final String PARAM_COMPLETED_BEFORE = "completedBefore";
     public static final String PARAM_COMPLETED_AFTER = "completedAfter";
-    public static final String PARAM_DEFINITION_ID = "workflow_definition_id";
+    public static final String PARAM_DEFINITION_ID = "definitionId";
+    public static final String VAR_DEFINITION_ID = "workflow_definition_id";
 
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
@@ -63,14 +64,21 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         filters.put(PARAM_STATE, req.getParameter(PARAM_STATE));
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
-        filters.put(PARAM_DUE_BEFORE, getDateParameter(req, PARAM_DUE_BEFORE));
-        filters.put(PARAM_DUE_AFTER, getDateParameter(req, PARAM_DUE_AFTER));
-        filters.put(PARAM_STARTED_BEFORE, getDateParameter(req, PARAM_STARTED_BEFORE));
-        filters.put(PARAM_STARTED_AFTER, getDateParameter(req, PARAM_STARTED_AFTER));
-        filters.put(PARAM_COMPLETED_BEFORE, getDateParameter(req, PARAM_COMPLETED_BEFORE));
-        filters.put(PARAM_COMPLETED_AFTER, getDateParameter(req, PARAM_COMPLETED_AFTER));
+        
+        // process all the date related parameters
+        processDateFilter(req, PARAM_DUE_BEFORE, filters);
+        processDateFilter(req, PARAM_DUE_AFTER, filters);
+        processDateFilter(req, PARAM_STARTED_BEFORE, filters);
+        processDateFilter(req, PARAM_STARTED_AFTER, filters);
+        processDateFilter(req, PARAM_COMPLETED_BEFORE, filters);
+        processDateFilter(req, PARAM_COMPLETED_AFTER, filters);
 
-        String workflowDefinitionId = params.get(PARAM_DEFINITION_ID);
+        // determine if there is a definition id to filter by
+        String workflowDefinitionId = params.get(VAR_DEFINITION_ID);
+        if (workflowDefinitionId == null)
+        {
+            workflowDefinitionId = req.getParameter(PARAM_DEFINITION_ID);
+        }
 
         List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
 
@@ -148,9 +156,19 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                     WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
                     Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
 
-                    if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (dueDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (dueDate != null && ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
@@ -158,51 +176,101 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                     WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
                     Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
 
-                    if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (dueDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (dueDate != null && ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_STARTED_BEFORE))
                 {
                     Date startDate = workflowInstance.getStartDate();
 
-                    if (startDate == null || startDate.getTime() <= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (startDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (startDate != null && startDate.getTime() <= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_STARTED_AFTER))
                 {
                     Date startDate = workflowInstance.getStartDate();
 
-                    if (startDate == null || startDate.getTime() >= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (startDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (startDate != null && startDate.getTime() >= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_COMPLETED_BEFORE))
                 {
                     Date endDate = workflowInstance.getEndDate();
 
-                    if (endDate == null || endDate.getTime() <= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (endDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (endDate != null && endDate.getTime() <= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_COMPLETED_AFTER))
                 {
                     Date endDate = workflowInstance.getEndDate();
 
-                    if (endDate == null || endDate.getTime() >= ((Date) filterValue).getTime())
+                    if (filterValue.equals(EMPTY))
                     {
-                        matches = true;
+                        if (endDate == null)
+                        {
+                            matches = true;
+                        }
+                    }
+                    else
+                    {
+                        if (endDate != null && endDate.getTime() >= ((Date) filterValue).getTime())
+                        {
+                            matches = true;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_INITIATOR))
                 {
-                    if (workflowInstance.getInitiator() != null && nodeService.exists(workflowInstance.getInitiator())
-                            && filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
+                    if (workflowInstance.getInitiator() != null && nodeService.exists(workflowInstance.getInitiator()) && 
+                        filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
                     {
                         matches = true;
                     }
@@ -216,6 +284,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                         matches = true;
                     }
                 }
+                
                 // update global result
                 result = result || matches;
             }

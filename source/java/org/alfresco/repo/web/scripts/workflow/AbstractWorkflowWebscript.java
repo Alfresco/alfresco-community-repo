@@ -46,6 +46,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
 {
+    public static final String NULL = "null";
+    public static final String EMPTY = "";
+    
     public static final String PARAM_MAX_ITEMS = "maxItems";
     public static final String PARAM_SKIP_COUNT = "skipCount";
     
@@ -118,6 +121,36 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
             WorkflowModelBuilder modelBuilder,
             WebScriptRequest req,
             Status status, Cache cache);
+    
+    
+    /**
+     * Processes the given date filter parameter from the provided webscript request.
+     * 
+     * If the parameter is present but set to an empty string or to "null" the
+     * date is added to the given filters Map as "", if the parameter
+     * contains an ISO8601 date it's added as a Date object to the filters.
+     * 
+     * @param req The WebScript request
+     * @param paramName The name of the parameter to look for
+     * @param filters Map of filters to add the date to
+     */
+    protected void processDateFilter(WebScriptRequest req, String paramName, Map<String, Object> filters)
+    {
+        // TODO: support other keywords i.e. today, tomorrow
+        
+        String dateParam = req.getParameter(paramName);
+        if (dateParam != null)
+        {
+            Object date = EMPTY;
+            
+            if (!EMPTY.equals(dateParam) && !NULL.equals(dateParam))
+            {
+                date = getDateParameter(req, paramName);
+            }
+            
+            filters.put(paramName, date);
+        }
+    }
     
     /**
      * Retrieves the named paramter as a date.

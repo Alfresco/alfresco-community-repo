@@ -18,7 +18,13 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -27,9 +33,11 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -38,6 +46,14 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
 {
+    public static final String PARAM_MAX_ITEMS = "maxItems";
+    public static final String PARAM_SKIP_COUNT = "skipCount";
+    
+    // used for results pagination: indicates that all items from list should be returned
+    public static final int DEFAULT_MAX_ITEMS = -1;  
+    
+    // used for results pagination: indicates that no items should be skipped
+    public static final int DEFAULT_SKIP_COUNT = 0;
 
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
@@ -102,4 +118,125 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
             WorkflowModelBuilder modelBuilder,
             WebScriptRequest req,
             Status status, Cache cache);
+    
+    /**
+     * Retrieves the named paramter as a date.
+     * 
+     * @param req The WebScript request
+     * @param paramName The name of parameter to look for
+     * @return The request parameter value or null if the parameter is not present
+     */
+    protected Date getDateParameter(WebScriptRequest req, String paramName)
+    {
+        String dateString = req.getParameter(paramName);
+
+        if (dateString != null)
+        {
+            try
+            {
+                return ISO8601DateFormat.parse(dateString.replaceAll(" ", "+"));
+            }
+            catch (Exception e)
+            {
+                String msg = "Invalid date value: " + dateString;
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Retrieves the named parameter as an integer, if the parameter is not present the default value is returned
+     * 
+     * @param req The WebScript request
+     * @param paramName The name of parameter to look for
+     * @param defaultValue The default value that should be returned if parameter is not present in request or if it is not positive
+     * @return The request parameter or default value
+     */
+    protected int getIntParameter(WebScriptRequest req, String paramName, int defaultValue)
+    {
+        String paramString = req.getParameter(paramName);
+        
+        if (paramString != null)
+        {
+            try
+            {
+                int param = Integer.valueOf(paramString);
+                
+                if (param > 0)
+                {
+                    return param;
+                }
+            }
+            catch (NumberFormatException e) 
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            }
+        }
+        
+        return defaultValue;
+    }
+    
+    /**
+     * Builds the results model, applying pagination to the results if necessary.
+     * 
+     * @param modelBuilder WorkflowModelBuilder instance to use
+     * @param req The WebScript request
+     * @param dataPropertyName The name of the property to use in the model
+     * @param results The full set of results
+     * @return List of results to return to the callee
+     */
+    protected Map<String, Object> createResultModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, 
+                String dataPropertyName, List<Map<String, Object>> results)
+    {
+        int totalItems = results.size();
+        int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
+        int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
+        
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put(dataPropertyName, applyPagination(results, maxItems, skipCount));
+        
+        if (maxItems != DEFAULT_MAX_ITEMS || skipCount != DEFAULT_SKIP_COUNT)
+        {
+            // maxItems or skipCount parameter was provided so we need to include paging into response
+            model.put("paging", modelBuilder.buildPaging(totalItems, maxItems == DEFAULT_MAX_ITEMS ? totalItems : maxItems, skipCount));
+        }
+        
+        return model;
+    }
+    
+    /**
+     * Make the pagination for given list of objects
+     * 
+     * @param results the initial list of objects for pagination
+     * @param maxItems maximum count of elements that should be included in paging result 
+     * @param skipCount the count of elements that should be skipped
+     * @return List of paginated results
+     */
+    protected List<Map<String, Object>> applyPagination(List<Map<String, Object>> results, int maxItems, int skipCount)
+    {
+        if (maxItems == DEFAULT_MAX_ITEMS && skipCount == DEFAULT_SKIP_COUNT)
+        {
+            // no need to make pagination
+            return results;
+        }
+        
+        List<Map<String, Object>> pagingResults = new ArrayList<Map<String,Object>>(results.size());
+        
+        // TODO: Revisit the logic below i.e. calculate start and end positions rather than relying on exceptions!
+        
+        for (int i = skipCount; i < (maxItems == DEFAULT_MAX_ITEMS ? results.size() : skipCount + maxItems); i++)
+        {
+            try
+            {
+                pagingResults.add(results.get(i));
+            }
+            catch (IndexOutOfBoundsException e) 
+            {
+                break;
+            }
+        }
+        
+        return pagingResults;
+    }
 }

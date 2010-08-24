@@ -25,17 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -105,11 +101,8 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
             }
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
-        // build the model for ftl
-        model.put("workflowInstances", results);
-
-        return model;
+        // create and return results, paginated if necessary
+        return createResultModel(modelBuilder, req, "workflowInstances", results);
     }
 
     /*
@@ -229,25 +222,6 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         }
 
         return result;
-    }
-
-    private Date getDateParameter(WebScriptRequest req, String name)
-    {
-        String dateString = req.getParameter(name);
-
-        if (dateString != null)
-        {
-            try
-            {
-                return ISO8601DateFormat.parse(dateString.replaceAll(" ", "+"));
-            }
-            catch (Exception e)
-            {
-                String msg = "Invalid date value: " + dateString;
-                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-            }
-        }
-        return null;
     }
 
     private enum WorkflowState

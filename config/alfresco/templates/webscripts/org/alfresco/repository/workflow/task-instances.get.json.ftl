@@ -9,4 +9,8 @@
       <#if task_has_next>,</#if>
       </#list>
    ]
+   <#if paging??>,
+   "paging": 
+   <@taskLib.pagingJSON paging=paging />
+   </#if>
 }

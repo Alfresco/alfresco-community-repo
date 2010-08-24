@@ -292,6 +292,15 @@ public class WorkflowModelBuilderTest extends TestCase
                     taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE));
         
     }
+    
+    public void testBuildPaging()
+    {
+        Map<String, Object> model = builder.buildPaging(100, 50, 50);
+        
+        assertEquals(100, model.get(WorkflowModelBuilder.PAGING_TOTAL_ITEMS));
+        assertEquals(50, model.get(WorkflowModelBuilder.PAGING_MAX_ITEMS));
+        assertEquals(50, model.get(WorkflowModelBuilder.PAGING_SKIP_COUNT));
+    }
 
     private WorkflowNode makeNode()
     {

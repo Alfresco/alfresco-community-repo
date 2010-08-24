@@ -32,7 +32,6 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -83,9 +82,11 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             // authority was not provided -> return all active tasks in the system
             WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
             taskQuery.setTaskState(state);
+            taskQuery.setActive(null);
             allTasks = workflowService.queryTasks(taskQuery);
         }
 
+        // filter results
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (WorkflowTask task : allTasks)
         {
@@ -102,9 +103,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             }
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put("taskInstances", results);
-        return model;
+        // create and return results, paginated if necessary
+        return createResultModel(modelBuilder, req, "taskInstances", results);
     }
 
     private List<String> getProperties(WebScriptRequest req)
@@ -154,25 +154,6 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             authority = null;
         }
         return authority;
-    }
-
-    private Date getDateParameter(WebScriptRequest req, String name)
-    {
-        String dateString = req.getParameter(name);
-
-        if (dateString != null)
-        {
-            try
-            {
-                return ISO8601DateFormat.parse(dateString.replaceAll(" ", "+"));
-            }
-            catch (Exception e)
-            {
-                String msg = "Invalid date value: " + dateString;
-                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-            }
-        }
-        return null;
     }
 
     /*

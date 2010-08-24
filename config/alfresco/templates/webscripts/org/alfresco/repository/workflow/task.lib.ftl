@@ -144,3 +144,14 @@
 }
 </#escape>
 </#macro>
+
+<#-- Renders a paging. -->
+<#macro pagingJSON paging>
+<#escape x as jsonUtils.encodeJSONString(x)>
+   {
+      "totalItems": "${paging.totalItems?c}",
+      "maxItems": "${paging.maxItems?c}",
+      "skipCount": "${paging.skipCount?c}"
+   }
+</#escape>
+</#macro>

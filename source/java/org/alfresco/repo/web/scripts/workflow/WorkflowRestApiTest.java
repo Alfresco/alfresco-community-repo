@@ -126,6 +126,8 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(results);
         assertTrue(results.length() == tasks.size());
         JSONObject result = results.getJSONObject(0);
+        
+        int totalItems = results.length();
 
         String expUrl = "api/task-instances/" + task.id;
         assertEquals(expUrl, result.getString("url"));
@@ -161,6 +163,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
 
         checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(dueDate));
+        
+        // paging
+        int maxItems = 3;        
+        for (int skipCount = 0; skipCount < totalItems; skipCount += maxItems)
+        {
+            checkPaging(MessageFormat.format(URL_USER_TASKS, USER2) + "&maxItems=" + maxItems + "&skipCount=" + skipCount, totalItems, maxItems, skipCount);
+        }
     }
 
     public void testTaskInstanceGet() throws Exception
@@ -452,6 +461,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONArray result = json.getJSONArray("data");
         assertNotNull(result);
 
+        int totalItems = result.length();
         for (int i = 0; i < result.length(); i++)
         {
             checkSimpleWorkflowInstanceResponse(result.getJSONObject(i));
@@ -498,6 +508,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         // filter by state
         checkFiltering(URL_WORKFLOW_INSTANCES + "?state=active");
+        
+        // paging
+        int maxItems = 3;        
+        for (int skipCount = 0; skipCount < totalItems; skipCount += maxItems)
+        {
+            checkPaging(URL_WORKFLOW_INSTANCES + "?maxItems=" + maxItems + "&skipCount=" + skipCount, totalItems, maxItems, skipCount);
+        }
     }
 
     public void testWorkflowInstancesForNodeGet() throws Exception
@@ -683,5 +700,27 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
 
         assertTrue(result.length() > 0);
+    }
+    
+    private void checkPaging(String url, int totalItems, int maxItems, int skipCount) throws Exception
+    {
+        Response response = sendRequest(new GetRequest(url), 200);
+
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        
+        JSONArray data = json.getJSONArray("data");
+        JSONObject paging = json.getJSONObject("paging");
+        
+        assertNotNull(data);
+        assertNotNull(paging);
+
+        assertTrue(data.length() >= 0);
+        assertTrue(data.length() <= maxItems);
+        
+        assertEquals(totalItems, paging.getInt("totalItems"));
+        assertEquals(maxItems, paging.getInt("maxItems"));
+        assertEquals(skipCount, paging.getInt("skipCount"));
     }
 }

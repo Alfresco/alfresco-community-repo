@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.usage.AbstractUsageDAOImpl;
 import org.alfresco.repo.domain.usage.UsageDeltaEntity;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
@@ -108,9 +109,18 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     @Override
     protected void selectUsersWithoutUsage(StoreRef storeRef, MapHandler resultsCallback)
     {
-        long personTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
-        long usernamePropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
-        long sizeCurrentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        Pair<Long, ? extends Object> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        Pair<Long, ? extends Object> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        Pair<Long, ? extends Object> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        
+        if (personTypeQNamePair == null || usernamePropQNamePair == null || sizeCurrentPropQNamePair == null)
+        {
+            return;             // The statics have not been used, so there can be no results
+        }
+        
+        Long personTypeQNameEntityId = personTypeQNamePair.getFirst();
+        Long usernamePropQNameEntityId = usernamePropQNamePair.getFirst();
+        Long sizeCurrentPropQNameEntityId = sizeCurrentPropQNamePair.getFirst();
         
         Map<String, Object> params = new HashMap<String, Object>(5);
         params.put("personTypeQNameID", personTypeQNameEntityId); // cm:person (type)
@@ -132,9 +142,18 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     @Override
     protected void selectUsersWithUsage(StoreRef storeRef, MapHandler resultsCallback)
     {
-        long personTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
-        long usernamePropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
-        long sizeCurrentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        Pair<Long, ? extends Object> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        Pair<Long, ? extends Object> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        Pair<Long, ? extends Object> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        
+        if (personTypeQNamePair == null || usernamePropQNamePair == null || sizeCurrentPropQNamePair == null)
+        {
+            return;             // The statics have not been used, so there can be no results
+        }
+        
+        Long personTypeQNameEntityId = personTypeQNamePair.getFirst();
+        Long usernamePropQNameEntityId = usernamePropQNamePair.getFirst();
+        Long sizeCurrentPropQNameEntityId = sizeCurrentPropQNamePair.getFirst();
         
         Map<String, Object> params = new HashMap<String, Object>(5);
         params.put("personTypeQNameID", personTypeQNameEntityId); // cm:person (type)
@@ -156,9 +175,18 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     @Override
     protected void selectUserContentSizesForStore(StoreRef storeRef, MapHandler resultsCallback)
     {
-        long contentTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_CONTENT).getFirst();
-        long ownerPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_OWNER).getFirst();
-        long contentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_CONTENT).getFirst();
+        Pair<Long, ? extends Object> contentTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_CONTENT);
+        Pair<Long, ? extends Object> ownerPropQNamePair = qnameDAO.getQName(ContentModel.PROP_OWNER);
+        Pair<Long, ? extends Object> contentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_CONTENT);
+        
+        if (contentTypeQNamePair == null || ownerPropQNamePair == null || contentPropQNamePair == null)
+        {
+            return;             // The statics have not been used, so there can be no results
+        }
+        
+        Long contentTypeQNameEntityId = contentTypeQNamePair.getFirst();
+        Long ownerPropQNameEntityId = ownerPropQNamePair.getFirst();
+        Long contentPropQNameEntityId = contentPropQNamePair.getFirst();
         
         MapRowHandler rowHandler = new MapRowHandler(resultsCallback);
         

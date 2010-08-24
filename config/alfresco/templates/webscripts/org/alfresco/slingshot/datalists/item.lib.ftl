@@ -9,7 +9,7 @@
             "value": "${item.createdBy.userName}",
             "displayValue": "${item.createdBy.displayName}"
          },
-         "modifiedOn": "${xmldate(node.properties.modified)}>",
+         "modifiedOn": "${xmldate(node.properties.modified)}",
          "modifiedBy":
          {
             "value": "${item.modifiedBy.userName}",

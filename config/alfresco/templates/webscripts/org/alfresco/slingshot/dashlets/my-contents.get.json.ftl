@@ -1,4 +1,4 @@
-<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
+<#macro dateFormat date>${xmldate(date)}</#macro>
 <#macro renderItem item>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
@@ -32,32 +32,29 @@
     "blogPosts": 
       {
          "items":
-            [
+         [
          <#list data.blogPosts.items as item>
-            <@renderItem item />
-            <#if item_has_next>,</#if>
+            <@renderItem item /><#if item_has_next>,</#if>
          </#list>
-            ]
+         ]
       },
     "wikiPages":
       {
          "items":
-            [
+         [
          <#list data.wikiPages.items as item>
-            <@renderItem item />
-            <#if item_has_next>,</#if>
+            <@renderItem item /><#if item_has_next>,</#if>
          </#list>
-            ]
+         ]
       },
     "forumPosts":
       {
          "items":      
-            [
+         [
          <#list data.discussions.items as item>
-            <@renderItem item />
-            <#if item_has_next>,</#if>
+            <@renderItem item /><#if item_has_next>,</#if>
          </#list>
-            ]
+         ]
       }
 }
 </#escape>

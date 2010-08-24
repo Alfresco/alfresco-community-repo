@@ -1,6 +1,6 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 
-<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
+<#macro dateFormat date>${xmldate(date)}</#macro>
 
 <#macro itemJSON item>
    <#escape x as jsonUtils.encodeJSONString(x)>

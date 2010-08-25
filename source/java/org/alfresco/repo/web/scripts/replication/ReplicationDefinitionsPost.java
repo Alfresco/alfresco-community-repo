@@ -55,9 +55,16 @@ public class ReplicationDefinitionsPost extends AbstractReplicationWebscript
            if(! json.has("description"))
               throw new WebScriptException(Status.STATUS_BAD_REQUEST, "description is required but wasn't supplied");
            
-           // Create
+           // Ensure one doesn't already exist with that name
+           String name = json.getString("name"); 
+           if(replicationService.loadReplicationDefinition(name) != null)
+           {
+              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A replication definition already exists with that name");
+           }
+           
+           // Create the definition
            replicationDefinition = replicationService.createReplicationDefinition(
-                 json.getString("name"), json.getString("description")
+                 name, json.getString("description")
            );
            
            // Set the extra parts

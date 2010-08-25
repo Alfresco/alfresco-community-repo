@@ -818,9 +818,25 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        // Ensure we can't create with a duplicate name
        json = new JSONObject();
        json.put("name", "Test");
+       json.put("description", "New Duplicate");
+       json.put("targetName", "New Duplicate Target");
        
        response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
        assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
+       
+       // Ensure that even though we got BAD REQUEST back, nothing changed
+       rd = replicationService.loadReplicationDefinition("New Definition");
+       assertEquals("New Definition", rd.getReplicationName());
+       assertEquals("Testing", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals(null, rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(true, rd.isEnabled());
     }
     
     public void testReplicationDefinitionPut() throws Exception

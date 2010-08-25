@@ -51,7 +51,6 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
@@ -70,6 +69,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
@@ -136,6 +136,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     private String name;
     private QName type;
     protected String id;
+    protected String siteName;
+    protected boolean siteNameResolved = false;
     
     /** The aspects applied to this node */
     protected Set<QName> aspects = null;
@@ -2670,31 +2672,79 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     // ------------------------------------------------------------------------------
     // Workflow methods
 
-	/**
-	 * Get active workflow instances this node belongs to
-	 * 
-	 * @return the active workflow instances this node belongs to
-	 */
-	public Scriptable getActiveWorkflows()
-	{
-		if (this.activeWorkflows == null)
-		{
-			WorkflowService workflowService = this.services.getWorkflowService();
-			
-			List<WorkflowInstance> workflowInstances = workflowService.getWorkflowsForContent(this.nodeRef, true);
-			Object[] jsWorkflowInstances = new Object[workflowInstances.size()];
-			int index = 0;
-			for (WorkflowInstance workflowInstance : workflowInstances)
-			{
-				jsWorkflowInstances[index++] = new JscriptWorkflowInstance(workflowInstance, this.services, this.scope);
-			}
-			this.activeWorkflows = Context.getCurrentContext().newArray(this.scope, jsWorkflowInstances);		
-		}
-
-		return this.activeWorkflows;
-	}
-
+    /**
+     * Get active workflow instances this node belongs to
+     * 
+     * @return the active workflow instances this node belongs to
+     */
+    public Scriptable getActiveWorkflows()
+    {
+        if (this.activeWorkflows == null)
+        {
+            WorkflowService workflowService = this.services.getWorkflowService();
+            
+            List<WorkflowInstance> workflowInstances = workflowService.getWorkflowsForContent(this.nodeRef, true);
+            Object[] jsWorkflowInstances = new Object[workflowInstances.size()];
+            int index = 0;
+            for (WorkflowInstance workflowInstance : workflowInstances)
+            {
+                jsWorkflowInstances[index++] = new JscriptWorkflowInstance(workflowInstance, this.services, this.scope);
+            }
+            this.activeWorkflows = Context.getCurrentContext().newArray(this.scope, jsWorkflowInstances);		
+        }
     
+        return this.activeWorkflows;
+    }
+
+    // ------------------------------------------------------------------------------
+    // Site methods
+    
+    /**
+     * Returns the short name of the site this node is located within. If the 
+     * node is not located within a site null is returned.
+     * 
+     * @return The short name of the site this node is located within, null
+     *         if the node is not located within a site.
+     */
+    public String getSiteShortName()
+    {
+        if (!this.siteNameResolved)
+        {
+            this.siteNameResolved = true;
+            
+            Path path = this.services.getNodeService().getPath(getNodeRef());
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Determing if node is within a site using path: " + path);
+            
+            for (int i = 0; i < path.size(); i++)
+            {
+                if ("st:sites".equals(path.get(i).getPrefixedString(this.services.getNamespaceService())))
+                {
+                    // we now know the node is in a site, find the next element in the array (if there is one)
+                    if ((i+1) < path.size())
+                    {
+                        // get the site name
+                        Path.Element siteName = path.get(i+1);
+                     
+                        // remove the "cm:" prefix and add to result object
+                        this.siteName = siteName.getPrefixedString(this.services.getNamespaceService()).substring(3);
+                    }
+                  
+                    break;
+                }
+            }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(this.siteName != null ? 
+                        "Node is in the site named \"" + this.siteName + "\"" : "Node is not in a site");
+        }
+        
+        return this.siteName;
+    }
+
     // ------------------------------------------------------------------------------
     // Helper methods
     
@@ -2863,6 +2913,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.parent = null;
         this.primaryParentAssoc = null;
         this.activeWorkflows = null;
+        this.siteName = null;
+        this.siteNameResolved = false;
     }
     
     /**

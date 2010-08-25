@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -70,6 +71,8 @@ public abstract class BaseContentNode implements TemplateContent
     private Boolean isContainer = null;
     private Boolean isLinkToDocument = null;
     private Boolean isLinkToContainer = null;
+    private String siteName;
+    private boolean siteNameResolved = false;
     
     /**
      * @return true if this Node is a container (i.e. a folder)
@@ -493,6 +496,45 @@ public abstract class BaseContentNode implements TemplateContent
         return (o instanceof TemplateNodeRef);
     }
     
+    // ------------------------------------------------------------------------------
+    // Site methods
+    
+    /**
+     * Returns the short name of the site this node is located within. If the 
+     * node is not located within a site null is returned.
+     * 
+     * @return The short name of the site this node is located within, null
+     *         if the node is not located within a site.
+     */
+    public String getSiteShortName()
+    {
+        if (!this.siteNameResolved)
+        {
+            this.siteNameResolved = true;
+            
+            Path path = this.services.getNodeService().getPath(getNodeRef());
+            
+            for (int i = 0; i < path.size(); i++)
+            {
+                if ("st:sites".equals(path.get(i).getPrefixedString(this.services.getNamespaceService())))
+                {
+                    // we now know the node is in a site, find the next element in the array (if there is one)
+                    if ((i+1) < path.size())
+                    {
+                        // get the site name
+                        Path.Element siteName = path.get(i+1);
+                     
+                        // remove the "cm:" prefix and add to result object
+                        this.siteName = siteName.getPrefixedString(this.services.getNamespaceService()).substring(3);
+                    }
+                  
+                    break;
+                }
+            }
+        }
+        
+        return this.siteName;
+    }
     
     // ------------------------------------------------------------------------------
     // Inner classes 

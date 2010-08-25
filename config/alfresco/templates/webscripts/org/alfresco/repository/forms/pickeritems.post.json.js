@@ -53,10 +53,6 @@ function main()
             {
                result = createGroupResult(result);
             }
-            else
-            {
-               result = createNodeResult(result);
-            }
             
             results.push(
             {

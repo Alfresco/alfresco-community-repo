@@ -7,11 +7,13 @@ function main()
       argsSearchTerm = args['searchTerm'],
       argsMaxResults = args['size'],
       argsXPath = args['xpath'],
+      pathElements = url.service.split("/"),
       parent = null,
       rootNode = companyhome,
       results = [],
       categoryResults = null,
-      resultObj = null;
+      resultObj = null,
+      lastPathElement = null;
    
    if (logger.isLoggingEnabled())
    {
@@ -20,17 +22,52 @@ function main()
       logger.log("argsFilterType = " + argsFilterType);
       logger.log("argsSearchTerm = " + argsSearchTerm);
       logger.log("argsMaxResults = " + argsMaxResults);
+      logger.log("argsXPath = " + argsXPath);
    }
          
    try
    {
+      // construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+      
+      // determine if we need to resolve the parent NodeRef
+      
       if (argsXPath != null)
       {
+         // resolve the provided XPath to a NodeRef
          var nodes = search.xpathSearch(argsXPath);
          if (nodes.length > 0)
          {
             nodeRef = String(nodes[0].nodeRef);
+         }
+      }
+      
+      // if the last path element is 'doclib' or 'siblings' find parent node
+      if (pathElements.length > 0)
+      {
+         lastPathElement = pathElements[pathElements.length-1];
+         
+         if (logger.isLoggingEnabled())
+            logger.log("lastPathElement = " + lastPathElement);
+         
+         if (lastPathElement == "siblings")
+         {
+            // the provided nodeRef is the node we want the siblings of so get it's parent
+            var node = search.findNode(nodeRef);
+            if (node !== null)
+            {
+               nodeRef = node.parent.nodeRef;
+            }
+            else
+            {
+               // if the provided node was not found default to companyhome
+               nodeRef = "alfresco://company/home";
+            }
+         }
+         else if (lastPathElement == "doclib")
+         {
+            // we want to find the document library for the nodeRef provided
+            nodeRef = findDoclib(nodeRef);
          }
       }
 
@@ -314,6 +351,44 @@ function findGroups(searchTerm, maxResults, results)
          return (a.item.properties.name < b.item.properties.name) ? -1 : (a.item.properties.name > b.item.properties.name) ? 1 : 0;
       });
    }
+}
+
+/**
+ * Returns the nodeRef of the document library of the site the
+ * given nodeRef is located within. If the nodeRef provided does
+ * not live within a site "alfresco://company/home" is returned.
+ * 
+ * @param nodeRef The node to find the document library for
+ * @return The nodeRef of the doclib or "alfresco://company/home" if the node
+ *         is not located within a site
+ */
+function findDoclib(nodeRef)
+{
+   var resultNodeRef = "alfresco://company/home";
+   
+   // find the given node
+   var node = search.findNode(nodeRef);
+   if (node !== null)
+   {
+      // get the name of the site
+      var siteName = node.siteShortName;
+      
+      if (logger.isLoggingEnabled())
+         logger.log("siteName = " + siteName);
+      
+      // if the node is in a site find the document library node using an XPath search
+      if (siteName !== null)
+      {
+         var nodes = search.xpathSearch("/app:company_home/st:sites/cm:" + search.ISO9075Encode(siteName) + "/cm:documentLibrary");
+         if (nodes.length > 0)
+         {
+            // there should only be 1 result, get the first one
+            resultNodeRef = String(nodes[0].nodeRef);
+         }
+      }
+   }
+   
+   return resultNodeRef;
 }
 
 main();

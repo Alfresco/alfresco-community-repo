@@ -2,6 +2,8 @@
   <shortname>PickerList</shortname>
   <description>Service to return metadata of child items in a parent space to display in the object finder</description>
   <url>/api/forms/picker/{type}/{store_type}/{store_id}/{id}/children</url>
+  <url>/api/forms/picker/{type}/{store_type}/{store_id}/{id}/siblings</url>
+  <url>/api/forms/picker/{type}/{store_type}/{store_id}/{id}/doclib</url>
   <url>/api/forms/picker/{type}/children</url>
   <format default="json"/>
   <authentication>user</authentication>

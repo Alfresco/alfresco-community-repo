@@ -13,7 +13,6 @@
       ${indent}"description": "${node.properties.description!""}",
       <#if node.properties.modified??>${indent}"modified": "${xmldate(node.properties.modified)}",</#if>
       <#if node.properties.modifier??>${indent}"modifier": "${node.properties.modifier}",</#if>
-      <#if node.site??>${indent}"site": "${node.site}",</#if>
       ${indent}"displayPath": "${node.displayPath!""}",
       ${indent}"nodeRef": "${node.nodeRef}"
    ${indent}},
@@ -40,7 +39,7 @@
             "description": "${row.item.properties.description!""}",
             <#if row.item.properties.modified??>"modified": "${xmldate(row.item.properties.modified)}",</#if>
             <#if row.item.properties.modifier??>"modifier": "${row.item.properties.modifier}",</#if>
-            <#if row.item.site??>"site": "${row.item.site}",</#if>
+            <#if row.item.siteShortName??>"site": "${row.item.siteShortName}",</#if>
             "displayPath": "${row.item.displayPath!""}",
             "nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
             "selectable" : ${row.selectable?string}</#if>

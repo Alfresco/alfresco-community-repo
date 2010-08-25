@@ -56,7 +56,7 @@ CREATE SEQUENCE alf_attributes_seq START WITH ${hibernate_seq_next_value} INCREM
 
 CREATE SEQUENCE alf_node_assoc_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
 
-CREATE SEQUENCE alf_usage_delta_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+CREATE SEQUENCE alf_usage_delta_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1; -- (optional)
 
 --
 -- Record script finish

@@ -441,39 +441,6 @@ ALTER TABLE t_alf_node_assoc RENAME TO alf_node_assoc;
 ALTER TABLE alf_node_assoc
    ADD CONSTRAINT alf_node_assoc_source_node_id_key UNIQUE (source_node_id, target_node_id, type_qname_id);
 
--- ----------------------------
--- Populate the Usage Deltas --
--- ----------------------------
-
-CREATE TABLE t_alf_usage_delta
-(
-   id INT8 NOT NULL,
-   version INT8 NOT NULL, 
-   node_id INT8 NOT NULL,
-   delta_size INT8 NOT NULL,
-   CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
-   PRIMARY KEY (id)
-);
-CREATE INDEX fk_alf_usaged_n ON t_alf_usage_delta (node_id);
-
-INSERT INTO t_alf_usage_delta
-   (
-      id, version,
-      node_id,
-      delta_size
-   )
-   SELECT
-      ud.id, 1,
-      ud.node_id,
-      ud.delta_size
-   FROM
-      alf_usage_delta ud
-;                                                          -- (optional)
-
--- Clean up
-DROP TABLE alf_usage_delta;                                -- (optional)
-ALTER TABLE t_alf_usage_delta RENAME TO alf_usage_delta;
-
 -- -----------------------------
 -- Populate the Node Aspects --
 -- -----------------------------
@@ -831,7 +798,7 @@ DELETE
    WHERE EXISTS
    (
       SELECT 1 FROM alf_qname, alf_namespace
-	  WHERE
+      WHERE
          t_alf_node_properties.qname_id = alf_qname.id AND
          alf_qname.ns_id = alf_namespace.id AND
          alf_namespace.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND

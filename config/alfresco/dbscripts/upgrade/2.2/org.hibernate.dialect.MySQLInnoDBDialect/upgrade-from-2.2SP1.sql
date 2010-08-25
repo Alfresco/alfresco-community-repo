@@ -232,39 +232,6 @@ INSERT INTO t_alf_node_assoc
 DROP TABLE alf_node_assoc;
 ALTER TABLE t_alf_node_assoc RENAME TO alf_node_assoc;
 
--- ----------------------------
--- Populate the Usage Deltas --
--- ----------------------------
-
-CREATE TABLE t_alf_usage_delta
-(
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL, 
-   node_id BIGINT NOT NULL,
-   delta_size BIGINT NOT NULL,
-   INDEX fk_alf_usaged_n (node_id),
-   CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
-   PRIMARY KEY (id)
-) TYPE=InnoDB;
-
-INSERT INTO t_alf_usage_delta
-   (
-      id, version,
-      node_id,
-      delta_size
-   )
-   SELECT
-      ud.id, 1,
-      ud.node_id,
-      ud.delta_size
-   FROM
-      alf_usage_delta ud
-;                                                          -- (optional)
-
--- Clean up
-DROP TABLE alf_usage_delta;                                -- (optional)
-ALTER TABLE t_alf_usage_delta RENAME TO alf_usage_delta;
-
 -- -----------------------------
 -- Populate the Node Aspects --
 -- -----------------------------

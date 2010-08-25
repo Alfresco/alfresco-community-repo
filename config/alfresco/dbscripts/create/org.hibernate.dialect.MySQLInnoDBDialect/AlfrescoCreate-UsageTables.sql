@@ -16,7 +16,7 @@ CREATE TABLE alf_usage_delta
     PRIMARY KEY (id),
     KEY fk_alf_usaged_n (node_id),
     CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES alf_node (id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB; -- (optional)
 
 --
 -- Record script finish

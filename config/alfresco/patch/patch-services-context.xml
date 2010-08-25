@@ -856,12 +856,6 @@
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
         </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
-                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
-            </list>
-        </property>
     </bean>
     
     <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.DeploymentMigrationPatch" parent="basePatch" >

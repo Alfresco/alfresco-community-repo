@@ -60,7 +60,8 @@ CREATE INDEX fk_alf_store_root ON alf_store (root_node_id);
 
 CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
 
-CREATE INDEX fk_alf_usaged_n ON alf_usage_delta (node_id);
+-- Optional: Present in various other patches
+CREATE INDEX fk_alf_usaged_n ON alf_usage_delta (node_id);    -- (optional)
 
 --
 -- Record script finish

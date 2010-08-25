@@ -162,6 +162,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          new TransferDefinition();
       transferDefinition.setNodes(toTransfer);
       transferDefinition.setSync(true);
+//      transferDefinition.setReadOnly(true); // TODO Make read only, but then need to fix tests
       
       return transferDefinition;
    }

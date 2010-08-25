@@ -42,6 +42,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
@@ -60,7 +62,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -84,6 +85,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private JobLockService jobLockService;
     private ActionService actionService;
     private NodeService nodeService;
+    private LockService lockService;
     private Repository repositoryHelper;
     private ActionTrackingService actionTrackingService;
     
@@ -120,6 +122,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
         actionService = (ActionService) ctx.getBean("actionService");
         nodeService = (NodeService) ctx.getBean("nodeService");
+        lockService = (LockService) ctx.getBean("lockService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
         
@@ -847,6 +850,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        TransferDefinition td = replicationActionExecutor.buildTransferDefinition(rd, nodes);
        assertEquals(true, td.isSync());
+//       assertEquals(true, td.isReadOnly());// TODO Make read only, and fix tests
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));
@@ -866,6 +870,10 @@ public class ReplicationServiceIntegrationTest extends TestCase
         NodeRef existing = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
         if(existing != null) {
            System.err.println("Zapped existing node " + existing + " for name " + name);
+           
+           try {
+              lockService.unlock(existing, true);
+           } catch(UnableToReleaseLockException e) {}
            nodeService.deleteNode(existing);
         }
         

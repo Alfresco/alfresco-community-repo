@@ -580,7 +580,7 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.DOUBLE;
         }
-        else if (value instanceof String)
+        else if (value instanceof String || value instanceof Enum<?>)
         {
             return ValueType.STRING;
         }

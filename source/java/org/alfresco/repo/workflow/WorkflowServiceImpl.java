@@ -681,6 +681,12 @@ public class WorkflowServiceImpl implements WorkflowService
             return false;
         }
         
+        // if a task does not have an owner it can not be reassigned
+        if (task.getProperties().get(ContentModel.PROP_OWNER) == null)
+        {
+            return false;
+        }
+        
         // if the task has the 'reassignable' property set to false it can not be reassigned
         Map<QName, Serializable> properties = task.getProperties();
         Boolean reassignable = (Boolean)properties.get(WorkflowModel.PROP_REASSIGNABLE);

@@ -436,7 +436,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
                key.equals("executionDetails") || key.equals("payload") ||
                key.equals("transferLocalReport") ||
                key.equals("transferRemoteReport") ||
-               key.equals("enabled")) {
+               key.equals("enabled") || key.equals("schedule")) {
               // All good
            } else {
               fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);
@@ -901,7 +901,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
               key.equals("executionDetails") || key.equals("payload") ||
               key.equals("transferLocalReport") ||
               key.equals("transferRemoteReport") ||
-              key.equals("enabled")) {
+              key.equals("enabled") || key.equals("schedule")) {
              // All good
           } else {
              fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);

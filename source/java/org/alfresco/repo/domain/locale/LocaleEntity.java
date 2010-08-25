@@ -24,13 +24,7 @@
  */
 package org.alfresco.repo.domain.locale;
 
-import java.util.Locale;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.util.EqualsHelper;
 
 
 /**
@@ -49,15 +43,8 @@ public class LocaleEntity
     private Long version;
     private String localeStr;
     
-    private transient ReadLock refReadLock;
-    private transient WriteLock refWriteLock;
-    private transient Locale locale;
-    
     public LocaleEntity()
     {
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        refReadLock = lock.readLock();
-        refWriteLock = lock.writeLock();
     }
     
     @Override
@@ -95,16 +82,7 @@ public class LocaleEntity
     }
     public void setLocaleStr(String localeStr)
     {
-        refWriteLock.lock();
-        try
-        {
-            this.localeStr = localeStr;
-            this.locale = null;
-        }
-        finally
-        {
-            refWriteLock.unlock();
-        }
+        this.localeStr = localeStr;
     }
     
     @Override
@@ -123,77 +101,12 @@ public class LocaleEntity
             return false;
         }
         LocaleEntity that = (LocaleEntity) obj;
-        return (this.getLocale().equals(that.getLocale()));
+        return EqualsHelper.nullSafeEquals(this.localeStr, that.localeStr);
     }
     
     @Override
     public int hashCode()
     {
-        return getLocale().hashCode();
-    }
-    
-    /**
-     * Lazily constructs a <code>Locale</code> instance referencing this entity
-     */
-    public Locale getLocale()
-    {
-        // The default locale cannot be cached as it depends on the running thread's locale
-        if (localeStr == null || localeStr.equals(DEFAULT_LOCALE_SUBSTITUTE))
-        {
-            return I18NUtil.getLocale();
-        }
-        // first check if it is available
-        refReadLock.lock();
-        try
-        {
-            if (locale != null)
-            {
-                return locale;
-            }
-        }
-        finally
-        {
-            refReadLock.unlock();
-        }
-        // get write lock
-        refWriteLock.lock();
-        try
-        {
-            // double check
-            if (locale == null )
-            {
-                locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, localeStr);
-            }
-            return locale;
-        }
-        finally
-        {
-            refWriteLock.unlock();
-        }
-    }
-    
-    /**
-     * @param locale        the locale to set or <tt>null</tt> to represent the default locale
-     */
-    public void setLocale(Locale locale)
-    {
-        refWriteLock.lock();
-        try
-        {
-            if (locale == null)
-            {
-                this.localeStr = DEFAULT_LOCALE_SUBSTITUTE;
-                this.locale = null;
-            }
-            else
-            {
-                this.localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
-                this.locale = locale;
-            }
-        }
-        finally
-        {
-            refWriteLock.unlock();
-        }
+        return localeStr == null ? 0 : localeStr.hashCode();
     }
 }

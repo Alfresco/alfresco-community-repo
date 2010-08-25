@@ -81,21 +81,25 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         this.localeEntityCache = new EntityLookupCache<Long, String, String>(new LocaleEntityCallbackDAO());
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Pair<Long, Locale> getLocalePair(Locale locale)
     {
-        if (locale == null)
-        {
-            throw new IllegalArgumentException("Locale cannot be null");
-        }
-        
         return getLocalePairImpl(locale);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Pair<Long, Locale> getDefaultLocalePair()
     {
         return getLocalePairImpl(null);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Pair<Long, Locale> getLocalePair(Long id)
     {
         if (id == null)
@@ -108,42 +112,44 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             throw new DataIntegrityViolationException("No locale exists for ID " + id);
         }
-        
+        String localeStr = entityPair.getSecond();
         // Convert the locale string to a locale
-        Locale locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, entityPair.getSecond());
+        Locale locale = null;
+        if (LocaleEntity.DEFAULT_LOCALE_SUBSTITUTE.equals(localeStr))
+        {
+            locale = I18NUtil.getLocale();
+        }
+        else
+        {
+            locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, entityPair.getSecond());
+        }
+        
         return new Pair<Long, Locale>(id, locale);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Pair<Long, Locale> getOrCreateLocalePair(Locale locale)
     {
-        if (locale == null)
-        {
-            throw new IllegalArgumentException("Locale cannot be null");
-        }
-        
-        String localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
-        Pair<Long, String> entityPair = localeEntityCache.getOrCreateByValue(localeStr);
-        if (entityPair == null)
-        {
-            throw new RuntimeException("Locale should have been created.");
-        }
-        return new Pair<Long, Locale>(entityPair.getFirst(), locale);
+        return getOrCreateLocalePairImpl(locale);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Pair<Long, Locale> getOrCreateDefaultLocalePair()
     {
-        Pair<Long, Locale> localePair = getDefaultLocalePair();
-        if (localePair != null)
-        {
-            return localePair;
-        }
-        
-        LocaleEntity localeEntity = new LocaleEntity();
-        localeEntity.setLocale(null);
-        
-        return getOrCreateLocalePair(localeEntity.getLocale());
+        return getOrCreateLocalePairImpl(null);
     }
     
+    /**
+     * Find the locale pair
+     * 
+     * @param locale                the locale to get or <tt>null</tt> to indicate the
+     *                              {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
+     * @return                      Returns the locale pair (ID, Locale) or <tt>null</tt> if not found.
+     */
     private Pair<Long, Locale> getLocalePairImpl(Locale locale)
     {
         // Null means look for the default
@@ -160,7 +166,7 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         
         if (localeStr == null)
         {
-            throw new IllegalArgumentException("Cannot look up entity by null ID.");
+            throw new IllegalArgumentException("Cannot look up entity by null locale.");
         }
         
         Pair<Long, String> entityPair = localeEntityCache.getByValue(localeStr);
@@ -172,6 +178,40 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
         {
             return new Pair<Long, Locale>(entityPair.getFirst(), locale);
         }
+    }
+    
+    /**
+     * Find or create the locale pair
+     * 
+     * @param locale                the locale to get or <tt>null</tt> to indicate the
+     *                              {@link LocaleEntity#DEFAULT_LOCALE_SUBSTITUTE default locale}.
+     * @return                      Returns the locale pair (ID, Locale), never <tt>null
+     */
+    private Pair<Long, Locale> getOrCreateLocalePairImpl(Locale locale)
+    {
+        // Null means look for the default
+        final String localeStr;
+        if (locale == null)
+        {
+            localeStr = LocaleEntity.DEFAULT_LOCALE_SUBSTITUTE;
+            locale = I18NUtil.getLocale();
+        }
+        else
+        {
+            localeStr = DefaultTypeConverter.INSTANCE.convert(String.class, locale);
+        }
+        
+        if (localeStr == null)
+        {
+            throw new IllegalArgumentException("Cannot look up entity by null locale.");
+        }
+        
+        Pair<Long, String> entityPair = localeEntityCache.getOrCreateByValue(localeStr);
+        if (entityPair == null)
+        {
+            throw new RuntimeException("Locale should have been created.");
+        }
+        return new Pair<Long, Locale>(entityPair.getFirst(), locale);
     }
     
     /**

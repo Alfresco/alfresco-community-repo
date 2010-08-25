@@ -26,8 +26,8 @@ package org.alfresco.repo.domain.locale;
 
 import java.util.Locale;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.Pair;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Data abstraction layer for Locale entities.
@@ -39,8 +39,8 @@ public interface LocaleDAO
 {
     /**
      * @param id            the unique ID of the entity
-     * @return              the locale (never null)
-     * @throws              AlfrescoRuntimeException if the ID provided is invalid
+     * @return              the locale pair (never null)
+     * @throws              DataIntegrityViolationException if the ID provided is invalid
      */
     Pair<Long, Locale> getLocalePair(Long id);
     
@@ -62,8 +62,7 @@ public interface LocaleDAO
      * Gets the locale ID for an existing instance or creates a new entity if
      * one doesn't exist.
      * 
-     * @param id            the locale to fetch or <tt>null</tt> to get or create the default
-     *                      locale.
+     * @param locale        the locale to fetch or <tt>null</tt> to get or create the default locale.
      * @return              the locale - never <tt>null</tt>
      */
     Pair<Long, Locale> getOrCreateLocalePair(Locale locale);

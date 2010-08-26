@@ -21,6 +21,8 @@ package org.alfresco.repo.replication;
 import java.util.List;
 
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
@@ -41,6 +43,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    private DictionaryService dictionaryService;
    private TransferService transferService;
    private NodeService nodeService;
+   private ScheduledPersistedActionService scheduledPersistedActionService;
    
    private ReplicationDefinitionPersisterImpl replicationDefinitionPersister;
    
@@ -88,6 +91,15 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    {
        this.dictionaryService = dictionaryService;
    }
+   
+   /**
+    * Injects the Scheduled Persisted Action Service bean
+    * @param scheduledPersistedActionService
+    */
+   public void setScheduledPersistedActionService(ScheduledPersistedActionService scheduledPersistedActionService) 
+   {
+      this.scheduledPersistedActionService = scheduledPersistedActionService;
+   }
 
    /*
     * (non-Javadoc)
@@ -114,7 +126,26 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * (org.alfresco.service.namespace.QName)
     */
    public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName) {
-      return replicationDefinitionPersister.loadReplicationDefinition(replicationDefinitionName);
+      ReplicationDefinitionImpl rd = (ReplicationDefinitionImpl)
+            replicationDefinitionPersister.loadReplicationDefinition(replicationDefinitionName);
+      if(rd != null) {
+         rd.setSchedule(
+               scheduledPersistedActionService.getSchedule(rd)
+         );
+      }
+      return rd;
+   }
+   
+   private List<ReplicationDefinition> attachSchedules(List<ReplicationDefinition> definitions) {
+      for(ReplicationDefinition rd : definitions) {
+         if(rd != null) {
+            ReplicationDefinitionImpl rdi = (ReplicationDefinitionImpl)rd;
+            rdi.setSchedule(
+                  scheduledPersistedActionService.getSchedule(rdi)
+            );
+         }
+      }
+      return definitions;
    }
 
    /*
@@ -123,7 +154,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * org.alfresco.service.cmr.replication.ReplicationService#loadReplicationDefinitions()
     */
    public List<ReplicationDefinition> loadReplicationDefinitions() {
-      return replicationDefinitionPersister.loadReplicationDefinitions();
+      return attachSchedules( replicationDefinitionPersister.loadReplicationDefinitions() );
    }
 
    /*
@@ -133,7 +164,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * (String)
     */
    public List<ReplicationDefinition> loadReplicationDefinitions(String target) {
-      return replicationDefinitionPersister.loadReplicationDefinitions(target); // TODO is this right
+      return attachSchedules( replicationDefinitionPersister.loadReplicationDefinitions(target) );
    }
    
    /*
@@ -155,7 +186,16 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     */
    public void saveReplicationDefinition(
          ReplicationDefinition replicationDefinition) {
+      // Save the replication definition
       replicationDefinitionPersister.saveReplicationDefinition(replicationDefinition);
+      
+      // If required, now also save the schedule for it
+      if(replicationDefinition.isSchedulingEnabled())
+      {
+         scheduledPersistedActionService.saveSchedule(
+               ((ReplicationDefinitionImpl)replicationDefinition).getSchedule()
+         );
+      }
    }
 
    /*
@@ -166,6 +206,12 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     */
    public void deleteReplicationDefinition(
          ReplicationDefinition replicationDefinition) {
+      if(replicationDefinition.isSchedulingEnabled())
+      {
+         scheduledPersistedActionService.deleteSchedule(
+               ((ReplicationDefinitionImpl)replicationDefinition).getSchedule()
+         );
+      }
       replicationDefinitionPersister.deleteReplicationDefinition(replicationDefinition);
    }
 
@@ -180,5 +226,25 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
             replicationDefinition,
             ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF
       );
+   }
+
+   public void disableScheduling(ReplicationDefinition replicationDefinition) {
+      ReplicationDefinitionImpl definition = (ReplicationDefinitionImpl)replicationDefinition; 
+      if(replicationDefinition.isSchedulingEnabled())
+      {
+         scheduledPersistedActionService.deleteSchedule(
+               definition.getSchedule()
+         );
+      }
+      definition.setSchedule(null);
+   }
+
+   public void enableScheduling(ReplicationDefinition replicationDefinition) {
+      if(!replicationDefinition.isSchedulingEnabled())
+      {
+         ScheduledPersistedAction schedule = 
+            scheduledPersistedActionService.createSchedule(replicationDefinition);
+         ((ReplicationDefinitionImpl)replicationDefinition).setSchedule(schedule);
+      }
    }
 }

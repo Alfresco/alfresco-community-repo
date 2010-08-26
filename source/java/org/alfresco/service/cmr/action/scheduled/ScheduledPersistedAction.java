@@ -18,8 +18,6 @@
  */
 package org.alfresco.service.cmr.action.scheduled;
 
-import java.util.Date;
-
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -31,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch
  * @since 3.4
  */
-public interface ScheduledPersistedAction 
+public interface ScheduledPersistedAction extends SchedulableAction
 {
    /** Get the action which the schedule applies to */
    public Action getAction();
@@ -39,62 +37,10 @@ public interface ScheduledPersistedAction
    /** Get the persisted {@link NodeRef} of the action this applies to */
    public NodeRef getActionNodeRef();
    
-   /** 
-    * Get the first date that the action should be run
-    *  on or after, or null if it should start shortly
-    *  after each startup.  
-    */
-   public Date getScheduleStart();
-   
-   /**
-    * Sets the first date that the action should be
-    *  run on or after. Set to null if the action
-    *  should be run shortly after each startup.
-    */
-   public void setScheduleStart(Date startDate);
 
-   
-   /**
-    * How many {@link #getScheduleIntervalPeriod()} periods
-    *  should we wait between executions?
-    * Will be null if the action isn't scheduled to
-    *  be repeated.
-    */
-   public Integer getScheduleIntervalCount();
-   
-   /**
-    * Sets how many periods should be waited between
-    *  each execution, or null if it shouldn't be
-    *  repeated. 
-    */
-   public void setScheduleIntervalCount(Integer count);
-
-   
-   /**
-    * How long are {@link #getScheduleIntervalCount()} counts
-    *  measured in?
-    */
-   public IntervalPeriod getScheduleIntervalPeriod();
-   
-   /**
-    * Sets the interval period
-    */
-   public void setScheduleIntervalPeriod(IntervalPeriod period);
-   
-   
    /**
     * Returns the interval in a form like 1Day (1 day)
     *  or 2Hour (2 hours)
     */
    public String getScheduleInterval();
-   
-   
-   public static enum IntervalPeriod {
-      Month, 
-      Week, 
-      Day, 
-      Hour, 
-      Minute,
-      Second;
-   }
 }

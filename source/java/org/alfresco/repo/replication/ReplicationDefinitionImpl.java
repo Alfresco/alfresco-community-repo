@@ -21,10 +21,12 @@ package org.alfresco.repo.replication;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -48,6 +50,8 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     public static final String REPLICATION_DEFINITION_LOCAL_TRANSFER_REPORT = "replicationTransferLocalReport";
     public static final String REPLICATION_DEFINITION_REMOTE_TRANSFER_REPORT = "replicationTransferRemoteReport";
 
+    private ScheduledPersistedAction schedule;
+    
     /**
      * @param id
      *            the action id
@@ -208,5 +212,55 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     */
    public void setRemoteTransferReport(NodeRef report) {
       setParameterValue(REPLICATION_DEFINITION_REMOTE_TRANSFER_REPORT, report);
+   }
+   
+   public ScheduledPersistedAction getSchedule()
+   {
+      return schedule;
+   }
+   
+   public void setSchedule(ScheduledPersistedAction schedule)
+   {
+      this.schedule = schedule;
+   }
+
+   public Integer getScheduleIntervalCount() {
+      if(schedule == null)
+         return null;
+      return schedule.getScheduleIntervalCount();
+   }
+
+   public IntervalPeriod getScheduleIntervalPeriod() {
+      if(schedule == null)
+         return null;
+      return schedule.getScheduleIntervalPeriod();
+   }
+
+   public Date getScheduleStart() {
+      if(schedule == null)
+         return null;
+      return schedule.getScheduleStart();
+   }
+
+   public void setScheduleIntervalCount(Integer count) {
+      if(schedule == null)
+         throw new IllegalStateException("Scheduling not enabled");
+      schedule.setScheduleIntervalCount(count);
+   }
+
+   public void setScheduleIntervalPeriod(IntervalPeriod period) {
+      if(schedule == null)
+         throw new IllegalStateException("Scheduling not enabled");
+      schedule.setScheduleIntervalPeriod(period);
+   }
+
+   public void setScheduleStart(Date startDate) {
+      if(schedule == null)
+         throw new IllegalStateException("Scheduling not enabled");
+      schedule.setScheduleStart(startDate);
+   }
+
+   public boolean isSchedulingEnabled() {
+      return (schedule != null);
    }
 }

@@ -20,6 +20,7 @@
 package org.alfresco.repo.replication;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.scheduled.ScheduledPersistedActionImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,6 +44,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
@@ -88,6 +92,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private LockService lockService;
     private Repository repositoryHelper;
     private ActionTrackingService actionTrackingService;
+    private ScheduledPersistedActionService scheduledPersistedActionService;
     
     private NodeRef replicationRoot;
     
@@ -125,6 +130,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         lockService = (LockService) ctx.getBean("lockService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
+        scheduledPersistedActionService = (ScheduledPersistedActionService) ctx.getBean("scheduledPersistedActionService");
         
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -854,6 +860,150 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));
+    }
+    
+    /**
+     * Test that the schedule related parts work properly
+     */
+    public void testScheduling() throws Exception
+    {
+       UserTransaction txn = transactionService.getUserTransaction();
+       
+       // A new definition doesn't have scheduling
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName("Target");
+       assertFalse(rd.isSchedulingEnabled());
+       
+       
+       // Disable does nothing
+       replicationService.disableScheduling(rd);
+       assertFalse(rd.isSchedulingEnabled());
+       
+       
+       // Enable it
+       txn.begin();
+       replicationService.saveReplicationDefinition(rd);
+       replicationService.enableScheduling(rd);
+       txn.commit();
+       assertTrue(rd.isSchedulingEnabled());
+       
+       
+       // Double enabling does nothing
+       replicationService.enableScheduling(rd);
+       assertTrue(rd.isSchedulingEnabled());
+       
+       
+       // Change it
+       assertNull(rd.getScheduleStart());
+       assertNull(rd.getScheduleIntervalCount());
+       assertNull(rd.getScheduleIntervalPeriod());
+       
+       rd.setScheduleStart(new Date(1));
+       
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(null, rd.getScheduleIntervalCount());
+       assertEquals(null, rd.getScheduleIntervalPeriod());
+       
+       
+       // Won't show up until saved
+       ReplicationDefinition rd2 = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(false, rd2.isSchedulingEnabled());
+       assertEquals(null, rd2.getScheduleStart());
+       assertEquals(null, rd2.getScheduleIntervalCount());
+       assertEquals(null, rd2.getScheduleIntervalPeriod());
+       
+       
+       // Save and check
+       assertEquals(true, rd.isSchedulingEnabled());
+       
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       replicationService.saveReplicationDefinition(rd);
+       txn.commit();
+       
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(null, rd.getScheduleIntervalCount());
+       assertEquals(null, rd.getScheduleIntervalPeriod());
+       
+       rd = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(null, rd.getScheduleIntervalCount());
+       assertEquals(null, rd.getScheduleIntervalPeriod());
+       
+       
+       // Change, save, check
+       rd.setScheduleIntervalCount(2);
+       rd.setScheduleIntervalPeriod(IntervalPeriod.Hour);
+       
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(2, rd.getScheduleIntervalCount().intValue());
+       assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
+       
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       replicationService.saveReplicationDefinition(rd);
+       rd = replicationService.loadReplicationDefinition(ACTION_NAME);
+       txn.commit();
+       
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(2, rd.getScheduleIntervalCount().intValue());
+       assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
+       
+       
+       // Re-load and enable is fine
+       rd2 = replicationService.loadReplicationDefinition(ACTION_NAME);
+       replicationService.enableScheduling(rd2);
+       
+       
+       // Check on the listing methods
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       rd = replicationService.loadReplicationDefinitions().get(0);
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(2, rd.getScheduleIntervalCount().intValue());
+       assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
+       
+       assertEquals(1, replicationService.loadReplicationDefinitions("Target").size());
+       rd = replicationService.loadReplicationDefinitions("Target").get(0);
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(2, rd.getScheduleIntervalCount().intValue());
+       assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
+       
+       
+       // Disable it
+       replicationService.disableScheduling(rd);
+       assertEquals(false, rd.isSchedulingEnabled());
+       
+       
+       // Check listings again
+       rd = replicationService.loadReplicationDefinitions().get(0);
+       assertEquals(false, rd.isSchedulingEnabled());
+       
+       rd = replicationService.loadReplicationDefinitions("Target").get(0);
+       assertEquals(false, rd.isSchedulingEnabled());
+       
+       
+       // Enable it, and check the scheduled service
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       int count = scheduledPersistedActionService.listSchedules().size();
+       replicationService.enableScheduling(rd);
+       replicationService.saveReplicationDefinition(rd);
+       assertEquals(count+1, scheduledPersistedActionService.listSchedules().size());
+       txn.commit();
+       
+       
+       // Delete is, and check the scheduled service
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       replicationService.deleteReplicationDefinition(rd);
+       assertEquals(count, scheduledPersistedActionService.listSchedules().size());
+       txn.commit();
     }
     
 

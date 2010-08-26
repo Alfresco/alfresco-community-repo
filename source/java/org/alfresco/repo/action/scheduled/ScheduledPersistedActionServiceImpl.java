@@ -35,16 +35,15 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
-import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction.IntervalPeriod;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -142,7 +141,11 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         List<ScheduledPersistedAction> actions = listSchedules(startupNodeService);
         for (ScheduledPersistedAction action : actions)
         {
-            addToScheduler((ScheduledPersistedActionImpl) action);
+            // Only schedule if the action still exists
+            if(action.getActionNodeRef() != null)
+            {
+               addToScheduler((ScheduledPersistedActionImpl) action);
+            }
         }
     }
 

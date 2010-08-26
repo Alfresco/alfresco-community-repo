@@ -45,4 +45,17 @@ public interface ReplicationService extends ReplicationDefinitionPersister {
     */
    @NotAuditable
    void replicate(ReplicationDefinition replicationDefinition);
+   
+   /**
+    * Turns on scheduling for the specified replication. You can
+    *  then set the scheduling details on the definition.
+    */
+   @NotAuditable
+   void enableScheduling(ReplicationDefinition replicationDefinition);
+   
+   /**
+    * Turns off scheduling for the specified replication 
+    */
+   @NotAuditable
+   void disableScheduling(ReplicationDefinition replicationDefinition);
 }

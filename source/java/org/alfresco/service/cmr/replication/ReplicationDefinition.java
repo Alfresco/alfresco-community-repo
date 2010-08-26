@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.service.cmr.action.CancellableAction;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -35,7 +36,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Nick Burch
  */
-public interface ReplicationDefinition extends CancellableAction, Serializable {
+public interface ReplicationDefinition extends CancellableAction, SchedulableAction, Serializable {
    /**
     * @return the name which uniquely identifies this replication definition.
     */
@@ -113,6 +114,13 @@ public interface ReplicationDefinition extends CancellableAction, Serializable {
     *  replication.
     */
    void setRemoteTransferReport(NodeRef report);
+   
+   /**
+    * Is scheduling currently enabled?
+    * See {@link ReplicationService#enableScheduling(ReplicationDefinition)} and
+    * {@link ReplicationService#disableScheduling(ReplicationDefinition)}
+    */
+   boolean isSchedulingEnabled();
    
    // TODO Replication options, such as permissions and rules
 }

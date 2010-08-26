@@ -129,6 +129,14 @@ var Evaluator =
             {
                status["rules"] = true;
             }
+
+            /* Transferred Nodes */
+            if (node.hasAspect("trx:transferred"))
+            {
+               status["transferred-node"] = true;
+               permissions["view-source-repository"] = true;
+               actionSet = "transferredFolder";
+            }
             break;
 
          /**
@@ -246,6 +254,14 @@ var Evaluator =
             if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleEditable"))
             {
                permissions["googledocs-edit"] = true;
+            }
+
+            /* Transferred Nodes */
+            if (node.hasAspect("trx:transferred"))
+            {
+               status["transferred-node"] = true;
+               permissions["view-source-repository"] = true;
+               actionSet = "transferredDocument";
             }
             break;
       }

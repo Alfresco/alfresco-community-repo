@@ -59,6 +59,7 @@
    <#if item.isFavourite??>"isFavourite": ${item.isFavourite?string},</#if>
    "location":
    {
+      "repositoryId": "${(node.properties["trx:repositoryId"])!(server.id)}",
       "site": "${item.location.site!""}",
       "siteTitle": "${item.location.siteTitle!""}",
       "container": "${item.location.container!""}",

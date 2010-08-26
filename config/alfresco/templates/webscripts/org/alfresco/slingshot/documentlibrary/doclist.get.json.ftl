@@ -5,6 +5,7 @@
    "startIndex": ${doclist.paging.startIndex?c},
    "metadata":
    {
+      "repositoryId": "${server.id}",
       <#if doclist.container??>"container": "${doclist.container.nodeRef}",</#if>
       "parent":
       {

@@ -121,14 +121,32 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     
     public void testNullMLText() throws Exception
     {
-        Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
         // Set an ML value to null
-        properties.put(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
         nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
         // Get them again
         Serializable mlTextSer = nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, mlTextSer);
         assertNull("Value returned is not null", mlText);
+        
+        // Now create an MLText object with a null entry
+        mlText = new MLText(null);
+        nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+        MLText mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertNull("MLText value should have been converted to a null String", mlTextCheck);
+        
+        // Do the same as ML-aware
+        MLPropertyInterceptor.setMLAware(true);
+        try
+        {
+            mlText = new MLText(null);
+            nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+            mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+            assertEquals("MLText value was not pulled out the same as it went in", mlText, mlTextCheck);
+        }
+        finally
+        {
+            MLPropertyInterceptor.setMLAware(false);            // Don't mess up the thread
+        }
     }
 
     public void testMLValuesOnCreate() throws Exception
@@ -334,10 +352,6 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
             assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
             assertEquals("First collection incorrect", 2, ((Collection)checkValues.get(0)).size());
             assertEquals("Second collection incorrect", 2, ((Collection)checkValues.get(1)).size());
-        }
-        catch (DictionaryException e)
-        {
-            // expected
         }
         finally
         {

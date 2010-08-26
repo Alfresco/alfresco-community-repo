@@ -525,7 +525,7 @@ public class NodePropertyValue implements Cloneable, Serializable
                     return DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
                 }
             }
-        }
+        },
         ;
         
         /**
@@ -580,7 +580,7 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.DOUBLE;
         }
-        else if (value instanceof String || value instanceof Enum<?>)
+        else if (value instanceof String)
         {
             return ValueType.STRING;
         }
@@ -744,9 +744,9 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         ParameterCheck.mandatory("typeQName", typeQName);
         
-        this.actualType = NodePropertyValue.getActualType(value);
         if (value == null)
         {
+            this.actualType = NodePropertyValue.getActualType(value);
             setPersistedValue(ValueType.NULL, null);
         }
         else
@@ -756,6 +756,8 @@ public class NodePropertyValue implements Cloneable, Serializable
             // back out because it is unconvertable.
             ValueType valueType = makeValueType(typeQName);
             value = valueType.convert(value);
+
+            this.actualType = NodePropertyValue.getActualType(value);
             // get the persisted type
             ValueType persistedValueType = this.actualType.getPersistedType(value);
             // convert to the persistent type
@@ -780,7 +782,6 @@ public class NodePropertyValue implements Cloneable, Serializable
             NodePropertyValue that = (NodePropertyValue) obj;
             return (this.actualType.equals(that.actualType) &&
                     EqualsHelper.nullSafeEquals(this.getPersistedValue(), that.getPersistedValue()));
-            
         }
         else
         {

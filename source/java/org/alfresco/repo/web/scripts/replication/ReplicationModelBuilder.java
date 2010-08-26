@@ -60,6 +60,11 @@ public class ReplicationModelBuilder
     protected static final String DEFINITION_ENABLED = "enabled";
     protected static final String DEFINITION_TARGET_NAME = "targetName";
     
+    protected static final String DEFINITION_SCHEDULE_ENABLED = "scheduleEnabled";
+    protected static final String DEFINITION_SCHEDULE_START  = "scheduleStart";
+    protected static final String DEFINITION_SCHEDULE_PERIOD = "scheduleIntervalPeriod";
+    protected static final String DEFINITION_SCHEDULE_COUNT  = "scheduleIntervalCount";
+    
     protected NodeService nodeService;
     protected ReplicationService replicationService;
     protected ActionTrackingService actionTrackingService;
@@ -190,6 +195,20 @@ public class ReplicationModelBuilder
        rdm.put(DEFINITION_TRANSFER_REMOTE_REPORT, rd.getRemoteTransferReport());
        rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
        rdm.put(DEFINITION_TARGET_NAME, rd.getTargetName());
+       
+       // Set the scheduling details
+       rdm.put(DEFINITION_SCHEDULE_ENABLED, rd.isSchedulingEnabled());
+       if(rd.isSchedulingEnabled())
+       {
+          rdm.put(DEFINITION_SCHEDULE_START, ISO8601DateFormat.format(rd.getScheduleStart()));
+          
+          rdm.put(DEFINITION_SCHEDULE_COUNT, rd.getScheduleIntervalCount());
+          if(rd.getScheduleIntervalPeriod() != null) {
+             rdm.put(DEFINITION_SCHEDULE_PERIOD, rd.getScheduleIntervalPeriod().toString());
+          } else {
+             rdm.put(DEFINITION_SCHEDULE_PERIOD, null);
+          }
+       }
        
        // Do the status
        // Includes start+end times, and running action details

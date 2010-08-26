@@ -35,7 +35,13 @@
       "transferLocalReport": <#if replicationDefinition.transferLocalReport??>"${replicationDefinition.transferLocalReport.nodeRef}"<#else>null</#if>,
       "transferRemoteReport": <#if replicationDefinition.transferRemoteReport??>"${replicationDefinition.transferRemoteReport.nodeRef}"<#else>null</#if>,
       "enabled": ${replicationDefinition.enabled?string},
-      "targetName": <#if replicationDefinition.targetName??>"${replicationDefinition.targetName}"<#else>null</#if>
+      "targetName": <#if replicationDefinition.targetName??>"${replicationDefinition.targetName}"<#else>null</#if>,
+      "schedule": <#if replicationDefinition.scheduleEnabled>
+          {
+            "start": "${replicationDefinition.scheduleStart}",
+            "intervalPeriod": <#if replicationDefinition.scheduleIntervalPeriod??>"${replicationDefinition.scheduleIntervalPeriod}"<#else>null</#if>,
+            "intervalCount": <#if replicationDefinition.scheduleIntervalCount??>${replicationDefinition.scheduleIntervalCount}<#else>null</#if>
+          }<#else>null</#if>
    }
 </#escape>
 </#macro>

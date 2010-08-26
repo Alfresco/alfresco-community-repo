@@ -21,10 +21,12 @@ package org.alfresco.repo.web.scripts.replication;
 import java.util.Map;
 
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,6 +101,52 @@ public abstract class AbstractReplicationWebscript extends DeclarativeWebScript
                    new NodeRef(node)
              );
           }
+       }
+    }
+    
+    /**
+     * Updates the schedule related properties, based on the
+     *  JSON, and has these persisted as required.
+     */
+    protected void updateDefinitionScheduling(ReplicationDefinition replicationDefinition, JSONObject json) 
+    throws JSONException 
+    {
+       if(json.has("schedule") && !json.isNull("schedule")) {
+          // Turn on scheduling, if not already enabled
+          replicationService.enableScheduling(replicationDefinition);
+          
+          // Update the properties
+          JSONObject schedule = json.getJSONObject("schedule");
+          
+          if(schedule.has("start") && !schedule.isNull("start")) {
+             replicationDefinition.setScheduleStart(
+                   ISO8601DateFormat.parse(schedule.getString("start"))
+             );
+          } else {
+             replicationDefinition.setScheduleStart(null);
+          }
+          
+          if(schedule.has("intervalPeriod") && !schedule.isNull("intervalPeriod")) {
+             replicationDefinition.setScheduleIntervalPeriod(
+                   IntervalPeriod.valueOf(schedule.getString("intervalPeriod"))
+             );
+          } else {
+             replicationDefinition.setScheduleIntervalPeriod(null);
+          }
+          
+          if(schedule.has("intervalCount") && !schedule.isNull("intervalCount")) {
+             replicationDefinition.setScheduleIntervalCount(
+                   schedule.getInt("intervalCount")
+             );
+          } else {
+             replicationDefinition.setScheduleIntervalCount(null);
+          }
+          
+          // Ensure the scheduling is saved
+          replicationService.saveReplicationDefinition(replicationDefinition);
+       } else {
+          // Disable scheduling
+          replicationService.disableScheduling(replicationDefinition);
        }
     }
     

@@ -72,9 +72,6 @@ public class ReplicationDefinitionsPost extends AbstractReplicationWebscript
            
            // Save the changes
            replicationService.saveReplicationDefinition(replicationDefinition);
-           
-           // Now do the scheduling
-           updateDefinitionScheduling(replicationDefinition, json);
        }
        catch (IOException iox)
        {

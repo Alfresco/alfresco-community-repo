@@ -102,15 +102,10 @@ public abstract class AbstractReplicationWebscript extends DeclarativeWebScript
              );
           }
        }
-    }
-    
-    /**
-     * Updates the schedule related properties, based on the
-     *  JSON, and has these persisted as required.
-     */
-    protected void updateDefinitionScheduling(ReplicationDefinition replicationDefinition, JSONObject json) 
-    throws JSONException 
-    {
+
+       
+       // Now for the scheduling parts
+       
        if(json.has("schedule") && !json.isNull("schedule")) {
           // Turn on scheduling, if not already enabled
           replicationService.enableScheduling(replicationDefinition);
@@ -119,9 +114,13 @@ public abstract class AbstractReplicationWebscript extends DeclarativeWebScript
           JSONObject schedule = json.getJSONObject("schedule");
           
           if(schedule.has("start") && !schedule.isNull("start")) {
-             replicationDefinition.setScheduleStart(
-                   ISO8601DateFormat.parse(schedule.getString("start"))
-             );
+             // Look for start:.... or start:{"iso8601":....}
+             String startDate = schedule.getString("start");
+             if(schedule.get("start") instanceof JSONObject) {
+                startDate = schedule.getJSONObject("start").getString("iso8601");
+             }
+             
+             replicationDefinition.setScheduleStart( ISO8601DateFormat.parse(startDate) );
           } else {
              replicationDefinition.setScheduleStart(null);
           }
@@ -141,9 +140,6 @@ public abstract class AbstractReplicationWebscript extends DeclarativeWebScript
           } else {
              replicationDefinition.setScheduleIntervalCount(null);
           }
-          
-          // Ensure the scheduling is saved
-          replicationService.saveReplicationDefinition(replicationDefinition);
        } else {
           // Disable scheduling
           replicationService.disableScheduling(replicationDefinition);

@@ -38,7 +38,9 @@
       "targetName": <#if replicationDefinition.targetName??>"${replicationDefinition.targetName}"<#else>null</#if>,
       "schedule": <#if replicationDefinition.scheduleEnabled>
           {
-            "start": "${replicationDefinition.scheduleStart}",
+            "start": { 
+                "iso8601": "${replicationDefinition.scheduleStart}"
+            },
             "intervalPeriod": <#if replicationDefinition.scheduleIntervalPeriod??>"${replicationDefinition.scheduleIntervalPeriod}"<#else>null</#if>,
             "intervalCount": <#if replicationDefinition.scheduleIntervalCount??>${replicationDefinition.scheduleIntervalCount}<#else>null</#if>
           }<#else>null</#if>

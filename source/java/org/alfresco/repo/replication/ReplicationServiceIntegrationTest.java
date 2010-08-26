@@ -1004,6 +1004,17 @@ public class ReplicationServiceIntegrationTest extends TestCase
        replicationService.deleteReplicationDefinition(rd);
        assertEquals(count, scheduledPersistedActionService.listSchedules().size());
        txn.commit();
+       
+       
+       // Ask for it to run scheduled
+       // Should fire up and then fail due to missing definitions
+       
+       // TODO
+    }
+    
+    public void testCancellation() throws Exception
+    {
+       // TODO
     }
     
 

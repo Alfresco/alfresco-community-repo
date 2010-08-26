@@ -169,6 +169,14 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
    
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+      // Specialise the action if needed, eg when loaded directly from
+      //  the NodeRef without going via the replication service
+      if(action.getActionDefinitionName().equals(ReplicationDefinitionImpl.EXECUTOR_NAME))
+      {
+         action = new ReplicationDefinitionImpl(action);
+      }
+      
+      // Off we go
       final ReplicationDefinition replicationDef = (ReplicationDefinition)action;
       if(replicationDef.getTargetName() == null ||
             replicationDef.getTargetName().equals(""))

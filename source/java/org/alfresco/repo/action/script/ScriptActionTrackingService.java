@@ -22,19 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionTrackingService;
-import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
-import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
-import org.alfresco.service.cmr.rendition.RenditionDefinition;
-import org.alfresco.service.cmr.rendition.RenditionService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

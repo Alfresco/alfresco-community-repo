@@ -10,7 +10,7 @@
 --
 
 --ASSIGN:hibernate_seq_next_value=value
-SELECT NEXTVAL(hibernate_sequence) AS value;
+SELECT NEXTVAL('hibernate_sequence') AS value;
 
 CREATE SEQUENCE avm_stores_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
 

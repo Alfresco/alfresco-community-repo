@@ -132,7 +132,9 @@ public class VersionImpl implements Version
     
     public VersionType getVersionType()
     {
-        return (VersionType)this.versionProperties.get(VersionBaseModel.PROP_VERSION_TYPE);
+        return DefaultTypeConverter.INSTANCE.convert(
+                VersionType.class,
+                this.versionProperties.get(VersionBaseModel.PROP_VERSION_TYPE));
     }
     
     public String getDescription()

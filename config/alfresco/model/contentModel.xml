@@ -876,6 +876,11 @@
                <type>d:text</type>
                <protected>true</protected>
             </property>
+            <property name="cm:versionType">
+               <title>Version Type</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
             <property name="cm:initialVersion">
                <title>Initial Version</title>
                <type>d:boolean</type>

@@ -125,7 +125,7 @@ function main()
         // returned from ScriptFormData.java as Strings
         else
         {
-            formModel.formData[k] = value.toString();
+            formModel.formData[k] = value;
         }
     }
     

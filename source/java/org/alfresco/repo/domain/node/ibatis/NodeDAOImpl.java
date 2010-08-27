@@ -541,7 +541,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Set<Long> selectNodeAspectIds(Long nodeId)
     {

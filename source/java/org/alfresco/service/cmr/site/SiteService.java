@@ -66,6 +66,15 @@ public interface SiteService
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility);
     
     /**
+     * This method checks if the currently authenticated user has permission to create sites.
+     * 
+     * @return <code>true</code> if current user can create sites, else <code>false</code>.
+     * @since 3.4
+     */
+    @NotAuditable
+    boolean hasCreateSitePermissions();
+    
+    /**
      * List the available sites.  This list can optionally be filtered by site name and/or site preset.
      * 
      * @param nameFilter            name filter

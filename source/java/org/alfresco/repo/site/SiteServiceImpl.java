@@ -299,6 +299,21 @@ public class SiteServiceImpl implements SiteService, SiteModel
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "sitesXPath", sitesXPath);
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.site.SiteService#hasCreateSitePermissions()
+     */
+    public boolean hasCreateSitePermissions()
+    {
+        final NodeRef siteRoot = getSiteRoot();
+        if (siteRoot == null)
+        {
+            throw new SiteServiceException("No root sites folder exists");
+        }
+        boolean result = permissionService.hasPermission(siteRoot, PermissionService.CONTRIBUTOR).equals(AccessStatus.ALLOWED);
+		return result;
+    }
     
     /**
      * @see org.alfresco.service.cmr.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)

@@ -105,6 +105,17 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * This method checks if the currently authenticated user has permission to create sites.
+     * 
+     * @return <code>true</code> if the current user is a Contributor to "Sites" node, else <code>false</code>.
+     * @since 3.4
+     */
+    public boolean hasCreateSitePermissions()
+    {
+    	return siteService.hasCreateSitePermissions();
+    }
+    
+    /**
      * List the sites available in the repository.  The returned list can optionally be filtered by name and site
      * preset.
      * <p>

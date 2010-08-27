@@ -568,7 +568,11 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.BOOLEAN;
         }
-        else if ((value instanceof Integer) || (value instanceof Long))
+        else if (value instanceof Integer)
+        {
+            return ValueType.INTEGER;
+        }
+        else if (value instanceof Long)
         {
             return ValueType.LONG;
         }

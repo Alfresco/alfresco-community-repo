@@ -130,18 +130,24 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         
         // Now create an MLText object with a null entry
         mlText = new MLText(null);
-        nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+        nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, mlText);
         MLText mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         assertNull("MLText value should have been converted to a null String", mlTextCheck);
         
+        // Set an ML value to null
+        nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+
         // Do the same as ML-aware
         MLPropertyInterceptor.setMLAware(true);
         try
         {
             mlText = new MLText(null);
-            nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+            nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, mlText);
             mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
             assertEquals("MLText value was not pulled out the same as it went in", mlText, mlTextCheck);
+            
+            // Set an ML value to null
+            nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
         }
         finally
         {

@@ -1637,7 +1637,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Copy for modification
         Map<NodePropertyKey, NodePropertyValue> propsToDelete = new HashMap<NodePropertyKey, NodePropertyValue>(oldPropsRaw);
         Map<NodePropertyKey, NodePropertyValue> propsToAdd = new HashMap<NodePropertyKey, NodePropertyValue>(newPropsRaw);
-
+        
         // Compare these fine-grained properties
         Map<NodePropertyKey, MapValueComparison> persistableDiff = EqualsHelper.getMapComparison(
                 propsToDelete,
@@ -1732,12 +1732,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         
-        // Remove by key
-        List<NodePropertyKey> propKeysToDeleteList = new ArrayList<NodePropertyKey>(propsToDelete.keySet());
-        deleteNodeProperties(nodeId, propKeysToDeleteList);
-        
         try
         {
+            // Remove by key
+            List<NodePropertyKey> propKeysToDeleteList = new ArrayList<NodePropertyKey>(propsToDelete.keySet());
+            int deleted = deleteNodeProperties(nodeId, propKeysToDeleteList);
+            if (deleted != propKeysToDeleteList.size())
+            {
+                // The translation of the left-hand map didn't match the database
+                // This happens when we use d:any and switch from a simple value to a collection: an edge case!                foreach
+                throw new DataIntegrityViolationException("Only deleted " + deleted + "/" + propKeysToDeleteList.size());
+            }
+            
             // Add by key-value
             insertNodeProperties(nodeId, propsToAdd);
         }
@@ -1745,7 +1751,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             // Don't trust the properties cache for the node
             propertiesCache.removeByKey(nodeId);
-            throw e;
+            // Focused error
+            throw new AlfrescoRuntimeException(
+                    "Failed to write property deltas: \n" +
+                    "  Node:          " + nodeId + "\n" +
+                    "  Old:           " + oldProps + "\n" +
+                    "  New:           " + newProps + "\n" +
+                    "  Old Raw:       " + oldPropsRaw + "\n" +
+                    "  New Raw:       " + newPropsRaw + "\n" +
+                    "  Diff:          " + persistableDiff + "\n" +
+                    "  Delete Tried:  " + propsToDelete.keySet() + "\n" +
+                    "  Add Tried:     " + propsToAdd, 
+                    e);
         }
         
         boolean updated = propsToDelete.size() > 0 || propsToAdd.size() > 0;

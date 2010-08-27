@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -321,9 +322,11 @@ public class NodePropertyHelper
         catch (TypeConversionException e)
         {
             throw new TypeConversionException(
-                    "The property value is not compatible with the type defined for the property: \n" + "   property: "
-                            + (propertyDef == null ? "unknown" : propertyDef) + "\n" + "   value: " + value + "\n"
-                            + "   value type: " + value.getClass(), e);
+                    "The property value is not compatible with the type defined for the property: \n" +
+                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                    "   value: " + value + "\n" +
+                    "   value type: " + value.getClass(),
+                    e);
         }
     }
 
@@ -544,12 +547,21 @@ public class NodePropertyHelper
             // Nothing to do
             return value;
         }
+        
+        // Do we definitely have MLText?
+        boolean isMLText = (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT));
+        
+        // Determine the default locale ID.  The chance of it being null is vanishingly small, but ...
+        Pair<Long, Locale> defaultLocalePair = localeDAO.getDefaultLocalePair();
+        Long defaultLocaleId = (defaultLocalePair == null) ? null : defaultLocalePair.getFirst();
+        
         Integer listIndex = null;
         for (Map.Entry<NodePropertyKey, NodePropertyValue> entry : propertyValues.entrySet())
         {
             NodePropertyKey propertyKey = entry.getKey();
             NodePropertyValue propertyValue = entry.getValue();
 
+            // Check that the client code has gathered the values together correctly
             if (listIndex == null)
             {
                 listIndex = propertyKey.getListIndex();
@@ -559,31 +571,56 @@ public class NodePropertyHelper
                 throw new IllegalStateException("Expecting to collapse properties with same list index: " + propertyValues);
             }
             
-            if (propertyValuesSize == 1
-                    && (propertyDef == null || !propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
+            // Get the locale of the current value
+            Long localeId = propertyKey.getLocaleId();
+            boolean isDefaultLocale = EqualsHelper.nullSafeEquals(defaultLocaleId, localeId);
+            
+            // Get the local entry value
+            Serializable entryValue = makeSerializableValue(propertyDef, propertyValue);
+            
+            // A default locale indicates a simple value i.e. the entry represents the whole value.
+            if (isDefaultLocale)
             {
-                // This is the only value and it is NOT to be converted to MLText
-                value = makeSerializableValue(propertyDef, propertyValue);
+                // Check and warn if there are other values
+                if (propertyValuesSize > 1)
+                {
+                    logger.warn(
+                            "Found localized properties along with a 'null' value in the default locale. \n" +
+                            "   The localized values will be ignored; 'null' will be returned: \n" +
+                            "   Default locale ID: " + defaultLocaleId + "\n" +
+                            "   Property:          " + propertyDef + "\n" +
+                            "   Values:            " + propertyValues);
+                }
+                // The entry could be null or whatever value came out
+                value = entryValue;
+                break;
             }
             else
             {
-                // There are multiple values, so add them to MLText
-                MLText mltext = (value == null) ? new MLText() : (MLText) value;
-                try
+                // Non-default locales indicate MLText ONLY.
+                Locale locale = localeDAO.getLocalePair(localeId).getSecond();
+                // Note that we force a non-null value here as a null MLText object is persisted
+                // just like any other null i.e. with the default locale.
+                if (value == null)
                 {
-                    String mlString = (String) propertyValue.getValue(DataTypeDefinition.TEXT);
-                    // Get the locale
-                    Long localeId = propertyKey.getLocaleId();
-                    Locale locale = localeDAO.getLocalePair(localeId).getSecond();
-                    // Add to the MLText object
-                    mltext.addValue(locale, mlString);
-                }
-                catch (TypeConversionException e)
+                    value = new MLText();
+                }       // We break for other entry values, so no need to check the non-null case
+                // Put the current value into the MLText object
+                if (entryValue == null || entryValue instanceof String)
                 {
-                    // Ignore
-                    logger.warn("Unable to add property value to MLText instance: " + propertyValue);
+                    // Can put in nulls and Strings
+                    ((MLText)value).put(locale, (String)entryValue);    // We've checked the casts
                 }
-                value = mltext;
+                else
+                {
+                    // It's a non-null non-String ... can't be added to MLText!
+                    logger.warn(
+                            "Found localized non-String properties. \n" +
+                            "   The non-String values will be ignored: \n" +
+                            "   Default locale ID: " + defaultLocaleId + "\n" +
+                            "   Property:          " + propertyDef + "\n" +
+                            "   Values:            " + propertyValues);
+                }
             }
         }
         // Done

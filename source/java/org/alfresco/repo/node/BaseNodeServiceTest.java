@@ -1909,7 +1909,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_PROPERTIES).getChildRef();
 
-        for (int inc = 0; inc < 6; inc++)
+        for (int inc = 0; inc < 3; inc++)
         {
             System.out.println("----------------------------------------------");
             int collectionSize = (int) Math.pow(10, inc);

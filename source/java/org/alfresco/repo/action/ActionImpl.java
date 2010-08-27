@@ -187,6 +187,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         if (action instanceof ActionImpl)
         {
             ActionImpl actionImpl = (ActionImpl) action;
+            this.executionInstance = actionImpl.getExecutionInstance();
             this.runAsUserName = actionImpl.getRunAsUser();
             this.actionChain = actionImpl.actionChain;
         }

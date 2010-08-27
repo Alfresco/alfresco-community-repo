@@ -162,17 +162,21 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          new TransferDefinition();
       transferDefinition.setNodes(toTransfer);
       transferDefinition.setSync(true);
-//      transferDefinition.setReadOnly(true); // TODO Make read only, but then need to fix tests
+      transferDefinition.setReadOnly(true);
       
       return transferDefinition;
    }
    
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
-      // Specialise the action if needed, eg when loaded directly from
-      //  the NodeRef without going via the replication service
-      if(action.getActionDefinitionName().equals(ReplicationDefinitionImpl.EXECUTOR_NAME))
+      if(action instanceof ReplicationDefinition)
       {
+         // Already of the correct type
+      }
+      else if(action.getActionDefinitionName().equals(ReplicationDefinitionImpl.EXECUTOR_NAME))
+      {
+         // Specialise the action if needed, eg when loaded directly from
+         //  the NodeRef without going via the replication service
          action = new ReplicationDefinitionImpl(action);
       }
       
@@ -294,6 +298,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
             if(transferId != null)
             {
                transferService.cancelAsync(transferId);
+               logger.debug("Replication cancel was requested for " + replicationDef.getReplicationQName());
             }
             else
             {
@@ -331,6 +336,12 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
                   6         // 6 times = wait up to 30 seconds
             );
          } catch(LockAcquisitionException e) {
+            logger.debug(
+                  "Unable to get the replication job lock on " +
+                  replicationDef.getReplicationQName() +
+                  ", retrying every " + (int)(retryTime/1000) + " seconds"
+            );
+            
             // Long try - every 30 seconds
             lockToken = jobLockService.getLock(
                   replicationDef.getReplicationQName(),

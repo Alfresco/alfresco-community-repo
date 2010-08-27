@@ -181,7 +181,11 @@ public class ReplicationServiceIntegrationTest extends TestCase
       if(folder2 != null) {
          nodeService.deleteNode(folder2);
       }
+      
+      // Zap the destination folder, which may well contain
+      //  entries transfered over which are locked
       if(destinationFolder != null) {
+         lockService.unlock(destinationFolder, true);
          nodeService.deleteNode(destinationFolder);
       }
       
@@ -598,6 +602,10 @@ public class ReplicationServiceIntegrationTest extends TestCase
      * Check that cancelling works.
      * Does this by taking a lock on the job, cancelling,
      *  releasing and seeing it abort.
+     *  
+     * Tests that when we ask for a replication task to be cancelled,
+     *  that it starts, cancels, and the status is correctly recorded
+     *  for it.
      */
     public void testReplicationExectionCancelling() throws Exception
     {
@@ -623,16 +631,32 @@ public class ReplicationServiceIntegrationTest extends TestCase
        txn.begin();
        actionService.executeAction(rd, replicationRoot, false, true);
        assertEquals(ActionStatus.Pending, rd.getExecutionStatus());
+       
+       assertEquals(false, actionTrackingService.isCancellationRequested(rd));
+       actionTrackingService.requestActionCancellation(rd);
+       assertEquals(true, actionTrackingService.isCancellationRequested(rd));
+       
        txn.commit();
-       
-       
+
        // Let it get going, will be waiting for the lock
        //  having registered with the action tracking service
-       Thread.sleep(500);
+       for(int i=0; i<100; i++) {
+          // Keep asking for it to be cancelled ASAP
+          actionTrackingService.requestActionCancellation(rd);
+          
+          if(rd.getExecutionStatus().equals(ActionStatus.Running)) {
+             // Good, has started up
+             // Stop waiting and do the cancel
+             break;
+          } else {
+             // Still pending, wait a bit more
+             Thread.sleep(10);
+          }
+       }
+
+       // Ensure it started, and should shortly stop
        assertEquals(ActionStatus.Running, rd.getExecutionStatus());
-       
-       // Now request the cancel
-       actionTrackingService.requestActionCancellation(rd);
+       assertEquals(true, actionTrackingService.isCancellationRequested(rd));
        
        // Release our lock, should allow the replication task
        //  to get going and spot the cancel
@@ -856,7 +880,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        TransferDefinition td = replicationActionExecutor.buildTransferDefinition(rd, nodes);
        assertEquals(true, td.isSync());
-//       assertEquals(true, td.isReadOnly());// TODO Make read only, and fix tests
+       assertEquals(true, td.isReadOnly());
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));
@@ -1009,11 +1033,6 @@ public class ReplicationServiceIntegrationTest extends TestCase
        // Ask for it to run scheduled
        // Should fire up and then fail due to missing definitions
        
-       // TODO
-    }
-    
-    public void testCancellation() throws Exception
-    {
        // TODO
     }
     

@@ -154,7 +154,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    {
       if (logger.isDebugEnabled() == true)
       {
-         logger.debug("Action " + action + " has begun exection");
+         logger.debug("Action " + action + " with provisional key " + generateCacheKey(action) + " has begun exection");
       }
       
       // Grab what status it was before
@@ -179,7 +179,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
          if(details == null) {
             logger.warn(
                   "Went to mark the start of execution of " +
-                  action + " but it wasn't in the running actions cache! " +
+                  action + " with key " + key + 
+                  " but it wasn't in the running actions cache! " +
                   "Your running actions cache is probably too small"
             );
          }
@@ -227,6 +228,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       // Put it into the cache
       ExecutionDetails details = buildExecutionDetails(action);
       executingActionsCache.put(key, details);
+      
+      if (logger.isDebugEnabled() == true)
+      {
+         logger.debug("Action " + action + " with key " + key + " placed into execution cache");
+      }
    }
 
    /**
@@ -332,10 +338,15 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       String key = generateCacheKey(action);
       ExecutionDetails details = getExecutionDetails(buildExecutionSummary(key));
       if(details == null) {
+         Exception e = new Exception("Cancellation status missing from cache");
+         e.fillInStackTrace();
+         
          logger.warn(
                "Unable to check cancellation status for running action " +
-               action + " as it wasn't in the running actions cache! " +
-               "Your running actions cache is probably too small"
+               action + " with execution key " + key + 
+               " as it wasn't in the running actions cache! " +
+               "Your running actions cache is probably too small",
+               e
          );
          
          // Re-generate

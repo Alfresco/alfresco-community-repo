@@ -34,12 +34,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * 
  * @author Gavin Cornwell
  * @author Nick Smith
+ * @since 3.4
  */
 public class WorkflowDefinitionsGet extends AbstractWorkflowWebscript
 {
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
+        ExcludeFilter excludeFilter = null;
+        String excludeParam = req.getParameter(PARAM_EXCLUDE);
+        if (excludeParam != null && excludeParam.length() > 0)
+        {
+            excludeFilter = new ExcludeFilter(excludeParam);
+        }
+        
         // list all workflow's definitions simple representation
         List<WorkflowDefinition> workflowDefinitions = workflowService.getDefinitions();            
             
@@ -47,7 +55,11 @@ public class WorkflowDefinitionsGet extends AbstractWorkflowWebscript
         
         for (WorkflowDefinition workflowDefinition : workflowDefinitions)            
         {
-            results.add(modelBuilder.buildSimple(workflowDefinition));
+            // if present, filter out excluded definitions
+            if (excludeFilter == null || !excludeFilter.isMatch(workflowDefinition.getName()))
+            {
+                results.add(modelBuilder.buildSimple(workflowDefinition));
+            }
         }
         
         Map<String, Object> model = new HashMap<String, Object>();

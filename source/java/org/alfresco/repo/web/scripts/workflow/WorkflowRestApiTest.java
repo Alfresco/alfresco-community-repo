@@ -170,6 +170,30 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         {
             checkPaging(MessageFormat.format(URL_USER_TASKS, USER2) + "&maxItems=" + maxItems + "&skipCount=" + skipCount, totalItems, maxItems, skipCount);
         }
+        
+        // check the exclude filtering
+        String exclude = "wf:submitAdhocTask";
+        response = sendRequest(new GetRequest(URL_TASKS + "?exclude=" + exclude), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        results = json.getJSONArray("data");
+        assertNotNull(results);
+        
+        boolean adhocTasksPresent = false;
+        for (int i = 0; i < results.length(); i++)
+        {
+            JSONObject taskJSON = results.getJSONObject(i);
+            
+            String type = taskJSON.getString("type");
+            if (exclude.equals(type))
+            {
+                adhocTasksPresent = true;
+                break;
+            }
+        }
+        
+        assertFalse("Found wf:submitAdhocTask when they were supposed to be excluded", adhocTasksPresent);
     }
 
     public void testTaskInstanceGet() throws Exception
@@ -348,6 +372,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(response.getContentAsString());
         JSONArray results = json.getJSONArray("data");
         assertNotNull(results);
+        assertTrue(results.length() > 0);
 
         for (int i = 0; i < results.length(); i++)
         {
@@ -370,6 +395,57 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
             assertTrue(workflowDefinitionJSON.has("description"));
             assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
         }
+        
+        // filter the workflow definitions and check they are not returned
+        String exclude = "jbpm$wf:adhoc";
+        response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        json = new JSONObject(response.getContentAsString());
+        results = json.getJSONArray("data");
+        assertNotNull(results);
+        
+        boolean adhocWorkflowPresent = false;
+        for (int i = 0; i < results.length(); i++)
+        {
+            JSONObject workflowDefinitionJSON = results.getJSONObject(i);
+            
+            String name = workflowDefinitionJSON.getString("name");
+            if (exclude.equals(name))
+            {
+                adhocWorkflowPresent = true;
+                break;
+            }
+        }
+        
+        assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
+        
+        // filter with a wildcard and ensure they all get filtered out
+        exclude = "jbpm$wf:adhoc, jbpm$wcmwf:*";
+        response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        json = new JSONObject(response.getContentAsString());
+        results = json.getJSONArray("data");
+        assertNotNull(results);
+        
+        adhocWorkflowPresent = false;
+        boolean wcmWorkflowsPresent = false;
+        for (int i = 0; i < results.length(); i++)
+        {
+            JSONObject workflowDefinitionJSON = results.getJSONObject(i);
+            
+            String name = workflowDefinitionJSON.getString("name");
+            if (name.equals("jbpm$wf:adhoc"))
+            {
+                adhocWorkflowPresent = true;
+            }
+            if (name.startsWith("jbpm$wcmwf:"))
+            {
+                wcmWorkflowsPresent = true;
+            }
+        }
+        
+        assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
+        assertFalse("Found a WCM workflow when they were supposed to be excluded", wcmWorkflowsPresent);
     }
 
     public void testWorkflowInstanceGet() throws Exception
@@ -479,19 +555,21 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         {
             checkSimpleWorkflowInstanceResponse(forDefinitionResult.getJSONObject(i));
         }
+        
+        // create a date an hour ago to test filtering
+        Date anHourAgo = new Date(dueDate.getTime());
+        anHourAgo.setHours(anHourAgo.getHours()-1);
 
         // filter by initiator
         checkFiltering(URL_WORKFLOW_INSTANCES + "?initiator=" + USER1);
 
         // filter by startedAfter
-        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedAfter=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedAfter=" + ISO8601DateFormat.format(anHourAgo));
 
         // filter by startedBefore
         checkFiltering(URL_WORKFLOW_INSTANCES + "?startedBefore=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
 
         // filter by dueAfter
-        Date anHourAgo = new Date(dueDate.getTime());
-        anHourAgo.setHours(anHourAgo.getHours()-1);
         checkFiltering(URL_WORKFLOW_INSTANCES + "?dueAfter=" + ISO8601DateFormat.format(anHourAgo));
 
         // filter by dueBefore
@@ -518,6 +596,30 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         {
             checkPaging(URL_WORKFLOW_INSTANCES + "?maxItems=" + maxItems + "&skipCount=" + skipCount, totalItems, maxItems, skipCount);
         }
+        
+        // check the exclude filtering
+        String exclude = "jbpm$wf:adhoc";
+        response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "?exclude=" + exclude), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        JSONArray results = json.getJSONArray("data");
+        assertNotNull(results);
+        
+        boolean adhocWorkflowPresent = false;
+        for (int i = 0; i < results.length(); i++)
+        {
+            JSONObject workflowInstanceJSON = results.getJSONObject(i);
+            
+            String type = workflowInstanceJSON.getString("type");
+            if (exclude.equals(type))
+            {
+                adhocWorkflowPresent = true;
+                break;
+            }
+        }
+        
+        assertFalse("Found adhoc workflows when they were supposed to be excluded", adhocWorkflowPresent);
     }
 
     public void testWorkflowInstancesForNodeGet() throws Exception

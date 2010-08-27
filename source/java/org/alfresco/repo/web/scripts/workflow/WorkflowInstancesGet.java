@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -35,13 +35,13 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * @author unknown
+ * Java backed implementation for REST API to retrieve workflow instances.
+ * 
+ * @author Gavin Cornwell
  * @since 3.4
- *
  */
 public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 {
-
     public static final String PARAM_STATE = "state";
     public static final String PARAM_INITIATOR = "initiator";
     public static final String PARAM_PRIORITY = "priority";
@@ -59,11 +59,17 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
 
-        // get request parameters
+        // get filter param values
         Map<String, Object> filters = new HashMap<String, Object>(9);
         filters.put(PARAM_STATE, req.getParameter(PARAM_STATE));
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
+        
+        String excludeParam = req.getParameter(PARAM_EXCLUDE);
+        if (excludeParam != null && excludeParam.length() > 0)
+        {
+            filters.put(PARAM_EXCLUDE, new ExcludeFilter(excludeParam));
+        }
         
         // process all the date related parameters
         processDateFilter(req, PARAM_DUE_BEFORE, filters);
@@ -72,7 +78,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         processDateFilter(req, PARAM_STARTED_AFTER, filters);
         processDateFilter(req, PARAM_COMPLETED_BEFORE, filters);
         processDateFilter(req, PARAM_COMPLETED_AFTER, filters);
-
+        
         // determine if there is a definition id to filter by
         String workflowDefinitionId = params.get(VAR_DEFINITION_ID);
         if (workflowDefinitionId == null)
@@ -113,14 +119,17 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         return createResultModel(modelBuilder, req, "workflowInstances", results);
     }
 
-    /*
-     * If workflow instance matches at list one filter value or if no filter was specified, then it will be included in response
+    /**
+     * Determine if the given workflow instance should be included in the response.
+     * 
+     * @param workflowInstance The workflow instance to check
+     * @param filters The list of filters the task must match to be included
+     * @return true if the workflow matches and should therefore be returned
      */
     private boolean matches(WorkflowInstance workflowInstance, Map<String, Object> filters, WorkflowModelBuilder modelBuilder)
     {
-        // by default we assume that workflow instance should be included to response
+        // by default we assume that workflow instance should be included
         boolean result = true;
-        boolean firstFilter = true;
 
         for (String key : filters.keySet())
         {
@@ -129,164 +138,122 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
             // skip null filters (null value means that filter was not specified)
             if (filterValue != null)
             {
-                // some of the filter was specified, so the decision to include or not workflow to response
-                // based on matching to filter parameter (by default false)
-                if (firstFilter)
+                if (key.equals(PARAM_EXCLUDE))
                 {
-                    result = false;
-                    firstFilter = false;
+                    ExcludeFilter excludeFilter = (ExcludeFilter)filterValue;
+                    String type = workflowInstance.getDefinition().getName();
+                    
+                    if (excludeFilter.isMatch(type))
+                    {
+                        result = false;
+                        break;
+                    }
                 }
-
-                boolean matches = false;
-
-                if (key.equals(PARAM_STATE))
+                else if (key.equals(PARAM_STATE))
                 {
                     WorkflowState filter = WorkflowState.getState(filterValue.toString());
 
                     if (filter != null)
                     {
-                        if (filter.equals(WorkflowState.COMPLETED) && !workflowInstance.isActive() || filter.equals(WorkflowState.ACTIVE) && workflowInstance.isActive())
+                        if (filter.equals(WorkflowState.COMPLETED) && workflowInstance.isActive() || 
+                            filter.equals(WorkflowState.ACTIVE) && !workflowInstance.isActive())
                         {
-                            matches = true;
+                            result = false;
+                            break;
                         }
                     }
                 }
                 else if (key.equals(PARAM_DUE_BEFORE))
                 {
                     WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
-                    Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+                    Date dueDate = (Date)startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(dueDate, filterValue, true))
                     {
-                        if (dueDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (dueDate != null && ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
                 {
                     WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
-                    Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+                    Date dueDate = (Date)startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(dueDate, filterValue, false))
                     {
-                        if (dueDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (dueDate != null && ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_STARTED_BEFORE))
                 {
                     Date startDate = workflowInstance.getStartDate();
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(startDate, filterValue, true))
                     {
-                        if (startDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (startDate != null && startDate.getTime() <= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_STARTED_AFTER))
                 {
                     Date startDate = workflowInstance.getStartDate();
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(startDate, filterValue, false))
                     {
-                        if (startDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (startDate != null && startDate.getTime() >= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_COMPLETED_BEFORE))
                 {
                     Date endDate = workflowInstance.getEndDate();
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(endDate, filterValue, true))
                     {
-                        if (endDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (endDate != null && endDate.getTime() <= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_COMPLETED_AFTER))
                 {
                     Date endDate = workflowInstance.getEndDate();
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(endDate, filterValue, false))
                     {
-                        if (endDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (endDate != null && endDate.getTime() >= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_INITIATOR))
                 {
-                    if (workflowInstance.getInitiator() != null && nodeService.exists(workflowInstance.getInitiator()) && 
-                        filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
+                    NodeRef initiator = workflowInstance.getInitiator();
+                    
+                    if (initiator == null)
                     {
-                        matches = true;
+                        result = false;
+                        break;
+                    }
+                    else
+                    {
+                        if (!nodeService.exists(initiator) || 
+                            !filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
+                        {
+                            result = false;
+                            break;
+                        }
                     }
                 }
                 else if (key.equals(PARAM_PRIORITY))
                 {
                     WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
 
-                    if (startTask != null && filterValue.equals(startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_PRIORITY).toString()))
+                    if (startTask == null || !filterValue.equals(startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_PRIORITY).toString()))
                     {
-                        matches = true;
+                        result = false;
+                        break;
                     }
                 }
-                
-                // update global result
-                result = result || matches;
             }
         }
 

@@ -1,8 +1,8 @@
 <webscript>
    <shortname>Get Workflow Instance Collection</shortname>
    <description>Retrieves all workflow instances, the returned list can be optionally filtered by the state of the workflow instance and by the authority that initiated the workflow instance.</description>
-   <url>/api/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;definitionId={workflow_definition_id?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
-   <url>/api/workflow-definitions/{workflow_definition_id}/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
+   <url>/api/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;definitionId={workflow_definition_id?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+   <url>/api/workflow-definitions/{workflow_definition_id}/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

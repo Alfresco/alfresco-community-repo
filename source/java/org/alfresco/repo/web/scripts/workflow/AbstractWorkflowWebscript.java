@@ -39,9 +39,13 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.util.StringUtils;
 
 /**
+ * Base class for all workflow REST API implementations.
+ * 
  * @author Nick Smith
+ * @author Gavin Cornwell
  * @since 3.4
  */
 public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
@@ -51,6 +55,7 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     
     public static final String PARAM_MAX_ITEMS = "maxItems";
     public static final String PARAM_SKIP_COUNT = "skipCount";
+    public static final String PARAM_EXCLUDE = "exclude";
     
     // used for results pagination: indicates that all items from list should be returned
     public static final int DEFAULT_MAX_ITEMS = -1;  
@@ -271,5 +276,127 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
         }
         
         return pagingResults;
+    }
+    
+    /**
+     * Determines whether the given date is a match for the given filter value.
+     * 
+     * @param date The date to check against
+     * @param filterValue The value of the filter, either an empty String or a Date object
+     * @param dateBeforeFilter true to test the date is before the filterValue, 
+     *        false to test the date is after the filterValue
+     * @return true if the date is a match for the filterValue
+     */
+    protected boolean isDateMatchForFilter(Date date, Object filterValue, boolean dateBeforeFilter)
+    {
+        boolean match = true;
+        
+        if (filterValue.equals(EMPTY))
+        {
+            if (date != null)
+            {
+                match = false;
+            }
+        }
+        else
+        {
+            if (date == null)
+            {
+                match = false;
+            }
+            else
+            {
+                if (dateBeforeFilter)
+                {
+                    if (((Date)date).getTime() >= ((Date)filterValue).getTime())
+                    {
+                        match = false;
+                    }
+                }
+                else
+                {
+                    if (((Date)date).getTime() <= ((Date)filterValue).getTime())
+                    {
+                        match = false;
+                    }
+                }
+            }
+        }
+        
+        return match;
+    }
+    
+    /**
+     * Helper class to check for excluded items.
+     */
+    public class ExcludeFilter
+    {
+        private static final String WILDCARD = "*";
+        
+        private List<String> exactFilters;
+        private List<String> wilcardFilters;
+        private boolean containsWildcards = false;
+        
+        /**
+         * Creates a new ExcludeFilter
+         * 
+         * @param filters Comma separated list of filters which can optionally
+         *        contain wildcards
+         */
+        public ExcludeFilter(String filters)
+        {
+            // tokenize the filters
+            String[] filterArray = StringUtils.tokenizeToStringArray(filters, ",");
+            
+            // create a list of exact filters and wildcard filters
+            this.exactFilters = new ArrayList<String>(filterArray.length);
+            this.wilcardFilters = new ArrayList<String>(filterArray.length);
+            
+            for (String filter : filterArray)
+            {
+                if (filter.endsWith(WILDCARD))
+                {
+                    // at least one wildcard is present
+                    this.containsWildcards = true;
+                    
+                    // add the filter without the wildcard
+                    this.wilcardFilters.add(filter.substring(0, 
+                                (filter.length()-WILDCARD.length())));
+                }
+                else
+                {
+                    // add the exact filter
+                    this.exactFilters.add(filter);
+                }
+            }
+        }
+        
+        /**
+         * Determines whether the given item matches one of
+         * the filters.
+         * 
+         * @param item The item to check
+         * @return true if the item matches one of the filters
+         */
+        public boolean isMatch(String item)
+        {
+            // see whether there is an exact match
+            boolean match = this.exactFilters.contains(item);
+            
+            // if there wasn't an exact match and wildcards are present
+            if (item != null && !match && this.containsWildcards)
+            {
+                for (String wildcardFilter : this.wilcardFilters)
+                {
+                    if (item.startsWith(wildcardFilter))
+                    {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            
+            return match;
+        }
     }
 }

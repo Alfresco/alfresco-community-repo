@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,8 +37,10 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
+ * Webscript impelementation to return workflow task instances.
+ * 
  * @author Nick Smith
- *
+ * @author Gavin Cornwell
  */
 public class TaskInstancesGet extends AbstractWorkflowWebscript
 {
@@ -71,6 +72,12 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
         processDateFilter(req, PARAM_DUE_BEFORE, filters);
         processDateFilter(req, PARAM_DUE_AFTER, filters);
+        
+        String excludeParam = req.getParameter(PARAM_EXCLUDE);
+        if (excludeParam != null && excludeParam.length() > 0)
+        {
+            filters.put(PARAM_EXCLUDE, new ExcludeFilter(excludeParam));
+        }
         
         List<WorkflowTask> allTasks;
 
@@ -205,14 +212,17 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         return authority;
     }
 
-    /*
-     * If workflow task matches at list one filter value or if no filter was specified, then it will be included in response
+    /**
+     * Determine if the given task should be included in the response.
+     * 
+     * @param task The task to check
+     * @param filters The list of filters the task must match to be included
+     * @return true if the task matches and should therefore be returned
      */
     private boolean matches(WorkflowTask task, Map<String, Object> filters)
     {
-        // by default we assume that workflow task should be included to response
+        // by default we assume that workflow task should be included
         boolean result = true;
-        boolean firstFilter = true;
 
         for (String key : filters.keySet())
         {
@@ -221,63 +231,44 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             // skip null filters (null value means that filter was not specified)
             if (filterValue != null)
             {
-                // some of the filter was specified, so the decision to include or not task to response 
-                // based on matching to filter parameter (by default false)
-                if (firstFilter)
+                if (key.equals(PARAM_EXCLUDE))
                 {
-                    result = false;
-                    firstFilter = false;
-                }
-
-                boolean matches = false;
-
-                if (key.equals(PARAM_DUE_BEFORE))
-                {
-                    Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
-
-                    if (filterValue.equals(EMPTY))
+                    ExcludeFilter excludeFilter = (ExcludeFilter)filterValue;
+                    String type = task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService);
+                    if (excludeFilter.isMatch(type))
                     {
-                        if (dueDate == null)
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
-                    else
+                }
+                else if (key.equals(PARAM_DUE_BEFORE))
+                {
+                    Date dueDate = (Date)task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+
+                    if (!isDateMatchForFilter(dueDate, filterValue, true))
                     {
-                        if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
                 {
-                    Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+                    Date dueDate = (Date)task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
 
-                    if (filterValue.equals(EMPTY))
+                    if (!isDateMatchForFilter(dueDate, filterValue, false))
                     {
-                        if (dueDate == null)
-                        {
-                            matches = true;
-                        }
-                    }
-                    else
-                    {
-                        if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
-                        {
-                            matches = true;
-                        }
+                        result = false;
+                        break;
                     }
                 }
                 else if (key.equals(PARAM_PRIORITY))
                 {
-                    if (filterValue.equals(task.getProperties().get(WorkflowModel.PROP_PRIORITY).toString()))
+                    if (!filterValue.equals(task.getProperties().get(WorkflowModel.PROP_PRIORITY).toString()))
                     {
-                        matches = true;
+                        result = false;
+                        break;
                     }
                 }
-                // update global result
-                result = result || matches;
             }
         }
 

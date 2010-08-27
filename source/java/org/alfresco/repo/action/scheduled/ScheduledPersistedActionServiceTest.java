@@ -32,15 +32,16 @@ import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.quartz.DateIntervalTrigger;
 import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -48,6 +49,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.DateIntervalTrigger.IntervalUnit;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -72,6 +74,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
 
     private Action testAction;
     private Action testAction2;
+    private Action testAction3;
 
     @Override
     protected void setUp() throws Exception
@@ -112,6 +115,8 @@ public class ScheduledPersistedActionServiceTest extends TestCase
                 //
                 testAction2, ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
                 ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction2"));
+        
+        testAction3 = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
 
         // Finish setup
         txn.commit();
@@ -122,14 +127,13 @@ public class ScheduledPersistedActionServiceTest extends TestCase
     {
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-
+        
         // Zap all test schedules
         List<ScheduledPersistedAction> schedules = service.listSchedules();
         for (ScheduledPersistedAction schedule : schedules)
         {
             service.deleteSchedule(schedule);
         }
-        
         txn.commit();
     }
 
@@ -139,7 +143,93 @@ public class ScheduledPersistedActionServiceTest extends TestCase
      */
     public void testPersistedActionImpl() throws Exception
     {
-        // TODO
+        ScheduledPersistedActionImpl schedule = 
+           new ScheduledPersistedActionImpl(testAction);
+        ScheduledPersistedActionImpl schedule3 = 
+           new ScheduledPersistedActionImpl(testAction3);
+
+        
+        // Check the core bits
+        assertEquals(null, schedule.getPersistedAtNodeRef());
+        assertEquals(testAction, schedule.getAction());
+        assertEquals(testAction.getNodeRef(), schedule.getActionNodeRef());
+        
+        assertEquals(null, schedule3.getPersistedAtNodeRef());
+        assertEquals(testAction3, schedule3.getAction());
+        assertEquals(null, schedule3.getActionNodeRef());
+        
+        // Persist the 3rd action
+        runtimeActionService.createActionNodeRef(
+              //
+              testAction3, ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+              ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction3"));
+        
+        assertEquals(null, schedule.getPersistedAtNodeRef());
+        assertEquals(testAction, schedule.getAction());
+        assertEquals(testAction.getNodeRef(), schedule.getActionNodeRef());
+        
+        assertEquals(null, schedule3.getPersistedAtNodeRef());
+        assertEquals(testAction3, schedule3.getAction());
+        assertEquals(testAction3.getNodeRef(), schedule3.getActionNodeRef());
+        assertNotNull(schedule3.getAction().getNodeRef());
+        
+        
+        // Check the start/end date bits
+        assertEquals(null, schedule.getScheduleStart());
+        assertEquals(null, schedule.getScheduleEnd());
+        
+        schedule.setScheduleStart(new Date(1234));
+        assertEquals(1234, schedule.getScheduleStart().getTime());
+        assertEquals(null, schedule.getScheduleEnd());
+        
+        schedule.setScheduleEnd(new Date(4321));
+        assertEquals(1234, schedule.getScheduleStart().getTime());
+        assertEquals(4321, schedule.getScheduleEnd().getTime());
+        
+        assertEquals(null, schedule3.getScheduleStart());
+        assertEquals(null, schedule3.getScheduleEnd());
+        
+        schedule.setScheduleStart(null);
+        assertEquals(null, schedule.getScheduleStart());
+        assertEquals(4321, schedule.getScheduleEnd().getTime());
+        
+        schedule.setScheduleEnd(null);
+        assertEquals(null, schedule.getScheduleStart());
+        assertEquals(null, schedule.getScheduleEnd());
+        
+        
+        // Check the interval parts
+        assertEquals(null, schedule.getScheduleInterval());
+        assertEquals(null, schedule.getScheduleIntervalCount());
+        assertEquals(null, schedule.getScheduleIntervalPeriod());
+        
+        schedule.setScheduleIntervalCount(3);
+        assertEquals(null, schedule.getScheduleInterval());
+        assertEquals(3, schedule.getScheduleIntervalCount().intValue());
+        assertEquals(null, schedule.getScheduleIntervalPeriod());
+        
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Hour);
+        assertEquals("3Hour", schedule.getScheduleInterval());
+        assertEquals(3, schedule.getScheduleIntervalCount().intValue());
+        assertEquals(IntervalPeriod.Hour, schedule.getScheduleIntervalPeriod());
+        
+        schedule.setScheduleIntervalCount(8);
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Month);
+        assertEquals("8Month", schedule.getScheduleInterval());
+        assertEquals(8, schedule.getScheduleIntervalCount().intValue());
+        assertEquals(IntervalPeriod.Month, schedule.getScheduleIntervalPeriod());
+        
+        schedule.setScheduleIntervalCount(null);
+        assertEquals(null, schedule.getScheduleInterval());
+        assertEquals(null, schedule.getScheduleIntervalCount());
+        assertEquals(IntervalPeriod.Month, schedule.getScheduleIntervalPeriod());
+        
+        schedule.setScheduleIntervalPeriod(null);
+        assertEquals(null, schedule.getScheduleInterval());
+        assertEquals(null, schedule.getScheduleIntervalCount());
+        assertEquals(null, schedule.getScheduleIntervalPeriod());
+        
+        // Trigger parts happen in another test 
     }
 
     /**
@@ -147,7 +237,118 @@ public class ScheduledPersistedActionServiceTest extends TestCase
      */
     public void testActionToTrigger() throws Exception
     {
-        // TODO
+       // Can't get a trigger until persisted
+       ScheduledPersistedActionImpl schedule = 
+          (ScheduledPersistedActionImpl)service.createSchedule(testAction);
+       Trigger t;
+       try {
+          schedule.asTrigger();
+          fail("Should require persistence first");
+       } catch(IllegalStateException e) {}
+
+       service.saveSchedule(schedule);
+       schedule.asTrigger();
+       
+       
+        // No schedule, no trigger
+       assertEquals(null, schedule.getScheduleInterval());
+       assertEquals(null, schedule.getScheduleIntervalCount());
+       assertEquals(null, schedule.getScheduleIntervalPeriod());
+       assertEquals(null, schedule.asTrigger());
+       
+       
+        // Only start date
+        schedule.setScheduleStart(new Date(12345));
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals(12345, t.getStartTime().getTime());
+        assertEquals(null, t.getEndTime());
+        assertEquals(SimpleTrigger.class, t.getClass());
+        
+       
+        // Only end date
+        // (End date + no repeat = never schedule)
+        schedule.setScheduleStart(null);
+        schedule.setScheduleEnd(new Date(12345));
+        
+        t = schedule.asTrigger();
+        assertEquals(null, t);
+
+        
+        // Only interval
+        schedule.setScheduleStart(null);
+        schedule.setScheduleEnd(null);
+        schedule.setScheduleIntervalCount(2);
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals((double)System.currentTimeMillis(), (double)t.getStartTime().getTime(), 2); // Within 2ms
+        assertEquals(null, t.getEndTime());
+        assertEquals(DateIntervalTrigger.class, t.getClass());
+        assertEquals(2, ((DateIntervalTrigger)t).getRepeatInterval());
+        assertEquals(IntervalUnit.SECOND, ((DateIntervalTrigger)t).getRepeatIntervalUnit());
+
+        
+        // Start+interval
+        schedule.setScheduleStart(new Date(12345));
+        schedule.setScheduleEnd(null);
+        schedule.setScheduleIntervalCount(3);
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Month);
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals(12345, t.getStartTime().getTime());
+        assertEquals(null, t.getEndTime());
+        assertEquals(DateIntervalTrigger.class, t.getClass());
+        assertEquals(3, ((DateIntervalTrigger)t).getRepeatInterval());
+        assertEquals(IntervalUnit.MONTH, ((DateIntervalTrigger)t).getRepeatIntervalUnit());
+
+        
+        // Start+interval+end
+        schedule.setScheduleStart(new Date(12345));
+        schedule.setScheduleEnd(new Date(54321));
+        schedule.setScheduleIntervalCount(12);
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Week);
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals(12345, t.getStartTime().getTime());
+        assertEquals(54321, t.getEndTime().getTime());
+        assertEquals(DateIntervalTrigger.class, t.getClass());
+        assertEquals(12, ((DateIntervalTrigger)t).getRepeatInterval());
+        assertEquals(IntervalUnit.WEEK, ((DateIntervalTrigger)t).getRepeatIntervalUnit());
+
+        
+        // interval+end
+        long future = System.currentTimeMillis() + 1234567;
+        schedule.setScheduleStart(null);
+        schedule.setScheduleEnd(new Date(future));
+        schedule.setScheduleIntervalCount(6);
+        schedule.setScheduleIntervalPeriod(IntervalPeriod.Hour);
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals((double)System.currentTimeMillis(), (double)t.getStartTime().getTime(), 2); // Within 2ms
+        assertEquals(future, t.getEndTime().getTime());
+        assertEquals(DateIntervalTrigger.class, t.getClass());
+        assertEquals(6, ((DateIntervalTrigger)t).getRepeatInterval());
+        assertEquals(IntervalUnit.HOUR, ((DateIntervalTrigger)t).getRepeatIntervalUnit());
+       
+        
+        // Start+end
+        // (The end bit is ignored, as there's no interval to decide over)
+        schedule.setScheduleStart(new Date(12345));
+        schedule.setScheduleEnd(new Date(54321));
+        schedule.setScheduleIntervalCount(null);
+        schedule.setScheduleIntervalPeriod(null);
+        
+        t = schedule.asTrigger();
+        assertNotNull(t);
+        assertEquals(12345, t.getStartTime().getTime());
+        assertEquals(null, t.getEndTime());
+        assertEquals(SimpleTrigger.class, t.getClass());
     }
 
     /**
@@ -209,7 +410,6 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         
         // Now ensure we can create for an action that didn't have a noderef
         //  when we started
-        Action testAction3 = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
         schedule = service.createSchedule(testAction3);
         
         assertNull(schedule.getActionNodeRef());
@@ -325,6 +525,41 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        assertNotNull(retrieved);
        assertEquals(testAction.getNodeRef(), retrieved.getActionNodeRef());
     }
+    
+    /**
+     * Tests that the startup registering works properly
+     */
+    public void testStartup() throws Exception
+    {
+       // Startup with none there, nothing happens
+       // TODO
+       
+       // Add one manually, startup, see it is registered
+       // TODO
+       
+       
+       // ====================================
+       // Startup related re-scheduling parts
+       // ====================================
+       
+       // No start date, repeats set, never run
+       // TODO
+       
+       // No start date, repeats set, previously run
+       // TODO
+       
+       // Start date, no repeats, never run
+       // TODO
+       
+       // Start date, no repeats, previously run
+       // TODO
+       
+       // Start date, has repeats, never run
+       // TODO
+       
+       // Start date, has repeats, previously run
+       // TODO
+    }
 
     /**
      * Ensures that deletion works correctly
@@ -347,6 +582,12 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        NodeRef schedule1NodeRef = ((ScheduledPersistedActionImpl)schedule1).getPersistedAtNodeRef();
        NodeRef schedule2NodeRef = ((ScheduledPersistedActionImpl)schedule2).getPersistedAtNodeRef();
        
+       // Both should have the relationship
+       assertEquals(1, nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(1, nodeService.getTargetAssocs(schedule2NodeRef, RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(1, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(1, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       
        // Delete one - the correct one goes!
        service.deleteSchedule(schedule2);
        assertEquals(1, service.listSchedules().size());
@@ -355,7 +596,12 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        assertNull(serviceImpl.loadPersistentSchedule(schedule2NodeRef));
        assertNotNull(service.getSchedule(testAction));
        assertNull(service.getSchedule(testAction2));
-
+       
+       // Ensure that the relationship went
+       assertEquals(1, nodeService.getTargetAssocs(schedule1NodeRef, RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(1, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(0, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       
        // Re-delete already deleted, no change
        service.deleteSchedule(schedule2);
        assertEquals(1, service.listSchedules().size());
@@ -373,12 +619,27 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        assertNull(service.getSchedule(testAction));
        assertNull(service.getSchedule(testAction2));
        
+       // Ensure that the relationship went
+       assertEquals(0, nodeService.getSourceAssocs(testAction.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       assertEquals(0, nodeService.getSourceAssocs(testAction2.getNodeRef(), RegexQNamePattern.MATCH_ALL).size());
+       
        // Can add back in again after being deleted
        service.saveSchedule(schedule1);
        assertEquals(1, service.listSchedules().size());
        assertEquals(testAction.getNodeRef(), service.listSchedules().get(0).getActionNodeRef());
        assertNotNull(service.getSchedule(testAction));
        assertNull(service.getSchedule(testAction2));
+       
+       // If we delete the action, then we have an orphaned schedule
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       nodeService.deleteNode(testAction.getNodeRef());
+       txn.commit();
+       
+       assertEquals(1, service.listSchedules().size());
+       assertEquals(1, service.listSchedules().size());
+       assertEquals(null, service.listSchedules().get(0).getAction());
+       assertEquals(null, service.listSchedules().get(0).getActionNodeRef());
     }
     
     /**
@@ -523,13 +784,17 @@ public class ScheduledPersistedActionServiceTest extends TestCase
     {
         // Create one that starts running in 2 seconds, runs every 2 seconds
         // until 9 seconds are up (will run 4 times)
+        // TODO
 
         // Create one that starts running now, every second until 9.5 seconds
         // are up (will run 9-10 times)
+        // TODO
 
         // Set them going
+        // TODO
 
         // Wait
+        // TODO
 
         // Check that they really did run properly
         // TODO

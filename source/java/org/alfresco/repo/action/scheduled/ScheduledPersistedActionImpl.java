@@ -210,10 +210,17 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
          DateIntervalTrigger.IntervalUnit.valueOf(
                intervalPeriod.toString().toUpperCase()
          );
+      // Ensure we always have a start date, even if it's now
+      Date start = scheduleStart;
+      if(start == null)
+         start = new Date();
+      // The end date is allowed to be null
+      Date end = scheduleEnd;
       
+      // Create the interval
       DateIntervalTrigger trigger = new DateIntervalTrigger(
                triggerName, null,
-               scheduleStart, scheduleEnd,
+               start, end,
                quartzInterval, intervalCount
       );
       trigger.setMisfireInstruction( DateIntervalTrigger.MISFIRE_INSTRUCTION_FIRE_ONCE_NOW );

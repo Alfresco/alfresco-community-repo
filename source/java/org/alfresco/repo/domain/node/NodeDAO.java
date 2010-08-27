@@ -629,5 +629,13 @@ public interface NodeDAO extends NodeBulkLoader
             QName propertyQName, 
             Serializable nodeValue,
             ChildAssocRefQueryCallback resultsCallback);
+
+    /**
+     * Used in ACL upgrade only to set the acl id with mimimal overhead
+     * 
+     * @param nodeId
+     * @param id
+     */
+    public void setNodeDefiningAclId(Long nodeId, long id);
  
 }

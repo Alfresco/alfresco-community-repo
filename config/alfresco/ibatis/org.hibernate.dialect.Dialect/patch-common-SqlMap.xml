@@ -298,7 +298,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_DmNodeCount">
+    <select id="select_DmNodeCount" resultClass="long">
         select
             count(*)
         from
@@ -306,7 +306,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap">
+    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap" resultClass="long">
         select
             count(*)
         from

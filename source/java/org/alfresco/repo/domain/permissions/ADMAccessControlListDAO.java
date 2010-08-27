@@ -133,7 +133,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             if (!pair.getSecond().getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
                 CounterSet update;
-                update = fixOldDmAcls(nodeDAO.getRootNode(pair.getSecond()).getFirst(), (Long)null, true);
+                Long rootNodeId = nodeDAO.getRootNode(pair.getSecond()).getFirst();
+                update = fixOldDmAcls(rootNodeId, nodeDAO.getNodeAclId(rootNodeId), (Long)null, true);
                 result.add(update);
             }
         }
@@ -148,95 +149,96 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         return toReturn;
     }
 
-    private CounterSet fixOldDmAcls(Long nodeId, Long inherited, boolean isRoot)
-    {
-        return fixOldDmAclsImpl(nodeId, inherited, isRoot);
-    }
-
-    private CounterSet fixOldDmAclsImpl(Long nodeId, Long inherited, boolean isRoot)
+    private CounterSet fixOldDmAcls(Long nodeId, Long existingNodeAclId, Long inheritedAclId, boolean isRoot)
     {
         CounterSet result = new CounterSet();
-        // Do the children first
-
-        Acl existingAcl = null;
-        Long aclId = nodeDAO.getNodeAclId(nodeId);
-        if (aclId != null)
-        {
-            existingAcl = aclDaoComponent.getAcl(aclId);
-        }
         
-        Long toInherit = null;
-        Long idToInheritFrom = null;
-
-        if (existingAcl != null)
+        // If existingNodeAclId is not null and equal to inheritedAclId then we know we have hit a shared ACL we have bulk set 
+        // - just carry on in this case - we do not need to get the acl
+        
+        Long newDefiningAcl = null;
+        
+        if((existingNodeAclId != null) && (existingNodeAclId == inheritedAclId))
         {
-            if (existingAcl.getAclType() == ACLType.OLD)
-            {
-                result.increment(ACLType.DEFINING);
-                SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties(aclDaoComponent.getDefaultProperties());
-                properties.setInherits(existingAcl.getInherits());
-                AccessControlList existing = aclDaoComponent.getAccessControlList(existingAcl.getId());
-                Long actuallyInherited = null;
-                if (existingAcl.getInherits())
-                {
-                    if (inherited != null)
-                    {
-                        actuallyInherited = inherited;
-                    }
-                }
-                Acl newAcl = aclDaoComponent.createAccessControlList(properties, existing.getEntries(), actuallyInherited);
-                idToInheritFrom = newAcl.getId();
-                nodeDAO.setNodeAclId(nodeId, idToInheritFrom);
-            }
-            else if (existingAcl.getAclType() == ACLType.SHARED)
-            {
-                // nothing to do just cascade into the children - we most likely did a bulk set above.
-            }
-            else
-            {
-                // Already fixed up
-                return result;
-            }
+            // nothing to do except move into the children
         }
         else
         {
-            // Set default ACL on roots with no settings
-            if (isRoot)
+            AccessControlList existing = null;
+            if (existingNodeAclId != null)
             {
-                result.increment(ACLType.DEFINING);
+                existing = aclDaoComponent.getAccessControlList(existingNodeAclId);
+            }
 
-                AccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
-                Acl newAcl = aclDaoComponent.createAccessControlList(properties);
-                long id = newAcl.getId();
-
-                idToInheritFrom = id;
-                nodeDAO.setNodeAclId(nodeId, id);
+            if (existing != null)
+            {
+                if (existing.getProperties().getAclType() == ACLType.OLD)
+                {
+                    result.increment(ACLType.DEFINING);
+                    SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties(aclDaoComponent.getDefaultProperties());
+                    properties.setInherits(existing.getProperties().getInherits());
+                   
+                    Long actuallyInherited = null;
+                    if (existing.getProperties().getInherits())
+                    {
+                        if (inheritedAclId != null)
+                        {
+                            actuallyInherited = inheritedAclId;
+                        }
+                    }
+                    Acl newAcl = aclDaoComponent.createAccessControlList(properties, existing.getEntries(), actuallyInherited);
+                    newDefiningAcl = newAcl.getId();
+                    nodeDAO.setNodeDefiningAclId(nodeId, newDefiningAcl);
+                }
+                else if (existing.getProperties().getAclType() == ACLType.SHARED)
+                {
+                    // nothing to do just cascade into the children - we most likely did a bulk set above.
+                    // TODO: Check shared ACL set is correct
+                }
+                else
+                {
+                    // Already fixed up
+                    // TODO: Keep going to check
+                    // Check inheritance is correct
+                    return result;
+                }
             }
             else
             {
-                // Unset - simple inherit
-                nodeDAO.setNodeAclId(nodeId, inherited);
+                // Set default ACL on roots with no settings
+                if (isRoot)
+                {
+                    result.increment(ACLType.DEFINING);
+
+                    AccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
+                    Acl newAcl = aclDaoComponent.createAccessControlList(properties);
+                    newDefiningAcl = newAcl.getId();
+                    nodeDAO.setNodeDefiningAclId(nodeId, newDefiningAcl);
+                }
+                else
+                {
+                    // Unset - simple inherit
+                    nodeDAO.setNodeDefiningAclId(nodeId, inheritedAclId);
+                }
             }
         }
 
+        Long toInherit = null;
         List<NodeIdAndAclId> children = nodeDAO.getPrimaryChildrenAcls(nodeId);
         if (children.size() > 0)
         {
             // Only make inherited if required
-            if (toInherit == null)
+            if (newDefiningAcl == null)
             {
-                if (idToInheritFrom == null)
-                {
-                    toInherit = inherited;
-                }
-                else
-                {
-                    toInherit = aclDaoComponent.getInheritedAccessControlList(idToInheritFrom);
-                }
+                toInherit = inheritedAclId;
+            }
+            else
+            {
+                toInherit = aclDaoComponent.getInheritedAccessControlList(newDefiningAcl);
             }
 
         }
-        
+
         if(children.size() > 0)
         {
             nodeDAO.setPrimaryChildrenSharedAclId(nodeId, null, toInherit);
@@ -244,7 +246,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 
         for (NodeIdAndAclId child : children)
         {
-            CounterSet update = fixOldDmAcls(child.getId(), toInherit, false);
+            CounterSet update = fixOldDmAcls(child.getId(), child.getAclId(), toInherit, false);
             result.add(update);
         }
         

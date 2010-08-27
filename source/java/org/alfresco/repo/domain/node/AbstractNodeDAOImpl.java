@@ -1417,6 +1417,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         updatePrimaryChildrenSharedAclId(primaryParentNodeId, optionalOldSharedAlcIdInAdditionToNull, newSharedAclId);
         invalidateCachesByNodeId(primaryParentNodeId, null, nodesCache);
     }
+    
+    @Override
+    public void setNodeDefiningAclId(Long nodeId, long aclId)
+    {
+        NodeUpdateEntity nodeUpdateEntity = new NodeUpdateEntity();
+        nodeUpdateEntity.setId(nodeId);
+        nodeUpdateEntity.setAclId(aclId);
+        nodeUpdateEntity.setUpdateAclId(true);
+        updateNodePatchAcl(nodeUpdateEntity);
+        invalidateCachesByNodeId(null, nodeId, nodesCache);
+    }
 
     public void deleteNode(Long nodeId)
     {
@@ -3161,6 +3172,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateStoreRoot(StoreEntity store);
     protected abstract Long insertNode(NodeEntity node);
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
+    protected abstract int updateNodePatchAcl(NodeUpdateEntity nodeUpdate);
     protected abstract void updatePrimaryChildrenSharedAclId(
             Long primaryParentNodeId,
             Long optionalOldSharedAlcIdInAdditionToNull,

@@ -354,6 +354,13 @@
         </isGreaterThan>
     </update>
     
+    <update id="update_NodePatchAcl" parameterClass="NodeUpdate">
+        update alf_node set
+            <isEqual property="updateAclId" compareValue="true" >       acl_id            = #aclId#</isEqual>
+        where
+            id = #id#
+    </update>
+    
     <update id="update_ChildAssocsUniqueName" parameterClass="ChildAssoc">
         update alf_child_assoc set
             child_node_name_crc = #childNodeNameCrc#,

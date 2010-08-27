@@ -311,17 +311,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertNotNull(results);
         assertEquals(3, results.length());
 
-        // Never run first
-        jsonRD = (JSONObject)results.get(0);
-        assertNotNull(jsonRD);
-        assertEquals("AnotherTest", jsonRD.get("name"));
-        assertEquals("New", jsonRD.get("status"));
-        assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(JSONObject.NULL, jsonRD.get("startedAt"));
-        assertEquals("/api/replication-definition/AnotherTest", jsonRD.get("details"));
-        
         // Ran most recently
-        jsonRD = (JSONObject)results.get(1);
+        jsonRD = (JSONObject)results.get(0);
         assertNotNull(jsonRD);
         assertEquals("Test2", jsonRD.get("name"));
         assertEquals("Completed", jsonRD.get("status"));
@@ -330,13 +321,22 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("/api/replication-definition/Test2", jsonRD.get("details"));
         
         // Ran least recently
-        jsonRD = (JSONObject)results.get(2);
+        jsonRD = (JSONObject)results.get(1);
         assertNotNull(jsonRD);
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
         assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
+        
+        // Never run last
+        jsonRD = (JSONObject)results.get(2);
+        assertNotNull(jsonRD);
+        assertEquals("AnotherTest", jsonRD.get("name"));
+        assertEquals("New", jsonRD.get("status"));
+        assertEquals(true, jsonRD.get("enabled"));
+        assertEquals(JSONObject.NULL, jsonRD.get("startedAt"));
+        assertEquals("/api/replication-definition/AnotherTest", jsonRD.get("details"));
         
        
         // Cancel one of these

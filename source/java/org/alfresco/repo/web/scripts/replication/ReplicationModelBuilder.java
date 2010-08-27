@@ -112,6 +112,8 @@ public class ReplicationModelBuilder
     }
     /**
      * Sorts simple definitions by their last run time.
+     * Things that have never been run go to the bottom of the list,
+     *  so we see most recently run, least recently run, never run.
      */
     public static class SimpleSorterByLastRun implements Comparator<Map<String,Object>> {
       /** Works on ISO8601 formatted date strings */
@@ -122,10 +124,10 @@ public class ReplicationModelBuilder
             return 0;
          }
          if(dateA != null && dateB == null) {
-            return 1;
+            return -1;
          }
          if(dateA == null && dateB != null) {
-            return -1;
+            return 1;
          }
          // We want more recent dates first
          return 0-dateA.compareTo(dateB);

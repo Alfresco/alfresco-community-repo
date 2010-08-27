@@ -106,6 +106,15 @@ public interface SysAdminParams
     public String getShareProtocol();
     
     /**
+     * Gets the group name used for public site visibility.
+     * Only members of this group will have SiteConsumer access to 'public' share sites.
+     * 
+     * @return the name of the public site group.
+     * @since 3.4
+     */
+    public String getSitePublicGroup();
+    
+    /**
      * Expands the special ${localname} token within a host name using the resolved DNS name for the local host.
      * 
      * @param hostName

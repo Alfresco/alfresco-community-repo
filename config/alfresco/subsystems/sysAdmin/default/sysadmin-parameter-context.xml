@@ -38,6 +38,8 @@
       <property name="shareProtocol">
          <value>${share.protocol}</value>
       </property>
+      
+      <property name="sitePublicGroup" value="${site.public.group}" />
    </bean>
 
 </beans>

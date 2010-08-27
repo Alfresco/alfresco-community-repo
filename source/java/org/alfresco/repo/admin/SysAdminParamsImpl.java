@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.license.LicenseService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -75,6 +76,9 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
 
     /** Share protocol. */
     private String shareProtocol = "http";
+    
+    // The default is GROUP_EVERYONE, although this will likely be overridden by an injected value from spring.
+    private String sitePublicGroup = PermissionService.ALL_AUTHORITIES;
 
     public SysAdminParamsImpl()
     {
@@ -283,4 +287,19 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     {
         return hostName.replace(TOKEN_LOCAL_NAME, localName);
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.admin.SysAdminParams#getSitePublicGroup()
+     */
+	public String getSitePublicGroup()
+	{
+		return this.sitePublicGroup;
+	}
+
+	public void setSitePublicGroup(String sitePublicGroup)
+	{
+		this.sitePublicGroup = sitePublicGroup;
+	}
+
 }

@@ -28,6 +28,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -148,6 +150,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }        
     }
 	
+    /**
+     * This test method ensures that public sites can be created and that their site info is correct.
+     * It also tests that a duplicate site cannot be created.
+     */
     public void testCreateSite() throws Exception
     {
         // Create a public site
@@ -203,10 +209,108 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Expected
         }
-
-		
 	}
-    
+
+	/**
+	 * This method tests https://issues.alfresco.com/jira/browse/ALF-3785 which allows 'public' sites
+	 * to be only visible to members of a configured group, by default EVERYONE.
+	 * 
+	 * @author Neil McErlean
+	 * @since 3.4
+	 */
+	@SuppressWarnings("deprecation")
+	public void testConfigurableSitePublicGroup() throws Exception
+	{
+		AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+		
+		// We'll be configuring a JMX managed bean (in this test method only).
+		ChildApplicationContextFactory sysAdminSubsystem = (ChildApplicationContextFactory) applicationContext.getBean("sysAdmin");
+		final String sitePublicGroupPropName = "site.public.group";
+		final String originalSitePublicGroup = "GROUP_EVERYONE";
+		
+		try
+		{
+			// Firstly we'll ensure that the site.public.group has the correct (pristine) value.
+			String groupName = sysAdminSubsystem.getProperty(sitePublicGroupPropName);
+			assertEquals(sitePublicGroupPropName + " was not the pristine value",
+					originalSitePublicGroup, groupName);
+			
+			// Create a 'normal', unconfigured site.
+	        SiteInfo unconfiguredSite = siteService.createSite(TEST_SITE_PRESET, "unconfigured",
+	        		                                           TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+	        assertTrue(containsConsumerPermission(originalSitePublicGroup, unconfiguredSite));
+
+	        
+			// Now set the managed bean's visibility group to something other than GROUP_EVERYONE.
+	        // This is the group that will have visibility of subsequently created sites.
+	        //
+	        // We'll intentionally set it to a group that DOES NOT EXIST YET.
+	        String newGroupName = this.getClass().getSimpleName() + System.currentTimeMillis();
+	        String prefixedNewGroupName = PermissionService.GROUP_PREFIX + newGroupName;
+	        
+	        sysAdminSubsystem.stop();
+	        sysAdminSubsystem.setProperty(sitePublicGroupPropName, prefixedNewGroupName);
+	        sysAdminSubsystem.start();
+
+	        // Now create a site as before. It should fail as we're using a group that doesn't exist.
+	        boolean expectedExceptionThrown = false;
+	        try
+	        {
+		        siteService.createSite(TEST_SITE_PRESET, "thisShouldFail",
+                        TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+	        }
+	        catch (SiteServiceException expected)
+	        {
+	        	expectedExceptionThrown = true;
+	        }
+	        if (!expectedExceptionThrown)
+	        {
+	        	fail("Expected exception on createSite with non-existent group was not thrown.");
+	        }
+	        
+	        
+	        // Now we'll create the group used above.
+	        authorityService.createAuthority(AuthorityType.GROUP, newGroupName);
+	        
+	        
+	        // And create the site as before. This time it should succeed.
+	        SiteInfo configuredSite = siteService.createSite(TEST_SITE_PRESET, "configured",
+                    TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+	        
+	        // And check the permissions on the site.
+	        assertTrue("The configured site should not have " + originalSitePublicGroup + " as SiteContributor",
+	        		!containsConsumerPermission(originalSitePublicGroup, configuredSite));
+	        assertTrue("The configured site should have (newGroupName) as SiteContributor",
+	        		containsConsumerPermission(prefixedNewGroupName, configuredSite));
+		}
+		finally
+		{
+			// Reset the JMX bean to its out-of-the-box values.
+			sysAdminSubsystem.stop();
+			sysAdminSubsystem.setProperty(sitePublicGroupPropName, originalSitePublicGroup);
+			sysAdminSubsystem.start();
+		}
+	}
+
+	private boolean containsConsumerPermission(final String groupName,
+			SiteInfo unconfiguredSite)
+	{
+		boolean result = false;
+		Set<AccessPermission> perms = permissionService.getAllSetPermissions(unconfiguredSite.getNodeRef());
+		for (AccessPermission p : perms)
+		{
+			if (p.getAuthority().equals(groupName) &&
+					p.getPermission().equals(SiteModel.SITE_CONSUMER))
+			{
+				result = true;
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * This method tests that admin and system users can set site membership for a site of which they are not SiteManagers.
+	 */
     public void testETHREEOH_15() throws Exception
     {
         SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);

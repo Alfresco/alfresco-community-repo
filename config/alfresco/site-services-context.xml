@@ -90,8 +90,7 @@
        </property>
        <property name="tenantService" ref="tenantService"/>
        <property name="roleComparator" ref="siteRoleComparator" />
-
-       
+        <property name="sysAdminParams" ref="sysAdminParams"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

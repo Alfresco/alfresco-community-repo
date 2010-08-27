@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -70,13 +71,13 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
@@ -109,6 +110,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     
     /** Messages */
     private static final String MSG_UNABLE_TO_CREATE = "site_service.unable_to_create";
+    private static final String MSG_VISIBILITY_GROUP_MISSING = "site_service.visibility_group_missing";
     private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
     private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
     private static final String MSG_SITE_NO_EXIST = "site_service.site_no_exist";
@@ -132,7 +134,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private TenantService tenantService;
     private TenantAdminService tenantAdminService;
     private RetryingTransactionHelper retryingTransactionHelper;
-    private Comparator<String> roleComparator ;
+    private Comparator<String> roleComparator;
+    private SysAdminParams sysAdminParams;
 
 
     /**
@@ -268,6 +271,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         this.roleComparator = roleComparator;
     }
+    
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+    	this.sysAdminParams = sysAdminParams;
+    }
 
     public Comparator<String> getRoleComparator()
     {
@@ -398,7 +406,21 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 // - add the current user to the site manager group
                 if (SiteVisibility.PUBLIC.equals(visibility) == true)
                 {
-                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                	// From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
+                	// GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4 admins
+                	// can change the value of property site.public.group via JMX/properties files
+                	// to be another group of their choosing.
+                	// This then is the group that is given SiteConsumer access to newly created sites.
+                	final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
+                	
+					boolean groupExists = authorityService.authorityExists(sitePublicGroup);
+                	if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !groupExists)
+                	{
+                		// If the group does not exist, we cannot create the site.
+                		throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
+                	}
+                	
+                    permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true)
                 {

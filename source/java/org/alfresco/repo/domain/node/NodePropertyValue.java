@@ -142,6 +142,10 @@ public class NodePropertyValue implements Cloneable, Serializable
                 {
                     return ((ContentDataId)value).getId();
                 }
+                else if (value instanceof ContentDataWithId)
+                {
+                    return ((ContentDataWithId)value).getId();
+                }
                 else
                 {
                     return DefaultTypeConverter.INSTANCE.convert(Long.class, value);
@@ -592,10 +596,6 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.DATE;
         }
-        else if (value instanceof ContentData)
-        {
-            return ValueType.CONTENT;
-        }
         else if (value instanceof NodeRef)
         {
             return ValueType.NODEREF;
@@ -631,6 +631,14 @@ public class NodePropertyValue implements Cloneable, Serializable
         else if (value instanceof ContentDataId)
         {
             return ValueType.CONTENT_DATA_ID;
+        }
+        else if (value instanceof ContentDataWithId)
+        {
+            return ValueType.CONTENT_DATA_ID;
+        }
+        else if (value instanceof ContentData)
+        {
+            return ValueType.CONTENT;
         }
         else
         {

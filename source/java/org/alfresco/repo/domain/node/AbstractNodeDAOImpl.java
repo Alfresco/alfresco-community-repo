@@ -1631,34 +1631,36 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Remove sys:referenceable
         ReferenceablePropertiesEntity.removeReferenceableProperties(node, newProps);
 
-        // Get the cached properties
-        Map<QName, Serializable> oldPropsCached = getNodePropertiesCached(nodeId);
+        // Load the current properties.
+        // This means that we have to go to the DB during cold-write operations,
+        // but usually a write occurs after a node has been fetched of viewed in
+        // some way by the client code.  Loading the existing properties has the
+        // advantage that the differencing code can eliminate unnecessary writes
+        // completely.
+        Map<QName, Serializable> oldPropsCached = getNodePropertiesCached(nodeId);  // Keep pristine for caching
         Map<QName, Serializable> oldProps = new HashMap<QName, Serializable>(oldPropsCached);
-        // If this is an add-only operation, remove any properties we are not interested in
+        // If we're adding, remove current properties that are not of interest
         if (isAddOnly)
         {
             oldProps.keySet().retainAll(newProps.keySet());
         }
-        // Convert to a raw format for comparison
-        Map<NodePropertyKey, NodePropertyValue> oldPropsRaw = nodePropertyHelper.convertToPersistentProperties(oldProps);
-        
-        // Get new property raw values
+        // We need to convert the new properties to our internally-used format,
+        // which is compatible with model i.e. people may have passed in data
+        // which needs to be converted to a model-compliant format.  We do this
+        // before comparisons to avoid false negatives.
         Map<NodePropertyKey, NodePropertyValue> newPropsRaw = nodePropertyHelper.convertToPersistentProperties(newProps);
-        
-        // Copy for modification
-        Map<NodePropertyKey, NodePropertyValue> propsToDelete = new HashMap<NodePropertyKey, NodePropertyValue>(oldPropsRaw);
-        Map<NodePropertyKey, NodePropertyValue> propsToAdd = new HashMap<NodePropertyKey, NodePropertyValue>(newPropsRaw);
-        
-        // Compare these fine-grained properties
-        Map<NodePropertyKey, MapValueComparison> persistableDiff = EqualsHelper.getMapComparison(
-                propsToDelete,
-                propsToAdd);
-        // Add or remove properties as we go
-        for (Map.Entry<NodePropertyKey, MapValueComparison> entry : persistableDiff.entrySet())
+        newProps = nodePropertyHelper.convertToPublicProperties(newPropsRaw);
+        // Now find out what's changed
+        Map<QName, MapValueComparison> diff = EqualsHelper.getMapComparison(
+                oldProps,
+                newProps);
+        // Keep track of properties to delete and add
+        Set<QName> propsToDelete = new HashSet<QName>(oldProps.size()*2);
+        Map<QName, Serializable> propsToAdd = new HashMap<QName, Serializable>(newProps.size() * 2);
+        Set<QName> contentQNamesToDelete = new HashSet<QName>(5);
+        for (Map.Entry<QName, MapValueComparison> entry : diff.entrySet())
         {
-            NodePropertyKey key = entry.getKey();
-            
-            QName qname = qnameDAO.getQName(key.getQnameId()).getSecond();
+            QName qname = entry.getKey();
             
             PropertyDefinition removePropDef = dictionaryService.getProperty(qname);
             boolean isContent = (removePropDef != null &&
@@ -1666,114 +1668,39 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             switch (entry.getValue())
             {
-            case NULL:
-            case EQUAL:
-                // The entries are the same
-                propsToDelete.remove(key);
-                propsToAdd.remove(key);
-                continue;
-            case RIGHT_ONLY:
-                // Only in new props: add
-                propsToDelete.remove(key);
-                // Handle new content 
-                if (isContent)
-                {
-                    // The new value needs conversion to the ID-based ContentData reference
-                    NodePropertyValue newPropValue = propsToAdd.get(key);
-                    ContentData newContentData = (ContentData) newPropValue.getValue(DataTypeDefinition.CONTENT);
-                    if (newContentData != null)
+                case EQUAL:
+                    // Ignore
+                    break;
+                case LEFT_ONLY:
+                    // Not in the new properties
+                    propsToDelete.add(qname);
+                    if (isContent)
                     {
+                        contentQNamesToDelete.add(qname);
+                    }
+                    break;
+                case NOT_EQUAL:
+                    // Must remove from the LHS
+                    propsToDelete.add(qname);
+                    if (isContent)
+                    {
+                        contentQNamesToDelete.add(qname);
+                    }
+                    // Fall through to load up the RHS
+                case RIGHT_ONLY:
+                    // We're adding this
+                    Serializable value = newProps.get(qname);
+                    if (isContent && value != null)
+                    {
+                        ContentData newContentData = (ContentData) value;
                         Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                        newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
-                        propsToAdd.put(key, newPropValue);
-                        newPropsRaw.put(
-                                key,
-                                new NodePropertyValue(
-                                        DataTypeDefinition.CONTENT,
-                                        new ContentDataWithId(newContentData, newContentDataId)));
+                        value = new ContentDataWithId(newContentData, newContentDataId);
                     }
-                }
-                continue;
-            case LEFT_ONLY:
-                // Only present in old props: must not be added
-                propsToAdd.remove(key);
-                // Handle deleted content
-                if (isContent)
-                {
-                    // The old values will be an ID-based ContentData reference
-                    NodePropertyValue valueToDelete = propsToDelete.get(key);
-                    ContentDataWithId contentDataWithId = (ContentDataWithId) valueToDelete.getValue(DataTypeDefinition.CONTENT);
-                    if (contentDataWithId != null)
-                    {
-                        Long contentDataId = contentDataWithId.getId();
-                        contentDataDAO.deleteContentData(contentDataId);
-                    }
-                }
-                continue;
-            case NOT_EQUAL:
-                // Value has changed: remove and add
-                if (isContent)
-                {
-                    // The old values will be an ID-based ContentData reference
-                    NodePropertyValue valueToDelete = propsToDelete.get(key);
-                    ContentDataWithId contentDataWithId = (ContentDataWithId) valueToDelete.getValue(DataTypeDefinition.CONTENT);
-                    if (contentDataWithId != null)
-                    {
-                        Long contentDataId = contentDataWithId.getId();
-                        contentDataDAO.deleteContentData(contentDataId);
-                    }
-                    // The new value needs conversion to the ID-based ContentData reference
-                    NodePropertyValue newPropValue = propsToAdd.get(key);
-                    ContentData newContentData = (ContentData) newPropValue.getValue(DataTypeDefinition.CONTENT);
-                    if (newContentData != null)
-                    {
-                        Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                        newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
-                        propsToAdd.put(key, newPropValue);
-                        newPropsRaw.put(
-                                key,
-                                new NodePropertyValue(
-                                        DataTypeDefinition.CONTENT,
-                                        new ContentDataWithId(newContentData, newContentDataId)));
-                    }
-                }
-                continue;
-            default:
-                throw new IllegalStateException("Unknown MapValueComparison: " + entry.getValue());
+                    propsToAdd.put(qname, value);
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown MapValueComparison: " + entry.getValue());
             }
-        }
-        
-        try
-        {
-            // Remove by key
-            List<NodePropertyKey> propKeysToDeleteList = new ArrayList<NodePropertyKey>(propsToDelete.keySet());
-            int deleted = deleteNodeProperties(nodeId, propKeysToDeleteList);
-            if (deleted != propKeysToDeleteList.size())
-            {
-                // The translation of the left-hand map didn't match the database
-                // This happens when we use d:any and switch from a simple value to a collection: an edge case!                foreach
-                throw new DataIntegrityViolationException("Only deleted " + deleted + "/" + propKeysToDeleteList.size());
-            }
-            
-            // Add by key-value
-            insertNodeProperties(nodeId, propsToAdd);
-        }
-        catch (RuntimeException e)
-        {
-            // Don't trust the properties cache for the node
-            propertiesCache.removeByKey(nodeId);
-            // Focused error
-            throw new AlfrescoRuntimeException(
-                    "Failed to write property deltas: \n" +
-                    "  Node:          " + nodeId + "\n" +
-                    "  Old:           " + oldProps + "\n" +
-                    "  New:           " + newProps + "\n" +
-                    "  Old Raw:       " + oldPropsRaw + "\n" +
-                    "  New Raw:       " + newPropsRaw + "\n" +
-                    "  Diff:          " + persistableDiff + "\n" +
-                    "  Delete Tried:  " + propsToDelete.keySet() + "\n" +
-                    "  Add Tried:     " + propsToAdd, 
-                    e);
         }
         
         boolean updated = propsToDelete.size() > 0 || propsToAdd.size() > 0;
@@ -1781,20 +1708,62 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch to bring into current txn
         if (updated)
         {
-            // Fix properties up w.r.t. types, etc
-            newProps = nodePropertyHelper.convertToPublicProperties(newPropsRaw);
+            // Clean up content properties
+            try
+            {
+                if (contentQNamesToDelete.size() > 0)
+                {
+                    Set<Long> contentQNameIdsToDelete = qnameDAO.convertQNamesToIds(contentQNamesToDelete, false);
+                    contentDataDAO.deleteContentDataForNode(nodeId, contentQNameIdsToDelete);
+                }
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Failed to delete content properties: \n" +
+                        "  Node:          " + nodeId + "\n" +
+                        "  Delete Tried:  " + contentQNamesToDelete, 
+                        e);
+            }
+    
+            try
+            {
+                // Apply deletes
+                Set<Long> propQNameIdsToDelete = qnameDAO.convertQNamesToIds(propsToDelete, true);
+                deleteNodeProperties(nodeId, propQNameIdsToDelete);
+                // Now create the raw properties for adding
+                newPropsRaw = nodePropertyHelper.convertToPersistentProperties(propsToAdd);
+                insertNodeProperties(nodeId, newPropsRaw);
+            }
+            catch (Throwable e)
+            {
+                // Don't trust the properties cache for the node
+                propertiesCache.removeByKey(nodeId);
+                // Focused error
+                throw new AlfrescoRuntimeException(
+                        "Failed to write property deltas: \n" +
+                        "  Node:          " + nodeId + "\n" +
+                        "  Old:           " + oldProps + "\n" +
+                        "  New:           " + newProps + "\n" +
+                        "  Diff:          " + diff + "\n" +
+                        "  Delete Tried:  " + propsToDelete + "\n" +
+                        "  Add Tried:     " + propsToAdd, 
+                        e);
+            }
+            
             // Build the properties to cache based on whether this is an append or replace
             Map<QName, Serializable> propsToCache = null;
             if (isAddOnly)
             {
                 // Combine the old and new properties
                 propsToCache = oldPropsCached;
-                propsToCache.putAll(newProps);
+                propsToCache.putAll(propsToAdd);
             }
             else
             {
                 // Replace old properties
                 propsToCache = newProps;
+                propsToCache.putAll(propsToAdd);            // Ensure correct types
             }
             // Update cache
             setNodePropertiesCached(nodeId, propsToCache);

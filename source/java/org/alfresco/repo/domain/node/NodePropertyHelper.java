@@ -578,8 +578,9 @@ public class NodePropertyHelper
             // Get the local entry value
             Serializable entryValue = makeSerializableValue(propertyDef, propertyValue);
             
-            // A default locale indicates a simple value i.e. the entry represents the whole value.
-            if (isDefaultLocale)
+            // A default locale indicates a simple value i.e. the entry represents the whole value,
+            // unless the dictionary specifically declares it to be d:mltext
+            if (isDefaultLocale && !isMLText)
             {
                 // Check and warn if there are other values
                 if (propertyValuesSize > 1)

@@ -637,16 +637,6 @@
 -->
     </select>
     
-
-    <select id="select_NodeAspectIds" parameterMap="parameter_Id" resultClass="java.lang.Long">
-        select
-            qname_id
-        from
-            alf_node_aspects
-        where
-            node_id = ?
-    </select>
-  
     <select id="select_NodesWithAspectId" parameterMap="parameter_NodesWithAspect" resultMap="result_NodeRef" >
         select
             node.id             as id,

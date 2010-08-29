@@ -94,7 +94,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update_PrimaryChildrenSharedAcl";
-    private static final String SELECT_NODE_ASPECT_IDS = "alfresco.node.select_NodeAspectIds";
     private static final String INSERT_NODE_ASPECT = "alfresco.node.insert_NodeAspect";
     private static final String DELETE_NODE_ASPECTS = "alfresco.node.delete_NodeAspects";
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";

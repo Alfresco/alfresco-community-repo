@@ -673,8 +673,6 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         //  failure details are hidden
         rd = replicationService.loadReplicationDefinition("Test3");
         assertEquals(0, actionTrackingService.getExecutingActions(rd).size());
-        
-        ((ActionImpl)rd).setExecutionStartDate(null);
         actionTrackingService.recordActionPending(rd);
         assertEquals(1, actionTrackingService.getExecutingActions(rd).size());
         instanceId = ((ActionImpl)rd).getExecutionInstance();

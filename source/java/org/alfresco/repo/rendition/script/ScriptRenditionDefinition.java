@@ -75,6 +75,7 @@ public final class ScriptRenditionDefinition extends ScriptAction
     
     RenditionDefinition getRenditionDefinition()
     {
+    	this.performParamConversionForRepo();
         return (RenditionDefinition)action;
     }
     

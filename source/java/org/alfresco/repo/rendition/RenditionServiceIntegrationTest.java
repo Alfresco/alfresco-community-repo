@@ -1664,6 +1664,50 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, avatarRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
     }
     
+    public void testALF3733() throws Exception
+    {
+    	// ALF-3733 was caused by ${cwd} evaluating to the empty string and a path "//sourceNodeName"
+    	// being passed to the FileFolderService for creation. This then splits the string using '/' as
+    	// a delimiter which leads to the attempted creation of nodes with the empty string as a name,
+    	// which is illegal.
+        QName renditionDefName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "myDummyRendition");
+    	String renderingEngineName = "imageRenderingEngine";
+    			
+    	RenditionDefinition renditionDef = renditionService.createRenditionDefinition(renditionDefName, renderingEngineName);
+    	Map<String, Serializable> params = new HashMap<String, Serializable>();
+    	params.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, 99);
+    	params.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 99);
+    	params.put(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, "${cwd}/resized/${name}_Thumb.${extension}");
+    	renditionDef.addParameterValues(params);
+    	
+    	ChildAssociationRef rendition = renditionService.render(this.nodeWithImageContent, renditionDef);
+
+        assertNotNull("rendition was null.", rendition);
+        assertTrue(nodeService.hasAspect(rendition.getChildRef(), RenditionModel.ASPECT_VISIBLE_RENDITION));
+        
+        // The rendition should have 2 parents.
+        List<ChildAssociationRef> allParents = nodeService.getParentAssocs(rendition.getChildRef());
+        assertEquals(2, allParents.size());
+        
+        // The rendition should be created under a new folder called 'resized'
+        NodeRef primaryParent = nodeService.getPrimaryParent(rendition.getChildRef()).getParentRef();
+        assertEquals("resized", nodeService.getProperty(primaryParent, ContentModel.PROP_NAME));
+        assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(primaryParent));
+        
+        // The rendition should have the source node as a non-primary parent.
+        NodeRef nonPrimaryParent = null;
+        for (ChildAssociationRef chAss : allParents)
+        {
+        	if (! chAss.getParentRef().equals(primaryParent))
+        	{
+        		nonPrimaryParent = chAss.getParentRef();
+        	}
+        }
+        assertNotNull("Non-primary parent was not found.", nonPrimaryParent);
+        assertEquals(nodeWithImageContent, nonPrimaryParent);
+    }
+
+    
     private RenditionDefinition loadAndValidateRenditionDefinition(String renditionLocalName)
     {
         QName renditionQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, renditionLocalName);

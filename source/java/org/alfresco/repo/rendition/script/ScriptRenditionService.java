@@ -128,20 +128,20 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
         return new ScriptNode(renditionNode, serviceRegistry);
     }
     
-    public ScriptNode render(ScriptNode sourceNode, ScriptRenditionDefinition renditionDefQName)
+    public ScriptNode render(ScriptNode sourceNode, ScriptRenditionDefinition scriptRenditionDef)
     {
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Rendering source node '")
                 .append(sourceNode)
-                .append("' with renditionDefQName '").append(renditionDefQName)
+                .append("' with renditionDefQName '").append(scriptRenditionDef)
                 .append("'");
             logger.debug(msg.toString());
         }
 
         ChildAssociationRef chAssRef = this.renditionService.render(sourceNode.getNodeRef(),
-                renditionDefQName.getRenditionDefinition());
+                scriptRenditionDef.getRenditionDefinition());
         
         NodeRef renditionNode = chAssRef.getChildRef();
 		if (logger.isDebugEnabled())

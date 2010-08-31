@@ -94,7 +94,29 @@ function testCreateRenditionDefinitionAndRender()
     test.assertEquals("image/png", rendition.mimetype);
 }
 
+function testALF3733()
+{
+	var renditionDefName = "cm:testRendition1";
+	var renderingEngineName = "imageRenderingEngine";
+			
+	var renditionDef = renditionService.createRenditionDefinition(renditionDefName, renderingEngineName);
+					
+	renditionDef.parameters['xsize'] = 99;
+	renditionDef.parameters['ysize'] = 99;			
+	renditionDef.parameters['destination-path-template'] = "${cwd}/resized/${name}_Thumb.${extension}";
+	
+	// Read them back to check
+	test.assertNotNull(renditionDef.parameters, "renditionDef.parameters was null");
+	test.assertEquals(99, renditionDef.parameters['xsize']);
+	test.assertEquals("${cwd}/resized/${name}_Thumb.${extension}", renditionDef.parameters['destination-path-template']);
+
+	var rendition = renditionService.render(testSourceNode, renditionDef);
+//	renditionDef.execute(testSourceNode);
+}
+
+
 // Execute tests
 testRenderNodeUsingRenditionDefinitionNames();
 testGetRenditions();
 testCreateRenditionDefinitionAndRender();
+testALF3733();

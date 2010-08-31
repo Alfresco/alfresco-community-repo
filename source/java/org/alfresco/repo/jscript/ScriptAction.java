@@ -132,19 +132,7 @@ public class ScriptAction implements Serializable, Scopeable
     @SuppressWarnings("synthetic-access")
     public void execute(ScriptNode node)
     {
-        if (this.parameters != null && this.parameters.isModified())
-        {
-            Map<String, Serializable> actionParams = action.getParameterValues();
-            actionParams.clear();
-
-            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
-            {
-                // perform the conversion from script wrapper object to repo serializable values
-                String name = entry.getKey();
-                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
-                actionParams.put(name, value);
-            }
-        }
+        performParamConversionForRepo();
         executeImpl(node);
         
         // Parameters may have been updated by action execution, so reset cache
@@ -172,19 +160,7 @@ public class ScriptAction implements Serializable, Scopeable
     @SuppressWarnings("synthetic-access")
     public void execute(final ScriptNode node, boolean readOnly, boolean newTxn)
     {
-        if (this.parameters != null && this.parameters.isModified())
-        {
-            Map<String, Serializable> actionParams = action.getParameterValues();
-            actionParams.clear();
-
-            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
-            {
-                // perform the conversion from script wrapper object to repo serializable values
-                String name = entry.getKey();
-                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
-                actionParams.put(name, value);
-            }
-        }
+        performParamConversionForRepo();
         RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
@@ -204,7 +180,7 @@ public class ScriptAction implements Serializable, Scopeable
         // Reset the actioned upon node
         node.reset();
     }
-    
+
     /**
      * Execute action.  The existing transaction will be joined.
      * 
@@ -214,19 +190,7 @@ public class ScriptAction implements Serializable, Scopeable
     @SuppressWarnings("synthetic-access")
     public void execute(NodeRef nodeRef)
     {
-        if (this.parameters != null && this.parameters.isModified())
-        {
-            Map<String, Serializable> actionParams = action.getParameterValues();
-            actionParams.clear();
-
-            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
-            {
-                // perform the conversion from script wrapper object to repo serializable values
-                String name = entry.getKey();
-                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
-                actionParams.put(name, value);
-            }
-        }
+        performParamConversionForRepo();
         actionService.executeAction(action, nodeRef);
 
         // Parameters may have been updated by action execution, so reset cache
@@ -246,19 +210,7 @@ public class ScriptAction implements Serializable, Scopeable
     @SuppressWarnings("synthetic-access")
     public void execute(final NodeRef nodeRef, boolean readOnly, boolean newTxn)
     {
-        if (this.parameters != null && this.parameters.isModified())
-        {
-            Map<String, Serializable> actionParams = action.getParameterValues();
-            actionParams.clear();
-
-            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
-            {
-                // perform the conversion from script wrapper object to repo serializable values
-                String name = entry.getKey();
-                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
-                actionParams.put(name, value);
-            }
-        }
+        performParamConversionForRepo();
         RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
@@ -275,6 +227,23 @@ public class ScriptAction implements Serializable, Scopeable
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
     }
+    
+	protected void performParamConversionForRepo() {
+		if (this.parameters != null && this.parameters.isModified())
+        {
+            Map<String, Serializable> actionParams = action.getParameterValues();
+            actionParams.clear();
+
+            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
+            {
+                // perform the conversion from script wrapper object to repo serializable values
+                String name = entry.getKey();
+                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
+                actionParams.put(name, value);
+            }
+        }
+	}
+
 
     /**
      * Value converter with specific knowledge of action parameters

@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -75,12 +75,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
 
     /*
      * (non-Javadoc)
-     * 
-     * @seeorg.alfresco.repo.rendition.RenditionLocationResolver#
-     * resolveRenditionPrimaryParentAssoc
-     * (org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.cmr.rendition.RenditionDefinition,
-     * org.alfresco.service.cmr.repository.ChildAssociationRef)
+     * @see org.alfresco.repo.rendition.RenditionLocationResolver#getRenditionLocation(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public RenditionLocation getRenditionLocation(NodeRef sourceNode, RenditionDefinition definition, NodeRef tempRenditionLocation)
     {
@@ -126,12 +121,12 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
 
         List<String> pathElements = Arrays.asList(path.split("/"));
         LinkedList<String> folderElements = new LinkedList<String>(pathElements);
+        
+        // We need to strip out any empty strings within the path elements.
+        // prior to passing this path to the fileFolderService for creation.
+        // e.g. "//foo//bar///item.txt" would cause an exception.
+        folderElements.removeAll(Arrays.asList(new String[]{""}));
 
-        // Remove empty folder caused by path starting with / .
-        if(folderElements.getFirst().length() == 0)
-        {
-            folderElements.removeFirst();
-        }
         // Remove 'Company Home' if it is at the start of the path.
         Serializable companyHomeName = nodeService.getProperty(companyHome, ContentModel.PROP_NAME);
         if(folderElements.getFirst().equals(companyHomeName))
@@ -149,7 +144,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         NodeRef parent = companyHome;
         if (!folderElements.isEmpty())
         {
-            FileInfo parentInfo = FileFolderServiceImpl.makeFolders(fileFolderService,
+            FileInfo parentInfo = FileFolderUtil.makeFolders(fileFolderService,
                         companyHome, folderElements,
                         ContentModel.TYPE_FOLDER);
             parent = parentInfo.getNodeRef();

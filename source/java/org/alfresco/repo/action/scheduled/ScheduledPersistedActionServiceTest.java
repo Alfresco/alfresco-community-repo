@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.ApplicationContextHelper;
 import org.quartz.DateIntervalTrigger;
 import org.quartz.Job;
@@ -701,7 +702,8 @@ public class ScheduledPersistedActionServiceTest extends TestCase
     }
 
     /**
-     * Tests that things actually get run correctly
+     * Tests that things actually get run correctly.
+     * Each sub-test runs in its own transaction
      */
     public void testExecution() throws Exception
     {
@@ -709,25 +711,30 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         sleepActionExec.resetTimesExecuted();
         sleepActionExec.setSleepMs(1);
 
-        ScheduledPersistedAction schedule;
-
         // This test needs the scheduler running properly
         scheduler.start();
         
         // Until the schedule is persisted, nothing will happen
-        schedule = service.createSchedule(testAction);
+        ScheduledPersistedAction schedule = service.createSchedule(testAction);
         assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
 
-        // A job due to start in 1 second, and run once
-        schedule = service.createSchedule(testAction);
-        schedule.setScheduleStart(new Date(System.currentTimeMillis() + 1000));
-        assertNull(schedule.getScheduleInterval());
-        assertNull(schedule.getScheduleIntervalCount());
-        assertNull(schedule.getScheduleIntervalPeriod());
-        assertNull(schedule.getScheduleLastExecutedAt());
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              
+              // A job due to start in 1 second, and run once
+              ScheduledPersistedAction schedule = service.createSchedule(testAction);
+              schedule.setScheduleStart(new Date(System.currentTimeMillis() + 1000));
+              assertNull(schedule.getScheduleInterval());
+              assertNull(schedule.getScheduleIntervalCount());
+              assertNull(schedule.getScheduleIntervalPeriod());
+              assertNull(schedule.getScheduleLastExecutedAt());
 
-        System.out.println("Job starts in 1 second, no repeat...");
-        service.saveSchedule(schedule);
+              System.out.println("Job starts in 1 second, no repeat...");
+              service.saveSchedule(schedule);
+              
+              return null;
+           }
+        }, false, true);
 
         // Check it went in
         assertEquals(1, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
@@ -741,106 +748,188 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         // Should have removed itself now the schedule is over
         assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
         
-        // Ensure it was tagged with when it ran
-        schedule = service.getSchedule(testAction);
-        assertEquals((double)System.currentTimeMillis(), (double)schedule.getScheduleLastExecutedAt().getTime(), 2500); // Within 2.5 secs
 
-        // Zap it
-        service.deleteSchedule(schedule);
-        assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              
+              // Ensure it was tagged with when it ran
+              ScheduledPersistedAction schedule = service.getSchedule(testAction);
+              assertEquals((double)System.currentTimeMillis(), (double)schedule.getScheduleLastExecutedAt().getTime(), 2500); // Within 2.5 secs
 
+              // Zap it
+              service.deleteSchedule(schedule);
+              assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+              
+              return null;
+           }
+        }, false, true);
+
+        
         // ==========================
 
-        // A job that runs every 2 seconds, for the next 3.5 seconds
-        // (Should get to run twice, now and @2 secs)
-        schedule = service.createSchedule(testAction);
-        schedule.setScheduleStart(new Date(0));
-        ((ScheduledPersistedActionImpl) schedule).setScheduleEnd(new Date(System.currentTimeMillis() + 3500));
-        schedule.setScheduleIntervalCount(2);
-        schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
-        assertEquals("2Second", schedule.getScheduleInterval());
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              
+              // A job that runs every 2 seconds, for the next 3.5 seconds
+              // (Should get to run twice, now and @2 secs)
+              ScheduledPersistedAction schedule = service.createSchedule(testAction);
+              schedule.setScheduleStart(new Date(0));
+              ((ScheduledPersistedActionImpl) schedule).setScheduleEnd(new Date(System.currentTimeMillis() + 3500));
+              schedule.setScheduleIntervalCount(2);
+              schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+              assertEquals("2Second", schedule.getScheduleInterval());
+      
+              // Reset count
+              sleepActionExec.resetTimesExecuted();
+              assertEquals(0, sleepActionExec.getTimesExecuted());
+      
+              System.out.println("Job starts now, repeats twice @ 2s");
+              service.saveSchedule(schedule);
+              
+              return null;
+           }
+        }, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              Thread.sleep(4500);
+              
+              ScheduledPersistedAction schedule = service.getSchedule(testAction);
+      
+              // Ensure it did properly run two times
+              // (Depending on timing of tests, might actually slip in 3 runs)
+              if(sleepActionExec.getTimesExecuted() == 3) {
+                 assertEquals(3, sleepActionExec.getTimesExecuted());
+              } else {
+                 assertEquals(2, sleepActionExec.getTimesExecuted());
+              }
+      
+              // Zap it
+              service.deleteSchedule(schedule);
+              assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+              
+              return null;
+           }
+        }, false, true);
 
-        // Reset count
-        sleepActionExec.resetTimesExecuted();
-        assertEquals(0, sleepActionExec.getTimesExecuted());
-
-        System.out.println("Job starts now, repeats twice @ 2s");
-        service.saveSchedule(schedule);
-
-        Thread.sleep(4200);
-
-        // Ensure it did properly run two times
-        // (Depending on timing of tests, might actually slip in 3 runs)
-        if(sleepActionExec.getTimesExecuted() == 3) {
-           assertEquals(3, sleepActionExec.getTimesExecuted());
-        } else {
-           assertEquals(2, sleepActionExec.getTimesExecuted());
-        }
-
-        // Zap it
-        service.deleteSchedule(schedule);
-        assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
-
+        
         // ==========================
 
-        // A job that starts in 2 seconds time, and runs
-        // every second until we kill it
-        schedule = service.createSchedule(testAction);
-        schedule.setScheduleStart(new Date(System.currentTimeMillis() + 2000));
-        schedule.setScheduleIntervalCount(1);
-        schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
-        assertEquals("1Second", schedule.getScheduleInterval());
-
-        // Reset count
-        sleepActionExec.resetTimesExecuted();
-        assertEquals(0, sleepActionExec.getTimesExecuted());
-
-        System.out.println("Job starts in 2s, repeats @ 1s");
-        service.saveSchedule(schedule);
-
-        // Let it run a few times
-        Thread.sleep(5000);
-
-        // Zap it - should still be live
-        assertEquals(1, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
-        service.deleteSchedule(schedule);
-        assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
-
-        // Check it ran an appropriate number of times
-        assertEquals("Didn't run enough - " + sleepActionExec.getTimesExecuted(), true, sleepActionExec
-                .getTimesExecuted() >= 3);
-        assertEquals("Ran too much - " + sleepActionExec.getTimesExecuted(), true,
-                sleepActionExec.getTimesExecuted() < 5);
-
-        // Ensure it finished shutting down
-        Thread.sleep(500);
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              
+              // A job that starts in 2 seconds time, and runs
+              // every second until we kill it
+              ScheduledPersistedAction schedule = service.createSchedule(testAction);
+              schedule.setScheduleStart(new Date(System.currentTimeMillis() + 2000));
+              schedule.setScheduleIntervalCount(1);
+              schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+              assertEquals("1Second", schedule.getScheduleInterval());
+      
+              // Reset count
+              sleepActionExec.resetTimesExecuted();
+              assertEquals(0, sleepActionExec.getTimesExecuted());
+      
+              System.out.println("Job starts in 2s, repeats @ 1s");
+              service.saveSchedule(schedule);
+              
+              return null;
+           }
+        }, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+      
+              // Let it run a few times
+              Thread.sleep(5000);
+      
+              // Zap it - should still be live
+              ScheduledPersistedAction schedule = service.getSchedule(testAction);
+              assertEquals(1, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+              service.deleteSchedule(schedule);
+              assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+              // Check it ran an appropriate number of times
+              assertEquals("Didn't run enough - " + sleepActionExec.getTimesExecuted(), true, sleepActionExec
+                      .getTimesExecuted() >= 3);
+              assertEquals("Ran too much - " + sleepActionExec.getTimesExecuted(), true,
+                      sleepActionExec.getTimesExecuted() < 5);
+      
+              // Ensure it finished shutting down
+              Thread.sleep(500);
+              
+              return null;
+           }
+        }, false, true);
     }
 
     /**
      * Tests that when we have more than one schedule defined and active, then
      * the correct things run at the correct times, and we never get confused
      */
-    public void DISABLEDtestMultipleExecutions() throws Exception
+    public void testMultipleExecutions() throws Exception
     {
-        // This test needs the scheduler running properly
-        scheduler.start();
-       
+       final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
+       sleepActionExec.resetTimesExecuted();
+       sleepActionExec.setSleepMs(1);
+
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+          public Void execute() throws Throwable {
+             
         // Create one that starts running in 2 seconds, runs every 2 seconds
         // until 9 seconds are up (will run 4 times)
-        // TODO
+        ScheduledPersistedActionImpl scheduleA = (ScheduledPersistedActionImpl)service.createSchedule(testAction);
+        scheduleA.setScheduleStart(new Date(System.currentTimeMillis()+2000));
+        scheduleA.setScheduleEnd(new Date(System.currentTimeMillis()+9000));
+        scheduleA.setScheduleIntervalCount(2);
+        scheduleA.setScheduleIntervalPeriod(IntervalPeriod.Second);
+        service.saveSchedule(scheduleA);
+        
 
         // Create one that starts running now, every second until 9.5 seconds
         // are up (will run 9-10 times)
-        // TODO
+        ScheduledPersistedActionImpl scheduleB = (ScheduledPersistedActionImpl)service.createSchedule(testAction2);
+        scheduleB.setScheduleStart(new Date(System.currentTimeMillis()));
+        scheduleB.setScheduleEnd(new Date(System.currentTimeMillis()+9500));
+        scheduleB.setScheduleIntervalCount(1);
+        scheduleB.setScheduleIntervalPeriod(IntervalPeriod.Second);
+        service.saveSchedule(scheduleB);
+        
+              return null;
+           }
+        }, false, true);
 
+        
         // Set them going
-        // TODO
+        scheduler.start();
+      
 
-        // Wait
-        // TODO
+        // Wait for 10 seconds for them to run and finish
+        Thread.sleep(10*1000);
 
+        
         // Check that they really did run properly
-        // TODO
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+              
+              ScheduledPersistedAction scheduleA = service.getSchedule(testAction);
+              ScheduledPersistedAction scheduleB = service.getSchedule(testAction2);
+              
+              // Both should have last run at some point in the last second or two
+              assertEquals((double)System.currentTimeMillis(), (double)scheduleA.getScheduleLastExecutedAt().getTime(), 2500);
+              assertEquals((double)System.currentTimeMillis(), (double)scheduleB.getScheduleLastExecutedAt().getTime(), 2500);
+              
+              // A should have run ~4 times
+              // B should have run ~9 times
+              assertEquals("Didn't run enough - " + sleepActionExec.getTimesExecuted(), true, sleepActionExec
+                    .getTimesExecuted() >= 11);
+              assertEquals("Ran too much - " + sleepActionExec.getTimesExecuted(), true,
+                    sleepActionExec.getTimesExecuted() < 16);
+              
+
+              return null;
+           }
+        }, false, true);
     }
 
     // ============================================================================

@@ -310,7 +310,7 @@ public class WCMUtil extends AVMUtil
     *           the component
     * @return the escaped string
     */
-   private static final String escapeStoreNameComponent(String component)
+   public static final String escapeStoreNameComponent(String component)
    {
       StringBuilder builder = null;
       int length = component.length();
@@ -363,7 +363,7 @@ public class WCMUtil extends AVMUtil
       int length = component.length();
       int lastAppendPosition = 0;
       int escapeIndex;
-      while ((escapeIndex = component.indexOf("_x", lastAppendPosition)) != -1)
+      while ((escapeIndex = component.indexOf("-x", lastAppendPosition)) != -1)
       {
          if (builder == null)
          {
@@ -373,7 +373,7 @@ public class WCMUtil extends AVMUtil
          {
             builder.append(component, lastAppendPosition, escapeIndex);
          }
-         lastAppendPosition = component.indexOf('_', escapeIndex + 2);
+         lastAppendPosition = component.indexOf('-', escapeIndex + 2);
          builder.appendCodePoint(Integer.parseInt(component.substring(escapeIndex + 2, lastAppendPosition), 16));
          lastAppendPosition++;
       }
@@ -391,7 +391,7 @@ public class WCMUtil extends AVMUtil
 
    private static final void appendEncoded(StringBuilder builder, String sequence)
    {
-      builder.append("_x").append(Integer.toString(sequence.codePointAt(0), 16).toUpperCase()).append("_");
+      builder.append("-x").append(Integer.toString(sequence.codePointAt(0), 16).toUpperCase()).append("-");
       int length = sequence.length();
       int next = sequence.offsetByCodePoints(0, 1);
       if (next < length)
@@ -851,8 +851,12 @@ public class WCMUtil extends AVMUtil
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
 
-   /** Matches character sequences that must be escaped in a compound store name. */   
-   protected static final Pattern PATTERN_ILLEGAL_SEQUENCE = Pattern.compile(FileNameValidator.FILENAME_ILLEGAL_REGEX + "|_x|" + STORE_SEPARATOR);
+   /**
+    * Matches character sequences that must be escaped in a compound store name. We disallow non-ASCII characters due to
+    * Tomcat 5.5's insistence on URL decoding paths with the JVM default charset (not necessarily UTF-8)
+    */
+   protected static final Pattern PATTERN_ILLEGAL_SEQUENCE = Pattern.compile(FileNameValidator.FILENAME_ILLEGAL_REGEX
+         + "|[^\\p{ASCII}]|-x|" + STORE_SEPARATOR);
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private

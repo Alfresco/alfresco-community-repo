@@ -51,6 +51,28 @@ import org.alfresco.service.namespace.QName;
 public interface ContentService
 {
     /**
+     * Gets the total space of the underlying content store (not exclusively Alfresco-controlled binaries).
+     * 
+     * @return
+     *      Returns the total, possibly approximate, size (in bytes) of of the store
+     *      or <tt>-1</tt> if no size data is available.
+     * 
+     * @since 3.3.3
+     */
+    public long getStoreTotalSpace();
+    
+    /**
+     * Gets the remaing <i>available</i> space in the underlying content store.
+     * 
+     * @return
+     *      Returns the total, possibly approximate, remaining space (in bytes) available to store content
+     *      or <tt>-1</tt> if no size data is available.
+     * 
+     * @since 3.3.3
+     */
+    public long getStoreFreeSpace();
+    
+    /**
      * Fetch content from the low-level stores using a content URL.  None of the
      * metadata associated with the content will be populated.  This method should
      * be used only to stream the binary data out when no other metadata is

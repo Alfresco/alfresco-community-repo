@@ -598,7 +598,7 @@ public final class SandboxFactory extends WCMUtil
       // tag all related stores to indicate that they are part of a single sandbox
       addSandboxGuid(sandboxGuid, props);
       // tag the store with the DNS name property
-      addStoreDNSPath(userStoreName, props, storeId, username);
+      addStoreDNSPath(userStoreName, props, storeId, WCMUtil.escapeStoreNameComponent(username));
       // The user store depends on the main staging store (dist=1)
       addStoreBackgroundLayer(props, stagingStoreName, 1);
       

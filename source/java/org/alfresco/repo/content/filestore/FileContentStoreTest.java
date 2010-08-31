@@ -93,12 +93,39 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertTrue("Root location for FileContentStore must exist", dir.exists());
     }
 
+    /**
+     * Ensures that the size is positive
+     */
     @Override
-    public void testTotalSize() throws Exception
+    public void testSpaceUsed() throws Exception
     {
         ContentStore store = getStore();
         store.getWriter(new ContentContext(null, null)).putContent("Test content");
-        long size = store.getTotalSize();
+        long size = store.getSpaceUsed();
         assertTrue("Size must be positive", size > 0L);
+    }
+    
+    /**
+     * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
+     */
+    @Override
+    public void testSpaceFree() throws Exception
+    {
+        ContentStore store = getStore();
+        long size = store.getSpaceFree();
+        assertTrue("Size must be positive", size > 0L);
+        assertTrue("Size must not be Long.MAX_VALUE", size < Long.MAX_VALUE);
+    }
+    
+    /**
+     * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
+     */
+    @Override
+    public void testSpaceTotal() throws Exception
+    {
+        ContentStore store = getStore();
+        long size = store.getSpaceTotal();
+        assertTrue("Size must be positive", size > 0L);
+        assertTrue("Size must not be Long.MAX_VALUE", size < Long.MAX_VALUE);
     }
 }

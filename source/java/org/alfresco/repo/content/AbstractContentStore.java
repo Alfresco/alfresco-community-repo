@@ -268,11 +268,38 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
+     * Uses {@link #getSpaceUsed()}, which is the equivalent method.  This method is now
+     * final in order to catch any implementations that should switch over to {@link #getSpaceUsed()}.
+     */
+    public final long getTotalSize()
+    {
+        return getSpaceUsed();
+    }
+
+    /**
      * @return      Returns <tt>-1</tt> always
      */
-    public long getTotalSize()
+    public long getSpaceUsed()
     {
         return -1L;
+    }
+
+    /**
+     * @return      Returns <tt>Long.MAX_VALUE</tt> always
+     */
+    @Override
+    public long getSpaceFree()
+    {
+        return Long.MAX_VALUE;
+    }
+
+    /**
+     * @return      Returns <tt>Long.MAX_VALUE</tt> always
+     */
+    @Override
+    public long getSpaceTotal()
+    {
+        return Long.MAX_VALUE;
     }
 
     /**

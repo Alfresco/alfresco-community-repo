@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -971,6 +972,17 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             }
         }
     
+        // Lucene indexing may strip certain international characters or treat them as equivalent so we do string
+        // comparisons on the results to ensure an exact match
+        Iterator<NodeRef> i = nodes.iterator();
+        while (i.hasNext())
+        {
+            if (!nodeService.getProperty(i.next(), WCMAppModel.PROP_WEBUSERNAME).equals(userName))
+            {
+                i.remove();                    
+            }
+        }
+
         if (nodes.size() == 1)
         {
             return nodes.get(0);

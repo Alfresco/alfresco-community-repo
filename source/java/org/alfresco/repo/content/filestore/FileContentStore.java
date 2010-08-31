@@ -54,7 +54,9 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author Derek Hulley
  */
-public class FileContentStore extends AbstractContentStore implements ApplicationContextAware, ApplicationListener
+public class FileContentStore
+        extends AbstractContentStore
+        implements ApplicationContextAware, ApplicationListener<ApplicationEvent>
 {
     /**
      * <b>store</b> is the new prefix for file content URLs
@@ -358,15 +360,6 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     }
 
     /**
-     * Performs a full, deep size calculation
-     */
-    @Override
-    public long getTotalSize()
-    {
-        return calculateDirectorySize(rootDirectory);
-    }
-    
-    /**
      * Recursive directory size calculation
      */
     private long calculateDirectorySize(File dir)
@@ -385,6 +378,37 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
             }
         }
         return size;
+    }
+
+    /**
+     * Performs a full, deep size calculation
+     */
+    @Override
+    public long getSpaceUsed()
+    {
+        return calculateDirectorySize(rootDirectory);
+    }
+
+    /**
+     * Get the filesystem's free space.
+     * 
+     * @return          Returns the root directory partition's {@link File#getFreeSpace() free space}
+     */
+    @Override
+    public long getSpaceFree()
+    {
+        return rootDirectory.getFreeSpace();
+    }
+
+    /**
+     * Get the filesystem's total space.
+     * 
+     * @return          Returns the root directory partition's {@link File#getTotalSpace() total space}
+     */
+    @Override
+    public long getSpaceTotal()
+    {
+        return rootDirectory.getTotalSpace();
     }
 
     /**

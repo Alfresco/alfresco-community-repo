@@ -104,7 +104,7 @@
         </property>
     </bean>
     
-    <bean id="jgroupsPropertySetter" class="org.alfresco.config.SystemPropertiesSetterBean" init-method="init">
+    <bean id="clusterPropertySetter" class="org.alfresco.config.SystemPropertiesSetterBean" init-method="init">
         <property name="propertyMap">
             <map>
                 <entry key="jgroups.bind_addr">
@@ -112,6 +112,18 @@
                 </entry>
                 <entry key="jgroups.bind_interface">
                     <value>${alfresco.jgroups.bind_interface}</value>
+                </entry>
+                <entry key="alfresco.ehcache.rmi.hostname">
+                    <value>${alfresco.ehcache.rmi.hostname}</value>
+                </entry>
+                <entry key="alfresco.ehcache.rmi.remoteObjectPort">
+                    <value>${alfresco.ehcache.rmi.remoteObjectPort}</value>
+                </entry>
+                <entry key="alfresco.ehcache.rmi.port">
+                    <value>${alfresco.ehcache.rmi.port}</value>
+                </entry>
+                <entry key="alfresco.ehcache.rmi.socketTimeoutMillis">
+                    <value>${alfresco.ehcache.rmi.socketTimeoutMillis}</value>
                 </entry>
                 <entry key="alfresco.tcp.start_port">
                     <value>${alfresco.tcp.start_port}</value>

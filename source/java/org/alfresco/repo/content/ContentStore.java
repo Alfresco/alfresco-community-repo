@@ -97,18 +97,58 @@ public interface ContentStore
     public boolean isWriteSupported();
     
     /**
-     * Calculates the total size of content stored.
-     * <p>
+     * @deprecated      Since 3.3.3 use {@link #getSpaceUsed()}.
+     * @see #getSpaceFree()
+     * @see #getSpaceTotal()
+     */
+    public long getTotalSize();
+    
+    /**
+     * Calculates the total size of <b>stored content</b>, excluding any other data in the underlying
+     * storage.
+     * <p/>
+     * <b>NOTE:</b> Calculating this value can be time-consuming - use sparingly.
+     * <p/>
      * <b>NOTE:</b> For efficiency, some implementations may provide a guess.  If not, this call could
      * take a long time.
-     * <p>
-     * Implementations should focus on calculating a size value quickly, rather than accurately.
      * 
      * @return
      *      Returns the total, possibly approximate size (in bytes) of the binary data stored or <tt>-1</tt>
      *      if no size data is available.
+     * 
+     * @since 3.3.3
      */
-    public long getTotalSize();
+    public long getSpaceUsed();
+    
+    /**
+     * Calcualates the remaing <i>free</i> space in the underlying store.
+     * <p>
+     * <b>NOTE:</b> For efficiency, some implementations may provide a guess.
+     * <p>
+     * Implementations should focus on calculating a size value quickly, rather than accurately.
+     * 
+     * @return
+     *      Returns the total, possibly approximate, free space (in bytes) available to the store
+     *      or <tt>-1</tt> if no size data is available.
+     * 
+     * @since 3.3.3
+     */
+    public long getSpaceFree();
+    
+    /**
+     * Calculates the total storage space of the underlying store.
+     * <p>
+     * <b>NOTE:</b> For efficiency, some implementations may provide a guess.
+     * <p>
+     * Implementations should focus on calculating a size value quickly, rather than accurately.
+     * 
+     * @return
+     *      Returns the total, possibly approximate, size (in bytes) of the underlying store
+     *      or <tt>-1</tt> if no size data is available.
+     * 
+     * @since 3.3.3
+     */
+    public long getSpaceTotal();
     
     /**
      * Get the location where the store is rooted.  The format of the returned value will depend on the

@@ -396,7 +396,10 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                         NodeRef rootNodeRef = getCompanyHome();
                         if (reference.length == 3)
                         {
-                            nodeRef = rootNodeRef;
+                            if (reference[2].equals(nodeService.getProperty(rootNodeRef, ContentModel.PROP_NAME)))
+                            {
+                                nodeRef = rootNodeRef;
+                            }
                         }
                         else
                         {

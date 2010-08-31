@@ -13,7 +13,7 @@
    <!-- EH Cache Manager to produce shared EH Caches -->
    <!-- ============================================ -->
    
-   <bean name="internalEHCacheManager" class="org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean" depends-on="jgroupsPropertySetter" />
+   <bean name="internalEHCacheManager" class="org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean" depends-on="clusterPropertySetter" />
    
    
    <!-- ===================================== -->

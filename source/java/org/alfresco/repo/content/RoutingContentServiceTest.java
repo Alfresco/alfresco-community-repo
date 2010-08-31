@@ -267,6 +267,13 @@ public class RoutingContentServiceTest extends TestCase
         assertNull("Reader must be null if the content URL is null", reader);
     }
     
+    @SuppressWarnings("unused")
+    public void testContentStoreSizes() throws Exception
+    {
+        long contentTotalSize = contentService.getStoreFreeSpace();
+        long contentAvailableSize = contentService.getStoreTotalSpace();
+    }
+    
     public void testGetRawReader() throws Exception
     {
         ContentReader reader = contentService.getRawReader("test://non-existence");

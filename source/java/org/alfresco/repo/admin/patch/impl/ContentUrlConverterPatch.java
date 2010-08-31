@@ -603,7 +603,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
             return true;
         }
         
-        final long totalSize = contentStore.getTotalSize();
+        final long totalSize = contentStore.getSpaceUsed();
         final MutableLong currentSize = new MutableLong(0L);
 
         final MutableInt count = new MutableInt();

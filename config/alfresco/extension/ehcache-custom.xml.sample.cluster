@@ -14,8 +14,22 @@
     />
 
     <cacheManagerPeerListenerFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+        class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
     />
+    <!--
+         To control the cache peer URLs, replace the 'cacheManagerPeerListenerFactory' with the following
+         and set the properties statically, in alfresco-global.properties or via java -D options.
+         Only the hostName needs to be set as the others have sensible defaults.
+    -->
+    <!--
+    <cacheManagerPeerListenerFactory
+        class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+        properties="hostName=${alfresco.ehcache.rmi.hostname},
+                    port=${alfresco.ehcache.rmi.port},
+                    remoteObjectPort=${alfresco.ehcache.rmi.remoteObjectPort},
+                    socketTimeoutMillis=${alfresco.ehcache.rmi.socketTimeoutMillis}"
+    />
+    -->
 
     <defaultCache
         maxElementsInMemory="5000"

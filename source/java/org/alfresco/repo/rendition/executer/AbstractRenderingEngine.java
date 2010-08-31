@@ -43,6 +43,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.RenderingEngineDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionLocation;
@@ -212,6 +213,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 	private RenditionLocationResolver renditionLocationResolver;
 	protected NodeService nodeService;
 	private RenditionService renditionService;
+    private BehaviourFilter behaviourFilter;
 	
 	private final NodeLocator temporaryParentNodeLocator;
 	private final QName temporaryRenditionLinkType;
@@ -235,6 +237,14 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     public void setRenditionService(RenditionService renditionService)
     {
         this.renditionService = renditionService;
+    }
+
+    /**
+     * @param behaviourFilter  policy behaviour filter 
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     public void setRenditionLocationResolver(RenditionLocationResolver renditionLocationResolver)
@@ -806,7 +816,16 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // doesn't exist.
         if (!nodeService.hasAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED))
         {
-            nodeService.addAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
+            // Ensure we do not update the 'modifier' due to thumbnail addition
+            behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                nodeService.addAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
         }
     }
 

@@ -316,6 +316,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return types;
     }
 
+    @Override
+    public long getStoreFreeSpace()
+    {
+        return store.getSpaceFree();
+    }
+
+    @Override
+    public long getStoreTotalSpace()
+    {
+        return store.getSpaceTotal();
+    }
+
     /** {@inheritDoc} */
     public ContentReader getRawReader(String contentUrl)
     {

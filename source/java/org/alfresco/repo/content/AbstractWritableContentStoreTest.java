@@ -100,10 +100,28 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Just check that the method doesn't blow up
      */
-    public void testTotalSize() throws Exception
+    public void testSpaceUsed() throws Exception
     {
         ContentStore store = getStore();
-        store.getTotalSize();
+        store.getSpaceUsed();
+    }
+    
+    /**
+     * Just checks that the method doesn't blow up
+     */
+    public void testSpaceFree() throws Exception
+    {
+        ContentStore store = getStore();
+        store.getSpaceFree();
+    }
+    
+    /**
+     * Just checks that the method doesn't blow up
+     */
+    public void testSpaceTotal() throws Exception
+    {
+        ContentStore store = getStore();
+        store.getSpaceTotal();
     }
     
     /**

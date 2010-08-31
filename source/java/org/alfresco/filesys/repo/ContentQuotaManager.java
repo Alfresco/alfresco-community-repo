@@ -32,6 +32,7 @@ import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.StringList;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -304,7 +305,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
             
             // Get the live usage values
 
-            userQuota = m_liveUsage.get( sess.getClientInformation().getUserName());
+            userQuota = m_liveUsage.get( AuthenticationUtil.getFullyAuthenticatedUser() );
             if ( userQuota == null && loadDetails == true) {
                 
                 // User is not in the live tracking table, load details for the user
@@ -346,7 +347,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	        
 	        // Get the user name
 	        
-	        userName = sess.getClientInformation().getUserName();
+	        userName = AuthenticationUtil.getFullyAuthenticatedUser();
 	        if ( userName == null || userName.length() == 0)
 	            throw new QuotaManagerException("No user name for client");
 	        

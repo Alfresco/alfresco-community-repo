@@ -192,9 +192,6 @@ public class ReplicationModelBuilder
        // Set the core details
        rdm.put(DEFINITION_NAME, rd.getReplicationName());
        rdm.put(DEFINITION_DESCRIPTION, rd.getDescription());
-       rdm.put(DEFINITION_FAILURE_MESSAGE, rd.getExecutionFailureMessage());
-       rdm.put(DEFINITION_TRANSFER_LOCAL_REPORT, rd.getLocalTransferReport());
-       rdm.put(DEFINITION_TRANSFER_REMOTE_REPORT, rd.getRemoteTransferReport());
        rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
        rdm.put(DEFINITION_TARGET_NAME, rd.getTargetName());
        
@@ -211,6 +208,12 @@ public class ReplicationModelBuilder
              rdm.put(DEFINITION_SCHEDULE_PERIOD, null);
           }
        }
+       
+       // Set the details of the previous run
+       // These will be null'd out later if replication is in progress
+       rdm.put(DEFINITION_FAILURE_MESSAGE, rd.getExecutionFailureMessage());
+       rdm.put(DEFINITION_TRANSFER_LOCAL_REPORT, rd.getLocalTransferReport());
+       rdm.put(DEFINITION_TRANSFER_REMOTE_REPORT, rd.getRemoteTransferReport());
        
        // Do the status
        // Includes start+end times, and running action details
@@ -297,6 +300,16 @@ public class ReplicationModelBuilder
         model.put(DEFINITION_ENDED_AT, null);
         model.put(DEFINITION_RUNNING_ACTION_ID, 
               AbstractActionWebscript.getRunningId(details.getExecutionSummary()));
+        
+        // Since it's running / about to run, there shouldn't
+        //  be failure messages or transfer reports
+        // If these currently exist on the model, remove them
+        if(model.containsKey(DEFINITION_FAILURE_MESSAGE))
+           model.put(DEFINITION_FAILURE_MESSAGE, null);
+        if(model.containsKey(DEFINITION_TRANSFER_LOCAL_REPORT))
+           model.put(DEFINITION_TRANSFER_LOCAL_REPORT, null);
+        if(model.containsKey(DEFINITION_TRANSFER_REMOTE_REPORT))
+           model.put(DEFINITION_TRANSFER_REMOTE_REPORT, null);
     }
 
     /**

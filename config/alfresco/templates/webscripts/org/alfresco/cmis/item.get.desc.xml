@@ -20,7 +20,7 @@
 
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
 
   <args>
     <arg>
@@ -33,7 +33,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the object</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>noderef</shortname>

@@ -306,15 +306,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             CMISTypeDefinition sourceType = cmisService.getTypeDefinition(sourceNodeRef);
             CMISTypeDefinition targetType = cmisService.getTypeDefinition(targetNodeRef);
 
-            if ((null != relationshipType.getAllowedSourceTypes()) && !relationshipType.getAllowedSourceTypes().contains(sourceType))
-            {
-                throw ExceptionUtil.createCmisException(("Source object type is not allowed for \"" + typeId + "\" Relationship type"), EnumServiceException.CONSTRAINT);
-            }
-            if ((null != relationshipType.getAllowedTargetTypes()) && !relationshipType.getAllowedTargetTypes().contains(targetType))
-            {
-                throw ExceptionUtil.createCmisException(("Target object type is not allowed for \"" + typeId + "\" Relationship type"), EnumServiceException.CONSTRAINT);
-            }
-
             QName relationshipTypeQName = relationshipType.getTypeId().getQName();
             AssociationDefinition associationDef = dictionaryService.getAssociation(relationshipTypeQName);
             if (associationDef != null)

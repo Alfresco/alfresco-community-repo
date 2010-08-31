@@ -14,10 +14,10 @@
   <url>/cmis/s/{store}/p{path}/content{property}</url>
   
   <url>/api/node/content{property}/{store_type}/{store_id}/{id}</url>
-  <url>/api/path/content{property}/{store_type}/{store_id}/{id}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{nodepath}</url>
   <url>/api/avmpath/content{property}/{store_id}/{id}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/content{property}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/content{property}</url>
 
   <args>
     <arg>
@@ -30,7 +30,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the object</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>property</shortname>

@@ -122,7 +122,7 @@ function getDoclist()
          if (filterParams.variablePath || item.isLink)
          {
             locationNode = (item.isLink && item.type == "document") ? item.linkNode : item.node;
-            location = Common.getLocation(locationNode);
+            location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
          }
          else
          {

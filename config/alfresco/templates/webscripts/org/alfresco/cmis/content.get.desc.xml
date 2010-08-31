@@ -15,10 +15,10 @@
 
   <!-- alfresco style -->
   <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}&amp;streamId={streamId?}</url>
-  <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{nodepath}?a={attach?}&amp;streamId={streamId?}</url>
   <url>/api/avmpath/content{property}/{store_id}/{avmpath}?a={attach?}&amp;streamId={streamId?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
   
   <args>
     <arg>
@@ -31,7 +31,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the object</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>property</shortname>

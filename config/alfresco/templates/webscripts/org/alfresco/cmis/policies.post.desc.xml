@@ -14,7 +14,7 @@
   <url>/cmis/s/{store}/p{path}/pols</url>
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/pols</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/pols</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/pols</url>
   <args>
     <arg>
         <shortname>store</shortname>
@@ -26,7 +26,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the object</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
   </args>
 

@@ -20,7 +20,6 @@ package org.alfresco.repo.cmis.reference;
 
 import java.util.Map;
 
-import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISObjectReference;
 import org.alfresco.cmis.CMISRelationshipReference;
 import org.alfresco.cmis.CMISRepositoryReference;
@@ -108,6 +107,16 @@ public class ReferenceFactory
         if (path != null)
         {
             return new ObjectPathReference(cmisService, repo, path);
+        }
+        
+        String nodepath = templateArgs.get("nodepath");
+        if (nodepath == null)
+        {
+            nodepath = args.get("nodepath");
+        }
+        if (nodepath != null)
+        {
+            return new NodePathReference(cmisService, repo, nodepath);
         }
         
         String avmPath = templateArgs.get("avmpath");

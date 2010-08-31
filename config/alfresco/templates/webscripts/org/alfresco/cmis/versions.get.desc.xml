@@ -14,7 +14,7 @@
   <url>/cmis/s/{store}/p{path}/versions?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/versions?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/versions?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/versions?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
 
   <args>
     <arg>
@@ -27,7 +27,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the folder</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>filter</shortname>

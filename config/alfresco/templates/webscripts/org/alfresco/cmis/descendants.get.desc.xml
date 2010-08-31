@@ -14,7 +14,7 @@
   <url>/cmis/s/{store}/p{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   <args>
     <arg>
         <shortname>store</shortname>
@@ -26,7 +26,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the folder</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>types</shortname>

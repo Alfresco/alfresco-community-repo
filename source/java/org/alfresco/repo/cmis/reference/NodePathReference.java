@@ -25,13 +25,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
- * Path Object Reference
+ * Node Path Object Reference
  * 
- * Note: This path is relative to the CMIS root path 
+ * Note: This path is from the root of the store
  * 
  * @author davidc
  */
-public class ObjectPathReference extends AbstractObjectReference
+public class NodePathReference extends AbstractObjectReference
 {
     protected String path;
     protected String[] reference;
@@ -43,18 +43,16 @@ public class ObjectPathReference extends AbstractObjectReference
      * @param repo
      * @param path
      */
-    public ObjectPathReference(CMISServices cmisServices, CMISRepositoryReference repo, String path)
+    public NodePathReference(CMISServices cmisServices, CMISRepositoryReference repo, String path)
     {
         super(cmisServices, repo);
-        this.path = cmisServices.getDefaultRootPath() + path;
+        this.path = path;
         String[] splitPath = this.path.split("/");
-        String[] pathSegments = new String[splitPath.length -1];
-        System.arraycopy(splitPath, 1, pathSegments, 0, splitPath.length -1);
-        this.reference = new String[2 + pathSegments.length];
+        this.reference = new String[2 + splitPath.length];
         StoreRef storeRef = repo.getStoreRef();
         reference[0] = storeRef.getProtocol();
         reference[1] = storeRef.getIdentifier();
-        System.arraycopy(pathSegments, 0, reference, 2, pathSegments.length);
+        System.arraycopy(splitPath, 0, reference, 2, splitPath.length);
     }
 
     /*
@@ -77,7 +75,7 @@ public class ObjectPathReference extends AbstractObjectReference
     @Override
     public String toString()
     {
-        return "ObjectPathReference[storeRef=" + repo.getStoreRef() + ",path=" + path + "]";
+        return "NodePathReference[storeRef=" + repo.getStoreRef() + ",path=" + path + "]";
     }
 
 }

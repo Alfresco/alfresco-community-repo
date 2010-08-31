@@ -15,7 +15,7 @@
   
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
   <args>
     <arg>
         <shortname>store</shortname>
@@ -27,7 +27,11 @@
     </arg>
     <arg>
         <shortname>path</shortname>
-        <description>the path of the folder</description>
+        <description>the path of the object (relative to CMIS root, typically "Company Home")</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
     </arg>
     <arg>
         <shortname>filter</shortname>

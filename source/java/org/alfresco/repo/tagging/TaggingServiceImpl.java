@@ -762,7 +762,7 @@ public class TaggingServiceImpl implements TaggingService,
         if (this.nodeService.exists(nodeRef) == true)
         {
             List<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
-            getTagScopes(nodeRef, tagScopeNodeRefs);
+            getTagScopes(nodeRef, tagScopeNodeRefs, true);
             if (tagScopeNodeRefs.size() != 0)
             {                
                 tagScope = new TagScopeImpl(tagScopeNodeRefs.get(0), getTagDetails(tagScopeNodeRefs.get(0)));
@@ -816,20 +816,35 @@ public class TaggingServiceImpl implements TaggingService,
         
         return result;
     }
-    
+
     /**
-     * Traverses up the node's primary parent placing all tag scope's in a list.
+     * Traverses up the node's primary parent placing ALL found tag scope's in a list.
      * <p>
-     * If none are found then the list is empty.
      * 
      * @param nodeRef      node reference
      * @param tagScopes    list of tag scopes
      */
     private void getTagScopes(NodeRef nodeRef, List<NodeRef> tagScopes)
     {
+        getTagScopes(nodeRef, tagScopes, false);
+    }
+    
+    /**
+     * Traverses up the node's primary parent placing found tag scope's in a list.
+     * <p>
+     * If none are found then the list is empty.
+     * 
+     * @param nodeRef      node reference
+     * @param tagScopes    list of tag scopes
+     * @param firstOnly    true => only return first tag scope that is found
+     */
+    private void getTagScopes(NodeRef nodeRef, List<NodeRef> tagScopes, boolean firstOnly)
+    {
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
         {
             tagScopes.add(nodeRef);
+            if (firstOnly)
+                return;
         }
         
         ChildAssociationRef assoc = this.nodeService.getPrimaryParent(nodeRef);
@@ -838,8 +853,8 @@ public class TaggingServiceImpl implements TaggingService,
             NodeRef parent = assoc.getParentRef();
             if (parent != null)
             {
-                getTagScopes(parent, tagScopes);
-            }                           
+                getTagScopes(parent, tagScopes, firstOnly);
+            }
         }
     }
 

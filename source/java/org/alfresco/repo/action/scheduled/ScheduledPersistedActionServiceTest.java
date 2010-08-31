@@ -120,6 +120,10 @@ public class ScheduledPersistedActionServiceTest extends TestCase
 
         // Finish setup
         txn.commit();
+        
+        // By default, we don't want the scheduler to fire while the tests run
+        // Certain tests will enable it as required
+        scheduler.standby();
     }
 
     @Override
@@ -135,6 +139,9 @@ public class ScheduledPersistedActionServiceTest extends TestCase
             service.deleteSchedule(schedule);
         }
         txn.commit();
+        
+        // Re-enable the scheduler again
+        scheduler.start();
     }
 
     /**
@@ -669,6 +676,9 @@ public class ScheduledPersistedActionServiceTest extends TestCase
      */
     public void testJobBeanInjection() throws Exception
     {
+        // This test needs the scheduler running properly
+        scheduler.start();
+       
         // The job should run almost immediately
         Job job = new TestJob();
         JobDetail details = new JobDetail("ThisIsATest", null, job.getClass());
@@ -701,6 +711,9 @@ public class ScheduledPersistedActionServiceTest extends TestCase
 
         ScheduledPersistedAction schedule;
 
+        // This test needs the scheduler running properly
+        scheduler.start();
+        
         // Until the schedule is persisted, nothing will happen
         schedule = service.createSchedule(testAction);
         assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
@@ -754,7 +767,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         System.out.println("Job starts now, repeats twice @ 2s");
         service.saveSchedule(schedule);
 
-        Thread.sleep(4000);
+        Thread.sleep(4200);
 
         // Ensure it did properly run two times
         // (Depending on timing of tests, might actually slip in 3 runs)
@@ -809,6 +822,9 @@ public class ScheduledPersistedActionServiceTest extends TestCase
      */
     public void DISABLEDtestMultipleExecutions() throws Exception
     {
+        // This test needs the scheduler running properly
+        scheduler.start();
+       
         // Create one that starts running in 2 seconds, runs every 2 seconds
         // until 9 seconds are up (will run 4 times)
         // TODO

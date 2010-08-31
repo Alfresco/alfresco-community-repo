@@ -78,10 +78,11 @@ public interface AuditComponent
      * @param applicationName   the name of the application being logged to
      * @param fromTime          the start time of entries to remove (inclusive and optional)
      * @param toTime            the end time of entries to remove (exclusive and optional)
+     * @return                  Returns the number of entries deleted
      * 
      * @since 3.2
      */
-    void deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
+    int deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
     
     /**
      * Check if an audit path is enabled.  The path will be disabled if it or any higher

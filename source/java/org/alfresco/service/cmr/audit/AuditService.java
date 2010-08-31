@@ -123,12 +123,13 @@ public interface AuditService
      * Remove all audit entries for the given application
      * 
      * @param applicationName   the name of the application for which to remove entries
+     * @return                  Returns the number of audit entries deleted
      * 
      * @since 3.2
      * 
      * @deprecated          Use {@link #clearAudit(String, Long, Long)}
      */
-    void clearAudit(String applicationName);
+    int clearAudit(String applicationName);
     
     /**
      * Remove audit entries for the given application between the time ranges.  If no start
@@ -138,10 +139,11 @@ public interface AuditService
      * @param applicationName   the name of the application for which to remove entries
      * @param fromTime          the start time of entries to remove (inclusive and optional)
      * @param toTime            the end time of entries to remove (exclusive and optional)
+     * @return                  Returns the number of audit entries deleted
      * 
      * @since 3.4
      */
-    void clearAudit(String applicationName, Long fromTime, Long toTime);
+    int clearAudit(String applicationName, Long fromTime, Long toTime);
     
     /**
      * The interface that will be used to give query results to the calling code.

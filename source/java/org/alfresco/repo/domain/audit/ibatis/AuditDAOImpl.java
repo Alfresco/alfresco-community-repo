@@ -161,13 +161,13 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         return updateEntity;
     }
 
-    public void deleteAuditEntries(Long applicationId, Long from, Long to)
+    public int deleteAuditEntries(Long applicationId, Long from, Long to)
     {
         AuditDeleteParameters params = new AuditDeleteParameters();
         params.setAuditApplicationId(applicationId);
         params.setAuditFromTime(from);
         params.setAuditToTime(to);
-        template.delete(DELETE_ENTRIES, params);
+        return template.delete(DELETE_ENTRIES, params);
     }
 
     @Override

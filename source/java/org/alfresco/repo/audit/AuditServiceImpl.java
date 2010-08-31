@@ -115,10 +115,10 @@ public class AuditServiceImpl implements AuditService
      * {@inheritDoc}
      * @since 3.2
      */
-    public void clearAudit(String applicationName)
+    public int clearAudit(String applicationName)
     {
         Long now = Long.valueOf(System.currentTimeMillis());
-        auditComponent.deleteAuditEntries(applicationName, null, now);
+        return auditComponent.deleteAuditEntries(applicationName, null, now);
     }
 
     /**
@@ -126,10 +126,10 @@ public class AuditServiceImpl implements AuditService
      * @since 3.4
      */
     @Override
-    public void clearAudit(String applicationName, Long fromTime, Long toTime)
+    public int clearAudit(String applicationName, Long fromTime, Long toTime)
     {
         toTime = (toTime == null) ? Long.valueOf(System.currentTimeMillis()) : toTime;
-        auditComponent.deleteAuditEntries(applicationName, fromTime, toTime);
+        return auditComponent.deleteAuditEntries(applicationName, fromTime, toTime);
     }
 
     /**

@@ -113,7 +113,7 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.2
      */
-    public void deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
+    public int deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
         AlfrescoTransactionSupport.checkTransactionReadState(true);
@@ -125,17 +125,20 @@ public class AuditComponentImpl implements AuditComponent
             {
                 logger.debug("No audit application named '" + applicationName + "' has been registered.");
             }
-            return;
+            return 0;
         }
         
         Long applicationId = application.getApplicationId();
         
-        auditDAO.deleteAuditEntries(applicationId, fromTime, toTime);
+        int deleted = auditDAO.deleteAuditEntries(applicationId, fromTime, toTime);
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Delete audit entries for " + applicationName + " (" + fromTime + " to " + toTime);
+            logger.debug(
+                    "Delete audit " + deleted + " entries for " + applicationName + 
+                    " (" + fromTime + " to " + toTime);
         }
+        return deleted;
     }
 
     /**

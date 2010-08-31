@@ -160,10 +160,11 @@ public interface AuditDAO
      * @param applicationId     and existing audit application ID
      * @param from              the minimum entry time (inclusive, optional)
      * @param to                the maximum entry time (exclusive, optional)
+     * @return                  Returns the number of entries deleted
      * 
      * @since 3.2
      */
-    void deleteAuditEntries(Long applicationId, Long from, Long to);
+    int deleteAuditEntries(Long applicationId, Long from, Long to);
     
     /**
      * Create a new audit entry with the given map of values.

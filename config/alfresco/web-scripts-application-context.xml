@@ -28,6 +28,13 @@
    <!--  Web Script Storage -->
    <!--                     -->
 
+    <!-- Get bulk node metadata -->
+    <bean id="webscript.org.alfresco.repository.metadata.bulkmetadata.post"
+          class="org.alfresco.repo.web.scripts.metadata.BulkMetadataGet"
+          parent="webscript">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+
    <bean id="webscripts.repostore" class="org.alfresco.repo.web.scripts.RepoStore" abstract="true" init-method="init">
       <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="nodeService" ref="nodeService" />
@@ -859,11 +866,10 @@
           parent="abstractAuditWebScript">
     </bean>
 
-    <!-- Get bulk node metadata -->
-    <bean id="webscript.org.alfresco.repository.metadata.bulkmetadata.post"
-          class="org.alfresco.repo.web.scripts.metadata.BulkMetadataGet"
-          parent="webscript">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    <!-- Clear audit entries for an application (between from and to times) -->
+    <bean id="webscript.org.alfresco.repository.audit.clear.post"
+          class="org.alfresco.repo.web.scripts.audit.AuditClearPost"
+          parent="abstractAuditWebScript">
     </bean>
 
     <!--                                      -->

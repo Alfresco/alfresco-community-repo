@@ -21,10 +21,13 @@ package org.alfresco.repo.web.scripts.audit;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
@@ -42,6 +45,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
 {
     private ApplicationContext ctx;
     private AuditService auditService;
+    private AuthenticationService authenticationService;
     private String admin;
     private boolean globallyEnabled;
 
@@ -50,6 +54,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     {
         super.setUp();
         ctx = getServer().getApplicationContext();
+        authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         auditService = (AuditService) ctx.getBean("AuditService");
         admin = AuthenticationUtil.getAdminUserName();
         
@@ -203,6 +208,69 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             {
                 auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
             }
+        }
+    }
+    
+    public void testClearAuditRepo() throws Exception
+    {
+        long now = System.currentTimeMillis();
+        long future = Long.MAX_VALUE;
+        
+        
+        boolean wasRepoEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
+        boolean wasEnabled = auditService.isAuditEnabled();
+        // We need to set this back after the test
+        try
+        {
+            auditService.setAuditEnabled(true);
+            auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            
+            // Force a failed login
+            RunAsWork<Void> failureWork = new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    try
+                    {
+                        authenticationService.authenticate("domino", "crud".toCharArray());
+                        fail("Failed to force authentication failure");
+                    }
+                    catch (AuthenticationException e)
+                    {
+                        // Expected
+                    }
+                    return null;
+                }
+            };
+            AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
+
+            // Delete audit entries that could not have happened
+            String url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + future;
+            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            Response response = sendRequest(req, Status.STATUS_OK, admin);
+            JSONObject json = new JSONObject(response.getContentAsString());
+            int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+            assertEquals("Could not have cleared more than 0", 0, cleared);
+
+            url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + now + "&toTime=" + future;
+            req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            response = sendRequest(req, Status.STATUS_OK, admin);
+            json = new JSONObject(response.getContentAsString());
+            cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+            assertTrue("Should have cleared at least 1 entry", cleared > 0);
+        }
+        finally
+        {
+            if (wasRepoEnabled)
+            {
+                auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            }
+            else
+            {
+                auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            }
+            auditService.setAuditEnabled(wasEnabled);
         }
     }
 }

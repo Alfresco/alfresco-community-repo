@@ -38,11 +38,14 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String PARAM_APPLICATION = "application";
     public static final String PARAM_PATH="path";
     public static final String PARAM_ENABLED = "enabled";
+    public static final String PARAM_FROM_TIME = "fromTime";
+    public static final String PARAM_TO_TIME = "toTime";
     
     public static final String JSON_KEY_ENABLED = "enabled";
     public static final String JSON_KEY_APPLICATIONS = "applications";
     public static final String JSON_KEY_NAME = "name";
     public static final String JSON_KEY_PATH = "path";
+    public static final String JSON_KEY_CLEARED = "cleared";
     
     /**
      * Logger that can be used by subclasses.
@@ -112,5 +115,31 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         String enableStr = req.getParameter(PARAM_ENABLED);
         return Boolean.parseBoolean(enableStr);
+    }
+    
+    protected Long getFromTime(WebScriptRequest req)
+    {
+        String timeStr = req.getParameter(PARAM_FROM_TIME);
+        try
+        {
+            return Long.parseLong(timeStr);
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+    }
+    
+    protected Long getToTime(WebScriptRequest req)
+    {
+        String timeStr = req.getParameter(PARAM_TO_TIME);
+        try
+        {
+            return Long.parseLong(timeStr);
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
     }
 }

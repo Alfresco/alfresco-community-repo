@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Derek Hulley
  * @since 3.4
  */
-public class AuditControlGet extends AbstractAuditWebScript
+public class AuditClearPost extends AbstractAuditWebScript
 {
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -40,29 +39,23 @@ public class AuditControlGet extends AbstractAuditWebScript
         Map<String, Object> model = new HashMap<String, Object>(7);
         
         String appName = getAppName(req);
-        String path = getPath(req);
-        boolean enabledGlobal = auditService.isAuditEnabled();
-        Map<String, AuditApplication> appsByName = auditService.getAuditApplications();
-        
-        // Check that the application exists
-        if (appName != null)
+        if (appName == null)
         {
-            if (path == null)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.path.notProvided");
-            }
-            
-            AuditApplication app = appsByName.get(appName);
-            if (app == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "audit.err.app.notFound", appName);
-            }
-            // Discard all the other applications
-            appsByName = Collections.singletonMap(appName, app);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.app.notProvided");
         }
+        AuditApplication app = auditService.getAuditApplications().get(appName);
+        if (app == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "audit.err.app.notFound", appName);
+        }
+        // Get from/to times
+        Long fromTime = getFromTime(req);           // might be null
+        Long toTime = getToTime(req);               // might be null
         
-        model.put(JSON_KEY_ENABLED, enabledGlobal);
-        model.put(JSON_KEY_APPLICATIONS, appsByName.values());
+        // Clear
+        int cleared = auditService.clearAudit(appName, fromTime, toTime);
+        
+        model.put(JSON_KEY_CLEARED, cleared);
         
         // Done
         if (logger.isDebugEnabled())

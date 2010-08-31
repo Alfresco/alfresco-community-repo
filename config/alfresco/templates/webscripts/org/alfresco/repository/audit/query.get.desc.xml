@@ -1,0 +1,27 @@
+<webscript>
+  <shortname>Alfresco Audit Service Query</shortname>
+  <description>Get audit events</description>
+  <url>/api/audit/query/{application}?{k1}={v1},{k2}={v2}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <name>application</name>
+      <description>Name of the audit application (mandatory parameter)</description>
+    </arg> 
+    <arg>
+      <name>k1</name>
+      <description>First key to query for.  If no value is provided, then the present of the key is enough.</description>
+    </arg> 
+    <arg>
+      <name>v1</name>
+      <description>First value to query for.  If this is no provided, then the presence of the key is enough.</description>
+    </arg> 
+ </args>
+  
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

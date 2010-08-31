@@ -116,6 +116,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       // Set the status
       action.setExecutionStatus(ActionStatus.Pending);
       
+      // Mark it as not having started quite yet
+      action.setExecutionStartDate(null);
+      
       // Have it put into the cache, so we can tell it
       //  is waiting to be run
       placeActionInCache(action);

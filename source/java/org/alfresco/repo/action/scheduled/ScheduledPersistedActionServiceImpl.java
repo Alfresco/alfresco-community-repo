@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -44,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,6 +204,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         IntervalPeriod period = schedule.getScheduleIntervalPeriod();
         nodeService.setProperty(nodeRef, ActionModel.PROP_INTERVAL_PERIOD, period == null ? null : period.name());
         
+        // We don't save the last executed at date here, that only gets changed
+        //  from within the execution loop
+        
         // update scheduled action (represented as an association)
         // NOTE: can only associate to a single action from a schedule (as specified by the action model)
         
@@ -332,6 +338,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         // create schedule
         ScheduledPersistedActionImpl scheduleImpl = new ScheduledPersistedActionImpl(action);
         scheduleImpl.setPersistedAtNodeRef(schedule);
+        
+        scheduleImpl.setScheduleLastExecutedAt((Date)nodeService.getProperty(schedule, ActionModel.PROP_LAST_EXECUTED_AT));
+        
         scheduleImpl.setScheduleStart((Date)nodeService.getProperty(schedule, ActionModel.PROP_START_DATE));
         scheduleImpl.setScheduleIntervalCount((Integer)nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_COUNT));
         String period = (String)nodeService.getProperty(schedule, ActionModel.PROP_INTERVAL_PERIOD);
@@ -479,33 +488,56 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     public static class ScheduledJobWrapper implements Job, ApplicationContextAware
     {
        private ActionService actionService;
+       private NodeService nodeService;
+       private TransactionService transactionService;
        private RuntimeActionService runtimeActionService;
        
        public void setApplicationContext(ApplicationContext applicationContext)
        {
+          nodeService = (NodeService)applicationContext.getBean("NodeService");
           actionService = (ActionService)applicationContext.getBean("ActionService");
+          transactionService = (TransactionService)applicationContext.getBean("transactionService");
           runtimeActionService = (RuntimeActionService)applicationContext.getBean("actionService");
        }
 
-       public void execute(JobExecutionContext jobContext)
+       public void execute(final JobExecutionContext jobContext)
        {
           // Do all this work as system
           // TODO - See if we can pinch some bits from the existing scheduled
           //  actions around who to run as
           AuthenticationUtil.setRunAsUserSystem();
           
-          // Create the action object
-          NodeRef actionNodeRef = new NodeRef(
-                jobContext.getMergedJobDataMap().getString(JOB_ACTION_NODEREF)
-          );
-          Action action = runtimeActionService.createAction(
-                actionNodeRef
-          );
-          
-          // Have it executed asynchronously
-          actionService.executeAction(
-                action, (NodeRef)null,
-                false, true
+          transactionService.getRetryingTransactionHelper().doInTransaction(
+             new RetryingTransactionCallback<Void>() {
+               public Void execute() throws Throwable {
+                  // Update the last run time on the schedule
+                  NodeRef scheduleNodeRef = new NodeRef(
+                        jobContext.getMergedJobDataMap().getString(JOB_SCHEDULE_NODEREF)
+                  );
+                  nodeService.setProperty(
+                         scheduleNodeRef, 
+                         ActionModel.PROP_LAST_EXECUTED_AT, 
+                         new Date()
+                  );
+                  
+                  // Create the action object
+                  NodeRef actionNodeRef = new NodeRef(
+                        jobContext.getMergedJobDataMap().getString(JOB_ACTION_NODEREF)
+                  );
+                  Action action = runtimeActionService.createAction(
+                        actionNodeRef
+                  );
+                  
+                  // Have it executed asynchronously
+                  actionService.executeAction(
+                        action, (NodeRef)null,
+                        false, true
+                  );
+                  
+                  // Real work starts when the transaction completes
+                  return null;
+               }
+             }, false, true
           );
        }
     }

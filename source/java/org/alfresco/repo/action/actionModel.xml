@@ -219,10 +219,20 @@
         <title>Persistent Action Schedule</title>
         <parent>cm:cmobject</parent>
         <properties>
+            <property name="act:lastExecutedAt">
+                <type>d:datetime</type>
+                <mandatory>false</mandatory>
+            </property>
             <property name="act:startDate">
                 <type>d:datetime</type>
                 <mandatory>true</mandatory>
             </property>
+            <!-- 
+            <property name="act:endDate">
+                <type>d:datetime</type>
+                <mandatory>false</mandatory>
+            </property>
+            -->
             <property name="act:intervalCount">
                 <type>d:int</type>
                 <mandatory>true</mandatory>

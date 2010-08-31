@@ -284,7 +284,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         
         t = schedule.asTrigger();
         assertNotNull(t);
-        assertEquals((double)System.currentTimeMillis(), (double)t.getStartTime().getTime(), 2); // Within 2ms
+        assertEquals((double)System.currentTimeMillis(), (double)t.getStartTime().getTime(), 5); // Within 5ms
         assertEquals(null, t.getEndTime());
         assertEquals(DateIntervalTrigger.class, t.getClass());
         assertEquals(2, ((DateIntervalTrigger)t).getRepeatInterval());
@@ -443,10 +443,18 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         schedule.setScheduleStart(now);
         schedule.setScheduleIntervalCount(2);
         schedule.setScheduleIntervalPeriod(ScheduledPersistedAction.IntervalPeriod.Day);
+        
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
         service.saveSchedule(schedule);
+        txn.commit();
 
         // Load and check it hasn't changed
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         ScheduledPersistedAction retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl)schedule).getPersistedAtNodeRef());
+        txn.commit();
+        
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
@@ -454,8 +462,12 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Save and re-load without changes
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         service.saveSchedule(schedule);
         retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl)schedule).getPersistedAtNodeRef());
+        txn.commit();
+        
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
@@ -463,9 +475,14 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Make some small changes
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl)schedule).getPersistedAtNodeRef());
         retrieved.setScheduleIntervalCount(3);
         service.saveSchedule(retrieved);
         retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl)schedule).getPersistedAtNodeRef());
+        txn.commit();
+        
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
@@ -476,8 +493,13 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         retrieved.setScheduleIntervalPeriod(ScheduledPersistedAction.IntervalPeriod.Month);
         now = new Date(); 
         retrieved.setScheduleStart(now);
+        
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         service.saveSchedule(retrieved);
         retrieved = serviceImpl.loadPersistentSchedule(((ScheduledPersistedActionImpl)schedule).getPersistedAtNodeRef());
+        txn.commit();
+        
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
@@ -689,6 +711,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNull(schedule.getScheduleInterval());
         assertNull(schedule.getScheduleIntervalCount());
         assertNull(schedule.getScheduleIntervalPeriod());
+        assertNull(schedule.getScheduleLastExecutedAt());
 
         System.out.println("Job starts in 1 second, no repeat...");
         service.saveSchedule(schedule);
@@ -704,6 +727,10 @@ public class ScheduledPersistedActionServiceTest extends TestCase
 
         // Should have removed itself now the schedule is over
         assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+        
+        // Ensure it was tagged with when it ran
+        schedule = service.getSchedule(testAction);
+        assertEquals((double)System.currentTimeMillis(), (double)schedule.getScheduleLastExecutedAt().getTime(), 2500); // Within 2.5 secs
 
         // Zap it
         service.deleteSchedule(schedule);

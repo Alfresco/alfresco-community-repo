@@ -39,6 +39,7 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
 {
    private NodeRef persistedAtNodeRef;
    private Action action;
+   private Date lastExecutedAt;
    private Date scheduleStart;
    private Date scheduleEnd;
    private Integer intervalCount;
@@ -77,6 +78,19 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
    {
       return action == null ? null : action.getNodeRef();
    }
+   
+   /** When was this action last run, if ever? */
+   public Date getScheduleLastExecutedAt()
+   {
+      return lastExecutedAt;
+   }
+   
+   /** Record when the scheduled action was last run */ 
+   public void setScheduleLastExecutedAt(Date executedAt)
+   {
+      this.lastExecutedAt = executedAt;
+   }
+
    
    /** 
     * Get the first date that the action should be run

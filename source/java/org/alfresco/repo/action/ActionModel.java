@@ -55,6 +55,7 @@ public interface ActionModel
     static final QName PROP_START_DATE              = QName.createQName(ACTION_MODEL_URI, "startDate");
     static final QName PROP_INTERVAL_COUNT          = QName.createQName(ACTION_MODEL_URI, "intervalCount");
     static final QName PROP_INTERVAL_PERIOD         = QName.createQName(ACTION_MODEL_URI, "intervalPeriod");
+    static final QName PROP_LAST_EXECUTED_AT        = QName.createQName(ACTION_MODEL_URI, "lastExecutedAt");
     static final QName ASSOC_SCHEDULED_ACTION       = QName.createQName(ACTION_MODEL_URI, "scheduledAction");
     
     //static final QName ASPECT_ACTIONABLE = QName.createQName(ACTION_MODEL_URI, "actionable");

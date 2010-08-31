@@ -45,7 +45,8 @@ public class ObjectPathReference extends AbstractObjectReference
     {
         super(cmisServices, repo);
         this.path = path.startsWith("/") ? path : "/" + path;
-        this.path = (!cmisServices.getDefaultRootPath().equals("/")) ? cmisServices.getDefaultRootPath() + this.path : this.path;
+        this.path = (cmisServices.getDefaultRootPath().equals("/") || this.path.startsWith(cmisServices.getDefaultRootPath())) ?
+                this.path : cmisServices.getDefaultRootPath() + this.path;
         String[] splitPath = this.path.split("/");
         String[] pathSegments = new String[splitPath.length -1];
         System.arraycopy(splitPath, 1, pathSegments, 0, splitPath.length -1);

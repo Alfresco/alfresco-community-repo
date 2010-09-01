@@ -109,9 +109,14 @@
    "type": "${workflowInstance.type}",
    "title": "${workflowInstance.title}",
    "description": "${workflowInstance.description}",
+   "message": "${workflowInstance.message}",
    "isActive": ${workflowInstance.isActive?string},
+   "priority": ${workflowInstance.priority?c},
    "startDate": "${workflowInstance.startDate}",
    "endDate": <#if workflowInstance.endDate??>"${workflowInstance.endDate}"<#else>null</#if>,
+   "dueDate": <#if workflowInstance.dueDate??>"${workflowInstance.dueDate}"<#else>null</#if>,
+   "context": <#if workflowInstance.context??>"${workflowInstance.context}"<#else>null</#if>,
+   "package": <#if workflowInstance.package??>"${workflowInstance.package}"<#else>null</#if>,
    "initiator": 
    <#if workflowInstance.initiator??>
    {
@@ -124,10 +129,6 @@
    null,
    </#if>
    "definitionUrl": "${workflowInstance.definitionUrl}"<#if detailed>,
-   "dueDate": <#if workflowInstance.dueDate??>"${workflowInstance.dueDate}"<#else>null</#if>,
-   "priority": <#if workflowInstance.priority??>${workflowInstance.priority?c}<#else>null</#if>,
-   "context": <#if workflowInstance.context??>"${workflowInstance.context}"<#else>null</#if>,
-   "package": "${workflowInstance.package}",
    "startTaskInstanceId": "${workflowInstance.startTaskInstanceId}",
    "definition": 
    <@worflowDefinitionLib.workflowDefinitionJSON workflowDefinition=workflowInstance.definition detailed=true/>

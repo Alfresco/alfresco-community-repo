@@ -351,6 +351,7 @@ public class WorkflowModelBuilderTest extends TestCase
         path.instance.id = "";
         path.instance.active = true;
         path.instance.startDate = new Date();
+        path.instance.workflowPackage = workflowPackage;
         path.instance.definition = new WorkflowDefinition(
                 "The Id", "The Name", "1", "The Title", "The Description", null);
         return path;

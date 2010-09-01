@@ -98,6 +98,7 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_TYPE = "type";
     public static final String TASK_WORKFLOW_INSTANCE_TITLE = "title";
     public static final String TASK_WORKFLOW_INSTANCE_DESCRIPTION = "description";
+    public static final String TASK_WORKFLOW_INSTANCE_MESSAGE = "message";
     public static final String TASK_WORKFLOW_INSTANCE_IS_ACTIVE = "isActive";
     public static final String TASK_WORKFLOW_INSTANCE_START_DATE = "startDate";
     public static final String TASK_WORKFLOW_INSTANCE_DUE_DATE = "dueDate";
@@ -235,7 +236,18 @@ public class WorkflowModelBuilder
         model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.getDefinition().getTitle());
         model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.getDefinition().getDescription());
         model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.isActive());
+        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.getDefinition()));
 
+        if (workflowInstance.getWorkflowPackage() != null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_PACKAGE, workflowInstance.getWorkflowPackage().toString());
+        }
+        
+        if (workflowInstance.getContext() != null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_CONTEXT, workflowInstance.getContext().toString());
+        }
+        
         if (workflowInstance.getStartDate() == null)
         {
             model.put(TASK_WORKFLOW_INSTANCE_START_DATE, workflowInstance.getStartDate());
@@ -262,7 +274,19 @@ public class WorkflowModelBuilder
         {
             model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
         }
-        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.getDefinition()));
+        
+        // TODO: Try and retrieve these from the workflow instance to save the need to 
+        //       do an extra query which makes things slow
+        model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, 2);
+        model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, null);
+        if (workflowInstance.getDescription() != null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, workflowInstance.description);
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, workflowInstance.getDefinition().getTitle());
+        }
 
         return model;
     }
@@ -299,13 +323,11 @@ public class WorkflowModelBuilder
             model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, dueDate);
         }
         
-        if (workflowInstance.context != null)
+        if (priority != null)
         {
-            model.put(TASK_WORKFLOW_INSTANCE_CONTEXT, workflowInstance.context.toString());
+            model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, priority);
         }
         
-        model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, priority);
-        model.put(TASK_WORKFLOW_INSTANCE_PACKAGE, workflowInstance.workflowPackage.toString());
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
         model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.definition));
 

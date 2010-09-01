@@ -279,9 +279,10 @@ public class WorkflowModelBuilder
         //       do an extra query which makes things slow
         model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, 2);
         model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, null);
-        if (workflowInstance.getDescription() != null)
+        String message = workflowInstance.getDescription();
+        if (message != null && message.length() > 0)
         {
-            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, workflowInstance.description);
+            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, message);
         }
         else
         {

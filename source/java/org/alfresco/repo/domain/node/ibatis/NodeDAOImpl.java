@@ -1291,6 +1291,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         query.setIncludeTxnIds(includeTxnIds);
         query.setExcludeTxnIds(excludeTxnIds);
         query.setExcludeServerId(excludeServerId);
+        query.setAscending(ascending);
         
         if (count == null)
         {

@@ -835,9 +835,10 @@
             txn.change_txn_id   as change_txn_id,
             txn.commit_time_ms  as commit_time_ms
     </sql>
-    <sql id="select_Transaction_OrderByCommitTime">
-        <isEqual property="orderByCommit" compareValue="true">order by txn.commit_time ASC</isEqual>
-        <isEqual property="orderByCommit" compareValue="false">order by txn.commit_time DESC</isEqual>
+    
+    <sql id="select_Transaction_OrderByCommitTimeTxnId">
+        <isEqual property="ascending" compareValue="true">order by txn.commit_time_ms ASC, txn.id ASC</isEqual>
+        <isEqual property="ascending" compareValue="false">order by txn.commit_time_ms DESC, txn.id DESC</isEqual>
     </sql>
     
     <!-- Full WHERE clause for TransactionQueryEntity -->
@@ -888,6 +889,7 @@
         from
             alf_transaction txn
         <include refid="alfresco.node.select_Transaction_FullWhere"/>
+        <include refid="alfresco.node.select_Transaction_OrderByCommitTimeTxnId"/>
     </select>
 
     <select id="select_TxnCount" resultClass="java.lang.Integer">
@@ -917,6 +919,8 @@
             node.id is null
             <isNotNull property="minId"><![CDATA[and txn.id >= #minId#]]></isNotNull>
             <isNotNull property="maxCommitTime"><![CDATA[and txn.commit_time_ms <= #maxCommitTime#]]></isNotNull>
+        order by
+            txn.id ASC
     </select>
     
     <select id="select_TxnMinCommitTime" resultClass="java.lang.Long">

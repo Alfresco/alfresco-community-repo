@@ -205,36 +205,116 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
          return null;
       }
       
+      // If the end date is in the past, don't schedule
+      if(scheduleEnd != null && scheduleEnd.getTime() < System.currentTimeMillis())
+      {
+         return null;
+      }
+      
+      
+      // Decide what to use as the start time
+      // This will be based on the requested start time, when
+      //  the schedule last ran (if ever), and the interval
+      Date startAt = scheduleStart;
+      Date endAt = scheduleEnd;
+      if(startAt == null)
+      {
+         // No start time specified, so start immediately
+         startAt = new Date();
+      }
+      else
+      {
+         // A start time was given. Is it still to come?
+         if(startAt.getTime() >= System.currentTimeMillis())
+         {
+            // The start date hasn't happened yet
+            // This means we can just use it as-is
+         }
+         else
+         {
+            // The start date has passed. Have we ever run this?
+            if(lastExecutedAt == null)
+            {
+               // The schedule has never run
+               // Tell Quartz the requested start time, so it runs
+               //  immediately, and repeats are correctly calculated
+               startAt = scheduleStart;
+            }
+            else if(lastExecutedAt.getTime() < startAt.getTime())
+            {
+               // The previous run time is before the scheduled
+               //  start time, so has probably been edited, and
+               //  both of these dates is in the past.
+               // Tell Quartz the requested start time, so it runs
+               //  immediately, and repeats are correctly calculated
+               startAt = scheduleStart;
+            }
+            else
+            {
+               // The start date is in the past, and we have
+               //  previously run the job
+               
+               if(getScheduleInterval() == null)
+               {
+                  // There is no schedule setup, so this is
+                  //  probably just an old job on startup/edit
+                  // So, don't run it
+                  return null;
+               }
+               
+               // Based on the start time, when would it next be
+               //  due to fire?
+               DateIntervalTrigger testT = buildDateIntervalTrigger("TEST", scheduleStart, null);
+               Date nextFireFromNow = testT.getFireTimeAfter(new Date());
+               Date nextFireFromLast = testT.getFireTimeAfter(lastExecutedAt);
+               
+               // If the next fire time from the last is before the
+               //  next due date, then we missed one
+               if(nextFireFromLast.getTime() < nextFireFromNow.getTime())
+               {
+                  // We missed one!
+                  // Tell Quartz the requested start time, so it runs
+                  //  immediately, and repeats are correctly calculated
+                  startAt = scheduleStart;
+               }
+               else
+               {
+                  // The last run time was largely when due
+                  // So, don't run until the next time
+                  startAt = nextFireFromNow;
+               }
+            }
+         }
+      }
+      
       
       // If they don't want it to repeat, just use a simple interval
       if(getScheduleInterval() == null)
       {
          SimpleTrigger trigger = new SimpleTrigger(
                triggerName, null,
-               scheduleStart
+               startAt
          ); 
          trigger.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
          return trigger;
       }
       
-      
+      return buildDateIntervalTrigger(triggerName, startAt, endAt);
+   }
+   
+   private DateIntervalTrigger buildDateIntervalTrigger(String triggerName, Date startAt, Date endAt)
+   {
       // There are some repeating rules
       // Create a Date Interval trigger
       DateIntervalTrigger.IntervalUnit quartzInterval = 
          DateIntervalTrigger.IntervalUnit.valueOf(
                intervalPeriod.toString().toUpperCase()
          );
-      // Ensure we always have a start date, even if it's now
-      Date start = scheduleStart;
-      if(start == null)
-         start = new Date();
-      // The end date is allowed to be null
-      Date end = scheduleEnd;
       
       // Create the interval
       DateIntervalTrigger trigger = new DateIntervalTrigger(
                triggerName, null,
-               start, end,
+               startAt, endAt,
                quartzInterval, intervalCount
       );
       trigger.setMisfireInstruction( DateIntervalTrigger.MISFIRE_INSTRUCTION_FIRE_ONCE_NOW );

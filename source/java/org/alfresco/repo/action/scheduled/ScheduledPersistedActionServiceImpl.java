@@ -33,7 +33,9 @@ import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -391,24 +393,36 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     }
 
     /**
-     * Adds a new entry into the scheduler
+     * Builds up the Quartz details, and adds it to the Quartz
+     *  scheduler when the transaction completes.
+     * We have to wait for the transaction to finish, otherwise
+     *  Quartz may end up trying and failing to load the details
+     *  of a job that hasn't been committed to the repo yet!
      */
     protected void addToScheduler(ScheduledPersistedActionImpl schedule)
     {
         // Wrap it up in Quartz bits
-        JobDetail details = buildJobDetail(schedule);
-        Trigger trigger = schedule.asTrigger();
+        final JobDetail details = buildJobDetail(schedule);
+        final Trigger trigger = schedule.asTrigger();
 
-        // Schedule it
-        try
-        {
-            scheduler.scheduleJob(details, trigger);
-        }
-        catch (SchedulerException e)
-        {
-            // Probably means scheduler is shutting down
-            log.warn(e);
-        }
+        // As soon as the transaction commits, add it
+        AlfrescoTransactionSupport.bindListener(
+           new TransactionListenerAdapter() {
+               @Override
+               public void afterCommit() {
+                  // Schedule it with Quartz
+                  try
+                  {
+                      scheduler.scheduleJob(details, trigger);
+                  }
+                  catch (SchedulerException e)
+                  {
+                      // Probably means scheduler is shutting down
+                      log.warn(e);
+                  }
+               }
+           }
+        );
     }
 
     protected JobDetail buildJobDetail(ScheduledPersistedActionImpl schedule)

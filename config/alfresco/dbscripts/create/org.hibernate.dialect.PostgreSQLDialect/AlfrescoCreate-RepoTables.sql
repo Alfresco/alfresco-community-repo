@@ -346,6 +346,7 @@ CREATE INDEX fk_alf_cass_cnode ON alf_child_assoc (child_node_id);
 CREATE INDEX fk_alf_cass_tqn ON alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON alf_child_assoc (qname_ns_id);
 CREATE INDEX idx_alf_cass_qncrc ON alf_child_assoc (qname_crc, type_qname_id, parent_node_id);
+CREATE INDEX idx_alf_cass_pri ON alf_child_assoc (parent_node_id, is_primary, child_node_id);
 CREATE SEQUENCE alf_child_assoc_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE alf_locale

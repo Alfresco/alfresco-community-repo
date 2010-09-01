@@ -32,10 +32,11 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.scheduled.ScheduledPersistedActionImpl;
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.repo.transfer.TransferTransmitter;
 import org.alfresco.repo.transfer.UnitTestInProcessTransmitterImpl;
@@ -558,6 +559,40 @@ public class ReplicationServiceIntegrationTest extends TestCase
        txn.begin();
        actionService.executeAction(rd2, replicationRoot);
        txn.commit();
+       
+       
+       // Schedule it for 0.5 seconds into the future
+       // Ensure that it is run to completion 
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       ((ActionImpl)rd2).setExecutionStatus(ActionStatus.New);
+       
+       replicationService.enableScheduling(rd2);
+       rd2.setScheduleStart(new Date(System.currentTimeMillis()+500));
+       replicationService.saveReplicationDefinition(rd2);
+       
+       txn.commit();
+       
+       // Wait for it to run
+       Thread.sleep(2000);
+       for(int i=0; i<100; i++)
+       {
+          txn = transactionService.getUserTransaction();
+          txn.begin();
+          rd2 = replicationService.loadReplicationDefinition(ACTION_NAME2);
+          txn.commit();
+          
+          if(rd2.getExecutionStatus().equals(ActionStatus.New) ||
+                rd2.getExecutionStatus().equals(ActionStatus.Pending) ||
+                rd2.getExecutionStatus().equals(ActionStatus.Running))
+          {
+             Thread.sleep(50);
+          }
+       }
+       
+       // Check it worked
+       assertEquals(ActionStatus.Completed, rd2.getExecutionStatus());
     }
     
     /**
@@ -886,13 +921,20 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(true, td.getNodes().contains(content1_1));
     }
     
+    private abstract class DoInTransaction implements RetryingTransactionCallback<Void>
+    {
+       protected final ReplicationDefinition replicationDefinition;
+       private DoInTransaction(ReplicationDefinition rd)
+       {
+          this.replicationDefinition = rd;
+       }
+    }
+    
     /**
      * Test that the schedule related parts work properly
      */
     public void testScheduling() throws Exception
     {
-       UserTransaction txn = transactionService.getUserTransaction();
-       
        // A new definition doesn't have scheduling
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        rd.setTargetName("Target");
@@ -905,10 +947,17 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        
        // Enable it
-       txn.begin();
-       replicationService.saveReplicationDefinition(rd);
-       replicationService.enableScheduling(rd);
-       txn.commit();
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+          new DoInTransaction(rd) {
+             public Void execute() throws Throwable {
+                replicationService.saveReplicationDefinition(replicationDefinition);
+                replicationService.enableScheduling(replicationDefinition);
+                assertTrue(replicationDefinition.isSchedulingEnabled());
+                return null;
+             }
+          }, false, true
+       );
+       
        assertTrue(rd.isSchedulingEnabled());
        
        
@@ -940,10 +989,14 @@ public class ReplicationServiceIntegrationTest extends TestCase
        // Save and check
        assertEquals(true, rd.isSchedulingEnabled());
        
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       replicationService.saveReplicationDefinition(rd);
-       txn.commit();
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+          new DoInTransaction(rd) {
+             public Void execute() throws Throwable {
+                replicationService.saveReplicationDefinition(replicationDefinition);
+                return null;
+             }
+          }, false, true
+       );
        
        assertEquals(true, rd.isSchedulingEnabled());
        assertEquals(1, rd.getScheduleStart().getTime());
@@ -966,12 +1019,21 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(2, rd.getScheduleIntervalCount().intValue());
        assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
        
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       replicationService.saveReplicationDefinition(rd);
-       rd = replicationService.loadReplicationDefinition(ACTION_NAME);
-       txn.commit();
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+          new DoInTransaction(rd) {
+             public Void execute() throws Throwable {
+                replicationService.saveReplicationDefinition(replicationDefinition);
+                return null;
+             }
+          }, false, true
+       );
        
+       assertEquals(true, rd.isSchedulingEnabled());
+       assertEquals(1, rd.getScheduleStart().getTime());
+       assertEquals(2, rd.getScheduleIntervalCount().intValue());
+       assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
+       
+       rd = replicationService.loadReplicationDefinition(ACTION_NAME);
        assertEquals(true, rd.isSchedulingEnabled());
        assertEquals(1, rd.getScheduleStart().getTime());
        assertEquals(2, rd.getScheduleIntervalCount().intValue());
@@ -980,7 +1042,9 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        // Re-load and enable is fine
        rd2 = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(true, rd2.isSchedulingEnabled());
        replicationService.enableScheduling(rd2);
+       assertEquals(true, rd2.isSchedulingEnabled());
        
        
        // Check on the listing methods
@@ -1013,27 +1077,63 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        
        // Enable it, and check the scheduled service
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       int count = scheduledPersistedActionService.listSchedules().size();
-       replicationService.enableScheduling(rd);
-       replicationService.saveReplicationDefinition(rd);
-       assertEquals(count+1, scheduledPersistedActionService.listSchedules().size());
-       txn.commit();
+       final int count = scheduledPersistedActionService.listSchedules().size();
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+          new DoInTransaction(rd) {
+             public Void execute() throws Throwable {
+                replicationService.enableScheduling(replicationDefinition);
+                replicationService.saveReplicationDefinition(replicationDefinition);
+                assertEquals(count+1, scheduledPersistedActionService.listSchedules().size());
+                return null;
+             }
+          }, false, true
+       );
        
        
-       // Delete is, and check the scheduled service
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       replicationService.deleteReplicationDefinition(rd);
+       // Delete it, and check the scheduled service
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+           new RetryingTransactionCallback<Void>() {
+              public Void execute() throws Throwable {
+                 ReplicationDefinition replicationDefinition;
+                 replicationDefinition = replicationService.loadReplicationDefinition(ACTION_NAME);
+                 replicationService.deleteReplicationDefinition(replicationDefinition);
+                 assertEquals(count, scheduledPersistedActionService.listSchedules().size());
+                 return null;
+              }
+           }, false, true
+       );
        assertEquals(count, scheduledPersistedActionService.listSchedules().size());
-       txn.commit();
        
        
        // Ask for it to run scheduled
        // Should fire up and then fail due to missing definitions
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+          new RetryingTransactionCallback<Void>() {
+              public Void execute() throws Throwable {
+                 ReplicationDefinition replicationDefinition;
+                 replicationDefinition = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+                 replicationService.enableScheduling(replicationDefinition);
+                 replicationDefinition.setScheduleStart(new Date(System.currentTimeMillis()+50));
+                 replicationService.saveReplicationDefinition(replicationDefinition);
+                 assertEquals(ActionStatus.New, replicationDefinition.getExecutionStatus());
+                 return null;
+              }
+           }, false, true
+       );
        
-       // TODO
+       // Let it fire up, wait up to 1.5 seconds
+       for(int i=0; i<150; i++)
+       {
+          rd = replicationService.loadReplicationDefinition(ACTION_NAME);
+          if(rd.getExecutionStatus().equals(ActionStatus.Failed))
+             break;
+          if(rd.getExecutionStatus().equals(ActionStatus.Completed))
+             break;
+          Thread.sleep(10);
+       }
+       
+       // Should have failed, as missing target + payload
+       assertEquals(ActionStatus.Failed, rd.getExecutionStatus());
     }
     
 

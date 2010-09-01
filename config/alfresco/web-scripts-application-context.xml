@@ -872,6 +872,12 @@
           parent="abstractAuditWebScript">
     </bean>
 
+    <!-- Query for audit entries for an application (time ranges, id ranges, user, forward/reverse, limit) -->
+    <bean id="webscript.org.alfresco.repository.audit.query.get"
+          class="org.alfresco.repo.web.scripts.audit.AuditQueryGet"
+          parent="abstractAuditWebScript">
+    </bean>
+
     <!--                                      -->
     <!--      Replication Service REST API    -->
     <!--                                      -->

@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Alfresco Audit Service Query</shortname>
   <description>Get audit events</description>
-  <url>/api/audit/query/{application}?{k1}={v1},{k2}={v2}</url>
+  <url>/api/audit/query/{application}?fromId={fromId}&amp;toId={toId}&amp;fromTime={fromTime}&amp;toTime={toTime}&amp;user={user}&amp;forward={forward}&amp;limit={limit}&amp;verbose={verbose}&amp;{k1}={v1}&amp;{k2}={v2}</url>
   <format default="json" />
   <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>

@@ -39,8 +39,8 @@ public class AuditControlGet extends AbstractAuditWebScript
     {
         Map<String, Object> model = new HashMap<String, Object>(7);
         
-        String appName = getAppName(req);
-        String path = getPath(req);
+        String appName = getParamAppName(req);
+        String path = getParamPath(req);
         boolean enabledGlobal = auditService.isAuditEnabled();
         Map<String, AuditApplication> appsByName = auditService.getAuditApplications();
         

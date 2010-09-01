@@ -38,7 +38,7 @@ public class AuditClearPost extends AbstractAuditWebScript
     {
         Map<String, Object> model = new HashMap<String, Object>(7);
         
-        String appName = getAppName(req);
+        String appName = getParamAppName(req);
         if (appName == null)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.app.notProvided");
@@ -49,8 +49,8 @@ public class AuditClearPost extends AbstractAuditWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "audit.err.app.notFound", appName);
         }
         // Get from/to times
-        Long fromTime = getFromTime(req);           // might be null
-        Long toTime = getToTime(req);               // might be null
+        Long fromTime = getParamFromTime(req);           // might be null
+        Long toTime = getParamToTime(req);               // might be null
         
         // Clear
         int cleared = auditService.clearAudit(appName, fromTime, toTime);

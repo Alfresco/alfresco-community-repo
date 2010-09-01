@@ -47,7 +47,8 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     private AuditService auditService;
     private AuthenticationService authenticationService;
     private String admin;
-    private boolean globallyEnabled;
+    private boolean wasGloballyEnabled;
+    boolean wasRepoEnabled;
 
     @Override
     protected void setUp() throws Exception
@@ -60,11 +61,16 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         
         AuthenticationUtil.setFullyAuthenticatedUser(admin);
         
-        globallyEnabled = auditService.isAuditEnabled();
+        wasGloballyEnabled = auditService.isAuditEnabled();
+        wasRepoEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
         // Only enable if required
-        if (!globallyEnabled)
+        if (!wasGloballyEnabled)
         {
             auditService.setAuditEnabled(true);
+        }
+        if (!wasRepoEnabled)
+        {
+            auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
         }
     }
 
@@ -75,7 +81,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         // Leave audit in correct state
         try
         {
-            if (!globallyEnabled)
+            if (!wasGloballyEnabled)
             {
                 auditService.setAuditEnabled(false);
             }
@@ -83,6 +89,21 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         catch (Throwable e)
         {
             throw new RuntimeException("Failed to set audit back to globally enabled/disabled state", e);
+        }
+        try
+        {
+            if (wasRepoEnabled)
+            {
+                auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            }
+            else
+            {
+                auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            }
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException("Failed to set repo audit back to enabled/disabled state", e);
         }
     }
     
@@ -121,29 +142,21 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     {
         boolean wasEnabled = auditService.isAuditEnabled();
 
-        // We need to set this back after the test
-        try
+        if (wasEnabled)
         {
-            if (wasEnabled)
-            {
-                String url = "/api/audit/control?enable=false";
-                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-                sendRequest(req, Status.STATUS_OK, admin);
-            }
-            else
-            {
-                String url = "/api/audit/control?enable=true";
-                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-                sendRequest(req, Status.STATUS_OK, admin);
-            }
-            
-            // Check that it worked
-            testGetIsAuditEnabledGlobally();
+            String url = "/api/audit/control?enable=false";
+            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            sendRequest(req, Status.STATUS_OK, admin);
         }
-        finally
+        else
         {
-            auditService.setAuditEnabled(wasEnabled);
+            String url = "/api/audit/control?enable=true";
+            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            sendRequest(req, Status.STATUS_OK, admin);
         }
+        
+        // Check that it worked
+        testGetIsAuditEnabledGlobally();
     }
     
     private static final String APP_REPO_NAME = "AlfrescoRepository";
@@ -179,36 +192,47 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     {
         boolean wasEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
 
-        // We need to set this back after the test
-        try
+        if (wasEnabled)
         {
-            if (wasEnabled)
-            {
-                String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=false";
-                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-                sendRequest(req, Status.STATUS_OK, admin);
-            }
-            else
-            {
-                String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=true";
-                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-                sendRequest(req, Status.STATUS_OK, admin);
-            }
-            
-            // Check that it worked
-            testGetIsAuditEnabledRepo();
+            String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=false";
+            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            sendRequest(req, Status.STATUS_OK, admin);
         }
-        finally
+        else
         {
-            if (wasEnabled)
-            {
-                auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
-            }
-            else
-            {
-                auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
-            }
+            String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=true";
+            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            sendRequest(req, Status.STATUS_OK, admin);
         }
+        
+        // Check that it worked
+        testGetIsAuditEnabledRepo();
+    }
+    
+    /**
+     * Perform a failed login attempt
+     */
+    private void loginWithFailure() throws Exception
+    {
+        // Force a failed login
+        RunAsWork<Void> failureWork = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                try
+                {
+                    authenticationService.authenticate("domino", "crud".toCharArray());
+                    fail("Failed to force authentication failure");
+                }
+                catch (AuthenticationException e)
+                {
+                    // Expected
+                }
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
     }
     
     public void testClearAuditRepo() throws Exception
@@ -216,61 +240,40 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         long now = System.currentTimeMillis();
         long future = Long.MAX_VALUE;
         
+        loginWithFailure();
         
-        boolean wasRepoEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
-        boolean wasEnabled = auditService.isAuditEnabled();
-        // We need to set this back after the test
-        try
-        {
-            auditService.setAuditEnabled(true);
-            auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
-            
-            // Force a failed login
-            RunAsWork<Void> failureWork = new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork() throws Exception
-                {
-                    try
-                    {
-                        authenticationService.authenticate("domino", "crud".toCharArray());
-                        fail("Failed to force authentication failure");
-                    }
-                    catch (AuthenticationException e)
-                    {
-                        // Expected
-                    }
-                    return null;
-                }
-            };
-            AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
+        // Delete audit entries that could not have happened
+        String url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + future;
+        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+        Response response = sendRequest(req, Status.STATUS_OK, admin);
+        JSONObject json = new JSONObject(response.getContentAsString());
+        int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+        assertEquals("Could not have cleared more than 0", 0, cleared);
 
-            // Delete audit entries that could not have happened
-            String url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + future;
-            TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-            Response response = sendRequest(req, Status.STATUS_OK, admin);
-            JSONObject json = new JSONObject(response.getContentAsString());
-            int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
-            assertEquals("Could not have cleared more than 0", 0, cleared);
+        url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + now + "&toTime=" + future;
+        req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+        assertTrue("Should have cleared at least 1 entry", cleared > 0);
+    }
+    
+    public void testQueryAuditRepo() throws Exception
+    {
+        long now = System.currentTimeMillis();
+        long future = Long.MAX_VALUE;
+        
+        auditService.setAuditEnabled(true);
+        auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
 
-            url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + now + "&toTime=" + future;
-            req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-            response = sendRequest(req, Status.STATUS_OK, admin);
-            json = new JSONObject(response.getContentAsString());
-            cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
-            assertTrue("Should have cleared at least 1 entry", cleared > 0);
-        }
-        finally
-        {
-            if (wasRepoEnabled)
-            {
-                auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
-            }
-            else
-            {
-                auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
-            }
-            auditService.setAuditEnabled(wasEnabled);
-        }
+        loginWithFailure();
+        
+        // Delete audit entries that could not have happened
+        String url = "/api/audit/query/" + APP_REPO_NAME + "?fromTime=" + now + "&verbose=true";
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+        Response response = sendRequest(req, Status.STATUS_OK, admin);
+        JSONObject json = new JSONObject(response.getContentAsString());
+        JSONArray jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertTrue("Expected at least one entry", jsonEntries.length() > 0);
     }
 }

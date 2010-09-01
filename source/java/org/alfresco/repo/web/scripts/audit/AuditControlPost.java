@@ -36,10 +36,10 @@ public class AuditControlPost extends AbstractAuditWebScript
     {
         Map<String, Object> model = new HashMap<String, Object>(7);
 
-        String appName = getAppName(req);
-        String path = getPath(req);
+        String appName = getParamAppName(req);
+        String path = getParamPath(req);
         
-        boolean enable = getEnableDisable(req);
+        boolean enable = getParamEnableDisable(req);
         
         if (appName == null)
         {

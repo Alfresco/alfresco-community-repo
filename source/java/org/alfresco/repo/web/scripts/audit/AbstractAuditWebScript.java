@@ -40,6 +40,21 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String PARAM_ENABLED = "enabled";
     public static final String PARAM_FROM_TIME = "fromTime";
     public static final String PARAM_TO_TIME = "toTime";
+    public static final String PARAM_FROM_ID = "fromId";
+    public static final String PARAM_TO_ID = "toId";
+    public static final String PARAM_USER = "user";
+    public static final String PARAM_FORWARD = "forward";
+    public static final String PARAM_LIMIT = "limit";
+    public static final String PARAM_VERBOSE = "verbose";
+
+    public static final Long DEFAULT_FROM_TIME = null;
+    public static final Long DEFAULT_TO_TIME = null;
+    public static final Long DEFAULT_FROM_ID = null;
+    public static final Long DEFAULT_TO_ID = null;
+    public static final String DEFAULT_USER = null;
+    public static final boolean DEFAULT_FORWARD = true;
+    public static final int DEFAULT_LIMIT = 100;
+    public static final boolean DEFAULT_VERBOSE = false;
     
     public static final String JSON_KEY_ENABLED = "enabled";
     public static final String JSON_KEY_APPLICATIONS = "applications";
@@ -47,6 +62,13 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String JSON_KEY_PATH = "path";
     public static final String JSON_KEY_CLEARED = "cleared";
     
+    public static final String JSON_KEY_ENTRIES = "entries";
+    public static final String JSON_QUERY_KEY_ID = "id";
+    public static final String JSON_QUERY_KEY_APPLICATION = "application";
+    public static final String JSON_QUERY_KEY_USER = "user";
+    public static final String JSON_QUERY_KEY_TIME = "time";
+    public static final String JSON_QUERY_KEY_VALUES = "values";
+
     /**
      * Logger that can be used by subclasses.
      */
@@ -77,7 +99,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      * 
      * @return                  Returns the application name or <tt>null</tt> if not present
      */
-    protected final String getAppName(WebScriptRequest req)
+    protected final String getParamAppName(WebScriptRequest req)
     {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String app = templateVars.get(PARAM_APPLICATION);
@@ -95,7 +117,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      * 
      * @return                  Returns the path or <tt>null</tt> if not present
      */
-    protected String getPath(WebScriptRequest req)
+    protected String getParamPath(WebScriptRequest req)
     {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String paramPath = templateVars.get(PARAM_PATH);
@@ -111,35 +133,99 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         return paramPath;
     }
     
-    protected boolean getEnableDisable(WebScriptRequest req)
+    protected boolean getParamEnableDisable(WebScriptRequest req)
     {
         String enableStr = req.getParameter(PARAM_ENABLED);
         return Boolean.parseBoolean(enableStr);
     }
     
-    protected Long getFromTime(WebScriptRequest req)
+    protected Long getParamFromTime(WebScriptRequest req)
     {
-        String timeStr = req.getParameter(PARAM_FROM_TIME);
+        String paramStr = req.getParameter(PARAM_FROM_TIME);
         try
         {
-            return Long.parseLong(timeStr);
+            return Long.parseLong(paramStr);
         }
         catch (NumberFormatException e)
         {
-            return null;
+            return DEFAULT_TO_TIME;
         }
     }
     
-    protected Long getToTime(WebScriptRequest req)
+    protected Long getParamToTime(WebScriptRequest req)
     {
-        String timeStr = req.getParameter(PARAM_TO_TIME);
+        String paramStr = req.getParameter(PARAM_TO_TIME);
         try
         {
-            return Long.parseLong(timeStr);
+            return Long.parseLong(paramStr);
         }
         catch (NumberFormatException e)
         {
-            return null;
+            return DEFAULT_TO_TIME;
         }
+    }
+    
+    protected Long getParamFromId(WebScriptRequest req)
+    {
+        String paramStr = req.getParameter(PARAM_FROM_ID);
+        try
+        {
+            return Long.parseLong(paramStr);
+        }
+        catch (NumberFormatException e)
+        {
+            return DEFAULT_FROM_ID;
+        }
+    }
+    
+    protected Long getParamToId(WebScriptRequest req)
+    {
+        String paramStr = req.getParameter(PARAM_TO_ID);
+        try
+        {
+            return Long.parseLong(paramStr);
+        }
+        catch (NumberFormatException e)
+        {
+            return DEFAULT_TO_ID;
+        }
+    }
+    
+    protected String getParamUser(WebScriptRequest req)
+    {
+        return req.getParameter(PARAM_USER);
+    }
+    
+    protected boolean getParamForward(WebScriptRequest req)
+    {
+        String paramStr = req.getParameter(PARAM_FORWARD);
+        if (paramStr == null)
+        {
+            return DEFAULT_FORWARD;
+        }
+        return Boolean.parseBoolean(paramStr);
+    }
+    
+    protected int getParamLimit(WebScriptRequest req)
+    {
+        String paramStr = req.getParameter(PARAM_LIMIT);
+        try
+        {
+            return Integer.parseInt(paramStr);
+        }
+        catch (NumberFormatException e)
+        {
+            return DEFAULT_LIMIT;
+        }
+    }
+    
+    protected boolean getParamVerbose(WebScriptRequest req)
+    {
+        String paramStr = req.getParameter(PARAM_VERBOSE);
+        if (paramStr == null)
+        {
+            return DEFAULT_VERBOSE;
+        }
+        return Boolean.parseBoolean(paramStr);
     }
 }

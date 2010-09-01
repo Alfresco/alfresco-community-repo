@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 
 /**
@@ -535,7 +536,8 @@ public class MultiTAVMService implements AVMService
                 try
                 {
                     // MT: return tenant stores only (although for super System return all stores)
-                    if (!AuthenticationUtil.isRunAsUserTheSystemUser())
+                    String runAsUser = AuthenticationUtil.getRunAsUser();
+                    if (! EqualsHelper.nullSafeEquals(runAsUser, AuthenticationUtil.SYSTEM_USER_NAME))
                     {
                         tenantService.checkDomain(store.getName());
                         store = getBaseStore(store);

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -561,21 +563,7 @@ public class AuditComponentImpl implements AuditComponent
             throw new AuditException("No persisted instance exists for audit application: " + application);
         }
 
-        // Eliminate any paths that have been disabled
-        Iterator<String> pathedValuesKeyIterator = values.keySet().iterator();
-        while(pathedValuesKeyIterator.hasNext())
-        {
-            String pathedValueKey = pathedValuesKeyIterator.next();
-            for (String disabledPath : disabledPaths)
-            {
-                if (pathedValueKey.startsWith(disabledPath))
-                {
-                    // The pathed value is excluded
-                    pathedValuesKeyIterator.remove();
-                }
-            }
-        }
-        // Check if there is anything left
+        // Check if there is anything to audit
         if (values.size() == 0)
         {
             if (logger.isDebugEnabled())
@@ -587,9 +575,25 @@ public class AuditComponentImpl implements AuditComponent
             }
             return Collections.emptyMap();
         }
+
+        Set<String> generatorKeys = values.keySet();
+        // Eliminate any paths that have been disabled
+        Iterator<String> generatorKeysIterator = generatorKeys.iterator();
+        while(generatorKeysIterator.hasNext())
+        {
+            String generatorKey = generatorKeysIterator.next();
+            for (String disabledPath : disabledPaths)
+            {
+                if (generatorKey.startsWith(disabledPath))
+                {
+                    // The pathed value is excluded
+                    generatorKeysIterator.remove();
+                }
+            }
+        }
         
         // Generate data
-        Map<String, DataGenerator> generators = application.getDataGenerators(values.keySet());
+        Map<String, DataGenerator> generators = application.getDataGenerators(generatorKeys);
         Map<String, Serializable> auditData = generateData(generators);
         
         // Now extract values
@@ -641,40 +645,45 @@ public class AuditComponentImpl implements AuditComponent
             AuditApplication application,
             Map<String, Serializable> values)
     {
-        Map<String, Serializable> newData = new HashMap<String, Serializable>(values.size() + 5);
-        for (Map.Entry<String, Serializable> entry : values.entrySet())
+        Map<String, Serializable> newData = new HashMap<String, Serializable>(values.size());
+        
+        List<DataExtractorDefinition> extractors = application.getDataExtractors();
+        for (DataExtractorDefinition extractorDef : extractors)
         {
-            String path = entry.getKey();
-            Serializable value = entry.getValue();
-            // Get the applicable extractor
-            Map<String, DataExtractor> extractors = application.getDataExtractors(path);
-            for (Map.Entry<String, DataExtractor> extractorElement : extractors.entrySet())
+            DataExtractor extractor = extractorDef.getDataExtractor();
+            String sourcePath = extractorDef.getDataSource();
+            String targetPath = extractorDef.getDataTarget();
+            
+            // We observe the key, not the actual value
+            if (!values.containsKey(sourcePath))
             {
-                String extractorPath = extractorElement.getKey();
-                DataExtractor extractor = extractorElement.getValue();
-                // Check if the extraction is supported
-                if (!extractor.isSupported(value))
-                {
-                    continue;
-                }
-                // Use the extractor to pull the value out
-                final Serializable data;
-                try
-                {
-                    data = extractor.extractData(value);
-                }
-                catch (Throwable e)
-                {
-                    throw new AlfrescoRuntimeException(
-                            "Failed to extract audit data: \n" +
-                            "   Path:      " + path + "\n" +
-                            "   Raw value: " + value + "\n" +
-                            "   Extractor: " + extractor,
-                            e);
-                }
-                // Add it to the map
-                newData.put(extractorPath, data);
+                continue;               // There is no data to extract
             }
+            
+            Serializable value = values.get(sourcePath);
+            
+            // Check if the extraction is supported
+            if (!extractor.isSupported(value))
+            {
+                continue;
+            }
+            // Use the extractor to pull the value out
+            final Serializable data;
+            try
+            {
+                data = extractor.extractData(value);
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Failed to extract audit data: \n" +
+                        "   Path:      " + sourcePath + "\n" +
+                        "   Raw value: " + value + "\n" +
+                        "   Extractor: " + extractor,
+                        e);
+            }
+            // Add it to the map
+            newData.put(targetPath, data);
         }
         // Done
         if (logger.isDebugEnabled())
@@ -682,7 +691,7 @@ public class AuditComponentImpl implements AuditComponent
             logger.debug("Extracted audit data: \n" +
                     "   Application: " + application + "\n" +
                     "   Raw values:  " + values + "\n" +
-                    "   Extracted: " + newData);
+                    "   Extracted:   " + newData);
         }
         return newData;
     }

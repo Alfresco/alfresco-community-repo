@@ -86,6 +86,7 @@
         <xs:complexContent>
             <xs:extension base="a:KeyedAuditDefinition">
                 <xs:attribute name="dataExtractor" type="a:NameAttribute" use="required" />
+                <xs:attribute name="dataSource" type="a:PathAttribute" use="optional" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

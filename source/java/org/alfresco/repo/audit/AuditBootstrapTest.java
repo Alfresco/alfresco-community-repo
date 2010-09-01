@@ -19,15 +19,16 @@
 package org.alfresco.repo.audit;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
@@ -188,17 +189,9 @@ public class AuditBootstrapTest extends TestCase
         AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
         
-        Map<String, DataExtractor> extractors = app.getDataExtractors("/blah");
-        assertNotNull("Should never get a null map", extractors);
-        assertTrue("Expected no extractors", extractors.isEmpty());
-
-        extractors = app.getDataExtractors("/test/1.1/2.1/3.1/4.1");
-        assertEquals(1, extractors.size());
-        assertTrue(extractors.containsKey("/test/1.1/2.1/3.1/4.1/value.1"));
-
-        extractors = app.getDataExtractors("/test/1.1/2.1/3.1");
-        assertEquals(1, extractors.size());
-        assertTrue(extractors.containsKey("/test/1.1/2.1/3.1/value.1"));
+        List<DataExtractorDefinition> extractors = app.getDataExtractors();
+        assertNotNull("Should never get a null list", extractors);
+        assertEquals("Expected 13 extractors", 13, extractors.size());
     }
     
     public void testAuditApplication_GetDataGenerators()

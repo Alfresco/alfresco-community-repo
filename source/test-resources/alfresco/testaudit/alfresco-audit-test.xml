@@ -24,6 +24,7 @@
         <PathMap source="/test/one.one/two.two" target="/test/1.1/2.2"/>
         <PathMap source="/actions-test" target="/actions-test"/>
         <PathMap source="/actions-test/actions/action-01-mapped" target="/actions-test/actions/action-01"/>
+        <PathMap source="/actions-test/actions/action-02-sourced" target="/actions-test/actions/action-02"/>
     </PathMappings>
 
     <Application name="Alfresco Test" key="test">
@@ -100,6 +101,11 @@
                         <RecordValue key="value" dataExtractor="simpleValue"/>
                     </AuditPath>
                 </AuditPath>
+            </AuditPath>
+            <AuditPath key="action-02">
+                <RecordValue key="valueA" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/A"/>
+                <RecordValue key="valueB" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/B"/>
+                <RecordValue key="valueC" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/C"/>
             </AuditPath>
         </AuditPath>
     </Application>

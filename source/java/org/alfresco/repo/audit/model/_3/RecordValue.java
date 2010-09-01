@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;extension base="{http://www.alfresco.org/repo/audit/model/3.2}KeyedAuditDefinition">
  *       &lt;attribute name="dataExtractor" use="required" type="{http://www.alfresco.org/repo/audit/model/3.2}NameAttribute" />
+ *       &lt;attribute name="dataSource" type="{http://www.alfresco.org/repo/audit/model/3.2}PathAttribute" />
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -49,6 +50,8 @@ public class RecordValue
 
     @XmlAttribute(required = true)
     protected String dataExtractor;
+    @XmlAttribute
+    protected String dataSource;
 
     /**
      * Gets the value of the dataExtractor property.
@@ -72,6 +75,30 @@ public class RecordValue
      */
     public void setDataExtractor(String value) {
         this.dataExtractor = value;
+    }
+
+    /**
+     * Gets the value of the dataSource property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    /**
+     * Sets the value of the dataSource property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDataSource(String value) {
+        this.dataSource = value;
     }
 
 }

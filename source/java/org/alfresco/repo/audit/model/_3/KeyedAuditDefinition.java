@@ -45,9 +45,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "KeyedAuditDefinition")
 @XmlSeeAlso({
-    GenerateValue.class,
+    RecordValue.class,
     AuditPath.class,
-    RecordValue.class
+    GenerateValue.class
 })
 public class KeyedAuditDefinition {
 

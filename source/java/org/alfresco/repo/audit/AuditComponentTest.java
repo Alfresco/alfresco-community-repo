@@ -253,7 +253,7 @@ public class AuditComponentTest extends TestCase
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
         Serializable valueC = new Float(16.0F);
-        // Get a noderef
+        
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
         parameters.put("B", valueB);
@@ -290,6 +290,45 @@ public class AuditComponentTest extends TestCase
     public void testAudit_Action01Mapped() throws Exception
     {
         auditAction01("action-01-mapped");
+    }
+    
+    /**
+     * Test auditing of something resembling real-world data
+     */
+    private void auditAction02(String actionName) throws Exception
+    {
+        Serializable valueA = new Date();
+        Serializable valueB = "BBB-value-here";
+        Serializable valueC = new Float(16.0F);
+        
+        final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
+        parameters.put("A", valueA);
+        parameters.put("B", valueB);
+        parameters.put("C", valueC);
+        // lowercase versions are not in the config
+        parameters.put("a", valueA);
+        parameters.put("b", valueB);
+        parameters.put("c", valueC);
+        
+        Map<String, Serializable> result = auditTestAction(actionName, nodeRef, parameters);
+        
+        Map<String, Serializable> expected = new HashMap<String, Serializable>();
+        expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        expected.put("/actions-test/actions/context-node/noderef", nodeRef);
+        expected.put("/actions-test/actions/action-02/valueA", valueA);
+        expected.put("/actions-test/actions/action-02/valueB", valueB);
+        expected.put("/actions-test/actions/action-02/valueC", valueC);
+        
+        // Check
+        checkAuditMaps(result, expected);
+    }
+    
+    /**
+     * Test auditing using alternative data sources
+     */
+    public void testAudit_Action02Sourced() throws Exception
+    {
+        auditAction02("action-02-sourced");
     }
     
     public void testQuery_Action01() throws Exception

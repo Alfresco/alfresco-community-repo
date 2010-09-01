@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.audit.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,7 +62,7 @@ public class AuditApplication
     private final Long disabledPathsId;
 
     /** Derived expaned map for fast lookup */
-    private Map<String, Map<String, DataExtractor>> dataExtractors = new HashMap<String, Map<String, DataExtractor>>(11);
+    private List<DataExtractorDefinition> dataExtractors = new ArrayList<DataExtractorDefinition>();
     /** Derived expaned map for fast lookup */
     private Map<String, Map<String, DataGenerator>> dataGenerators = new HashMap<String, Map<String, DataGenerator>>(11);
     
@@ -281,31 +283,59 @@ public class AuditApplication
     }
     
     /**
-     * Get all data extractors applicable to a given path and scope.
+     * Utility class carrying information around a {@link DataExtractor}.
      * 
-     * @param path              the audit path
-     * @return                  Returns all data extractors mapped to their key-path
+     * @author Derek Hulley
+     * @since 3.4
      */
-    public Map<String, DataExtractor> getDataExtractors(String path)
+    public static class DataExtractorDefinition
     {
-        Map<String, DataExtractor> extractors = dataExtractors.get(path);
-        if (extractors == null)
+        private final String dataSource;
+        private final String dataTarget;
+        private final DataExtractor dataExtractor;
+
+        /**
+         * @param dataSource            the path to get data from
+         * @param dataTarget            the path to write data to
+         * @param dataExtractor         the implementation to use
+         */
+        public DataExtractorDefinition(String dataSource, String dataTarget, DataExtractor dataExtractor)
         {
-            // Don't give back a null
-            extractors = Collections.emptyMap();
+            this.dataSource = dataSource;
+            this.dataTarget = dataTarget;
+            this.dataExtractor = dataExtractor;
         }
-        else
+
+        public String getDataSource()
         {
-            // we don't want to give back a modifiable map
-            extractors = Collections.unmodifiableMap(extractors);
+            return dataSource;
         }
+
+        public String getDataTarget()
+        {
+            return dataTarget;
+        }
+
+        public DataExtractor getDataExtractor()
+        {
+            return dataExtractor;
+        }
+    }
+    
+    /**
+     * Get all data extractors applicable to this application.
+     * 
+     * @return                  Returns all data extractors contained in the application
+     */
+    public List<DataExtractorDefinition> getDataExtractors()
+    {
+        List<DataExtractorDefinition> extractors = Collections.unmodifiableList(dataExtractors);
         
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Looked up data extractors: \n" +
-                    "   Path:  " + path + "\n" +
                     "   Found: " + extractors);
         }
         return extractors;
@@ -361,7 +391,6 @@ public class AuditApplication
                 auditPath,
                 null,
                 new HashSet<String>(37),
-                new HashMap<String, DataExtractor>(13),
                 new HashMap<String, DataGenerator>(13));
     }
     /**
@@ -371,11 +400,9 @@ public class AuditApplication
             AuditPath auditPath,
             String currentPath,
             Set<String> existingPaths,
-            Map<String, DataExtractor> upperExtractorsByPath,
             Map<String, DataGenerator> upperGeneratorsByPath)
     {
         // Clone the upper maps to prevent pollution
-        upperExtractorsByPath = new HashMap<String, DataExtractor>(upperExtractorsByPath);
         upperGeneratorsByPath = new HashMap<String, DataGenerator>(upperGeneratorsByPath);
         
         // Append the current audit path to the current path
@@ -409,16 +436,16 @@ public class AuditApplication
             {
                 generateException(extractorPath, "No data extractor exists for name: " + extractorName);
             }
-            // All generators that occur earlier in the path will also be applicable here
-            upperExtractorsByPath.put(extractorPath, extractor);
+            // The extractor may pull data from somewhere else
+            String sourcePath = element.getDataSource();
+            if (sourcePath == null)
+            {
+                sourcePath = currentPath;
+            }
+            // Store the extractor definition
+            DataExtractorDefinition extractorDef = new DataExtractorDefinition(sourcePath, extractorPath, extractor);
+            dataExtractors.add(extractorDef);
         }
-        // All the extractors apply to the current path
-        dataExtractors.put(currentPath, upperExtractorsByPath);
-        // Data extractors only apply directly to data in which they appear.
-        //    TODO: Examine this assumption.  If it is not true, i.e. data extractors apply to
-        //          data anywhere down the hierarchy, then the followin line of code should be
-        //          removed and the use-cases tested appropriately.
-        upperExtractorsByPath = new HashMap<String, DataExtractor>();
 
         // Get the data generators declared for this key
         for (GenerateValue element : auditPath.getGenerateValue())
@@ -445,7 +472,7 @@ public class AuditApplication
         // Find all sub audit paths and recurse
         for (AuditPath element : auditPath.getAuditPath())
         {
-            buildAuditPaths(element, currentPath, existingPaths, upperExtractorsByPath, upperGeneratorsByPath);
+            buildAuditPaths(element, currentPath, existingPaths, upperGeneratorsByPath);
         }
     }
     

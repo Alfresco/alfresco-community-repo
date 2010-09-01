@@ -72,6 +72,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     private final static String USER3 = "Nick" + GUID.generate();
     private static final String URL_TASKS = "api/task-instances";
     private static final String URL_USER_TASKS = "api/task-instances?authority={0}";
+    private static final String URL_WORKFLOW_TASKS = "api/workflow-instances/{0}/task-instances";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
     private static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
@@ -194,6 +195,16 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         }
         
         assertFalse("Found wf:submitAdhocTask when they were supposed to be excluded", adhocTasksPresent);
+        
+        // retrieve tasks using the workflow instance
+        String workflowInstanceId = adhocPath.getInstance().getId();
+        response = sendRequest(new GetRequest(MessageFormat.format(URL_WORKFLOW_TASKS, workflowInstanceId)), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        results = json.getJSONArray("data");
+        assertNotNull(results);
+        assertTrue(results.length() > 0);
     }
 
     public void testTaskInstanceGet() throws Exception

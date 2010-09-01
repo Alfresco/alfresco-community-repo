@@ -51,11 +51,12 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_DUE_AFTER = "dueAfter";
     public static final String PARAM_PROPERTIES = "properties";
     public static final String PARAM_POOLED_TASKS = "pooledTasks";
-    public static final String PARAM_DETAILED = "detailed";
+    public static final String VAR_WORKFLOW_INSTANCE_ID = "workflow_instance_id";
 
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
+        Map<String, String> params = req.getServiceMatch().getTemplateVars();
         Map<String, Object> filters = new HashMap<String, Object>(4);
 
         // authority is not included into filters list as it will be taken into account before filtering
@@ -64,9 +65,14 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         // state is also not included into filters list, for the same reason
         WorkflowTaskState state = getState(req);
         
+        // look for a workflow instance id
+        String workflowInstanceId = params.get(VAR_WORKFLOW_INSTANCE_ID);
+        
+        // determine if pooledTasks should be included, when appropriate i.e. when an authority is supplied
         Boolean pooledTasksOnly = getPooledTasks(req);
+        
+        // get list of properties to include in the response
         List<String> properties = getProperties(req);
-        boolean detailed = "true".equals(req.getParameter(PARAM_DETAILED));
         
         // get filter param values
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
@@ -81,56 +87,74 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         
         List<WorkflowTask> allTasks;
 
-        if (authority != null)
+        if (workflowInstanceId != null)
         {
-            List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
-            List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority);
-            if (pooledTasksOnly != null)
+            // a workflow instance id was provided so query for tasks
+            WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+            taskQuery.setActive(null);
+            taskQuery.setProcessId(workflowInstanceId);
+            taskQuery.setTaskState(state);
+            
+            if (authority != null)
             {
-                if (pooledTasksOnly.booleanValue())
+                taskQuery.setActorId(authority);
+            }
+            
+            allTasks = workflowService.queryTasks(taskQuery);
+        }
+        else
+        {
+            // default task state to IN_PROGRESS if not supplied
+            if (state == null)
+            {
+                state = WorkflowTaskState.IN_PROGRESS;
+            }
+            
+            // no workflow instance id is present so get all tasks
+            if (authority != null)
+            {
+                List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
+                List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority);
+                if (pooledTasksOnly != null)
                 {
-                    // only return pooled tasks the user can claim
-                    allTasks = new ArrayList<WorkflowTask>(pooledTasks.size());
-                    allTasks.addAll(pooledTasks);
+                    if (pooledTasksOnly.booleanValue())
+                    {
+                        // only return pooled tasks the user can claim
+                        allTasks = new ArrayList<WorkflowTask>(pooledTasks.size());
+                        allTasks.addAll(pooledTasks);
+                    }
+                    else
+                    {
+                        // only return tasks assigned to the user
+                        allTasks = new ArrayList<WorkflowTask>(tasks.size());
+                        allTasks.addAll(tasks);
+                    }
                 }
                 else
                 {
-                    // only return tasks assigned to the user
-                    allTasks = new ArrayList<WorkflowTask>(tasks.size());
+                    // include both assigned and unassigned tasks
+                    allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
                     allTasks.addAll(tasks);
+                    allTasks.addAll(pooledTasks);
                 }
             }
             else
             {
-                // include both assigned and unassigned tasks
-                allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
-                allTasks.addAll(tasks);
-                allTasks.addAll(pooledTasks);
+                // authority was not provided -> return all active tasks in the system
+                WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+                taskQuery.setTaskState(state);
+                taskQuery.setActive(null);
+                allTasks = workflowService.queryTasks(taskQuery);
             }
         }
-        else
-        {
-            // authority was not provided -> return all active tasks in the system
-            WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
-            taskQuery.setTaskState(state);
-            taskQuery.setActive(null);
-            allTasks = workflowService.queryTasks(taskQuery);
-        }
-
+        
         // filter results
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (WorkflowTask task : allTasks)
         {
             if (matches(task, filters))
             {
-                if (detailed)
-                {
-                    results.add(modelBuilder.buildDetailed(task));
-                }
-                else
-                {
-                    results.add(modelBuilder.buildSimple(task, properties));
-                }
+                results.add(modelBuilder.buildSimple(task, properties));
             }
         }
 
@@ -174,7 +198,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     }
     
     /**
-     * Gets the specified {@link WorkflowTaskState}, defaults to IN_PROGRESS.
+     * Gets the specified {@link WorkflowTaskState}, null if not requested
+     * 
      * @param req
      * @return
      */
@@ -193,8 +218,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
         }
-        // Defaults to IN_PROGRESS.
-        return WorkflowTaskState.IN_PROGRESS;
+        
+        return null;
     }
 
     /**

@@ -4,7 +4,8 @@
   Lists all Workflow Task Instances associated with an authority and of a given State.
   The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.
   </description>
-  <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;detailed={detailed?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+  <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+  <url>/api/workflow-instances/{workflow_instance_id}/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;dueBefore={isoDate?}&amp;dueAfter={isoDate?}&amp;properties={prop1, prop2, prop3...?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

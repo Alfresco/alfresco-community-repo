@@ -555,8 +555,26 @@ function getSearchResults(params)
                {
                   // property name - convert to DD property name format
                   propName = propName.replace("_", ":");
-                  // TODO: adv search in jsf uses quotes for boolean, number etc... dates!
-                  formQuery += (first ? '' : ' AND ') + propName + ':"' + propValue + '"';
+                  
+                  // special case for date range packed property
+                  if (propName.match("-daterange$") == "-daterange")
+                  {
+                     // "from" and "to" date range value is packed with a | character separator
+                     // if neither value is specified then there is no need to add the term
+                     if (propValue.length > 1)
+                     {
+                        // work out if "from" and/or "to" are specified - use MIN and MAX otherwise
+                        propName = propName.substr(0, propName.length - "-daterange".length);
+                        var sepindex = propValue.indexOf("|");
+                        var from = (sepindex === 0 ? "MIN" : propValue.substr(0, sepindex));
+                        var to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
+                        formQuery += (first ? '' : ' AND ') + propName + ':[' + from + ' TO ' + to + ']';
+                     }
+                  }
+                  else
+                  {
+                     formQuery += (first ? '' : ' AND ') + propName + ':"' + propValue + '"';
+                  }
                }
                else
                {

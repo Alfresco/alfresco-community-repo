@@ -152,6 +152,7 @@ CREATE INDEX fk_alf_cass_pnode ON t_alf_child_assoc (parent_node_id);
 CREATE INDEX fk_alf_cass_cnode ON t_alf_child_assoc (child_node_id);
 CREATE INDEX fk_alf_cass_tqn ON t_alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON t_alf_child_assoc (qname_ns_id);
+CREATE INDEX idx_alf_cass_pri ON t_alf_child_assoc (parent_node_id, is_primary, child_node_id);
 
 INSERT INTO t_alf_child_assoc
    (

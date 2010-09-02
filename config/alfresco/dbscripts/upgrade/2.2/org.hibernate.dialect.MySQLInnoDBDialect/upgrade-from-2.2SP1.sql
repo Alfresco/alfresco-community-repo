@@ -153,6 +153,7 @@ CREATE TABLE t_alf_child_assoc
    INDEX fk_alf_cass_cnode (child_node_id),
    INDEX fk_alf_cass_tqn (type_qname_id),
    INDEX fk_alf_cass_qnns (qname_ns_id),
+   INDEX idx_alf_cass_pri (parent_node_id, is_primary, child_node_id),
    CONSTRAINT fk_alf_cass_pnode foreign key (parent_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_cass_cnode foreign key (child_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_cass_tqn foreign key (type_qname_id) REFERENCES alf_qname (id),

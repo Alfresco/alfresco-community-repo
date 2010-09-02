@@ -47,8 +47,14 @@ public class WorkflowInstance implements Serializable
     /** Initiator (cm:person) - null if System initiated */
     public NodeRef initiator;
     
+    /** Workflow priority */
+    public Integer priority;
+    
     /** Workflow Start Date */
     public Date startDate;
+    
+    /** Workflow Due Date */
+    public Date dueDate;
     
     /** Workflow End Date */
     public Date endDate;
@@ -103,11 +109,27 @@ public class WorkflowInstance implements Serializable
     }
 
     /**
+     * @return the priority, null if there is no priority set
+     */
+    public Integer getPriority()
+    {
+        return this.priority;
+    }
+
+    /**
      * @return the startDate
      */
     public Date getStartDate()
     {
         return startDate;
+    }
+    
+    /**
+     * @return the dueDate
+     */
+    public Date getDueDate()
+    {
+        return dueDate;
     }
 
     /**

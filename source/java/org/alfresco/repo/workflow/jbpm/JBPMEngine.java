@@ -2898,6 +2898,8 @@ public class JBPMEngine extends BPMEngine
         WorkflowInstance workflowInstance = new WorkflowInstance();
         workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
         workflowInstance.description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+        workflowInstance.priority = (Integer)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_PRIORITY));
+        workflowInstance.dueDate = (Date)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE));
         workflowInstance.definition = createWorkflowDefinition(instance.getProcessDefinition());
         workflowInstance.active = !instance.hasEnded();
         JBPMNode initiator = (JBPMNode)instance.getContextInstance().getVariable("initiator");

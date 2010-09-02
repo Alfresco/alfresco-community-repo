@@ -18,6 +18,7 @@
  */
 package org.alfresco.filesys.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -1331,12 +1332,88 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 	    			logger.info("FTP server data ports restricted to range " + rangeFrom + ":" + rangeTo);
             	}
             }
+            
+    		// FTPS parameter parsing
+    		//
+    		// Check if a key store path has been specified
+    		
+    		if ( ftpConfigBean.getKeyStorePath() != null && ftpConfigBean.getKeyStorePath().length() > 0) {
+
+    			// Get the path to the key store, check that the file exists
+
+    			String keyStorePath = ftpConfigBean.getKeyStorePath();
+    			File keyStoreFile = new File( keyStorePath);
+    			
+    			if ( keyStoreFile.exists() == false)
+    				throw new InvalidConfigurationException("FTPS key store file does not exist, " + keyStorePath);
+    			else if ( keyStoreFile.isDirectory())
+    				throw new InvalidConfigurationException("FTPS key store path is a directory, " + keyStorePath);
+    			
+    			// Set the key store path
+    			
+    			ftpConfig.setKeyStorePath( keyStorePath);
+    		}
+
+    		// Check if the trust store path has been specified
+    		
+    		if ( ftpConfigBean.getTrustStorePath() != null && ftpConfigBean.getTrustStorePath().length() > 0) {
+
+    			// Get the path to the trust store, check that the file exists
+    			
+    			String trustStorePath = ftpConfigBean.getTrustStorePath();
+    			File trustStoreFile = new File( trustStorePath);
+    			
+    			if ( trustStoreFile.exists() == false)
+    				throw new InvalidConfigurationException("FTPS trust store file does not exist, " + trustStorePath);
+    			else if ( trustStoreFile.isDirectory())
+    				throw new InvalidConfigurationException("FTPS trust store path is a directory, " + trustStorePath);
+    			
+    			// Set the trust store path
+    			
+    			ftpConfig.setTrustStorePath( trustStorePath);
+    		}
+    		
+    		// Check if the store passphrase has been specified
+    		
+    		if ( ftpConfigBean.getPassphrase() != null && ftpConfigBean.getPassphrase().length() > 0) {
+
+    			// Set the store passphrase
+    			
+    			ftpConfig.setPassphrase( ftpConfigBean.getPassphrase());
+    		}
+    		
+    		// Check if only secure sessions should be allowed to logon
+    		
+    		if ( ftpConfigBean.hasRequireSecureSession()) {
+
+    			// Only allow secure sessions to logon to the FTP server
+
+    			ftpConfig.setRequireSecureSession( true);
+    		}
+    		
+    		// Check that all the required FTPS parameters have been set
+    		
+    		if ( ftpConfig.getKeyStorePath() != null || ftpConfig.getTrustStorePath() != null || ftpConfig.getPassphrase() != null) {
+    			
+    			// Make sure all parameters are set
+    			
+    			if ( ftpConfig.getKeyStorePath() == null || ftpConfig.getTrustStorePath() == null || ftpConfig.getPassphrase() == null)
+    				throw new InvalidConfigurationException("FTPS configuration requires keyStore, trustStore and storePassphrase to be set");
+    		}
+    		
+    		// Check if SSLEngine debug output should be enabled
+    		
+    		if ( ftpConfigBean.hasSslEngineDebug()) {
+
+    			// Enable SSLEngine debug output
+
+    			System.setProperty("javax.net.debug", "ssl,handshake");
+    		}
         }
         catch (InvalidConfigurationException ex)
         {
             throw new AlfrescoRuntimeException(ex.getMessage());
         }
-
     }
 
     /**

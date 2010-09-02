@@ -64,6 +64,23 @@ public class FTPConfigBean
     private int dataPortFrom;
     private int dataPortTo;
     
+    // FTPS configuration
+    //
+    // Path to the keystore/truststore files
+    
+    private String m_keyStorePath;
+    private String m_trustStorePath;
+    
+    private String m_passphrase;
+    
+    // Only allow FTPS/encrypted session logons
+    
+    private boolean m_requireSecureSess;
+    
+    // SSL engine debug enable
+    
+    private boolean m_sslDebug;
+    
     /**
      * Checks if is server enabled.
      * 
@@ -308,5 +325,95 @@ public class FTPConfigBean
      */
     public void setDataPortTo(int toPort) {
     	dataPortTo = toPort;
+    }
+    
+    /**
+     * Return the key store path
+     * 
+     * @return String
+     */
+    public final String getKeyStorePath() {
+  	  return m_keyStorePath;
+    }
+    
+    /**
+     * Return the trust store path
+     * 
+     * @return String
+     */
+    public final String getTrustStorePath() {
+  	  return m_trustStorePath;
+    }
+    
+    /**
+     * Return the passphrase for the key store/trust store
+     * 
+     * @return String
+     */
+    public final String getPassphrase() {
+  	  return m_passphrase;
+    }
+    
+    /**
+     * Determine if only secure sessions will be allowed to logon
+     * 
+     * @return boolean
+     */
+    public final boolean hasRequireSecureSession() {
+  	  return m_requireSecureSess;
+    }
+    
+    /**
+     * Set/clear the require secure sessions flag
+     * 
+     * @param reqSec boolean
+     */
+    public final void setRequireSecureSession( boolean reqSec) {
+    	m_requireSecureSess = reqSec;
+    }
+    
+    /**
+     * Set the key store path
+     * 
+     * @param path String
+     */
+    public final void setKeyStorePath( String path) {
+    	m_keyStorePath = path;
+    }
+    
+    /**
+     * Set the trust store path
+     * 
+     * @param path String
+     */
+    public final void setTrustStorePath( String path) {
+    	m_trustStorePath = path;
+    }
+    
+    /**
+     * Set the passphrase
+     * 
+     * @param phrase String
+     */
+    public final void setPassphrase( String phrase) {
+    	m_passphrase = phrase;
+    }
+    
+    /**
+     * Check if SSLEngine debug output should be enabled
+     * 
+     * @return boolean
+     */
+    public final boolean hasSslEngineDebug() {
+    	return m_sslDebug;
+    }
+    
+    /**
+     * Enable SSLEngine class debug output
+     * 
+     *  @param sslDebug boolean
+     */
+    public final void setSslEngineDebug( boolean sslDebug) {
+    	m_sslDebug = sslDebug;
     }
 }

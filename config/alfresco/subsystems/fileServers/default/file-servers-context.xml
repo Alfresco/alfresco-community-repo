@@ -221,6 +221,27 @@
 	  <property name="dataPortTo">
 		  <value>${ftp.dataPortTo}</value>
 	  </property>
+	   
+	 <!-- FTPS support -->
+	 <property name="keyStorePath">
+		 <value>${ftp.keyStore}</value>
+	 </property>
+	   
+	 <property name="trustStorePath">
+		 <value>${ftp.trustStore}</value>
+	 </property>
+	   
+	 <property name="passphrase">
+		 <value>${ftp.passphrase}</value>
+	 </property>
+	   
+	 <property name="requireSecureSession">
+		 <value>${ftp.requireSecureSession}</value>
+	 </property>
+	   
+	 <property name="sslEngineDebug">
+		 <value>${ftp.sslEngineDebug}</value>
+	 </property>
    </bean>
 
    <!--The configurable RPC user mappings - actually a post-processed composite property! -->

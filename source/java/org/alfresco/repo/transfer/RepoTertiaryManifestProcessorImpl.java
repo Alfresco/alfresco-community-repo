@@ -82,8 +82,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
         {
             log.debug("Processing node with incoming noderef of " + node.getNodeRef());
         }
-        logProgress("Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
-
+        logComment("Tertiary Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
 
         /**
          * This processor only does processes sync requests.
@@ -143,6 +142,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                             if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
                             {
                                 log.debug("an unexpected transferred child node:" + child);
+                                logComment("Transfer sync mode - checking unexpected child node:" + child);
                                 String fromRepositoryId = (String)nodeService.getProperty(childNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
                                 
                                 // Yes this is a transferred node.  When syncing we only delete nodes that are "from" 
@@ -156,6 +156,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                                          * it needs to be "pruned" of the transferring repo's content instead.
                                          */
                                         log.debug("node to be deleted contains alien content so needs to be pruned." + childNodeRef);
+                                        logComment("Transfer sync mode - node contains alien content so can't be deleted. " +  childNodeRef);
                                         alienProcessor.pruneNode(childNodeRef, fromRepositoryId);
                                     }
                                     else
@@ -165,7 +166,8 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                                         if(manifestRepositoryId.equalsIgnoreCase(fromRepositoryId))
                                         {
                                             // Yes the manifest repository Id and the from repository Id match.
-                                            // Destination node if from the transferring repo and needs to be deleted.                              
+                                            // Destination node if from the transferring repo and needs to be deleted. 
+                                            logDeleted(node.getNodeRef(), childNodeRef, nodeService.getPath(childNodeRef));
                                             nodeService.deleteNode(childNodeRef);
                                             log.debug("deleted node:" + childNodeRef);
                                         }

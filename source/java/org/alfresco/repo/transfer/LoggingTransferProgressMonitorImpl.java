@@ -21,6 +21,8 @@ package org.alfresco.repo.transfer;
 
 import java.io.InputStream;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -61,10 +63,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object, java.lang.Throwable)
      */
-    public void log(String transferId, Object obj, Throwable ex) throws TransferException
+    public void logException(String transferId, Object obj, Throwable ex) throws TransferException
     {
         localLog(transferId, obj, ex);
-        delegate.log(transferId, obj, ex);
+        delegate.logException(transferId, obj, ex);
     }
 
     /**
@@ -73,10 +75,39 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object)
      */
-    public void log(String transferId, Object obj) throws TransferException
+    public void logComment(String transferId, Object obj) throws TransferException
     {
         localLog(transferId, obj, null);
-        delegate.log(transferId, obj);
+        delegate.logComment(transferId, obj);
+    }
+    
+    @Override
+    public void logCreated(String transferId, NodeRef sourceNode,
+            NodeRef destNode, NodeRef parentNode, Path parentPath, boolean orphan)
+    {
+        delegate.logCreated(transferId, sourceNode, destNode, parentNode, parentPath, orphan);
+    }
+    
+    @Override
+    public void logUpdated(String transferId, NodeRef sourceNode,
+            NodeRef destNode, Path parentPath)
+    {
+        delegate.logUpdated(transferId, sourceNode, destNode, parentPath);
+    }
+    
+    @Override
+    public void logMoved(String transferId, NodeRef sourceNode,
+            NodeRef destNode, Path oldPath, NodeRef parentNodeRef, Path parentPath)
+    {
+        delegate.logMoved(transferId, sourceNode, destNode, oldPath, parentNodeRef, parentPath);
+    }
+    
+    @Override
+    public void logDeleted(String transferId, NodeRef sourceNode,
+            NodeRef destNode, Path parentPath)
+    {
+        delegate.logDeleted(transferId, sourceNode, destNode, parentPath);
+        
     }
 
     /**
@@ -151,4 +182,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     {
         return delegate.getLogInputStream(transferId);
     }
+
+
+
+
+
+
 }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.alfresco.org/model/transferDestinationReport/1.0"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:report="http://www.alfresco.org/model/transferDestinationReport/1.0"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+   <!-- XML Schema for the client side transferReport owned by the 
+   alfresco transferService -->
+   
+   <xs:element name="transferDestinationReport" type="report:transferDestinationReport">
+   <xs:annotation>
+       <xs:documentation>This is an Alfresco destination side transfer report</xs:documentation>
+   </xs:annotation>
+   </xs:element>
+   
+   <xs:complexType name="transferDestinationReport">
+      <xs:annotation>
+         <xs:documentation>
+         The Alfresco destination side transfer report
+         </xs:documentation>
+      </xs:annotation>
+      
+      <xs:sequence maxOccurs="unbounded" minOccurs="0">
+      	<xs:choice>
+      		<xs:element name="state" type="report:state"></xs:element>
+      		<xs:element name="comment" type="report:comment"></xs:element>
+      		<xs:element name="created" type="report:created"></xs:element>
+      		<xs:element name="updated" type="report:updated"></xs:element>
+      		<xs:element name="moved" type="report:moved"></xs:element>
+      		<xs:element name="deleted" type="report:deleted"></xs:element>
+      		<xs:element name="exception" type="report:exception"></xs:element>
+      	</xs:choice>
+      </xs:sequence>
+   </xs:complexType>
+   
+   <xs:complexType name="state">
+       <xs:attribute name="date" type="dateTime"></xs:attribute>
+       <xs:attribute name="state" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="comment" mixed="true">
+       <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="created">
+       <xs:sequence maxOccurs="1" minOccurs="0">
+          <xs:element name="destinationPath" type="report:destinationPath"></xs:element>
+       </xs:sequence>
+       <xs:attribute name="sourceNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="parentNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="destinationNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="date" type="dateTime"></xs:attribute>
+       <xs:attribute name="orphan" type="boolean"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="updated">
+   	<xs:sequence maxOccurs="1" minOccurs="0">
+   		<xs:element name="destinationPath" type="report:destinationPath"></xs:element>
+   	</xs:sequence>
+   	<xs:attribute name="sourceNodeRef" type="string"></xs:attribute>
+   	<xs:attribute name="destinationNodeRef" type="string"></xs:attribute>
+   	<xs:attribute name="date" type="dateTime"></xs:attribute>
+
+   </xs:complexType>
+
+   <xs:complexType name="deleted">
+       <xs:sequence maxOccurs="1" minOccurs="0">
+          <xs:element name="destinationPath" type="report:destinationPath"></xs:element>
+       </xs:sequence>
+       <xs:attribute name="sourceNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="destinationNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="moved">
+       <xs:sequence maxOccurs="1" minOccurs="0">
+          <xs:element name="destinationPath" type="report:destinationPath"></xs:element>
+          <xs:element name="oldPath" type="report:oldPath"></xs:element>
+       </xs:sequence>
+       <xs:attribute name="sourceNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="destinationNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="newParentNodeRef" type="string"></xs:attribute>
+       <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="destinationPath" mixed="true">
+   </xs:complexType>
+   
+   <xs:complexType name="oldPath" mixed="true">
+   </xs:complexType>
+   
+   <xs:complexType name="sourcePath" mixed="true">
+   </xs:complexType>
+   
+   <xs:complexType name="exception" mixed="true">
+       <xs:attribute name="type" type="string"></xs:attribute>
+       <xs:attribute name="message" type="string"></xs:attribute>
+   </xs:complexType>
+   
+</xs:schema>

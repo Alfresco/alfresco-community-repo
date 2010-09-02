@@ -20,22 +20,21 @@
 package org.alfresco.repo.transfer;
 
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.channels.Channels;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transfer.reportd.XMLTransferDestinationReportWriter;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -57,7 +56,8 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
     private NodeService nodeService;
     private ContentService contentService;
     private TransactionService transactionService;
-    private Map<String, WritableByteChannel> transferLogWriters = new TreeMap<String, WritableByteChannel>();
+    //private Map<String, WritableByteChannel> transferLogWriters = new TreeMap<String, WritableByteChannel>();
+    private Map<String, TransferDestinationReportWriter> transferLogWriters = new TreeMap<String, TransferDestinationReportWriter>();
 
     /*
      * (non-Javadoc)
@@ -92,51 +92,72 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
      * 
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object)
      */
-    public void log(final String transferId, final Object obj)
+    public void logComment(final String transferId, final Object obj)
     {
-        log(transferId, obj, null);
+        TransferDestinationReportWriter writer = getLogWriter(transferId);
+        writer.writeComment(obj.toString());
     }
 
-    public void log(final String transferId, final Object obj, final Throwable ex)
+    public void logException(final String transferId, final Object obj, final Throwable ex)
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
                     public NodeRef execute() throws Throwable
                     {
+                        TransferDestinationReportWriter writer = getLogWriter(transferId);
+                        
+                        writer.writeComment(obj.toString());
+                        
                         if (ex != null)
                         {
                             NodeRef nodeRef = getTransferRecord(transferId);
                             // Write the exception onto the transfer record
                             nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_ERROR, ex);
+                            writer.writeException(ex);
                         }
-                        WritableByteChannel writer = getLogWriter(transferId);
-                        Date now = new Date();
-                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                        String text = format.format(now) + " - " + obj.toString() + "\n";
-                        if (ex != null)
-                        {
-                            text += ex.getMessage() + "\n";
-                            StringWriter stringWriter = new StringWriter(1024);
-                            PrintWriter errorWriter = new PrintWriter(stringWriter);
-                            ex.printStackTrace(errorWriter);
-                            text += stringWriter.toString();
-                        }
-                        try
-                        {
-                            writer.write(ByteBuffer.wrap(text.getBytes("UTF-8")));
-                        }
-                        catch (Exception ex)
-                        {
-                            if (log.isWarnEnabled())
-                            {
-                                log.warn("Unable to record transfer log information:\n " + text, ex);
-                            }
-                        }
+
                         return null;
                     }
                 }, false, true);
-
+    }
+    
+    @Override
+    public void logCreated(String transferId, 
+            NodeRef sourceNode,
+            NodeRef destNode,
+            NodeRef parentNodeRef,
+            Path parentPath, 
+            boolean orphan)
+    {
+        TransferDestinationReportWriter writer = getLogWriter(transferId);
+        writer.writeCreated(sourceNode, destNode, parentNodeRef, parentPath);
+    }
+    
+    @Override
+    public void logUpdated(String transferId, NodeRef sourceNodeRef,
+            NodeRef destNodeRef, Path path)
+    {
+        TransferDestinationReportWriter writer = getLogWriter(transferId);
+        writer.writeUpdated(sourceNodeRef, destNodeRef, path);       
+    }
+    
+    @Override
+    public void logMoved(String transferId, NodeRef sourceNodeRef,
+            NodeRef destNodeRef, Path oldPath, NodeRef newParentNodeRef, Path newPath)
+    {
+        TransferDestinationReportWriter writer = getLogWriter(transferId);
+        writer.writeMoved(sourceNodeRef, destNodeRef, oldPath, newParentNodeRef, newPath);       
+    }
+    
+    @Override
+    public void logDeleted(String transferId, 
+            NodeRef sourceNodeRef,
+            NodeRef destNodeRef, 
+            Path oldPath)
+    {
+        TransferDestinationReportWriter writer = getLogWriter(transferId);
+        writer.writeDeleted(sourceNodeRef, destNodeRef, oldPath);
     }
 
     /*
@@ -197,20 +218,21 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
                         testCancelled(nodeRef);
                         String currentStatusString = (String)nodeService.getProperty(nodeRef, TransferModel.PROP_TRANSFER_STATUS);
                         Status currentStatus = Status.valueOf(currentStatusString);
+                        
+                        TransferDestinationReportWriter writer = getLogWriter(transferId);
+                        writer.writeChangeState(status.toString());
+                        
                         //If the transfer has already reached a terminal state then we don't allow any further change
                         if (!TransferProgress.getTerminalStatuses().contains(currentStatus))
                         {
-                            log(transferId, "Status update: " + status);
                             nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_STATUS, status.toString());
                             //If the transfer has now reached a terminal state then the make sure that the log channel is
                             //closed for it (if one was open).
                             if (TransferProgress.getTerminalStatuses().contains(status))
                             {
-                                WritableByteChannel logChannel = transferLogWriters.remove(transferId);
-                                if (logChannel != null)
-                                {
-                                    logChannel.close();
-                                }
+                                log.debug("closing destination transfer report");
+                                writer.endTransferReport();
+                                transferLogWriters.remove(transferId);
                             }
                         }
                         return null;
@@ -237,18 +259,29 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
         return nodeRef;
     }
 
-    private WritableByteChannel getLogWriter(String transferId)
+    private  TransferDestinationReportWriter getLogWriter(String transferId)
     {
-        WritableByteChannel channel = this.transferLogWriters.get(transferId);
-        if (channel == null)
+        TransferDestinationReportWriter writer = this.transferLogWriters.get(transferId);
+        if (writer == null)
         {
             NodeRef node = new NodeRef(transferId);
-            ContentWriter writer = contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype("text/plain");
-            channel = writer.getWritableChannel();
-            transferLogWriters.put(transferId, channel);
+            ContentWriter contentWriter = contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
+            contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+            contentWriter.setEncoding("UTF-8");
+            
+            writer = new  XMLTransferDestinationReportWriter();
+            try
+            {
+                writer.startTransferReport("UTF-8", Channels.newWriter(contentWriter.getWritableChannel(), "UTF-8"));
+            } 
+            catch (ContentIOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } 
+            transferLogWriters.put(transferId, writer);
         }
-        return channel;
+        return writer;
     }
     
     public InputStream getLogInputStream(String transferId)
@@ -258,7 +291,14 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
         
         ContentReader reader = contentService.getReader(transferRecord, ContentModel.PROP_CONTENT); 
         
-        return reader.getContentInputStream();
+        if(reader != null)
+        {
+            return reader.getContentInputStream();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -287,5 +327,4 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
     {
         this.transactionService = transactionService;
     }
-
 }

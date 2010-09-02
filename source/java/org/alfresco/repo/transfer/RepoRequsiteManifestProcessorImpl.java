@@ -90,7 +90,7 @@ public class RepoRequsiteManifestProcessorImpl extends AbstractManifestProcessor
         {
             log.debug("Processing node with incoming noderef of " + node.getNodeRef());
         }
-        logProgress("Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
+        logComment("Primary Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
 
         ChildAssociationRef primaryParentAssoc = node.getPrimaryParentAssoc();
 

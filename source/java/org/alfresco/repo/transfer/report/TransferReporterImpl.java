@@ -310,7 +310,7 @@ public class TransferReporterImpl implements TransferReporter
         ContentWriter writer = contentService.getWriter(ref.getChildRef(), 
                 ContentModel.PROP_CONTENT, true);
         writer.setLocale(Locale.getDefault());
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding(DEFAULT_ENCODING);
         writer.putContent(tempFile);
         

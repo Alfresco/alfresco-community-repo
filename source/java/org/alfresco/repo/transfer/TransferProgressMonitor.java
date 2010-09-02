@@ -21,6 +21,8 @@ package org.alfresco.repo.transfer;
 
 import java.io.InputStream;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 
@@ -36,20 +38,60 @@ import org.alfresco.service.cmr.transfer.TransferProgress;
 public interface TransferProgressMonitor
 {
     /**
-     * log a message
+     * log an ad-hoc message
      * @param transferId
      * @param obj
      * @throws TransferException
      */
-    void log(String transferId, Object obj) throws TransferException;
+    void logComment(String transferId, Object obj) throws TransferException;
     /**
-     * log a message and an exception
+     * log an ad-hoc message and an exception
      * @param transferId
      * @param obj
      * @param ex
      * @throws TransferException
      */
-    void log(String transferId, Object obj, Throwable ex) throws TransferException;
+    void logException(String transferId, Object obj, Throwable ex) throws TransferException;
+    
+    /**
+     * Log the creation of a new node
+     * @param transferId
+     * @param sourceNode
+     * @param destNode
+     * @param newPath
+     * @param orphan
+     */
+    void logCreated(String transferId, NodeRef sourceNode, NodeRef destNode, NodeRef newParent, Path newPath, boolean orphan);
+    
+    /**
+     * Log the creation of a new node
+     * @param transferId
+     * @param sourceNode
+     * @param destNode
+     * @param parentPath
+     * @param orphan
+     */
+    void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath);
+  
+    
+    /**
+     * Log the deletion of a node
+     * @param transferId
+     * @param sourceNode
+     * @param destNode
+     * @param parentPath
+     * @param orphan
+     */
+    void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath);
+    
+    /**
+     * After the transfer has completed this method reads the log.
+     * @param transferId
+     * @return the log
+     */
+
+    void logMoved(String transferId, NodeRef sourceNodeRef,
+            NodeRef destNodeRef, Path oldPath, NodeRef newParent, Path newPath);
     
     /**
      * update the progress of the specified transfer 
@@ -84,10 +126,7 @@ public interface TransferProgressMonitor
      */
     TransferProgress getProgress(String transferId) throws TransferException;
     
-    /**
-     * After the transfer has completed this method reads the log.
-     * @param transferId
-     * @return the log
-     */
     InputStream getLogInputStream(String transferId) throws TransferException;
+    
+
 }

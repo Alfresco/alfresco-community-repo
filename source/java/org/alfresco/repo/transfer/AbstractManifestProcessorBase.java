@@ -30,6 +30,7 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -187,7 +188,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         String message = (node != null) ? "Error while processing incoming node " + node.getNodeRef() :
             "Error processing commit";
         
-        monitor.log(transferId, message, ex);
+        monitor.logException(transferId, message, ex);
         //Any non-fatal transfer exception is logged and then skipped - the transfer continues 
         //(albeit with a guaranteed rollback at the end).
         //A fatal transfer exception is rethrown and causes the transfer to end immediately.
@@ -203,8 +204,24 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         }
     }
     
-    protected void logProgress(String message)
+    protected void logComment(String message)
     {
-        receiver.getProgressMonitor().log(transferId, message);
+        receiver.getProgressMonitor().logComment(transferId, message);
+    }
+    protected void logCreated(NodeRef sourceNode, NodeRef destNode, NodeRef newParentNode, Path parentPath, boolean orphan)
+    {
+        receiver.getProgressMonitor().logCreated(transferId, sourceNode, destNode, newParentNode, parentPath, orphan);
+    }
+    protected void logDeleted(NodeRef sourceNode, NodeRef destNode, Path parentPath)
+    {
+        receiver.getProgressMonitor().logDeleted(transferId, sourceNode, destNode, parentPath);
+    }
+    protected void logUpdated(NodeRef sourceNode, NodeRef destNode, Path newPath)
+    {
+        receiver.getProgressMonitor().logUpdated(transferId, sourceNode, destNode, newPath);
+    }
+    protected void logMoved(NodeRef sourceNode, NodeRef destNode, Path oldPath, NodeRef newParent, Path newPath)
+    {
+        receiver.getProgressMonitor().logMoved(transferId, sourceNode, destNode, oldPath, newParent, newPath);
     }
 }

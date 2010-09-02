@@ -738,7 +738,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                     }
                     else
                     {
-                        progressMonitor.log(transferId, "Unable to start commit. No snapshot file received",
+                        progressMonitor.logException(transferId, "Unable to start commit. No snapshot file received",
                                 new TransferException(MSG_NO_SNAPSHOT_RECEIVED, new Object[]{transferId}));
                     }
                     return null;

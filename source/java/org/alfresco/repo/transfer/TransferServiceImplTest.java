@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -1911,6 +1912,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         NodeRef transferReport = null;
+        NodeRef transferDestReport = null;
+        
         startNewTransaction();
         try
         {
@@ -1943,11 +1946,14 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                         {
                             case DESTINATION:
                                 foundDestReport = true;
-                                assertNotNull("dest transfer nodeId null", reportEvent.getNodeRef());
-                                assertFalse("dest transfer nodeId not correct", transferReport.equals(reportEvent.getNodeRef()));
+                                transferDestReport = reportEvent.getNodeRef();
+                                assertNotNull("dest transfer nodeId null", transferDestReport);
+                                assertFalse("dest transfer nodeId not correct", transferReport.equals(transferDestReport));
                                 break;
+                                
                             case SOURCE:
                                 foundSourceReport = true;
+                             
                                 assertEquals("source transfer nodeId not correct", transferReport, reportEvent.getNodeRef());
                                 break; 
                         }
@@ -1962,18 +1968,22 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
-        
+       
+        /**
+         * Now validate the client side transfer report against the xsd file
+         */
         startNewTransaction();
         try
         {
             ContentReader reader = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
             assertNotNull("transfer reader is null", reader);
             
-            ContentReader reader2 = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
-            assertNotNull("transfer reader is null", reader);
-            
-            logger.debug("now show the contents of the transfer report");
-            reader2.getContent(System.out);  
+//            ContentReader reader2 = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
+//            assertNotNull("transfer reader is null", reader2);
+//            
+//            logger.debug("now show the contents of the transfer report");
+//            System.out.println("Client side transfer report");
+//            reader2.getContent(System.out);  
             
             // Now validate the client side transfer report against the XSD
             Source transferReportSource = new StreamSource(reader.getContentInputStream());
@@ -1989,19 +1999,94 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 fail(e.getMessage() );
             }
-            
-            logger.debug("now delete the target:" + targetName);
-            
-            transferService.deleteTransferTarget(targetName);     
         }
         finally
         {
             endTransaction();
-        }          
-    } // test transfer report
+        }
+        
+        /**
+         * Now validate the destination side transfer report against its xsd file
+         */
+        startNewTransaction();
+        try
+        {
+            ContentReader reader = contentService.getReader(transferDestReport, ContentModel.PROP_CONTENT);
+            assertNotNull("transfer reader is null", reader);
+                        
+            // Now validate the destination side transfer report against the XSD
+            Source transferReportSource = new StreamSource(reader.getContentInputStream());
+            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final String TRANSFER_REPORT_SCHEMA_LOCATION = "classpath:org/alfresco/repo/transfer/reportd/TransferDestinationReport.xsd";
+            Schema schema = sf.newSchema(ResourceUtils.getURL(TRANSFER_REPORT_SCHEMA_LOCATION));
+            Validator validator = schema.newValidator();
+            try 
+            {
+                validator.validate(transferReportSource);
+            }
+            catch (Exception e)
+            {
+                fail("Destination Transfer Report " + e.getMessage() );
+            } 
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        
+        /**
+         * Now validate all transfer reports.
+         */
+        startNewTransaction();
+        try
+        {
 
-    
-    
+            String query = "TYPE:\"trx:transferReportDest\"";
+            ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);
+  
+            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final String TRANSFER_REPORT_SCHEMA_LOCATION = "classpath:org/alfresco/repo/transfer/reportd/TransferDestinationReport.xsd";
+            Schema schema = sf.newSchema(ResourceUtils.getURL(TRANSFER_REPORT_SCHEMA_LOCATION));
+            Validator validator = schema.newValidator();
+     
+            for(ResultSetRow result : results)
+            {
+                NodeRef reportNode = result.getNodeRef();
+                
+                logger.debug("validating  reportNode " + reportNode);
+                // Now validate the destination side transfer report against the XSD
+                ContentReader reader = contentService.getReader(reportNode, ContentModel.PROP_CONTENT);
+                assertNotNull("transfer reader is null", reader);
+                
+                Source transferReportSource = new StreamSource(reader.getContentInputStream());
+                try 
+                {
+                    validator.validate(transferReportSource);
+                }
+                catch (Exception e)
+                {
+                    fail("Destination Transfer Report reportNode:" + reportNode + " message :" + e.getMessage() );
+                } 
+            }
+        }
+        finally
+        {
+            endTransaction();
+        } 
+          
+        startNewTransaction();
+        try
+        {
+        
+            logger.debug("now delete the target:" + targetName);
+        
+            transferService.deleteTransferTarget(targetName);  
+        }
+        finally
+        {
+            endTransaction();
+        }    
+    } // test transfer report    
     
 //    /**
 //     * Test the transfer method with big content - commented out since it takes a long time to run.

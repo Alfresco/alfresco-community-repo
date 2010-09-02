@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -135,7 +136,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // store in which its old parent lives.
         // If we can find a corresponding node then we'll delete it.
         // If we can't find a corresponding node then we'll do nothing.
-        logProgress("Processing incoming deleted node: " + node.getNodeRef());
+        logComment("Primary Processing incoming deleted node: " + node.getNodeRef());
         
         ChildAssociationRef origPrimaryParent = node.getPrimaryParentAssoc();
         NodeRef origNodeRef = new NodeRef(origPrimaryParent.getParentRef().getStoreRef(), node.getNodeRef().getId());
@@ -154,12 +155,14 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         + " has been resolved to existing local noderef " + exNode
                         + "  - deleting");
             }
-                
-            delete(exNode);
+            
+            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode));    
+            
+            delete(node, exNode);
         }
         else
         {
-            logProgress("Unable to find corresponding node for incoming deleted node: " + node.getNodeRef());
+            logComment("Unable to find corresponding node for incoming deleted node: " + node.getNodeRef());
             if (log.isDebugEnabled())
             {
                 log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef()
@@ -180,7 +183,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             log.debug("Processing node with incoming noderef of " + node.getNodeRef());
         }
-        logProgress("Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
+        logComment("Primary Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
 
         ChildAssociationRef primaryParentAssoc = node.getPrimaryParentAssoc();
         if (primaryParentAssoc == null)
@@ -216,7 +219,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                     log.info("Located an archived node with UUID matching transferred node: " + archiveNodeRef);
                     log.info("Attempting to restore " + archiveNodeRef);
                 }
-                logProgress("Delete node from archive: " + archiveNodeRef);
+                logComment("Delete node from archive: " + archiveNodeRef);
                 nodeService.deleteNode(archiveNodeRef);
             }
 
@@ -239,7 +242,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             ChildAssociationRef primaryParentAssoc)
     {
         log.info("Creating new node with noderef " + node.getNodeRef());
-        logProgress("Creating new node to correspond to incoming node: " + node.getNodeRef());
+        
+
         
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
@@ -260,7 +264,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             parentAssocType = tempLocation.getTypeQName();
             parentAssocName = tempLocation.getQName();
             log.info("Recording orphaned transfer node: " + node.getNodeRef());
-            logProgress("Unable to resolve parent for new incoming node. Storing it in temp folder: " + node.getNodeRef());
+            logComment("Unable to resolve parent for new incoming node. Storing it in temp folder: " + node.getNodeRef());
             storeOrphanNode(primaryParentAssoc);
         }
         // We now know that this is a new node, and we have found the
@@ -298,6 +302,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             log.debug("Created new node (" + newNode.getChildRef() + ") parented by node " + newNode.getParentRef());
         }
+        
+        logCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()), false);
         
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
@@ -350,11 +356,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * Delete this node
      * @param exNode
      */
-    protected void delete(NodeRef nodeToDelete)
+    protected void delete(TransferManifestDeletedNode node, NodeRef nodeToDelete)
     {
         if(alienProcessor.isAlien(nodeToDelete))
         {
-            logProgress("Pruning local node: " + nodeToDelete);
+            logComment("Node contains alien content and can't be deleted: " + nodeToDelete);
             if (log.isDebugEnabled())
             {
                 log.debug("Node to be deleted is alien prune rather than delete: " + nodeToDelete);
@@ -375,14 +381,15 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 {
                     if(!fromRepository.equalsIgnoreCase(transferringRepo))
                     {
-                        logProgress("Not deleting local node (not from the transferring repository): " + nodeToDelete);
+                        logComment("Not deleting local node (not from the transferring repository): " + nodeToDelete);
                         return;
                     }
                 }
             }
             
             // Not alien or from another repo - delete it.
-            logProgress("Deleting local node: " + nodeToDelete);
+            logDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete));
+            
             nodeService.deleteNode(nodeToDelete);
             if (log.isDebugEnabled())
             {
@@ -399,7 +406,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // Yes, it is...
             for (ChildAssociationRef orphan : orphansToClaim)
             {
-                logProgress("Re-parenting previously orphaned node (" + orphan.getChildRef() + ") with found parent " + orphan.getParentRef());
+                logComment("Re-parenting previously orphaned node (" + orphan.getChildRef() + ") with found parent " + orphan.getParentRef());
                 ChildAssociationRef newRef = nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(), orphan
                         .getQName());
                 
@@ -441,13 +448,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             {
                 if(!fromRepository.equalsIgnoreCase(transferringRepo))
                 {
-                    logProgress("Not updating local node (not from the transferring repository): " + node.getNodeRef());
+                    logComment("Not updating local node (not from the transferring repository): " + node.getNodeRef());
                     return;
                 }
             }
         }
         
-        logProgress("Updating local node: " + node.getNodeRef());
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
         NodeRef parentNodeRef = resolvedNodes.resolvedParent;
@@ -483,7 +489,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             
             // Yes, we need to move the node
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
-            logProgress("Moved node " + nodeToUpdate + " to be under parent node " + parentNodeRef);
+            logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()));
             
             alienProcessor.afterMoveAlien(newNode);
             
@@ -494,6 +500,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         if (updateNeeded(node, nodeToUpdate))
         {
 
+            logUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate));
+            
             // We need to process content properties separately.
             // First, create a shallow copy of the supplied property map...
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());

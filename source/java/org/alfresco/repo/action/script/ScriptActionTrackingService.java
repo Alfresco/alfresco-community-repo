@@ -113,7 +113,7 @@ public class ScriptActionTrackingService extends BaseScopableProcessorExtension
             ExecutionDetails detail = actionTrackingService.getExecutionDetails(summary);
             if(detail != null)
             {
-                details.add( new ScriptExecutionDetails(detail) );
+                details.add( new ScriptExecutionDetails(detail, serviceRegistry) );
             }
         }
         

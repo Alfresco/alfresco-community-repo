@@ -22,6 +22,8 @@ import static org.alfresco.repo.action.ActionServiceImplTest.assertBefore;
 
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -33,6 +35,7 @@ import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -43,6 +46,8 @@ import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -67,6 +72,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     private NodeRef folder;
     private NodeService nodeService;
     private ActionService actionService;
+    private ScriptService scriptService;
     private TransactionService transactionService;
     private RuntimeActionService runtimeActionService;
     private ActionTrackingService actionTrackingService;
@@ -76,6 +82,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     @SuppressWarnings("unchecked")
     protected void setUp() throws Exception {
         this.nodeService = (NodeService)ctx.getBean("nodeService");
+        this.scriptService = (ScriptService)ctx.getBean("scriptService");
         this.actionService = (ActionService)ctx.getBean("actionService");
         this.runtimeActionService = (RuntimeActionService)ctx.getBean("actionService");
         this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");
@@ -1072,6 +1079,52 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertBefore(action.getExecutionEndDate(), new Date());
        assertNotNull(action.getExecutionFailureMessage());
        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+    }
+    
+    public void testJavascriptAPI() throws Exception
+    {
+        // We need a background action to sleep for long enough for
+        //  it still to be running when the JS fires off
+        final SleepActionExecuter sleepActionExec = 
+          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+        sleepActionExec.setSleepMs(2000);
+        
+        ActionImpl sleepAction;
+        ActionImpl action;
+       
+        // Create three test actions:
+        ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
+        
+        // Sleep one that will still be running
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        sleepAction = (ActionImpl)createWorkingSleepAction(null);
+        sleepAction.setNodeRef(nodeRef); // This isn't true!
+        this.actionService.executeAction(sleepAction, null, false, true);
+        txn.commit();
+        
+        // Move one that will appear to be "running"
+        action = (ActionImpl)createFailingMoveAction();
+        actionTrackingService.recordActionExecuting(action);
+        
+        // Finally one that has "failed"
+        // (Shouldn't show up in any lists)
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        action = (ActionImpl)createWorkingSleepAction(null);
+        action.setExecutionStartDate(new Date(1234));
+        action.setExecutionEndDate(new Date(54321));
+        action.setExecutionStatus(ActionStatus.Failed);
+        this.actionService.saveAction(this.nodeRef, action);
+        txn.commit();
+       
+        // Call the test 
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("NodeRef", nodeRef.toString());
+        model.put("SleepAction", sleepAction);
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/action/script/test_actionTrackingService.js");
+        this.scriptService.executeScript(location, model);
     }
 
     

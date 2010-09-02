@@ -22,9 +22,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.repo.jscript.Scopeable;
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -43,10 +44,14 @@ public final class ScriptExecutionDetails implements Serializable, Scopeable
     
     /** The details we wrap */
     private ExecutionDetails details;
-
-    public ScriptExecutionDetails(ExecutionDetails details)
+    
+    /** Services, used when building Script objects */
+    private ServiceRegistry services;
+    
+    public ScriptExecutionDetails(ExecutionDetails details, ServiceRegistry services)
     {
     	 this.details = details;
+    	 this.services = services;
     }
     
     protected ExecutionDetails getExecutionDetails() 
@@ -67,8 +72,8 @@ public final class ScriptExecutionDetails implements Serializable, Scopeable
        return details.getExecutionInstance();
     }
     
-    public NodeRef getPersistedActionRef() {
-       return details.getPersistedActionRef();
+    public ScriptNode getPersistedActionRef() {
+       return new ScriptNode(details.getPersistedActionRef(), services); 
     }
 
     public String getRunningOn() {

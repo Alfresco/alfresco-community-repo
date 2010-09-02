@@ -15,6 +15,7 @@
 
     <DataGenerators>
        <DataGenerator name="personFullName" registeredName="auditModel.generator.personFullName"/>
+       <DataGenerator name="authenticatedUser" registeredName="auditModel.generator.user"/>
     </DataGenerators>
 
     <PathMappings>
@@ -23,11 +24,9 @@
 
     <Application name="AlfrescoRepository" key="repository">
         <AuditPath key="login">
-            <!--
             <AuditPath key="no-error">
                 <RecordValue key="user" dataExtractor="simpleValue" dataSource="/repository/login/args/userName"/>
             </AuditPath>
-            -->
             <AuditPath key="error">
                 <RecordValue key="user" dataExtractor="simpleValue" dataSource="/repository/login/args/userName"/>
             </AuditPath>

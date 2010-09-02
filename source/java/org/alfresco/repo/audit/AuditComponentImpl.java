@@ -651,8 +651,15 @@ public class AuditComponentImpl implements AuditComponent
         for (DataExtractorDefinition extractorDef : extractors)
         {
             DataExtractor extractor = extractorDef.getDataExtractor();
+            String triggerPath = extractorDef.getDataTrigger();
             String sourcePath = extractorDef.getDataSource();
             String targetPath = extractorDef.getDataTarget();
+            
+            // Check if it is triggered
+            if (!values.containsKey(triggerPath))
+            {
+                continue;               // It is not triggered
+            }
             
             // We observe the key, not the actual value
             if (!values.containsKey(sourcePath))

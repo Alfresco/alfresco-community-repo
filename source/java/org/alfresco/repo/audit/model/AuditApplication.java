@@ -290,20 +290,31 @@ public class AuditApplication
      */
     public static class DataExtractorDefinition
     {
+        private final String dataTrigger;
         private final String dataSource;
         private final String dataTarget;
         private final DataExtractor dataExtractor;
 
         /**
+         * @param dataTrigger           the data path that must exist for this extractor to be triggered
          * @param dataSource            the path to get data from
          * @param dataTarget            the path to write data to
          * @param dataExtractor         the implementation to use
          */
-        public DataExtractorDefinition(String dataSource, String dataTarget, DataExtractor dataExtractor)
+        public DataExtractorDefinition(String dataTrigger, String dataSource, String dataTarget, DataExtractor dataExtractor)
         {
+            this.dataTrigger = dataTrigger;
             this.dataSource = dataSource;
             this.dataTarget = dataTarget;
             this.dataExtractor = dataExtractor;
+        }
+
+        /**
+         * The data path that must exist for the extractor to be triggered.
+         */
+        public String getDataTrigger()
+        {
+            return dataTrigger;
         }
 
         public String getDataSource()
@@ -442,8 +453,14 @@ public class AuditApplication
             {
                 sourcePath = currentPath;
             }
+            // The extractor may be triggered by data from elsewhere
+            String dataTrigger = element.getDataTrigger();
+            if (dataTrigger == null)
+            {
+                dataTrigger = currentPath;
+            }
             // Store the extractor definition
-            DataExtractorDefinition extractorDef = new DataExtractorDefinition(sourcePath, extractorPath, extractor);
+            DataExtractorDefinition extractorDef = new DataExtractorDefinition(dataTrigger, sourcePath, extractorPath, extractor);
             dataExtractors.add(extractorDef);
         }
 

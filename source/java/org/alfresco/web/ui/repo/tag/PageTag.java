@@ -16,6 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+/*
+ * There is an Enterprise overlay for this file
+ */
+
 package org.alfresco.web.ui.repo.tag;
 
 import java.io.IOException;

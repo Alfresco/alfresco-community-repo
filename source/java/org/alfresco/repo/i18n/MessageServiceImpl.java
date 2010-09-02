@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -54,6 +53,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Message Service to get localised messages/strings which have been loaded from resource bundles either dynamically 
@@ -138,65 +138,36 @@ public class MessageServiceImpl implements MessageService
         this.messagesCache = messagesCache;
     }
     
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#setLocale(java.util.Locale)
-     */
     public void setLocale(Locale locale)
     {
         I18NUtil.setLocale(locale);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getLocale()
-     */
     public Locale getLocale()
     {
         return I18NUtil.getLocale();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#setContentLocale(java.util.Locale)
-     */
     public void setContentLocale(Locale locale)
     {
         I18NUtil.setContentLocale(locale);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getContentLocale()
-     */
     public Locale getContentLocale()
     {
         return I18NUtil.getContentLocale();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getNearestLocale(java.util.Locale, java.util.Set)
-     */
     public Locale getNearestLocale(Locale templateLocale, Set<Locale> options)
     {
         return I18NUtil.getNearestLocale(templateLocale, options);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#parseLocale(java.lang.String)
-     */
     public Locale parseLocale(String localeStr)
     {
         return I18NUtil.parseLocale(localeStr);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#registerResourceBundle(java.lang.String)
-     */
     public void registerResourceBundle(String resBundlePath)
     {
         String tenantDomain = getTenantDomain(); 
@@ -231,19 +202,11 @@ public class MessageServiceImpl implements MessageService
         }
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getMessage(java.lang.String)
-     */
     public String getMessage(String messageKey)
     {
         return getMessage(messageKey, getLocale());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getMessage(java.lang.String, java.util.Locale)
-     */
     public String getMessage(final String messageKey, final Locale locale)
     {
         String message = null;
@@ -289,19 +252,11 @@ public class MessageServiceImpl implements MessageService
         return message;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getMessage(java.lang.String, java.lang.Object[])
-     */
     public String getMessage(String messageKey, Object ... params)
     {
         return getMessage(messageKey, getLocale(), params);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getMessage(java.lang.String, java.util.Locale, java.lang.Object[])
-     */
     public String getMessage(String messageKey, Locale locale, Object ... params)
     {
         String message = getMessage(messageKey, locale);
@@ -312,10 +267,6 @@ public class MessageServiceImpl implements MessageService
         return message;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#unregisterResourceBundle(java.lang.String)
-     */
     public void unregisterResourceBundle(String resBundlePath)
     {
         Map<Locale, Set<String>> loadedResourceBundlesForAllLocales;
@@ -561,72 +512,64 @@ public class MessageServiceImpl implements MessageService
         return props;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getRepoResourceBundle(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.util.Locale)
-     */
-    public ResourceBundle getRepoResourceBundle(StoreRef storeRef, String path, Locale locale) throws IOException
+    public ResourceBundle getRepoResourceBundle(
+            final StoreRef storeRef,
+            final String path,
+            final Locale locale) throws IOException
     {   
-        ResourceBundle resBundle = null;
-        
         // TODO - need to replace basic strategy with a more complete
         // search & instantiation strategy similar to ResourceBundle.getBundle()
         // Consider search query with basename* and then apply strategy ...
         
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        
-        // first attempt - with locale        
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
-        
-        if ((nodeRefs == null) || (nodeRefs.size() == 0))
+        // Avoid permission exceptions
+        RunAsWork<ResourceBundle> getBundleWork = new RunAsWork<ResourceBundle>()
         {
-            // second attempt - basename 
-            nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
-           
-            if ((nodeRefs == null) || (nodeRefs.size() == 0))
+            @Override
+            public ResourceBundle doWork() throws Exception
             {
-                logger.debug("Could not find message resource bundle " + storeRef + "/" + path);
-                return null;
+                NodeRef rootNode = nodeService.getRootNode(storeRef);
+
+                // first attempt - with locale        
+                List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
+                
+                if ((nodeRefs == null) || (nodeRefs.size() == 0))
+                {
+                    // second attempt - basename 
+                    nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
+                   
+                    if ((nodeRefs == null) || (nodeRefs.size() == 0))
+                    {
+                        logger.debug("Could not find message resource bundle " + storeRef + "/" + path);
+                        return null;
+                    }
+                }
+                
+                if (nodeRefs.size() > 1)
+                {
+                    throw new RuntimeException("Found more than one message resource bundle " + storeRef + path);
+                }
+                
+                NodeRef messageResourceNodeRef = nodeRefs.get(0);
+        
+                ContentReader cr = contentService.getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
+                ResourceBundle resBundle = new MessagePropertyResourceBundle(
+                        new InputStreamReader(cr.getContentInputStream(), cr.getEncoding()));
+                return resBundle;
             }
-        }
-        
-        if (nodeRefs.size() > 1)
-        {
-            throw new RuntimeException("Found more than one message resource bundle " + storeRef + path);
-        }
-        else
-        {
-            NodeRef messageResourceNodeRef = nodeRefs.get(0);
-    
-            ContentReader cr = contentService.getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
-            resBundle = new MessagePropertyResourceBundle(new InputStreamReader(cr.getContentInputStream(), cr.getEncoding()));
-        }
-        
-        return resBundle;
+        };
+        return AuthenticationUtil.runAs(getBundleWork, AuthenticationUtil.getSystemUserName());
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
-     */
     public void onEnableTenant()
     {
         // NOOP - refer to DictionaryRepositoryBootstrap
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
-     */
     public void onDisableTenant()
     {
         destroy(); // will be called in context of tenant
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#init()
-     */
     public void init()
     { 
         // initialise empty message service       
@@ -639,10 +582,6 @@ public class MessageServiceImpl implements MessageService
         logger.info("Empty message service initialised");
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
-     */
     public void destroy()
     {
         // used by reset and also as callback when destroying tenant(s) during shutdown
@@ -655,10 +594,6 @@ public class MessageServiceImpl implements MessageService
         logger.info("Messages cache destroyed (all locales)");
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#getRegisteredBundles()
-     */
     public Set<String> getRegisteredBundles()
     {
         try
@@ -821,10 +756,6 @@ public class MessageServiceImpl implements MessageService
         return tenantService.getCurrentUserDomain();
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.i18n.MessageService#register(org.alfresco.repo.i18n.MessageDeployer)
-     */
     public void register(MessageDeployer messageDeployer)
     {
         if (! messageDeployers.contains(messageDeployer))

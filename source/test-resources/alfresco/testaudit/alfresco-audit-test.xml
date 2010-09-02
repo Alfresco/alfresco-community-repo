@@ -103,9 +103,9 @@
                 </AuditPath>
             </AuditPath>
             <AuditPath key="action-02">
-                <RecordValue key="valueA" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/A"/>
-                <RecordValue key="valueB" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/B"/>
-                <RecordValue key="valueC" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/C"/>
+                <RecordValue key="valueA" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/A" dataTrigger="/actions-test/actions/action-02/params/A"/>
+                <RecordValue key="valueB" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/B" dataTrigger="/actions-test/actions/action-02/params/B"/>
+                <RecordValue key="valueC" dataExtractor="simpleValue" dataSource="/actions-test/actions/action-02/params/C" dataTrigger="/actions-test/actions/action-02/params/C"/>
             </AuditPath>
         </AuditPath>
     </Application>

@@ -33,6 +33,43 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface ImapService
 {
+    
+    /**
+     * Helper enumeration to handle email body type text/html and text/plain
+     */
+    public static enum EmailBodyType
+    {
+        TEXT_PLAIN(AlfrescoImapConst.CLASSPATH_TEXT_PLAIN_TEMPLATE),
+        TEXT_HTML(AlfrescoImapConst.CLASSPATH_TEXT_HTML_TEMPLATE);
+        
+        EmailBodyType(String templatePath)
+        {
+            this.templatePath = templatePath;
+        }
+        public String getSubtype()
+        {
+            return name().toLowerCase().substring(5);
+        }
+
+        public String getTypeSubtype()
+        {
+            return name().toLowerCase().replaceAll("_", "");
+        }
+
+        public String getMimeType()
+        {
+            return name().toLowerCase().replaceAll("_", "/");
+        }
+        
+        public String getClasspathTempltePath()
+        {
+            return this.templatePath;
+        }
+        
+        private String templatePath;
+
+    }
+
     /**
      * Returns an collection of mailboxes. This method serves LIST command of the IMAP protocol.
      * 
@@ -191,4 +228,15 @@ public interface ImapService
      */
     public String getWebApplicationContextUrl();
 
+    /**
+     * Returns a template for email body. It is either classpath path or NodeRef.toString().
+     * This method trying to find a template on the path in the repository first
+     * e.g. {@code "Data Dictionary > IMAP Templates >"}. This path should be set as the property of the "imapHelper" bean.
+     * In this case it returns {@code NodeRef.toString()} of the template. If there are no template in the repository it
+     * returns a default template on the classpath.
+     * 
+     * @param Type one of the possible body types text/html and text/plain
+     * @return
+     */
+    public String getDefaultEmailBodyTemplate(EmailBodyType type);
 }

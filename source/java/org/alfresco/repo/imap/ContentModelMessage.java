@@ -31,6 +31,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.imap.ImapService.EmailBodyType;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.namespace.QName;

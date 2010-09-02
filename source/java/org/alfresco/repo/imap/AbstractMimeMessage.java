@@ -18,9 +18,6 @@
  */
 package org.alfresco.repo.imap;
 
-import static org.alfresco.repo.imap.AlfrescoImapConst.CLASSPATH_TEXT_HTML_TEMPLATE;
-import static org.alfresco.repo.imap.AlfrescoImapConst.CLASSPATH_TEXT_PLAIN_TEMPLATE;
-import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFIX;
 import static org.alfresco.repo.imap.AlfrescoImapConst.MIME_VERSION;
 import static org.alfresco.repo.imap.AlfrescoImapConst.X_ALF_NODEREF_ID;
 
@@ -40,6 +37,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.imap.ImapService.EmailBodyType;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -47,8 +45,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -85,27 +81,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
         buildMessage(fileInfo, serviceRegistry);
     }
 
-    public static enum EmailBodyType
-    {
-        TEXT_PLAIN, TEXT_HTML;
-
-        public String getSubtype()
-        {
-            return name().toLowerCase().substring(5);
-        }
-
-        public String getTypeSubtype()
-        {
-            return name().toLowerCase().replaceAll("_", "");
-        }
-
-        public String getMimeType()
-        {
-            return name().toLowerCase().replaceAll("_", "/");
-        }
-
-    }
-
     protected void buildMessage(FileInfo fileInfo, ServiceRegistry serviceRegistry) throws MessagingException
     {
         checkParameter(serviceRegistry, "ServiceRegistry");
@@ -115,13 +90,15 @@ public abstract class AbstractMimeMessage extends MimeMessage
         this.messageFileInfo = fileInfo;
         RetryingTransactionHelper txHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
         txHelper.setMaxRetries(MAX_RETRIES);
+        txHelper.setReadOnly(false);
         txHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 buildMessageInternal();
                 return null;
             }
-        });
+        }, false);
+        
     }
     
     /**
@@ -243,7 +220,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
     public String getEmailBodyText(EmailBodyType type)
     {
         return serviceRegistry.getTemplateService().processTemplate(
-                getDefaultEmailBodyTemplate(type),
+                imapService.getDefaultEmailBodyTemplate(type),
                 createEmailTemplateModel(messageFileInfo.getNodeRef()));
     }
 
@@ -283,62 +260,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
         {
             addFrom(new Address[] { new InternetAddress(DEFAULT_EMAIL_FROM) });
         }
-    }
-
-    /**
-     * Returns default email body template. This method trying to find a template on the path in the repository first
-     * e.g. {@code "Data Dictionary > IMAP Templates >"}. This path should be set as the property of the "imapHelper" bean.
-     * In this case it returns {@code NodeRef.toString()} of the template. If there are no template in the repository it
-     * returns a default template on the classpath.
-     * 
-     * @param type One of the {@link EmailBodyType}.
-     * @return String representing template classpath path or NodeRef.toString().
-     */
-    private String getDefaultEmailBodyTemplate(EmailBodyType type)
-    {
-        String result = null;
-        switch (type)
-        {
-        case TEXT_HTML:
-            result = CLASSPATH_TEXT_HTML_TEMPLATE;
-            break;
-        case TEXT_PLAIN:
-            result = CLASSPATH_TEXT_PLAIN_TEMPLATE;
-            break;
-        }
-        final StringBuilder templateName = new StringBuilder(DICTIONARY_TEMPLATE_PREFIX).append("-").append(type.getTypeSubtype()).append(".ftl");
-        final String repositoryTemplatePath = imapService.getRepositoryTemplatePath();
-        int indexOfStoreDelim = repositoryTemplatePath.indexOf(StoreRef.URI_FILLER);
-        if (indexOfStoreDelim == -1)
-        {
-            logger.error("Bad path format, " + StoreRef.URI_FILLER + " not found");
-            return result;
-        }
-        indexOfStoreDelim += StoreRef.URI_FILLER.length();
-        int indexOfPathDelim = repositoryTemplatePath.indexOf("/", indexOfStoreDelim);
-        if (indexOfPathDelim == -1)
-        {
-            logger.error("Bad path format, / not found");
-            return result;
-        }
-        final String storePath = repositoryTemplatePath.substring(0, indexOfPathDelim);
-        final String rootPathInStore = repositoryTemplatePath.substring(indexOfPathDelim);
-        final String query = String.format("+PATH:\"%1$s/*\" +@cm\\:name:\"%2$s\"", rootPathInStore, templateName.toString());
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Using template path :" + repositoryTemplatePath + "/" + templateName);
-            logger.debug("Query: " + query);
-        }
-        StoreRef storeRef = new StoreRef(storePath);
-        ResultSet resultSet = serviceRegistry.getSearchService().query(storeRef, "lucene", query);
-        if (resultSet == null || resultSet.length() == 0)
-        {
-            logger.error(String.format("IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
-            return result;
-        }
-        result = resultSet.getNodeRef(0).toString();
-        resultSet.close();
-        return result;
     }
 
     /**

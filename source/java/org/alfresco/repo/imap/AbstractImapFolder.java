@@ -366,7 +366,7 @@ public abstract class AbstractImapFolder implements MailFolder
                 return getRecentCountInternal(reset);
             }
         };
-        return command.run(true);
+        return command.run();
     }
 
     /**

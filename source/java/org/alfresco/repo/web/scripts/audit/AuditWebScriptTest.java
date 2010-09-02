@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -212,7 +214,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     /**
      * Perform a failed login attempt
      */
-    private void loginWithFailure() throws Exception
+    private void loginWithFailure(final String username) throws Exception
     {
         // Force a failed login
         RunAsWork<Void> failureWork = new RunAsWork<Void>()
@@ -222,7 +224,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             {
                 try
                 {
-                    authenticationService.authenticate("domino", "crud".toCharArray());
+                    authenticationService.authenticate(username, "crud".toCharArray());
                     fail("Failed to force authentication failure");
                 }
                 catch (AuthenticationException e)
@@ -240,7 +242,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         long now = System.currentTimeMillis();
         long future = Long.MAX_VALUE;
         
-        loginWithFailure();
+        loginWithFailure(getName());
         
         // Delete audit entries that could not have happened
         String url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + future;
@@ -249,15 +251,24 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(response.getContentAsString());
         int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
         assertEquals("Could not have cleared more than 0", 0, cleared);
-
+        
+        // Delete the entry (at least)
         url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + now + "&toTime=" + future;
         req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
         cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
         assertTrue("Should have cleared at least 1 entry", cleared > 0);
+        
+        // Delete all entries
+        url = "/api/audit/clear/" + APP_REPO_NAME;;
+        req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
     }
     
+    @SuppressWarnings("unused")
     public void testQueryAuditRepo() throws Exception
     {
         long now = System.currentTimeMillis();
@@ -266,14 +277,98 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         auditService.setAuditEnabled(true);
         auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
 
-        loginWithFailure();
+        loginWithFailure(getName());
         
-        // Delete audit entries that could not have happened
+        // Query for audit entries that could not have happened
         String url = "/api/audit/query/" + APP_REPO_NAME + "?fromTime=" + now + "&verbose=true";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         JSONObject json = new JSONObject(response.getContentAsString());
+        Long entryCount = json.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_COUNT);
         JSONArray jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertTrue("Expected at least one entry", jsonEntries.length() > 0);
+        assertEquals("Entry count and physical count don't match", new Long(jsonEntries.length()), entryCount);
+        JSONObject jsonEntry = jsonEntries.getJSONObject(0);
+        Long entryId = jsonEntry.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_ID);
+        assertNotNull("No entry ID", entryId);
+        String entryTimeStr = jsonEntry.getString(AbstractAuditWebScript.JSON_KEY_ENTRY_TIME);
+        assertNotNull("No entry time String", entryTimeStr);
+        Date entryTime = ISO8601DateFormat.parse((String)entryTimeStr); // Check conversion
+        JSONObject jsonValues = jsonEntry.getJSONObject(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
+        String entryUsername = jsonValues.getString("/repository/login/error/user");
+        assertEquals("Didn't find the login-failure-user", getName(), entryUsername);
+        
+        // Query using well-known ID
+        Long fromEntryId = entryId;                 // Search is inclusive on the 'from' side
+        Long toEntryId = entryId.longValue() + 1L;  // Search is exclusive on the 'to' side
+        url = "/api/audit/query/" + APP_REPO_NAME + "?fromId=" + fromEntryId + "&toId=" + toEntryId;
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of search results", 1, jsonEntries.length());
+        
+        // Query using a non-existent entry path
+        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/userXXX" + "?verbose=true";
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertTrue("Should not have found anything", jsonEntries.length() == 0);
+        
+        // Query using a good entry path
+        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?verbose=true";
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertTrue("Should have found entries", jsonEntries.length() > 0);
+        
+        // Now login with failure using a GUID and ensure that we can find it
+        String missingUser = new Long(System.currentTimeMillis()).toString();
+
+        // Query for event that has not happened
+        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser;
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of search results", 0, jsonEntries.length());
+        
+        loginWithFailure(missingUser);
+        
+        // Query for event that has happened once
+        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser;
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of search results", 1, jsonEntries.length());
+        
+        // Query for event, but casting the value to the incorrect type
+        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser + "&valueType=java.lang.Long";
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of search results", 0, jsonEntries.length());
+        
+        // Test what happens when the target data needs encoding
+        String oddUser = "%$£\\\"\'";
+        loginWithFailure(oddUser);
+        
+        // Query for the event limiting to one by count and descending (i.e. get last)
+        url = "/api/audit/query/" + APP_REPO_NAME + "?forward=false&limit=1&verbose=true";
+        req = new TestWebScriptServer.GetRequest(url);
+        response = sendRequest(req, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of search results", 1, jsonEntries.length());
+        jsonEntry = jsonEntries.getJSONObject(0);
+        entryId = jsonEntry.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_ID);
+        assertNotNull("No entry ID", entryId);
+        jsonValues = jsonEntry.getJSONObject(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
+        entryUsername = jsonValues.getString("/repository/login/error/user");
+        assertEquals("Didn't find the login-failure-user", oddUser, entryUsername);
     }
 }

@@ -38,6 +38,8 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String PARAM_APPLICATION = "application";
     public static final String PARAM_PATH="path";
     public static final String PARAM_ENABLED = "enabled";
+    public static final String PARAM_VALUE = "value";
+    public static final String PARAM_VALUE_TYPE = "valueType";
     public static final String PARAM_FROM_TIME = "fromTime";
     public static final String PARAM_TO_TIME = "toTime";
     public static final String PARAM_FROM_ID = "fromId";
@@ -62,12 +64,13 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String JSON_KEY_PATH = "path";
     public static final String JSON_KEY_CLEARED = "cleared";
     
+    public static final String JSON_KEY_ENTRY_COUNT = "count";
     public static final String JSON_KEY_ENTRIES = "entries";
-    public static final String JSON_QUERY_KEY_ID = "id";
-    public static final String JSON_QUERY_KEY_APPLICATION = "application";
-    public static final String JSON_QUERY_KEY_USER = "user";
-    public static final String JSON_QUERY_KEY_TIME = "time";
-    public static final String JSON_QUERY_KEY_VALUES = "values";
+    public static final String JSON_KEY_ENTRY_ID = "id";
+    public static final String JSON_KEY_ENTRY_APPLICATION = "application";
+    public static final String JSON_KEY_ENTRY_USER = "user";
+    public static final String JSON_KEY_ENTRY_TIME = "time";
+    public static final String JSON_KEY_ENTRY_VALUES = "values";
 
     /**
      * Logger that can be used by subclasses.
@@ -139,6 +142,19 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         return Boolean.parseBoolean(enableStr);
     }
     
+    protected String getParamValue(WebScriptRequest req)
+    {
+        return req.getParameter(PARAM_VALUE);
+    }
+    
+    protected String getParamValueType(WebScriptRequest req)
+    {
+        return req.getParameter(PARAM_VALUE_TYPE);
+    }
+    
+    /**
+     * @see #DEFAULT_FROM_TIME
+     */
     protected Long getParamFromTime(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_FROM_TIME);
@@ -152,6 +168,9 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * @see #DEFAULT_TO_TIME
+     */
     protected Long getParamToTime(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_TO_TIME);
@@ -165,6 +184,9 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * @see #DEFAULT_FROM_ID
+     */
     protected Long getParamFromId(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_FROM_ID);
@@ -178,6 +200,9 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * @see #DEFAULT_TO_ID
+     */
     protected Long getParamToId(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_TO_ID);
@@ -191,11 +216,17 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * @see #DEFAULT_USER
+     */
     protected String getParamUser(WebScriptRequest req)
     {
         return req.getParameter(PARAM_USER);
     }
     
+    /**
+     * @see #DEFAULT_FORWARD
+     */
     protected boolean getParamForward(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_FORWARD);
@@ -206,6 +237,9 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         return Boolean.parseBoolean(paramStr);
     }
     
+    /**
+     * @see #DEFAULT_LIMIT
+     */
     protected int getParamLimit(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_LIMIT);
@@ -219,6 +253,9 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * @see #DEFAULT_VERBOSE
+     */
     protected boolean getParamVerbose(WebScriptRequest req)
     {
         String paramStr = req.getParameter(PARAM_VERBOSE);

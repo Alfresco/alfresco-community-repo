@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.audit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -44,6 +46,10 @@ public class AuditQueryGet extends AbstractAuditWebScript
         final Map<String, Object> model = new HashMap<String, Object>(7);
         
         String appName = getParamAppName(req);
+        String path = getParamPath(req);
+        
+        Serializable value = getParamValue(req);
+        String valueType = getParamValueType(req);
         Long fromTime = getParamFromTime(req);
         Long toTime = getParamToTime(req);
         Long fromId = getParamFromId(req);
@@ -63,6 +69,25 @@ public class AuditQueryGet extends AbstractAuditWebScript
             }
         }
         
+        // Transform the value to the correct type
+        if (value != null && valueType != null)
+        {
+            try
+            {
+                @SuppressWarnings("unchecked")
+                Class<? extends Serializable> clazz = (Class<? extends Serializable>) Class.forName(valueType);
+                value = DefaultTypeConverter.INSTANCE.convert(clazz, value);
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.value.classNotFound", valueType);
+            }
+            catch (Throwable e)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.value.convertFailed", value, valueType);
+            }
+        }
+        
         // Execute the query
         AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(appName);
@@ -72,6 +97,10 @@ public class AuditQueryGet extends AbstractAuditWebScript
         params.setToId(toId);
         params.setUser(user);
         params.setForward(forward);
+        if (path != null || value != null)
+        {
+            params.addSearchKey(path, value);
+        }
         
         final List<Map<String, Object>> entries = new ArrayList<Map<String,Object>>(limit);
         AuditQueryCallback callback = new AuditQueryCallback()
@@ -97,16 +126,16 @@ public class AuditQueryGet extends AbstractAuditWebScript
                     Map<String, Serializable> values)
             {
                 Map<String, Object> entry = new HashMap<String, Object>(11);
-                entry.put(JSON_QUERY_KEY_ID, entryId);
-                entry.put(JSON_QUERY_KEY_APPLICATION, applicationName);
+                entry.put(JSON_KEY_ENTRY_ID, entryId);
+                entry.put(JSON_KEY_ENTRY_APPLICATION, applicationName);
                 if (user != null)
                 {
-                    entry.put(JSON_QUERY_KEY_USER, user);
+                    entry.put(JSON_KEY_ENTRY_USER, user);
                 }
-                entry.put(JSON_QUERY_KEY_TIME, new Long(time));
+                entry.put(JSON_KEY_ENTRY_TIME, new Date(time));
                 if (values != null)
                 {
-                    entry.put(JSON_QUERY_KEY_VALUES, values);
+                    entry.put(JSON_KEY_ENTRY_VALUES, values);
                 }
                 entries.add(entry);
                 
@@ -116,6 +145,7 @@ public class AuditQueryGet extends AbstractAuditWebScript
         
         auditService.auditQuery(callback, params, limit);
         
+        model.put(JSON_KEY_ENTRY_COUNT, entries.size());
         model.put(JSON_KEY_ENTRIES, entries);
         
         // Done

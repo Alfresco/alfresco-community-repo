@@ -349,10 +349,20 @@ public class SearcherComponentTest extends TestCase
         assertEquals(9, answer.size());
         
         QName qname = QName.createQName(BaseNodeServiceTest.NAMESPACE, "my@test_with_at_sign");
-        ChildAssociationRef assoc = nodeService.createNode(n1, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, ContentModel.TYPE_CONTAINER);
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(QName.createQName(BaseNodeServiceTest.NAMESPACE, "mytest"), "my@test_value_with_at_sign");
+        
+        ChildAssociationRef assoc = nodeService.createNode(n1, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, ContentModel.TYPE_CONTAINER, properties);
         NodeRef n4 = assoc.getChildRef();
         
-        answer = searcher.selectNodes(rootNodeRef, "/test:root_p_n1/test:my@test_with_at_sign", null, namespacePrefixResolver, false);
+        StringBuffer path = new StringBuffer().append("test:root_p_n1/").append(ISO9075.getXPathName(qname, namespacePrefixResolver));
+        answer = searcher.selectNodes(rootNodeRef, path.toString(), null, namespacePrefixResolver, false);
+        assertEquals(1, answer.size());
+        assertTrue(answer.contains(n4));
+        
+        String xpathQuery = "//*[@test:mytest='my@test_value_with_at_sign']";
+        answer = searcher.selectNodes(rootNodeRef, xpathQuery, null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n4));
     }

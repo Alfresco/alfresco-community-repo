@@ -50,7 +50,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -67,12 +66,13 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
+import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.util.StringUtils;
 import org.xml.sax.ContentHandler;
 
@@ -321,7 +321,7 @@ public class ImporterComponent
             {
                 String[] qnameComponents = QName.splitPrefixedQName(segments[i]);
                 QName segmentQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
-                validPath.append(segmentQName.toPrefixString());
+                validPath.append(ISO9075.getXPathName(segmentQName, namespaceService));
             }
             if (i < (segments.length -1))
             {
@@ -1053,6 +1053,7 @@ public class ImporterComponent
             }
             else if (importedRef.startsWith("/"))
             {
+                importedRef = createValidPath(importedRef);
                 List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
                 if (nodeRefs.size() > 0)
                 {
@@ -1071,6 +1072,7 @@ public class ImporterComponent
 	                // resolve relative path
 	                try
 	                {
+	                    importedRef = createValidPath(importedRef);
 	                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
 	                    if (nodeRefs.size() > 0)
 	                    {

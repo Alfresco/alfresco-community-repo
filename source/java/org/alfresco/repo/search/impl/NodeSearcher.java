@@ -119,12 +119,6 @@ public class NodeSearcher
                     }
                 }
             }
-            else
-            {
-                // match '@' in a folder/filename (but do not match XPath query syntax '[@' or '/@' or '(@' or '@*')
-                // TODO cannot yet match '(@' or '[@' in a folder/filename - would need to identify and encode path elements
-                xpath = xpath.replaceAll("(?<![/\\[(])@(?!//*)", "_x0040_");
-            }
             
             DocumentNavigator documentNavigator = new DocumentNavigator(dictionaryService, nodeService, searchService,
                     namespacePrefixResolver, followAllParentLinks, useJCRXPath);

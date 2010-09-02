@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -135,7 +136,25 @@ public class AuditQueryGet extends AbstractAuditWebScript
                 entry.put(JSON_KEY_ENTRY_TIME, new Date(time));
                 if (values != null)
                 {
-                    entry.put(JSON_KEY_ENTRY_VALUES, values);
+                    // Convert values to Strings
+                    Map<String, String> valueStrings = new HashMap<String, String>(values.size() * 2);
+                    for (Map.Entry<String, Serializable> mapEntry : values.entrySet())
+                    {
+                        String key = mapEntry.getKey();
+                        Serializable value = mapEntry.getValue();
+                        try
+                        {
+                            String valueString = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                            valueStrings.put(key, valueString);
+                        }
+                        catch (TypeConversionException e)
+                        {
+                            // Use the toString()
+                            valueStrings.put(key, value.toString());
+                        }
+                        
+                    }
+                    entry.put(JSON_KEY_ENTRY_VALUES, valueStrings);
                 }
                 entries.add(entry);
                 

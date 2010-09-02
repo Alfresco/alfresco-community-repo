@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -236,6 +235,7 @@ public class WorkflowModelBuilder
         model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.getDefinition().getTitle());
         model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.getDefinition().getDescription());
         model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.isActive());
+        model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, workflowInstance.getPriority());
         model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.getDefinition()));
 
         if (workflowInstance.getWorkflowPackage() != null)
@@ -256,6 +256,15 @@ public class WorkflowModelBuilder
         {
             model.put(TASK_WORKFLOW_INSTANCE_START_DATE, ISO8601DateFormat.format(workflowInstance.getStartDate()));
         }
+        
+        if (workflowInstance.getDueDate() == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, workflowInstance.getDueDate());
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, ISO8601DateFormat.format(workflowInstance.getDueDate()));
+        }
 
         if (workflowInstance.getEndDate() == null)
         {
@@ -275,10 +284,6 @@ public class WorkflowModelBuilder
             model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
         }
         
-        // TODO: Try and retrieve these from the workflow instance to save the need to 
-        //       do an extra query which makes things slow
-        model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, 2);
-        model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, null);
         String message = workflowInstance.getDescription();
         if (message != null && message.length() > 0)
         {
@@ -302,31 +307,11 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = buildSimple(workflowInstance);
 
-        Serializable dueDate = null;
-        Serializable priority = null;
         Serializable startTaskId = null;
-
         WorkflowTask startTask = getStartTaskForWorkflow(workflowInstance);
-        
         if (startTask != null)
         {
             startTaskId = startTask.id;
-            dueDate = startTask.properties.get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
-            priority = startTask.properties.get(WorkflowModel.PROP_WORKFLOW_PRIORITY);
-        }
-        
-        if (dueDate != null)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, ISO8601DateFormat.format((Date) dueDate));
-        }
-        else
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, dueDate);
-        }
-        
-        if (priority != null)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, priority);
         }
         
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);

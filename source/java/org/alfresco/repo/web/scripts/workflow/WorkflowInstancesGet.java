@@ -25,11 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -165,8 +163,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if (key.equals(PARAM_DUE_BEFORE))
                 {
-                    WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
-                    Date dueDate = (Date)startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+                    Date dueDate = workflowInstance.getDueDate();
 
                     if (!isDateMatchForFilter(dueDate, filterValue, true))
                     {
@@ -176,8 +173,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if (key.equals(PARAM_DUE_AFTER))
                 {
-                    WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
-                    Date dueDate = (Date)startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+                    Date dueDate = workflowInstance.getDueDate();
 
                     if (!isDateMatchForFilter(dueDate, filterValue, false))
                     {
@@ -246,9 +242,13 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if (key.equals(PARAM_PRIORITY))
                 {
-                    WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
+                    String priority = "0";
+                    if (workflowInstance.getPriority() != null)
+                    {
+                        priority = workflowInstance.getPriority().toString();
+                    }
 
-                    if (startTask == null || !filterValue.equals(startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_PRIORITY).toString()))
+                    if (!filterValue.equals(priority))
                     {
                         result = false;
                         break;

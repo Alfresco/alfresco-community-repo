@@ -55,7 +55,7 @@ public interface RepositoryExporterService
      * @param packageName package name prefix for export .acp files
      * @return  list of repository held export files
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"repositoryDestination", "packageName"})
+    @Auditable(parameters = {"repositoryDestination", "packageName"})
     public RepositoryExportHandle[] export(NodeRef repositoryDestination, String packageName);
     
     /**

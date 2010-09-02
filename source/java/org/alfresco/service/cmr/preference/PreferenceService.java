@@ -34,7 +34,7 @@ public interface PreferenceService
      * @param  userName                     the user name
      * @return Map<String, Serializable>    a map containing the preference values, empty if none
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName"})
+    @Auditable(parameters = {"userName"})
     Map<String, Serializable> getPreferences(String userName);
 
     /**
@@ -49,7 +49,7 @@ public interface PreferenceService
      * @param preferenceFilter              the preference filter
      * @return Map<String, Serializable>    a map containing the preference values, empty if none
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferenceFilter"})
+    @Auditable(parameters = {"userName", "preferenceFilter"})
     Map<String, Serializable> getPreferences(String userName, String preferenceFilter);
     
     /**
@@ -63,7 +63,7 @@ public interface PreferenceService
      * @param userName      the user name
      * @param preferences   the preference values
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferences"})
+    @Auditable(parameters = {"userName", "preferences"})
     void setPreferences(String userName, Map<String, Serializable> preferences);
     
     /**
@@ -71,7 +71,7 @@ public interface PreferenceService
      * 
      * @param userName      the user name
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName"})
+    @Auditable(parameters = {"userName"})
     void clearPreferences(String userName);
 
     /**
@@ -82,7 +82,7 @@ public interface PreferenceService
      * @param userName          the user name
      * @param preferenceFilter  the preference filter
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferenceFilter"})
+    @Auditable(parameters = {"userName", "preferenceFilter"})
     void clearPreferences(String userName, String preferenceFilter);
 
 }

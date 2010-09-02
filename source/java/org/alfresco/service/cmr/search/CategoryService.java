@@ -70,7 +70,7 @@ public interface CategoryService
      * @param depth - the enumeration depth for what level to recover
      * @return a collection of all the nodes found identified by their ChildAssocRef's
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"categoryRef", "mode", "depth"})
+    @Auditable(parameters = {"categoryRef", "mode", "depth"})
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth );
 
     /**
@@ -81,7 +81,7 @@ public interface CategoryService
      * @param depth - the enumeration depth for what level to recover
      * @return a collection of all the nodes found identified by their ChildAssocRef's
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectQName", "depth"})
+    @Auditable(parameters = {"storeRef", "aspectQName", "depth"})
     public Collection<ChildAssociationRef> getCategories(StoreRef storeRef, QName aspectQName, Depth depth );
 
     /**
@@ -89,7 +89,7 @@ public interface CategoryService
      * 
      * @return
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef"})
+    @Auditable(parameters = {"storeRef"})
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef);
 
     /**
@@ -99,7 +99,7 @@ public interface CategoryService
      * @param aspectName
      * @return
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectName"})
+    @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
     
     /**
@@ -119,7 +119,7 @@ public interface CategoryService
      * @param aspectName
      * @param attributeName
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectName", "attributeName"})
+    @Auditable(parameters = {"storeRef", "aspectName", "attributeName"})
     public NodeRef createClassification(StoreRef storeRef, QName aspectName, String attributeName);
     
     /**
@@ -130,7 +130,7 @@ public interface CategoryService
      * @param name
      * @return
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectName", "name"})
+    @Auditable(parameters = {"storeRef", "aspectName", "name"})
     public NodeRef createRootCategory(StoreRef storeRef, QName aspectName, String name);
     
     /**
@@ -140,7 +140,7 @@ public interface CategoryService
      * @param name
      * @return
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parent", "name"})
+    @Auditable(parameters = {"parent", "name"})
     public NodeRef createCategory(NodeRef parent, String name);
     
     /**
@@ -149,7 +149,7 @@ public interface CategoryService
      * @param storeRef
      * @param aspectName
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectName"})
+    @Auditable(parameters = {"storeRef", "aspectName"})
     public void deleteClassification(StoreRef storeRef, QName aspectName);
     
     /**
@@ -157,7 +157,7 @@ public interface CategoryService
      * 
      * @param nodeRef
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public void deleteCategory(NodeRef nodeRef);
     
    /** 

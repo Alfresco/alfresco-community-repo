@@ -89,7 +89,7 @@ public interface ScriptService
      * 
      * @throws ScriptException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"scriptRef", "contentProp", "model"})
+    @Auditable(parameters = {"scriptRef", "contentProp", "model"})
     public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException;
     
@@ -106,7 +106,7 @@ public interface ScriptService
      * 
      * @throws ScriptException
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"engine", "scriptRef", "contentProp", "model"})
+    @Auditable(parameters = {"engine", "scriptRef", "contentProp", "model"})
     public Object executeScript(String engine, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException;
     

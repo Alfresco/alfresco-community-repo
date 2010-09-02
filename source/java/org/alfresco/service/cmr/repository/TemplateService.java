@@ -141,7 +141,7 @@ public interface TemplateService
      * 
      * @return TemplateProcessor
      */
-    @Auditable(warn = true, parameters = {"engine"})
+    @Auditable(parameters = {"engine"})
     public TemplateProcessor getTemplateProcessor(String engine);
     
     /**

@@ -80,7 +80,7 @@ public interface CopyService
      * 
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
+    @Auditable(parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
     public NodeRef copy(
             NodeRef sourceNodeRef,            
             NodeRef targetParentNodeRef,
@@ -102,7 +102,7 @@ public interface CopyService
      * 
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
+    @Auditable(parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
     public NodeRef copyAndRename(
             NodeRef sourceNodeRef,            
             NodeRef targetParentNodeRef,
@@ -122,7 +122,7 @@ public interface CopyService
      *                                  parent to the new node
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName"})
+    @Auditable(parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName"})
     public NodeRef copy(
             NodeRef sourceNodeRef,            
             NodeRef targetParentNodeRef,
@@ -156,7 +156,7 @@ public interface CopyService
      * @param sourceNodeRef         the source node reference
      * @param destinationNodeRef    the destination node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "destinationNodeRef"})
+    @Auditable(parameters = {"sourceNodeRef", "destinationNodeRef"})
     public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);   
     
     /**
@@ -165,7 +165,7 @@ public interface CopyService
      * @param nodeRef   the original node reference
      * @return          a list of copies, empty is none
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public List<NodeRef> getCopies(NodeRef nodeRef);
     
 }

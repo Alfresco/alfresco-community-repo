@@ -58,7 +58,7 @@ public interface ActionService
      * @param nodeRef   the node reference
      * @return          a list of applicable action definitions
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     List<ActionDefinition> getActionDefinitions(NodeRef nodeRef);
     
     /**
@@ -156,7 +156,7 @@ public interface ActionService
      * @param action                the action
      * @param actionedUponNodeRef    the actioned upon node reference
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"action", "actionedUponNodeRef" })
+    @Auditable(parameters = {"action", "actionedUponNodeRef" })
     void executeAction(Action action, NodeRef actionedUponNodeRef);
     
     /**
@@ -168,7 +168,7 @@ public interface ActionService
      * @param actionedUponNodeRef    the actioned upon node reference
      * @param checkConditions        indicates whether the conditions should be checked
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"action", "actionedUponNodeRef", "checkConditions" })
+    @Auditable(parameters = {"action", "actionedUponNodeRef", "checkConditions" })
     void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions);
     
     /**
@@ -190,7 +190,7 @@ public interface ActionService
      * @param executeAsynchronously    indicates whether the action should be executed asychronously or not, this value overrides
      *                                 the value set on the action its self
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"action", "actionedUponNodeRef", "checkConditions", "executeAsynchronously" })
+    @Auditable(parameters = {"action", "actionedUponNodeRef", "checkConditions", "executeAsynchronously" })
     void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions, boolean executeAsynchronously);
     
     /**
@@ -205,7 +205,7 @@ public interface ActionService
      * @param actionedUponNodeRef    the actioned upon node reference
      * @return                        true if the condition succeeds, false otherwise
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"action", "actionedUponNodeRef" })
+    @Auditable(parameters = {"action", "actionedUponNodeRef" })
     boolean evaluateAction(Action action, NodeRef actionedUponNodeRef);
     
     /**
@@ -215,7 +215,7 @@ public interface ActionService
      * @param actionedUponNodeRef    the actioned upon node reference
      * @return                        true if the condition succeeds, false otherwise
      */
-    @Auditable(key = Auditable.Key.ARG_1, parameters = {"condition", "actionedUponNodeRef" })
+    @Auditable(parameters = {"condition", "actionedUponNodeRef" })
     boolean evaluateActionCondition(ActionCondition condition, NodeRef actionedUponNodeRef);
     
     /**
@@ -228,7 +228,7 @@ public interface ActionService
      * @param nodeRef    the node reference
      * @param action    the action
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "action" })
+    @Auditable(parameters = {"nodeRef", "action" })
     void saveAction(NodeRef nodeRef, Action action);
     
     /**
@@ -237,7 +237,7 @@ public interface ActionService
      * @param nodeRef    the node reference
      * @return            the list of actions
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     List<Action> getActions(NodeRef nodeRef);
     
     /**
@@ -249,7 +249,7 @@ public interface ActionService
      * @param actionId    the action id
      * @return            the action
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "actionId"})
+    @Auditable(parameters = {"nodeRef", "actionId"})
     Action getAction(NodeRef nodeRef, String actionId);
     
     /**
@@ -258,7 +258,7 @@ public interface ActionService
      * @param nodeRef        the node reference
      * @param action        the action
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "action" })
+    @Auditable(parameters = {"nodeRef", "action" })
     void removeAction(NodeRef nodeRef, Action action);
     
     /**
@@ -266,7 +266,7 @@ public interface ActionService
      * 
      * @param nodeRef    the node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     void removeAllActions(NodeRef nodeRef);
     
 }

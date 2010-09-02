@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.service;
+package org.alfresco.repo.audit;
+
+import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 /**
  * An interface to test the use of the auditable annotation.
@@ -29,9 +32,9 @@ public interface AnnotationTestInterface
     @Auditable()
     public void noArgs();
     
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"one", "two"})
+    @Auditable(parameters = {"one", "two"})
     public String getString(String one, String two); 
     
-    @Auditable(key =  Auditable.Key.ARG_0, parameters = {"one"})
+    @Auditable(parameters = {"one"})
     public String getAnotherString(String one); 
 }

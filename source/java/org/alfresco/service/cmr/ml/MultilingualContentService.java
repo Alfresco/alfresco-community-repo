@@ -44,7 +44,7 @@ public interface MultilingualContentService
      * @param contentNodeRef            An existing <b>cm:content</b>
      * @return                          Returns <tt>true</tt> if the document has a <b>cm:mlContainer</b> parent
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentNodeRef"})
+    @Auditable(parameters = {"contentNodeRef"})
     boolean isTranslation(NodeRef contentNodeRef);
 
     /**
@@ -55,7 +55,7 @@ public interface MultilingualContentService
      *
      * @see org.alfresco.model.ContentModel#ASPECT_MULTILINGUAL_DOCUMENT
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentNodeRef", "locale"})
+    @Auditable(parameters = {"contentNodeRef", "locale"})
     void makeTranslation(NodeRef contentNodeRef, Locale locale);
 
     /**
@@ -64,7 +64,7 @@ public interface MultilingualContentService
      *
      * @param translationNodeRef        an existing <b>cm:mlDocument</b>
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
+    @Auditable(parameters = {"translationNodeRef"})
     void unmakeTranslation(NodeRef translationNodeRef);
 
     /**
@@ -74,7 +74,7 @@ public interface MultilingualContentService
      * @param newTranslationNodeRef     An existing <b>cm:content</b>
      * @param translationOfNodeRef      An existing <b>cm:mlDocument</b>
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"newTranslationNodeRef", "translationOfNodeRef", "locale"})
+    @Auditable(parameters = {"newTranslationNodeRef", "translationOfNodeRef", "locale"})
     void addTranslation(NodeRef newTranslationNodeRef, NodeRef translationOfNodeRef, Locale locale);
 
     /**
@@ -83,7 +83,7 @@ public interface MultilingualContentService
      * @param translationNodeRef        An existing <b>cm:mlDocument</b>
      * @return                          Returns the <b>cm:mlContainer</b> translation parent
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef"})
+    @Auditable(parameters = {"translationNodeRef"})
     NodeRef getTranslationContainer(NodeRef translationNodeRef);
 
     /**
@@ -93,7 +93,7 @@ public interface MultilingualContentService
      * @param translationOfNodeRef      An existing <b>cm:mlDocument</b> or <b>cm:mlContainer</b>
      * @return                          Returns a map of translation nodes keyed by locale
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationOfNodeRef"})
+    @Auditable(parameters = {"translationOfNodeRef"})
     Map<Locale, NodeRef> getTranslations(NodeRef translationOfNodeRef);
 
     /**
@@ -110,7 +110,7 @@ public interface MultilingualContentService
      * @see #getTranslations(NodeRef)
      * @see org.springframework.extensions.surf.util.I18NUtil#getNearestLocale(Locale, Set)
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "locale"})
+    @Auditable(parameters = {"translationNodeRef", "locale"})
     NodeRef getTranslationForLocale(NodeRef translationNodeRef, Locale locale);
 
 
@@ -122,7 +122,7 @@ public interface MultilingualContentService
      * @param addThisNodeLocale         if true, add the locale of the given <b>cm:mlDocument</b> in the list.
      * @return                          Returns a list of missng locales
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"localizedNodeRef", "addThisNodeLocale"})
+    @Auditable(parameters = {"localizedNodeRef", "addThisNodeLocale"})
     List<Locale> getMissingTranslations(NodeRef localizedNodeRef, boolean addThisNodeLocale);
 
     /**
@@ -137,7 +137,7 @@ public interface MultilingualContentService
      *                      of the <b>cm:mlContainer</b>.  <tt>null</tt> is returned if there is no
      *                      pivot translation.
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     NodeRef getPivotTranslation(NodeRef nodeRef);
 
     /**
@@ -156,7 +156,7 @@ public interface MultilingualContentService
      *                                  the default naming convention.
      * @return Returns                  the new created <b>cm:mlEmptyTranslation</b>
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationOfNodeRef", "name", "locale"})
+    @Auditable(parameters = {"translationOfNodeRef", "name", "locale"})
     NodeRef addEmptyTranslation(NodeRef translationOfNodeRef, String name, Locale locale);
 
     /**
@@ -173,7 +173,7 @@ public interface MultilingualContentService
      * @throws FileExistsException
      * @throws Exception
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "newParentRef"})
+    @Auditable(parameters = {"mlContainerNodeRef", "newParentRef"})
     NodeRef copyTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef, String prefixName) throws FileExistsException, FileNotFoundException, Exception;
 
     /**
@@ -187,7 +187,7 @@ public interface MultilingualContentService
      * @throws FileExistsException
      * @throws FileNotFoundException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef", "newParentRef"})
+    @Auditable(parameters = {"mlContainerNodeRef", "newParentRef"})
     void moveTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef) throws FileExistsException, FileNotFoundException;
 
     /**
@@ -196,6 +196,6 @@ public interface MultilingualContentService
      *
      * @param mlContainerNodeRef        The <b>cm:mlContainer</b> to remove
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerNodeRef"})
+    @Auditable(parameters = {"mlContainerNodeRef"})
     void deleteTranslationContainer(NodeRef mlContainerNodeRef);
 }

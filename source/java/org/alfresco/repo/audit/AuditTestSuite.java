@@ -33,6 +33,7 @@ public class AuditTestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
         
+        suite.addTestSuite(AuditableAnnotationTest.class);
         suite.addTestSuite(AuditableAspectTest.class);
         suite.addTestSuite(AuditBootstrapTest.class);
         suite.addTestSuite(AuditComponentTest.class);

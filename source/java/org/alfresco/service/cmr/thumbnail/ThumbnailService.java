@@ -66,7 +66,7 @@ public interface ThumbnailService
      * @param  name                     the name of the thumbnail (optional, pass null for unnamed thumbnail)
      * @return NodeRef                  node reference to the newly created thumbnail 
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name"})
+    @Auditable(parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name"})
     NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name);
     
     /**
@@ -83,7 +83,7 @@ public interface ThumbnailService
      * @param assocDetails              the thumbnail parent association details
      * @return NodeRef                  node reference to the newly created thumbnail
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name", "assocDetails"})
+    @Auditable(parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name", "assocDetails"})
     NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name, ThumbnailParentAssociationDetails assocDetails);
     
     /**
@@ -99,7 +99,7 @@ public interface ThumbnailService
      * @param thumbnail             the thumbnail node
      * @param transformationOptions the transformation options used when updating the thumbnail
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"thumbnail", "transformationOptions"})
+    @Auditable(parameters = {"thumbnail", "transformationOptions"})
     void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions);
     
     /**
@@ -112,7 +112,7 @@ public interface ThumbnailService
      * @param thumbnailName     thumbnail name
      * @return NodeRef          the thumbnail node reference, null if not found
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "thumbnailName"})
+    @Auditable(parameters = {"node", "contentProperty", "thumbnailName"})
     NodeRef getThumbnailByName(NodeRef node, QName contentProperty, String thumbnailName);
     
     /**
@@ -131,7 +131,7 @@ public interface ThumbnailService
      * @param options               transformation options
      * @return List<NodeRef>        list of matching thumbnail node references, empty if no matches found
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "options"})
+    @Auditable(parameters = {"node", "contentProperty", "mimetype", "options"})
     List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype, TransformationOptions options);
     
 }

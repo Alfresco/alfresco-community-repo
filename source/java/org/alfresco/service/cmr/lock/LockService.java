@@ -51,7 +51,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                  thrown if the lock could not be obtained
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType"})
+   @Auditable(parameters = {"nodeRef", "lockType"})
    public void lock(NodeRef nodeRef, LockType lockType)
        throws UnableToAquireLockException;
    
@@ -76,7 +76,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                       thrown if the lock could not be obtained
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType", "timeToExpire"})
+   @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
        throws UnableToAquireLockException;
    
@@ -108,7 +108,7 @@ public interface LockService
     * @throws UnableToAquireLockException
     *                           thrown if the lock could not be obtained
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockType", "timeToExpire", "lockChildren"})
+   @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire", "lockChildren"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
        throws UnableToAquireLockException;
    
@@ -147,7 +147,7 @@ public interface LockService
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released             
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"}) 
+   @Auditable(parameters = {"nodeRef"}) 
    public void unlock(NodeRef nodeRef)
        throws UnableToReleaseLockException;
    
@@ -170,7 +170,7 @@ public interface LockService
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "lockChildren"}) 
+   @Auditable(parameters = {"nodeRef", "lockChildren"}) 
    public void unlock(NodeRef nodeRef, boolean lockChildren)
        throws UnableToReleaseLockException;
    
@@ -204,7 +204,7 @@ public interface LockService
     * @param nodeRef    the node reference
     * @return           the lock status
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+   @Auditable(parameters = {"nodeRef"})
    public LockStatus getLockStatus(NodeRef nodeRef);
    
    
@@ -216,7 +216,7 @@ public interface LockService
     * @param nodeRef    the node reference
     * @return           the lock status
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "userName"})
+   @Auditable(parameters = {"nodeRef", "userName"})
    public LockStatus getLockStatus(NodeRef nodeRef, String userName);
    
    /**
@@ -230,7 +230,7 @@ public interface LockService
     * @return          the lock type, null is returned if the object in question has no
     *                  lock
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+   @Auditable(parameters = {"nodeRef"})
    public LockType getLockType(NodeRef nodeRef);
    
    /**
@@ -243,7 +243,7 @@ public interface LockService
     *                   thrown if the node is locked.  This is based on the lock status of the lock,
     *                   the user ref and the lock type.
     */
-   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+   @Auditable(parameters = {"nodeRef"})
    public void checkForLock(NodeRef nodeRef);   
    
    /**
@@ -252,7 +252,7 @@ public interface LockService
     * @param    storeRef    the store reference
     * @return               a list of nodes that the current user has locked.
     */
-   @Auditable(key = Auditable.Key.ARG_0,parameters = {"storeRef"})
+   @Auditable(parameters = {"storeRef"})
    public List<NodeRef> getLocks(StoreRef storeRef);
    
    /**
@@ -263,6 +263,6 @@ public interface LockService
     * 
     * @return           a list of nodes that the current user has locked filtered by the lock type provided
     */
-   @Auditable(key = Auditable.Key.ARG_0,parameters = {"storeRef", "lockType"})
+   @Auditable(parameters = {"storeRef", "lockType"})
    public List<NodeRef> getLocks(StoreRef storeRef, LockType lockType);
 }

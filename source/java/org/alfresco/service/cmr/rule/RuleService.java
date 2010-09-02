@@ -85,7 +85,7 @@ public interface RuleService
      * @param nodeRef       the node reference
      * @return              true if the rules are enabled, false otherwise
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public boolean rulesEnabled(NodeRef nodeRef);
     
     /**
@@ -94,7 +94,7 @@ public interface RuleService
      * 
      * @param nodeRef  the node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public void disableRules(NodeRef nodeRef);
     
     /**
@@ -103,7 +103,7 @@ public interface RuleService
      * 
      * @param nodeRef   the node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public void enableRules(NodeRef nodeRef);
     
     /**
@@ -132,7 +132,7 @@ public interface RuleService
      * @param nodeRef 	the node reference
      * @return 			true if the node has rules associated, false otherwise
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public boolean hasRules(NodeRef nodeRef);
 
     /**
@@ -145,7 +145,7 @@ public interface RuleService
      * @param nodeRef 	the node reference
      * @return 			a list of the rules associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public List<Rule> getRules(NodeRef nodeRef);
 
     /**
@@ -161,7 +161,7 @@ public interface RuleService
      *            				the result list or not
      * @return 					a list of the rules associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "includeInhertied"})
+    @Auditable(parameters = {"nodeRef", "includeInhertied"})
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertied);
     
     /**
@@ -174,7 +174,7 @@ public interface RuleService
      * 									are returned
      * @return							a list of the rules associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "includeInhertiedRuleType", "ruleTypeName"})
+    @Auditable(parameters = {"nodeRef", "includeInhertiedRuleType", "ruleTypeName"})
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInhertiedRuleType, String ruleTypeName);
 
     /**
@@ -183,7 +183,7 @@ public interface RuleService
      * @param nodeRef                   the node reference
      * @return                          a list of the rules associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public int countRules(NodeRef nodeRef);
     
     /**
@@ -192,7 +192,7 @@ public interface RuleService
      * @param nodeRef the node reference
      * @return the rule corresponding to the node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public Rule getRule(NodeRef nodeRef);
 
     /**
@@ -204,7 +204,7 @@ public interface RuleService
      * @param nodeRef
      * @param rule
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule"})
+    @Auditable(parameters = {"nodeRef", "rule"})
     public void saveRule(NodeRef nodeRef, Rule rule);
     
     /**
@@ -213,7 +213,7 @@ public interface RuleService
      * @param rule
      * @param index
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule", "index"})
+    @Auditable(parameters = {"nodeRef", "rule", "index"})
     public void saveRule(NodeRef nodeRef, Rule rule, int index);
     
     /**
@@ -222,7 +222,7 @@ public interface RuleService
      * @param ruleNodeRef
      * @param index
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "ruleNodeRef", "index"})
+    @Auditable(parameters = {"nodeRef", "ruleNodeRef", "index"})
     public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index);
     
     /**
@@ -231,7 +231,7 @@ public interface RuleService
      * @param rule
      * @param index
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule", "index"})
+    @Auditable(parameters = {"nodeRef", "rule", "index"})
     public void setRulePosition(NodeRef nodeRef, Rule rule, int index);
     
     /**
@@ -239,7 +239,7 @@ public interface RuleService
      * 
      * @param nodeRef  the actionable node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule"})
+    @Auditable(parameters = {"nodeRef", "rule"})
     public void removeRule(NodeRef nodeRef, Rule rule);
     
     /**
@@ -247,7 +247,7 @@ public interface RuleService
      * 
      * @param nodeRef   the actionable node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public void removeAllRules(NodeRef nodeRef);
     
     /**
@@ -256,7 +256,7 @@ public interface RuleService
      * @param rule  the rule
      * @return      the owning node reference
      */
-    @Auditable(key = Auditable.Key.RETURN, parameters = {"rule"})
+    @Auditable(parameters = {"rule"})
     public NodeRef getOwningNodeRef(Rule rule);
     
     /**
@@ -268,7 +268,7 @@ public interface RuleService
      * @param action    the action
      * @return          the owning node reference
      */
-    @Auditable(key = Auditable.Key.RETURN, parameters = {"action"})
+    @Auditable(parameters = {"action"})
     public NodeRef getOwningNodeRef(Action action);
     
     /**
@@ -278,7 +278,7 @@ public interface RuleService
      * @param  nodeRef   rule node reference
      * @return boolean   true if linked, false otherwise
      */
-    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public boolean isLinkedToRuleNode(NodeRef nodeRef);
     
     /**
@@ -288,7 +288,7 @@ public interface RuleService
      * @param nodeRef   node reference of a rule node
      * @return NodeRef  reference to the 
      */
-    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public NodeRef getLinkedToRuleNode(NodeRef nodeRef);
     
     /**
@@ -298,6 +298,6 @@ public interface RuleService
      * @param nodeRef           node reference of a rule node
      * @return List<NodeRef>    list of rule nodes that link to this passed rule node, empty if none
      */
-    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);
 }

@@ -58,7 +58,7 @@ public interface CheckOutCheckInService
 	 * 										the working copy
 	 * @return								node reference to the created working copy
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "destinationParentNodeRef", "destinationAssocTypeQName", "destinationAssocQName"})
+    @Auditable(parameters = {"nodeRef", "destinationParentNodeRef", "destinationAssocTypeQName", "destinationAssocQName"})
 	public NodeRef checkout(
 			NodeRef nodeRef,
 			NodeRef destinationParentNodeRef,			
@@ -74,7 +74,7 @@ public interface CheckOutCheckInService
 	 * @param nodeRef	a reference to the node to checkout
 	 * @return			a node reference to the created working copy
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
 	public NodeRef checkout(NodeRef nodeRef);
 	
 	/**
@@ -107,7 +107,7 @@ public interface CheckOutCheckInService
 	 * @return						the node reference to the original node, updated with the checked in 
 	 * 								state
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workingCopyNodeRef", "versionProperties", "contentUrl", "keepCheckedOut"})
+    @Auditable(parameters = {"workingCopyNodeRef", "versionProperties", "contentUrl", "keepCheckedOut"})
 	public NodeRef checkin(
 			NodeRef workingCopyNodeRef,
 			Map<String,Serializable> versionProperties,
@@ -128,7 +128,7 @@ public interface CheckOutCheckInService
 	 * @return						the node reference to the original node, updated with the checked in 
 	 * 								state
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workingCopyNodeRef", "versionProperties", "contentUrl"})
+    @Auditable(parameters = {"workingCopyNodeRef", "versionProperties", "contentUrl"})
 	public NodeRef checkin(
 			NodeRef workingCopyNodeRef,
 			Map<String, Serializable> versionProperties,
@@ -146,7 +146,7 @@ public interface CheckOutCheckInService
 	 * @return						the node reference to the original node, updated with the checked in 
 	 * 								state
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workingCopyNodeRef", "versionProperties"})
+    @Auditable(parameters = {"workingCopyNodeRef", "versionProperties"})
 	public NodeRef checkin(
 			NodeRef workingCopyNodeRef,
 			Map<String, Serializable> versionProperties);
@@ -164,7 +164,7 @@ public interface CheckOutCheckInService
 	 * @param workingCopyNodeRef	the working copy node reference
 	 * @return						the original node reference
 	 */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workingCopyNodeRef"})
+    @Auditable(parameters = {"workingCopyNodeRef"})
 	public NodeRef cancelCheckout(NodeRef workingCopyNodeRef);
     
     /**
@@ -175,6 +175,6 @@ public interface CheckOutCheckInService
      * @param   nodeRef   a node reference
      * @return            the working copy node reference or null if none.
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public NodeRef getWorkingCopy(NodeRef nodeRef);
 }

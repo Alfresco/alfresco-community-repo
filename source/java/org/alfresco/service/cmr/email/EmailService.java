@@ -55,6 +55,6 @@ public interface EmailService
      * @param message the email message
      * @throws EmailMessageRejectException if the message is rejected for <b>any</b> reason
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = { "nodeRef", "message" })
+    @Auditable(parameters = { "nodeRef", "message" })
     void importMessage(NodeRef nodeRef, EmailMessage message);
 }

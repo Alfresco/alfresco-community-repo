@@ -65,7 +65,7 @@ public interface WorkflowService
      * @param workflowDefinition  the content object containing the definition
      * @return  workflow deployment descriptor
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"workflowDefinition"})
+    @Auditable(parameters = {"workflowDefinition"})
     public WorkflowDeployment deployDefinition(NodeRef workflowDefinition);
 
     /**
@@ -432,7 +432,7 @@ public interface WorkflowService
      * @param container  (optional) a pre-created container (e.g. folder, versioned folder or layered folder)
      * @return  the workflow package
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"container"})
+    @Auditable(parameters = {"container"})
     public NodeRef createPackage(NodeRef container);
 
     /**
@@ -442,7 +442,7 @@ public interface WorkflowService
      * @param active  true => active workflows only, false => completed workflows only
      * @return  list of workflows which act upon the specified content
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"packageItem", "active"})
+    @Auditable(parameters = {"packageItem", "active"})
     public List<WorkflowInstance> getWorkflowsForContent(NodeRef packageItem, boolean active);
     
     /**
@@ -450,6 +450,6 @@ public interface WorkflowService
      * @param taskId - the task id
      * @return - A list of NodeRefs
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"packageItem", "active"})
+    @Auditable(parameters = {"packageItem", "active"})
     public List<NodeRef> getPackageContents(String taskId);
 }

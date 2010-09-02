@@ -46,7 +46,7 @@ public interface FileFolderService
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching files and folders
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
+    @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> list(NodeRef contextNodeRef);
     
     /**
@@ -55,7 +55,7 @@ public interface FileFolderService
      * @param folderNodeRef the folder to start searching in
      * @return Returns a list of matching files
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"folderNodeRef"})
+    @Auditable(parameters = {"folderNodeRef"})
     public List<FileInfo> listFiles(NodeRef folderNodeRef);
     
     /**
@@ -64,7 +64,7 @@ public interface FileFolderService
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching folders
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
+    @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> listFolders(NodeRef contextNodeRef);
        
     /**
@@ -75,7 +75,7 @@ public interface FileFolderService
      * @param contextNodeRef the node to start searching in
      * @param filter - may be null in which case all sub-folders will be searched
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
+    @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> listDeepFolders(NodeRef contextNodeRef, SubFolderFilter filter);
     
     /**
@@ -85,7 +85,7 @@ public interface FileFolderService
      * @param name the name of the node to search for
      * @return Returns the node that has the given name - or null if not found
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "name"})
+    @Auditable(parameters = {"contextNodeRef", "name"})
     public NodeRef searchSimple(NodeRef contextNodeRef, String name);
     
     
@@ -109,7 +109,7 @@ public interface FileFolderService
      * For deep listing use listDeepFolders. 
      * Avoid calling this method with any name pattern except for "*".    
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "includeSubFolders"})
+    @Auditable(parameters = {"contextNodeRef", "namePattern", "includeSubFolders"})
     public List<FileInfo> search(
             NodeRef contextNodeRef,
             String namePattern,
@@ -135,7 +135,7 @@ public interface FileFolderService
      * For deep listing use listDeepFolders.    
      * Avoid calling this method with any name pattern except for "*".  
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "fileSearch", "folderSearch", "includeSubFolders"})
+    @Auditable(parameters = {"contextNodeRef", "namePattern", "fileSearch", "folderSearch", "includeSubFolders"})
     public List<FileInfo> search(
             NodeRef contextNodeRef,
             String namePattern,
@@ -152,7 +152,7 @@ public interface FileFolderService
      * @throws FileExistsException if a file or folder with the new name already exists
      * @throws FileNotFoundException the file or folder reference doesn't exist
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"fileFolderRef", "newName"})
+    @Auditable(parameters = {"fileFolderRef", "newName"})
     public FileInfo rename(NodeRef fileFolderRef, String newName) throws FileExistsException, FileNotFoundException;
     
     /**
@@ -167,7 +167,7 @@ public interface FileFolderService
      * @throws FileExistsException
      * @throws FileNotFoundException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentRef", "newName"})
+    @Auditable(parameters = {"sourceNodeRef", "targetParentRef", "newName"})
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName)
             throws FileExistsException, FileNotFoundException;
 
@@ -184,7 +184,7 @@ public interface FileFolderService
      * @throws FileExistsException
      * @throws FileNotFoundException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentRef", "newName"})
+    @Auditable(parameters = {"sourceNodeRef", "targetParentRef", "newName"})
     public FileInfo copy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName)
             throws FileExistsException, FileNotFoundException;
 
@@ -203,7 +203,7 @@ public interface FileFolderService
      * 
      * @see {@link #create(NodeRef, String, QName, QName)}
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "name", "typeQName"})
+    @Auditable(parameters = {"parentNodeRef", "name", "typeQName"})
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
     
     /**
@@ -217,7 +217,7 @@ public interface FileFolderService
      * @return Returns the new node's file information
      * @throws FileExistsException
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "name", "typeQName"})
+    @Auditable(parameters = {"parentNodeRef", "name", "typeQName"})
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException;
     
     /**
@@ -225,7 +225,7 @@ public interface FileFolderService
      * 
      * @param nodeRef the node to delete
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public void delete(NodeRef nodeRef);
       
     /**
@@ -244,7 +244,7 @@ public interface FileFolderService
      *      including the destination file or folder
      * @throws FileNotFoundException if the node could not be found
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rootNodeRef", "nodeRef"})
+    @Auditable(parameters = {"rootNodeRef", "nodeRef"})
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException;
     
     /**
@@ -255,7 +255,7 @@ public interface FileFolderService
      * @return Returns the info of the file or folder
      * @throws FileNotFoundException if no file or folder exists along the path
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"rootNodeRef", "pathElements"})
+    @Auditable(parameters = {"rootNodeRef", "pathElements"})
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException;
     
     /**
@@ -264,7 +264,7 @@ public interface FileFolderService
      * @param nodeRef the node to get info for
      * @return Returns the file info or null if the node does not represent a file or folder
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public FileInfo getFileInfo(NodeRef nodeRef);
     
     /**
@@ -274,7 +274,7 @@ public interface FileFolderService
      * @param nodeRef the content node
      * @return Returns a handle to the content associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public ContentReader getReader(NodeRef nodeRef);
     
     /**
@@ -284,7 +284,7 @@ public interface FileFolderService
      * @param nodeRef the content node
      * @return Returns a handle to the content associated with the node
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public ContentWriter getWriter(NodeRef nodeRef);
     
     
@@ -293,7 +293,7 @@ public interface FileFolderService
      * 
      * @return          returns <tt>true</tt> if the NodeRef is valid
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    @Auditable(parameters = {"nodeRef"})
     public boolean exists(NodeRef nodeRef);
     
     /**

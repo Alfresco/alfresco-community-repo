@@ -84,7 +84,7 @@ public interface ContentService
      * @param contentUrl        a content store URL
      * @return                  Returns a reader for the URL that needs to be checked.
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contentUrl"})
+    @Auditable(parameters = {"contentUrl"})
     public ContentReader getRawReader(String contentUrl);
     
     /**
@@ -103,7 +103,7 @@ public interface ContentService
      * 
      * @see org.alfresco.repo.content.filestore.FileContentReader#getSafeContentReader(ContentReader, String, Object[])
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName"})
+    @Auditable(parameters = {"nodeRef", "propertyQName"})
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
             throws InvalidNodeRefException, InvalidTypeException;
 
@@ -136,7 +136,7 @@ public interface ContentService
      * @throws InvalidNodeRefException if the node doesn't exist
      * @throws InvalidTypeException if the node property is not of type <b>content</b>
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "propertyQName", "update"})
+    @Auditable(parameters = {"nodeRef", "propertyQName", "update"})
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
                 throws InvalidNodeRefException, InvalidTypeException;
 

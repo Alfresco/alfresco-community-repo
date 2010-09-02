@@ -48,7 +48,7 @@ public interface EditionService
      * @param translationNodeRef        The specific <b>cm:mlDocument</b> to use as the starting point
      *                                  of the new edition.  All other translations will be removed.
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"translationNodeRef", "versionProperties"})
+    @Auditable(parameters = {"translationNodeRef", "versionProperties"})
     NodeRef createEdition(NodeRef translationNodeRef, Map<String, Serializable> versionProperties);
 
     /**
@@ -57,7 +57,7 @@ public interface EditionService
      * @param mlContainer               An existing <b>cm:mlContainer</b>
      * @return                          The Version History of the mlContainer
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainer"})
+    @Auditable(parameters = {"mlContainer"})
     VersionHistory getEditions(NodeRef mlContainer);
 
     /**
@@ -66,7 +66,7 @@ public interface EditionService
      * @param mlContainerEdition            An existing version of a mlContainer
      * @return                              The list of <b>cm:mlDocument</b> transalation versions of the edition
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"mlContainerEdition"})
+    @Auditable(parameters = {"mlContainerEdition"})
     List<VersionHistory> getVersionedTranslations(Version mlContainerEdition);
 
     /**
@@ -83,7 +83,7 @@ public interface EditionService
      *                                      an existing version of a <b>cm:mlContainer</b> version.
      * @return                              The versioned metadata
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"version"})
+    @Auditable(parameters = {"version"})
     Map<QName, Serializable> getVersionedMetadatas(Version version);
 
  }

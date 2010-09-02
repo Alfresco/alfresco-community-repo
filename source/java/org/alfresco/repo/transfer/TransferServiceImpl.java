@@ -103,6 +103,12 @@ public class TransferServiceImpl implements TransferService
     private static final String MSG_ERR_TRANSFER_ASYNC = "transfer_service.unable_to_transfer_async";
     private static final String MSG_TARGET_EXISTS = "transfer_service.target_exists";
     private static final String MSG_NO_NODES = "transfer_service.no_nodes";
+    private static final String MSG_MISSING_ENDPOINT_PATH = "transfer_service.missing_endpoint_path";
+    private static final String MSG_MISSING_ENDPOINT_PROTOCOL = "transfer_service.missing_endpoint_protocol";
+    private static final String MSG_MISSING_ENDPOINT_HOST = "transfer_service.missing_endpoint_host";
+    private static final String MSG_MISSING_ENDPOINT_PORT = "transfer_service.missing_endpoint_port";
+    private static final String MSG_MISSING_ENDPOINT_USERNAME = "transfer_service.missing_endpoint_username";
+    private static final String MSG_MISSING_ENDPOINT_PASSWORD = "transfer_service.missing_endpoint_password";
     
     /**
      * The synchronised list of transfers in progress.
@@ -1080,12 +1086,36 @@ public class TransferServiceImpl implements TransferService
     {
         def.setNodeRef(nodeRef);
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        def.setEndpointPath((String)properties.get(TransferModel.PROP_ENDPOINT_PATH));
-        def.setEndpointProtocol((String)properties.get(TransferModel.PROP_ENDPOINT_PROTOCOL));
-        def.setEndpointHost((String)properties.get(TransferModel.PROP_ENDPOINT_HOST));
-        def.setEndpointPort((Integer)properties.get(TransferModel.PROP_ENDPOINT_PORT));
-        Serializable passwordVal = properties.get(TransferModel.PROP_PASSWORD);
+        String name = (String)properties.get(ContentModel.PROP_NAME);
         
+        String endpointPath = (String)properties.get(TransferModel.PROP_ENDPOINT_PATH);
+        if (endpointPath == null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_PATH, new Object[] {name});
+        def.setEndpointPath(endpointPath);
+
+        String endpointProtocol = (String)properties.get(TransferModel.PROP_ENDPOINT_PROTOCOL);
+        if (endpointProtocol == null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_PROTOCOL, new Object[] {name});
+        def.setEndpointProtocol(endpointProtocol);
+
+        String endpointHost = (String)properties.get(TransferModel.PROP_ENDPOINT_HOST);
+        if (endpointHost== null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_HOST, new Object[] {name});
+        def.setEndpointHost(endpointHost);
+
+        Integer endpointPort = (Integer)properties.get(TransferModel.PROP_ENDPOINT_PORT);
+        if (endpointPort == null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_PORT, new Object[] {name});
+        def.setEndpointPort(endpointPort);
+
+        String username = (String)properties.get(TransferModel.PROP_USERNAME);
+        if (username == null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_USERNAME, new Object[] {name});
+        def.setUsername(username);
+
+        Serializable passwordVal = properties.get(TransferModel.PROP_PASSWORD);
+        if (passwordVal == null)
+            throw new TransferException(MSG_MISSING_ENDPOINT_PASSWORD, new Object[] {name});
         if(passwordVal.getClass().isArray())
         {
             def.setPassword(decrypt((char[])passwordVal));
@@ -1096,9 +1126,7 @@ public class TransferServiceImpl implements TransferService
             def.setPassword(decrypt(password.toCharArray()));
         }
         
-        
-        def.setUsername((String)properties.get(TransferModel.PROP_USERNAME));
-        def.setName((String)properties.get(ContentModel.PROP_NAME));
+        def.setName(name);
         def.setTitle((String)properties.get(ContentModel.PROP_TITLE));
         def.setDescription((String)properties.get(ContentModel.PROP_DESCRIPTION));    
         

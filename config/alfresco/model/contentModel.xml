@@ -17,6 +17,7 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
       <namespace uri="http://www.alfresco.org/model/rendition/1.0" prefix="rn"/>
+      <namespace uri="http://www.alfresco.org/model/exif/1.0" prefix="exif"/>
    </namespaces>
 
    <constraints>
@@ -1145,6 +1146,19 @@
          </properties>
       </aspect>
       
+      <aspect name="cm:geographic">
+         <title>Geographic</title>
+         <properties>
+            <property name="cm:latitude">
+               <title>Latitude</title>
+               <type>d:double</type>
+            </property>
+            <property name="cm:longitude">
+               <title>Longitude</title>
+               <type>d:double</type>
+            </property>
+         </properties>
+      </aspect>
       
       <!--             -->
       <!--  RENDITIONS -->
@@ -1184,7 +1198,75 @@
          </associations>
       </aspect>      
       
+      <!--       -->
+      <!--  EXIF -->
+      <!--       -->
       
+      <aspect name="exif:exif">
+         <title>EXIF</title>
+         <properties>
+            <property name="exif:dateTimeOriginal">
+               <title>Date and Time</title>
+               <type>d:datetime</type>
+            </property>
+            <property name="exif:pixelXDimension">
+               <title>Image Width</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:pixelYDimension">
+               <title>Image Height</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:exposureTime">
+               <title>Exposure Time</title>
+               <type>d:double</type>
+            </property>
+            <property name="exif:fNumber">
+               <title>F Number</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:flash">
+               <title>Flash Activated</title>
+               <type>d:boolean</type>
+            </property>
+            <property name="exif:focalLength">
+               <title>Focal Length</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:isoSpeedRatings">
+               <title>ISO Speed</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:manufacturer">
+               <title>Camera Manufacturer</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:model">
+               <title>Camera Model</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:software">
+               <title>Camera Software</title>
+               <type>d:text</type>
+            </property>
+            <property name="exif:orientation">
+               <title>Orientation</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:xResolution">
+               <title>Horizontal Resolution</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:yResolution">
+               <title>Vertical Resolution</title>
+               <type>d:int</type>
+            </property>
+            <property name="exif:resolutionUnit">
+               <title>Resolution Unit</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
       
       <!--             -->
       <!--  DEPRECATED -->
@@ -1239,20 +1321,6 @@
       <!--                      -->
       <!--  DEPRECATED (end of) -->
       <!--                      -->
-
-      <aspect name="cm:geographic">
-         <title>Geographic</title>
-         <properties>
-            <property name="cm:latitude">
-               <title>Latitude</title>
-               <type>d:double</type>
-            </property>
-            <property name="cm:longitude">
-               <title>Longitude</title>
-               <type>d:double</type>
-            </property>
-         </properties>
-      </aspect>
       
    </aspects>
 

@@ -126,14 +126,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        if(!auditComponent.isAuditEnabled())
+        if(!auditComponent.areAuditValuesRequired())
         {
             // No auditing
             return mi.proceed();
         }
         else
         {
-            // New configuration will be used and optionally old configuration if useNewConfig=false
+            // New configuration will be used
             return proceed(mi);
         }
     }
@@ -157,14 +157,6 @@ public class AuditMethodInterceptor implements MethodInterceptor
             // If we are already in a nested audit call, there is nothing to do
             if (wasInAudit != null)
             {
-                return mi.proceed();
-            }
-
-            // If there are no mapped paths, there is nothing to do
-            if (!this.auditComponent.isSourcePathMapped(AUDIT_PATH_API_ROOT))
-            {
-                // We can ignore the rest of the stack too
-                inAudit.set(Boolean.TRUE);
                 return mi.proceed();
             }
 

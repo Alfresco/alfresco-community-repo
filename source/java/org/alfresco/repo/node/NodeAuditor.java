@@ -94,7 +94,7 @@ public class NodeAuditor implements InitializingBean, NodeServicePolicies.Before
     {
         // Only continue if there is something listening for our events (note this may change depending on audit
         // subsystem configuration)
-        if (!auditComponent.isSourcePathMapped(BEFORE_DELETE_NODE_PATH))
+        if (!auditComponent.areAuditValuesRequired())
         {
             return;
         }

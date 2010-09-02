@@ -62,15 +62,20 @@ public interface AuditComponent
     public Map<String, AuditApplication> getAuditApplications();
     
     /**
-     * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in
-     * calling components.
+     * Determine whether the audit infrastructure expects audit values to be passed in.
+     * This is a helper method to allow optimizations in the client code.  Reasons why
+     * this method might return <tt>false</tt> are: auditing is disabled; no audit applications
+     * have been registered.  Sometimes, depending on the log level, this method may always
+     * return <tt>true</tt>.
      * 
-     * @return                  Returns <code>true</code> if the given source path is mapped to one or more
-     *                          audit applications
+     * 
+     * @return                  Returns <code>true</code> if the calling code (data producers)
+     *                          should go ahead and generate the data for
+     *                          {@link #recordAuditValues(String, Map) recording}.
      * 
      * @since 3.3
      */
-    public boolean isSourcePathMapped(String sourcePath);
+    public boolean areAuditValuesRequired();
     
     /**
      * Delete audit entries for the given application and time range

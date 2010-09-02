@@ -50,19 +50,22 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * The default audit component implementation.
- * <TODO: Implement before, after and exception filtering. At the moment
- * these filters are ignored. TODO: Respect audit internal - at the moment audit internal is fixed to false.
+ * Component that records audit values as well as providing the query implementation.
+ * <p>
+ * To turn on logging of all <i>potentially auditable</i> data, turn on logging for:<br/>
+ * <strong>{@link #INBOUND_LOGGER org.alfresco.repo.audit.inbound}</strong>.
  * <p/>
- * The V3.2 audit functionality is contained within the same component.  When the newer audit
- * implementation has been tested and approved, then older ones will be deprecated as necessary.
+ * TODO: Respect audit internal - at the moment audit internal is fixed to false.
  * 
- * @author Andy Hind
  * @author Derek Hulley
+ * @since 3.2 (in its current form)
  */
 public class AuditComponentImpl implements AuditComponent
 {
+    private static final String INBOUND_LOGGER = "org.alfresco.repo.audit.inbound";
+    
     private static Log logger = LogFactory.getLog(AuditComponentImpl.class);
+    private static Log loggerInbound = LogFactory.getLog(INBOUND_LOGGER);
 
     private AuditModelRegistryImpl auditModelRegistry;
     private PropertyValueDAO propertyValueDAO;
@@ -203,11 +206,17 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
+     * <p/>
+     * Note that if DEBUG is on for the the {@link #INBOUND_LOGGER}, then <tt>true</tt>
+     * will always be returned.
+     * 
      * @since 3.2
      */
-    public boolean isSourcePathMapped(String sourcePath)
+    public boolean areAuditValuesRequired()
     {
-        return isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty();                
+        return
+            (loggerInbound.isDebugEnabled()) ||
+            (isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty());
     }
     
     /**
@@ -438,8 +447,24 @@ public class AuditComponentImpl implements AuditComponent
     {
         ParameterCheck.mandatory("rootPath", rootPath);
         AuditApplication.checkPathFormat(rootPath);
+        
+        // Log inbound values
+        if (loggerInbound.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder(values.size()*64);
+            sb.append("\n")
+              .append("Inbound audit values:");
+            for (Map.Entry<String, Serializable> entry : values.entrySet())
+            {
+                String pathElement = entry.getKey();
+                String path = AuditApplication.buildPath(rootPath, pathElement);
+                Serializable value = entry.getValue();
+                sb.append("\n\t").append(path).append("=").append(value);
+            }
+            loggerInbound.debug(sb.toString());
+        }
 
-        if (values == null || values.isEmpty() || !isSourcePathMapped(rootPath))
+        if (values == null || values.isEmpty() || !areAuditValuesRequired())
         {
             return Collections.emptyMap();
         }

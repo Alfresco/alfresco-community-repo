@@ -37,7 +37,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
 {
     public static final String PARAM_APPLICATION = "application";
     public static final String PARAM_PATH="path";
-    public static final String PARAM_ENABLED = "enabled";
+    public static final String PARAM_ENABLE = "enable";
     public static final String PARAM_VALUE = "value";
     public static final String PARAM_VALUE_TYPE = "valueType";
     public static final String PARAM_FROM_TIME = "fromTime";
@@ -138,7 +138,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     
     protected boolean getParamEnableDisable(WebScriptRequest req)
     {
-        String enableStr = req.getParameter(PARAM_ENABLED);
+        String enableStr = req.getParameter(PARAM_ENABLE);
         return Boolean.parseBoolean(enableStr);
     }
     

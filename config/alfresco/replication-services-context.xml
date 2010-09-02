@@ -77,14 +77,13 @@
 
 
    <!-- JavaScript API support -->
-<!--
    <bean id="replicationServiceScript" parent="baseJavaScriptExtension"
          class="org.alfresco.repo.replication.script.ScriptReplicationService">
         <property name="extensionName">
             <value>replicationService</value>
         </property>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="replicationService" ref="ReplicationService"/>
     </bean>
--->
    
 </beans>

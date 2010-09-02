@@ -33,7 +33,12 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
     
     public void assertEquals(Object expected, Object value, String message)
     {
-        if (expected.equals(value) == false)
+        if (expected == null && value == null)
+        {
+           return;
+        }
+        
+        if ((expected == null && value != null) || expected.equals(value) == false)
         {
             if (message == null)
             {

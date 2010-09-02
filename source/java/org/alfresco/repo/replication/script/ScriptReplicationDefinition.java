@@ -24,7 +24,6 @@ import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,7 +45,7 @@ public final class ScriptReplicationDefinition extends ScriptAction
    public ScriptReplicationDefinition(ServiceRegistry serviceRegistry, ReplicationService replicationService, 
             Scriptable scope, ReplicationDefinition replicationDefinition)
     {
-    	 super(serviceRegistry, (Action)replicationDefinition, (ActionDefinition)replicationDefinition);
+    	 super(serviceRegistry, (Action)replicationDefinition, null);
     	 this.replicationService = replicationService;
     }
     

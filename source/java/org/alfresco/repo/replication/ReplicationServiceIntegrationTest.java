@@ -33,8 +33,10 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.replication.script.ScriptReplicationDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.TransferServiceImpl;
@@ -42,6 +44,7 @@ import org.alfresco.repo.transfer.TransferTransmitter;
 import org.alfresco.repo.transfer.UnitTestInProcessTransmitterImpl;
 import org.alfresco.repo.transfer.UnitTestTransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -58,6 +61,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -88,6 +93,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private TransferService transferService;
     private ContentService contentService;
     private JobLockService jobLockService;
+    private ScriptService scriptService;
     private ActionService actionService;
     private NodeService nodeService;
     private LockService lockService;
@@ -127,6 +133,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         contentService = (ContentService) ctx.getBean("contentService");
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
         actionService = (ActionService) ctx.getBean("actionService");
+        scriptService = (ScriptService)ctx.getBean("scriptService");
         nodeService = (NodeService) ctx.getBean("nodeService");
         lockService = (LockService) ctx.getBean("lockService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
@@ -1134,6 +1141,37 @@ public class ReplicationServiceIntegrationTest extends TestCase
        // Should have failed, as missing target + payload
        assertEquals(ActionStatus.Failed, rd.getExecutionStatus());
     }
+    
+    public void DISABLEDtestJavascriptAPI() throws Exception
+    {
+       ServiceRegistry serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
+       
+       // Setup some replication tasks
+       ReplicationDefinition empty = replicationService.createReplicationDefinition(ACTION_NAME, "Empty");
+       
+       ReplicationDefinition persisted = replicationService.createReplicationDefinition(ACTION_NAME2, "Persisted");
+       persisted.setTargetName(TRANSFER_TARGET);
+       persisted.getPayload().add(
+             new NodeRef("workspace://SpacesStore/Testing")
+       );
+       persisted.getPayload().add(
+             new NodeRef("workspace://SpacesStore/Testing2")
+       );
+       replicationService.saveReplicationDefinition(persisted);
+       
+       // Call the test 
+       Map<String, Object> model = new HashMap<String, Object>();
+       model.put("Empty", new ScriptReplicationDefinition(serviceRegistry, replicationService, null, empty));
+       model.put("EmptyName", ACTION_NAME);
+       model.put("Persisted", new ScriptReplicationDefinition(serviceRegistry, replicationService, null, persisted));
+       model.put("PersistedName", ACTION_NAME2);
+       model.put("PersistedNodeRef", persisted.getNodeRef());
+       
+       ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/replication/script/test_replicationService.js");
+       this.scriptService.executeScript(location, model);
+    }
+    
+    // =============================================
     
 
     private NodeRef makeNode(NodeRef parent, QName nodeType)

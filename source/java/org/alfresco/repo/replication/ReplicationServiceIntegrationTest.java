@@ -833,10 +833,9 @@ public class ReplicationServiceIntegrationTest extends TestCase
        ContentReader remoteReader = 
            contentService.getReader(remoteReport, ContentModel.PROP_CONTENT);
        String remoteReportContent = remoteReader.getContentString();
-       
-       // TODO: update these tests when transfer report is converted to XML
-       assertFalse("XML found in:\n" + remoteReportContent, remoteReportContent.contains("<?xml"));
-       assertTrue("Report Status not found in:\n" + remoteReportContent, remoteReportContent.contains("Status update: COMPLETE"));
+
+       assertTrue("XML not found in:\n" + remoteReportContent, remoteReportContent.contains("<?xml"));
+       assertTrue("Report Status not found in:\n" + remoteReportContent, remoteReportContent.contains("state=\"COMPLETE\""));
 
        txn.commit();
     }

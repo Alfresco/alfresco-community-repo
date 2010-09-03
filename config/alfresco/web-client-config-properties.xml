@@ -763,4 +763,39 @@
       </property-sheet>
    </config>
    
+   <!-- ************************ -->
+   <!-- Configuration for EXIF   -->
+   <!-- ************************ -->
+   
+   <config evaluator="aspect-name" condition="exif:exif">
+      <property-sheet>
+         <show-property name="exif:dateTimeOriginal" />
+         <show-property name="exif:pixelXDimension" />
+         <show-property name="exif:pixelYDimension" />
+         <show-property name="exif:exposureTime" />
+         <show-property name="exif:fNumber" />
+         <show-property name="exif:flash" />
+         <show-property name="exif:focalLength" />
+         <show-property name="exif:isoSpeedRatings" />
+         <show-property name="exif:manufacturer" />
+         <show-property name="exif:model" />
+         <show-property name="exif:software" />
+         <show-property name="exif:orientation" />
+         <show-property name="exif:xResolution" />
+         <show-property name="exif:yResolution" />
+         <show-property name="exif:resolutionUnit" />
+      </property-sheet>
+   </config>
+   
+   <!-- ****************************** -->
+   <!-- Configuration for Geographic   -->
+   <!-- ****************************** -->
+   
+   <config evaluator="aspect-name" condition="cm:geographic">
+      <property-sheet>
+         <show-property name="cm:latitude" />
+         <show-property name="cm:longitude" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

@@ -1,6 +1,6 @@
 <#-- Workflow Task Instance in details -->
 
-<#import "task.lib.ftl" as taskLib />
+<#import "workflow.lib.ftl" as workflowLib />
 {
-   "data": <@taskLib.taskJSON task=workflowTask detailed=true/>
+   "data": <@workflowLib.taskJSON task=workflowTask detailed=true />
 }

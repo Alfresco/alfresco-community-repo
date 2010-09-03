@@ -72,7 +72,6 @@ public class WorkflowModelBuilder
     public static final String TASK_DESCRIPTION = "description";
     public static final String TASK_TITLE = "title";
     public static final String TASK_NAME = "name";
-    public static final String TASK_TYPE = "type";
     public static final String TASK_URL = "url";
     public static final String TASK_IS_POOLED = "isPooled";
     public static final String TASK_IS_EDITABLE = "isEditable";
@@ -94,7 +93,6 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_ID = "id";
     public static final String TASK_WORKFLOW_INSTANCE_URL = "url";
     public static final String TASK_WORKFLOW_INSTANCE_NAME = "name";
-    public static final String TASK_WORKFLOW_INSTANCE_TYPE = "type";
     public static final String TASK_WORKFLOW_INSTANCE_TITLE = "title";
     public static final String TASK_WORKFLOW_INSTANCE_DESCRIPTION = "description";
     public static final String TASK_WORKFLOW_INSTANCE_MESSAGE = "message";
@@ -180,7 +178,6 @@ public class WorkflowModelBuilder
         model.put(TASK_ID, task.getId());
         model.put(TASK_URL, getUrl(task));
         model.put(TASK_NAME, task.getName());
-        model.put(TASK_TYPE, task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService));
         model.put(TASK_TITLE, task.getTitle());
         model.put(TASK_DESCRIPTION, task.getDescription());
         model.put(TASK_STATE, task.getState().name());
@@ -231,9 +228,9 @@ public class WorkflowModelBuilder
         model.put(TASK_WORKFLOW_INSTANCE_ID, workflowInstance.getId());
         model.put(TASK_WORKFLOW_INSTANCE_URL, getUrl(workflowInstance));
         model.put(TASK_WORKFLOW_INSTANCE_NAME, workflowInstance.getDefinition().getName());
-        model.put(TASK_WORKFLOW_INSTANCE_TYPE, workflowInstance.getDefinition().getName());
         model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.getDefinition().getTitle());
         model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.getDefinition().getDescription());
+        model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, workflowInstance.getDescription());
         model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.isActive());
         model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, workflowInstance.getPriority());
         model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.getDefinition()));
@@ -282,16 +279,6 @@ public class WorkflowModelBuilder
         else
         {
             model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
-        }
-        
-        String message = workflowInstance.getDescription();
-        if (message != null && message.length() > 0)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, message);
-        }
-        else
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_MESSAGE, workflowInstance.getDefinition().getTitle());
         }
 
         return model;

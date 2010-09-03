@@ -136,8 +136,6 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(task.title, result.getString("title"));
         assertEquals(task.description, result.getString("description"));
         assertEquals(task.state.name(), result.getString("state"));
-        assertEquals(task.definition.metadata.getName().toPrefixString(this.namespaceService), 
-                    result.getString("type"));
         assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         assertFalse(result.getBoolean("isPooled"));
         assertTrue(result.getBoolean("isEditable"));
@@ -186,7 +184,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         {
             JSONObject taskJSON = results.getJSONObject(i);
             
-            String type = taskJSON.getString("type");
+            String type = taskJSON.getString("name");
             if (exclude.equals(type))
             {
                 adhocTasksPresent = true;
@@ -234,7 +232,6 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.title, result.getString("title"));
         assertEquals(startTask.description, result.getString("description"));
         assertEquals(startTask.state.name(), result.getString("state"));
-        assertEquals(startTask.name, result.getString("type"));
         assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         assertFalse(result.getBoolean("isPooled"));
         assertTrue(result.getBoolean("isEditable"));
@@ -467,8 +464,8 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         Date dueDate = new Date();
-        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
-        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
         params.put(WorkflowModel.PROP_CONTEXT, packageRef);
 
@@ -486,15 +483,15 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
 
         assertEquals(adhocInstance.id, result.getString("id"));
+        assertTrue(result.opt("message").equals(JSONObject.NULL));
         assertEquals(adhocInstance.definition.name, result.getString("name"));
-        assertEquals(adhocInstance.definition.name, result.getString("type"));
         assertEquals(adhocInstance.definition.title, result.getString("title"));
         assertEquals(adhocInstance.definition.description, result.getString("description"));
         assertEquals(adhocInstance.active, result.getBoolean("isActive"));
         assertEquals(ISO8601DateFormat.format(adhocInstance.startDate), result.getString("startDate"));
         assertNotNull(result.getString("dueDate"));
         assertNotNull(result.getString("endDate"));
-        assertEquals(2, result.getInt("priority"));
+        assertEquals(1, result.getInt("priority"));
         JSONObject initiator = result.getJSONObject("initiator");
 
         assertEquals(USER1, initiator.getString("userName"));
@@ -622,7 +619,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         {
             JSONObject workflowInstanceJSON = results.getJSONObject(i);
             
-            String type = workflowInstanceJSON.getString("type");
+            String type = workflowInstanceJSON.getString("name");
             if (exclude.equals(type))
             {
                 adhocWorkflowPresent = true;

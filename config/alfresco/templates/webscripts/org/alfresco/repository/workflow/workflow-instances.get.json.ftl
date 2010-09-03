@@ -1,16 +1,16 @@
 <#-- Workflow Instances collection -->
 
-<#import "task.lib.ftl" as taskLib />
+<#import "workflow.lib.ftl" as workflowLib />
 {
    "data": 
    [
       <#list workflowInstances as workflowInstance>
-      <@taskLib.workflowInstanceJSON workflowInstance=workflowInstance />
+      <@workflowLib.workflowInstanceJSON workflowInstance=workflowInstance />
       <#if workflowInstance_has_next>,</#if>
       </#list>
    ]
    <#if paging??>,
    "paging": 
-   <@taskLib.pagingJSON paging=paging />
+   <@workflowLib.pagingJSON paging=paging />
    </#if>
 }

@@ -1,9 +1,9 @@
-<#import "workflow-definition.lib.ftl" as workflowDefLib />
+<#import "workflow.lib.ftl" as workflowLib />
 {
    "data": 
    [
       <#list workflowDefinitions as workflowDefinition>
-         <@workflowDefLib.workflowDefinitionJSON workflowDefinition=workflowDefinition />
+         <@workflowLib.workflowDefinitionJSON workflowDefinition=workflowDefinition />
          <#if workflowDefinition_has_next>,</#if>
       </#list>
    ]

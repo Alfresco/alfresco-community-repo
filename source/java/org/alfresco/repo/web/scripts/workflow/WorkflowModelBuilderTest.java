@@ -88,8 +88,6 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(task.getTitle(), model.get(WorkflowModelBuilder.TASK_TITLE));
         assertEquals(task.getDescription(), model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
         assertEquals(task.getState().name(), model.get(WorkflowModelBuilder.TASK_STATE));
-        assertEquals(task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService), 
-                    model.get(WorkflowModelBuilder.TASK_TYPE));
         assertNull(model.get(WorkflowModelBuilder.TASK_OUTCOME));
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_EDITABLE));
@@ -235,9 +233,9 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(workflowInstance.getId(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
         assertTrue(model.containsKey(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_URL));
         assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
-        assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TYPE));
         assertEquals(workflowInstance.getDefinition().getTitle(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
         assertEquals(workflowInstance.getDefinition().getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
+        assertEquals(workflowInstance.getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_MESSAGE));
         assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));        
         assertEquals(ISO8601DateFormat.format(workflowInstance.getStartDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
         assertEquals(ISO8601DateFormat.format(workflowInstance.getEndDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));

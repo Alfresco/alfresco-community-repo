@@ -1,16 +1,15 @@
 <#-- List Workflow Task Instances -->
-<#assign detailed=((args.detailed!"false")=="true")>
-<#import "task.lib.ftl" as taskLib />
+<#import "workflow.lib.ftl" as workflowLib />
 {
    "data": 
    [
       <#list taskInstances as task>
-      <@taskLib.taskJSON task=task detailed=detailed/>
+      <@workflowLib.taskJSON task=task />
       <#if task_has_next>,</#if>
       </#list>
    ]
    <#if paging??>,
    "paging": 
-   <@taskLib.pagingJSON paging=paging />
+   <@workflowLib.pagingJSON paging=paging />
    </#if>
 }

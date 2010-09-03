@@ -1,5 +1,3 @@
-<#import "workflow-definition.lib.ftl" as worflowDefinitionLib />
-
 <#-- Renders a task instance. -->
 <#macro taskJSON task detailed=false>
 <#escape x as jsonUtils.encodeJSONString(x)>
@@ -7,7 +5,6 @@
          "id": "${task.id}",
          "url": "${task.url}",
          "name": "${task.name}",
-         "type": "${task.type}",
          "title": "${task.title}",
          "description": "${task.description}",
          "state": "${task.state}",
@@ -106,13 +103,12 @@
    "id": "${workflowInstance.id}",
    "url": "${workflowInstance.url}",
    "name": "${workflowInstance.name}",
-   "type": "${workflowInstance.type}",
    "title": "${workflowInstance.title}",
    "description": "${workflowInstance.description}",
-   "message": "${workflowInstance.message}",
    "isActive": ${workflowInstance.isActive?string},
    "startDate": "${workflowInstance.startDate}",
-   "priority": <#if workflowInstance.priority??>${workflowInstance.priority?c}<#else>0</#if>,
+   "priority": <#if workflowInstance.priority??>${workflowInstance.priority?c}<#else>2</#if>,
+   "message": <#if workflowInstance.message?? && workflowInstance.message?length &gt; 0>"${workflowInstance.message}"<#else>null</#if>,
    "endDate": <#if workflowInstance.endDate??>"${workflowInstance.endDate}"<#else>null</#if>,
    "dueDate": <#if workflowInstance.dueDate??>"${workflowInstance.dueDate}"<#else>null</#if>,
    "context": <#if workflowInstance.context??>"${workflowInstance.context}"<#else>null</#if>,
@@ -131,7 +127,7 @@
    "definitionUrl": "${workflowInstance.definitionUrl}"<#if detailed>,
    "startTaskInstanceId": "${workflowInstance.startTaskInstanceId}",
    "definition": 
-   <@worflowDefinitionLib.workflowDefinitionJSON workflowDefinition=workflowInstance.definition detailed=true/>
+   <@workflowDefinitionJSON workflowDefinition=workflowInstance.definition detailed=true/>
    <#if workflowInstance.tasks??>,
    "tasks": 
    [
@@ -146,7 +142,35 @@
 </#escape>
 </#macro>
 
-<#-- Renders a paging. -->
+<#-- Renders a workflow definition. -->
+<#macro workflowDefinitionJSON workflowDefinition detailed=false>
+<#escape x as jsonUtils.encodeJSONString(x)>
+      {
+         "id" : "${workflowDefinition.id}",
+         "url": "${workflowDefinition.url}",
+         "name": "${workflowDefinition.name}",
+         "title": "${workflowDefinition.title}",
+         "description": "${workflowDefinition.description}"
+         <#if detailed>,
+         "version": "${workflowDefinition.version}",
+         "startTaskDefinitionUrl": "${workflowDefinition.startTaskDefinitionUrl}",
+         "startTaskDefinitionType": "${shortQName(workflowDefinition.startTaskDefinitionType)}",
+         "taskDefinitions": 
+         [
+            <#list workflowDefinition.taskDefinitions as taskDefinition>
+            {
+               "url": "${taskDefinition.url}",
+               "type": "${shortQName(taskDefinition.type)}"
+            }
+            <#if taskDefinition_has_next>,</#if>
+            </#list>
+         ]
+         </#if>
+      }
+</#escape>
+</#macro>
+
+<#-- Renders a paging object. -->
 <#macro pagingJSON paging>
 <#escape x as jsonUtils.encodeJSONString(x)>
    {

@@ -1526,13 +1526,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
-    public void purgeNode(Long nodeId)
+    @Override
+    public int purgeNodes(long maxTxnCommitTimeMs)
     {
-        int count = deleteNodeById(nodeId, true);
-        if (count != 1)
-        {
-            throw new ConcurrencyFailureException("Failed to purge node: " + nodeId);
-        }
+        return deleteNodesByCommitTime(true, maxTxnCommitTimeMs);
     }
 
     /*
@@ -3046,15 +3043,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return (txn == null ? null : txn.getId());
     }
 
-    public void getNodesDeletedInOldTxns(
-            Long minNodeId,
-            long maxCommitTime,
-            int count,
-            NodeRefQueryCallback resultsCallback)
-    {
-        selectNodesDeletedInOldTxns(minNodeId, maxCommitTime, count, resultsCallback);
-    }
-
     public int getTransactionCount()
     {
         return selectTransactionCount();
@@ -3170,6 +3158,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAlcId);
     protected abstract int deleteNodeById(Long nodeId, boolean deletedOnly);
+    protected abstract int deleteNodesByCommitTime(boolean deletedOnly, long maxTxnCommitTimeMs);
     protected abstract NodeEntity selectNodeById(Long id, Boolean deleted);
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
     protected abstract List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
@@ -3267,11 +3256,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             String childNodeName);
 
     protected abstract Transaction selectLastTxnBeforeCommitTime(Long maxCommitTime);
-    protected abstract void selectNodesDeletedInOldTxns(
-            Long minNodeId,
-            Long maxCommitTime,
-            Integer count,
-            NodeRefQueryCallback resultsCallback);
     protected abstract int selectTransactionCount();
     protected abstract Transaction selectTxnById(Long txnId);
     protected abstract List<NodeEntity> selectTxnChanges(Long txnId, Long storeId);

@@ -22,12 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableLong;
 
 /**
@@ -53,15 +50,20 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      */
     protected List<String> doCleanInternal() throws Throwable
     {
-      List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
-      List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
-      
-      List<String> allResults = new ArrayList<String>(100);
-      allResults.addAll(purgedNodes);
-      allResults.addAll(purgedTxns);
-      
-      // Done
-      return allResults;
+        if (minPurgeAgeMs < 0)
+        {
+            return Collections.singletonList("Minimum purge age is negative; purge disabled");
+        }
+        
+        List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
+        List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
+        
+        List<String> allResults = new ArrayList<String>(100);
+        allResults.addAll(purgedNodes);
+        allResults.addAll(purgedTxns);
+        
+        // Done
+        return allResults;
     }
 
     /**
@@ -75,7 +77,6 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         this.minPurgeAgeMs = ((long) minPurgeAgeDays) * 24L * 3600L * 1000L;
     }
 
-    private static final int NODE_PURGE_BATCH_SIZE = 1000;
     /**
      * Cleans up deleted nodes that are older than the given minimum age.
      * 
@@ -84,88 +85,55 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
      */
     private List<String> purgeOldDeletedNodes(long minAge)
     {
-        if (minAge < 0)
-        {
-            return Collections.emptyList();
-        }
         final List<String> results = new ArrayList<String>(100);
-        final MutableLong minNodeId = new MutableLong(0L);
 
-        final long maxCommitTime = System.currentTimeMillis() - minAge;
+        final long maxCommitTimeMs = System.currentTimeMillis() - minAge;
+        
         RetryingTransactionCallback<Integer> purgeNodesCallback = new RetryingTransactionCallback<Integer>()
         {
             public Integer execute() throws Throwable
             {
-                final List<Pair<Long, NodeRef>> nodePairs = new ArrayList<Pair<Long, NodeRef>>(NODE_PURGE_BATCH_SIZE);
-                NodeRefQueryCallback callback = new NodeRefQueryCallback()
-                {
-                    public boolean handle(Pair<Long, NodeRef> nodePair)
-                    {
-                        nodePairs.add(nodePair);
-                        return true;
-                    }
-                };
-                nodeDAO.getNodesDeletedInOldTxns(minNodeId.longValue(), maxCommitTime, NODE_PURGE_BATCH_SIZE, callback);
-                for (Pair<Long, NodeRef> nodePair : nodePairs)
-                {
-                    Long nodeId = nodePair.getFirst();
-                    nodeDAO.purgeNode(nodeId);
-                    // Update the min node ID for the next query
-                    if (nodeId.longValue() > minNodeId.longValue())
-                    {
-                        minNodeId.setValue(nodeId.longValue());
-                    }
-                }
-                return nodePairs.size();
+                return nodeDAO.purgeNodes(maxCommitTimeMs);
             }
         };
-        while (true)
+        // TODO: Add error catching and decrement the maxCommitTimeMs to reduce DB resource usage
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setMaxRetries(5);                             // Limit number of retries
+        txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
+        // Get nodes to delete
+        Integer purgeCount = new Integer(0);
+        // Purge nodes
+        try
         {
-            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            txnHelper.setMaxRetries(5);                             // Limit number of retries
-            txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
-            // Get nodes to delete
-            Integer purgeCount = new Integer(0);
-            // Purge nodes
-            try
+            purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
+            if (purgeCount.intValue() > 0)
             {
-                purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
-                if (purgeCount.intValue() > 0)
-                {
-                    String msg =
-                        "Purged old nodes: \n" +
-                        "   Min node ID:     " + minNodeId.longValue() + "\n" +
-                        "   Batch size:      " + NODE_PURGE_BATCH_SIZE + "\n" +
-                        "   Max commit time: " + maxCommitTime + "\n" +
-                        "   Purge count:     " + purgeCount;
-                    results.add(msg);
-                }
-            }
-            catch (Throwable e)
-            {
-                String msg = 
-                    "Failed to purge nodes." +
-                    "  Set log level to WARN for this class to get exception log: \n" +
-                    "   Min node ID:     " + minNodeId.longValue() + "\n" +
-                    "   Batch size:      " + NODE_PURGE_BATCH_SIZE + "\n" +
-                    "   Max commit time: " + maxCommitTime + "\n" +
-                    "   Error:       " + e.getMessage();
-                // It failed; do a full log in WARN mode
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn(msg, e);
-                }
-                else
-                {
-                    logger.error(msg);
-                }
+                String msg =
+                    "Purged old nodes: \n" +
+                    "   Max commit time: " + maxCommitTimeMs + "\n" +
+                    "   Purge count:     " + purgeCount;
                 results.add(msg);
-                break;
             }
-            if (purgeCount.intValue() == 0)
+        }
+        catch (Throwable e)
+        {
+            String msg = 
+                "Failed to purge nodes." +
+                "  If the purgable set is too large for the available DB resources \n" +
+                "  then the nodes can be purged manually as well. \n" +
+                "  Set log level to WARN for this class to get exception log: \n" +
+                "   Max commit time: " + maxCommitTimeMs + "\n" +
+                "   Error:       " + e.getMessage();
+            // It failed; do a full log in WARN mode
+            if (logger.isWarnEnabled())
             {
-                break;
+                logger.warn(msg, e);
             }
+            else
+            {
+                logger.error(msg);
+            }
+            results.add(msg);
         }
         // Done
         return results;
@@ -210,6 +178,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         };
         while (true)
         {
+            // Ensure we keep the lock
+            refreshLock();
+            
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setMaxRetries(5);                             // Limit number of retries
             txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through

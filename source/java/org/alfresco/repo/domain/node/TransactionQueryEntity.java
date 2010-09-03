@@ -43,6 +43,7 @@ public class TransactionQueryEntity
     private List<Long> excludeTxnIds;
     private Long excludeServerId;
     private Boolean ascending;
+    private Boolean deletedNodes;
     private Long storeId;
     
     /**
@@ -66,6 +67,7 @@ public class TransactionQueryEntity
           .append(", excludeTxnIds=").append(excludeTxnIds)
           .append(", excludeServerId=").append(excludeServerId)
           .append(", ascending=").append(ascending)
+          .append(", deletedNodes=").append(deletedNodes)
           .append(", storeId=").append(storeId)
           .append("]");
         return sb.toString();
@@ -159,6 +161,16 @@ public class TransactionQueryEntity
     public void setAscending(Boolean ascending)
     {
         this.ascending = ascending;
+    }
+
+    public Boolean getDeletedNodes()
+    {
+        return deletedNodes;
+    }
+
+    public void setDeletedNodes(Boolean deletedNodes)
+    {
+        this.deletedNodes = deletedNodes;
     }
 
     public Long getStoreId()

@@ -88,6 +88,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
     private static final String UPDATE_NODE_PATCH_ACL = "alfresco.node.update_NodePatchAcl";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
+    private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodesByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
@@ -319,6 +320,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Do we delete everything (false) or just nodes already marked as deleted (true)
         node.setDeleted(deletedOnly);
         return template.delete(DELETE_NODE_BY_ID, node);
+    }
+
+    @Override
+    protected int deleteNodesByCommitTime(boolean deletedOnly, long maxTxnCommitTimeMs)
+    {
+        TransactionQueryEntity query = new TransactionQueryEntity();
+        query.setDeletedNodes(Boolean.TRUE);
+        query.setMaxCommitTime(maxTxnCommitTimeMs);
+        return template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
     }
 
     @Override
@@ -1222,16 +1232,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             return null;
         }
-    }
-
-    @Override
-    protected void selectNodesDeletedInOldTxns(
-            Long minNodeId,
-            Long maxCommitTime,
-            Integer count,
-            NodeRefQueryCallback resultsCallback)
-    {
-        throw new UnsupportedOperationException();
     }
 
     @Override

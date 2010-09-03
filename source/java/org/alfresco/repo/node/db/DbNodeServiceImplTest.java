@@ -30,6 +30,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -69,6 +70,17 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
+    }
+    
+    /**
+     * Manually trigger the cleanup registry
+     */
+    public void testNodeCleanupRegistry() throws Exception
+    {
+        setComplete();
+        endTransaction();
+        NodeCleanupRegistry cleanupRegistry = (NodeCleanupRegistry) applicationContext.getBean("nodeCleanupRegistry");
+        cleanupRegistry.doClean();
     }
 
     /**

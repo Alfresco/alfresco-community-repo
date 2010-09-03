@@ -208,14 +208,14 @@ public interface NodeDAO extends NodeBulkLoader
      * associated with a live transaction.
      */
     public void deleteNode(Long nodeId);
-    
+
     /**
-     * Remove all traces of the node.  This assumes that the node has been marked
-     * for deletion using {@link #deleteNode(Long)}.
+     * Purge deleted nodes where their participating transactions are older than a given time.
      * 
-     * @deprecated      This will be replaced with a purgeNodes(long maxTxnCommitTimeMs)
+     * @param maxTxnCommitTimeMs                ignore transactions created <i>after</i> this time
+     * @return                                  Returns the number of deleted nodes purged
      */
-    public void purgeNode(Long nodeId);
+    public int purgeNodes(long maxTxnCommitTimeMs);
     
     /*
      * Properties
@@ -539,22 +539,6 @@ public interface NodeDAO extends NodeBulkLoader
      */
     
     /**
-     * Gets a batch of deleted nodes in old transactions.
-     * 
-     * @param minNodeId                     the minimum node ID
-     * @param maxCommitTime                 the maximum commit time (to set a minimum transaction age)
-     * @param count                         the maximum number of results (for batching)
-     * @param resultsCallback               the callback to pass results back
-     * 
-     * @deprecated                          {@link #purgeNode(Long)}
-     */
-    public void getNodesDeletedInOldTxns(
-            Long minNodeId,
-            long maxCommitTime,
-            int count,
-            NodeRefQueryCallback resultsCallback);
-    
-    /**
      * Retrieves the maximum transaction ID for which the commit time is less than the given time.
      * 
      * @param maxCommitTime         the max commit time (ms)
@@ -622,8 +606,14 @@ public interface NodeDAO extends NodeBulkLoader
     
     public void purgeTxn(Long txnId);
     
+    /**
+     * @return              Returns the minimum commit time or <tt>null</tt> if there are no transactions
+     */
     public Long getMinTxnCommitTime();
     
+    /**
+     * @return              Returns the maximum commit time or <tt>null</tt> if there are no transactions
+     */
     public Long getMaxTxnCommitTime();
     
     /**

@@ -20,16 +20,20 @@ package org.alfresco.repo.node.cleanup;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,18 +47,28 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
 {
+    /** Lock key: system:NodeCleanup */
+    private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "NodeCleanup");
+    /** Default Lock time to live: 1 minute */
+    private static final long LOCK_TTL = 60*1000L;
+    
     protected final Log logger;
-    private final ReentrantLock cleanupLock;
     
     private NodeCleanupRegistry registry;
     protected TransactionService transactionService;
+    protected JobLockService jobLockService;
     protected DbNodeServiceImpl dbNodeService;
     protected NodeDAO nodeDAO;
     
+    private ThreadLocal<String> lockToken = new ThreadLocal<String>();
+    private VmShutdownListener shutdownListener = new VmShutdownListener("NodeCleanup");
+    
+    /**
+     * Default constructor
+     */
     public AbstractNodeCleanupWorker()
     {
         logger = LogFactory.getLog(this.getClass());
-        cleanupLock = new ReentrantLock();
     }
     
     public void setRegistry(NodeCleanupRegistry registry)
@@ -65,6 +79,11 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
     }
 
     public void setDbNodeService(DbNodeServiceImpl dbNodeService)
@@ -81,6 +100,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     {
         PropertyCheck.mandatory(this, "registry", registry);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         PropertyCheck.mandatory(this, "dbNodeService", dbNodeService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
 
@@ -94,46 +114,52 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
      */
     public List<String> doClean()
     {
-        /** Prevent multiple executions of the implementation method */
-        boolean locked = cleanupLock.tryLock();
-        if (locked)
+        try
         {
-            try
+            // Get a lock
+            lockToken.set(null);
+            String token = jobLockService.getLock(LOCK, LOCK_TTL);
+            lockToken.set(token);
+            
+            // Do the work
+            return doCleanWithTxn();
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Some other process was busy
+            return Collections.singletonList("Node cleanup in process: " + e.getMessage());
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
             {
-                return doCleanWithTxn();
-            }
-            catch (Throwable e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    StringBuilder sb = new StringBuilder(1024);
-                    StackTraceUtil.buildStackTrace(
-                            "Node cleanup failed: " +
-                            "   Worker: " + this.getClass().getName() + "\n" +
-                            "   Error:  " + e.getMessage(),
-                            e.getStackTrace(),
-                            sb,
-                            Integer.MAX_VALUE);
-                    logger.debug(sb.toString());
-                }
                 StringBuilder sb = new StringBuilder(1024);
                 StackTraceUtil.buildStackTrace(
-                    "Node cleanup failed: " +
-                    "   Worker: " + this.getClass().getName() + "\n" +
-                    "   Error:  " + e.getMessage(),
-                    e.getStackTrace(),
-                    sb,
-                    20);
-                return Collections.singletonList(sb.toString());
+                        "Node cleanup failed: " +
+                        "   Worker: " + this.getClass().getName() + "\n" +
+                        "   Error:  " + e.getMessage(),
+                        e.getStackTrace(),
+                        sb,
+                        Integer.MAX_VALUE);
+                logger.debug(sb.toString());
             }
-            finally
-            {
-                cleanupLock.unlock();
-            }
+            StringBuilder sb = new StringBuilder(1024);
+            StackTraceUtil.buildStackTrace(
+                "Node cleanup failed: " +
+                "   Worker: " + this.getClass().getName() + "\n" +
+                "   Error:  " + e.getMessage(),
+                e.getStackTrace(),
+                sb,
+                20);
+            return Collections.singletonList(sb.toString());
         }
-        else
+        finally
         {
-            return Collections.emptyList();
+            String token = this.lockToken.get();
+            if (token != null)
+            {
+                jobLockService.releaseLock(token, LOCK);
+            }
         }
     }
     
@@ -154,6 +180,24 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             }
         };
         return AuthenticationUtil.runAs(doCleanRunAs, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * Helper method to refresh the current job's lock token
+     */
+    protected void refreshLock() throws LockAcquisitionException
+    {
+        String token = this.lockToken.get();
+        if (token != null && !shutdownListener.isVmShuttingDown())
+        {
+            // We had a lock token AND the VM is still going
+            jobLockService.refreshLock(token, LOCK, LOCK_TTL);
+        }
+        else
+        {
+            // There is no lock token on this thread, so we trigger a deliberate failure
+            jobLockService.refreshLock("lock token not available", LOCK, LOCK_TTL);
+        }
     }
     
     /**

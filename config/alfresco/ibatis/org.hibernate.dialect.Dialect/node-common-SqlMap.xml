@@ -419,6 +419,20 @@
             <isEqual property="deleted" compareValue="true">and node_deleted = #deleted#</isEqual>
     </delete>
     
+    <delete id="delete_NodesByTxnCommitTime" parameterClass="TransactionQuery">
+        <![CDATA[
+        delete from alf_node
+        where
+            node_deleted = #deletedNodes# and
+            transaction_id <=
+            (
+                select max(txn.id) from alf_transaction txn
+                where
+                    txn.commit_time_ms < #maxCommitTime#
+            )
+        ]]>
+    </delete>
+    
     <delete id="delete_NodeProperties" parameterClass="NodeProperty">
         delete from alf_node_properties
         where
@@ -853,6 +867,7 @@
     <sql id="select_Transaction_FullWhere">
         <dynamic prepend="where">
             <isNotNull property="id" prepend="---">txn.id = #id#</isNotNull>
+            <isNotNull property="deletedNodes" prepend="and"> node.node_deleted = #deletedNodes#</isNotNull>
             <isNotNull property="storeId" prepend="and"> store.id = #storeId#</isNotNull>
             <isNotNull property="excludeServerId" prepend="and"><![CDATA[ server_id <> #excludeServerId#]]></isNotNull>
             <isNotNull property="minCommitTime" prepend="and"><![CDATA[ txn.commit_time_ms >= #minCommitTime#]]></isNotNull>
@@ -922,7 +937,7 @@
             txn.id
         from
             alf_transaction txn
-            right join alf_node node on (node.transaction_id = txn.id)
+            left join alf_node node on (node.transaction_id = txn.id)
         where
             node.id is null
             <isNotNull property="minId"><![CDATA[and txn.id >= #minId#]]></isNotNull>

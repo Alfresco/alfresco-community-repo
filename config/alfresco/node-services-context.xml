@@ -192,6 +192,9 @@
       <property name="transactionService">
          <ref bean="transactionService" />
       </property>
+      <property name="jobLockService">
+         <ref bean="jobLockService" />
+      </property>
       <property name="dbNodeService">
          <ref bean="dbNodeService" />
       </property>
@@ -199,7 +202,7 @@
          <ref bean="nodeDAO" />
       </property>
    </bean>
-   <bean id="nodeCleanup.deleteNodeCleanup"
+   <bean id="nodeCleanup.deletedNodeCleanup"
          class="org.alfresco.repo.node.db.DeletedNodeCleanupWorker"
          parent="nodeCleanupBase">
       <property name="minPurgeAgeDays">

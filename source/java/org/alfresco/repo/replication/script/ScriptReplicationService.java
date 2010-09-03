@@ -103,6 +103,8 @@ public class ScriptReplicationService extends BaseScopableProcessorExtension
     public ScriptReplicationDefinition loadReplicationDefinition(String replicationName)
     {
         ReplicationDefinition replicationDefinition = replicationService.loadReplicationDefinition(replicationName);
+        if(replicationDefinition == null)
+           return null;
         return new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), replicationDefinition);
     }
     
@@ -116,6 +118,11 @@ public class ScriptReplicationService extends BaseScopableProcessorExtension
     {
         List<ReplicationDefinition> definitions = replicationService.loadReplicationDefinitions(targetName);
         return toScriptReplicationDefinitions(definitions);
+    }
+    
+    public void replicate(ScriptReplicationDefinition definition)
+    {
+        replicationService.replicate(definition.getReplicationDefinition());
     }
 
     private ScriptReplicationDefinition[] toScriptReplicationDefinitions(List<ReplicationDefinition> definitions)

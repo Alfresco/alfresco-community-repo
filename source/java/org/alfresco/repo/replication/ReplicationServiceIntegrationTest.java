@@ -118,6 +118,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     
     private final String ACTION_NAME  = "testName";
     private final String ACTION_NAME2 = "testName2";
+    private final String ACTION_NAME3 = "testName3";
     private final QName  ACTION_QNAME  = QName.createQName(null, ACTION_NAME);
     private final QName  ACTION_QNAME2 = QName.createQName(null, ACTION_NAME2);
     
@@ -1142,7 +1143,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(ActionStatus.Failed, rd.getExecutionStatus());
     }
     
-    public void DISABLEDtestJavascriptAPI() throws Exception
+    public void testJavascriptAPI() throws Exception
     {
        ServiceRegistry serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
        
@@ -1159,13 +1160,22 @@ public class ReplicationServiceIntegrationTest extends TestCase
        );
        replicationService.saveReplicationDefinition(persisted);
        
+       ReplicationDefinition persisted2 = replicationService.createReplicationDefinition(ACTION_NAME3, "Persisted2");
+       persisted2.setTargetName("AnotherTarget");
+       replicationService.saveReplicationDefinition(persisted2);
+       
        // Call the test 
        Map<String, Object> model = new HashMap<String, Object>();
        model.put("Empty", new ScriptReplicationDefinition(serviceRegistry, replicationService, null, empty));
        model.put("EmptyName", ACTION_NAME);
        model.put("Persisted", new ScriptReplicationDefinition(serviceRegistry, replicationService, null, persisted));
        model.put("PersistedName", ACTION_NAME2);
-       model.put("PersistedNodeRef", persisted.getNodeRef());
+       model.put("PersistedNodeRef", persisted.getNodeRef().toString());
+       model.put("PersistedTarget", persisted.getTargetName());
+       model.put("Persisted2", new ScriptReplicationDefinition(serviceRegistry, replicationService, null, persisted2));
+       model.put("Persisted2Name", ACTION_NAME3);
+       model.put("Persisted2NodeRef", persisted2.getNodeRef().toString());
+       model.put("Persisted2Target", persisted2.getTargetName());
        
        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/replication/script/test_replicationService.js");
        this.scriptService.executeScript(location, model);

@@ -375,7 +375,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     /**
      * Get the limit for the hibernate executions queue
-     * @return
      */
     public int getHibernateMaxExecutions()
     {
@@ -385,7 +384,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Set the limit for the hibernate executions queue
      * Less than zero always uses event amalgamation 
-     * @param hibernateMaxExecutions
      */
     public void setHibernateMaxExecutions(int hibernateMaxExecutions)
     {

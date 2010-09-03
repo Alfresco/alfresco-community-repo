@@ -150,9 +150,9 @@
          "url": "${workflowDefinition.url}",
          "name": "${workflowDefinition.name}",
          "title": "${workflowDefinition.title}",
-         "description": "${workflowDefinition.description}"
+         "description": "${workflowDefinition.description}",
+         "version": "${workflowDefinition.version}"
          <#if detailed>,
-         "version": "${workflowDefinition.version}",
          "startTaskDefinitionUrl": "${workflowDefinition.startTaskDefinitionUrl}",
          "startTaskDefinitionType": "${shortQName(workflowDefinition.startTaskDefinitionType)}",
          "taskDefinitions": 

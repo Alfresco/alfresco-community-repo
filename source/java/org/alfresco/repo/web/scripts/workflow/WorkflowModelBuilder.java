@@ -341,6 +341,7 @@ public class WorkflowModelBuilder
         model.put(WORKFLOW_DEFINITION_NAME, workflowDefinition.getName());
         model.put(WORKFLOW_DEFINITION_TITLE, workflowDefinition.getTitle());
         model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.getDescription());
+        model.put(WORKFLOW_DEFINITION_VERSION, workflowDefinition.getVersion());
 
         return model;
     }
@@ -355,7 +356,6 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = buildSimple(workflowDefinition);
 
-        model.put(WORKFLOW_DEFINITION_VERSION, workflowDefinition.getVersion());
         model.put(WORKFLOW_DEFINITION_START_TASK_DEFINITION_URL, getUrl(workflowDefinition.getStartTaskDefinition().getMetadata()));
         model.put(WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE, workflowDefinition.getStartTaskDefinition().getMetadata().getName());
 

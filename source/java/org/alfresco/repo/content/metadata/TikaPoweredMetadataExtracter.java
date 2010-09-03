@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -114,6 +115,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         
         // TODO Once TIKA-451 is fixed this list will get nicer
         this.tikaDateFormats = new DateFormat[] {
+              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"),
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US),
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
@@ -127,6 +130,18 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
               new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy"),
               new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy", Locale.US)
         };
+        // Set the timezone on the UTC based formats 
+        for(DateFormat df : this.tikaDateFormats)
+        {
+           if(df instanceof SimpleDateFormat)
+           {
+              SimpleDateFormat sdf = (SimpleDateFormat)df;
+              if(sdf.toPattern().endsWith("'Z'"))
+              {
+                 sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+              }
+           }
+        }
     }
     
     /**

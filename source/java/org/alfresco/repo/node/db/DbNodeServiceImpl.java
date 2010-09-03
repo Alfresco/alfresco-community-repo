@@ -67,6 +67,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
@@ -171,7 +172,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<StoreRef> storeRefs = new ArrayList<StoreRef>(50);
         for (Pair<Long, StoreRef> pair : stores)
         {
-            storeRefs.add(pair.getSecond());
+            StoreRef storeRef = pair.getSecond();
+            if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_DELETED))
+            {
+                // Ignore
+                continue;
+            }
+            storeRefs.add(storeRef);
         }
         // Now get the AVMStores.
         List<StoreRef> avmStores = avmNodeService.getStores();
@@ -211,7 +218,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public void deleteStore(StoreRef storeRef) throws InvalidStoreRefException
     {
-        throw new UnsupportedOperationException();
+        // Delete the index
+        nodeIndexer.indexDeleteStore(storeRef);
+        // Rename the store
+        StoreRef deletedStoreRef = new StoreRef(StoreRef.PROTOCOL_DELETED, GUID.generate());
+        nodeDAO.moveStore(storeRef, deletedStoreRef);
+        
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Marked store for deletion: " + storeRef + " --> " + deletedStoreRef);
+        }
     }
 
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException

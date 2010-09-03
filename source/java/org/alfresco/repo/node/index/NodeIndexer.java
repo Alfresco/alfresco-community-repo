@@ -24,6 +24,7 @@ import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -69,13 +70,14 @@ public class NodeIndexer
     {
         this.enabled = enabled;
     }
-
-    /**
-     * @deprecated
-     */
-    public void init()
+    
+    public void indexDeleteStore(StoreRef storeRef)
     {
-        logger.warn("NodeIndexer.init() has been deprecated.");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("indexDeleteNode", new Exception("Stack Trace"));
+        }
+        indexer.deleteIndex(storeRef);
     }
 
     public void indexCreateNode(ChildAssociationRef childAssocRef)

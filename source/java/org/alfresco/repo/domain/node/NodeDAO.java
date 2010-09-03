@@ -103,6 +103,14 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public Pair<Long, NodeRef> newStore(StoreRef storeRef);
     
+    /**
+     * Changes the old store reference to the new store reference.
+     * 
+     * @param oldStoreRef       the existing store
+     * @param newStoreRef       the new store
+     */
+    public void moveStore(StoreRef oldStoreRef, StoreRef newStoreRef);
+    
     public Pair<Long, NodeRef> getRootNode(StoreRef storeRef);
     
     /*

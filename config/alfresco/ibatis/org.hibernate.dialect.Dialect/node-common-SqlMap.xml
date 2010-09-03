@@ -331,6 +331,14 @@
             id = #id#
     </update>
     
+    <update id="update_Store" parameterClass="Store">
+        update alf_store set
+            protocol = #protocol#,
+            identifier = #identifier#
+        where
+            id = #id#
+    </update>
+    
     <update id="update_Node" parameterClass="NodeUpdate">
         update alf_node set
                                                                           version           = #version#

@@ -645,6 +645,28 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return new Pair<Long, NodeRef>(rootNode.getId(), rootNode.getNodeRef());
     }
     
+    @Override
+    public void moveStore(StoreRef oldStoreRef, StoreRef newStoreRef)
+    {
+        StoreEntity store = getStoreNotNull(oldStoreRef);
+        store.setProtocol(newStoreRef.getProtocol());
+        store.setIdentifier(newStoreRef.getIdentifier());
+        // Update it
+        int count = updateStore(store);
+        if (count != 1)
+        {
+            throw new ConcurrencyFailureException("Store not updated: " + oldStoreRef);
+        }
+        // All the NodeRef-based caches are invalid.  ID-based caches are fine.
+        rootNodesCache.removeByKey(oldStoreRef);
+        nodesCache.clear();
+        
+        if (isDebugEnabled)
+        {
+            logger.debug("Moved store: " + oldStoreRef + " --> " + newStoreRef);
+        }
+    }
+
     /**
      * Callback to cache store root nodes by {@link StoreRef}.
      * 
@@ -3139,6 +3161,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract NodeEntity selectStoreRootNode(StoreRef storeRef);
     protected abstract Long insertStore(StoreEntity store);
     protected abstract int updateStoreRoot(StoreEntity store);
+    protected abstract int updateStore(StoreEntity store);
     protected abstract Long insertNode(NodeEntity node);
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
     protected abstract int updateNodePatchAcl(NodeUpdateEntity nodeUpdate);

@@ -80,6 +80,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_TRANSACTION_BY_ID = "alfresco.node.delete_TransactionById";
     private static final String INSERT_STORE = "alfresco.node.insert_Store";
     private static final String UPDATE_STORE_ROOT = "alfresco.node.update_StoreRoot";
+    private static final String UPDATE_STORE = "alfresco.node.update_Store";
     private static final String SELECT_STORE_ALL = "alfresco.node.select_StoreAll";
     private static final String SELECT_STORE_ROOT_NODE_BY_ID = "alfresco.node.select_StoreRootNodeById";
     private static final String SELECT_STORE_ROOT_NODE_BY_REF = "alfresco.node.select_StoreRootNodeByRef";
@@ -267,6 +268,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected int updateStoreRoot(StoreEntity store)
     {
         return template.update(UPDATE_STORE_ROOT, store);
+    }
+
+    @Override
+    protected int updateStore(StoreEntity store)
+    {
+        return template.update(UPDATE_STORE, store);
     }
 
     @Override

@@ -57,6 +57,7 @@ public class SubethaEmailServer extends EmailServer
         serverImpl = new SMTPServer(new HandlerFactory());
         serverImpl.setPort(getPort());
         serverImpl.setHostName(getDomain());
+        serverImpl.setMaxConnections(getMaxConnections());
         serverImpl.start();
         log.info("Email Server has started successfully");
     }

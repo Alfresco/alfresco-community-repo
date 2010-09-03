@@ -24,6 +24,9 @@
         <property name="port">
             <value>${email.server.port}</value>
         </property>
+        <property name="maxConnections">
+            <value>${email.server.connections.max}</value>
+        </property>
         <property name="blockedSenders">
             <value>${email.server.blocked.senders}</value>
         </property>

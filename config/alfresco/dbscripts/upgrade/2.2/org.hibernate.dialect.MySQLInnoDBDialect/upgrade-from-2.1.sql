@@ -696,11 +696,15 @@ INSERT INTO alf_locale (id, locale_str) VALUES (1, '.default');
 
 -- Locales come from the attribute table which was used to support MLText persistence
 -- Query OK, 0 rows affected (17.22 sec)
+--FOREACH alf_attributes.id system.upgrade.alf_attributes.batchsize
 INSERT INTO alf_locale (locale_str)
    SELECT DISTINCT(ma.mkey)
       FROM alf_node_properties np
       JOIN alf_attributes a1 ON (np.attribute_value = a1.id)
       JOIN alf_map_attribute_entries ma ON (ma.map_id = a1.id)
+      LEFT OUTER JOIN alf_locale l ON (ma.mkey = l.locale_str)
+      WHERE l.locale_str IS NULL
+      AND a1.id >= ${LOWERBOUND} AND a1.id <= ${UPPERBOUND}   
 ;
 
 -- -------------------------------

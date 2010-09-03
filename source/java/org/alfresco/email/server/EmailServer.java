@@ -44,6 +44,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
     private boolean enabled;
     private String domain;
     private int port;
+    private int maxConnections;
     private Set<String> blockedSenders;
     private Set<String> allowedSenders;
 
@@ -58,6 +59,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
         this.enabled = false;
         this.port = 25;
         this.domain = null;
+        this.maxConnections = 3;
         this.blockedSenders = new HashSet<String>(23);
         this.allowedSenders = new HashSet<String>(23);
     }
@@ -93,6 +95,24 @@ public abstract class EmailServer extends AbstractLifecycleBean
         this.port = port;
     }
 
+    /**
+     * Returns the maximum number of connection accepted by the server.
+     * @return the maximum number of connections
+     */
+    protected int getMaxConnections()
+    {
+        return maxConnections;
+    }
+
+    /**
+     * Sets the maximum number of connection accepted by the server
+     * @param maxConnections
+     */
+    public void setMaxConnections(int maxConnections)
+    {
+        this.maxConnections = maxConnections;
+    }
+    
     /**
      * Set the blocked senders as a comma separated list.  The entries will be trimmed of
      * all whitespace.

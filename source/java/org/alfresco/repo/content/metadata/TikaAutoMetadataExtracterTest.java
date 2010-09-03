@@ -34,6 +34,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -218,16 +219,37 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       assertEquals("68 pixels", p.get("Image Height"));
       assertEquals("8 bits", p.get("Data Precision"));
       assertEquals(QUICK_TITLE, p.get("Comments"));
+      // Check namespace'd Tika properties
       assertEquals("12.54321", p.get("geo:lat"));
       assertEquals("-54.1234", p.get("geo:long"));
+      assertEquals("100", p.get("tiff:ImageWidth"));
+      assertEquals("68", p.get("tiff:ImageLength"));
+      assertEquals("Canon", p.get("tiff:Make"));
+      assertEquals("5.6", p.get("exif:FNumber"));
       
       // Map and check
       Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
       ContentReader reader = new FileContentReader(open("GEO.jpg"));
       reader.setMimetype("image/jpeg");
       extracter.extract(reader, properties);
-      assertEquals(12.54321, properties.get(QName.createQName("http://www.alfresco.org/model/content/1.0","latitude")));
-      assertEquals(-54.1234, properties.get(QName.createQName("http://www.alfresco.org/model/content/1.0","longitude")));
+      // Check the geo bits
+      assertEquals(12.54321, properties.get(ContentModel.PROP_LATITUDE));
+      assertEquals(-54.1234, properties.get(ContentModel.PROP_LONGITUDE));
+      // Check the exif bits
+      assertEquals(100, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "pixelXDimension")));
+      assertEquals(68, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "pixelYDimension")));
+      assertEquals(0.000625, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "exposureTime")));
+      assertEquals(5.6, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "fNumber")));
+      assertEquals(false, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "flash")));
+      assertEquals(194.0, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "focalLength")));
+      assertEquals("400", properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "isoSpeedRatings")));
+      assertEquals("Canon", properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "manufacturer")));
+      assertEquals("Canon EOS 40D", properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "model")));
+      assertEquals("Adobe Photoshop CS3 Macintosh", properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "software")));
+      assertEquals(null, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "orientation")));
+      assertEquals(240.0, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "xResolution")));
+      assertEquals(240.0, properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "yResolution")));
+      assertEquals("Inch", properties.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "resolutionUnit")));
    }
    private File open(String fileBase) throws Throwable {
       String filename = "quick" + fileBase;

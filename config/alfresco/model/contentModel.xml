@@ -1223,7 +1223,7 @@
             </property>
             <property name="exif:fNumber">
                <title>F Number</title>
-               <type>d:text</type>
+               <type>d:double</type>
             </property>
             <property name="exif:flash">
                <title>Flash Activated</title>
@@ -1231,7 +1231,7 @@
             </property>
             <property name="exif:focalLength">
                <title>Focal Length</title>
-               <type>d:int</type>
+               <type>d:double</type>
             </property>
             <property name="exif:isoSpeedRatings">
                <title>ISO Speed</title>
@@ -1255,11 +1255,11 @@
             </property>
             <property name="exif:xResolution">
                <title>Horizontal Resolution</title>
-               <type>d:int</type>
+               <type>d:double</type>
             </property>
             <property name="exif:yResolution">
                <title>Vertical Resolution</title>
-               <type>d:int</type>
+               <type>d:double</type>
             </property>
             <property name="exif:resolutionUnit">
                <title>Resolution Unit</title>

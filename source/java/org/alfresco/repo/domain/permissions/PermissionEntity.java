@@ -41,7 +41,7 @@ public class PermissionEntity implements Permission, Serializable
     
     private Long id;
     private Long version;
-    private Long qnameId;
+    private Long typeQnameId;
     private String name;
     
     /**
@@ -51,9 +51,9 @@ public class PermissionEntity implements Permission, Serializable
     {
     }
     
-    public PermissionEntity(Long qnameId, String name)
+    public PermissionEntity(Long typeQnameId, String name)
     {
-        this.qnameId = qnameId;
+        this.typeQnameId = typeQnameId;
         this.name = name;
     }
     
@@ -91,12 +91,12 @@ public class PermissionEntity implements Permission, Serializable
     
     public Long getTypeQNameId()
     {
-        return qnameId;
+        return typeQnameId;
     }
     
-    public void setTypeQNameId(Long qnameId)
+    public void setTypeQNameId(Long typenameId)
     {
-        this.qnameId = qnameId;
+        this.typeQnameId = typenameId;
     }
     
     public String getName()
@@ -112,7 +112,7 @@ public class PermissionEntity implements Permission, Serializable
     @Override
     public int hashCode()
     {
-        return qnameId.hashCode() + (37 * name.hashCode());
+        return typeQnameId.hashCode() + (37 * name.hashCode());
     }
     
     @Override
@@ -125,7 +125,7 @@ public class PermissionEntity implements Permission, Serializable
         else if (obj instanceof PermissionEntity)
         {
             PermissionEntity that = (PermissionEntity)obj;
-            return (EqualsHelper.nullSafeEquals(this.qnameId, that.qnameId) &&
+            return (EqualsHelper.nullSafeEquals(this.typeQnameId, that.typeQnameId) &&
                     EqualsHelper.nullSafeEquals(this.name, that.name));
         }
         else
@@ -141,7 +141,7 @@ public class PermissionEntity implements Permission, Serializable
         sb.append("PermissionEntity")
           .append("[ ID=").append(id)
           .append(", version=").append(version)
-          .append(", qnameId=").append(qnameId)
+          .append(", typeQnameId=").append(typeQnameId)
           .append(", name=").append(name)
           .append("]");
         return sb.toString();

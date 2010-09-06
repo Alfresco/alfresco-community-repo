@@ -72,7 +72,7 @@
     <resultMap id="result_Permission" class="Permission">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
-        <result property="qnameId" column="type_qname_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="typeQnameId" column="type_qname_id" jdbcType="BIGINT" javaType="long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
     
@@ -216,14 +216,14 @@
         insert into alf_permission
             (version, type_qname_id, name)
         values
-            (#version#, #qnameId#, #name#)
+            (#version#, #typeQnameId#, #name#)
     </sql>
     
     <sql id="insert_Permission_Sequence">
         insert into alf_permission
             (id, version, type_qname_id, name)
         values
-            (#id#, #version#, #qnameId#, #name#)
+            (#id#, #version#, #typeQnameId#, #name#)
     </sql>
     
     <sql id="insert_Authority_AutoIncrement">
@@ -318,7 +318,7 @@
         update
             alf_permission
         set
-            qname_id = #qnameId#,
+            type_qname_id = #typeQnameId#,
             name = #name#,
             version = #version#
         where

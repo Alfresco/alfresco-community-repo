@@ -44,6 +44,7 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
     /**
      * @return Returns the same transformer regardless - it is allowed
      */
+    @Override
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
     {
         return transformer;
@@ -54,6 +55,8 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
         boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should not be supported", false, reliability);
         reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
+        assertEquals("Mimetype should be supported", true, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
 }

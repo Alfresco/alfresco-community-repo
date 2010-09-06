@@ -1064,7 +1064,7 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>124</value></property>
         <property name="targetSchema"><value>125</value></property>
-          <property name="dependsOn" >
+        <property name="dependsOn" >
             <list>
                 <ref bean="patch.fixNameCrcValues-2" />
             </list>
@@ -1080,12 +1080,29 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V3.0-0-CreateActivitiesExtras" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.0-0-CreateActivitiesExtras</value></property>
+        <property name="description"><value>patch.db-V3.0-0-CreateActivitiesExtras.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>125</value></property>
+        <property name="targetSchema"><value>126</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.0-ActivityTables" />
+            </list>
+        </property>
+    </bean>
     <bean id="patch.db-V3.0-ActivityTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.0-ActivityTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>125</value></property>
         <property name="targetSchema"><value>126</value></property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
+            </list>
+        </property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
         </property>

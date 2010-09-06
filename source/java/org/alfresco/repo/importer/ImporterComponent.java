@@ -66,7 +66,6 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -306,8 +305,19 @@ public class ImporterComponent
     }
     
     /**
-     * Create a valid path
+     * Create a valid qname-based xpath
      * 
+     * Note: 
+     * - the localname will be truncated to 100 chars
+     * - the localname should already be encoded for ISO 9075 (in case of MT bootstrap, the @ sign will be auto-encoded, see below)
+     * 
+     * Some examples:
+     *      /
+     *      sys:people/cm:admin
+     *      /app:company_home/app:dictionary
+     *      ../../cm:people_x0020_folder
+     *      sys:people/cm:admin_x0040_test
+     *      
      * @param path
      * @return
      */
@@ -319,9 +329,24 @@ public class ImporterComponent
         {
             if (segments[i] != null && segments[i].length() > 0)
             {
-                String[] qnameComponents = QName.splitPrefixedQName(segments[i]);
-                QName segmentQName = QName.createQName(qnameComponents[0], QName.createValidLocalName(qnameComponents[1]), namespaceService); 
-                validPath.append(ISO9075.getXPathName(segmentQName, namespaceService));
+                int colonIndex = segments[i].indexOf(QName.NAMESPACE_PREFIX);
+                if (colonIndex == -1)
+                {
+                    // eg. ".."
+                    validPath.append(segments[i]);
+                }
+                else
+                {
+                    String[] qnameComponents = QName.splitPrefixedQName(segments[i]);
+                    
+                    String localName = QName.createValidLocalName(qnameComponents[1]);
+                    
+                    // MT: bootstrap of "alfrescoUserStore.xml" requires 'sys:people/cm:admin@tenant' to be encoded as 'sys:people/cm:admin_x0040_tenant' (for XPath)
+                    localName = localName.replace("@", "_x0040_");
+                    
+                    QName segmentQName = QName.createQName(qnameComponents[0], localName, namespaceService);
+                    validPath.append(segmentQName.toPrefixString());
+                }
             }
             if (i < (segments.length -1))
             {
@@ -1046,15 +1071,15 @@ public class ImporterComponent
             // Resolve path to node reference
             NodeRef nodeRef = null;
             importedRef = bindPlaceHolder(importedRef, binding);
-
+            
             if (importedRef.equals("/"))
             {
                 nodeRef = sourceNodeRef;
             }
             else if (importedRef.startsWith("/"))
             {
-                importedRef = createValidPath(importedRef);
-                List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+                String path = createValidPath(importedRef);
+                List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, path, null, namespaceService, false);
                 if (nodeRefs.size() > 0)
                 {
                     nodeRef = nodeRefs.get(0);
@@ -1072,8 +1097,8 @@ public class ImporterComponent
 	                // resolve relative path
 	                try
 	                {
-	                    importedRef = createValidPath(importedRef);
-	                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+	                    String path = createValidPath(importedRef);
+	                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, path, null, namespaceService, false);
 	                    if (nodeRefs.size() > 0)
 	                    {
 	                        nodeRef = nodeRefs.get(0);

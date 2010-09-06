@@ -97,7 +97,7 @@ CREATE TABLE alf_access_control_entry
     CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id),
     CONSTRAINT fk_alf_ace_perm FOREIGN KEY (permission_id) REFERENCES alf_permission (id)
 );
-CREATE UNIQUE INDEX permission_id ON alf_access_control_entry (permission_id, authority_id, allowed, applies, context_id);
+CREATE UNIQUE INDEX permission_id ON alf_access_control_entry (permission_id, authority_id, allowed, applies);
 CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
 CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
 CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);

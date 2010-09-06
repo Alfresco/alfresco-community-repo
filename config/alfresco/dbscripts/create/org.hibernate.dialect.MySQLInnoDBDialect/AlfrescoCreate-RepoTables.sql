@@ -87,7 +87,7 @@ CREATE TABLE alf_access_control_entry
     applies INTEGER NOT NULL,
     context_id BIGINT,
     PRIMARY KEY (id),
-    UNIQUE KEY permission_id (permission_id, authority_id, allowed, applies, context_id),
+    UNIQUE KEY permission_id (permission_id, authority_id, allowed, applies),
     KEY fk_alf_ace_ctx (context_id),
     KEY fk_alf_ace_perm (permission_id),
     KEY fk_alf_ace_auth (authority_id),

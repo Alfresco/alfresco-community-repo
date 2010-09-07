@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -55,7 +56,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    private static Log logger = LogFactory.getLog(ActionTrackingServiceImpl.class);
 
-   private EhCacheAdapter<String, ExecutionDetails> executingActionsCache;
+   private SimpleCache<String, ExecutionDetails> executingActionsCache;
    
    private TransactionService transactionService;
    private RuntimeActionService runtimeActionService;
@@ -95,7 +96,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     * Sets the cache used to store details of
     *  currently executing actions, cluster wide.
     */
-   public void setExecutingActionsCache(EhCacheAdapter<String, ExecutionDetails> executingActionsCache)
+   public void setExecutingActionsCache(SimpleCache<String, ExecutionDetails> executingActionsCache)
    {
        this.executingActionsCache = executingActionsCache;
    }

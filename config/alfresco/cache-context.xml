@@ -50,7 +50,7 @@
    </bean>
    
    <!-- ===================================== -->
-   <!-- ID lookup for Encoding entities       -->
+   <!-- ID lookup for ContentData entities    -->
    <!-- ===================================== -->
 
    <!-- The cross-transaction shared cache for ContentData -->
@@ -400,6 +400,10 @@
          <value>10000</value>
       </property>
    </bean>
+
+   <!-- ===================================== -->
+   <!-- ACL Readers cache                     -->
+   <!-- ===================================== -->
 
     <!-- The cross-transaction shared cache for ACL readers -->
    
@@ -1044,7 +1048,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.cache.routingContentStoreSharedCache</value>
+               <value>org.alfresco.cache.routingContentStoreCache</value>
             </property>
          </bean>
       </property>
@@ -1068,7 +1072,7 @@
    <!-- Executing Actions caches              -->
    <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for AbstractRoutingContentStore -->
+   <!-- The cross-transaction shared cache for Executing Actions -->
    
    <bean name="executingActionsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
@@ -1077,10 +1081,24 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>org.alfresco.cache.executingActionsSharedCache</value>
+               <value>org.alfresco.cache.executingActionsCache</value>
             </property>
          </bean>
       </property>
    </bean>
 
+   <!-- The transactional cache for Executing Actions -->
+   
+   <bean name="executingActionsCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="executingActionsSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.executingActionsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>1000</value>
+      </property>
+   </bean>
+   
 </beans>

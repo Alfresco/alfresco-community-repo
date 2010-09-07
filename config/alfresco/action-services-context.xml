@@ -124,7 +124,7 @@
             <ref bean="actionService" />
         </property>         
         <property name="executingActionsCache">
-            <ref bean="executingActionsSharedCache" />
+            <ref bean="executingActionsCache" />
         </property>         
     </bean>
 

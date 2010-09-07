@@ -304,7 +304,7 @@ public class RenderingEngineTemplateImpl
          final String parentAVMPath = AVMNodeConverter.SplitBase(renditionAvmPath)[0];
          AVMUtil.makeAllDirectories(parentAVMPath);
          avmService.createFile(parentAVMPath,
-                               AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+                               AVMNodeConverter.SplitBase(renditionAvmPath)[1]).close();
          
          if (logger.isDebugEnabled())
          {

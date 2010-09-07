@@ -93,7 +93,7 @@ public class AddAvmContentDialog extends AddContentDialog
       String parent = this.avmBrowseBean.getCurrentPath();
       
       // create the file
-      this.getAvmService().createFile(parent, this.fileName);
+      this.getAvmService().createFile(parent, this.fileName).close();
       this.path = parent + '/' + this.fileName;
       NodeRef fileNodeRef = AVMNodeConverter.ToNodeRef(-1, this.path);
       

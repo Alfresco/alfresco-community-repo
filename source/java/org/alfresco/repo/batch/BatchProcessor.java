@@ -24,6 +24,7 @@ import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -141,13 +142,23 @@ public class BatchProcessor<T> implements BatchMonitor
                     retryingTransactionHelper,
                     new BatchProcessWorkProvider<T>()
                     {
+                        boolean hasMore = true;
                         public int getTotalEstimatedWorkSize()
                         {
                             return collection.size();
                         }
                         public Collection<T> getNextWork()
                         {
-                            return collection;
+                            // Only return the collection once
+                            if (hasMore)
+                            {
+                                hasMore = false;
+                                return collection;
+                            }
+                            else
+                            {
+                                return Collections.emptyList();
+                            }
                         }
                     },
                     workerThreads, batchSize,
@@ -541,27 +552,44 @@ public class BatchProcessor<T> implements BatchMonitor
         
         public boolean hasNext()
         {
-            if (currentIterator == null)
+            boolean hasNext = false;
+            if (workProvider == null)
             {
-                if (workProvider != null)
+                // The workProvider was exhausted
+                hasNext = false;
+            }
+            else
+            {
+                if (currentIterator != null)
+                {
+                    // See if there there is any more on this specific iterator
+                    hasNext = currentIterator.hasNext();
+                }
+                
+                // If we don't have a next (remember that the workProvider is still available)
+                // go and get more results
+                if (!hasNext)
                 {
                     Collection<T> nextWork = workProvider.getNextWork();
                     if (nextWork == null)
                     {
                         throw new RuntimeException("BatchProcessWorkProvider returned 'null' work: " + workProvider);
                     }
-                    currentIterator = nextWork.iterator();
+                    // Check that there are some results at all
+                    if (nextWork.size() == 0)
+                    {
+                        // An empty collection indicates that there are no more results
+                        workProvider = null;
+                        currentIterator = null;
+                        hasNext = false;
+                    }
+                    else
+                    {
+                        // There were some results, so get a new iterator
+                        currentIterator = nextWork.iterator();
+                        hasNext = currentIterator.hasNext();
+                    }
                 }
-                else
-                {
-                    // The null workProvider indicates that it was exhausted
-                }
-            }
-            boolean hasNext = (currentIterator == null) ? false : currentIterator.hasNext();
-            if (!hasNext)
-            {
-                workProvider = null;            // No more work to get
-                currentIterator = null;
             }
             return hasNext;
         }

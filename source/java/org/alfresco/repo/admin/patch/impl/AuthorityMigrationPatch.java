@@ -336,9 +336,8 @@ public class AuthorityMigrationPatch extends AbstractPatch
         return authNodeRef;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal()
+    /**
+     * TODO: The walking of the group associations should be wrapped up in a BatchProcessWorkProvider, if possible
      */
     @Override
     protected String applyInternal() throws Exception

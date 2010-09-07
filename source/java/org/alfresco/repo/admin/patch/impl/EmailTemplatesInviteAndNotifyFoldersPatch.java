@@ -282,11 +282,15 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
         
         //move template
         String xpath = emaiemailTemplatesFolderXPath + "/cm:" + templateName;
-        List<NodeRef> templateNodeRef = searchService.selectNodes(emailTemplatesFolderNodeRef, xpath, null, namespaceService, false);
-        if (templateNodeRef != null)
+        List<NodeRef> templateNodeRefs = searchService.selectNodes(emailTemplatesFolderNodeRef, xpath, null, namespaceService, false);
+        for (NodeRef templateNodeRef : templateNodeRefs)
         {
-            nodeService.moveNode(templateNodeRef.get(0), createdFolderNodeRef, ContentModel.ASSOC_CHILDREN,
-                    nodeService.getPrimaryParent(templateNodeRef.get(0)).getQName());
+            QName qname = nodeService.getPrimaryParent(templateNodeRef).getQName();
+            nodeService.moveNode(
+                    templateNodeRef,
+                    createdFolderNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    qname);
         }
         
         return createdFolderNodeRef;

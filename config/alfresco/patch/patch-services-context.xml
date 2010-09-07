@@ -1860,6 +1860,7 @@
         <property name="applyToTenants"><value>false</value></property>
         <property name="dependsOn" >
             <list>
+                <ref bean="patch.thumbnailsAssocQName" />
                 <ref bean="patch.uniqueChildName" />
                 <ref bean="patch.InvalidNameEnding" />
             </list>

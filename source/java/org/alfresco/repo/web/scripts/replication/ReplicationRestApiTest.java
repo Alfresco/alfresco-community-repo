@@ -40,6 +40,7 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
@@ -1388,6 +1389,89 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertNull(replicationService.loadReplicationDefinition("Test"));
        assertNotNull(replicationService.loadReplicationDefinition("Test 2"));
        assertNull(replicationService.loadReplicationDefinition("Test 3"));
+    }
+    
+    /**
+     * Test that when creating and working with replication
+     *  definitions with a name that includes "nasty"
+     *  characters, things still work.
+     * Related to ALF-4610.
+     * TEST DISABLED - Spring Surf bug... 
+     *  Caused by: java.lang.IllegalArgumentException: URLDecoder: Illegal hex characters in escape (%) pattern - For input string: "^&"
+     */
+    public void DISABLEDtestReplicationDefinitionsNastyNames() throws Exception
+    {
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       Response response;
+       String jsonStr;
+       
+       String nastyName = "~!@#$%^&()_+-={}[];";
+       String nastyNameURL = URLEncoder.encodeUriComponent(nastyName);
+       
+       
+       // Create
+       JSONObject json = new JSONObject();
+       json.put("name", nastyName);
+       json.put("description", "Nasty Characters");
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr).getJSONObject("data");
+       assertNotNull(json);
+       
+       assertEquals(nastyName, json.get("name"));
+       assertEquals("Nasty Characters", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals(JSONObject.NULL, json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+       
+       
+       // Check it turned up
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(nastyName, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+       
+       
+       // Fetch the details
+       response = sendRequest(new GetRequest(URL_DEFINITION + nastyNameURL), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr).getJSONObject("data");
+       assertNotNull(json);
+       
+       assertEquals(nastyName, json.get("name"));
+       assertEquals("Nasty Characters", json.get("description"));
+       assertEquals("New", json.get("status"));
+       
+       
+       // Delete
+       // Because some of the delete operations happen post-commit, and
+       //  because we don't have real transactions, fake it
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       // Call the delete webscript
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + nastyNameURL), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
+       
+       // Let the node service do its work
+       txn.commit();
+       Thread.sleep(50);
+       
+       // Check the details webscript to ensure it went
+       response = sendRequest(new GetRequest(URL_DEFINITION + nastyNameURL), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+       
+       // And check the service too
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
     }
     
     

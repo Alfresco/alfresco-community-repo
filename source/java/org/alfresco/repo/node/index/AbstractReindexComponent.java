@@ -20,9 +20,10 @@ package org.alfresco.repo.node.index;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,15 +49,14 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Abstract helper for reindexing.
@@ -91,7 +91,8 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     private ThreadPoolExecutor threadPoolExecutor;
     
     private TenantService tenantService;
-    private List<String> storesToIgnore = new ArrayList<String>(0);
+    private Set<String> storeProtocolsToIgnore = new HashSet<String>(7);
+    private Set<StoreRef> storesToIgnore = new HashSet<StoreRef>(7);
     
     private volatile boolean shutdown;
     private final WriteLock indexerWriteLock;
@@ -208,16 +209,44 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         this.tenantService = tenantService;
     }
     
-    public void setStoresToIgnore(List<String> storesToIgnore)
+    /**
+     * @param storeProtocolsToIgnore    a list of store protocols that will be ignored
+     *                                  by the index check code e.g. 'deleted' in 'deleted://MyStore'
+     * @since 3.4
+     */
+    public void setStoreProtocolsToIgnore(List<String> storeProtocolsToIgnore)
     {
-        this.storesToIgnore = storesToIgnore;
+        for (String storeProtocolToIgnore : storeProtocolsToIgnore)
+        {
+            this.storeProtocolsToIgnore.add(storeProtocolToIgnore);
+        }
     }
     
-    public List<String> getStoresToIgnore()
+    /**
+     * @param storesToIgnore            a list of store references that will be ignored
+     *                                  by the index check code e.g. 'test://TestOne'
+     */
+    public void setStoresToIgnore(List<String> storesToIgnore)
     {
-        return this.storesToIgnore;
+        for (String storeToIgnore : storesToIgnore)
+        {
+            StoreRef storeRef = new StoreRef(storeToIgnore);
+            this.storesToIgnore.add(storeRef);
+        }
     }
-
+    
+    /**
+     * Find out if a store is ignored by the indexing code
+     * 
+     * @param storeRef                  the store to check
+     * @return                          Returns <tt>true</tt> if the store reference provided is not indexed
+     */
+    public boolean isIgnorableStore(StoreRef storeRef)
+    {
+        storeRef = tenantService.getBaseName(storeRef);                 // Convert to tenant-safe check
+        return storesToIgnore.contains(storeRef) || storeProtocolsToIgnore.contains(storeRef.getProtocol());
+    }
+    
     /**
      * Determines if calls to {@link #reindexImpl()} should be wrapped in a transaction or not.
      * The default is <b>true</b>.
@@ -242,13 +271,14 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      */
     public final void reindex()
     {
-//        PropertyCheck.mandatory(this, "authenticationComponent", this.authenticationComponent);
         PropertyCheck.mandatory(this, "ftsIndexer", this.ftsIndexer);
         PropertyCheck.mandatory(this, "indexer", this.indexer);
         PropertyCheck.mandatory(this, "searcher", this.searcher);
         PropertyCheck.mandatory(this, "nodeService", this.nodeService);
         PropertyCheck.mandatory(this, "nodeDaoService", this.nodeDAO);
         PropertyCheck.mandatory(this, "transactionComponent", this.transactionService);
+        PropertyCheck.mandatory(this, "storesToIgnore", this.storesToIgnore);
+        PropertyCheck.mandatory(this, "storeProtocolsToIgnore", this.storeProtocolsToIgnore);
         
         if (indexerWriteLock.tryLock())
         {
@@ -336,19 +366,14 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 }
             }
             
-            List<String> storesToIgnore = getStoresToIgnore();
-            if (storesToIgnore != null)
+            storeRefsIterator = storeRefs.iterator();
+            while (storeRefsIterator.hasNext())
             {
-                 
-                storeRefsIterator = storeRefs.iterator();
-                while (storeRefsIterator.hasNext())
+                // Remove stores to ignore
+                StoreRef storeRef = storeRefsIterator.next();
+                if (isIgnorableStore(storeRef))
                 {
-                    // Remove stores to ignore
-                    StoreRef storeRef = storeRefsIterator.next();
-                    if (storesToIgnore.contains(storeRef.toString()))
-                    {
-                        storeRefsIterator.remove();
-                    }
+                    storeRefsIterator.remove();
                 }
             }
             
@@ -368,17 +393,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
         return storeRefs;
     }
-    
-//    Unused - comemnted out to make use clearer for isTxnPresentInIndex
-//    protected InIndex isTxnIdPresentInIndex(long txnId)
-//    {
-//        Transaction txn = nodeDaoService.getTxnById(txnId);
-//        if (txn == null)
-//        {
-//            return InIndex.YES;
-//        }
-//        return isTxnPresentInIndex(txn);
-//    }
     
     /**
      * Determines if a given transaction is definitely in the index or not.
@@ -417,39 +431,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         {
             // If none of the stores have the transaction, then that might be because it consists of 0 modifications
             int updateCount = nodeDAO.getTxnUpdateCount(txnId);
-            
-            /* Alternative (r15360)
-            // exclude updates in the version store
-            if(updateCount > 0)
-            {
-                // the updates could all be in the version stores ...
-                List<NodeRef> changes = nodeDaoService.getTxnChanges(txnId);
-                for(NodeRef change : changes)
-                {
-                    StoreRef changeStore = change.getStoreRef();
-                    if(changeStore.getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
-                    {
-                        if(changeStore.getIdentifier().equals("lightWeightVersionStore"))
-                        {
-                            Status nodeStatus = nodeService.getNodeStatus(change);
-                            if(!nodeStatus.isDeleted())
-                            {
-                                updateCount--;
-                            }
-                        }
-                        if(changeStore.getIdentifier().equals("version2Store"))
-                        {
-                            Status nodeStatus = nodeService.getNodeStatus(change);
-                            if(!nodeStatus.isDeleted())
-                            {
-                                updateCount--;
-                            }
-                        }
-                    }
-                   
-                }
-            }
-            */
             
             if ((updateCount > 0) && (! allUpdatedNodesCanBeIgnored(txnId)))
             {
@@ -543,38 +524,24 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     
     protected boolean allUpdatedNodesCanBeIgnored(Long txnId)
     {
+        ParameterCheck.mandatory("txnId", txnId);
+        
         boolean allUpdatedNodesCanBeIgnored = false;
-        List<String> storesToIgnore = getStoresToIgnore();
-        if ((storesToIgnore != null) && (storesToIgnore.size() > 0) && (txnId != null))
+        
+        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
+        
+        allUpdatedNodesCanBeIgnored = true;
+        for (NodeRef.Status nodeStatus : nodeStatuses)
         {
-            List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
-            
-            allUpdatedNodesCanBeIgnored = true;
-            for (NodeRef nodeRef : nodeRefs)
+            NodeRef nodeRef = nodeStatus.getNodeRef();
+            if (! nodeStatus.isDeleted())
             {
-                if (nodeRef != null)
+                // updated node (ie. not deleted)
+                StoreRef storeRef = nodeRef.getStoreRef();
+                if (!isIgnorableStore(storeRef))
                 {
-                    Status nodeStatus = nodeService.getNodeStatus(nodeRef);
-                    if (nodeStatus == null)
-                    {
-                        // it's not there any more
-                        continue;
-                    }
-                    if (! nodeStatus.isDeleted())
-                    {
-                        // updated node (ie. not deleted)
-                        StoreRef storeRef = nodeRef.getStoreRef();
-                        if (tenantService != null)
-                        {
-                            storeRef = tenantService.getBaseName(nodeRef.getStoreRef());
-                        }
-                            
-                        if (! storesToIgnore.contains(storeRef.toString()))
-                        {
-                            allUpdatedNodesCanBeIgnored = false;
-                            break;
-                        }
-                    }
+                    allUpdatedNodesCanBeIgnored = false;
+                    break;
                 }
             }
         }
@@ -587,15 +554,18 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         final Long txnId = txn.getId();
         // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
         // get all node refs for the transaction
-        List<NodeRef> nodeRefs = nodeDAO.getTxnChangesForStore(storeRef, txnId);
+        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChangesForStore(storeRef, txnId);
         boolean foundNodeRef = false;
-        for (NodeRef nodeRef : nodeRefs)
+        for (NodeRef.Status nodeStatus : nodeStatuses)
         {
+            NodeRef nodeRef = nodeStatus.getNodeRef();
             if (logger.isTraceEnabled())
             {
-                logger.trace("Searching for node in index: \n" +
+                logger.trace(
+                        
+                        "Searching for node in index: \n" +
                         "   node: " + nodeRef + "\n" +
-                  "   txn: " + txnId);
+                        "   txn: " + txnId);
             }
             // we know that these are all deletions
             ResultSet results = null;
@@ -689,12 +659,12 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
         
         // get the node references pertinent to the transaction
-        List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
+        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
         // reindex each node
         int nodeCount = 0;
-        for (NodeRef nodeRef : nodeRefs)
+        for (NodeRef.Status nodeStatus : nodeStatuses)
         {
-            Status nodeStatus = nodeService.getNodeStatus(nodeRef);
+            NodeRef nodeRef = nodeStatus.getNodeRef();
             if (nodeStatus == null)
             {
                 // it's not there any more
@@ -748,7 +718,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         private final List<Long> txnIds;
         private long lastIndexedTimestamp;
         private boolean atHeadOfQueue;
-        private boolean killed;
         
         private ReindexWorkerRunnable(List<Long> txnIds)
         {
@@ -760,7 +729,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             this.uidHashCode = id * 13 + 11;
             this.txnIds = txnIds;
             this.atHeadOfQueue = false;
-            this.killed = false;
             recordTimestamp();
         }
         
@@ -790,16 +758,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         public int hashCode()
         {
             return uidHashCode;
-        }
-
-        public synchronized void kill()
-        {
-            this.killed = true;
-        }
-        
-        private synchronized boolean isKilled()
-        {
-            return killed;
         }
 
         /**
@@ -912,11 +870,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         
         public synchronized void reindexedNode(NodeRef nodeRef)
         {
-            // Check for forced kill
-            if (isKilled())
-            {
-                throw new ReindexTerminatedException();
-            }
             recordTimestamp();
         }
         
@@ -975,15 +928,15 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     peek.setAtHeadOfQueue();
                 }
                 // Check kill switch
-                if (peek == null || isKilled() || isAtHeadOfQueue())
+                if (peek == null || isAtHeadOfQueue())
                 {
                     // Going to close
                     break;
                 }
                 else
                 {
-                    // This thread is not at the head of the queue and has not been flagged
-                    // for death, so just wait until someone notifies us to carry on
+                    // This thread is not at the head of the queue so just wait
+                    // until someone notifies us to carry on
                     waitForHeadOfQueue();
                     // Loop again
                 }

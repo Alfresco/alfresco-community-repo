@@ -306,7 +306,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         // TODO Need to find out if this is important and if so
         // need to capture Transaction IDs.
-        return new NodeRef.Status("Unknown", null, !exists(nodeRef));
+        return new NodeRef.Status(nodeRef, "Unknown", null, !exists(nodeRef));
     }
     
     /**

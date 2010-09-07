@@ -528,6 +528,9 @@
         </property>
         <property name="redirectedProtocolBindings">
             <map>
+                <entry key="deleted">
+                    <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
+                </entry>
                 <entry key="workspace">
                     <ref bean="admLuceneIndexerAndSearcherFactory"></ref>
                 </entry>

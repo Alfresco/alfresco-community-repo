@@ -69,6 +69,15 @@
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
     </resultMap>
+    <resultMap id="result_NodeStatus" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
     <resultMap id="result_Node" class="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -893,13 +902,15 @@
             )
     </select>
     
-    <select id="select_TxnNodes" parameterClass="TransactionQuery" resultMap="result_NodeRef">
+    <select id="select_TxnNodes" parameterClass="TransactionQuery" resultMap="result_NodeStatus">
         select
             node.id             as id,
             store.protocol      as protocol,
             store.identifier    as identifier,
             node.uuid           as uuid,
-            node.node_deleted   as node_deleted
+            node.node_deleted   as node_deleted,
+            txn.id              as txn_id,
+            txn.change_txn_id   as txn_change_id
         from
             alf_node node
             join alf_store store on (store.id = node.store_id)

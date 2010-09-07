@@ -593,14 +593,14 @@ public interface NodeDAO extends NodeBulkLoader
     public int getTransactionCount();
     
     /**
-     * @deprecated          Replace with query returning a Node object
+     * @return              Returns the node statuses for a transaction, limited to the store
      */
-    public List<NodeRef> getTxnChangesForStore(StoreRef storeRef, Long txnId);
+    public List<NodeRef.Status> getTxnChangesForStore(StoreRef storeRef, Long txnId);
     
     /**
-     * @deprecated          Replace with query returning a Node object
+     * @return              Returns the node statuses for a transaction, regardless of store
      */
-    public List<NodeRef> getTxnChanges(Long txnId);
+    public List<NodeRef.Status> getTxnChanges(Long txnId);
     
     public List<Long> getTxnsUnused(Long minTxnId, long maxCommitTime, int count);
     

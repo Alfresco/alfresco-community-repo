@@ -46,6 +46,11 @@
       <property name="tenantService">
          <ref bean="tenantService" />
       </property>
+      <property name="storeProtocolsToIgnore">
+         <list>
+            <value>deleted</value>
+         </list>
+      </property>
       <property name="storesToIgnore">
          <list>
             <value>${version.store.version2Store}</value>

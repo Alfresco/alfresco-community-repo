@@ -31,7 +31,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -446,16 +445,11 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             public Object execute() throws Exception
             {
                 // get the node references pertinent to the transaction
-                List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
+                List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
                 // reindex each node
-                for (NodeRef nodeRef : nodeRefs)
+                for (NodeRef.Status nodeStatus : nodeStatuses)
                 {
-                    Status nodeStatus = nodeService.getNodeStatus(nodeRef);
-                    if (nodeStatus == null)
-                    {
-                        // it's not there any more
-                        continue;
-                    }
+                    NodeRef nodeRef = nodeStatus.getNodeRef();
                     if (nodeStatus.isDeleted())                                 // node deleted
                     {
                         // only the child node ref is relevant

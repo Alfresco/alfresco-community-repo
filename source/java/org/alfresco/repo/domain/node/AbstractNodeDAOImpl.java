@@ -775,7 +775,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         else
         {
             Transaction txn = node.getTransaction();
-            return new NodeRef.Status(txn.getChangeTxnId(), txn.getId(), node.getDeleted());
+            return new NodeRef.Status(nodeRef, txn.getChangeTxnId(), txn.getId(), node.getDeleted());
         }
     }
 
@@ -3053,23 +3053,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return selectTxnById(txnId);
     }
 
-    public List<NodeRef> getTxnChanges(Long txnId)
+    public List<NodeRef.Status> getTxnChanges(Long txnId)
     {
         return getTxnChangesForStore(null, txnId);
     }
 
-    public List<NodeRef> getTxnChangesForStore(StoreRef storeRef, Long txnId)
+    public List<NodeRef.Status> getTxnChangesForStore(StoreRef storeRef, Long txnId)
     {
         Long storeId = (storeRef == null) ? null : getStoreNotNull(storeRef).getId();
         List<NodeEntity> nodes = selectTxnChanges(txnId, storeId);
         // Convert
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodes.size());
+        List<NodeRef.Status> nodeStatuses = new ArrayList<NodeRef.Status>(nodes.size());
         for (NodeEntity node : nodes)
         {
-            nodeRefs.add(node.getNodeRef());
+            nodeStatuses.add(node.getNodeStatus());
         }
         // Done
-        return nodeRefs;
+        return nodeStatuses;
     }
 
     public int getTxnUpdateCount(Long txnId)

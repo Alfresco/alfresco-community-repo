@@ -67,10 +67,6 @@ public class FullIndexRecoveryComponentTest extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
-        
-     
-        
     }
     
     public void testSetup() throws Exception

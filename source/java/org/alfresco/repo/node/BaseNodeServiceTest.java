@@ -463,20 +463,17 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("New store not present is list of stores", storeRefs.contains(storeRef));
     }
     
-    /**
-     * TODO: Comment back in and fix up IndexCheckServiceTest
-     */
-    public void xtestDeleteStore() throws Exception
+    public void testDeleteStore() throws Exception
     {
         StoreRef storeRef = createStore();
         // get all stores
         List<StoreRef> storeRefs = nodeService.getStores();
         // check that the store ref is present
-        assertTrue("New store not present is list of stores", storeRefs.contains(storeRef));
+        assertTrue("New store not present in list of stores", storeRefs.contains(storeRef));
         // Delete it
         nodeService.deleteStore(storeRef);
         storeRefs = nodeService.getStores();
-        assertFalse("Deleted store should not present is list of stores", storeRefs.contains(storeRef));
+        assertFalse("Deleted store should not present in list of stores", storeRefs.contains(storeRef));
         // Now make sure that none of the stores have the "deleted" protocol
         for (StoreRef retrievedStoreRef : storeRefs)
         {

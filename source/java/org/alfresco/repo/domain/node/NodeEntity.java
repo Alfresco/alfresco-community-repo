@@ -140,6 +140,12 @@ public class NodeEntity implements Node
         return new NodeRef(store.getStoreRef(), uuid);
     }
     
+    public NodeRef.Status getNodeStatus()
+    {
+        NodeRef nodeRef = new NodeRef(store.getStoreRef(), uuid);
+        return new NodeRef.Status(nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
+    }
+    
     public Pair<Long, NodeRef> getNodePair()
     {
         return new Pair<Long, NodeRef>(id, getNodeRef());

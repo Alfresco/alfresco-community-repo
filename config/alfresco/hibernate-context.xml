@@ -52,10 +52,6 @@
         </property>
         <property name="mappingResources">
             <list>
-<!--                 
-                <value>org/alfresco/repo/audit/hibernate/Audit.hbm.xml</value>
- -->
-
                 <value>org/jbpm/graph/action/Script.hbm.xml</value>
                 <value>org/jbpm/db/hibernate.queries.hbm.xml</value>
                 <value>org/jbpm/graph/def/ProcessDefinition.hbm.xml</value>
@@ -147,11 +143,6 @@
         <property name="hibernateProperties" ref="hibernateConfigProperties" />
         <property name="entityCacheStrategies" >
             <props>
-<!-- 
-                <prop key="org.alfresco.repo.audit.hibernate.AuditConfigImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.audit.hibernate.AuditDateImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.audit.hibernate.AuditSourceImpl">${cache.strategy}</prop>
- -->
             </props>
         </property>
         <property name="collectionCacheStrategies" >

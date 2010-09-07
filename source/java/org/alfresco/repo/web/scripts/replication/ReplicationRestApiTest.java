@@ -1396,10 +1396,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
      *  definitions with a name that includes "nasty"
      *  characters, things still work.
      * Related to ALF-4610.
-     * TEST DISABLED - Spring Surf bug... 
-     *  Caused by: java.lang.IllegalArgumentException: URLDecoder: Illegal hex characters in escape (%) pattern - For input string: "^&"
      */
-    public void DISABLEDtestReplicationDefinitionsNastyNames() throws Exception
+    public void testReplicationDefinitionsNastyNames() throws Exception
     {
        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
        Response response;

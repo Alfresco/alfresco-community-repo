@@ -92,6 +92,8 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(VersionPathTest.class);
         suite.addTestSuite(WCMInheritPermissionsTest.class);
         
+        suite.addTestSuite(AVMServiceConcurrentTest.class);
+        
         /*
         // note:to test remotely need running repo (otherwise effectively repeats AVMServiceLocalTest)
         suite.addTestSuite(AVMServiceRemoteSystemTest.class);

@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -257,7 +258,7 @@ public class AVMServicePermissionsTest extends TestCase
         return permissionModelDAO.getPermissionReference(null, permission);
     }
 
-    private void buildBaseStructure(String base)
+    private void buildBaseStructure(String base) throws IOException
     {
         avmService.createStore(base);
         avmService.createDirectory(base + ":/", "base");
@@ -265,18 +266,18 @@ public class AVMServicePermissionsTest extends TestCase
         avmService.createDirectory(base + ":/base/d-a", "d-aa");
         avmService.createDirectory(base + ":/base/d-a", "d-ab");
         avmService.createDirectory(base + ":/base/d-a", "d-ac");
-        avmService.createFile(base + ":/base/d-a", "f-aa");
+        avmService.createFile(base + ":/base/d-a", "f-aa").close();
         avmService.createDirectory(base + ":/base", "d-b");
         avmService.createDirectory(base + ":/base/d-b", "d-ba");
         avmService.createDirectory(base + ":/base/d-b", "d-bb");
         avmService.createDirectory(base + ":/base/d-b", "d-bc");
-        avmService.createFile(base + ":/base/d-b", "f-ba");
+        avmService.createFile(base + ":/base/d-b", "f-ba").close();
         avmService.createDirectory(base + ":/base", "d-c");
         avmService.createDirectory(base + ":/base/d-c", "d-ca");
         avmService.createDirectory(base + ":/base/d-c", "d-cb");
         avmService.createDirectory(base + ":/base/d-c", "d-cc");
-        avmService.createFile(base + ":/base/d-c", "f-ca");
-        avmService.createFile(base + ":/base", "f-a");
+        avmService.createFile(base + ":/base/d-c", "f-ca").close();
+        avmService.createFile(base + ":/base", "f-a").close();
 
         avmService.createDirectory(base + ":/base", "d-d");
         avmService.createLayeredDirectory(base + ":/base/d-a", base + ":/base/d-d", "layer-d-a");
@@ -657,7 +658,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    public void testComplexStore_AlterInheritance()
+    public void testComplexStore_AlterInheritance() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -771,7 +772,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    public void testComplexStore_AddPermissionsToMiddle()
+    public void testComplexStore_AddPermissionsToMiddle() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -939,7 +940,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    public void testComplexStore_AddPermissionsToBottom()
+    public void testComplexStore_AddPermissionsToBottom() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -2238,7 +2239,7 @@ public class AVMServicePermissionsTest extends TestCase
         // System.err.println("Permisssions not found at "+desc.getPath());
     }
 
-    public void testRedirectLayeredDirectory()
+    public void testRedirectLayeredDirectory() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -2247,9 +2248,9 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.createStore(storeName);
             avmService.createDirectory(storeName + ":/", "www");
             avmService.createDirectory(storeName + ":/www", "avm-web-apps");
-            avmService.createFile(storeName + ":/www", "dog");
+            avmService.createFile(storeName + ":/www", "dog").close();
             avmService.createDirectory(storeName + ":/www/avm-web-apps", "ROOT");
-            avmService.createFile(storeName + ":/www/avm-web-apps", "cat");
+            avmService.createFile(storeName + ":/www/avm-web-apps", "cat").close();
 
             AVMNodeDescriptor desc = avmService.lookup(-1, storeName + ":/www");
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
@@ -2448,7 +2449,7 @@ public class AVMServicePermissionsTest extends TestCase
             desc = avmService.lookup(-1, storeName + ":/layer/l-d");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             permissionService.setPermission(nodeRef, "directory-monkey", PermissionService.READ, true);
-            avmService.createFile(storeName + ":/layer", "l-f");
+            avmService.createFile(storeName + ":/layer", "l-f").close();
             desc = avmService.lookup(-1, storeName + ":/layer/l-f");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             permissionService.setPermission(nodeRef, "file-monkey", PermissionService.READ, true);
@@ -2914,7 +2915,7 @@ public class AVMServicePermissionsTest extends TestCase
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
             assertEquals(aclDaoComponent.getInheritedAccessControlList(definingId), avmACLDAO.getAccessControlList(nodeRef).getId());
 
-            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file");
+            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file").close();
             desc = avmService.lookup(-1, storeName + ":/www/avm-web-apps/ROOT/file");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
@@ -3111,7 +3112,7 @@ public class AVMServicePermissionsTest extends TestCase
     }
     
     // Comment-out for now due to intermittent failure: expected:<6> but was:<7>
-    public void x_testSimpleInternalLayer()
+    public void x_testSimpleInternalLayer() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -3152,7 +3153,7 @@ public class AVMServicePermissionsTest extends TestCase
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
             assertEquals(aclDaoComponent.getInheritedAccessControlList(definingId), avmACLDAO.getAccessControlList(nodeRef).getId());
 
-            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file");
+            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file").close();
             desc = avmService.lookup(-1, storeName + ":/www/avm-web-apps/ROOT/file");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
@@ -3354,7 +3355,7 @@ public class AVMServicePermissionsTest extends TestCase
         System.out.println("\t => " + acl);
     }
 
-    public void testMutationsWithSimpleLayers()
+    public void testMutationsWithSimpleLayers() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -3459,13 +3460,13 @@ public class AVMServicePermissionsTest extends TestCase
             permissionService.setPermission(nodeRef, "jim", "ContentReviewer", true);
             permissionService.setPermission(nodeRef, "dave", "ContentReviewer", true);
 
-            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file");
+            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "file").close();
             desc = avmService.lookup(-1, storeName + ":/www/avm-web-apps/ROOT/file");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             // TODO: Check this
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 7);
 
-            avmService.createFile(storeName + "-a-:/www/avm-web-apps/ROOT", "file2");
+            avmService.createFile(storeName + "-a-:/www/avm-web-apps/ROOT", "file2").close();
             desc = avmService.lookup(-1, storeName + "-a-:/www/avm-web-apps/ROOT/file2");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 10);
@@ -3599,7 +3600,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    public void testRenamePlainFile()
+    public void testRenamePlainFile() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -3649,7 +3650,7 @@ public class AVMServicePermissionsTest extends TestCase
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 1);
 
-            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "test");
+            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "test").close();
             desc = avmService.lookup(-1, storeName + ":/www/avm-web-apps/ROOT/test");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             permissionService.setPermission(nodeRef, "four", PermissionService.ALL_PERMISSIONS, true);
@@ -3797,7 +3798,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    public void testRenamePlainFileIntoLayer()
+    public void testRenamePlainFileIntoLayer() throws IOException
     {
         runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -3835,7 +3836,7 @@ public class AVMServicePermissionsTest extends TestCase
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 1);
 
-            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "test");
+            avmService.createFile(storeName + ":/www/avm-web-apps/ROOT", "test").close();
             desc = avmService.lookup(-1, storeName + ":/www/avm-web-apps/ROOT/test");
             nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             permissionService.setPermission(nodeRef, "four", PermissionService.ALL_PERMISSIONS, true);
@@ -3937,7 +3938,7 @@ public class AVMServicePermissionsTest extends TestCase
     private static final String FILE_NAME = "fileForExport";
     private static final String ROOT = "ROOT";
 
-    private void createStagingWithSnapshots(String storeName)
+    private void createStagingWithSnapshots(String storeName) throws IOException
     {
         if (avmService.getStore(storeName) != null)
         {
@@ -3956,7 +3957,7 @@ public class AVMServicePermissionsTest extends TestCase
         avmService.createDirectory(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE, ROOT);
         avmService.createSnapshot(storeName, "third", "third");
         assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT));
-        avmService.createFile(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT, FILE_NAME);
+        avmService.createFile(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT, FILE_NAME).close();
         avmService.createSnapshot(storeName, "fourth", "fourth");
         assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/" + FILE_NAME));
 

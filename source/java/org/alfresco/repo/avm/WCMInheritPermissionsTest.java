@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.avm;
 
+import java.io.IOException;
+
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,7 +41,7 @@ public class WCMInheritPermissionsTest extends AVMServiceTestBase
         permissionService = (PermissionService)fContext.getBean("permissionService");
     }
     
-    private void createStagingWithSnapshots(String storeName)
+    private void createStagingWithSnapshots(String storeName) throws IOException
     {
         if (fService.getStore(storeName) != null)
         {
@@ -58,7 +60,7 @@ public class WCMInheritPermissionsTest extends AVMServiceTestBase
         fService.createDirectory(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE, ROOT);
         fService.createSnapshot(storeName, "third", "third");
         assertNotNull(fService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT));
-        fService.createFile(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT, FILE_NAME);
+        fService.createFile(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT, FILE_NAME).close();
         fService.createSnapshot(storeName, "fourth", "fourth");
         assertNotNull(fService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/" + FILE_NAME));
     }
@@ -69,7 +71,7 @@ public class WCMInheritPermissionsTest extends AVMServiceTestBase
         assertNull(fService.getStore(storeName));
     }
     
-    public void testSetInheritParentPermissions()
+    public void testSetInheritParentPermissions() throws IOException
     {
         createStagingWithSnapshots(STORE_NAME);
         

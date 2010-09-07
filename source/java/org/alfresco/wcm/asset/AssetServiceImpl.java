@@ -216,7 +216,14 @@ public class AssetServiceImpl implements AssetService
         String sbStoreId = WCMUtil.getSandboxStoreId(avmParentPath);
         if (! isWebProjectStagingSandbox(sbStoreId))
         {
-            avmService.createFile(avmParentPath, name);            
+            try
+            {
+                avmService.createFile(avmParentPath, name).close();
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("I/O Error.", e);
+            }
         }
         else
         {

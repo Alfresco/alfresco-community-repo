@@ -32,10 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
-
-import javax.transaction.UserTransaction;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
@@ -104,431 +101,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         runQueriesAgainstBasicTree("main");
     }
     
-    public void test_ALF_786() throws Exception
-    {
-        int threads= 4;
-        int loops = 10;
-        int snapshotsPerLoop = 4;
-        
-        
-        int startVersion;
-        UserTransaction testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        fService.createDirectory("main:/", "test");
-        startVersion = fService.createSnapshot("main", null, null).get("main");
-        
-        testTX.commit();
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-
-        
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
-        SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        ResultSet results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        assertEquals(0, results.length());
-        results.close();
-        testTX.commit();
-
-        Thread runner = null;
-
-        for (int i = 0; i < threads; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, false, snapshotsPerLoop, Nester.Mode.CREATE, loops);
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        // snap
-        testTX.commit();
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();;
-        SortedMap<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/test");
-        assertEquals(loops, listing.size());
-        for(AVMNodeDescriptor node : listing.values())
-        {
-            System.out.println("Listed: "+node.getPath()+" "+node.getVersionID()); 
-        }
-        List<AVMDifference> diffs = fSyncService.compare(startVersion, "main:/", -1, "main:/", null);
-        assertEquals(loops, diffs.size());
-        for(AVMDifference diff : diffs)
-        {
-            AVMNodeDescriptor desc = fService.lookup(diff.getDestinationVersion(), diff.getDestinationPath(), true);
-            assertFalse(desc.isDeleted());
-        }
-        
-        
-        
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(loops, results.length());
-        results.close();
-        testTX.commit();
-        
-        // update
-        
-        runner = null;
-        for (int i = 0; i < threads; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, false, snapshotsPerLoop, Nester.Mode.UPDATE, loops);
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(loops, results.length());
-        results.close();
-        testTX.commit();
-        
-         // delete
-        
-        runner = null;
-        for (int i = 0; i < threads; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, false, snapshotsPerLoop, Nester.Mode.DELETE, loops);
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(0, results.length());
-        results.close();
-        testTX.commit();
-        
-        // recreate
-        
-        runner = null;
-        for (int i = 0; i < threads; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, false, snapshotsPerLoop, Nester.Mode.CREATE, loops);
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(loops, results.length());
-        results.close();
-        testTX.commit();
-        
-        //move
-        
-        runner = null;
-        for (int i = 0; i < threads; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, false, snapshotsPerLoop, Nester.Mode.MOVE, loops);
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(loops, results.length());
-        results.close();
-        testTX.commit();
-    }
-    
-    public void xtest_ALF_786_PLUS() throws Exception
-    {
-        int startVersion;
-        UserTransaction testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        fService.createDirectory("main:/", "test");
-        startVersion = fService.createSnapshot("main", null, null).get("main");
-        
-        testTX.commit();
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-
-        
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
-        SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        ResultSet results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        assertEquals(0, results.length());
-        results.close();
-        testTX.commit();
-
-        Thread runner = null;
-
-        for (int i = 0; i < 10; i++)
-        {
-            runner = new Nester("Concurrent-" + i, runner, true, 10, Nester.Mode.CREATE, 10 );
-        }
-        if (runner != null)
-        {
-            runner.start();
-
-            try
-            {
-                runner.join();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();
-        // snap
-        testTX.commit();
-        testTX = fTransactionService.getUserTransaction();
-        testTX.begin();;
-        SortedMap<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/test");
-        assertEquals(100, listing.size());
-        for(AVMNodeDescriptor node : listing.values())
-        {
-            System.out.println("Listed: "+node.getPath()+" "+node.getVersionID()); 
-        }
-        List<AVMDifference> diffs = fSyncService.compare(startVersion, "main:/", -1, "main:/", null);
-        assertEquals(100, diffs.size());
-        for(AVMDifference diff : diffs)
-        {
-            AVMNodeDescriptor desc = fService.lookup(diff.getDestinationVersion(), diff.getDestinationPath(), true);
-            assertFalse(desc.isDeleted());
-        }
-        
-        
-        
-        searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
-        results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
-        for(ResultSetRow row : results)
-        {
-            System.out.println("Found: "+row.getNodeRef());
-        }
-        assertEquals(100, results.length());
-        results.close();
-        testTX.commit();
-    }
-    
-    static class Nester extends Thread
-    {
-        enum Mode {CREATE, UPDATE, DELETE, MOVE};
-        
-        Thread waiter;
-
-        int i;
-        
-        boolean multiThread;
-        
-        int snapshotCount;
-        
-        Mode mode;
-        
-        int loopCount;
-        
-        Nester(String name, Thread waiter, boolean multiThread, int snapshotCount, Mode mode, int loopCount)
-        {
-            super(name);
-            this.setDaemon(true);
-            this.waiter = waiter;
-            this.multiThread = multiThread;
-            this.snapshotCount = snapshotCount;
-            this.mode = mode;
-            this.loopCount = loopCount;
-        }
-
-        public void run()
-        {
-            fAuthenticationComponent.setSystemUserAsCurrentUser();
-            if (waiter != null)
-            {
-                waiter.start();
-            }
-            try
-            {
-                System.out.println("Start " + this.getName());
-                for(i = 0; i < loopCount; i++)
-                {
-                    RetryingTransactionCallback<Void> create = new RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            fService.createFile("main:/test", getName()+"-"+i);
-
-                            return null;
-                        }
-                    };
-                    RetryingTransactionCallback<Void> update = new RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            fService.setMimeType("main:/test/"+getName()+"-"+i, "text/plain");
-
-                            return null;
-                        }
-                    };
-                    RetryingTransactionCallback<Void> delete = new RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            fService.removeNode("main:/test/"+getName()+"-"+i);
-
-                            return null;
-                        }
-                    };
-                    RetryingTransactionCallback<Void> move = new RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            fService.rename("main:/test/", getName()+"-"+i, "main:/test/", "MOVED-"+getName()+"-"+i);
-
-                            return null;
-                        }
-                    };
-                    if(multiThread || (waiter == null))
-                    {
-                         // only one thread creates for 786
-                        switch(mode)
-                        {
-                        case CREATE:
-                            fRetryingTransactionHelper.doInTransaction(create);
-                            System.out.println(getName()+i);
-                            break;
-                        case UPDATE:
-                            fRetryingTransactionHelper.doInTransaction(update);
-                            break;
-                        case DELETE:
-                            fRetryingTransactionHelper.doInTransaction(delete);
-                            break;
-                        case MOVE:
-                            fRetryingTransactionHelper.doInTransaction(move);
-                            break;
-                        default:
-                        }
-                       
-                    }
-                   
-                    RetryingTransactionCallback<Void> snap = new RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            fService.createSnapshot("main", null, null);
-                           
-
-                            return null;
-                        }
-                    };
-                    for(int s = 0; s < snapshotCount; s++)
-                    {
-                        fRetryingTransactionHelper.doInTransaction(snap);
-                    }
-                }
-                System.out.println("End " + this.getName());
-            }
-            catch (Exception e)
-            {
-                System.out.println("End " + this.getName() + " with error " + e.getMessage());
-                e.printStackTrace();
-            }
-            finally
-            {
-                fAuthenticationComponent.clearCurrentSecurityContext();
-            }
-            if (waiter != null)
-            {
-                try
-                {
-                    waiter.join();
-                    System.out.println("Waited for " + waiter.getName()+" by "+this.getName());
-                }
-                catch (InterruptedException e)
-                {
-                }
-            }
-        }
-
-    }
-    
-    
-    
-    public void testDiffOrder()
+    public void testDiffOrder() throws IOException
     {
         try
         {
@@ -538,11 +111,11 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("Bottom:/", "www");
             fService.createLayeredDirectory("Bottom:/www", "Top:/", "www");
 
-            fService.createFile("Bottom:/www", "newInBottom");
+            fService.createFile("Bottom:/www", "newInBottom").close();
             fService.createSnapshot("Bottom", null, null);
-            fService.createFile("Top:/www", "newInTop");
+            fService.createFile("Top:/www", "newInTop").close();
             fService.createSnapshot("Top", null, null);
-            fService.createFile("Bottom:/www", "file");
+            fService.createFile("Bottom:/www", "file").close();
             fService.createSnapshot("Bottom", null, null);
             fService.forceCopy("Top:/www/file");
             fService.createSnapshot("Top", null, null);
@@ -671,9 +244,9 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("main:/", "2007").close();
             fService.createFile("main:/", "meep meep").close();
             fService.createDirectory("main:/", "my space");
-            fService.createFile("main:/my space", "my file");
+            fService.createFile("main:/my space", "my file").close();
             fService.createDirectory("main:/", "2001");
-            fService.createFile("main:/2001", "2002");
+            fService.createFile("main:/2001", "2002").close();
             fService.createSnapshot("main", null, null);
 
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
@@ -1071,7 +644,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createLayeredDirectory("main:/a", "layer:/", "a");
             fService.createSnapshot("layer", null, null);
             runQueriesAgainstBasicTree("main");
-            fService.createFile("main:/a", "Xander");
+            fService.createFile("main:/a", "Xander").close();
             fService.createSnapshot("layer", null, null);
             
             assertEquals(2, fService.lookup(2, "layer:/a").getIndirectionVersion());
@@ -1113,7 +686,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createLayeredDirectory("main:/a", "layer:/root", "layer");
             fService.createSnapshot("layer", null, null);
             fService.createFile("main:/a", "dummy").close();
-            fService.createFile("layer:/root/layer", "pygmy");
+            fService.createFile("layer:/root/layer", "pygmy").close();
             fService.createSnapshot("layer", null, null);
             fService.createStore("branch");
             fService.createBranch(1, "layer:/root", "branch:/", "branch");
@@ -3180,7 +2753,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createSnapshot("main", null, null);
             listing = fService.getDirectoryListingDirect(-1, "main:/layer");
             assertEquals(1, listing.size());
-            fService.createFile("main:/layer", "lepton");
+            fService.createFile("main:/layer", "lepton").close();
             fService.createSnapshot("main", null, null);
             listing = fService.getDirectoryListingDirect(-1, "main:/layer");
             assertEquals(2, listing.size());
@@ -4611,7 +4184,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
             
             // note: unlike WCM, edit staging directly (ie. don't bother with mainA--layer for now)
-            fService.createFile("mainA:/a", "foo");
+            fService.createFile("mainA:/a", "foo").close();
             
             PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
             out.println("I am mainA:/a/foo");

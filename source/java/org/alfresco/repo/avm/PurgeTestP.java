@@ -51,7 +51,7 @@ public class PurgeTestP extends AVMServiceTestBase
             
             for (int i = 1; i <= fileCount; i++)
             {
-                fService.createFile("main:/", "file"+i);
+                fService.createFile("main:/", "file"+i).close();
             }
             
             logger.info("Remove "+fileCount+" files ...");

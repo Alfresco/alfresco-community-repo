@@ -216,15 +216,14 @@ public class TransferEventProcessor
             {
                 TransferEventImpl event = new TransferEventEndState();
                 event.setMessage("End State: " + currentState);
-                event.setTransferState(state);
+                event.setTransferState(currentState);
                 queue.add(event); 
             }
-            {
-                TransferEventImpl event = new TransferEventEnterState();
-                event.setMessage("Enter State: " + state);
-                event.setTransferState(state);
-                queue.add(event); 
-            }
+
+            TransferEventImpl event = new TransferEventEnterState();
+            event.setMessage("Enter State: " + state);
+            event.setTransferState(state);
+            queue.add(event); 
             currentState = state;
         }
     }

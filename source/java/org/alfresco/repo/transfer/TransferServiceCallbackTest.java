@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2009-2010 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.transfer;
 
 import static org.mockito.Matchers.*;
@@ -258,6 +276,141 @@ public class TransferServiceCallbackTest extends TestCase
         
         event = new TransferEventSuccess();
         event.setTransferState(TransferState.SUCCESS);
+        expectedEvents.add(event);
+        
+        event = new TransferEventReport();
+        expectedEvents.add(event);
+        
+        event = new TransferEventReport();
+        expectedEvents.add(event);
+
+        verifyCallback(expectedEvents);
+    }
+    
+    public void xtestErrorDuringCommit()
+    {
+        Exception error = new TransferException("Commit failed");
+        
+        TransferProgress status0 = new TransferProgress();
+        status0.setStatus(Status.COMMIT_REQUESTED);
+        status0.setCurrentPosition(0);
+        status0.setEndPosition(0);
+        
+        TransferProgress status1 = new TransferProgress();
+        status1.setStatus(Status.COMMITTING);
+        status1.setCurrentPosition(0);
+        status1.setEndPosition(4);
+        
+        TransferProgress status2 = new TransferProgress();
+        status2.setStatus(Status.COMMITTING);
+        status2.setCurrentPosition(3);
+        status2.setEndPosition(4);
+        
+        TransferProgress status3 = new TransferProgress();
+        status3.setStatus(Status.COMMITTING);
+        status3.setCurrentPosition(5);
+        status3.setEndPosition(8);
+        
+        TransferProgress status4 = new TransferProgress();
+        status4.setStatus(Status.ERROR);
+        status4.setCurrentPosition(8);
+        status4.setEndPosition(8);
+        status4.setError(error);
+        
+        TransferProgress[] statuses = new TransferProgress[] {status0, status1, status2, status3, status4};
+        configureBasicMockTransmitter(statuses);
+        when(mockedTransferTransmitter.begin(target)).thenReturn(transfer);
+
+        TransferDefinition transferDef = new TransferDefinition();
+        transferDef.setNodes(folder1, file1, file2, file3);
+        transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
+
+        List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
+        TransferEventImpl event;
+
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.START);
+        expectedEvents.add(event);
+        
+        event = new TransferEventBegin();
+        event.setTransferState(TransferState.START);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEndState();
+        event.setTransferState(TransferState.START);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.SENDING_SNAPSHOT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventSendingSnapshot();
+        event.setTransferState(TransferState.SENDING_SNAPSHOT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEndState();
+        event.setTransferState(TransferState.SENDING_SNAPSHOT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.SENDING_CONTENT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventSendingContent();
+        event.setTransferState(TransferState.SENDING_CONTENT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventSendingContent();
+        event.setTransferState(TransferState.SENDING_CONTENT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventSendingContent();
+        event.setTransferState(TransferState.SENDING_CONTENT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEndState();
+        event.setTransferState(TransferState.SENDING_CONTENT);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.PREPARING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEndState();
+        event.setTransferState(TransferState.PREPARING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventCommittingStatus();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventCommittingStatus();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventCommittingStatus();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventCommittingStatus();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEndState();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventEnterState();
+        event.setTransferState(TransferState.ERROR);
+        expectedEvents.add(event);
+        
+        event = new TransferEventError();
+        event.setTransferState(TransferState.ERROR);
+        ((TransferEventError)event).setException(error);
         expectedEvents.add(event);
         
         event = new TransferEventReport();

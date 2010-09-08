@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -30,7 +31,6 @@ import org.springframework.dao.TransientDataAccessResourceException;
 public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
 {
     private static final String MSG_ACCESS_DENIED = "permissions.err_access_denied";
-    private static final String MSG_READ_ONLY = "permissions.err_read_only";
     
     public ExceptionTranslatorMethodInterceptor()
     {
@@ -47,15 +47,19 @@ public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
         {
             throw new AccessDeniedException(MSG_ACCESS_DENIED, ade);
         }
+        catch (ReadOnlyServerException e)
+        {
+            throw new AccessDeniedException(ReadOnlyServerException.MSG_READ_ONLY, e);
+        }
         catch (TransientDataAccessResourceException e)
         {
             // this usually occurs when the server is in read-only mode
-            throw new AccessDeniedException(MSG_READ_ONLY, e);
+            throw new AccessDeniedException(ReadOnlyServerException.MSG_READ_ONLY, e);
         }
         catch (InvalidDataAccessApiUsageException e)
         {
             // this usually occurs when the server is in read-only mode
-            throw new AccessDeniedException(MSG_READ_ONLY, e);
+            throw new AccessDeniedException(ReadOnlyServerException.MSG_READ_ONLY, e);
         }
     }
 }

@@ -79,6 +79,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
@@ -530,7 +531,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Check that this is a writable txn
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
         {
-            throw new IllegalStateException("Transaction entries can only be created for writable transactions");
+            throw new ReadOnlyServerException();
         }
         // Have to create a new transaction entry
         Long serverId = getServerId();

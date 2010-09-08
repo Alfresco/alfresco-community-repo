@@ -82,7 +82,8 @@ public class StatusCommandProcessor implements CommandProcessor
             jsonWriter.writeValue("endPosition", progress.getEndPosition());
             if (progress.getError() != null)
             {
-                //FIXME: bjr: write this
+                jsonWriter.startValue("error");
+                TransferProcessorUtil.writeError(progress.getError(), jsonWriter);
             }
             jsonWriter.endObject();
             String response = stringWriter.toString();

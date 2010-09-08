@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.transfer;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 
@@ -30,14 +31,38 @@ public class TransferProcessorUtil
     {
         StringWriter stringWriter = new StringWriter(300);
         JSONWriter jsonWriter = new JSONWriter(stringWriter);
-        jsonWriter.startObject();
-        jsonWriter.writeValue("errorId", ex.getMsgId());
-        jsonWriter.startValue("errorParams");
-        jsonWriter.startArray();
-        stringWriter.write(writeErrorParams(ex.getMsgParams()));
-        jsonWriter.endArray();
-        jsonWriter.endObject();
+        writeError(ex, jsonWriter);
         return stringWriter.toString();
+    }
+
+    public static void writeError(Throwable ex, JSONWriter jsonWriter) throws IOException
+    {
+        jsonWriter.startObject();
+        jsonWriter.writeValue("errorType", JSONWriter.encodeJSONString(ex.getClass().getName()));
+        if (AlfrescoRuntimeException.class.isAssignableFrom(ex.getClass()))
+        {
+            AlfrescoRuntimeException alfEx = (AlfrescoRuntimeException)ex;
+            jsonWriter.writeValue("errorId", JSONWriter.encodeJSONString(alfEx.getMsgId()));
+            jsonWriter.startValue("errorParams");
+            jsonWriter.startArray();
+            Object[] msgParams = alfEx.getMsgParams();
+            if (msgParams != null)
+            {
+                for (Object param : msgParams) 
+                {
+                    if (param != null)
+                    {
+                        jsonWriter.writeValue(JSONWriter.encodeJSONString(param.toString()));
+                    }
+                    else
+                    {
+                        jsonWriter.writeNullValue();
+                    }
+                }
+            }
+            jsonWriter.endArray();
+        }
+        jsonWriter.endObject();
     }
 
     /**

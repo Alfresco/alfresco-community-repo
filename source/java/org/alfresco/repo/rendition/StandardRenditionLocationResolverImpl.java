@@ -79,7 +79,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
      */
     public RenditionLocation getRenditionLocation(NodeRef sourceNode, RenditionDefinition definition, NodeRef tempRenditionLocation)
     {
-        // If a destination NodeRef is specified then don't botther to find the location as one has already been specified.
+        // If a destination NodeRef is specified then don't bother to find the location as one has already been specified.
         NodeRef destination = AbstractRenderingEngine.getCheckedParam(RenditionService.PARAM_DESTINATION_NODE, NodeRef.class, definition);
         if(destination!=null)
         {

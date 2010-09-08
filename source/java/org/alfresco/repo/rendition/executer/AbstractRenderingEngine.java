@@ -1054,7 +1054,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * Given a rendition definition, a source node and a temporary rendition node, this method uses a
      * {@link RenditionLocationResolver} to calculate the {@link RenditionLocation} of the rendition.
      */
-    private RenditionLocation resolveRenditionLocation(NodeRef sourceNode, RenditionDefinition definition,
+    protected RenditionLocation resolveRenditionLocation(NodeRef sourceNode, RenditionDefinition definition,
                 NodeRef tempRendition)
     {
         return renditionLocationResolver.getRenditionLocation(sourceNode, definition, tempRendition);

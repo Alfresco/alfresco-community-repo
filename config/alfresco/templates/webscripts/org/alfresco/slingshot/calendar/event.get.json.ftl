@@ -3,10 +3,10 @@
 <#if result.error?exists>
   error : "${result.error}"
 <#else>
-  name: "${result.name?html}",
-  what: "${result.what?html}",
-  description: "${result.description?html}",
-  location: "${result.location?html}",
+  name: "${result.name}",
+  what: "${result.what}",
+  description: "${result.description}",
+  location: "${result.location}",
   tags: [
   <#list result.tags as tag>
    "${tag}"<#if tag_has_next>,</#if>
@@ -17,8 +17,8 @@
   to: "${result.to?string("M/d/yyyy")}",
   end: "${result.to?string("HH:mm")}",
   allday: "${result.allday?string}",
-  docfolder: "${result.docfolder?html}",
-  recurrence: "${result.recurrence?html}",
+  docfolder: "${result.docfolder}",
+  recurrence: "${result.recurrence}",
   isoutlook: "${result.isoutlook?string}"
 </#if>
 }

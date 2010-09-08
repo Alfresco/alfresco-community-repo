@@ -22,7 +22,7 @@
    <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
   "tags": <#noescape>[${tags}]</#noescape>
   <#if event.properties["ia:recurrenceRule"] ??>
-  ,"recurrenceRule": "${event.properties["ia:recurrenceRule"]?html}"
+  ,"recurrenceRule": "${event.properties["ia:recurrenceRule"]}"
   </#if>
   <#if event.properties["ia:recurrenceLastMeeting"] ??>
   ,"recurrenceLastMeeting": "${event.properties["ia:recurrenceLastMeeting"]?string("M/d/yyyy")}"

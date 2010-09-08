@@ -554,7 +554,7 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = new HashMap<String, Object>();
         String id = workflowTransition.getId();
-        model.put(WORKFLOW_NODE_TRANSITION_ID, id);
+        model.put(WORKFLOW_NODE_TRANSITION_ID, id == null ? "" : id);
         model.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.getTitle());
         model.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.getDescription());
         model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault());

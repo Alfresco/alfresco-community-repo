@@ -711,13 +711,35 @@ public class CacheTest extends TestCase
     }
     /**
      * <ul>
+     *   <li>Remove from the backing cache</li>
+     *   <li>Remove from the transactional cache</li>
+     *   <li>Add to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentRemoveAgainstUpdate_NoPreExisting()throws Throwable
+    {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.remove(COMMON_KEY);
+                transactionalCache.remove(COMMON_KEY);
+                backingCache.put(COMMON_KEY, "aaa2");
+                return null;
+            }
+        };
+        executeAndCheck(callback, COMMON_KEY, null);
+    }
+    /**
+     * <ul>
      *   <li>Add to the backing cache</li>
      *   <li>Remove from the transactional cache</li>
      *   <li>Add to the backing cache</li>
      *   <li>Commit</li>
      * </ul>
      */
-    public void testConcurrentRemoveAgainstUpdate()throws Throwable
+    public void testConcurrentRemoveAgainstUpdate_PreExisting()throws Throwable
     {
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {

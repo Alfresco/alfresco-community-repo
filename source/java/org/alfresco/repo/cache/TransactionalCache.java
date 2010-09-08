@@ -503,16 +503,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     }
                     else
                     {
-                        V existingValue = getSharedCacheValue(key);
-                        if (existingValue == null)
-                        {
-                            // There is no point doing a remove for a value that doesn't exist
-                        }
-                        else
-                        {
-                            // Create a bucket to remove the value from the shared cache
-                            txnData.removedItemsCache.add(key);
-                        }
+                        // Create a bucket to remove the value from the shared cache
+                        txnData.removedItemsCache.add(key);
                     }
                 }
                 // remove the item from the udpated cache, if present

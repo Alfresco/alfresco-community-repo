@@ -124,7 +124,8 @@
             <ref bean="actionService" />
         </property>         
         <property name="executingActionsCache">
-            <ref bean="executingActionsCache" />
+            <!-- TODO: ALF-4682 ActionTrackingService uses cluster- and transactionally-unsafe cache -->
+            <ref bean="executingActionsSharedCache" />
         </property>         
     </bean>
 

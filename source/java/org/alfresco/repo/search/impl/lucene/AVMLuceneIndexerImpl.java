@@ -59,7 +59,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -286,7 +285,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         {
                             s_logger.debug("new: ("+srcVersion+", "+dstVersion+") "+difference.getDestinationPath());
                         }
-                        // AR-786
+                        // ALF-786
                         reindex(difference.getDestinationPath(), dstDesc.isDirectory());
                         if (dstDesc.isDirectory())
                         {
@@ -310,7 +309,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     {
                         // We are back from the dead ...the node used to be deleted
                         // Treat as new
-                        // AR-786
+                        // ALF-786
                         if (s_logger.isDebugEnabled())
                         {
                             s_logger.debug("back: ("+srcVersion+", "+dstVersion+") "+difference.getDestinationPath());
@@ -420,7 +419,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         Map<String, AVMNodeDescriptor> children = avmService.getDirectoryListing(dir, false);
         for (AVMNodeDescriptor child : children.values())
         {
-            // AR-786
+            // ALF-786
             reindex(child.getPath(), child.isDirectory());
             reindexAllAncestors(child.getPath());
             if (child.isDirectory())

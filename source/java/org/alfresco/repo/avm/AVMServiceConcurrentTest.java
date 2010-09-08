@@ -47,15 +47,17 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
     public void test_CreateDelete() throws Exception
     {
         int threads= 4;
-        
         int loops = 10;
         
-        //int snapshotsPerLoop = 4;
-        int snapshotsPerLoop = 1;
+        int snapshotsPerLoop = 4;
+        
+        assertEquals(1, fService.getStoreVersions("main").size());
         
         fService.createDirectory("main:/", "test");
         
         int startVersion = fService.createSnapshot("main", null, null).get("main");
+        
+        assertEquals(2, fService.getStoreVersions("main").size());
         
         assertEquals(0, fService.getDirectoryListing(-1, "main:/test").size());
         
@@ -90,6 +92,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
             }
         }
         
+        System.out.println("Snapshot count: "+fService.getStoreVersions("main").size());
+        
         SortedMap<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/test");
         assertEquals(loops, listing.size());
         
@@ -119,7 +123,6 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         
         testTX.commit();
         
-        
          // delete
         
         runner = null;
@@ -143,6 +146,15 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         
         assertEquals(0, fService.getDirectoryListing(-1, "main:/test").size());
         
+        System.out.println("Snapshot count: "+fService.getStoreVersions("main").size());
+        
+        /*
+        for(org.alfresco.service.cmr.avm.VersionDescriptor v : fService.getStoreVersions("main"))
+        {
+            System.out.println(v);
+        }
+        */
+        
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();
         
@@ -160,13 +172,10 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
     
     public void test_ALF_786() throws Exception
     {
-        //int threads= 4;
-        int threads= 2;
-        
+        int threads= 4;
         int loops = 10;
         
-        //int snapshotsPerLoop = 4;
-        int snapshotsPerLoop = 1;
+        int snapshotsPerLoop = 4;
         
         fService.createDirectory("main:/", "test");
         
@@ -184,6 +193,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         results.close();
         
         testTX.commit();
+        
+        // create
         
         Thread runner = null;
         for (int i = 0; i < threads; i++)
@@ -270,7 +281,7 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         results.close();
         testTX.commit();
         
-         // delete
+        // delete
         
         runner = null;
         for (int i = 0; i < threads; i++)
@@ -342,7 +353,7 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         
         testTX.commit();
         
-        //move
+        // move
         
         runner = null;
         for (int i = 0; i < threads; i++)
@@ -389,7 +400,6 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         testTX.commit();
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();
-
         
         StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
         SearchService searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
@@ -397,9 +407,9 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         assertEquals(0, results.length());
         results.close();
         testTX.commit();
-
+        
         Thread runner = null;
-
+        
         for (int i = 0; i < 10; i++)
         {
             runner = new Nester("Concurrent-" + i, runner, true, 10, Nester.Mode.CREATE, 10 );
@@ -407,7 +417,7 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         if (runner != null)
         {
             runner.start();
-
+            
             try
             {
                 runner.join();
@@ -417,11 +427,12 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                 e.printStackTrace();
             }
         }
-
+        
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();
         // snap
         testTX.commit();
+        
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();;
         SortedMap<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, "main:/test");
@@ -456,7 +467,7 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         enum Mode {CREATE, UPDATE, DELETE, MOVE};
         
         Thread waiter;
-
+        
         int i;
         
         boolean multiThread;
@@ -477,7 +488,7 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
             this.mode = mode;
             this.loopCount = loopCount;
         }
-
+        
         public void run()
         {
             fAuthenticationComponent.setSystemUserAsCurrentUser();
@@ -487,13 +498,16 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
             }
             try
             {
-                System.out.println("Start " + this.getName());
+                //System.out.println("Start " + this.getName());
+                
                 for(i = 0; i < loopCount; i++)
                 {
                     RetryingTransactionCallback<Void> create = new RetryingTransactionCallback<Void>()
                     {
                         public Void execute() throws Throwable
                         {
+                            System.out.println("Create file: " + "main:/test/" + getName()+"-"+i);
+                            
                             fService.createFile("main:/test", getName()+"-"+i).close();
                             
                             return null;
@@ -503,6 +517,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                     {
                         public Void execute() throws Throwable
                         {
+                            System.out.println("Update file mime type: " + "main:/test/" + getName()+"-"+i);
+                            
                             fService.setMimeType("main:/test/"+getName()+"-"+i, "text/plain");
                             
                             return null;
@@ -512,6 +528,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                     {
                         public Void execute() throws Throwable
                         {
+                            System.out.println("Remove file: " + "main:/test/" + getName()+"-"+i);
+                            
                             fService.removeNode("main:/test/"+getName()+"-"+i);
                             
                             return null;
@@ -521,6 +539,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                     {
                         public Void execute() throws Throwable
                         {
+                            System.out.println("Rename file: " + "main:/test/" + getName()+"-"+i);
+                            
                             fService.rename("main:/test/", getName()+"-"+i, "main:/test/", "MOVED-"+getName()+"-"+i);
                             
                             return null;
@@ -533,7 +553,6 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                         {
                         case CREATE:
                             fRetryingTransactionHelper.doInTransaction(create);
-                            System.out.println(getName()+i);
                             break;
                         case UPDATE:
                             fRetryingTransactionHelper.doInTransaction(update);
@@ -553,6 +572,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                     {
                         public Void execute() throws Throwable
                         {
+                            //System.out.println("Snap: main:/");
+                            
                             fService.createSnapshot("main", null, null);
                             
                             return null;
@@ -563,7 +584,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
                         fRetryingTransactionHelper.doInTransaction(snap);
                     }
                 }
-                System.out.println("End " + this.getName());
+                
+                //System.out.println("End " + this.getName());
             }
             catch (Exception e)
             {

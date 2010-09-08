@@ -39,7 +39,7 @@ public class AVMServiceIndexTest extends AVMServiceTestBase
     private final static long REPEAT_INTERVAL_MSECS = 1000 * 60;
     */
     
-    private final static long SLEEP = 10000;
+    private final static long SLEEP = 20000;
     private final static long START_DELAY_MSECS = 2000;
     private final static long REPEAT_INTERVAL_MSECS = 2000;
     

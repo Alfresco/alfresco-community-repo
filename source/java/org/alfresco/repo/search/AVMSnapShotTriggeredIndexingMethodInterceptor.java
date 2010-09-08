@@ -156,7 +156,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("renameStore createIndex " + to, new Exception("Stack Trace"));
+                            logger.debug("renameStore createIndex " + to + "(0, " + after + ")", new Exception("Stack Trace"));
                         }
                         avmIndexer.createIndex(to, IndexMode.SYNCHRONOUS);
                         avmIndexer.index(to, 0, after, getIndexMode(to));
@@ -274,11 +274,22 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 }
                 
                 int from = before != -1 ? before : last;
-                if (logger.isDebugEnabled())
+                
+                if (from > after)
                 {
-                    logger.debug("indexSnapshotImpl " + store, new Exception("Stack Trace"));
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("skip indexSnapshotImpl " + store + " (" + (before == -1 ? "-1, " : "") + from +", " + after +")", new Exception("Stack Trace"));
+                    }
                 }
-                avmIndexer.index(store, from, after, getIndexMode(store));
+                else
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("indexSnapshotImpl " + store + " (" + (before == -1 ? "-1, " : "") + from +", " + after +")", new Exception("Stack Trace"));
+                    }
+                    avmIndexer.index(store, from, after, getIndexMode(store));
+                }
             }
         }
     }

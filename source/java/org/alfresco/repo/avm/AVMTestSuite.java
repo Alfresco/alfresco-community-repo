@@ -78,14 +78,6 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(AVMServiceIndexTest.class);
         suite.addTestSuite(AVMServicePerfTest.class);
         
-        //suite.addTestSuite(AVMCrawlTestP.class);
-        //suite.addTestSuite(AVMScaleTestP.class);
-        //suite.addTestSuite(AVMStressTestP.class);
-        
-        //suite.addTestSuite(PurgeTestP.class); // see above
-        
-        //suite.addTestSuite(SimultaneousLoadTest.class);
-        
         suite.addTestSuite(AVMDiffPerformanceTest.class);
         suite.addTestSuite(AVMChildNamePatternMatchPerformanceTest.class);
         
@@ -93,6 +85,11 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(WCMInheritPermissionsTest.class);
         
         suite.addTestSuite(AVMServiceConcurrentTest.class);
+        
+        //suite.addTestSuite(AVMCrawlTestP.class);
+        //suite.addTestSuite(AVMScaleTestP.class);
+        //suite.addTestSuite(AVMStressTestP.class);
+        //suite.addTestSuite(SimultaneousLoadTest.class);
         
         /*
         // note:to test remotely need running repo (otherwise effectively repeats AVMServiceLocalTest)

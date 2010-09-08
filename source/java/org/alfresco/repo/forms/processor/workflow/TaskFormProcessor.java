@@ -38,9 +38,7 @@ import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -51,10 +49,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * FormProcessor implementation for workflow tasks.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTask, WorkflowTask>
 {
@@ -103,9 +101,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java
-     * .lang.Object)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object)
      */
     @Override
     protected String getItemType(WorkflowTask item)
@@ -117,21 +113,16 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java
-     * .lang.Object)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object)
      */
     @Override
     protected String getItemURI(WorkflowTask item)
     {
-        // TODO Check this URL is OK.
         return "api/task-instances/" + item.id;
     }
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.task.ContentModelFormProcessor#getLogger
-     * ()
+     * @see org.alfresco.repo.forms.processor.task.ContentModelFormProcessor#getLogger()
      */
     @Override
     protected Log getLogger()
@@ -184,8 +175,12 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     private String getTransitionValues(WorkflowTask item)
     {
         WorkflowTransition[] transitions = item.definition.node.transitions;
-        if(transitions == null || transitions.length == 0)
+        
+        if (transitions == null || transitions.length == 0)
+        {
             return "";
+        }
+        
         return buildTransitionString(item, transitions);
     }
 
@@ -196,9 +191,9 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         for (WorkflowTransition transition : transitions)
         {
             String transId = transition.getId();
-            if(hiddenStr.contains(transId) == false)
+            if (hiddenStr.contains(transId) == false)
             {
-                builder.append(transId);
+                builder.append(transId != null ? transId : "");
                 builder.append("|");
                 builder.append(transition.getTitle());
                 builder.append(",");
@@ -215,9 +210,9 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         if (hiddenValues != null)
         {
             if (hiddenValues instanceof List<?>)
-        {
-            return (List<String>) hiddenValues;
-        }
+            {
+                return (List<String>) hiddenValues;
+            }
             else if (hiddenValues instanceof String && ((String)hiddenValues).length() > 0)
             {
                 return Arrays.asList(((String)hiddenValues).split(","));

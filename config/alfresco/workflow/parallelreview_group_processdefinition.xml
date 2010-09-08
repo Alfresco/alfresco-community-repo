@@ -37,7 +37,6 @@
                 </script>
             </event>
         </task>
-        <transition name="reject" to="endreview" />
         <transition name="approve" to="endreview">
             <script>
                 <variable name="wf_approveCount" access="read,write" />
@@ -46,6 +45,7 @@
                  </expression>
             </script>
         </transition>
+        <transition name="reject" to="endreview" />
     </task-node>
 
     <join name="endreview">

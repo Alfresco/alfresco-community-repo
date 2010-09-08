@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -474,7 +476,26 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }
             else
             {
-                model = M2Model.createModel(contentReader.getContentInputStream());
+                InputStream is = null;
+                try
+                {
+                    is = contentReader.getContentInputStream();
+                    model = M2Model.createModel(is);
+                }
+                finally
+                {
+                    if (is != null)
+                    {
+                        try
+                        {
+                            is.close();
+                        }
+                        catch (IOException e)
+                        {
+                            logger.error("Failed to close input stream for " + nodeRef);
+                        }
+                    }
+                }
             }
         }
         // TODO should we inactivate the model node and put the error somewhere??

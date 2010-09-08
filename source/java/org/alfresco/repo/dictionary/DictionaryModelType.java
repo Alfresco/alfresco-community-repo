@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -637,7 +639,27 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                     if (contentReader != null)
                                     {
                                         // Create a model from the current content
-                                        M2Model m2Model = M2Model.createModel(contentReader.getContentInputStream());
+                                        M2Model m2Model = null;
+                                        InputStream is = null;
+                                        try
+                                        {
+                                            is = contentReader.getContentInputStream();
+                                            m2Model = M2Model.createModel(is);
+                                        }
+                                        finally
+                                        {
+                                            if (is != null)
+                                            {
+                                                try
+                                                {
+                                                    is.close();
+                                                }
+                                                catch (IOException e)
+                                                {
+                                                    logger.error("Failed to close input stream for " + nodeRef);
+                                                }
+                                            }
+                                        }
                                         
                                         // Try and compile the model
                                         CompiledModel compiledModel= m2Model.compile(dictionaryDAO, namespaceDAO);

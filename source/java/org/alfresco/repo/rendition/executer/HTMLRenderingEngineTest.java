@@ -19,11 +19,14 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -54,6 +57,9 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
     private NodeRef sourceDoc;
     private NodeRef targetFolder;
     private String targetFolderPath;
+    
+    private static final String MIMETYPE_DOC = "application/msword";
+    private static final String MIMETYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     /*
      * (non-Javadoc)
@@ -121,7 +127,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
         createTargetFolder();
     }
     
-    private NodeRef createForDoc(String docname)
+    private NodeRef createForDoc(String docname) throws IOException
     {
        // Create the node
        Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
@@ -135,10 +141,21 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
        ).getChildRef();
        
        // Put the sample doc into it
+       File f = AbstractContentTransformerTest.loadNamedQuickTestFile(docname);
+       if(f == null) {
+          fail("Unable to find test file for " + docname);
+       }
+       
        ContentWriter writer = contentService.getWriter(
              node, ContentModel.PROP_CONTENT, true
        );
-       writer.putContent("TESTING");
+       if(docname.endsWith(".doc")) {
+          writer.setMimetype(MIMETYPE_DOC);
+       }
+       if(docname.endsWith(".docx")) {
+          writer.setMimetype(MIMETYPE_DOCX);
+       }
+       writer.putContent(f);
           
        // All done
        return node;
@@ -188,7 +205,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
              targetFolderPath + "/${name}.html"
        );
 
-       for(String name : new String[] {"NoImages.doc","NoImages.docx"})
+       for(String name : new String[] {"quick.doc","quick.docx"})
        {
           sourceDoc = createForDoc(name);
           

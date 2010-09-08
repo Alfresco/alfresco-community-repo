@@ -20,15 +20,19 @@
 package org.alfresco.repo.rendition.executer;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionLocation;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -38,6 +42,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.xml.sax.ContentHandler;
 
 /**
  * This class provides a way to turn documents supported by the
@@ -85,15 +95,18 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         String targetMimeType = "text/html";
         
         // Check that Tika supports it
-        // TODO
+        AutoDetectParser p = new AutoDetectParser();
+        MediaType sourceMediaType = MediaType.parse(sourceMimeType);
+        if(! p.getParsers().containsKey(sourceMediaType))
+        {
+           throw new RenditionServiceException(
+                 "Source mime type of " + sourceMimeType + 
+                 " is not supported by Tika for HTML conversions"
+           );
+        }
         
-        // Make the HTML Version
-        ContentWriter contentWriter = context.makeContentWriter();
-        // TODO
-        contentWriter.putContent(
-              "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        		  "<html><body><h1>Test!</h1></body></html>"
-        );
+        // Make the HTML Version using Tika
+        generateHTML(p, context);
         
         // Extract out any images
         // TODO
@@ -110,16 +123,22 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
               if(imgFolder == null)
                  imgFolder = createImagesDirectory(context);
               
-              // Create the node
-              properties.clear();
-              properties.put(ContentModel.PROP_NAME, fakeContent); 
-              NodeRef img = nodeService.createNode(
-                    imgFolder,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(fakeContent),
-                    ContentModel.TYPE_CONTENT,
-                    properties
-              ).getChildRef();
+              // Create the node if needed
+              NodeRef img = nodeService.getChildByName(
+                    imgFolder, ContentModel.ASSOC_CONTAINS, fakeContent
+              );
+              if(img == null)
+              {
+                 properties.clear();
+                 properties.put(ContentModel.PROP_NAME, fakeContent); 
+                 img = nodeService.createNode(
+                       imgFolder,
+                       ContentModel.ASSOC_CONTAINS,
+                       QName.createQName(fakeContent),
+                       ContentModel.TYPE_CONTENT,
+                       properties
+                 ).getChildRef();
+              }
               
               // If we can, associate it with the rendered HTML, so
               //  that they're properly linked
@@ -170,10 +189,18 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        }
        folderName = folderName + "_files";
        
+       // It is already there?
+       // (eg from when the rendition is being re-run)
+       NodeRef imgFolder = nodeService.getChildByName(
+             parent, ContentModel.ASSOC_CONTAINS, folderName
+       );
+       if(imgFolder != null)
+          return imgFolder;
+       
        // Create the directory
        Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
        properties.put(ContentModel.PROP_NAME, folderName);
-       NodeRef imgFolder = nodeService.createNode(
+       imgFolder = nodeService.createNode(
              parent,
              ContentModel.ASSOC_CONTAINS,
              QName.createQName(folderName),
@@ -182,5 +209,54 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        ).getChildRef();
        
        return imgFolder;
+    }
+    
+    /**
+     * Builds a Tika-compatible SAX content handler, which will
+     *  be used to generate+capture the XHTML
+     */
+    private ContentHandler buildContentHandler(Writer output) 
+    {
+       SAXTransformerFactory factory = (SAXTransformerFactory)
+                SAXTransformerFactory.newInstance();
+       TransformerHandler handler;
+       
+       try {
+          handler = factory.newTransformerHandler();
+       } catch (TransformerConfigurationException e) {
+          throw new RenditionServiceException("SAX Processing isn't available - " + e);
+       }
+       
+       handler.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
+       handler.setResult(new StreamResult(output));
+       handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "xml");
+       
+       return handler;
+    }
+    
+    /**
+     * Asks Tika to translate the contents into HTML
+     */
+    private void generateHTML(Parser p, RenderingContext context)
+    {
+       // Setup things to parse with
+       Metadata metadata = new Metadata();
+       ParseContext parseContext = new ParseContext();
+       StringWriter sw = new StringWriter();
+       ContentHandler handler = buildContentHandler(sw);
+       
+       // Parse
+       try {
+          p.parse(
+                context.makeContentReader().getContentInputStream(),
+                handler, metadata, parseContext
+          );
+       } catch(Exception e) {
+          throw new RenditionServiceException("Tika HTML Conversion Failed", e);
+       }
+       
+       // Save it
+       ContentWriter contentWriter = context.makeContentWriter();
+       contentWriter.putContent( sw.toString() );
     }
 }

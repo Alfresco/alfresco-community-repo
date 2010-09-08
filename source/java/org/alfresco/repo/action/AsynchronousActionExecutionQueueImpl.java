@@ -41,7 +41,6 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
-import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,7 +61,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     /** Services */
     private ThreadPoolExecutor threadPoolExecutor;
     private TransactionService transactionService;
-    private AuthenticationContext authenticationContext;
     private PolicyComponent policyComponent;
     private Map<String, AbstractAsynchronousActionFilter>
             actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
@@ -117,13 +115,11 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     }
 
     /**
-     * Set the authentication component
-     * 
-     * @param authenticationContext       the authentication component
+     * @deprecated Not used since 3.4
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationContext = authenticationContext;
+        logger.warn("Property 'authenticationContext' is no longer required.");
     }
 
     /**
@@ -249,7 +245,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 action,
                 actionedUponNodeRef,
                 checkConditions,
-                actionExecutionHistoryNodeRef,
                 actionChain,
                 executedRules);
         
@@ -381,7 +376,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         private Action action;
         private NodeRef actionedUponNodeRef;
         private boolean checkConditions;
-        private NodeRef actionExecutionHistoryNodeRef;
         private Set<String> actionChain;
         private Set<RuleServiceImpl.ExecutedRuleData> executedRules;
 
@@ -390,7 +384,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
          * @param action                            the action to perform
          * @param actionedUponNodeRef               the node to perform the action on
          * @param checkConditions                   the check conditions
-         * @param actionExecutionHistoryNodeRef     the action execution history node reference
          * @param actionChain                       the action chain
          * @param executedRules                     list of executions done to helps to prevent loop scenarios with async rules
          */
@@ -399,7 +392,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 Action action,
                 NodeRef actionedUponNodeRef,
                 boolean checkConditions,
-                NodeRef actionExecutionHistoryNodeRef,
                 Set<String> actionChain,
                 Set<RuleServiceImpl.ExecutedRuleData> executedRules)
         {
@@ -407,59 +399,8 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             this.actionedUponNodeRef = actionedUponNodeRef;
             this.action = action;
             this.checkConditions = checkConditions;
-            this.actionExecutionHistoryNodeRef = actionExecutionHistoryNodeRef;
             this.actionChain = actionChain;
             this.executedRules = executedRules;
-        }
-
-        /**
-         * Get the action
-         * 
-         * @return the action
-         */
-        public Action getAction()
-        {
-            return this.action;
-        }
-
-        /**
-         * Get the actioned upon node reference
-         * 
-         * @return the actioned upon node reference
-         */
-        public NodeRef getActionedUponNodeRef()
-        {
-            return this.actionedUponNodeRef;
-        }
-
-        /**
-         * Get the check conditions value
-         * 
-         * @return the check conditions value
-         */
-        public boolean getCheckCondtions()
-        {
-            return this.checkConditions;
-        }
-
-        /**
-         * Get the action execution history node reference
-         * 
-         * @return the action execution history node reference
-         */
-        public NodeRef getActionExecutionHistoryNodeRef()
-        {
-            return this.actionExecutionHistoryNodeRef;
-        }
-
-        /**
-         * Get the action chain
-         * 
-         * @return the action chain
-         */
-        public Set<String> getActionChain()
-        {
-            return actionChain;
         }
 
         /**

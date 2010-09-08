@@ -580,7 +580,7 @@ function getSearchResults(params)
                else
                {
                   // pseudo cm:content property - e.g. mimetype, size or encoding
-                  formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':' + propValue;
+                  formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
                }
                first = false;
             }

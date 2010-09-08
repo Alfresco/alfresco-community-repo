@@ -556,19 +556,35 @@ function getSearchResults(params)
                   // property name - convert to DD property name format
                   propName = propName.replace("_", ":");
                   
-                  // special case for date range packed property
-                  if (propName.match("-daterange$") == "-daterange")
+                  // special case for range packed properties
+                  if (propName.match("-range$") == "-range")
                   {
-                     // "from" and "to" date range value is packed with a | character separator
+                     // currently support text based ranges (usually numbers) or date ranges
+                     // range value is packed with a | character separator
+                     
                      // if neither value is specified then there is no need to add the term
                      if (propValue.length > 1)
                      {
-                        // work out if "from" and/or "to" are specified - use MIN and MAX otherwise
-                        propName = propName.substr(0, propName.length - "-daterange".length);
-                        var sepindex = propValue.indexOf("|");
-                        // we only want the "YYYY-MM-DD" part of the ISO date value - so crop the strings
-                        var from = (sepindex === 0 ? "MIN" : propValue.substr(0, 10));
-                        var to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1, sepindex + 10));
+                        var from, to, sepindex = propValue.indexOf("|");
+                        if (propName.match("-date-range$") == "-date-range")
+                        {
+                           // date range found
+                           propName = propName.substr(0, propName.length - "-date-range".length)
+                           
+                           // work out if "from" and/or "to" are specified - use MIN and MAX otherwise;
+                           // we only want the "YYYY-MM-DD" part of the ISO date value - so crop the strings
+                           from = (sepindex === 0 ? "MIN" : propValue.substr(0, 10));
+                           to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1, sepindex + 10));
+                        }
+                        else
+                        {
+                           // simple range found
+                           propName = propName.substr(0, propName.length - "-range".length);
+                           
+                           // work out if "min" and/or "max" are specified - use MIN and MAX otherwise
+                           from = (sepindex === 0 ? "MIN" : propValue.substr(0, sepindex));
+                           to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
+                        }
                         formQuery += (first ? '' : ' AND ') + propName + ':"' + from + '".."' + to + '"';
                      }
                   }

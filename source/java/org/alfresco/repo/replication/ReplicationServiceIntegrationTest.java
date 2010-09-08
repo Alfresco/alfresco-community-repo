@@ -650,7 +650,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
      *  that it starts, cancels, and the status is correctly recorded
      *  for it.
      */
-    public void testReplicationExectionCancelling() throws Exception
+    public void testReplicationExecutionCancelling() throws Exception
     {
        // We need the test transfer target for this test
        makeTransferTarget();

@@ -65,7 +65,6 @@ public class UserUsageTest extends TestCase
     private MutableAuthenticationDao authenticationDAO;
     protected NodeRef rootNodeRef;
     protected NodeRef systemNodeRef;
-    protected NodeRef personNodeRef;
     protected AuthenticationComponent authenticationComponent;
     private UserTransaction testTX;
     private TransactionService transactionService;
@@ -77,6 +76,9 @@ public class UserUsageTest extends TestCase
     private RepoAdminService repoAdminService;
     
     private static final String TEST_USER = "userUsageTestUser";
+    private static final String TEST_USER_2 = "userUsageTestUser2";
+    protected NodeRef personNodeRef;
+    protected NodeRef personNodeRef2;
     
     private static final QName customType = QName.createQName("{my.new.model}sop"); // from exampleModel.xml
     
@@ -110,21 +112,8 @@ public class UserUsageTest extends TestCase
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         rootNodeRef = nodeService.getRootNode(storeRef);
         
-        // create person
-        if (personService.personExists(TEST_USER))
-        {
-            personService.deletePerson(TEST_USER);
-        }
-        
-        Map<QName, Serializable> props = createPersonProperties(TEST_USER);
-        personNodeRef = personService.createPerson(props);
-        
-        // create an authentication object e.g. the user
-        if (authenticationDAO.userExists(TEST_USER))
-        {
-            authenticationService.deleteAuthentication(TEST_USER);
-        }
-        authenticationService.createAuthentication(TEST_USER, TEST_USER.toCharArray());
+        // create test users
+        createTestUsers();
         
         // deploy custom model
         InputStream modelStream = getClass().getClassLoader().getResourceAsStream("tenant/exampleModel.xml");
@@ -138,11 +127,45 @@ public class UserUsageTest extends TestCase
         testTX.begin();
     }
     
+    private void createTestUsers()
+    {
+        // test user 1
+        if (personService.personExists(TEST_USER))
+        {
+            personService.deletePerson(TEST_USER);
+        }
+        
+        Map<QName, Serializable> props = createPersonProperties(TEST_USER);
+        personNodeRef = personService.createPerson(props);
+        
+        if (authenticationDAO.userExists(TEST_USER))
+        {
+            authenticationService.deleteAuthentication(TEST_USER);
+        }
+        authenticationService.createAuthentication(TEST_USER, TEST_USER.toCharArray());
+        
+        // test user 2
+        if (personService.personExists(TEST_USER_2))
+        {
+            personService.deletePerson(TEST_USER_2);
+        }
+        
+        props = createPersonProperties(TEST_USER_2);
+        personNodeRef2 = personService.createPerson(props);
+        
+        if (authenticationDAO.userExists(TEST_USER_2))
+        {
+            authenticationService.deleteAuthentication(TEST_USER_2);
+        }
+        authenticationService.createAuthentication(TEST_USER_2, TEST_USER_2.toCharArray());
+    }
+    
     protected void tearDown() throws Exception
     {
         try
         {
             usageService.deleteDeltas(personNodeRef);
+            usageService.deleteDeltas(personNodeRef2);
             
             testTX.commit();
         }
@@ -160,6 +183,12 @@ public class UserUsageTest extends TestCase
     protected void runAs(String userName)
     {
         authenticationService.authenticate(userName, userName.toCharArray());
+        assertNotNull(authenticationService.getCurrentUserName());
+    }
+    
+    protected void runAsAdmin()
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         assertNotNull(authenticationService.getCurrentUserName());
     }
     
@@ -744,6 +773,140 @@ public class UserUsageTest extends TestCase
         
         assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
         assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+    }
+    
+    public void testCreateDeleteRestoreTwoUsersAcrossTx() throws Exception
+    {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
+        runAs(TEST_USER);
+        
+        // Create a (shared) folder
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // create some content as the first user
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content1 = addTextContent(folder, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog");
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(TEST_USER, ownableService.getOwner(content1));
+        
+        NodeRef content2 = addTextContent(folder, "afdpj.txt", "Amazingly few discotheques provide jukeboxes", true);
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(TEST_USER, ownableService.getOwner(content2));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER_2);
+        
+        // create some more content as the second user
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        NodeRef content3 = addTextContent(folder, "aqabfweatj.txt", "All questions asked by five watch experts amazed the judge");
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER_2));
+        assertEquals(TEST_USER_2, ownableService.getOwner(content3));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER_2);
+        
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        // as the second user, delete some content owned by first user
+        
+        delete(content2);
+        
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        delete(content1);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        // as the first user, delete some content owned by second user
+        
+        delete(content3);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        // note: via AlfExp non-admin user can only restore what they have deleted
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER_2);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        restore(content2);
+        
+        // note: restore sets owner as the user who deleted the content (not the original owner)
+        assertEquals(TEST_USER_2, ownableService.getOwner(content2));
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(44, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAs(TEST_USER);
+        
+        restore(content3);
+        
+        assertEquals(TEST_USER, ownableService.getOwner(content3));
+        
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(44, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        runAsAdmin();
+        
+        restore(content1);
+        
+        //note: restore sets owner as the user who deleted the content (not the original owner)
+        assertEquals(TEST_USER_2, ownableService.getOwner(content1));
+        
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER_2));
     }
     
     private NodeRef addTextContent(NodeRef folderRef, String name, String textData)

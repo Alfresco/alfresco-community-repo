@@ -367,10 +367,15 @@ public class ContentUsageImpl implements ContentUsageService,
                 long contentSize = contentData.getSize();
                 
                 // Get owner/creator
-                String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
-                if ((owner == null) || (owner.equals(OwnableService.NO_OWNER)))
+                String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER); // allow for case where someone else is deleting the node
+                if (owner == null)
                 {
-                    owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+                    
+                    owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+                    if ((owner == null) || (owner.equals(OwnableService.NO_OWNER)))
+                    {
+                        owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+                    }
                 }
                 
                 if (contentSize != 0 && owner != null)

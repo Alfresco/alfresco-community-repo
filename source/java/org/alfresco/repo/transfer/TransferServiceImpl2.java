@@ -727,6 +727,7 @@ public class TransferServiceImpl2 implements TransferService2
                         try
                         {
                             TransferEndEventImpl endEventImpl = null;
+                            String reportName = null;
 
                             try
                             {
@@ -738,12 +739,14 @@ public class TransferServiceImpl2 implements TransferService2
                                     errorEvent.setException(failureException);
                                     errorEvent.setMessage(failureException.getMessage());
                                     endEventImpl = errorEvent;
+                                    reportName = "error";
                                 }
                                 else if (cancelled)
                                 {
                                     endEventImpl = new TransferEventCancelled();
                                     endEventImpl.setTransferState(TransferEvent.TransferState.CANCELLED);
                                     endEventImpl.setMessage("cancelled");
+                                    reportName = "cancelled";
                                 }
                                 else
                                 {
@@ -751,6 +754,7 @@ public class TransferServiceImpl2 implements TransferService2
                                     endEventImpl = new TransferEventSuccess();
                                     endEventImpl.setTransferState(TransferEvent.TransferState.SUCCESS);
                                     endEventImpl.setMessage("success");
+                                    reportName = "success";
                                 }
                                 
                                 // manually add the terminal event to the transfer report event list
@@ -760,22 +764,23 @@ public class TransferServiceImpl2 implements TransferService2
                             {
                                 // report this failure as last resort
                                 failureException = e;
+                                reportName = "error";
                                 logger.warn("Exception - unable to notify end transfer state", e);
                             }
                             
-                            String transferName = new SimpleDateFormat("yyyyMMddhhmmssSSSZ").format(new Date());
+                            reportName += "_" + new SimpleDateFormat("yyyyMMddhhmmssSSSZ").format(new Date());
 
                             try
                             {
                                 logger.debug("now pull back the destination transfer report");
-                                destinationReport = persistDestinationTransferReport(transferName, transfer, target);
+                                destinationReport = persistDestinationTransferReport(reportName, transfer, target);
                                 if (destinationReport != null)
                                 {
                                     eventProcessor.writeReport(destinationReport, TransferEventReport.ReportType.DESTINATION);
                                 }
 
                                 logger.debug("now persist the client side transfer report");
-                                sourceReport = persistTransferReport(transferName, transfer, target, definition, transferReportEvents, manifest, failureException);
+                                sourceReport = persistTransferReport(reportName, transfer, target, definition, transferReportEvents, manifest, failureException);
                                 if (sourceReport != null)
                                 {
                                     eventProcessor.writeReport(sourceReport, TransferEventReport.ReportType.SOURCE);

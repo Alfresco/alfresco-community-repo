@@ -97,7 +97,7 @@ public class TransferReporterImpl implements TransferReporter
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
         
         String title = transferName;
-        String description = "Transfer error report, " + transferName + " targetName " + target.getName();
+        String description = "Transfer Report - target: " + target.getName();
         String name = transferName;
         
         properties.put(ContentModel.PROP_NAME, name);
@@ -165,7 +165,7 @@ public class TransferReporterImpl implements TransferReporter
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
                
         String title = transferName;
-        String description = "Transfer success report : " + transferName + " targetName: " + target.getName();
+        String description = "Transfer Report - target: " + target.getName();
         String name = transferName;
         
         properties.put(ContentModel.PROP_NAME, name);
@@ -287,9 +287,9 @@ public class TransferReporterImpl implements TransferReporter
             File tempFile)
     {
        
-        String title = transferName + " destination";
-        String description = "Transfer Destination Report, success, targetName : " + target.getName();
-        String name = transferName + " destination";
+        String title = transferName + "_destination";
+        String description = "Transfer Destination Report - target: " + target.getName();
+        String name = title;
         
         logger.debug("writing destination transfer report " + title);
         logger.debug("parent node ref " + target.getNodeRef());

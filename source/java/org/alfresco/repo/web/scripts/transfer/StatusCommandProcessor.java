@@ -19,19 +19,19 @@
 
 package org.alfresco.repo.web.scripts.transfer;
 
-import java.io.StringWriter;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.util.json.ExceptionJsonSerializer;
+import org.alfresco.util.json.JsonSerializer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 
 /**
@@ -46,6 +46,7 @@ public class StatusCommandProcessor implements CommandProcessor
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
 
     private TransferReceiver receiver;
+    private JsonSerializer<Throwable, JSONObject> errorSerializer = new ExceptionJsonSerializer();
 
     private final static Log logger = LogFactory.getLog(StatusCommandProcessor.class);
 
@@ -72,21 +73,17 @@ public class StatusCommandProcessor implements CommandProcessor
         {
             TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
 
-            // return the unique transfer id (the lock id)
-            StringWriter stringWriter = new StringWriter(300);
-            JSONWriter jsonWriter = new JSONWriter(stringWriter);
-            jsonWriter.startObject();
-            jsonWriter.writeValue("transferId", transferId);
-            jsonWriter.writeValue("status", progress.getStatus().toString());
-            jsonWriter.writeValue("currentPosition", progress.getCurrentPosition());
-            jsonWriter.writeValue("endPosition", progress.getEndPosition());
+            JSONObject progressObject = new JSONObject();
+            progressObject.put("transferId", transferId);
+            progressObject.put("status", progress.getStatus().toString());
+            progressObject.put("currentPosition", progress.getCurrentPosition());
+            progressObject.put("endPosition", progress.getEndPosition());
             if (progress.getError() != null)
             {
-                jsonWriter.startValue("error");
-                TransferProcessorUtil.writeError(progress.getError(), jsonWriter);
+                JSONObject errorObject = errorSerializer.serialize(progress.getError());
+                progressObject.put("error", errorObject);
             }
-            jsonWriter.endObject();
-            String response = stringWriter.toString();
+            String response = progressObject.toString();
 
             resp.setContentType("application/json");
             resp.setContentEncoding("UTF-8");
@@ -117,6 +114,11 @@ public class StatusCommandProcessor implements CommandProcessor
     public void setReceiver(TransferReceiver receiver)
     {
         this.receiver = receiver;
+    }
+
+    public void setErrorSerializer(JsonSerializer<Throwable, JSONObject> errorSerializer)
+    {
+        this.errorSerializer = errorSerializer;
     }
 
 }

@@ -102,6 +102,8 @@ var Evaluator =
          case "filelink":
             actionSet = "link";
             isLink = true;
+            custom["linkNodeRef"] = node.nodeRef;
+            
             /**
              * NOTE: After this point, the "node" object will be changed to a link's destination node
              *       if the original node was a filelink type.

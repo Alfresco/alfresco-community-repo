@@ -22,7 +22,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.replication.ReplicationDefinitionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,10 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -70,7 +69,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
     private ReplicationService replicationService;
     private TransactionService transactionService;
     private ActionTrackingService actionTrackingService;
-    private EhCacheAdapter<String, ExecutionDetails> executingActionsCache;
+    private SimpleCache<String, ExecutionDetails> executingActionsCache;
     
     private Repository repositoryHelper;
     private NodeRef dataDictionary;
@@ -968,7 +967,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         actionTrackingService = (ActionTrackingService)appContext.getBean("actionTrackingService");
         repositoryHelper = (Repository)appContext.getBean("repositoryHelper");
         transactionService = (TransactionService)appContext.getBean("transactionService");
-        executingActionsCache = (EhCacheAdapter<String, ExecutionDetails>)appContext.getBean("executingActionsSharedCache");
+        executingActionsCache = (SimpleCache<String, ExecutionDetails>)appContext.getBean("executingActionsCache");
         
         MutableAuthenticationService authenticationService = (MutableAuthenticationService)appContext.getBean("AuthenticationService");
         PersonService personService = (PersonService)appContext.getBean("PersonService");

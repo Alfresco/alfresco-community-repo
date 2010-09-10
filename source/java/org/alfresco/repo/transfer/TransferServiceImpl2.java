@@ -674,7 +674,14 @@ public class TransferServiceImpl2 implements TransferService2
                             {
                                 targetError = new TransferException(MSG_UNKNOWN_TARGET_ERROR);
                             }
-                            failureException = new TransferException(MSG_TARGET_ERROR, new Object[] {targetError.getMessage()}, targetError);
+                            if (Exception.class.isAssignableFrom(targetError.getClass()))
+                            {
+                                failureException = (Exception)targetError;
+                            }
+                            else
+                            {
+                                failureException = new TransferException(MSG_TARGET_ERROR, new Object[] {targetError.getMessage()}, targetError);
+                            }
                             clientState = ClientTransferState.Finished;
                             break;
                         }

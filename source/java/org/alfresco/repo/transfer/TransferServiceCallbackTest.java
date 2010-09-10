@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
 import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
 import org.alfresco.service.cmr.transfer.TransferEventSuccess;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferFailureException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
@@ -293,7 +294,7 @@ public class TransferServiceCallbackTest extends TestCase
         verifyCallback(expectedEvents);
     }
     
-    public void xtestErrorDuringCommit()
+    public void testErrorDuringCommit()
     {
         Exception error = new TransferException("Commit failed");
         
@@ -329,103 +330,111 @@ public class TransferServiceCallbackTest extends TestCase
 
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
-        transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
-
-        List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
-        TransferEventImpl event;
-
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.START);
-        expectedEvents.add(event);
-        
-        event = new TransferEventBegin();
-        event.setTransferState(TransferState.START);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEndState();
-        event.setTransferState(TransferState.START);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.SENDING_SNAPSHOT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventSendingSnapshot();
-        event.setTransferState(TransferState.SENDING_SNAPSHOT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEndState();
-        event.setTransferState(TransferState.SENDING_SNAPSHOT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.SENDING_CONTENT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventSendingContent();
-        event.setTransferState(TransferState.SENDING_CONTENT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventSendingContent();
-        event.setTransferState(TransferState.SENDING_CONTENT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventSendingContent();
-        event.setTransferState(TransferState.SENDING_CONTENT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEndState();
-        event.setTransferState(TransferState.SENDING_CONTENT);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.PREPARING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEndState();
-        event.setTransferState(TransferState.PREPARING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventCommittingStatus();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventCommittingStatus();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventCommittingStatus();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventCommittingStatus();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEndState();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventEnterState();
-        event.setTransferState(TransferState.ERROR);
-        expectedEvents.add(event);
-        
-        event = new TransferEventError();
-        event.setTransferState(TransferState.ERROR);
-        ((TransferEventError)event).setException(error);
-        expectedEvents.add(event);
-        
-        event = new TransferEventReport();
-        expectedEvents.add(event);
-        
-        event = new TransferEventReport();
-        expectedEvents.add(event);
-
-        verifyCallback(expectedEvents);
+        try
+        {
+            transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
+            fail();
+        }
+        catch (TransferFailureException ex)
+        {
+            List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
+            TransferEventImpl event;
+    
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventBegin();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventSendingSnapshot();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.SENDING_CONTENT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventSendingContent();
+            event.setTransferState(TransferState.SENDING_CONTENT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventSendingContent();
+            event.setTransferState(TransferState.SENDING_CONTENT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventSendingContent();
+            event.setTransferState(TransferState.SENDING_CONTENT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.SENDING_CONTENT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.PREPARING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.PREPARING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventCommittingStatus();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventCommittingStatus();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventCommittingStatus();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventCommittingStatus();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+    
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.COMMITTING);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+            
+            event = new TransferEventError();
+            event.setTransferState(TransferState.ERROR);
+            ((TransferEventError)event).setException(error);
+            expectedEvents.add(event);
+    
+            verifyCallback(expectedEvents);
+        }
     }
     
     public void testTargetAlreadyLocked()
@@ -440,7 +449,7 @@ public class TransferServiceCallbackTest extends TestCase
             transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
             fail("Transfer expected to throw an exception, but it didn't.");
         }
-        catch(TransferException ex)
+        catch(TransferFailureException ex)
         {
             List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
             TransferEventImpl event;
@@ -467,7 +476,7 @@ public class TransferServiceCallbackTest extends TestCase
 
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
-            ((TransferEventError)event).setException(ex);
+            ((TransferEventError)event).setException((Exception)ex.getCause());
             expectedEvents.add(event);
             
             verifyCallback(expectedEvents);

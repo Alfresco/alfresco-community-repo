@@ -18,16 +18,21 @@
  */
 package org.alfresco.repo.transfer;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferProgress.Status;
+import org.alfresco.util.json.ExceptionJsonSerializer;
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -36,7 +41,10 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.json.JSONObject;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Unit test for HttpClientTransmitterImpl
@@ -59,6 +67,7 @@ public class HttpClientTransmitterImplTest extends TestCase
     private HttpClientTransmitterImpl transmitter;
     private HttpClient mockedHttpClient;
     private TransferTargetImpl target;
+    private MockableHttpMethodFactory mockedHttpMethodFactory;
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -70,7 +79,9 @@ public class HttpClientTransmitterImplTest extends TestCase
         
         this.transmitter = new HttpClientTransmitterImpl();
         this.mockedHttpClient = mock(HttpClient.class);
+        this.mockedHttpMethodFactory = new MockableHttpMethodFactory();
         transmitter.setHttpClient(mockedHttpClient);
+        transmitter.setHttpMethodFactory(mockedHttpMethodFactory);
 
         this.target = new TransferTargetImpl();
         target.setEndpointHost(TARGET_HOST);
@@ -195,6 +206,38 @@ public class HttpClientTransmitterImplTest extends TestCase
         }
     }
     
+    public void testGetStatusErrorRehydration() throws Exception
+    {
+        final ExceptionJsonSerializer errorSerializer = new ExceptionJsonSerializer();
+        final TransferException expectedException = new TransferException("my message id", new Object[] {"param1", "param2"}); 
+        when(mockedHttpClient.executeMethod(any(HostConfiguration.class), any(HttpMethod.class), 
+                any(HttpState.class))).thenReturn(200);
+        doAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable
+            {
+                JSONObject progressObject = new JSONObject();
+                progressObject.put("transferId", "mytransferid");
+                progressObject.put("status", Status.ERROR);
+                progressObject.put("currentPosition", 1);
+                progressObject.put("endPosition", 10);
+                JSONObject errorObject = errorSerializer.serialize(expectedException);
+                progressObject.put("error", errorObject);
+                return progressObject.toString();
+            }
+        }).when(mockedHttpMethodFactory.latestPostMethod).getResponseBodyAsString();
+        
+        Transfer transfer = new Transfer();
+        transfer.setTransferId("mytransferid");
+        transfer.setTransferTarget(target);
+        TransferProgress progress = transmitter.getStatus(transfer);
+        assertTrue(progress.getError() != null);
+        assertEquals(expectedException.getClass(), progress.getError().getClass());
+        TransferException receivedException = (TransferException)progress.getError();
+        assertEquals(expectedException.getMsgId(), receivedException.getMsgId());
+        assertTrue(Arrays.deepEquals(expectedException.getMsgParams(), receivedException.getMsgParams()));
+    }
+    
     private static class CustomSocketFactory implements SecureProtocolSocketFactory 
     {
 
@@ -236,6 +279,26 @@ public class HttpClientTransmitterImplTest extends TestCase
             // TODO Auto-generated method stub
             return null;
         }
+    }
+    
+    private static class MockableHttpMethodFactory implements HttpMethodFactory
+    {
+        private PostMethod latestPostMethod;
         
+        public MockableHttpMethodFactory()
+        {
+            reset();
+        }
+        
+        @Override
+        public PostMethod createPostMethod()
+        {
+            return latestPostMethod;
+        }
+        
+        public void reset()
+        {
+            latestPostMethod = spy(new PostMethod());; 
+        }
     }
 }

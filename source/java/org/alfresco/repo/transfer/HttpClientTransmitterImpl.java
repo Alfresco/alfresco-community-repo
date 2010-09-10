@@ -35,6 +35,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.util.json.ExceptionJsonSerializer;
+import org.alfresco.util.json.JsonSerializer;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -54,6 +56,7 @@ import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -80,6 +83,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private Protocol httpProtocol = new Protocol(HTTP_SCHEME_NAME, new DefaultProtocolSocketFactory(), DEFAULT_HTTP_PORT);
     private Protocol httpsProtocol = new Protocol(HTTPS_SCHEME_NAME, (ProtocolSocketFactory) new SSLProtocolSocketFactory(), DEFAULT_HTTPS_PORT);
     private Map<String,Protocol> protocolMap = null;
+    private HttpMethodFactory httpMethodFactory = null;
+    private JsonSerializer<Throwable, JSONObject> jsonErrorSerializer;
     
     private ContentService contentService;
 
@@ -91,6 +96,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
         httpClient = new HttpClient();
         httpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
+        httpMethodFactory = new StandardHttpMethodFactoryImpl();
+        jsonErrorSerializer = new ExceptionJsonSerializer();
     }
     
     public void init()
@@ -123,7 +130,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
      */
     public void verifyTarget(TransferTarget target) throws TransferException
     {
-        HttpMethod verifyRequest = new PostMethod();
+        HttpMethod verifyRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -165,8 +172,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 log.error("Received \"unsuccessful\" response code from target server: " + response);
                 String errorPayload = method.getResponseBodyAsString();
                 JSONObject errorObj = new JSONObject(errorPayload);
-                errorId = errorObj.getString("errorId");
-                JSONArray errorParamArray = errorObj.getJSONArray("errorParams");
+                errorId = errorObj.getString("alfrescoErrorId");
+                JSONArray errorParamArray = errorObj.getJSONArray("alfrescoErrorParams");
                 int length = errorParamArray.length();
                 errorParams = new String[length];
                 for (int i = 0; i < length; ++i) 
@@ -185,7 +192,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
      * @param target
      * @return
      */
-    private HttpState getHttpState(TransferTarget target)
+    protected HttpState getHttpState(TransferTarget target)
     {
         HttpState httpState = new HttpState();
         httpState.setCredentials(new AuthScope(target.getEndpointHost(), target.getEndpointPort(), 
@@ -219,7 +226,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     public Transfer begin(TransferTarget target) throws TransferException
     {
-        HttpMethod beginRequest = new PostMethod();
+        HttpMethod beginRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -263,7 +270,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void sendManifest(Transfer transfer, File manifest, OutputStream result) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
-        PostMethod postSnapshotRequest = new PostMethod();
+        PostMethod postSnapshotRequest = getPostMethod();
         MultipartRequestEntity requestEntity;
         
         if(log.isDebugEnabled())
@@ -332,7 +339,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void abort(Transfer transfer) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
-        HttpMethod abortRequest = new PostMethod();
+        HttpMethod abortRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -370,7 +377,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void commit(Transfer transfer) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
-        HttpMethod commitRequest = new PostMethod();
+        HttpMethod commitRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -407,7 +414,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void prepare(Transfer transfer) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
-        HttpMethod prepareRequest = new PostMethod();
+        HttpMethod prepareRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -452,7 +459,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         }
 
         TransferTarget target = transfer.getTransferTarget();
-        PostMethod postContentRequest = new PostMethod();
+        PostMethod postContentRequest = getPostMethod();
 
         try
         {
@@ -517,7 +524,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public TransferProgress getStatus(Transfer transfer) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
-        HttpMethod statusRequest = new PostMethod();
+        HttpMethod statusRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -539,11 +546,15 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int currentPosition  = statusObj.getInt("currentPosition");
                 int endPosition  = statusObj.getInt("endPosition");
                 String statusStr= statusObj.getString("status");
-                //We're expecting the transfer progress encoded in a JSON object... 
+
+                JSONObject errorJSON = statusObj.getJSONObject("error");
+                Throwable throwable = rehydrateError(errorJSON);
+
                 TransferProgress p = new TransferProgress();
                 p.setStatus(TransferProgress.Status.valueOf(statusStr));
                 p.setCurrentPosition(currentPosition);
                 p.setEndPosition(endPosition);
+                p.setError(throwable);
                 return p;
             } 
             catch (RuntimeException e)
@@ -569,9 +580,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void getTransferReport(Transfer transfer, OutputStream result)
     {
         TransferTarget target = transfer.getTransferTarget();
-        PostMethod getReportRequest = new PostMethod();
-        MultipartRequestEntity requestEntity;
-             
+        PostMethod getReportRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -621,6 +630,24 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             getReportRequest.releaseConnection();
         }        
     }
+
+    protected PostMethod getPostMethod()
+    {
+        return httpMethodFactory.createPostMethod();
+    }
+    
+    /**
+     * 
+     * @param errorJSON A JSON object expected to hold the name of the error class ("errorType"),
+     * the error message ("errorMessage"), and, optionally, the Alfresco message id ("alfrescoErrorId")
+     * and Alfresco message parameters ("alfrescoErrorParams").
+     * @return The rehydrated error object, or null if errorJSON is null.
+     * @throws JSONException if an error occurs while parsing the supplied JSON object
+     */
+    private Throwable rehydrateError(JSONObject errorJSON) 
+    {
+        return jsonErrorSerializer.deserialize(errorJSON);
+    }
     
     public void setContentService(ContentService contentService)
     {
@@ -631,4 +658,15 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
-} // end of class
+
+    public void setHttpMethodFactory(HttpMethodFactory httpMethodFactory)
+    {
+        this.httpMethodFactory = httpMethodFactory;
+    }
+
+    public void setJsonErrorSerializer(JsonSerializer<Throwable, JSONObject> jsonErrorSerializer)
+    {
+        this.jsonErrorSerializer = jsonErrorSerializer;
+    }
+    
+}

@@ -114,7 +114,7 @@ function main()
          var data =
          {
             title: topicData.post.properties.title,
-            page: json.get("page"),
+            page: json.get("page") + "?topicId=" + topicData.topic.name,
             params:
             {
                topicId: topicData.topic.name
@@ -143,5 +143,4 @@ function main()
       }
    }
 }
-
 main();

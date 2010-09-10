@@ -28,12 +28,12 @@ package org.alfresco.service.cmr.action;
  * @author Nick Burch
  */
 public class ExecutionSummary {
-    private String actionType;
-    private String actionId;
-    private int executionInstance;
+    private final String actionType;
+    private final String actionId;
+    private final int executionInstance;
     
-    public ExecutionSummary(String actionType, String actionId,
-         int executionInstance) {
+    public ExecutionSummary(final String actionType, final String actionId,
+         final int executionInstance) {
        this.actionType = actionType;
        this.actionId = actionId;
        this.executionInstance = executionInstance;

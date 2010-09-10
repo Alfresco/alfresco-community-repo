@@ -388,8 +388,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
             return;
         }
 
-        // Since it is, update the cancelled flag on it
-        details.requestCancel();
+        // Create a new copy of the details, this time with 
+        //  the cancel flag set
+        details = new ExecutionDetails(
+              details.getExecutionSummary(), details.getPersistedActionRef(),
+              details.getRunningOn(), details.getStartedAt(), true
+        );
 
         // Save the flag to the cache
         executingActionsCache.put(actionKey, details);

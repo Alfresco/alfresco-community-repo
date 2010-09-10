@@ -38,12 +38,18 @@ public class ExecutionDetails implements Serializable {
      *  we don't need to also hold a 2nd copy of it 
      */
     private transient ExecutionSummary executionSummary;
-    private NodeRef persistedActionRef;
-    private String runningOn;
-    private Date startedAt;
-    private boolean cancelRequested;
     
-    public ExecutionDetails() {}
+    private final NodeRef persistedActionRef;
+    private final String runningOn;
+    private final Date startedAt;
+    private final boolean cancelRequested;
+    
+    public ExecutionDetails() {
+       persistedActionRef = null;
+       runningOn = null;
+       startedAt = null;
+       cancelRequested = false;
+    }
 
     public ExecutionDetails(ExecutionSummary executionSummary,
           NodeRef persistedActionRef, String runningOn, Date startedAt,
@@ -108,8 +114,5 @@ public class ExecutionDetails implements Serializable {
 
     public boolean isCancelRequested() {
        return cancelRequested;
-    }
-    public void requestCancel() {
-       cancelRequested = true;
     }
  }

@@ -752,13 +752,16 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // Get the updated key, and check
        key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
+       ExecutionSummary s3 = ActionTrackingServiceImpl.buildExecutionSummary(key3);
        
        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertEquals(false, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
        assertNotNull(executingActionsCache.get(key3));
        
        actionTrackingService.requestActionCancellation(sleepAction3);
        
        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertEquals(true, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
        assertNotNull(executingActionsCache.get(key3));
        
        // Have it finish sleeping, will have been cancelled

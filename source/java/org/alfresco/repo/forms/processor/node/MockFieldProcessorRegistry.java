@@ -29,6 +29,7 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP;
 
 import org.alfresco.repo.forms.processor.FieldProcessor;
+import org.alfresco.repo.forms.processor.workflow.MessageFieldProcessor;
 import org.alfresco.repo.forms.processor.workflow.PackageItemsFieldProcessor;
 import org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -51,24 +52,23 @@ public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegist
         register(SizeFieldProcessor.KEY, makeSizeFieldProcessor());
         register(TransitionFieldProcessor.KEY, makeTransitionFieldProcessor());
         register(PackageItemsFieldProcessor.KEY, makePackageItemFieldProcessor());
+        register(MessageFieldProcessor.KEY, makeMessageFieldProcessor());
         setDefaultProcessor(makeDefaultFieldProcessor(namespaceService, dictionaryService));
     }
 
-    /**
-     * @return
-     */
     private FieldProcessor makePackageItemFieldProcessor()
     {
-        // TODO Auto-generated method stub
         return new PackageItemsFieldProcessor();
     }
 
-    /**
-     * @return
-     */
     private FieldProcessor makeTransitionFieldProcessor()
     {
         return new TransitionFieldProcessor();
+    }
+    
+    private FieldProcessor makeMessageFieldProcessor()
+    {
+        return new MessageFieldProcessor();
     }
 
     private FieldProcessor makeDefaultFieldProcessor(NamespaceService namespaceService,

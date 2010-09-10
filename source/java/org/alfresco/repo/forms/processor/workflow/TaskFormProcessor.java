@@ -47,6 +47,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * FormProcessor implementation for workflow tasks.
@@ -154,6 +155,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         Map<String, Object> values = new HashMap<String, Object>(2);
         values.put(TransitionFieldProcessor.KEY, getTransitionValues(item));
         values.put(PackageItemsFieldProcessor.KEY, getPackageItemValues(item));
+        values.put(MessageFieldProcessor.KEY, getMessageValues(item));
         return values;
     }
 
@@ -182,6 +184,23 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         }
         
         return buildTransitionString(item, transitions);
+    }
+    
+    private String getMessageValues(WorkflowTask task)
+    {
+        String message = I18NUtil.getMessage(MessageFieldProcessor.MSG_VALUE_NONE);
+        
+        String description = (String)task.getProperties().get(WorkflowModel.PROP_DESCRIPTION);
+        if (description != null)
+        {
+            String taskTitle = task.getTitle();
+            if (taskTitle == null || !taskTitle.equals(description))
+            {
+                message = description;
+            }
+        }
+        
+        return message;
     }
 
     private String buildTransitionString(WorkflowTask item, WorkflowTransition[] transitions)

@@ -23,8 +23,6 @@ import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FormException;
 import org.apache.commons.logging.Log;
 
-import com.sun.star.lang.IllegalArgumentException;
-
 /**
  * 
  * @since 3.4
@@ -53,7 +51,7 @@ public abstract class AbstractFieldProcessor<Data> implements FieldProcessor
         }
         else
         {
-            String msg = "Data object: "+itemData+" is not of expected type: "+expectedType;
+            String msg = "Data object: " + itemData + " is not of expected type: " + expectedType;
             throw new FormException(msg, new IllegalArgumentException());
         }
     }

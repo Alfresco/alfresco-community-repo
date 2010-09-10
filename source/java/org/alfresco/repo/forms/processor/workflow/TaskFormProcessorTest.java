@@ -266,6 +266,26 @@ public class TaskFormProcessorTest extends TestCase
         checkSingleProperty(form, fieldName, transitionValues);
     }
 
+    public void testGenerateMessage() throws Exception
+    {
+        String message = null;
+        String fieldName = MessageFieldProcessor.KEY;
+        Form form = processForm(fieldName);
+        checkSingleProperty(form, fieldName, message);
+
+        // add a description to the task and check it comes back
+        message = "This is some text the user may have entered";
+        this.task.properties.put(PROP_DESCRIPTION, message);
+        
+        form = processForm(fieldName);
+        checkSingleProperty(form, fieldName, message);
+        
+        // set the description to the same as the task title
+        // and make sure the message comes back as null
+        this.task.properties.put(PROP_DESCRIPTION, this.task.title);
+        form = processForm(fieldName);
+        checkSingleProperty(form, fieldName, null);
+    }
 
     public void testGeneratePackageItems() throws Exception
     {
@@ -490,14 +510,12 @@ public class TaskFormProcessorTest extends TestCase
     {
         String expDataKey = makeDataKeyName(fieldName);
         checkSingleField(form, fieldName, fieldData, expDataKey);
-
     }
 
     private void checkSingleAssociation(Form form, String fieldName, Serializable fieldData)
     {
         String expDataKey = makeAssociationDataKey(fieldName);
         checkSingleField(form, fieldName, fieldData, expDataKey);
-
     }
 
     private void checkSingleField(Form form, String fieldName, Serializable fieldData, String expDataKey)
@@ -509,7 +527,14 @@ public class TaskFormProcessorTest extends TestCase
         String dataKey = fieldDef.getDataKeyName();
         assertEquals(expDataKey, dataKey);
         FieldData data = form.getFormData().getFieldData(dataKey);
-        assertEquals(fieldData, data.getValue());
+        if (fieldData != null)
+        {
+            assertEquals(fieldData, data.getValue());
+        }
+        else
+        {
+            assertNull(data);
+        }
     }
 
     private String makeDataKeyName(String fieldName)
@@ -575,6 +600,7 @@ public class TaskFormProcessorTest extends TestCase
         WorkflowTask result = new WorkflowTask();
         result.id = TASK_ID;
         result.state = WorkflowTaskState.IN_PROGRESS;
+        result.title = "Test";
         result.definition = makeTaskDefinition();
         result.properties = makeTaskProperties();
 

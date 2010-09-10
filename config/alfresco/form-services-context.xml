@@ -186,5 +186,9 @@
     <bean id="transitionsFieldProcessor"
         class="org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor"
         parent="baseFieldProcessor" />
+        
+   <bean id="messageFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.MessageFieldProcessor"
+        parent="baseFieldProcessor" />
 
 </beans>

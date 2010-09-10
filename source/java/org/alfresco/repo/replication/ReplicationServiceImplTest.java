@@ -24,7 +24,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * @author Nick Burch
@@ -32,7 +31,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 public class ReplicationServiceImplTest extends TestCase
 {
     private ActionService actionService = mock(ActionService.class);
-    private NodeService nodeService = mock(NodeService.class);
     
     private final ReplicationDefinitionPersisterImpl replicationDefinitionPersister = mock(ReplicationDefinitionPersisterImpl.class);
     private ReplicationServiceImpl replicationService;
@@ -45,7 +43,6 @@ public class ReplicationServiceImplTest extends TestCase
     {
        replicationService = new ReplicationServiceImpl();
        replicationService.setActionService(actionService);
-       replicationService.setNodeService(nodeService);
        replicationService.setReplicationDefinitionPersister(replicationDefinitionPersister);
     }
     

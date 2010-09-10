@@ -1,8 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
-	<!-- Transfer Service Configuration -->
-	<bean id="transferService" class="org.alfresco.repo.transfer.TransferServiceImpl"
+    <!-- Transfer Service Configuration -->
+    <bean id="transferService" class="org.alfresco.repo.transfer.TransferServiceImpl">
+        <property name="transferServiceImpl2">
+            <ref bean="transferService2" />
+        </property>
+    </bean>
+
+	<bean id="transferService2" class="org.alfresco.repo.transfer.TransferServiceImpl2"
 		init-method="init">
 		<property name="actionService">
 			<ref bean="ActionService" />
@@ -146,24 +152,41 @@
 			</props>
 		</property>
 	</bean>
+    
+    <!-- Transfer service bean -->
+    <bean id="TransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.transfer.TransferService</value>
+        </property>
+        <property name="target">
+            <ref bean="transferService" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="TransferService_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref local="TransferService_security" />
+            </list>
+        </property>
+    </bean>
 
-	<!-- Transfer service bean -->
-	<bean id="TransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
-		<property name="proxyInterfaces">
-			<value>org.alfresco.service.cmr.transfer.TransferService</value>
-		</property>
-		<property name="target">
-			<ref bean="transferService" />
-		</property>
-		<property name="interceptorNames">
-			<list>
-				<idref local="TransferService_transaction" />
-				<idref bean="AuditMethodInterceptor" />
-				<idref bean="exceptionTranslator" />
-				<idref local="TransferService_security" />
-			</list>
-		</property>
-	</bean>
+    <bean id="TransferService2" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.transfer.TransferService2</value>
+        </property>
+        <property name="target">
+            <ref bean="transferService2" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="TransferService_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref local="TransferService_security" />
+            </list>
+        </property>
+    </bean>
 
 	<bean id="TransferReceiver_security"
 		class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
@@ -179,6 +202,7 @@
 			</props>
 		</property>
 	</bean>
+
 
 	<!-- Transfer service bean -->
 	<bean id="TransferReceiver" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -197,7 +221,6 @@
 			</list>
 		</property>
 	</bean>
-
 
 	<bean id="transfer-async" class="org.alfresco.repo.transfer.TransferAsyncAction"
 		parent="action-executer">

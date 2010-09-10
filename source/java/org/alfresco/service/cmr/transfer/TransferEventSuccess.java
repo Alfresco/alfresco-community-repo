@@ -18,12 +18,12 @@
  */
 package org.alfresco.service.cmr.transfer;
 
-import org.alfresco.repo.transfer.TransferEventImpl;
+import org.alfresco.repo.transfer.TransferEndEventImpl;
 
 /**
- * The success event indicates a successfull transfer
+ * The success event indicates a successful transfer
  */
-public class TransferEventSuccess extends TransferEventImpl implements TransferEvent
+public class TransferEventSuccess extends TransferEndEventImpl
 {
     public String toString()
     {

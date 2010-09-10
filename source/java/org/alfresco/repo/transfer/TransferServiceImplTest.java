@@ -39,6 +39,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
@@ -95,7 +96,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;
     private ContentService contentService;
-    private TransferServiceImpl transferServiceImpl;
+    private TransferServiceImpl2 transferServiceImpl;
     private SearchService searchService;
     private TransactionService transactionService;
     private TransferReceiver receiver;
@@ -130,7 +131,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
-        this.transferServiceImpl = (TransferServiceImpl)this.applicationContext.getBean("transferService");
+        this.transferServiceImpl = (TransferServiceImpl2)this.applicationContext.getBean("transferService2");
         this.searchService = (SearchService)this.applicationContext.getBean("SearchService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("TransactionService");
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
@@ -1803,7 +1804,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
              */
             assertTrue("transfer report is too small", transferReport.size() > 3);
             assertTrue("transfer report does not start with START", transferReport.get(0).getTransferState().equals(TransferEvent.TransferState.START));
-            assertTrue("transfer report does not end with ERROR", transferReport.get(transferReport.size()-2).getTransferState().equals(TransferEvent.TransferState.ERROR));
+            assertTrue("transfer report does not end with CANCELLED", transferReport.get(transferReport.size()-1).getTransferState().equals(TransferEvent.TransferState.CANCELLED));
             // last event is the transfer report event.
         }
         finally     
@@ -2057,16 +2058,18 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 // Now validate the destination side transfer report against the XSD
                 ContentReader reader = contentService.getReader(reportNode, ContentModel.PROP_CONTENT);
                 assertNotNull("transfer reader is null", reader);
-                
-                Source transferReportSource = new StreamSource(reader.getContentInputStream());
-                try 
+                if (reader.getMimetype().equals(MimetypeMap.MIMETYPE_XML))
                 {
-                    validator.validate(transferReportSource);
+                    Source transferReportSource = new StreamSource(reader.getContentInputStream());
+                    try 
+                    {
+                        validator.validate(transferReportSource);
+                    }
+                    catch (Exception e)
+                    {
+                        fail("Destination Transfer Report reportNode:" + reportNode + " message :" + e.getMessage() );
+                    }
                 }
-                catch (Exception e)
-                {
-                    fail("Destination Transfer Report reportNode:" + reportNode + " message :" + e.getMessage() );
-                } 
             }
         }
         finally

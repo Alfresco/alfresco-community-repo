@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.transfer;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -55,7 +59,7 @@ import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
 import org.alfresco.service.cmr.transfer.TransferEventSuccess;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
-import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferEvent.TransferState;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -74,10 +78,10 @@ public class TransferServiceCallbackTest extends TestCase
     private static final String TRANSFER_TARGET_NAME = "TransferServiceImplUnitTest";
     
     private ApplicationContext applicationContext;
-    private TransferServiceImpl transferServiceImpl;
+    private TransferServiceImpl2 transferServiceImpl;
     private AuthenticationComponent authenticationComponent;
     private TransferTransmitter mockedTransferTransmitter;
-    private TransferService transferService;
+    private TransferService2 transferService;
     private TransactionService transactionService;
     private UserTransaction tx;
     private Repository repository;
@@ -103,7 +107,7 @@ public class TransferServiceCallbackTest extends TestCase
         applicationContext = ApplicationContextHelper.getApplicationContext();
 
         // Get the required services
-        transferServiceImpl = (TransferServiceImpl) this.applicationContext.getBean("transferService");
+        transferServiceImpl = (TransferServiceImpl2) this.applicationContext.getBean("transferService2");
         transferService = transferServiceImpl;
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
@@ -266,6 +270,14 @@ public class TransferServiceCallbackTest extends TestCase
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
         
+        event = new TransferEventReport();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+        
+        event = new TransferEventReport();
+        event.setTransferState(TransferState.COMMITTING);
+        expectedEvents.add(event);
+
         event = new TransferEventEndState();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
@@ -278,12 +290,6 @@ public class TransferServiceCallbackTest extends TestCase
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
         
-        event = new TransferEventReport();
-        expectedEvents.add(event);
-        
-        event = new TransferEventReport();
-        expectedEvents.add(event);
-
         verifyCallback(expectedEvents);
     }
     
@@ -443,6 +449,14 @@ public class TransferServiceCallbackTest extends TestCase
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
             
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
@@ -450,13 +464,10 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
-            
+
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
             ((TransferEventError)event).setException(ex);
-            expectedEvents.add(event);
-            
-            event = new TransferEventReport();
             expectedEvents.add(event);
             
             verifyCallback(expectedEvents);

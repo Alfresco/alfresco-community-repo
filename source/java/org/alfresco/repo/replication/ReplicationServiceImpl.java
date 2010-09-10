@@ -23,11 +23,8 @@ import java.util.List;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,9 +37,6 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    private static final Log log = LogFactory.getLog(ReplicationServiceImpl.class);
 
    private ActionService actionService;
-   private DictionaryService dictionaryService;
-   private TransferService transferService;
-   private NodeService nodeService;
    private ScheduledPersistedActionService scheduledPersistedActionService;
    
    private ReplicationDefinitionPersisterImpl replicationDefinitionPersister;
@@ -57,24 +51,6 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    }
    
    /**
-    * Injects the TransferService bean
-    * @param transferService
-    */
-   public void setTransferService(TransferService transferService)
-   {
-       this.transferService = transferService;
-   }
-   
-   /**
-    * Injects the NodeService bean.
-    * @param nodeService
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-       this.nodeService = nodeService;
-   }
-
-   /**
     * Injects the ActionService bean.
     * @param actionService
     */
@@ -83,15 +59,6 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
        this.actionService = actionService;
    }
 
-   /**
-    * Injects the DictionaryService bean.
-    * @param dictionaryService
-    */
-   public void setDictionaryService(DictionaryService dictionaryService)
-   {
-       this.dictionaryService = dictionaryService;
-   }
-   
    /**
     * Injects the Scheduled Persisted Action Service bean
     * @param scheduledPersistedActionService

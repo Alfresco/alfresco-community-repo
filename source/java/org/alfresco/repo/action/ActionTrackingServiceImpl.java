@@ -244,7 +244,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
      * Schedule the recording of the action failure to occur in another
      * transaction
      */
-    public void recordActionFailure(Action action, Throwable exception)
+    public void recordActionFailure(Action action, final Throwable exception)
     {
         if (logger.isDebugEnabled() == true)
         {
@@ -313,10 +313,18 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
                                                     .createAction(actionNode);
 
                                             // Update it
+                                            if (exception instanceof ActionCancelledException)
+                                            {
+                                                action.setExecutionStatus(ActionStatus.Cancelled);
+                                                action.setExecutionFailureMessage(null);
+                                            }
+                                            else
+                                            {
+                                                action.setExecutionStatus(ActionStatus.Failed);
+                                                action.setExecutionFailureMessage(exception.getMessage());
+                                            }
                                             action.setExecutionStartDate(startedAt);
                                             action.setExecutionEndDate(endedAt);
-                                            action.setExecutionStatus(ActionStatus.Failed);
-                                            action.setExecutionFailureMessage(message);
                                             runtimeActionService.saveActionImpl(actionNode, action);
 
                                             if (logger.isDebugEnabled() == true)

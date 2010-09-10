@@ -35,7 +35,7 @@ public interface TransferEvent
     /**
      * The transfer events will Start with a START event and finish with either SUCCESS or ERROR
      */
-    enum TransferState { START, SENDING_SNAPSHOT, SENDING_CONTENT, PREPARING, COMMITTING, SUCCESS, ERROR };
+    enum TransferState { START, SENDING_SNAPSHOT, SENDING_CONTENT, PREPARING, COMMITTING, SUCCESS, ERROR, CANCELLED };
               
     /**
      * Get the state of this transfer  

@@ -1,7 +1,5 @@
 package org.alfresco.service.cmr.transfer;
 
-import java.util.Date;
-
 import org.alfresco.repo.transfer.TransferEventImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 

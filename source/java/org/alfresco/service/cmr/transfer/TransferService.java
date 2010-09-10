@@ -28,12 +28,15 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 
 /**
- * The transfer service is responsible for transfering nodes between one instance of Alfresco and another remote instance.
- * as well as the transfer method, this interface also provides methods for managing the  
+ * The transfer service is responsible for transferring nodes between one instance of Alfresco and another remote instance.
+ * as well as the transfer method, this interface also provides methods for managing transfer targets.
+ * 
+ * @see TransferService2
  * 
  * @author Mark Rogers
  */
 @PublicService
+@Deprecated
 public interface TransferService
 {
 

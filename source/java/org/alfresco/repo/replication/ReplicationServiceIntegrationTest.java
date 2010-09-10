@@ -39,7 +39,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.replication.script.ScriptReplicationDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transfer.TransferServiceImpl;
+import org.alfresco.repo.transfer.TransferServiceImpl2;
 import org.alfresco.repo.transfer.TransferTransmitter;
 import org.alfresco.repo.transfer.UnitTestInProcessTransmitterImpl;
 import org.alfresco.repo.transfer.UnitTestTransferManifestNodeFactory;
@@ -66,7 +66,7 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -90,7 +90,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
     private TransactionService transactionService;
-    private TransferService transferService;
+    private TransferService2 transferService;
     private ContentService contentService;
     private JobLockService jobLockService;
     private ScriptService scriptService;
@@ -130,7 +130,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
         replicationService = (ReplicationService) ctx.getBean("replicationService");
         transactionService = (TransactionService) ctx.getBean("transactionService");
-        transferService = (TransferService) ctx.getBean("transferService");
+        transferService = (TransferService2) ctx.getBean("transferService2");
         contentService = (ContentService) ctx.getBean("contentService");
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
         actionService = (ActionService) ctx.getBean("actionService");
@@ -495,50 +495,61 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        // First one with no target, which isn't allowed
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted with no Target defined");
        } catch(ReplicationServiceException e) {}
+       txn.rollback();
        
        
        // Now no payload, also not allowed
        rd.setTargetName(TRANSFER_TARGET);
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted with no payload defined");
        } catch(ReplicationServiceException e) {}
-       
+       txn.rollback();
        
        // Now disabled, not allowed
        assertEquals(true, rd.isEnabled());
        rd.setEnabled(false);
        assertEquals(false, rd.isEnabled());
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted when disabled");
        } catch(ReplicationServiceException e) {}
-       
+       txn.rollback();
        
        // Invalid Transfer Target, not allowed
        rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        rd.setTargetName("I am an invalid target that isn't there");
        rd.getPayload().add( folder1 );
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted with an invalid transfer target");
        } catch(ReplicationServiceException e) {}
-       
+       txn.rollback();
        
        // Can't send Folder2a if Folder2 isn't there, as it
        //  won't have anywhere to put it
        rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        rd.setTargetName(TRANSFER_TARGET);
        rd.getPayload().add( folder2a );
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be able to send Folder2a when Folder2 is missing!");
        } catch(ReplicationServiceException e) {}
-       
+       txn.rollback();
        
        // Next a proper one with a transient definition,
        //  and a sensible set of folders
@@ -547,7 +558,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        rd.getPayload().add( folder1 );
        
        // Will execute without error
-       UserTransaction txn = transactionService.getUserTransaction();
+       txn = transactionService.getUserTransaction();
        txn.begin();
        actionService.executeAction(rd, replicationRoot);
        txn.commit();
@@ -608,7 +619,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
      * Take a 10 second lock on the job, then execute.
      * Ensure that we really wait a little over 10 seconds.
      */
-    public void testReplicationExectionLocking() throws Exception
+    public void testReplicationExecutionLocking() throws Exception
     {
        // We need the test transfer target for this test
        makeTransferTarget();
@@ -718,6 +729,8 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        // Ensure it was cancelled
        assertEquals(null, rd.getExecutionFailureMessage());
+       assertNotNull(rd.getLocalTransferReport());
+       assertNotNull(rd.getRemoteTransferReport());
        assertEquals(ActionStatus.Cancelled, rd.getExecutionStatus());
     }
     
@@ -1227,7 +1240,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private void makeTransferServiceLocal() {
        TransferReceiver receiver = (TransferReceiver)ctx.getBean("transferReceiver");
        TransferManifestNodeFactory transferManifestNodeFactory = (TransferManifestNodeFactory)ctx.getBean("transferManifestNodeFactory");
-       TransferServiceImpl transferServiceImpl = (TransferServiceImpl) ctx.getBean("transferService");
+       TransferServiceImpl2 transferServiceImpl = (TransferServiceImpl2) ctx.getBean("transferService2");
        ContentService contentService = (ContentService) ctx.getBean("contentService");
        
        TransferTransmitter transmitter = 

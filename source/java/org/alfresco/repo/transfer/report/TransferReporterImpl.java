@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +36,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transfer.Transfer;
 import org.alfresco.repo.transfer.TransferModel;
-import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -99,7 +96,7 @@ public class TransferReporterImpl implements TransferReporter
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
         
-        String title = transferName + " , error";
+        String title = transferName;
         String description = "Transfer error report, " + transferName + " targetName " + target.getName();
         String name = transferName;
         
@@ -167,7 +164,7 @@ public class TransferReporterImpl implements TransferReporter
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
                
-        String title = transferName + ", success";
+        String title = transferName;
         String description = "Transfer success report : " + transferName + " targetName: " + target.getName();
         String name = transferName;
         
@@ -290,7 +287,7 @@ public class TransferReporterImpl implements TransferReporter
             File tempFile)
     {
        
-        String title = transferName + ", destination, success";
+        String title = transferName + " destination";
         String description = "Transfer Destination Report, success, targetName : " + target.getName();
         String name = transferName + " destination";
         

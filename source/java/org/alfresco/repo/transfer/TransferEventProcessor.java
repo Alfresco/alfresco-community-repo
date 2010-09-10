@@ -25,16 +25,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferCallback;
+import org.alfresco.service.cmr.transfer.TransferEndEvent;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferEventBegin;
 import org.alfresco.service.cmr.transfer.TransferEventCommittingStatus;
 import org.alfresco.service.cmr.transfer.TransferEventEndState;
 import org.alfresco.service.cmr.transfer.TransferEventEnterState;
-import org.alfresco.service.cmr.transfer.TransferEventError;
+import org.alfresco.service.cmr.transfer.TransferEventReport;
 import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
 import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
-import org.alfresco.service.cmr.transfer.TransferEventSuccess;
-import org.alfresco.service.cmr.transfer.TransferEventReport;
 
 /**
  * Class to bring together all the transfer event stuff.
@@ -45,15 +44,15 @@ import org.alfresco.service.cmr.transfer.TransferEventReport;
  *
  * @author Mark Rogers
  */
-
-
 public class TransferEventProcessor
 {
     public Set<TransferCallback> observers = new  HashSet<TransferCallback>();
     
     LinkedBlockingQueue<TransferEvent> queue = new LinkedBlockingQueue<TransferEvent>();
     
-
+    public TransferEventProcessor()
+    {
+    }
     
     public void addObserver(TransferCallback observer)
     {
@@ -65,14 +64,6 @@ public class TransferEventProcessor
         observers.remove(observer);
     }
     
-    /**
-     * 
-     */
-    public TransferEventProcessor()
-    {
-        
-    }
-    
     public void begin(String transferId)
     {
         setState(TransferEvent.TransferState.START);  
@@ -80,47 +71,23 @@ public class TransferEventProcessor
         event.setTransferState(TransferEvent.TransferState.START);
         event.setMessage("begin transferId:" + transferId);
         queue.add(event); 
-        event.setTransferId(transferId);     
+        event.setTransferId(transferId);
         notifyObservers();
     }
       
     public void start()
     {
-        setState(TransferEvent.TransferState.START);        
+        setState(TransferEvent.TransferState.START);
         notifyObservers();
     }
-    
-    public void success()
+
+    public void end(TransferEndEvent endEvent)
     {
-        setState(TransferEvent.TransferState.SUCCESS);
-        
-        /**
-         * Write the success event
-         */
-        TransferEventSuccess event = new TransferEventSuccess();
-        event.setTransferState(TransferEvent.TransferState.SUCCESS);
-        event.setLast(true);
-        event.setMessage("success lastEvent:true");
-        queue.add(event); 
+        setState(endEvent.getTransferState());
+        queue.add(endEvent); 
         notifyObservers();
     }
-    
-    public void error(Exception exception)
-    {
-        setState(TransferEvent.TransferState.ERROR);
-        
-        /**
-         * Write the error event
-         */
-        TransferEventError event = new TransferEventError();
-        event.setTransferState(TransferEvent.TransferState.ERROR);
-        event.setLast(true);
-        event.setMessage("error lastEvent:true, " + exception.getMessage());
-        event.setException(exception);
-        queue.add(event); 
-        notifyObservers();
-    }
-    
+
     /**
      * 
      * @param data
@@ -175,6 +142,7 @@ public class TransferEventProcessor
     public void writeReport(NodeRef nodeRef, TransferEventReport.ReportType reportType)
     {
         TransferEventReport event = new TransferEventReport();
+        event.setTransferState(currentState);
         event.setNodeRef(nodeRef);
         event.setReportType(reportType); 
         event.setMessage("report nodeRef:" + nodeRef + ", reportType :" + reportType );
@@ -198,13 +166,8 @@ public class TransferEventProcessor
         event.setMessage("committing " + position + " of " + range);
         queue.add(event);
         notifyObservers();
-
     }
     
-    public void abort()
-    {
-
-    }
     
     private TransferEvent.TransferState currentState;
     
@@ -217,13 +180,13 @@ public class TransferEventProcessor
                 TransferEventImpl event = new TransferEventEndState();
                 event.setMessage("End State: " + currentState);
                 event.setTransferState(currentState);
-                queue.add(event); 
+                queue.add(event);
             }
-
+            
             TransferEventImpl event = new TransferEventEnterState();
             event.setMessage("Enter State: " + state);
             event.setTransferState(state);
-            queue.add(event); 
+            queue.add(event);
             currentState = state;
         }
     }

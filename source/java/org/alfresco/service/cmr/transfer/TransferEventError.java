@@ -18,12 +18,12 @@
  */
 package org.alfresco.service.cmr.transfer;
 
-import org.alfresco.repo.transfer.TransferEventImpl;
+import org.alfresco.repo.transfer.TransferEndEventImpl;
 
 /**
  * Indicates the reason why a transfer failed
  */
-public class TransferEventError extends TransferEventImpl implements TransferEvent
+public class TransferEventError extends TransferEndEventImpl
 {
     private Exception exception;
 

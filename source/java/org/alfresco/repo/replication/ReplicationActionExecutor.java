@@ -268,7 +268,8 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
           {
               TransferEventError failureEndEvent = ((TransferFailureException)e).getErrorEvent();
               writeDefinitionReports(replicationDef, failureEndEvent.getSourceReport(), failureEndEvent.getDestinationReport());
-              throw new ReplicationServiceException("Error executing transfer - " + e.getCause().getMessage(), e);
+              Throwable cause = (e.getCause() == null) ? e : e.getCause();
+              throw new ReplicationServiceException("Error executing transfer - " + cause.getMessage(), cause);
           }
           writeDefinitionReports(replicationDef, null, null);
           throw new ReplicationServiceException("Error executing transfer - " + e.getMessage(), e);

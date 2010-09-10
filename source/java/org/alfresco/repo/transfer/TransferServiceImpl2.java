@@ -728,9 +728,8 @@ public class TransferServiceImpl2 implements TransferService2
                                     logger.debug("TransferException - unable to transfer", failureException);
                                     TransferEventError errorEvent = new TransferEventError();
                                     errorEvent.setTransferState(TransferEvent.TransferState.ERROR);
-                                    TransferFailureException endException = new TransferFailureException(errorEvent);
-                                    errorEvent.setMessage(endException.getMessage());
-                                    errorEvent.setException(endException);
+                                    errorEvent.setException(failureException);
+                                    errorEvent.setMessage(failureException.getMessage());
                                     endEventImpl = errorEvent;
                                 }
                                 else if (cancelled)
@@ -832,7 +831,7 @@ public class TransferServiceImpl2 implements TransferService2
             if (endEvent instanceof TransferEventError)
             {
                 TransferEventError endError = (TransferEventError)endEvent;
-                throw (TransferFailureException)endError.getException();
+                throw new TransferFailureException(endError);
             }
             return endEvent;
         }
@@ -1044,8 +1043,9 @@ public class TransferServiceImpl2 implements TransferService2
         TransferStatus status = transferMonitoring.get(transferHandle);
         if(status != null)
         {
-            if(status.cancelMe)
+            if(!status.cancelInProgress && status.cancelMe)
             {
+                status.cancelInProgress = true;
                 throw new TransferCancelledException();
             }
         }
@@ -1394,6 +1394,7 @@ public class TransferServiceImpl2 implements TransferService2
     private class TransferStatus 
     {
         boolean cancelMe = false;
+        boolean cancelInProgress = false;
     }
     
 

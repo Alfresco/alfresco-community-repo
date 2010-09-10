@@ -20,6 +20,8 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery.OrderBy;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -41,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * 
  * @author Nick Smith
  * @author Gavin Cornwell
+ * @since 3.4
  */
 public class TaskInstancesGet extends AbstractWorkflowWebscript
 {
@@ -52,6 +56,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_PROPERTIES = "properties";
     public static final String PARAM_POOLED_TASKS = "pooledTasks";
     public static final String VAR_WORKFLOW_INSTANCE_ID = "workflow_instance_id";
+
+    private WorkflowTaskDueAscComparator taskComparator = new WorkflowTaskDueAscComparator();
 
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
@@ -94,6 +100,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             taskQuery.setActive(null);
             taskQuery.setProcessId(workflowInstanceId);
             taskQuery.setTaskState(state);
+            taskQuery.setOrderBy(new OrderBy[]{OrderBy.TaskDue_Asc});
             
             if (authority != null)
             {
@@ -137,6 +144,9 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                     allTasks.addAll(tasks);
                     allTasks.addAll(pooledTasks);
                 }
+                
+                // sort tasks by due date
+                Collections.sort(allTasks, taskComparator);
             }
             else
             {
@@ -144,6 +154,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
                 taskQuery.setTaskState(state);
                 taskQuery.setActive(null);
+                taskQuery.setOrderBy(new OrderBy[] { OrderBy.TaskDue_Asc });
                 allTasks = workflowService.queryTasks(taskQuery);
             }
         }
@@ -298,5 +309,26 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         }
 
         return result;
+    }
+    
+    /**
+     * Comparator to sort workflow tasks by due date in ascending order.
+     */
+    class WorkflowTaskDueAscComparator implements Comparator<WorkflowTask>
+    {
+        @Override
+        public int compare(WorkflowTask o1, WorkflowTask o2)
+        {
+            Date date1 = (Date)o1.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+            Date date2 = (Date)o2.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+            
+            long time1 = date1 == null ? Long.MAX_VALUE : date1.getTime();
+            long time2 = date2 == null ? Long.MAX_VALUE : date2.getTime();
+            
+            long result = time1 - time2;
+            
+            return (result > 0) ? 1 : (result < 0 ? -1 : 0);
+        }
+        
     }
 }

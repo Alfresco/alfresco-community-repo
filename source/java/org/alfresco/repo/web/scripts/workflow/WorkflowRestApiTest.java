@@ -117,6 +117,10 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         // Check USER2 now has one task.
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
         WorkflowTask task = tasks.get(0);
+        
+        Map<QName, Serializable> updateParams = new HashMap<QName, Serializable>(1);
+        updateParams.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        workflowService.updateTask(task.getId(), updateParams, null, null);
 
         personManager.setUser(USER2);
         response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
@@ -161,14 +165,18 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
 
-        checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(dueDate));
+        checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(new Date()));
         
         // paging
         int maxItems = 3;        
         for (int skipCount = 0; skipCount < totalItems; skipCount += maxItems)
         {
+            // one of this should test situation when skipCount + maxItems > totalItems
             checkPaging(MessageFormat.format(URL_USER_TASKS, USER2) + "&maxItems=" + maxItems + "&skipCount=" + skipCount, totalItems, maxItems, skipCount);
         }
+        
+        // testing when skipCount > totalItems
+        checkPaging(MessageFormat.format(URL_USER_TASKS, USER2) + "&maxItems=" + maxItems + "&skipCount=" + (totalItems + 1), totalItems, maxItems, totalItems + 1);
         
         // check the exclude filtering
         String exclude = "wf:submitAdhocTask";

@@ -261,18 +261,15 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
         
         List<Map<String, Object>> pagingResults = new ArrayList<Map<String,Object>>(results.size());
         
-        // TODO: Revisit the logic below i.e. calculate start and end positions rather than relying on exceptions!
-        
-        for (int i = skipCount; i < (maxItems == DEFAULT_MAX_ITEMS ? results.size() : skipCount + maxItems); i++)
+        int endPosition = results.size();
+        if (skipCount + maxItems <= endPosition)
         {
-            try
-            {
-                pagingResults.add(results.get(i));
-            }
-            catch (IndexOutOfBoundsException e) 
-            {
-                break;
-            }
+            endPosition = skipCount + maxItems;
+        }
+        
+        for (int i = skipCount; i < endPosition; i++)
+        {
+            pagingResults.add(results.get(i));
         }
         
         return pagingResults;

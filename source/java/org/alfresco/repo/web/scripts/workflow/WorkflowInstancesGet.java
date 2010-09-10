@@ -19,6 +19,8 @@
 package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +53,8 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_COMPLETED_AFTER = "completedAfter";
     public static final String PARAM_DEFINITION_ID = "definitionId";
     public static final String VAR_DEFINITION_ID = "workflow_definition_id";
+    
+    private WorkflowInstanceDueAscComparator workflowComparator = new WorkflowInstanceDueAscComparator();
 
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
@@ -101,6 +105,9 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 workflows.addAll(workflowService.getWorkflows(workflowDefinition.getId()));
             }
         }
+        
+        // sort workflows by due date
+        Collections.sort(workflows, workflowComparator);
 
         // filter result
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(workflows.size());
@@ -284,5 +291,26 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
             return null;
         }
+    }
+    
+    /**
+     * Comparator to sort workflow instances by due date in ascending order.
+     */
+    class WorkflowInstanceDueAscComparator implements Comparator<WorkflowInstance>
+    {
+        @Override
+        public int compare(WorkflowInstance o1, WorkflowInstance o2)
+        {
+            Date date1 = (Date)o1.dueDate;
+            Date date2 = (Date)o2.dueDate;
+            
+            long time1 = date1 == null ? Long.MAX_VALUE : date1.getTime();
+            long time2 = date2 == null ? Long.MAX_VALUE : date2.getTime();
+            
+            long result = time1 - time2;
+            
+            return (result > 0) ? 1 : (result < 0 ? -1 : 0);
+        }
+        
     }
 }

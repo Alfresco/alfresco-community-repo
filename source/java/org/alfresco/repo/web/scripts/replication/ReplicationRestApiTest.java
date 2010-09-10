@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
@@ -568,6 +569,48 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(true, payload.get("isFolder"));
         assertEquals("Data Dictionary", payload.get("name"));
         assertEquals("/Company Home/Data Dictionary", payload.get("path"));
+        
+        
+        // Add a deleted NodeRef too, will be silently ignored
+        //  by the webscript layer
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef deleted = nodeService.createNode(
+              dataDictionary, ContentModel.ASSOC_CONTAINS,
+              QName.createQName("IwillBEdeleted"),
+              ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.deleteNode(deleted);
+        txn.commit();
+        
+        rd.getPayload().add( deleted );
+        replicationService.saveReplicationDefinition(rd);
+        
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr).getJSONObject("data");
+        
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("CancelRequested", json.get("status"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        
+        // Check Payload
+        assertEquals(2, json.getJSONArray("payload").length());
+        payload = json.getJSONArray("payload").getJSONObject(0);
+        assertEquals("Company Home", payload.get("name"));
+        payload = json.getJSONArray("payload").getJSONObject(1);
+        assertEquals("Data Dictionary", payload.get("name"));
 
         
         // Add a 2nd and 3rd definition
@@ -580,7 +623,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         rd.setEnabled(false);
         
         // Have the 3rd one flagged as having failed
-        UserTransaction txn = transactionService.getUserTransaction();
+        txn = transactionService.getUserTransaction();
         txn.begin();
         replicationService.saveReplicationDefinition(rd);
         actionTrackingService.recordActionExecuting(rd);

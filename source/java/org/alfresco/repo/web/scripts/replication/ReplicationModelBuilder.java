@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ISO8601DateFormat;
 
@@ -219,9 +220,16 @@ public class ReplicationModelBuilder
        // Includes start+end times, and running action details
        setStatus(rd, rdm);
        
-       // Expand out the payload details
-       rdm.put(DEFINITION_PAYLOAD, rd.getPayload());
+       // Only include the payload entries that still exist
+       // Otherwise the freemarker layer gets upset about deleted nodes
+       List<NodeRef> payload = new ArrayList<NodeRef>();
+       for(NodeRef node : rd.getPayload()) {
+          if(nodeService.exists(node))
+             payload.add(node);
+       }
+       rdm.put(DEFINITION_PAYLOAD, payload);
        
+       // Save in the usual way
        Map<String, Object> model = new HashMap<String,Object>();
        model.put(MODEL_DATA_ITEM, rdm);
        return model;

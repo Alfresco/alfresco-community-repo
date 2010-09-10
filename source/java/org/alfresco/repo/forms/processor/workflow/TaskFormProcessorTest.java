@@ -59,6 +59,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -77,6 +78,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -114,6 +116,7 @@ public class TaskFormProcessorTest extends TestCase
     private static final NodeRef FAKE_NODE2 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode2");
     private static final NodeRef FAKE_NODE3 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode3");
     private static final NodeRef PCKG_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakePackage");
+    private static final NodeRef USER_NODE = new NodeRef(NamespaceService.CONTENT_MODEL_1_0_URI + "/admin");
 
     private WorkflowService workflowService;
     private NodeService nodeService;
@@ -121,6 +124,7 @@ public class TaskFormProcessorTest extends TestCase
     private WorkflowTask task;
     private NamespaceService namespaceService;
     private AuthenticationService authenticationService;
+    private PersonService personService;
     private WorkflowTask newTask;
     private Map<QName, Serializable> actualProperties = null;
     private Map<QName, List<NodeRef>> actualAdded= null;
@@ -285,6 +289,21 @@ public class TaskFormProcessorTest extends TestCase
         this.task.properties.put(PROP_DESCRIPTION, this.task.title);
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, null);
+    }
+    
+    public void testGenerateTaskOwner() throws Exception
+    {
+        // check the task owner is null
+        String fieldName = TaskOwnerFieldProcessor.KEY;
+        Form form = processForm(fieldName);
+        checkSingleProperty(form, fieldName, null);
+        
+        // set task owner
+        this.task.getProperties().put(ContentModel.PROP_OWNER, "admin");
+        
+        // check the task owner property is correct
+        form = processForm(fieldName);
+        checkSingleProperty(form, fieldName, "admin|System|Administrator");
     }
 
     public void testGeneratePackageItems() throws Exception
@@ -567,6 +586,7 @@ public class TaskFormProcessorTest extends TestCase
         DictionaryService dictionaryService = makeDictionaryService();
         namespaceService = makeNamespaceService();
         authenticationService = makeAuthenticationService();
+        personService = makePersonService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
                     dictionaryService);
         DefaultFieldProcessor defaultProcessor = makeDefaultFieldProcessor(dictionaryService);
@@ -582,6 +602,7 @@ public class TaskFormProcessorTest extends TestCase
         processor1.setNamespaceService(namespaceService);
         processor1.setDictionaryService(dictionaryService);
         processor1.setAuthenticationService(authenticationService);
+        processor1.setPersonService(personService);
         processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
         return processor1;
     }
@@ -722,6 +743,13 @@ public class TaskFormProcessorTest extends TestCase
         when(mock.getCurrentUserName()).thenReturn("admin");
         return mock;
     }
+    
+    private PersonService makePersonService()
+    {
+        PersonService mock = mock(PersonService.class);
+        when(mock.getPerson("admin")).thenReturn(USER_NODE);
+        return mock;
+    }
 
     @SuppressWarnings("unchecked")
     private WorkflowService makeWorkflowService()
@@ -771,6 +799,12 @@ public class TaskFormProcessorTest extends TestCase
         NodeService service = mock(NodeService.class);
         when(service.hasAspect(PCKG_NODE, ASPECT_WORKFLOW_PACKAGE))
             .thenReturn(true);
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+        props.put(ContentModel.PROP_FIRSTNAME, "System");
+        props.put(ContentModel.PROP_LASTNAME, "Administrator");
+        
+        when(service.getProperties(USER_NODE)).thenReturn(props);
         return service;
     }
 

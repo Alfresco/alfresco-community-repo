@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -40,6 +41,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
@@ -61,6 +63,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     private static final Log LOGGER = LogFactory.getLog(TaskFormProcessor.class);
 
     protected AuthenticationService authenticationService;
+    protected PersonService personService;
     
     // Constructor for Spring
     public TaskFormProcessor()
@@ -71,12 +74,13 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     // Constructor for tests.
     public TaskFormProcessor(WorkflowService workflowService, NamespaceService namespaceService,
             DictionaryService dictionaryService, AuthenticationService authenticationService,
-            FieldProcessorRegistry fieldProcessorRegistry)
+            PersonService personService, FieldProcessorRegistry fieldProcessorRegistry)
     {
         this.workflowService = workflowService;
         this.namespaceService = namespaceService;
         this.dictionaryService = dictionaryService;
         this.authenticationService = authenticationService;
+        this.personService = personService;
         this.fieldProcessorRegistry = fieldProcessorRegistry;
     }
 
@@ -88,6 +92,16 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
+    }
+    
+    /**
+     * Sets the person service
+     * 
+     * @param personService The PersonService instance
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
     
     /* (non-Javadoc)
@@ -155,7 +169,8 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         Map<String, Object> values = new HashMap<String, Object>(2);
         values.put(TransitionFieldProcessor.KEY, getTransitionValues(item));
         values.put(PackageItemsFieldProcessor.KEY, getPackageItemValues(item));
-        values.put(MessageFieldProcessor.KEY, getMessageValues(item));
+        values.put(MessageFieldProcessor.KEY, getMessageValue(item));
+        values.put(TaskOwnerFieldProcessor.KEY, getTaskOwnerValue(item));
         return values;
     }
 
@@ -173,20 +188,8 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         }
         return results;
     }
-
-    private String getTransitionValues(WorkflowTask item)
-    {
-        WorkflowTransition[] transitions = item.definition.node.transitions;
-        
-        if (transitions == null || transitions.length == 0)
-        {
-            return "";
-        }
-        
-        return buildTransitionString(item, transitions);
-    }
     
-    private String getMessageValues(WorkflowTask task)
+    private String getMessageValue(WorkflowTask task)
     {
         String message = I18NUtil.getMessage(MessageFieldProcessor.MSG_VALUE_NONE);
         
@@ -201,6 +204,52 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         }
         
         return message;
+    }
+    
+    private String getTaskOwnerValue(WorkflowTask task)
+    {
+        String owner = (String)task.getProperties().get(ContentModel.PROP_OWNER);
+        
+        if (owner == null || owner.length() == 0)
+        {
+            return null;
+        }
+        
+        return buildTaskOwnerString(owner);
+    }
+    
+    private String buildTaskOwnerString(String ownerUsername)
+    {
+        StringBuilder builder = new StringBuilder(ownerUsername);
+        
+        // get the person node
+        NodeRef ownerNodeRef = this.personService.getPerson(ownerUsername);
+        
+        if (ownerNodeRef != null)
+        {
+            Map<QName, Serializable> personProps = this.nodeService.getProperties(ownerNodeRef);
+            
+            builder.append("|");
+            builder.append(personProps.containsKey(ContentModel.PROP_FIRSTNAME) ? 
+                        personProps.get(ContentModel.PROP_FIRSTNAME) : "");
+            builder.append("|");
+            builder.append(personProps.containsKey(ContentModel.PROP_LASTNAME) ? 
+                        personProps.get(ContentModel.PROP_LASTNAME) : "");
+        }
+        
+        return builder.toString();
+    }
+
+    private String getTransitionValues(WorkflowTask item)
+    {
+        WorkflowTransition[] transitions = item.definition.node.transitions;
+        
+        if (transitions == null || transitions.length == 0)
+        {
+            return "";
+        }
+        
+        return buildTransitionString(item, transitions);
     }
 
     private String buildTransitionString(WorkflowTask item, WorkflowTransition[] transitions)

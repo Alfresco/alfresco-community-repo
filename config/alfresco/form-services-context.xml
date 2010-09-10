@@ -65,7 +65,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="contentService" ref="ContentService" />
         <property name="dictionaryService" ref="DictionaryService" />
-      <property name="fileFolderService" ref="FileFolderService" />
+        <property name="fileFolderService" ref="FileFolderService" />
         <property name="namespaceService" ref="NamespaceService" />
         <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
     </bean>
@@ -170,6 +170,7 @@
       <property name="filterRegistry" ref="taskFilterRegistry" />
       <property name="workflowService" ref="workflowServiceImpl" />
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="personService" ref="PersonService" />
       <property name="matchPattern">
          <value>task</value>
       </property>
@@ -189,6 +190,10 @@
         
    <bean id="messageFieldProcessor"
         class="org.alfresco.repo.forms.processor.workflow.MessageFieldProcessor"
+        parent="baseFieldProcessor" />
+        
+   <bean id="taskOwnerFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.TaskOwnerFieldProcessor"
         parent="baseFieldProcessor" />
 
 </beans>

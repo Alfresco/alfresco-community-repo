@@ -37,7 +37,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class TransitionFieldProcessor extends TransientFieldProcessor
 {
     public static final String KEY = "transitions";
-    public static final String DATA_TYPE = "transitions";
+    public static final String DATA_TYPE = KEY;
 
     private static final String MSG_LABEL = "form_service.transitions.label";
     private static final String MSG_DESCRIPTION = "form_service.transitions.description";

@@ -1381,8 +1381,24 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check workflow instance details
         assertEquals("jbpm$wf:adhoc", workflow.definition.name);
         
-        // update the first task in the users list
+        // get the task form and verify data
         String taskId = tasks.get(0).getId();
+        fields.clear();
+        fields.add("bpm:taskId");
+        fields.add("transitions");
+        fields.add("message");
+        fields.add("taskOwner");
+        fields.add("packageItems");
+        form = this.formService.getForm(new Item(TASK_FORM_ITEM_KIND, taskId), fields);
+        
+        FormData taskData = form.getFormData();
+        assertEquals(taskId, "jbpm$" + taskData.getFieldData("prop_bpm_taskId").getValue().toString());
+        assertEquals("|Task Done", taskData.getFieldData("prop_transitions").getValue());
+        assertEquals("UserOne_FormServiceImplTest|firstName|lastName", taskData.getFieldData("prop_taskOwner").getValue());
+        assertEquals("This is a new adhoc task", taskData.getFieldData("prop_message").getValue());
+        assertNotNull(taskData.getFieldData("assoc_packageItems").getValue());
+        
+        // update the first task in the users list
         String comment = "This is a comment";
         data = new FormData();
         data.addFieldData("prop_bpm_comment", comment);

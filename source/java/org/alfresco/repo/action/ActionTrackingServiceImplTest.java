@@ -33,7 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImplTest.CancellableSleepAction;
 import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -69,6 +69,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     private NodeRef rootNodeRef;
     
     private NodeRef nodeRef;
+    @SuppressWarnings("unused")
     private NodeRef folder;
     private NodeService nodeService;
     private ActionService actionService;
@@ -76,7 +77,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     private TransactionService transactionService;
     private RuntimeActionService runtimeActionService;
     private ActionTrackingService actionTrackingService;
-    private EhCacheAdapter<String, ExecutionDetails> executingActionsCache;
+    private SimpleCache<String, ExecutionDetails> executingActionsCache;
     
     @Override
     @SuppressWarnings("unchecked")
@@ -87,7 +88,7 @@ public class ActionTrackingServiceImplTest extends TestCase
         this.runtimeActionService = (RuntimeActionService)ctx.getBean("actionService");
         this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");
         this.transactionService = (TransactionService)ctx.getBean("transactionService");
-        this.executingActionsCache = (EhCacheAdapter<String, ExecutionDetails>)ctx.getBean("executingActionsSharedCache");
+        this.executingActionsCache = (SimpleCache<String, ExecutionDetails>)ctx.getBean("executingActionsCache");
 
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -117,9 +118,7 @@ public class ActionTrackingServiceImplTest extends TestCase
         txn.commit();
         
         // Cache should start empty each time
-        for(String key : executingActionsCache.getKeys()) {
-           executingActionsCache.remove(key);
-        }
+        executingActionsCache.clear();
         
         // Reset the execution instance IDs, so we
         //  can predict what they'll be

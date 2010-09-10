@@ -1074,7 +1074,7 @@
 
    <!-- The cross-transaction shared cache for Executing Actions -->
    
-   <bean name="executingActionsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+   <bean name="executingActionsCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
             <property name="cacheManager">
@@ -1087,18 +1087,4 @@
       </property>
    </bean>
 
-   <!-- The transactional cache for Executing Actions -->
-   
-   <bean name="executingActionsCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="executingActionsSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.cache.executingActionsTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
-   </bean>
-   
 </beans>

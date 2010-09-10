@@ -104,7 +104,7 @@
 		<#if !first>,<#else><#local first = false></#if>"${key}":
 		<#if isUser && object.isTemplateContent(val)>"${val.content}"
 		<#elseif object.isTemplateNodeRef(val)>"${val.nodeRef}"
-		<#elseif val?is_date>"${val?datetime?string}"
+		<#elseif val?is_date>"${xmldate(val)}"
 		<#elseif val?is_boolean>${val?string}
 		<#else>"${val}"
 		</#if>

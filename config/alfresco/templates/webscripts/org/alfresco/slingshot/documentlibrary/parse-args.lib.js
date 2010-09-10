@@ -312,7 +312,7 @@ var ParseArgs =
 
          if (siteNode === null)
          {
-            status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
+            status.setCode(status.STATUS_GONE, "Site not found: '" + siteId + "'");
             return null;
          }
 
@@ -322,7 +322,7 @@ var ParseArgs =
             rootNode = siteNode.createContainer(containerId, containerType || "cm:folder");
             if (rootNode === null)
             {
-               status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
+               status.setCode(status.STATUS_GONE, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
                return null;
             }
             

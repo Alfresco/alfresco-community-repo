@@ -798,7 +798,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
             catch (Exception ex)
             {
-                log.error("Failed to clean up transfer. Lock may still be in place: " + transferId);
+                log.error("Failed to clean up transfer. Lock may still be in place: " + transferId, ex);
             }
         }
     }

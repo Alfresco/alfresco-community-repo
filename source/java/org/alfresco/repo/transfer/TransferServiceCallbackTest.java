@@ -270,14 +270,6 @@ public class TransferServiceCallbackTest extends TestCase
         event = new TransferEventCommittingStatus();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
-        event = new TransferEventReport();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
-        
-        event = new TransferEventReport();
-        event.setTransferState(TransferState.COMMITTING);
-        expectedEvents.add(event);
 
         event = new TransferEventEndState();
         event.setTransferState(TransferState.COMMITTING);
@@ -287,6 +279,14 @@ public class TransferServiceCallbackTest extends TestCase
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
         
+        event = new TransferEventReport();
+        event.setTransferState(TransferState.SUCCESS);
+        expectedEvents.add(event);
+        
+        event = new TransferEventReport();
+        event.setTransferState(TransferState.SUCCESS);
+        expectedEvents.add(event);
+
         event = new TransferEventSuccess();
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
@@ -411,23 +411,23 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventCommittingStatus();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
-            event = new TransferEventReport();
-            event.setTransferState(TransferState.COMMITTING);
-            expectedEvents.add(event);
-            
-            event = new TransferEventReport();
-            event.setTransferState(TransferState.COMMITTING);
-            expectedEvents.add(event);
-    
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
+
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
             
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+    
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
             ((TransferEventError)event).setException(error);
@@ -457,20 +457,20 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
-            event = new TransferEventReport();
-            event.setTransferState(TransferState.START);
-            expectedEvents.add(event);
-
-            event = new TransferEventReport();
-            event.setTransferState(TransferState.START);
-            expectedEvents.add(event);
 
             event = new TransferEventEndState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
 
             event = new TransferEventEnterState();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+            
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+
+            event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
 

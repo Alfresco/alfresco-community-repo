@@ -776,14 +776,14 @@ public class TransferServiceImpl2 implements TransferService2
                                 destinationReport = persistDestinationTransferReport(reportName, transfer, target);
                                 if (destinationReport != null)
                                 {
-                                    eventProcessor.writeReport(destinationReport, TransferEventReport.ReportType.DESTINATION);
+                                    eventProcessor.writeReport(destinationReport, TransferEventReport.ReportType.DESTINATION, endEventImpl.getTransferState());
                                 }
 
                                 logger.debug("now persist the client side transfer report");
                                 sourceReport = persistTransferReport(reportName, transfer, target, definition, transferReportEvents, manifest, failureException);
                                 if (sourceReport != null)
                                 {
-                                    eventProcessor.writeReport(sourceReport, TransferEventReport.ReportType.SOURCE);
+                                    eventProcessor.writeReport(sourceReport, TransferEventReport.ReportType.SOURCE, endEventImpl.getTransferState());
                                 }
                             }
                             catch(Exception e)

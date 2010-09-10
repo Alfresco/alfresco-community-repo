@@ -139,10 +139,12 @@ public class TransferEventProcessor
         notifyObservers();
     }
     
-    public void writeReport(NodeRef nodeRef, TransferEventReport.ReportType reportType)
+    public void writeReport(NodeRef nodeRef, TransferEventReport.ReportType reportType, TransferEvent.TransferState state)
     {
+        setState(state);
+
         TransferEventReport event = new TransferEventReport();
-        event.setTransferState(currentState);
+        event.setTransferState(state);
         event.setNodeRef(nodeRef);
         event.setReportType(reportType); 
         event.setMessage("report nodeRef:" + nodeRef + ", reportType :" + reportType );

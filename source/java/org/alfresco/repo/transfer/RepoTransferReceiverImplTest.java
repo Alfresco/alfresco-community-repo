@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.transfer;
 
+import static org.mockito.Mockito.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.Serializable;
@@ -32,6 +34,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
@@ -52,6 +57,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferServicePolicies;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -60,6 +66,7 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
@@ -80,6 +87,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     private String dummyContent;
     private byte[] dummyContentBytes;
     private NodeRef guestHome;
+    private PolicyComponent policyComponent;
     
     @Override
     public void runBare() throws Throwable
@@ -106,6 +114,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
         this.receiver = (RepoTransferReceiverImpl) this.getApplicationContext().getBean("transferReceiver");
+        this.policyComponent = (PolicyComponent) this.getApplicationContext().getBean("policyComponent");
         this.searchService = (SearchService) this.getApplicationContext().getBean("searchService");
         this.dummyContent = "This is some dummy content.";
         this.dummyContentBytes = dummyContent.getBytes("UTF-8");
@@ -402,8 +411,17 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
     }
     
+    @SuppressWarnings("unchecked")
     public void testNodeDeleteAndRestore() throws Exception
     {
+        TransferServicePolicies.OnEndInboundTransferPolicy mockedPolicyHandler = 
+            mock(TransferServicePolicies.OnEndInboundTransferPolicy.class);
+        
+        policyComponent.bindClassBehaviour(
+                TransferServicePolicies.OnEndInboundTransferPolicy.QNAME,
+                TransferModel.TYPE_TRANSFER_RECORD, 
+                new JavaBehaviour(mockedPolicyHandler, "onEndInboundTransfer", NotificationFrequency.EVERY_EVENT));
+        
         log.info("testNodeDeleteAndRestore");
 
         setDefaultRollback(true);
@@ -461,9 +479,21 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
             assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
             assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
+
+            ArgumentCaptor<String> transferIdCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
+                    createdNodesCaptor.capture(), updatedNodesCaptor.capture(), deletedNodesCaptor.capture());
+            assertEquals(transferId, transferIdCaptor.getValue());
+            Set capturedCreatedNodes = createdNodesCaptor.getValue();
+            assertEquals(nodes.size(), capturedCreatedNodes.size());
+
             for (TransferManifestNode node : nodes)
             {
                 assertTrue(nodeService.exists(node.getNodeRef()));
+                assertTrue(capturedCreatedNodes.contains(node.getNodeRef()));
             }
         }
         finally
@@ -471,6 +501,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
 
+        reset(mockedPolicyHandler);
+        
         startNewTransaction();
         try
         {
@@ -481,6 +513,19 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             log.debug(snapshot);
             receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
             receiver.commit(transferId);
+
+            ArgumentCaptor<String> transferIdCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+            verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
+                    createdNodesCaptor.capture(), updatedNodesCaptor.capture(), deletedNodesCaptor.capture());
+            assertEquals(transferId, transferIdCaptor.getValue());
+            Set capturedDeletedNodes = deletedNodesCaptor.getValue();
+            assertEquals(3, capturedDeletedNodes.size());
+            assertTrue(capturedDeletedNodes.contains(deletedNode8.getNodeRef()));
+            assertTrue(capturedDeletedNodes.contains(deletedNode2.getNodeRef()));
+            assertTrue(capturedDeletedNodes.contains(deletedNode11.getNodeRef()));
         }
         finally
         {
@@ -494,17 +539,21 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
             assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
 
-            assertTrue(nodeService.exists(deletedNode8.getNodeRef()));
-            assertTrue(nodeService.hasAspect(deletedNode8.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
-            log.debug("Successfully tested existence of archive node: " + deletedNode8.getNodeRef());
-            
-            assertTrue(nodeService.exists(deletedNode2.getNodeRef()));
-            assertTrue(nodeService.hasAspect(deletedNode2.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
-            log.debug("Successfully tested existence of archive node: " + deletedNode2.getNodeRef());
+            NodeRef archiveNode8 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node8.getNodeRef().getId()); 
+            NodeRef archiveNode2 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node2.getNodeRef().getId()); 
+            NodeRef archiveNode11 = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node11.getNodeRef().getId()); 
 
-            assertTrue(nodeService.exists(deletedNode11.getNodeRef()));
-            assertTrue(nodeService.hasAspect(deletedNode11.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
-            log.debug("Successfully tested existence of archive node: " + deletedNode11.getNodeRef());
+            assertTrue(nodeService.exists(archiveNode8));
+            assertTrue(nodeService.hasAspect(archiveNode8, ContentModel.ASPECT_ARCHIVED));
+            log.debug("Successfully tested existence of archive node: " + archiveNode8);
+            
+            assertTrue(nodeService.exists(archiveNode2));
+            assertTrue(nodeService.hasAspect(archiveNode2, ContentModel.ASPECT_ARCHIVED));
+            log.debug("Successfully tested existence of archive node: " + archiveNode2);
+            
+            assertTrue(nodeService.exists(archiveNode11));
+            assertTrue(nodeService.hasAspect(archiveNode11, ContentModel.ASPECT_ARCHIVED));
+            log.debug("Successfully tested existence of archive node: " + archiveNode11);
             
             log.debug("Successfully tested existence of all archive nodes");
             
@@ -527,6 +576,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         System.out.println("Now try to restore orphan node 2.");
 
+        reset(mockedPolicyHandler);
+
         String errorMsgId = null;
         startNewTransaction();
         try
@@ -546,8 +597,20 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             {
                 // Expected
                 errorMsgId = ex.getMsgId();
-            }
 
+                ArgumentCaptor<String> transferIdCaptor = ArgumentCaptor.forClass(String.class);
+                ArgumentCaptor<Set> createdNodesCaptor = ArgumentCaptor.forClass(Set.class);
+                ArgumentCaptor<Set> updatedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+                ArgumentCaptor<Set> deletedNodesCaptor = ArgumentCaptor.forClass(Set.class);
+                
+                verify(mockedPolicyHandler, times(1)).onEndInboundTransfer(transferIdCaptor.capture(), 
+                        createdNodesCaptor.capture(), updatedNodesCaptor.capture(), deletedNodesCaptor.capture());
+                
+                assertEquals(transferId, transferIdCaptor.getValue());
+                assertTrue(createdNodesCaptor.getValue().isEmpty());
+                assertTrue(updatedNodesCaptor.getValue().isEmpty());
+                assertTrue(deletedNodesCaptor.getValue().isEmpty());
+            }
         }
         catch (Exception ex)
         {
@@ -679,8 +742,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
             assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
 
-            assertTrue(nodeService.exists(deletedNode11.getNodeRef()));
-            assertTrue(nodeService.hasAspect(deletedNode11.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
+            NodeRef archivedNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deletedNode11.getNodeRef().getId());
+            assertTrue(nodeService.exists(archivedNodeRef));
+            assertTrue(nodeService.hasAspect(archivedNodeRef, ContentModel.ASPECT_ARCHIVED));
             log.debug("Successfully tested existence of archive node: " + deletedNode11.getNodeRef());
             
             log.debug("Successfully tested existence of all archive nodes");
@@ -699,7 +763,6 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
 
         //Finally we transfer node2 and node11 (in that order)
-        String errorMsgId = null;
         startNewTransaction();
         try
         {
@@ -820,7 +883,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     private TransferManifestDeletedNode createDeletedNode(TransferManifestNode nodeToDelete)
     {
         TransferManifestDeletedNode deletedNode = new TransferManifestDeletedNode();
-        deletedNode.setNodeRef(new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeToDelete.getNodeRef().getId()));
+        deletedNode.setNodeRef(nodeToDelete.getNodeRef());
         deletedNode.setParentPath(nodeToDelete.getParentPath());
         deletedNode.setPrimaryParentAssoc(nodeToDelete.getPrimaryParentAssoc());
         deletedNode.setUuid(nodeToDelete.getUuid());

@@ -89,7 +89,7 @@ public class AVMTestSuite extends TestSuite
         //suite.addTestSuite(AVMCrawlTestP.class);
         suite.addTestSuite(AVMScaleTestP.class);
         //suite.addTestSuite(AVMStressTestP.class);
-        //suite.addTestSuite(SimultaneousLoadTest.class);
+        suite.addTestSuite(SimultaneousLoadTest.class);
         
         /*
         // note:to test remotely need running repo (otherwise effectively repeats AVMServiceLocalTest)

@@ -606,6 +606,9 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         // filter by state
         checkFiltering(URL_WORKFLOW_INSTANCES + "?state=active");
         
+        // filter by definition name
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?definitionName=jbpm$wf:adhoc");
+        
         // paging
         int maxItems = 3;        
         for (int skipCount = 0; skipCount < totalItems; skipCount += maxItems)

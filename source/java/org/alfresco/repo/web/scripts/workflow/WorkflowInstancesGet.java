@@ -51,6 +51,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_STARTED_AFTER = "startedAfter";
     public static final String PARAM_COMPLETED_BEFORE = "completedBefore";
     public static final String PARAM_COMPLETED_AFTER = "completedAfter";
+    public static final String PARAM_DEFINITION_NAME = "definitionName";
     public static final String PARAM_DEFINITION_ID = "definitionId";
     public static final String VAR_DEFINITION_ID = "workflow_definition_id";
     
@@ -66,6 +67,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         filters.put(PARAM_STATE, req.getParameter(PARAM_STATE));
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
+        filters.put(PARAM_DEFINITION_NAME, req.getParameter(PARAM_DEFINITION_NAME));
         
         String excludeParam = req.getParameter(PARAM_EXCLUDE);
         if (excludeParam != null && excludeParam.length() > 0)
@@ -154,6 +156,49 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                         break;
                     }
                 }
+                else if (key.equals(PARAM_INITIATOR))
+                {
+                    NodeRef initiator = workflowInstance.getInitiator();
+                    
+                    if (initiator == null)
+                    {
+                        result = false;
+                        break;
+                    }
+                    else
+                    {
+                        if (!nodeService.exists(initiator) || 
+                            !filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+                else if (key.equals(PARAM_PRIORITY))
+                {
+                    String priority = "0";
+                    if (workflowInstance.getPriority() != null)
+                    {
+                        priority = workflowInstance.getPriority().toString();
+                    }
+
+                    if (!filterValue.equals(priority))
+                    {
+                        result = false;
+                        break;
+                    }
+                }
+                else if (key.equals(PARAM_DEFINITION_NAME))
+                {
+                    String definitionName = workflowInstance.getDefinition().getName();
+                    
+                    if (!filterValue.equals(definitionName))
+                    {
+                        result = false;
+                        break;
+                    }
+                }
                 else if (key.equals(PARAM_STATE))
                 {
                     WorkflowState filter = WorkflowState.getState(filterValue.toString());
@@ -223,39 +268,6 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                     Date endDate = workflowInstance.getEndDate();
 
                     if (!isDateMatchForFilter(endDate, filterValue, false))
-                    {
-                        result = false;
-                        break;
-                    }
-                }
-                else if (key.equals(PARAM_INITIATOR))
-                {
-                    NodeRef initiator = workflowInstance.getInitiator();
-                    
-                    if (initiator == null)
-                    {
-                        result = false;
-                        break;
-                    }
-                    else
-                    {
-                        if (!nodeService.exists(initiator) || 
-                            !filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
-                        {
-                            result = false;
-                            break;
-                        }
-                    }
-                }
-                else if (key.equals(PARAM_PRIORITY))
-                {
-                    String priority = "0";
-                    if (workflowInstance.getPriority() != null)
-                    {
-                        priority = workflowInstance.getPriority().toString();
-                    }
-
-                    if (!filterValue.equals(priority))
                     {
                         result = false;
                         break;

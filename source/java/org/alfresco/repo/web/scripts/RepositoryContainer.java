@@ -767,7 +767,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
          */
         public void afterRollback()
         {
-            writeResponse();
+            reset();
         }
 
         /*

@@ -623,6 +623,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Step 6: Negative test : transfer no nodes
      * transfer (should throw exception)
      * 
+     * Step 7: Negative test : transfer to a disabled transfer target
+     * transfer (should throw exception)
+     * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
     public void testTransferOneNode() throws Exception
@@ -689,6 +692,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 transferMe = transferService.getTransferTarget(targetName);
             }
+            transferService.enableTransferTarget(targetName, true);
         }
         finally
         {
@@ -905,7 +909,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
 
-        
         /**
           * Step 6
           * Negative test transfer nothing
@@ -921,7 +924,28 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             // expect to go here
         }
-        
+       
+        /**
+         * Step 7: Negative test : transfer to a disabled transfer target
+         * transfer (should throw exception)
+         */ 
+        logger.debug("Transfer again - with no content - should throw exception");
+        try
+        {
+                transferService.enableTransferTarget(targetName, false);
+                TransferDefinition definition = new TransferDefinition();
+                
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(deletedContentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+                fail("target not enabled exception not thrown");
+        }
+        catch(TransferException te)
+        {
+           // expect to go here
+           assertTrue("check contents of exception message", te.getCause().getMessage().contains("enabled"));
+        }
      }
     
     /**

@@ -123,6 +123,7 @@ public class TransferServiceImpl2 implements TransferService2
     private static final String MSG_FAILED_TO_GET_TRANSFER_STATUS = "transfer_service.failed_to_get_transfer_status";
     private static final String MSG_TARGET_ERROR = "transfer_service.target_error";
     private static final String MSG_UNKNOWN_TARGET_ERROR = "transfer_service.unknown_target_error";
+    private static final String MSG_TARGET_NOT_ENABLED = "transfer_service.target_not_enabled";
     
     private static final String FILE_DIRECTORY = "transfer";
     private static final String FILE_SUFFIX = ".xml";
@@ -574,6 +575,7 @@ public class TransferServiceImpl2 implements TransferService2
                         manifest = createManifest(definition);
                         logger.debug("transfer begin");
                         target = getTransferTarget(targetName);
+                        checkTargetEnabled(target);
                         transfer = transmitter.begin(target);
                         String transferId = transfer.getTransferId();
                         TransferStatus status = new TransferStatus();
@@ -662,6 +664,7 @@ public class TransferServiceImpl2 implements TransferService2
                         if (progress.getCurrentPosition() != pollPosition)
                         {
                             pollPosition = progress.getCurrentPosition();
+                            logger.debug("committing :" + pollPosition);
                             eventProcessor.committing(progress.getEndPosition(), pollPosition);
                         }
 
@@ -772,11 +775,14 @@ public class TransferServiceImpl2 implements TransferService2
 
                             try
                             {
-                                logger.debug("now pull back the destination transfer report");
-                                destinationReport = persistDestinationTransferReport(reportName, transfer, target);
-                                if (destinationReport != null)
+                                if(transfer != null)
                                 {
-                                    eventProcessor.writeReport(destinationReport, TransferEventReport.ReportType.DESTINATION, endEventImpl.getTransferState());
+                                    logger.debug("now pull back the destination transfer report");
+                                    destinationReport = persistDestinationTransferReport(reportName, transfer, target);
+                                    if (destinationReport != null)
+                                    {
+                                        eventProcessor.writeReport(destinationReport, TransferEventReport.ReportType.DESTINATION, endEventImpl.getTransferState());
+                                    }
                                 }
 
                                 logger.debug("now persist the client side transfer report");
@@ -1062,6 +1068,15 @@ public class TransferServiceImpl2 implements TransferService2
             }
         }
     }
+    
+    private void checkTargetEnabled(TransferTarget target) throws TransferException
+    {
+        if(!target.isEnabled())
+        {
+            logger.debug("target is not enabled");
+            throw new TransferException(MSG_TARGET_NOT_ENABLED, new Object[] {target.getName()});
+        }
+    }
 
     public void setNodeService(NodeService nodeService)
     {
@@ -1231,6 +1246,11 @@ public class TransferServiceImpl2 implements TransferService2
         if(nodeService.hasAspect(nodeRef, TransferModel.ASPECT_ENABLEABLE))
         {
             def.setEnabled((Boolean)properties.get(TransferModel.PROP_ENABLED));
+        }
+        else
+        {
+            // If the enableable aspect is not present then we don't want transfer failing.
+            def.setEnabled(Boolean.TRUE);
         }
     }
 
@@ -1408,8 +1428,5 @@ public class TransferServiceImpl2 implements TransferService2
         boolean cancelMe = false;
         boolean cancelInProgress = false;
     }
-    
-
-
-
+   
 }

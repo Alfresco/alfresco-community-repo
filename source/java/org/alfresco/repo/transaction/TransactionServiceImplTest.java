@@ -30,6 +30,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
@@ -140,6 +141,13 @@ public class TransactionServiceImplTest extends TestCase
                     getName() + "_" + System.currentTimeMillis());
             txn.commit();
             fail("Read-only transaction wasn't detected");
+        }
+        catch (ReadOnlyServerException e)
+        {
+            // This is now thrown at the lower layers, but it *is* possible for one of the later
+            // exceptions to get through: Fixed ALF-3884: Share does not report access denied exceptions correctly
+            @SuppressWarnings("unused")
+            int i = 0;
         }
         catch (InvalidDataAccessApiUsageException e)
         {

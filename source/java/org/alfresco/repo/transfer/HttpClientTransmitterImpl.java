@@ -546,15 +546,20 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int currentPosition  = statusObj.getInt("currentPosition");
                 int endPosition  = statusObj.getInt("endPosition");
                 String statusStr= statusObj.getString("status");
-
-                JSONObject errorJSON = statusObj.getJSONObject("error");
-                Throwable throwable = rehydrateError(errorJSON);
-
+                
                 TransferProgress p = new TransferProgress();
+                
+                if(statusObj.has("error"))
+                {
+                    JSONObject errorJSON = statusObj.getJSONObject("error");
+                    Throwable throwable = rehydrateError(errorJSON);
+                    p.setError(throwable);
+                }
+             
                 p.setStatus(TransferProgress.Status.valueOf(statusStr));
                 p.setCurrentPosition(currentPosition);
                 p.setEndPosition(endPosition);
-                p.setError(throwable);
+             
                 return p;
             } 
             catch (RuntimeException e)

@@ -19,11 +19,15 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
@@ -42,12 +46,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * This class provides a way to turn documents supported by the
@@ -106,62 +112,8 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         }
         
         // Make the HTML Version using Tika
+        // This will also extract out any images as found
         generateHTML(p, context);
-        
-        // Extract out any images
-        // TODO
-        boolean hasImages = true; // TODO
-        if(hasImages)
-        {
-           Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
-           NodeRef imgFolder = null;
-           
-           // Extract into it
-           boolean donePrimary = false;
-           for(String fakeContent : new String[] {"Test1","Test2"})
-           {
-              if(imgFolder == null)
-                 imgFolder = createImagesDirectory(context);
-              
-              // Create the node if needed
-              NodeRef img = nodeService.getChildByName(
-                    imgFolder, ContentModel.ASSOC_CONTAINS, fakeContent
-              );
-              if(img == null)
-              {
-                 properties.clear();
-                 properties.put(ContentModel.PROP_NAME, fakeContent); 
-                 img = nodeService.createNode(
-                       imgFolder,
-                       ContentModel.ASSOC_CONTAINS,
-                       QName.createQName(fakeContent),
-                       ContentModel.TYPE_CONTENT,
-                       properties
-                 ).getChildRef();
-              }
-              
-              // If we can, associate it with the rendered HTML, so
-              //  that they're properly linked
-              QName assocType = SECONDARY_IMAGE;
-              if(!donePrimary)
-              {
-                 assocType = PRIMARY_IMAGE;
-                 donePrimary = true;
-              }
-              if(dictionaryService.getAssociation(assocType) != null)
-              {
-                 nodeService.createAssociation(
-                       context.getDestinationNode(), img, assocType
-                 );
-              }
-              
-              // Put the image into the node
-              ContentWriter writer = contentService.getWriter(
-                    img, ContentModel.PROP_CONTENT, true
-              );
-              writer.putContent(fakeContent);
-           }
-        }
     }
     
     /**
@@ -211,6 +163,52 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        return imgFolder;
     }
     
+    private NodeRef createEmbeddedImage(NodeRef imgFolder, boolean primary,
+          String filename, String contentType, InputStream imageSource,
+          RenderingContext context)
+    {
+       // Create the node if needed
+       NodeRef img = nodeService.getChildByName(
+             imgFolder, ContentModel.ASSOC_CONTAINS, filename
+       );
+       if(img == null)
+       {
+          Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
+          properties.put(ContentModel.PROP_NAME, filename);
+          img = nodeService.createNode(
+                imgFolder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(filename),
+                ContentModel.TYPE_CONTENT,
+                properties
+          ).getChildRef();
+       }
+       
+       // If we can, associate it with the rendered HTML, so
+       //  that they're properly linked
+       QName assocType = SECONDARY_IMAGE;
+       if(primary)
+       {
+          assocType = PRIMARY_IMAGE;
+       }
+       if(dictionaryService.getAssociation(assocType) != null)
+       {
+          nodeService.createAssociation(
+                context.getDestinationNode(), img, assocType
+          );
+       }
+       
+       // Put the image into the node
+       ContentWriter writer = contentService.getWriter(
+             img, ContentModel.PROP_CONTENT, true
+       );
+       writer.setMimetype(contentType);
+       writer.putContent(imageSource);
+       
+       // All done
+       return img;
+    }
+    
     /**
      * Builds a Tika-compatible SAX content handler, which will
      *  be used to generate+capture the XHTML
@@ -241,9 +239,12 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
     {
        // Setup things to parse with
        Metadata metadata = new Metadata();
-       ParseContext parseContext = new ParseContext();
        StringWriter sw = new StringWriter();
        ContentHandler handler = buildContentHandler(sw);
+       
+       // Our parse context needs to extract images
+       ParseContext parseContext = new ParseContext();
+       parseContext.set(Parser.class, new TikaImageExtractingParser(context));
        
        // Parse
        try {
@@ -258,5 +259,92 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        // Save it
        ContentWriter contentWriter = context.makeContentWriter();
        contentWriter.putContent( sw.toString() );
+    }
+    
+    
+    /**
+     * A nested Tika parser which extracts out any
+     *  images as they come past.
+     */
+   @SuppressWarnings("serial")
+   private class TikaImageExtractingParser implements Parser {
+      private Set<MediaType> types;
+      
+      private RenderingContext renderingContext;
+      private NodeRef imgFolder = null;
+      private int count = 0;
+      
+      private TikaImageExtractingParser(RenderingContext renderingContext) {
+         this.renderingContext = renderingContext;
+         
+         // Our expected types
+         types = new HashSet<MediaType>();
+         types.add(MediaType.image("bmp"));
+         types.add(MediaType.image("gif"));
+         types.add(MediaType.image("jpg"));
+         types.add(MediaType.image("jpeg"));
+         types.add(MediaType.image("png"));
+         types.add(MediaType.image("tiff"));
+      }
+      
+      @Override
+      public Set<MediaType> getSupportedTypes(ParseContext context) {
+         return types;
+      }
+
+      @Override
+      public void parse(InputStream stream, ContentHandler handler,
+            Metadata metadata, ParseContext context) throws IOException,
+            SAXException, TikaException {
+         // Is it a supported image?
+         String filename = metadata.get(Metadata.RESOURCE_NAME_KEY);
+         String type = metadata.get(Metadata.CONTENT_TYPE);
+         boolean accept = false;
+         
+         if(type != null) {
+            for(MediaType mt : types) {
+               if(mt.toString().equals(type)) {
+                  accept = true;
+               }
+            }
+         }
+         if(filename != null) {
+            for(MediaType mt : types) {
+               String ext = "." + mt.getSubtype();
+               if(filename.endsWith(ext)) {
+                  accept = true;
+               }
+            }
+         }
+         
+         if(!accept)
+            return;
+
+         handleImage(stream, filename, type);
+      }
+
+      @Override
+      public void parse(InputStream stream, ContentHandler handler,
+            Metadata metadata) throws IOException, SAXException, TikaException {
+         parse(stream, handler, metadata, new ParseContext());
+      }
+      
+      private void handleImage(InputStream stream, String filename, String type) {
+         count++;
+         
+         // Do we already have the folder? If not, create it
+         if(imgFolder == null) {
+            imgFolder = createImagesDirectory(renderingContext);
+         }
+         
+         // Give it a sensible name if needed
+         if(filename == null) {
+            filename = "image-" + count + ".";
+            filename += type.substring(type.indexOf('/')+1);
+         }
+
+         // Save the image
+         createEmbeddedImage(imgFolder, (count==1), filename, type, stream, renderingContext);
+      }
     }
 }

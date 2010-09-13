@@ -29,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -51,6 +52,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(HTMLRenderingEngineTest.class);
     private NodeRef companyHome;
+    private DictionaryService dictionaryService;
     private RenditionService renditionService;
     private Repository repositoryHelper;
     
@@ -75,6 +77,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.renditionService = (RenditionService) this.applicationContext.getBean("RenditionService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.dictionaryService = (DictionaryService) this.applicationContext.getBean("dictionaryService");
         this.companyHome = repositoryHelper.getCompanyHome();
         
         createTargetFolder();
@@ -241,8 +244,13 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
           
           // Check we didn't get an image folder, only the html
           int numItems = nodeService.getChildAssocs(targetFolder).size();
-          // TODO - Enable this when proper folder stuff is in place
-//          assertEquals(numItemsStart+1, numItems);
+          assertEquals(numItemsStart+1, numItems);
+          
+          // Check that the html lacks img tags
+          assertEquals(
+                "Unexpected img tag in html:\n" + html,
+                false, html.contains("<img")
+          );
           
           // Check we didn't get any images
           for(ChildAssociationRef ref : nodeService.getChildAssocs(htmlNode))
@@ -264,7 +272,93 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
      */
     public void testDocWithOneImages() throws Exception
     {
-       
+       RenditionDefinition def = renditionService.createRenditionDefinition(
+             QName.createQName("Test"), HTMLRenderingEngine.NAME);
+       def.setParameterValue(
+             RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
+             targetFolderPath + "/${name}.html"
+       );
+
+       for(String name : new String[] {"quickImg1.doc","quickImg1.docx"})
+       {
+          sourceDoc = createForDoc(name);
+          
+          String baseName = name.substring(0, name.lastIndexOf('.'));
+          
+          int numItemsStart = nodeService.getChildAssocs(targetFolder).size();
+          
+          ChildAssociationRef rendition = renditionService.render(sourceDoc, def);
+          assertNotNull(rendition);
+          
+          // Check it was created
+          NodeRef htmlNode = rendition.getChildRef();
+          assertEquals(true, nodeService.exists(htmlNode));
+          
+          // Check it got the right name
+          assertEquals(
+                baseName + ".html",
+                nodeService.getProperty(htmlNode, ContentModel.PROP_NAME)
+          );
+          
+          // Check it ended up in the right place
+          assertEquals(
+                "Should have been in " + targetFolderPath + " but was  in" +
+                   nodeService.getPath(htmlNode),
+                targetFolder,
+                nodeService.getPrimaryParent(htmlNode).getParentRef()
+          );
+          
+          // Check it got the right contents
+          ContentReader reader = contentService.getReader(
+                htmlNode, ContentModel.PROP_CONTENT
+          );
+          String html = reader.getContentString();
+          assertEquals("<?xml", html.substring(0, 5));
+          
+          // Check that the html has the img tags
+//          assertEquals(
+//                "Couldn't find img tag in html:\n" + html,
+//                true, html.contains("<img")
+//          );
+          
+          // Check we got an image folder
+          int numItems = nodeService.getChildAssocs(targetFolder).size();
+          assertEquals(numItemsStart+2, numItems);
+          
+          // Check the name of the image folder
+          NodeRef imgFolder = null;
+          for(ChildAssociationRef ref : nodeService.getChildAssocs(targetFolder)) {
+             if(nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_NAME).equals(
+                   baseName + "_files"
+             )) {
+                imgFolder = ref.getChildRef();
+             }
+          }
+          assertNotNull("Couldn't find new folder named " + baseName + "_files", imgFolder);
+          
+          // Check the contents
+          assertEquals(1, nodeService.getChildAssocs(imgFolder).size());
+          
+          
+          // Check the associations if supported
+          if(dictionaryService.getAssociation(HTMLRenderingEngine.PRIMARY_IMAGE) != null)
+          {
+             boolean hasPrimary = false;
+             boolean hasSecondary = false;
+             for(ChildAssociationRef ref : nodeService.getChildAssocs(htmlNode))
+             {
+                if(ref.getTypeQName().equals(HTMLRenderingEngine.PRIMARY_IMAGE))
+                   hasPrimary = true;
+                if(ref.getTypeQName().equals(HTMLRenderingEngine.SECONDARY_IMAGE))
+                   hasSecondary = true;
+             }
+             assertEquals(true, hasPrimary);
+             assertEquals(false, hasSecondary);
+          }
+          
+          // All done
+          tidyUpSourceDoc();
+       }
     }
     
     /**

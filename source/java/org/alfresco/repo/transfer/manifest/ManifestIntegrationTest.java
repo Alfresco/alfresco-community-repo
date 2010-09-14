@@ -33,19 +33,12 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
-import org.alfresco.repo.transfer.manifest.TransferManifestNode;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactoryImpl;
-import org.alfresco.repo.transfer.manifest.TransferManifestWriter;
-import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
@@ -148,7 +141,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             formatter.writeTransferManifestHeader(header);
             for(NodeRef nodeRef : nodes)
             {
-                TransferManifestNode node = nodeFactory.createTransferManifestNode(nodeRef);
+                TransferManifestNode node = nodeFactory.createTransferManifestNode(nodeRef, null);
                 formatter.writeTransferManifestNode(node);
                 sentNodes.put(nodeRef, node);
             }
@@ -156,7 +149,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             snapshotWriter.close();
             
             // Show the snapshot file (For dev purposes)
-            outputFile(snapshotFile);   
+            outputFile(snapshotFile);
             
             /**
              * Now read the snapshot file

@@ -72,7 +72,9 @@ public class InvokeCommand extends BaseAjaxCommand
    @Target(ElementType.METHOD)
    public @interface ResponseMimetype
    {
-      public String value() default MimetypeMap.MIMETYPE_XML;
+      // NOTE: replaced Mimetype.MIMETYPE_XML with string literal due to bug
+      //        http://bugs.sun.com/view_bug.do?bug_id=6512707 - causing build to fail
+      public String value() default "text/xml";
    }
 
    /////////////////////////////////////////////////////////////////////////////

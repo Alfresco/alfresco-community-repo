@@ -283,6 +283,37 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         
         return newVersionRef;
     }
+
+    /**
+     * Check whether the V1 history represented by oldVersionHistoryRef represents
+     * a versioned working copy node (Alfresco V2.1.7 can create these)
+     * 
+     * @param oldVersionHistoryRef
+     * @return
+     */
+    protected boolean v1CheckForVersionedWorkingCopy(NodeRef oldVersionHistoryRef)
+    {
+        boolean valid = true;
+
+        // Get versioned nodeRef from one of the versions - note: assumes all versions refer to the same versioned nodeRef
+        Collection<ChildAssociationRef> versions = dbNodeService.getChildAssocs(oldVersionHistoryRef);
+        if (versions.size() > 0)
+        {
+            Iterator<ChildAssociationRef> itr = versions.iterator();
+            ChildAssociationRef childAssocRef = itr.next();
+            NodeRef versionRef = childAssocRef.getChildRef();
+            
+            Version version = version1Service.getVersion(versionRef);
+            @SuppressWarnings("unchecked")
+            List<QName> frozenAspects = (List<QName>)dbNodeService.getProperty(versionRef, VersionModel.PROP_QNAME_FROZEN_ASPECTS);
+            if(frozenAspects.contains(ContentModel.ASPECT_WORKING_COPY) && frozenAspects.contains(ContentModel.ASPECT_VERSIONABLE))
+            {
+                valid = false;
+            }
+        }
+        
+        return valid;
+    }
     
     protected NodeRef v1GetVersionedNodeRef(NodeRef oldVersionHistoryRef)
     {
@@ -327,8 +358,15 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     
     protected void migrateVersion(NodeRef oldVHNodeRef, boolean deleteImmediately) throws Throwable
     {
-        NodeRef versionedNodeRef = v1GetVersionedNodeRef(oldVHNodeRef);
-        migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
+        if(v1CheckForVersionedWorkingCopy(oldVHNodeRef))
+        {
+            NodeRef versionedNodeRef = v1GetVersionedNodeRef(oldVHNodeRef);
+            migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
+        }
+        else
+        {
+            logger.warn("Have found a versioned working copy node " + oldVHNodeRef + ", skipping");
+        }
         
         if (deleteImmediately)
         {

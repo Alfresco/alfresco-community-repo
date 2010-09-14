@@ -18,7 +18,16 @@
         </property>
         <property name="extension">
             <value>js</value>
-        </property>        
+        </property>
+        <!-- compile javascript and cache compiled scripts -->
+        <property name="compile">
+            <value>true</value>
+        </property>
+        <!-- allow sharing of sealed scopes for performance -->
+        <!-- disable to give each script it's own new scope which can be extended -->
+        <property name="shareSealedScopes">
+            <value>true</value>
+        </property>
         <property name="scriptService">
             <ref bean="scriptService"/>
         </property>

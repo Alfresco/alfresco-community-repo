@@ -21,7 +21,6 @@ package org.alfresco.repo.jscript;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +88,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Flag to enable or disable runtime script compliation */
     private boolean compile = true;
     
+    /** Flag to enable the sharing of sealed root scopes between scripts executions */
+    private boolean shareSealedScopes = true;
+    
     /** Cache of runtime compiled script instances */
     private final Map<String, Script> scriptCache = new ConcurrentHashMap<String, Script>(256);
     
@@ -119,6 +121,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         this.compile = compile;
     }
     
+    /**
+     * @param shareSealedScopes true to allow sharing of sealed scopes between script executions - set to
+     * false to disable this feature and ensure that a new scope is created for each executed script.
+     */
+    public void setShareSealedScopes(boolean shareSealedScopes)
+    {
+        this.shareSealedScopes = shareSealedScopes;
+    }
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#reset()
      */
@@ -414,10 +425,18 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // Create a thread-specific scope from one of the shared scopes.
             // See http://www.mozilla.org/rhino/scopes.html
             cx.setWrapFactory(wrapFactory);
-            Scriptable sharedScope = secure ? this.nonSecureScope : this.secureScope;
-            Scriptable scope = cx.newObject(sharedScope);
-            scope.setPrototype(sharedScope);
-            scope.setParentScope(null);
+            Scriptable scope;
+            if (this.shareSealedScopes)
+            {
+                Scriptable sharedScope = secure ? this.nonSecureScope : this.secureScope;
+                scope = cx.newObject(sharedScope);
+                scope.setPrototype(sharedScope);
+                scope.setParentScope(null);
+            }
+            else
+            {
+                scope = initScope(cx, secure, false);
+            }
             
             // there's always a model, if only to hold the util objects
             if (model == null)
@@ -531,7 +550,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
     }
 
-
+    
     /**
      * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised.
      * This saves on very expensive calls to reinitialize a new scope on every web script execution. See
@@ -541,38 +560,65 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     public void afterPropertiesSet() throws Exception
     {
-        // Initialise the secure scope
+        // Initialize the secure scope
         Context cx = Context.enter();
         try
         {
             cx.setWrapFactory(wrapFactory);
-            this.secureScope = cx.initStandardObjects(null, true);
-
-            // remove security issue related objects - this ensures the script may not access
-            // unsecure java.* libraries or import any other classes for direct access - only
-            // the configured root host objects will be available to the script writer
-            this.secureScope.delete("Packages");
-            this.secureScope.delete("getClass");
-            this.secureScope.delete("java");
+            this.secureScope = initScope(cx, false, true);
         }
         finally
         {
             Context.exit();
         }
         
-        // Initialise the non-secure scope
+        // Initialize the non-secure scope
         cx = Context.enter();
         try
         {
             cx.setWrapFactory(wrapFactory);
-
-            // allow access to all libraries and objects, including the importer
-            // @see http://www.mozilla.org/rhino/ScriptingJava.html
-            this.nonSecureScope = new ImporterTopLevel(cx, true);
+            this.nonSecureScope = initScope(cx, true, true);
         }
         finally
         {
             Context.exit();
         }
+    }
+    
+    /**
+     * Initializes a scope for script execution. The easiest way to embed Rhino is just to create a new scope this
+     * way whenever you need one. However, initStandardObjects() is an expensive method to call and it allocates a
+     * fair amount of memory.
+     * 
+     * @param cx        the thread execution context
+     * @param secure    Do we consider the script secure? When <code>false</code> this ensures the script may not
+     *                  access insecure java.* libraries or import any other classes for direct access - only the
+     *                  configured root host objects will be available to the script writer.
+     * @param sealed    Should the scope be sealed, making it immutable? This should be <code>true</code> if a scope
+     *                  is to be reused.
+     * @return the scope object
+     */
+    protected Scriptable initScope(Context cx, boolean secure, boolean sealed)
+    {
+        Scriptable scope;
+        if (secure)
+        {
+            // Initialise the non-secure scope
+            // allow access to all libraries and objects, including the importer
+            // @see http://www.mozilla.org/rhino/ScriptingJava.html
+            scope = new ImporterTopLevel(cx, sealed);
+        }
+        else
+        {
+            // Initialise the secure scope
+            scope = cx.initStandardObjects(null, sealed);
+            // remove security issue related objects - this ensures the script may not access
+            // unsecure java.* libraries or import any other classes for direct access - only
+            // the configured root host objects will be available to the script writer
+            scope.delete("Packages");
+            scope.delete("getClass");
+            scope.delete("java");
+        }
+        return scope;
     }
 }

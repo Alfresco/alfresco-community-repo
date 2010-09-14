@@ -71,6 +71,7 @@
       <property name="actionTrackingService" ref="actionTrackingService" />
       <property name="transactionService" ref="transactionService" />
       <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
+      <property name="readOnly" value="true" />
    </bean>
 
    <!-- JavaScript API support -->

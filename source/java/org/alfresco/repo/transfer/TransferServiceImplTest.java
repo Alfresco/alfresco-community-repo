@@ -111,7 +111,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
 
     String REPO_ID_A = "RepoIdA";
-    String REPO_ID_B = "RepoIdB";
+    String REPO_ID_B;
     String REPO_ID_C = "RepoIdC";
     
     @Override
@@ -146,6 +146,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
         this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
+        
+        REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
         
         authenticationComponent.setSystemUserAsCurrentUser();
         setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
@@ -947,6 +949,184 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
            assertTrue("check contents of exception message", te.getCause().getMessage().contains("enabled"));
         }
      }
+    
+    /**
+     * Test the transfer method w.r.t. moving a node.
+     * 
+     * Step 1.
+     * Move by changing the parent's node ref.
+     *  
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testMoveNode() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "Hello";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testTransferMoveNode";
+        TransferTarget transferMe;
+        NodeRef contentNodeRef;
+        NodeRef parentNodeRef;
+        NodeRef destNodeRef;
+        NodeRef moveToNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test node that we will read and write
+             */
+            String name = GUID.generate();
+            
+            ChildAssociationRef newParent = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+            parentNodeRef = newParent.getChildRef();
+            nodeService.setProperty(parentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(parentNodeRef, ContentModel.PROP_NAME, name);
+            
+            ChildAssociationRef child = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("TransferOneNode"), ContentModel.TYPE_CONTENT);
+            contentNodeRef = child.getChildRef();
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, "TransferOneNode");
+            
+            ChildAssociationRef moveTo = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("moveTo"), ContentModel.TYPE_FOLDER);
+            moveToNodeRef = moveTo.getChildRef();
+            nodeService.setProperty(moveToNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(moveToNodeRef, ContentModel.PROP_NAME, "moveTo");
+            
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+            transferService.enableTransferTarget(targetName, true);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        logger.debug("First transfer - create new node (no content yet)");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Step 0: Transfer our node which has no content
+             */
+            {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(parentNodeRef);
+                    nodes.add(contentNodeRef);
+                    nodes.add(moveToNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+            
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            NodeRef destParentNodeRef = testNodeFactory.getMappedNodeRef(parentNodeRef);
+            
+            ChildAssociationRef destParent = nodeService.getPrimaryParent(destNodeRef);
+            assertEquals("parent node ref not correct prior to test", destParentNodeRef, destParent.getParentRef());
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+       /**
+        * Step 1: Move a node through transfer
+        * Move the destination node
+        * transfer (Should transfer the destination node back)
+        */
+        logger.debug("Transfer again with moved node");
+        startNewTransaction();
+        try
+        {
+            // Move the node up one level on the destination.
+            nodeService.moveNode(contentNodeRef, moveToNodeRef, ContentModel.ASSOC_CONTAINS,  QName.createQName("testOneNode"));   
+        }
+        finally
+        {
+            endTransaction();
+        }
+  
+        startNewTransaction();
+        try
+        {
+            TransferDefinition definition = new TransferDefinition();
+            Set<NodeRef>nodes = new HashSet<NodeRef>();
+            nodes.add(contentNodeRef);
+            definition.setNodes(nodes);
+            transferService.transfer(targetName, definition);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            NodeRef destParentNodeRef = testNodeFactory.getMappedNodeRef(moveToNodeRef);
+            
+            ChildAssociationRef destParent = nodeService.getPrimaryParent(destNodeRef);
+            assertEquals("node not moved", destParentNodeRef, destParent.getParentRef());
+
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+   } // test move node
+
     
     /**
      * Test the transfer method by sending a graph of nodes.
@@ -5586,6 +5766,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     {
         setDefaultRollback(false);
         
+        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+        
         String CONTENT_TITLE = "ContentTitle";
         String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         Locale CONTENT_LOCALE = Locale.GERMAN; 
@@ -5819,7 +6001,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         /**
          * Step 3
-         * Now move A3
+         * Now move A5
          * C3 (Dest) gets invaded by A5
          */
         startNewTransaction();
@@ -5868,7 +6050,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         /**
          * Step 4 - multi invasion move via transfer service.
-         * Invade A5 by B6.  Transfer from C3 back to C2.
+         * Invade A5 by B6.  
+         * Transfer from C3 back to C2.
          */
         startNewTransaction();
         try 
@@ -5919,6 +6102,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             List<String>invaders = (List<String>)nodeService.getProperty(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.PROP_INVADED_BY);
             assertTrue("invaders is too small", invaders.size() > 1);
             assertTrue("invaders does not contain REPO A", invaders.contains(REPO_ID_A));
+            assertTrue("invaders does not contain REPO B", invaders.contains(localRepositoryId));
         }
         finally
         {
@@ -5973,6 +6157,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             List<String>invaders = (List<String>)nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_INVADED_BY);
             assertTrue("invaders is too big", invaders.size() < 2);
             assertFalse("invaders contains REPO A", invaders.contains(REPO_ID_A));
+            assertTrue("invaders does not contains REPO B", invaders.contains(REPO_ID_B));
    
         }
         finally

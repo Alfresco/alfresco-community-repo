@@ -342,7 +342,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
          * are we adding an alien node here? The transfer service has policies disabled 
          * so have to call the consequence of the policy directly.
          */ 
-        if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+        if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
         {
             alienProcessor.onCreateChild(newNode, header.getRepositoryId(), true);
         }
@@ -491,8 +491,25 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
             logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()));
             
-            alienProcessor.afterMoveAlien(newNode);
-            
+            /**
+             * are we adding an alien node here? The transfer service has policies disabled 
+             * so have to call the consequence of the policy directly.
+             */ 
+            if(nodeService.hasAspect(newNode.getChildRef(), TransferModel.ASPECT_ALIEN))
+            {
+                alienProcessor.afterMoveAlien(newNode); 
+            }
+            else
+            {    
+                /**
+                 * are we adding an alien node here? The transfer service has policies disabled 
+                 * so have to call the consequence of the policy directly.
+                 */ 
+                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+                {
+                    alienProcessor.onCreateChild(newNode, header.getRepositoryId(), true);
+                }
+            }
         }
 
         log.info("Resolved parent node to " + parentNodeRef);

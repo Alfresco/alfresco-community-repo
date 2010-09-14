@@ -19,8 +19,9 @@
 package org.alfresco.repo.transfer.manifest;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 
 public interface TransferManifestNodeFactory
 {
-    TransferManifestNode createTransferManifestNode(NodeRef nodeRef);
+    TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition);
 }

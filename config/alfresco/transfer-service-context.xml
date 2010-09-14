@@ -58,6 +58,7 @@
    <bean id="transferManifestNodeFactory" class="org.alfresco.repo.transfer.manifest.TransferManifestNodeFactoryImpl" init-method="init" >
 		<property name="nodeService" ref="NodeService" />
 		<property name="permissionService" ref="PermissionService" />
+        <property name="dictionaryService" ref="DictionaryService" />
 	</bean>
 	
 	<bean id="alienProcessor" class="org.alfresco.repo.transfer.AlienProcessorImpl"

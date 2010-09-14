@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Definition of what to transfer.
@@ -47,6 +48,9 @@ public class TransferDefinition implements Serializable
     
     // Which nodes to deploy
     private Set<NodeRef> nodes;
+    
+    // Which aspects to exclude
+    private Set<QName> excludedAspects;
 
     /**
      * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
@@ -73,7 +77,7 @@ public class TransferDefinition implements Serializable
     
     public void setNodes(NodeRef...nodes)
     {
-        this.setNodes(new HashSet<NodeRef>(Arrays.asList(nodes)));
+        this.setNodes(Arrays.asList(nodes));
     }
 
     /**
@@ -83,6 +87,36 @@ public class TransferDefinition implements Serializable
     public Set<NodeRef> getNodes()
     {
         return nodes;
+    }
+
+    /**
+     * Sets which aspects to exclude from transfer
+     * 
+     * @param exludedAspects collection of aspects to exclude
+     */
+    public void setExcludedAspects(Collection<QName> exludedAspects)
+    {
+        this.excludedAspects = new HashSet<QName>(exludedAspects);
+    }
+
+    /**
+     * Sets which aspects to exclude from transfer
+     * 
+     * @param excludedAspects aspects to exclude from transfer
+     */
+    public void setExcludedAspects(QName... excludedAspects)
+    {
+        this.setExcludedAspects(Arrays.asList(excludedAspects));
+    }
+
+    /**
+     * Gets the aspects to exclude from transfer
+     * 
+     * @return set of excluded aspects (or null, if none specified)
+     */
+    public Set<QName> getExcludedAspects()
+    {
+        return excludedAspects;
     }
     
     /**

@@ -909,7 +909,7 @@ public class TransferServiceImpl2 implements TransferService2
         formatter.writeTransferManifestHeader(header);
         for(NodeRef nodeRef : nodes)
         {
-            TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef);
+            TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition);
             formatter.writeTransferManifestNode(node);
         }
         formatter.endTransferManifest();

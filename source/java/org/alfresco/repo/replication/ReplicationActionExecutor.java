@@ -27,6 +27,7 @@ import org.alfresco.repo.action.ActionCancelledException;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.ChildAssociatedNodeFinder;
 import org.alfresco.repo.transfer.ContentClassFilter;
@@ -169,13 +170,18 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
     *  replication to be run.
     */
    protected TransferDefinition buildTransferDefinition(
-         ReplicationDefinition replicationDef, Set<NodeRef> toTransfer
-   ) {
+         ReplicationDefinition replicationDef, Set<NodeRef> toTransfer)
+   {
       TransferDefinition transferDefinition =
          new TransferDefinition();
       transferDefinition.setNodes(toTransfer);
       transferDefinition.setSync(true);
       transferDefinition.setReadOnly(true);
+      
+      // Exclude aspects from transfer
+      // NOTE: this list of aspects should be synced up with the NodeCrawler in expandPayload to
+      //       ensure a coherent set of nodes are transferred
+      transferDefinition.setExcludedAspects(RuleModel.ASPECT_RULES);
       
       return transferDefinition;
    }
@@ -208,10 +214,6 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       {
          throw new ReplicationServiceException("Unable to execute a disabled replication definition");
       }
-      
-      // Clear the previous transfer report references
-//      replicationDef.setLocalTransferReport(null); 
-//      replicationDef.setRemoteTransferReport(null);
       
       // Lock the service - only one instance of the replication
       //  should occur at a time

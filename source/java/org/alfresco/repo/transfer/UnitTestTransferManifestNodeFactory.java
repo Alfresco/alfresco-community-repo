@@ -31,6 +31,7 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -69,9 +70,9 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
         this.realFactory = realFactory;
     }
 
-    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef)
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
     {
-        TransferManifestNode newNode = realFactory.createTransferManifestNode(nodeRef);
+        TransferManifestNode newNode = realFactory.createTransferManifestNode(nodeRef, definition);
 
         NodeRef origNodeRef = newNode.getNodeRef();
 

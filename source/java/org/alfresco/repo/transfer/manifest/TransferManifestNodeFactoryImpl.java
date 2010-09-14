@@ -18,11 +18,17 @@
  */
 package org.alfresco.repo.transfer.manifest;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -30,7 +36,9 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
@@ -43,15 +51,16 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
 {
     private NodeService nodeService;
     private PermissionService permissionService;
+    private DictionaryService dictionaryService;
     
     public void init()
     {
         
     }
     
-    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef)
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
     {
-        NodeRef.Status status = nodeService.getNodeStatus(nodeRef);   
+        NodeRef.Status status = nodeService.getNodeStatus(nodeRef);
         
         if(status == null)
         {
@@ -104,9 +113,9 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
         
             TransferManifestNormalNode node = new TransferManifestNormalNode();
             node.setNodeRef(nodeRef);
-            node.setProperties(nodeService.getProperties(nodeRef));
-            node.setAspects(nodeService.getAspects(nodeRef));
-            node.setType(nodeService.getType(nodeRef));   
+            node.setProperties(getNodeProperties(nodeRef, definition == null ? null : definition.getExcludedAspects()));
+            node.setAspects(getNodeAspects(nodeRef, definition == null ? null : definition.getExcludedAspects()));
+            node.setType(nodeService.getType(nodeRef));
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
             if(parentAssocRef != null && parentAssocRef.getParentRef() != null)
             {   
@@ -145,25 +154,76 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             return node;
         }
     }
+    
+    /**
+     * Gets the aspects of the specified node, minus those that have been explicitly excluded
+     * 
+     * @param nodeRef  node to get aspects for
+     * @param excludedAspects  aspects to exluce
+     * @return  set of aspects minus those excluded
+     */
+    private Set<QName> getNodeAspects(NodeRef nodeRef, Set<QName> excludedAspects)
+    {
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        if (excludedAspects == null || excludedAspects.size() == 0)
+        {
+            return aspects;
+        }
+        else
+        {
+            Set<QName> filteredAspects = new HashSet<QName>(aspects.size());
+            for (QName aspect : aspects)
+            {
+                if (!excludedAspects.contains(aspect))
+                {
+                    filteredAspects.add(aspect);
+                }
+            }
+            return filteredAspects;
+        }
+    }
 
+    /**
+     * Gets the properties of the specified node, minus those that have been explicitly excluded
+     * 
+     * @param nodeRef  node to get aspects for
+     * @param excludedAspects  aspects to exluce
+     * @return  map of properties minus those excluded
+     */
+    private Map<QName, Serializable> getNodeProperties(NodeRef nodeRef, Set<QName> excludedAspects)
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        if (excludedAspects == null || excludedAspects.size() == 0)
+        {
+            return properties;
+        }
+        else
+        {
+            Map<QName, Serializable> filteredProperties = new HashMap<QName, Serializable>(properties.size());
+            for (Map.Entry<QName, Serializable> property : properties.entrySet())
+            {
+                PropertyDefinition propDef = dictionaryService.getProperty(property.getKey());
+                if (propDef == null || !excludedAspects.contains(propDef.getContainerClass().getName()))
+                {
+                    filteredProperties.put(property.getKey(), property.getValue());
+                }
+            }
+            return filteredProperties;
+        }
+    }
 
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    public NodeService getNodeService()
-    {
-        return nodeService;
-    }
-
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-
-    public PermissionService getPermissionService()
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
     {
-        return permissionService;
+        this.dictionaryService = dictionaryService;
     }
 }

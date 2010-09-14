@@ -4981,18 +4981,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Change Nodes A1 ... A5 source to be received "from repo B"
      * transfer 
      * 
-     *  //TO BE INVESTIGATED - Not yet implemented 
-     *  //c) when syncing don't accept updates to nodes that are not "from" the transferring system.
-     *  //Step 3.
-     *  //Multiple repo update of the same node
-     *  //Change the transferred aspect for A5 destination to be "from" repo B
-     *  //Update A5
-     *  //Transfer (sync)
-     *  //
-     *  //Step 4.
-     *  //Change the transferred aspect for A5 destination to be "from" repo B
-     *  //Update A5
-     *  //Transfer A5 (normal) - should update
      */
     public void testTwoRepoSync() throws Exception
     {

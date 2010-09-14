@@ -438,7 +438,7 @@ CREATE TABLE alf_node_assoc
     CONSTRAINT fk_alf_nass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
 );
 CREATE UNIQUE INDEX source_node_id ON alf_node_assoc (source_node_id, target_node_id, type_qname_id);
-CREATE INDEX k_alf_nass_snode ON alf_node_assoc (source_node_id);
+CREATE INDEX fk_alf_nass_snode ON alf_node_assoc (source_node_id);
 CREATE INDEX fk_alf_nass_tnode ON alf_node_assoc (target_node_id);
 CREATE INDEX fk_alf_nass_tqn ON alf_node_assoc (type_qname_id);
 CREATE SEQUENCE alf_node_assoc_seq START WITH 1 INCREMENT BY 1;

@@ -411,7 +411,7 @@ CREATE TABLE alf_node_assoc
     type_qname_id BIGINT NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY source_node_id (source_node_id, target_node_id, type_qname_id),
-    KEY k_alf_nass_snode (source_node_id),
+    KEY fk_alf_nass_snode (source_node_id),
     KEY fk_alf_nass_tnode (target_node_id),
     KEY fk_alf_nass_tqn (type_qname_id),
     CONSTRAINT fk_alf_nass_snode FOREIGN KEY (source_node_id) REFERENCES alf_node (id),

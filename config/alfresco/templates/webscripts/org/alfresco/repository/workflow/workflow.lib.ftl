@@ -5,8 +5,8 @@
          "id": "${task.id}",
          "url": "${task.url}",
          "name": "${task.name}",
-         "title": "${task.title}",
-         "description": "${task.description}",
+         "title": "${task.title!""}",
+         "description": "${task.description!""}",
          "state": "${task.state}",
          "path": "${task.path}",
          "isPooled": ${task.isPooled?string},
@@ -37,23 +37,23 @@
             "type": 
             {
                "name": "${shortQName(task.definition.type.name?string)}",
-               "title": "${task.definition.type.title}",
-               "description": "${task.definition.type.description}",
+               "title": "${task.definition.type.title!""}",
+               "description": "${task.definition.type.description!""}",
                "url": "${task.definition.type.url}"
             },
             "node": 
             {
                "name": "${task.definition.node.name}",
-               "title": "${task.definition.node.title}",
-               "description": "${task.definition.node.description}",
+               "title": "${task.definition.node.title!""}",
+               "description": "${task.definition.node.description!""}",
                "isTaskNode": ${task.definition.node.isTaskNode?string},
                "transitions": 
                [
                   <#list task.definition.node.transitions as transition>
                   {
                      "id": "${transition.id}",
-                     "title": "${transition.title}",
-                     "description": "${transition.description}",
+                     "title": "${transition.title!""}",
+                     "description": "${transition.description!""}",
                      "isDefault": ${transition.isDefault?string},
                      "isHidden": ${transition.isHidden?string}
                   }
@@ -103,8 +103,8 @@
    "id": "${workflowInstance.id}",
    "url": "${workflowInstance.url}",
    "name": "${workflowInstance.name}",
-   "title": "${workflowInstance.title}",
-   "description": "${workflowInstance.description}",
+   "title": "${workflowInstance.title!""}",
+   "description": "${workflowInstance.description!""}",
    "isActive": ${workflowInstance.isActive?string},
    "startDate": "${workflowInstance.startDate}",
    "priority": <#if workflowInstance.priority??>${workflowInstance.priority?c}<#else>2</#if>,
@@ -149,8 +149,8 @@
          "id" : "${workflowDefinition.id}",
          "url": "${workflowDefinition.url}",
          "name": "${workflowDefinition.name}",
-         "title": "${workflowDefinition.title}",
-         "description": "${workflowDefinition.description}",
+         "title": "${workflowDefinition.title!""}",
+         "description": "${workflowDefinition.description!""}",
          "version": "${workflowDefinition.version}"
          <#if detailed>,
          "startTaskDefinitionUrl": "${workflowDefinition.startTaskDefinitionUrl}",

@@ -22,10 +22,15 @@ package org.alfresco.repo.transfer;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -602,20 +607,22 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int responseStatus = httpClient.executeMethod(hostConfig, getReportRequest, httpState);
                 checkResponseStatus("getReport", responseStatus, getReportRequest);
                 
-               
                 InputStream is = getReportRequest.getResponseBodyAsStream();
-                InputStreamReader reader = new InputStreamReader(is);
                 
-                BufferedReader br = new BufferedReader(reader);                
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(result));
-
-                String s = br.readLine();
-                while(s != null)
+                // Now copy the response input stream to result.
+                final ReadableByteChannel inputChannel = Channels.newChannel(is);
+                final WritableByteChannel outputChannel = Channels.newChannel(result);
+                try
                 {
-                    bw.write(s);
-                    s = br.readLine();
+                    // copy the channels
+                    channelCopy(inputChannel, outputChannel);
                 }
-                bw.close();
+                finally
+                {
+                    // closing the channels
+                    inputChannel.close();
+                    outputChannel.close();
+                }
                            
                 return;
             } 
@@ -627,13 +634,38 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 String error = "Failed to execute HTTP request to target";
                 log.debug(error, e);
-                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"sendManifest", target.toString(), e.toString()}, e);
+                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"getTransferReport", target.toString(), e.toString()}, e);
             }
         } 
         finally
         {
             getReportRequest.releaseConnection();
         }        
+    }
+    
+    private static void channelCopy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException 
+    {
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(2 * 1024);
+        while (src.read(buffer) != -1) 
+        {
+            // prepare the buffer to be drained
+            buffer.flip();
+            // write to the channel, may block
+             dest.write(buffer);
+        
+            // If partial transfer, shift remainder down
+            // If buffer is empty, same as doing clear()
+            buffer.compact();
+        }
+        
+        // EOF will leave buffer in fill state
+        buffer.flip();
+        
+        // make sure the buffer is fully drained.
+        while (buffer.hasRemaining()) 
+        {
+            dest.write(buffer);
+        }
     }
 
     protected PostMethod getPostMethod()

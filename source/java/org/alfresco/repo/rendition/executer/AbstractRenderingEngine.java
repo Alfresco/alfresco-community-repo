@@ -628,7 +628,19 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         NodeRef parentNode = renditionDefinition.getRenditionParent();
         QName assocType = renditionDefinition.getRenditionAssociationType();
         QName nodeType = getRenditionNodeType(renditionDefinition);
-        ChildAssociationRef childAssoc = nodeService.createNode(parentNode, assocType, assocName, nodeType, nodeProps);
+        
+        // Ensure that the creation of rendition children does not cause updates
+        // to the modified, modifier properties on the source node
+        behaviourFilter.disableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
+        ChildAssociationRef childAssoc = null;
+        try
+        {
+            childAssoc = nodeService.createNode(parentNode, assocType, assocName, nodeType, nodeProps);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
+        }
         return childAssoc;
     }
 

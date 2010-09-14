@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -64,6 +65,7 @@ public class AbstractRenderingEngineTest extends TestCase
         engine = new TestRenderingEngine();
         engine.setContentService(contentService);
         engine.setNodeService(nodeService);
+        engine.setBehaviourFilter(mock(BehaviourFilter.class));
     }
 
     @SuppressWarnings("unchecked")

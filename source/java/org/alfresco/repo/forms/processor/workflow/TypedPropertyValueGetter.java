@@ -103,13 +103,20 @@ public class TypedPropertyValueGetter
     private Boolean processBooleanValue(Object value)
     {
         // check for browser representation of true, that being "on"
-        if (value instanceof String && ON.equals(value)) 
+        if (value instanceof String) 
         {
-            return Boolean.TRUE;
+            if (ON.equals(value))
+            {
+                return Boolean.TRUE;
+            }
+            else
+            {
+                return Boolean.valueOf((String)value);
+            }
         }
         else
         {
-            return Boolean.FALSE; // TODO Check this line is OK with Gav.
+            return Boolean.FALSE;
         }
     }
 

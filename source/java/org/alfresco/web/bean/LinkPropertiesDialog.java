@@ -155,6 +155,13 @@ public class LinkPropertiesDialog extends BaseDialogBean
          NodeRef nodeRef = getEditableNode().getNodeRef();
          Map<String, Object> props = getEditableNode().getProperties();
          
+         //get the name and move the node as necessary
+         String name = (String) props.get(ContentModel.PROP_NAME);
+         if (name != null)
+         {
+            getFileFolderService().rename(nodeRef, name);
+         } 
+         
          Map<QName, Serializable> properties = this.getNodeService().getProperties(nodeRef);
          
          // we need to put all the properties from the editable bag back into 

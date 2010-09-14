@@ -160,7 +160,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                      if (checkExists(name + LINK_NODE_EXTENSION, destRef) == false)
                      {
                         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                        props.put(ContentModel.PROP_NAME, name + LINK_NODE_EXTENSION);
+                        String newName = name + LINK_NODE_EXTENSION;
+                        props.put(ContentModel.PROP_NAME, newName);
                         props.put(ContentModel.PROP_LINK_DESTINATION, getNodeRef());
                         if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT))
                         {
@@ -168,7 +169,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                            ChildAssociationRef childRef = nodeService.createNode(
                                  destRef,
                                  ContentModel.ASSOC_CONTAINS,
-                                 assocRef.getQName(),
+                                 QName.createQName(assocRef.getQName().getNamespaceURI(), newName),
                                  ApplicationModel.TYPE_FILELINK,
                                  props);
 

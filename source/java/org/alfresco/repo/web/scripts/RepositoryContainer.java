@@ -38,7 +38,6 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -79,9 +78,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     // Logger
     protected static final Log logger = LogFactory.getLog(RepositoryContainer.class);
 
-    // Transaction key for buffered response
-    private static String BUFFERED_RESPONSE_KEY = RepositoryContainer.class.getName() + ".bufferedresponse";
-    
     /** Component Dependencies */
     private Repository repository;
     private RepositoryImageResolver imageResolver;
@@ -331,6 +327,30 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         }
         else
         {
+            final BufferedResponse bufferedRes;
+            RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
+            if (trxParams.getCapability() == TransactionCapability.readwrite)
+            {
+                if (trxParams.getBufferSize() > 0)
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
+
+                    // create buffered response that allows transaction retrying
+                    bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
+                    bufferedRes = null;
+                }
+            }
+            else
+            {
+                bufferedRes = null;
+            }
+            
             // encapsulate script within transaction
             RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
             {
@@ -342,29 +362,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                             logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," 
                                     + description.getRequiredTransactionParameters().getCapability());
 
-                        WebScriptResponse redirectedRes = scriptRes;
-                        RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
-                        if (trxParams.getCapability() == TransactionCapability.readwrite)
+                        if (bufferedRes == null)
                         {
-                            if (trxParams.getBufferSize() > 0)
-                            {
-                                if (logger.isDebugEnabled())
-                                    logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
-    
-                                // create buffered response that's sensitive transaction boundary
-                                BufferedResponse bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
-                                AlfrescoTransactionSupport.bindResource(BUFFERED_RESPONSE_KEY, bufferedRes); 
-                                AlfrescoTransactionSupport.bindListener(bufferedRes);
-                                redirectedRes = bufferedRes;
-                            }
-                            else
-                            {
-                                if (logger.isDebugEnabled())
-                                    logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
-                            }
+                            script.execute(scriptReq, scriptRes);                            
                         }
-                        
-                        script.execute(scriptReq, redirectedRes);
+                        else
+                        {
+                            // Reset the response in case of a transaction retry
+                            bufferedRes.reset();
+                            script.execute(scriptReq, bufferedRes);
+                        }
                     }
                     catch(Exception e)
                     {
@@ -414,7 +421,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         
             boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
             boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
-            retryingTransactionHelper.doInTransaction(work, readonly, requiresNew); 
+            retryingTransactionHelper.doInTransaction(work, readonly, requiresNew);
+
+            // Ensure a response is always flushed after successful execution
+            if (bufferedRes != null)
+            {
+                bufferedRes.writeResponse();
+            }
+            
         }
     }
     
@@ -575,7 +589,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     /**
      * Transactional Buffered Response
      */
-    private static class BufferedResponse implements TransactionListener, WrappingWebScriptResponse
+    private static class BufferedResponse implements WrappingWebScriptResponse
     {
         private WebScriptResponse res;
         private int bufferSize;
@@ -750,48 +764,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         public void setStatus(int status)
         {
             res.setStatus(status);
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-         */
-        public void afterCommit()
-        {
-            writeResponse();
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
-         */
-        public void afterRollback()
-        {
-            reset();
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
-         */
-        public void beforeCommit(boolean readOnly)
-        {
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
-         */
-        public void beforeCompletion()
-        {
-        }
-
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.TransactionListener#flush()
-         */
-        public void flush()
-        {
         }
 
         /**

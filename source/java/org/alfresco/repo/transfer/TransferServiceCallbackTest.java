@@ -470,10 +470,6 @@ public class TransferServiceCallbackTest extends TestCase
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
 
-            event = new TransferEventReport();
-            event.setTransferState(TransferState.ERROR);
-            expectedEvents.add(event);
-
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
             ((TransferEventError)event).setException((Exception)ex.getCause());

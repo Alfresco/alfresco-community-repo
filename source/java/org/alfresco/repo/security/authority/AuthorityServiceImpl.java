@@ -239,7 +239,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             {
                 if (guestGroups.contains(authority) || guestGroups.contains(tenantService.getBaseNameUser(authority)))
                 {
-                    isAdminUser = true;
+                    isGuestUser = true;
                     break;
                 }
             }

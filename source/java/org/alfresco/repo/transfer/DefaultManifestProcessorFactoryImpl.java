@@ -114,7 +114,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     public TransferManifestProcessor getRequsiteProcessor(
             TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
     {
-        RepoRequsiteManifestProcessorImpl processor = new RepoRequsiteManifestProcessorImpl(receiver, transferId, out);
+        RepoRequisiteManifestProcessorImpl processor = new RepoRequisiteManifestProcessorImpl(receiver, transferId, out);
        
         CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();       
         processor.setNodeResolver(nodeResolver);

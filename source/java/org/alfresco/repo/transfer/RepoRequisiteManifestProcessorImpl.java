@@ -53,20 +53,20 @@ import org.xml.sax.SAXParseException;
  * resources are required.
  * 
  */
-public class RepoRequsiteManifestProcessorImpl extends AbstractManifestProcessorBase
+public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcessorBase
 {
     private NodeService nodeService;
     private CorrespondingNodeResolver nodeResolver;
     private TransferRequsiteWriter out;
     
     
-    private static final Log log = LogFactory.getLog(RepoRequsiteManifestProcessorImpl.class);
+    private static final Log log = LogFactory.getLog(RepoRequisiteManifestProcessorImpl.class);
 
     /**
      * @param receiver 
      * @param transferId
      */
-    public RepoRequsiteManifestProcessorImpl(TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
+    public RepoRequisiteManifestProcessorImpl(TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
     {
         super(receiver, transferId);
         this.out = out;

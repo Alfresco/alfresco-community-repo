@@ -104,7 +104,6 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
     {
         ContentReader contentReader = context.makeContentReader();
         String sourceMimeType = contentReader.getMimetype();
-        String targetMimeType = "text/html";
         
         // Check that Tika supports the supplied file
         AutoDetectParser p = new AutoDetectParser();
@@ -293,6 +292,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        
        // Save it
        ContentWriter contentWriter = context.makeContentWriter();
+       contentWriter.setMimetype("text/html");
        contentWriter.putContent( sw.toString() );
     }
     

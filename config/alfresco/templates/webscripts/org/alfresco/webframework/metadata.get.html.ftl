@@ -64,7 +64,7 @@
 		{
 			<@serialize object=child includeChildren=false includeContent=includeContent/>
 		}
-		<#assign first = false>	
+		<#assign first = false>
 		</#list>
 	]
 <#else>
@@ -95,6 +95,22 @@
 </#escape>
 </#macro>
 
+<#macro serializeSequence sequence>
+[
+<#local first = true>
+<#list sequence as e>
+   <#if !first>,<#else><#local first = false></#if>
+   <#if isUser && object.isTemplateContent(e)>"${e.content}"
+   <#elseif object.isTemplateNodeRef(e)>"${e.nodeRef}"
+   <#elseif e?is_date>"${xmldate(e)}"
+   <#elseif e?is_boolean>${e?string}
+   <#elseif e?is_number>${e?c}
+   <#else>"${e}"
+   </#if>
+</#list>
+]
+</#macro>
+
 <#macro serializeHash hash>
 <#escape x as jsonUtils.encodeJSONString(x)>
 <#local first = true>
@@ -106,6 +122,8 @@
 		<#elseif object.isTemplateNodeRef(val)>"${val.nodeRef}"
 		<#elseif val?is_date>"${xmldate(val)}"
 		<#elseif val?is_boolean>${val?string}
+		<#elseif val?is_number>${val?c}
+		<#elseif val?is_sequence><@serializeSequence sequence=val/>
 		<#else>"${val}"
 		</#if>
 	</#if>

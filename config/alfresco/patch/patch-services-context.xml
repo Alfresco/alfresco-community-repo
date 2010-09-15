@@ -2007,7 +2007,7 @@
         </property>   
     </bean>
 
-    <bean id="patch.transferDefinitionsFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.transferServiceFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.transferServiceFolder</value></property>
         <property name="description"><value>patch.transferDefinitions.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -2330,6 +2330,7 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />
+                <ref bean="patch.transferServiceFolder" />
             </list>
         </property>
         <property name="importerBootstrap">
@@ -2355,6 +2356,7 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />
+                <ref bean="patch.transfer.targetrulefolder" />
             </list>
         </property>
         <property name="importerBootstrap">

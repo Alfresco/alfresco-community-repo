@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
+import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -36,6 +38,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Test the audit web scripts
@@ -45,6 +48,9 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class AuditWebScriptTest extends BaseWebScriptTest
 {
+    private static final String APP_REPOTEST_NAME = "AlfrescoRepositoryTest";
+    private static final String APP_REPOTEST_PATH = "/repositorytest";
+
     private ApplicationContext ctx;
     private AuditService auditService;
     private AuthenticationService authenticationService;
@@ -60,19 +66,35 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         auditService = (AuditService) ctx.getBean("AuditService");
         admin = AuthenticationUtil.getAdminUserName();
+
+        // Register the test model
+        AuditModelRegistryImpl auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-repository.xml");
+        auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.loadAuditModels();
         
         AuthenticationUtil.setFullyAuthenticatedUser(admin);
         
         wasGloballyEnabled = auditService.isAuditEnabled();
-        wasRepoEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
+        wasRepoEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
         // Only enable if required
         if (!wasGloballyEnabled)
         {
             auditService.setAuditEnabled(true);
+            wasGloballyEnabled = auditService.isAuditEnabled();
+            if (!wasGloballyEnabled)
+            {
+                fail("Failed to enable global audit for test");
+            }
         }
         if (!wasRepoEnabled)
         {
-            auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+            auditService.enableAudit(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
+            wasRepoEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
+            if (!wasRepoEnabled)
+            {
+                fail("Failed to enable repo audit for test");
+            }
         }
     }
 
@@ -96,11 +118,11 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         {
             if (wasRepoEnabled)
             {
-                auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+                auditService.enableAudit(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
             }
             else
             {
-                auditService.disableAudit(APP_REPO_NAME, APP_REPO_PATH);
+                auditService.disableAudit(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
             }
         }
         catch (Throwable e)
@@ -161,13 +183,11 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         testGetIsAuditEnabledGlobally();
     }
     
-    private static final String APP_REPO_NAME = "AlfrescoRepository";
-    private static final String APP_REPO_PATH = "/repository";
     public void testGetIsAuditEnabledRepo() throws Exception
     {
-        boolean wasEnabled = auditService.isAuditEnabled(APP_REPO_NAME, null);
+        boolean wasEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, null);
 
-        String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH;
+        String url = "/api/audit/control/" + APP_REPOTEST_NAME + APP_REPOTEST_PATH;
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         
         if (wasEnabled)
@@ -181,8 +201,8 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             String appPath = app.getString(AbstractAuditWebScript.JSON_KEY_PATH);
             boolean appEnabled = app.getBoolean(AbstractAuditWebScript.JSON_KEY_ENABLED);
             assertEquals("Mismatched application audit enabled", wasEnabled, appEnabled);
-            assertEquals("Mismatched application audit name", APP_REPO_NAME, appName);
-            assertEquals("Mismatched application audit path", APP_REPO_PATH, appPath);
+            assertEquals("Mismatched application audit name", APP_REPOTEST_NAME, appName);
+            assertEquals("Mismatched application audit path", APP_REPOTEST_PATH, appPath);
         }
         else
         {
@@ -192,17 +212,17 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     
     public void testSetAuditEnabledRepo() throws Exception
     {
-        boolean wasEnabled = auditService.isAuditEnabled(APP_REPO_NAME, APP_REPO_PATH);
+        boolean wasEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
 
         if (wasEnabled)
         {
-            String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=false";
+            String url = "/api/audit/control/" + APP_REPOTEST_NAME + APP_REPOTEST_PATH + "?enable=false";
             TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
             sendRequest(req, Status.STATUS_OK, admin);
         }
         else
         {
-            String url = "/api/audit/control/" + APP_REPO_NAME + APP_REPO_PATH + "?enable=true";
+            String url = "/api/audit/control/" + APP_REPOTEST_NAME + APP_REPOTEST_PATH + "?enable=true";
             TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
             sendRequest(req, Status.STATUS_OK, admin);
         }
@@ -245,7 +265,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         loginWithFailure(getName());
         
         // Delete audit entries that could not have happened
-        String url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + future;
+        String url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + future;
         TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         JSONObject json = new JSONObject(response.getContentAsString());
@@ -253,7 +273,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertEquals("Could not have cleared more than 0", 0, cleared);
         
         // Delete the entry (at least)
-        url = "/api/audit/clear/" + APP_REPO_NAME + "?fromTime=" + now + "&toTime=" + future;
+        url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&toTime=" + future;
         req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -261,7 +281,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertTrue("Should have cleared at least 1 entry", cleared > 0);
         
         // Delete all entries
-        url = "/api/audit/clear/" + APP_REPO_NAME;;
+        url = "/api/audit/clear/" + APP_REPOTEST_NAME;;
         req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -275,12 +295,12 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         long future = Long.MAX_VALUE;
         
         auditService.setAuditEnabled(true);
-        auditService.enableAudit(APP_REPO_NAME, APP_REPO_PATH);
+        auditService.enableAudit(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
 
         loginWithFailure(getName());
         
         // Query for audit entries that could not have happened
-        String url = "/api/audit/query/" + APP_REPO_NAME + "?fromTime=" + now + "&verbose=true";
+        String url = "/api/audit/query/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&verbose=true";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         JSONObject json = new JSONObject(response.getContentAsString());
@@ -295,13 +315,13 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertNotNull("No entry time String", entryTimeStr);
         Date entryTime = ISO8601DateFormat.parse((String)entryTimeStr); // Check conversion
         JSONObject jsonValues = jsonEntry.getJSONObject(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
-        String entryUsername = jsonValues.getString("/repository/login/error/user");
+        String entryUsername = jsonValues.getString("/repositorytest/login/error/user");
         assertEquals("Didn't find the login-failure-user", getName(), entryUsername);
         
         // Query using well-known ID
         Long fromEntryId = entryId;                 // Search is inclusive on the 'from' side
         Long toEntryId = entryId.longValue() + 1L;  // Search is exclusive on the 'to' side
-        url = "/api/audit/query/" + APP_REPO_NAME + "?fromId=" + fromEntryId + "&toId=" + toEntryId;
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "?fromId=" + fromEntryId + "&toId=" + toEntryId;
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -309,7 +329,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
         
         // Query using a non-existent entry path
-        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/userXXX" + "?verbose=true";
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/userXXX" + "?verbose=true";
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -317,7 +337,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertTrue("Should not have found anything", jsonEntries.length() == 0);
         
         // Query using a good entry path
-        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?verbose=true";
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?verbose=true";
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -328,7 +348,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         String missingUser = new Long(System.currentTimeMillis()).toString();
 
         // Query for event that has not happened
-        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser;
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser;
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -338,7 +358,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         loginWithFailure(missingUser);
         
         // Query for event that has happened once
-        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser;
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser;
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -346,7 +366,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
         
         // Query for event, but casting the value to the incorrect type
-        url = "/api/audit/query/" + APP_REPO_NAME + "/repository/login/error/user" + "?value=" + missingUser + "&valueType=java.lang.Long";
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser + "&valueType=java.lang.Long";
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -358,7 +378,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         loginWithFailure(oddUser);
         
         // Query for the event limiting to one by count and descending (i.e. get last)
-        url = "/api/audit/query/" + APP_REPO_NAME + "?forward=false&limit=1&verbose=true";
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "?forward=false&limit=1&verbose=true";
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
@@ -368,7 +388,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         entryId = jsonEntry.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_ID);
         assertNotNull("No entry ID", entryId);
         jsonValues = jsonEntry.getJSONObject(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
-        entryUsername = jsonValues.getString("/repository/login/error/user");
+        entryUsername = jsonValues.getString("/repositorytest/login/error/user");
         assertEquals("Didn't find the login-failure-user", oddUser, entryUsername);
     }
 }

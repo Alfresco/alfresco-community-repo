@@ -46,14 +46,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.ContainerAwareDetector;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * This class provides a way to turn documents supported by the
@@ -100,7 +106,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         String sourceMimeType = contentReader.getMimetype();
         String targetMimeType = "text/html";
         
-        // Check that Tika supports it
+        // Check that Tika supports the supplied file
         AutoDetectParser p = new AutoDetectParser();
         MediaType sourceMediaType = MediaType.parse(sourceMimeType);
         if(! p.getParsers().containsKey(sourceMediaType))
@@ -114,6 +120,25 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         // Make the HTML Version using Tika
         // This will also extract out any images as found
         generateHTML(p, context);
+    }
+    
+    /**
+     * What name should be used for the images directory?
+     */
+    private String getImagesDirectoryName(RenderingContext context)
+    {
+       // Based on the name of the source node, which will
+       //  also largely be the name of the html node
+       String folderName = nodeService.getProperty( 
+             context.getSourceNode(),
+             ContentModel.PROP_NAME
+       ).toString();
+       if(folderName.lastIndexOf('.') > -1)
+       {
+          folderName = folderName.substring(0, folderName.lastIndexOf('.'));
+       }
+       folderName = folderName + "_files";
+       return folderName;
     }
     
     /**
@@ -131,15 +156,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        NodeRef parent = location.getParentRef();
        
        // Figure out what to call it, based on the HTML node
-       String folderName = nodeService.getProperty( 
-             context.getSourceNode(),
-             ContentModel.PROP_NAME
-       ).toString();
-       if(folderName.lastIndexOf('.') > -1)
-       {
-          folderName = folderName.substring(0, folderName.lastIndexOf('.'));
-       }
-       folderName = folderName + "_files";
+       String folderName = getImagesDirectoryName(context);
        
        // It is already there?
        // (eg from when the rendition is being re-run)
@@ -237,10 +254,28 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      */
     private void generateHTML(Parser p, RenderingContext context)
     {
+       ContentReader contentReader = context.makeContentReader();
+       
        // Setup things to parse with
-       Metadata metadata = new Metadata();
        StringWriter sw = new StringWriter();
-       ContentHandler handler = buildContentHandler(sw);
+       ContentHandler handler = new TikaImageRewritingContentHandler( 
+                   buildContentHandler(sw),
+                   getImagesDirectoryName(context)
+       );
+       
+       // Tell Tika what we're dealing with
+       Metadata metadata = new Metadata();
+       metadata.set(
+             Metadata.CONTENT_TYPE, 
+             contentReader.getMimetype()
+       );
+       metadata.set(
+             Metadata.RESOURCE_NAME_KEY, 
+             nodeService.getProperty( 
+                   context.getSourceNode(),
+                   ContentModel.PROP_NAME
+             ).toString()
+       );
        
        // Our parse context needs to extract images
        ParseContext parseContext = new ParseContext();
@@ -249,7 +284,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        // Parse
        try {
           p.parse(
-                context.makeContentReader().getContentInputStream(),
+                contentReader.getContentInputStream(),
                 handler, metadata, parseContext
           );
        } catch(Exception e) {
@@ -346,5 +381,96 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
          // Save the image
          createEmbeddedImage(imgFolder, (count==1), filename, type, stream, renderingContext);
       }
+    }
+   
+    /**
+     * A content handler that re-writes image src attributes,
+     *  and passes everything else on to the real one.
+     */
+    private class TikaImageRewritingContentHandler implements ContentHandler {
+       private ContentHandler handler;
+       private String imageFolder;
+       
+       private TikaImageRewritingContentHandler(ContentHandler handler, String imageFolder) {
+          this.handler = handler;
+          this.imageFolder = imageFolder;
+       }
+
+       @Override
+       public void startElement(String uri, String localName, String qName,
+             Attributes origAttrs) throws SAXException {
+          // If we have an image tag, re-write the src attribute
+          //  if required
+          if("img".equals(localName)) {
+             AttributesImpl attrs;
+             if(origAttrs instanceof AttributesImpl) {
+                attrs = (AttributesImpl)origAttrs;
+             } else {
+                attrs = new AttributesImpl(origAttrs);
+             }
+             
+             for(int i=0; i<attrs.getLength(); i++) {
+                if("src".equals(attrs.getLocalName(i))) {
+                   String src = attrs.getValue(i);
+                   if(src.startsWith("embedded:")) {
+                      src = imageFolder + "/" +
+                               src.substring(src.indexOf(':')+1);
+                      attrs.setValue(i, src);
+                   }
+                }
+             }
+             handler.startElement(uri, localName, qName, attrs);
+          } else {
+             // For any other tag, pass through as-is
+             handler.startElement(uri, localName, qName, origAttrs);
+          }
+       }
+
+       @Override
+       public void characters(char[] ch, int start, int length)
+       throws SAXException {
+          handler.characters(ch, start, length);
+       }
+       @Override
+       public void ignorableWhitespace(char[] ch, int start, int length)
+       throws SAXException {
+          handler.ignorableWhitespace(ch, start, length);
+       }
+       
+       @Override
+       public void endDocument() throws SAXException {
+          handler.endDocument();
+       }
+       @Override
+       public void endElement(String uri, String localName, String qName)
+       throws SAXException {
+          handler.endElement(uri, localName, qName);
+       }
+       @Override
+       public void endPrefixMapping(String prefix) throws SAXException {
+          handler.endPrefixMapping(prefix);
+       }
+       @Override
+       public void processingInstruction(String target, String data)
+       throws SAXException {
+          handler.processingInstruction(target, data);
+       }
+       @Override
+       public void setDocumentLocator(Locator locator) {
+          handler.setDocumentLocator(locator);
+       }
+       @Override
+       public void skippedEntity(String name) throws SAXException {
+          handler.skippedEntity(name);
+       }
+       @Override
+       public void startDocument() throws SAXException {
+          handler.startDocument();
+       }
+       @Override
+       public void startPrefixMapping(String prefix, String uri)
+       throws SAXException {
+          handler.startPrefixMapping(prefix, uri);
+       }
     }
 }

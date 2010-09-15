@@ -336,6 +336,8 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cmisTypeDefinition.setQueryName(typeDefinition.getQueryName());
         cmisTypeDefinition.setDisplayName(typeDefinition.getDisplayName());
         cmisTypeDefinition.setBaseId(EnumBaseObjectTypeIds.fromValue(typeDefinition.getBaseType().getTypeId().getId()));
+        cmisTypeDefinition.setLocalNamespace(typeDefinition.getTypeId().getLocalNamespace());
+        cmisTypeDefinition.setLocalName(typeDefinition.getTypeId().getLocalName());
 
         if ((null != typeDefinition.getParentType()) && (null != typeDefinition.getParentType().getTypeId()))
         {

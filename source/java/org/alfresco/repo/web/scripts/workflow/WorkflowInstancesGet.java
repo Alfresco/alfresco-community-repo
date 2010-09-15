@@ -26,12 +26,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -62,9 +65,11 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
 
+        // state is not included into filters list as it will be taken into account before filtering
+        WorkflowState state = getState(req);
+        
         // get filter param values
         Map<String, Object> filters = new HashMap<String, Object>(9);
-        filters.put(PARAM_STATE, req.getParameter(PARAM_STATE));
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
         filters.put(PARAM_DEFINITION_NAME, req.getParameter(PARAM_DEFINITION_NAME));
@@ -89,13 +94,26 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             workflowDefinitionId = req.getParameter(PARAM_DEFINITION_ID);
         }
+        
+        // default workflow state to ACTIVE if not supplied
+        if (state == null)
+        {
+            state = WorkflowState.ACTIVE;
+        }
 
         List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
 
         if (workflowDefinitionId != null)
         {
             // list workflows for specified workflow definition
-            workflows.addAll(workflowService.getWorkflows(workflowDefinitionId));
+            if (state == WorkflowState.ACTIVE)
+            {
+                workflows.addAll(workflowService.getActiveWorkflows(workflowDefinitionId));
+            }
+            else
+            {
+                workflows.addAll(workflowService.getCompletedWorkflows(workflowDefinitionId));
+            }
         }
         else
         {
@@ -104,7 +122,14 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
             // list workflows for all definitions
             for (WorkflowDefinition workflowDefinition : workflowDefinitions)
             {
-                workflows.addAll(workflowService.getWorkflows(workflowDefinition.getId()));
+                if (state == WorkflowState.ACTIVE)
+                {
+                    workflows.addAll(workflowService.getActiveWorkflows(workflowDefinition.getId()));
+                }
+                else
+                {
+                    workflows.addAll(workflowService.getCompletedWorkflows(workflowDefinition.getId()));
+                }
             }
         }
         
@@ -199,20 +224,6 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                         break;
                     }
                 }
-                else if (key.equals(PARAM_STATE))
-                {
-                    WorkflowState filter = WorkflowState.getState(filterValue.toString());
-
-                    if (filter != null)
-                    {
-                        if (filter.equals(WorkflowState.COMPLETED) && workflowInstance.isActive() || 
-                            filter.equals(WorkflowState.ACTIVE) && !workflowInstance.isActive())
-                        {
-                            result = false;
-                            break;
-                        }
-                    }
-                }
                 else if (key.equals(PARAM_DUE_BEFORE))
                 {
                     Date dueDate = workflowInstance.getDueDate();
@@ -278,31 +289,37 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         return result;
     }
+    
+    /**
+     * Gets the specified {@link WorkflowState}, null if not requested.
+     * 
+     * @param req The WebScript request
+     * @return The workflow state or null if not requested
+     */
+    private WorkflowState getState(WebScriptRequest req)
+    {
+        String stateName = req.getParameter(PARAM_STATE);
+        if (stateName != null)
+        {
+            try
+            {
+                return WorkflowState.valueOf(stateName.toUpperCase());
+            }
+            catch (IllegalArgumentException e)
+            {
+                String msg = "Unrecognised State parameter: " + stateName;
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+            }
+        }
+        
+        return null;
+    }
 
+    // enum to represent workflow states
     private enum WorkflowState
     {
-        ACTIVE ("active"),
-        COMPLETED ("completed");
-
-        String value;
-
-        WorkflowState(String value)
-        {
-            this.value = value;
-        }
-
-        static WorkflowState getState(String value)
-        {
-            for (WorkflowState state : WorkflowState.values())
-            {
-                if (state.value.equals(value))
-                {
-                    return state;
-                }
-            }
-
-            return null;
-        }
+        ACTIVE,
+        COMPLETED;
     }
     
     /**

@@ -225,7 +225,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             }
             catch (IllegalArgumentException e)
             {
-                String msg = "Unrecognised State parameter:  " + stateName;
+                String msg = "Unrecognised State parameter: " + stateName;
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
         }

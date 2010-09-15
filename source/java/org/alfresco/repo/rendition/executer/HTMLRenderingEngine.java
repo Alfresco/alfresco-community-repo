@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,7 +37,10 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionLocation;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -46,18 +50,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.ContainerAwareDetector;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.ContentHandlerDecorator;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -78,6 +80,13 @@ import org.xml.sax.helpers.AttributesImpl;
 public class HTMLRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(HTMLRenderingEngine.class);
+    
+    /**
+     * This optional parameter, when set to true, causes only the
+     *  contents of the HTML body to be written out as the rendition.
+     * By default, the whole of the HTML document is used.
+     */
+    public static final String PARAM_BODY_CONTENTS_ONLY = "bodyContentsOnly";
 
     /*
      * Action constants
@@ -94,6 +103,16 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
     public void setDictionaryService(DictionaryService dictionaryService) {
        this.dictionaryService = dictionaryService;
     }
+    
+    
+    @Override
+    protected Collection<ParameterDefinition> getParameterDefinitions() {
+       Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
+       paramList.add(new ParameterDefinitionImpl(PARAM_BODY_CONTENTS_ONLY, DataTypeDefinition.BOOLEAN, false,
+             getParamDisplayLabel(PARAM_BODY_CONTENTS_ONLY)));
+       return paramList;
+    }
+
 
     /*
      * (non-Javadoc)
@@ -229,8 +248,9 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      * Builds a Tika-compatible SAX content handler, which will
      *  be used to generate+capture the XHTML
      */
-    private ContentHandler buildContentHandler(Writer output) 
+    private ContentHandler buildContentHandler(Writer output, RenderingContext context) 
     {
+       // Create the main transformer
        SAXTransformerFactory factory = (SAXTransformerFactory)
                 SAXTransformerFactory.newInstance();
        TransformerHandler handler;
@@ -245,7 +265,19 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        handler.setResult(new StreamResult(output));
        handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "xml");
        
-       return handler;
+       // Change the image links as they go past
+       ContentHandler contentHandler = new TikaImageRewritingContentHandler(
+             handler, getImagesDirectoryName(context)
+       );
+       
+       // If required, wrap it to only return the body 
+       boolean bodyOnly = context.getParamWithDefault(PARAM_BODY_CONTENTS_ONLY, false);
+       if(bodyOnly) {
+          contentHandler = new BodyContentHandler(contentHandler);
+       }
+       
+       // All done
+       return contentHandler;
     }
     
     /**
@@ -257,10 +289,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        
        // Setup things to parse with
        StringWriter sw = new StringWriter();
-       ContentHandler handler = new TikaImageRewritingContentHandler( 
-                   buildContentHandler(sw),
-                   getImagesDirectoryName(context)
-       );
+       ContentHandler handler = buildContentHandler(sw, context);
        
        // Tell Tika what we're dealing with
        Metadata metadata = new Metadata();
@@ -290,10 +319,24 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
           throw new RenditionServiceException("Tika HTML Conversion Failed", e);
        }
        
+       // As a string
+       String html = sw.toString();
+       
+       // If we're doing body-only, remove all the html namespaces
+       //  that will otherwise clutter up the document
+       boolean bodyOnly = context.getParamWithDefault(PARAM_BODY_CONTENTS_ONLY, false);
+       if(bodyOnly) {
+          html = html.replaceAll("<p xmlns=\"http://www.w3.org/1999/xhtml\"","<p");
+          html = html.replaceAll("<h(\\d) xmlns=\"http://www.w3.org/1999/xhtml\"","<h\\1");
+          html = html.replaceAll("<div xmlns=\"http://www.w3.org/1999/xhtml\"","<div");
+          html = html.replaceAll("<table xmlns=\"http://www.w3.org/1999/xhtml\"","<table");
+          html = html.replaceAll("&#13;","");
+       }
+       
        // Save it
        ContentWriter contentWriter = context.makeContentWriter();
        contentWriter.setMimetype("text/html");
-       contentWriter.putContent( sw.toString() );
+       contentWriter.putContent( html );
     }
     
     
@@ -387,12 +430,11 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      * A content handler that re-writes image src attributes,
      *  and passes everything else on to the real one.
      */
-    private class TikaImageRewritingContentHandler implements ContentHandler {
-       private ContentHandler handler;
+    private class TikaImageRewritingContentHandler extends ContentHandlerDecorator {
        private String imageFolder;
        
        private TikaImageRewritingContentHandler(ContentHandler handler, String imageFolder) {
-          this.handler = handler;
+          super(handler);
           this.imageFolder = imageFolder;
        }
 
@@ -419,58 +461,11 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
                    }
                 }
              }
-             handler.startElement(uri, localName, qName, attrs);
+             super.startElement(uri, localName, qName, attrs);
           } else {
              // For any other tag, pass through as-is
-             handler.startElement(uri, localName, qName, origAttrs);
+             super.startElement(uri, localName, qName, origAttrs);
           }
-       }
-
-       @Override
-       public void characters(char[] ch, int start, int length)
-       throws SAXException {
-          handler.characters(ch, start, length);
-       }
-       @Override
-       public void ignorableWhitespace(char[] ch, int start, int length)
-       throws SAXException {
-          handler.ignorableWhitespace(ch, start, length);
-       }
-       
-       @Override
-       public void endDocument() throws SAXException {
-          handler.endDocument();
-       }
-       @Override
-       public void endElement(String uri, String localName, String qName)
-       throws SAXException {
-          handler.endElement(uri, localName, qName);
-       }
-       @Override
-       public void endPrefixMapping(String prefix) throws SAXException {
-          handler.endPrefixMapping(prefix);
-       }
-       @Override
-       public void processingInstruction(String target, String data)
-       throws SAXException {
-          handler.processingInstruction(target, data);
-       }
-       @Override
-       public void setDocumentLocator(Locator locator) {
-          handler.setDocumentLocator(locator);
-       }
-       @Override
-       public void skippedEntity(String name) throws SAXException {
-          handler.skippedEntity(name);
-       }
-       @Override
-       public void startDocument() throws SAXException {
-          handler.startDocument();
-       }
-       @Override
-       public void startPrefixMapping(String prefix, String uri)
-       throws SAXException {
-          handler.startPrefixMapping(prefix, uri);
        }
     }
 }

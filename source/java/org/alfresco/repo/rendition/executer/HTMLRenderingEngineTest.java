@@ -194,6 +194,35 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
        );
        String html = reader.getContentString();
        assertEquals("<?xml", html.substring(0, 5));
+       assertTrue("HTML wrong:\n"+html, html.contains("<html"));
+       assertTrue("HTML wrong:\n"+html, html.contains("<head>"));
+       assertTrue("HTML wrong:\n"+html, html.contains("<body>"));
+       
+       assertTrue("HTML wrong:\n"+html, html.contains("<p>The quick brown fox"));
+       
+       
+       // Now do a body-only one, check that we still got the 
+       //  contents, but not the html surround
+       def.setParameterValue(
+             HTMLRenderingEngine.PARAM_BODY_CONTENTS_ONLY, Boolean.TRUE
+       );
+       rendition = renditionService.render(sourceDoc, def);
+       assertNotNull(rendition);
+       
+       htmlNode = rendition.getChildRef();
+       assertEquals(true, nodeService.exists(htmlNode));
+       
+       reader = contentService.getReader(
+             htmlNode, ContentModel.PROP_CONTENT
+       );
+       html = reader.getContentString();
+       assertEquals("<?xml", html.substring(0, 5));
+       assertFalse("Body wrong:\n"+html, html.contains("<html"));
+       assertFalse("Body wrong:\n"+html, html.contains("<head>"));
+       assertFalse("Body wrong:\n"+html, html.contains("<body>"));
+       
+       assertTrue("HTML wrong:\n"+html, html.contains("<p>The quick brown fox"));
+       assertTrue("HTML wrong:\n"+html, html.contains("</p>"));
     }
     
     /**

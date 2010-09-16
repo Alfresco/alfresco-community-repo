@@ -278,27 +278,6 @@ public class AVMLockingServiceTest extends TestCase
         assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
         assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
         assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
-        
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                try
-                {
-                    lockingService.modifyLock(
-                            testWP1, "ScrapHeap/Adam/plans.txt", "Spike",
-                            testWP1, "TheInitiative/Adam/plans.txt", EMPTY_MAP);
-                    fail("Failed to prevent lock modification by non-owner.");
-                }
-                catch (AVMLockingException e)
-                {
-                    // Expected
-                }
-                
-                return null;
-            }
-        }, "Buffy");
     }
     
     /**

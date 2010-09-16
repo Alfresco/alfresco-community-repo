@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WebDAVModel;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,13 +52,13 @@ public class LockMethod extends WebDAVMethod
 {
     public static final String EMPTY_NS = "";
     
-    private int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
+    protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
     
-    private LockInfo lockInfo = new LockInfo();
+    protected LockInfo lockInfo = new LockInfo();
 
-    private String m_scope = null;
+    protected String m_scope = null;
 
-    private String lockToken= null;
+    protected String lockToken= null;
 
     /**
      * Default constructor
@@ -202,7 +202,7 @@ public class LockMethod extends WebDAVMethod
                             case Node.TEXT_NODE:
                                 break;
                             case Node.ELEMENT_NODE:
-                                m_scope = propertiesNode.getNodeName();
+                                m_scope = propertiesNode.getLocalName();
                                 break;
                             }
                         }
@@ -259,7 +259,7 @@ public class LockMethod extends WebDAVMethod
             else
             {
                // make sure folder structure is present
-               dirInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
+               dirInfo = FileFolderUtil.makeFolders(fileFolderService, rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
             }
             
             if (dirInfo == null)
@@ -311,7 +311,7 @@ public class LockMethod extends WebDAVMethod
      * @param userName String
      * @exception WebDAVServerException
      */
-    private final void createLock(FileInfo lockNode, String userName) throws WebDAVServerException
+    protected final void createLock(FileInfo lockNode, String userName) throws WebDAVServerException
     {
         LockService lockService = getLockService();
 
@@ -349,7 +349,7 @@ public class LockMethod extends WebDAVMethod
      * @param userName String
      * @exception WebDAVServerException
      */
-    private final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
+    protected final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
     {
         LockService lockService = getLockService();
 
@@ -363,7 +363,7 @@ public class LockMethod extends WebDAVMethod
     /**
      * Generates the XML lock discovery response body
      */
-    private void generateResponse(NodeRef lockNode, String userName) throws Exception
+    protected void generateResponse(NodeRef lockNode, String userName) throws Exception
     {
         XMLWriter xml = createXMLWriter();
 

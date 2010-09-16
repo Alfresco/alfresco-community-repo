@@ -69,7 +69,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
    private ActionTrackingService actionTrackingService;
    private TransactionService transactionService;
    private ReplicationDefinitionPersisterImpl replicationDefinitionPersister;
-   private Boolean readOnly;
+   private ReplicationParams replicationParams;
    
    /**
     * By default, we lock for 30 minutes
@@ -136,13 +136,13 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
    }
 
    /**
-    * Sets transfer read only default value
+    * Sets Replication Parameters
     *  
-    * @param readOnly true => mark items in destination repository as read only
+    * @param replicationParams  replication parameters
     */
-   public void setReadOnly(Boolean readOnly)
+   public void setReplicationParams(ReplicationParams replicationParams)
    {
-       this.readOnly = readOnly;
+       this.replicationParams = replicationParams;
    }
    
    @Override
@@ -187,7 +187,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          new TransferDefinition();
       transferDefinition.setNodes(toTransfer);
       transferDefinition.setSync(true);
-      transferDefinition.setReadOnly(readOnly == null ? true : readOnly);
+      transferDefinition.setReadOnly(replicationParams.getTransferReadOnly());
       
       // Exclude aspects from transfer
       // NOTE: this list of aspects should be synced up with the NodeCrawler in expandPayload to

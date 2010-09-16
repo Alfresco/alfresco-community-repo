@@ -89,6 +89,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
    
     private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
+    private ReplicationParams replicationParams;
     private TransactionService transactionService;
     private TransferService2 transferService;
     private ContentService contentService;
@@ -129,6 +130,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     {
         replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
         replicationService = (ReplicationService) ctx.getBean("replicationService");
+        replicationParams = (ReplicationParams) ctx.getBean("replicationParams");
         transactionService = (TransactionService) ctx.getBean("transactionService");
         transferService = (TransferService2) ctx.getBean("transferService2");
         contentService = (ContentService) ctx.getBean("contentService");
@@ -935,7 +937,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        TransferDefinition td = replicationActionExecutor.buildTransferDefinition(rd, nodes);
        assertEquals(true, td.isSync());
-       assertEquals(true, td.isReadOnly());
+       assertEquals(replicationParams.getTransferReadOnly(), td.isReadOnly());
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));

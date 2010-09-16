@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -70,7 +71,22 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
         /**
          * Work out whether this is a deleted node or not
          */
-        if(nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) || status.isDeleted())
+        if (status.isDeleted())
+        {
+            //This node used to exist but doesn't any more. We can't discover anything about its original parentage
+            //so we will create a dummy record that contains the correct noderef but dummy parent association and 
+            //parent path. This will keep the target side happy, and will result in the node being deleted 
+            //if a node with the same noderef exists on the target.
+            TransferManifestDeletedNode deletedNode = new TransferManifestDeletedNode();
+            deletedNode.setNodeRef(nodeRef);
+            ChildAssociationRef dummyPrimaryParent = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, 
+                    nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dummy"), 
+                    nodeRef, true, -1);
+            deletedNode.setPrimaryParentAssoc(dummyPrimaryParent);
+            deletedNode.setParentPath(new Path());
+            return deletedNode;
+        }
+        else if(nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
         {
             if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED))
             {

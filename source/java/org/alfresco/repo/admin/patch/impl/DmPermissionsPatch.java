@@ -107,6 +107,7 @@ public class DmPermissionsPatch extends AbstractPatch
                             catch (IllegalStateException e)
                             {
                                 // Can't be set.  We're done here.
+                                toDo = 0L;
                                 running = false;
                                 return 0L;
                             }

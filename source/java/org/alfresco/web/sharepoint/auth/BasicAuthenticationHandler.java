@@ -33,10 +33,11 @@ import org.alfresco.web.bean.repository.User;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * <p>BASIC web authentication implementation.</p>
+ * <p>
+ * BASIC web authentication implementation.
+ * </p>
  * 
  * @author PavelYur
- *
  */
 public class BasicAuthenticationHandler extends AbstractAuthenticationHandler implements SharepointConstants
 {
@@ -44,68 +45,96 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
 
     private final static String BASIC_START = "BASIC";
 
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.SharepointAuthenticationHandler#authenticateRequest(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.webdav.auth.SharepointAuthenticationHandler#authenticateRequest(javax.servlet.ServletContext,
+     * javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     public boolean authenticateRequest(ServletContext context, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException
     {
-        String authHdr = request.getHeader(HEADER_AUTHORIZATION);
-        if (authHdr != null && authHdr.length() > 5 && authHdr.substring(0, 5).equalsIgnoreCase(BASIC_START))
+        if (isUserAuthenticated(context, request))
         {
-            String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
-            String username = null;
-            String password = null;
+            return true;
+        }
+        else
+        {
+            // Unlike multi-stage authentication protocols like Kerberos / NTLM we have only one possible response to an
+            // unauthenticated user
+            restartLoginChallenge(context, request, response);
+            return false;
+        }
+    }
 
-            int pos = basicAuth.indexOf(":");
-            if (pos != -1)
+    /**
+     * Returns <code>true</code> if the user is authenticated and their details are cached in the session
+     * 
+     * @param context
+     *            the servlet context
+     * @param request
+     *            the servlet request
+     * @return <code>true</code>, if the user is authenticated
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             On other errors.
+     */
+    public boolean isUserAuthenticated(ServletContext context, HttpServletRequest request) throws IOException,
+            ServletException
+    {
+        String authHdr = request.getHeader(HEADER_AUTHORIZATION);
+        HttpSession session = request.getSession(false);
+        SessionUser user = session == null ? null : (SessionUser) session.getAttribute(USER_SESSION_ATTRIBUTE);
+        if (user == null)
+        {
+            if (authHdr != null && authHdr.length() > 5 && authHdr.substring(0, 5).equalsIgnoreCase(BASIC_START))
             {
-                username = basicAuth.substring(0, pos);
-                password = basicAuth.substring(pos + 1);
-            }
-            else
-            {
-                username = basicAuth;
-                password = "";
-            }
-
-            try
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("Authenticating user '" + username + "'");
-                
-                authenticationService.authenticate(username, password.toCharArray());
-                
-                // Normalize the user ID taking into account case sensitivity settings
-                username = authenticationService.getCurrentUserName();
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("Authenticated user '" + username + "'");
-                
-                request.getSession().setAttribute(USER_SESSION_ATTRIBUTE, new User(username, authenticationService.getCurrentTicket(), personService.getPerson(username)));                
-                
-                return true;
-            }
-            catch (AuthenticationException ex)
-            {
-                // Do nothing, user object will be null
+                String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
+                String username = null;
+                String password = null;
+    
+                int pos = basicAuth.indexOf(":");
+                if (pos != -1)
+                {
+                    username = basicAuth.substring(0, pos);
+                    password = basicAuth.substring(pos + 1);
+                }
+                else
+                {
+                    username = basicAuth;
+                    password = "";
+                }
+    
+                try
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Authenticating user '" + username + "'");
+    
+                    authenticationService.authenticate(username, password.toCharArray());
+    
+                    // Normalize the user ID taking into account case sensitivity settings
+                    username = authenticationService.getCurrentUserName();
+    
+                    if (logger.isDebugEnabled())
+                        logger.debug("Authenticated user '" + username + "'");
+    
+                    request.getSession()
+                            .setAttribute(
+                                    USER_SESSION_ATTRIBUTE,
+                                    new User(username, authenticationService.getCurrentTicket(), personService
+                                            .getPerson(username)));
+    
+                    return true;
+                }
+                catch (AuthenticationException ex)
+                {
+                    // Do nothing, user object will be null
+                }
             }
         }
         else
         {
-            HttpSession session = request.getSession(false);
-            if (session == null)
-            {
-                return false;
-            }
-
-            SessionUser user = (SessionUser) session
-                    .getAttribute(USER_SESSION_ATTRIBUTE);
-            if (user == null)
-            {
-                return false;
-            }
             try
             {
                 authenticationService.validate(user.getTicket());
@@ -114,13 +143,12 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
             catch (AuthenticationException ex)
             {
                 session.invalidate();
-            }                        
+            }
         }
 
         return false;
     }
 
-    
     @Override
     public String getWWWAuthenticate()
     {

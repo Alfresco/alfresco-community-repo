@@ -190,15 +190,6 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
         case LOCK_NOT_OWNER:
         case LOCK_OWNER:
-            if (currentLockState.equals(LockState.LOCK_NOT_OWNER))
-            {
-                // The lock is held by another user
-                if (! AuthenticationUtil.isRunAsUserTheSystemUser())
-                {
-                    String currentLockOwner = getLockOwner(avmStore, path);
-                    throw new AVMLockingException("avmlockservice.locked", path, currentLockOwner);
-                }
-            }
             // Remove the lock first
             attributeService.removeAttribute(KEY_AVM_LOCKS, avmStore, path);
             HashMap<String, String> lockAttributes = createLockAttributes(lockOwner, lockData);

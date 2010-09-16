@@ -25,6 +25,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Service to handle AVM locking.
  * 
+ * Note that this service is a low-level service and does no "self-permissioning"
+ * e.g. checking ownership of locks.
+ * 
  * @author Derek Hulley, janv
  */
 public interface AVMLockingService

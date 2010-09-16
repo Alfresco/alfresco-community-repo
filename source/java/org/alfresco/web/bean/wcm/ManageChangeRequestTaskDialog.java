@@ -134,6 +134,8 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          for (AVMDifference diff : diffs)
          {
             // move the lock for this path from the user workflow sandbox to the users main store
+            // we need to do this because the workflow endTask will trigger deletion of the (user)
+            // workflow store which will in turn recursively remove all the locks.
             String diffSourcePath = diff.getSourcePath();
             String diffSourceAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffSourcePath);
             String sourceWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
@@ -147,12 +149,12 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
                      "   Source: " + diffSourcePath + "\n" +
                      "   Target: " + diffTargetPath);
             }
-            // Modify the lock
+
             Map<String, String> lockAttributes = Collections.singletonMap(
-                  WCMUtil.LOCK_KEY_STORE_NAME, diffTargetAvmStore);
+                    WCMUtil.LOCK_KEY_STORE_NAME, diffTargetAvmStore);
             boolean modified = this.getAvmLockingService().modifyLock(
-                     sourceWebProject, AVMUtil.getStoreRelativePath(diffSourcePath), username,
-                     sourceWebProject, null, lockAttributes);
+                    sourceWebProject, AVMUtil.getStoreRelativePath(diffSourcePath), username,
+                    sourceWebProject, AVMUtil.getStoreRelativePath(diffTargetPath), lockAttributes);
             if (modified && logger.isDebugEnabled())
             {
                logger.debug(

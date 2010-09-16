@@ -122,7 +122,8 @@ public class SiteInfoImpl implements SiteInfo
      */
     public String getTitle()
     {
-        return title;
+        // title can be used for sorting, so ensure it's not null
+        return (title != null ? title : "");
     }
     
     /**

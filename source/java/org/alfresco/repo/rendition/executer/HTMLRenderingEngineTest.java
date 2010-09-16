@@ -344,7 +344,6 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
           String html = reader.getContentString();
           assertEquals("<?xml", html.substring(0, 5));
           
-if(name.endsWith(".docx")) {          
           // Check that the html has the img tags
           assertEquals(
                 "Couldn't find img tag in html:\n" + html,
@@ -357,7 +356,6 @@ if(name.endsWith(".docx")) {
                 "Couldn't find correct img src in html:\n" + expSource + "\n" + html,
                 true, html.contains(expSource)
           );
-}
           
           // Check we got an image folder
           int numItems = nodeService.getChildAssocs(targetFolder).size();

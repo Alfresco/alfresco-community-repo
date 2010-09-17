@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>assign-workflow</shortname>
-  <description>Document List Action - Assign Workflow</description>
-  <url>/slingshot/doclib/action/assign-workflow</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

@@ -238,6 +238,34 @@ public class HttpClientTransmitterImplTest extends TestCase
         assertTrue(Arrays.deepEquals(expectedException.getMsgParams(), receivedException.getMsgParams()));
     }
     
+    public void testBeginFailure() throws Exception
+    {
+        final ExceptionJsonSerializer errorSerializer = new ExceptionJsonSerializer();
+        final TransferException expectedException = new TransferException("my message id", new Object[] {"param1", "param2"}); 
+        when(mockedHttpClient.executeMethod(any(HostConfiguration.class), any(HttpMethod.class), 
+                any(HttpState.class))).thenReturn(500);
+        doAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable
+            {
+                JSONObject errorObject = errorSerializer.serialize(expectedException);
+                return errorObject.toString();
+            }
+        }).when(mockedHttpMethodFactory.latestPostMethod).getResponseBodyAsString();
+        
+        try
+        {
+            transmitter.begin(target);
+            fail();
+        }
+        catch(TransferException ex)
+        {
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMsgId(), ex.getMsgId());
+            assertTrue(Arrays.deepEquals(expectedException.getMsgParams(), ex.getMsgParams()));
+        }
+    }
+    
     private static class CustomSocketFactory implements SecureProtocolSocketFactory 
     {
 

@@ -60,7 +60,6 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -171,24 +170,26 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     {
         if (response != 200)
         {
-            String errorId = null;
-            String[] errorParams = null;
-            try {
+            Throwable error = null;
+            try 
+            {
                 log.error("Received \"unsuccessful\" response code from target server: " + response);
                 String errorPayload = method.getResponseBodyAsString();
                 JSONObject errorObj = new JSONObject(errorPayload);
-                errorId = errorObj.getString("alfrescoErrorId");
-                JSONArray errorParamArray = errorObj.getJSONArray("alfrescoErrorParams");
-                int length = errorParamArray.length();
-                errorParams = new String[length];
-                for (int i = 0; i < length; ++i) 
-                {
-                    errorParams[i] = errorParamArray.getString(i);
-                }
-            } catch (Exception ex) {
+                error = rehydrateError(errorObj);
+            } 
+            catch (Exception ex) 
+            {
                 throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[] {methodName, response});
             }
-            throw new TransferException(errorId, errorParams);
+            if ((error != null) && TransferException.class.isAssignableFrom(error.getClass()))
+            {
+                throw (TransferException)error;
+            }
+            else
+            {
+                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, error);
+            }
         }
     }
 

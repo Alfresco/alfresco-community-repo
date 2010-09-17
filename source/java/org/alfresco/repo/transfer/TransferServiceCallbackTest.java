@@ -21,6 +21,7 @@ package org.alfresco.repo.transfer;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -407,10 +408,6 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventCommittingStatus();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
-            event = new TransferEventCommittingStatus();
-            event.setTransferState(TransferState.COMMITTING);
-            expectedEvents.add(event);
 
             event = new TransferEventEndState();
             event.setTransferState(TransferState.COMMITTING);
@@ -466,6 +463,75 @@ public class TransferServiceCallbackTest extends TestCase
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
             
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+
+            event = new TransferEventError();
+            event.setTransferState(TransferState.ERROR);
+            ((TransferEventError)event).setException((Exception)ex.getCause());
+            expectedEvents.add(event);
+            
+            verifyCallback(expectedEvents);
+        }
+    }
+
+    public void testSendContentFailed()
+    {
+        TransferProgress status0 = new TransferProgress();
+        status0.setStatus(Status.CANCELLED);
+        status0.setCurrentPosition(0);
+        status0.setEndPosition(0);
+        TransferProgress[] statuses = new TransferProgress[] {status0};
+        configureBasicMockTransmitter(statuses);
+        when(mockedTransferTransmitter.begin(target)).thenReturn(transfer);
+        doThrow(new TransferException("Simulate failure to write content")).when(mockedTransferTransmitter).sendManifest(any(Transfer.class), any(File.class), any(OutputStream.class));
+        when(mockedTransferTransmitter.getStatus(transfer)).thenReturn(statuses[0]);
+        
+        TransferDefinition transferDef = new TransferDefinition();
+        transferDef.setNodes(folder1, file1, file2, file3);
+        try
+        {
+            transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
+            fail("Transfer expected to throw an exception, but it didn't.");
+        }
+        catch(TransferFailureException ex)
+        {
+            List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
+            TransferEventImpl event;
+
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventBegin();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.START);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventSendingSnapshot();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEndState();
+            event.setTransferState(TransferState.SENDING_SNAPSHOT);
+            expectedEvents.add(event);
+            
+            event = new TransferEventEnterState();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+            
+            event = new TransferEventReport();
+            event.setTransferState(TransferState.ERROR);
+            expectedEvents.add(event);
+
             event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);

@@ -660,14 +660,6 @@ public class TransferServiceImpl2 implements TransferService2
                             }
                         }
 
-                        // notify transfer progress
-                        if (progress.getCurrentPosition() != pollPosition)
-                        {
-                            pollPosition = progress.getCurrentPosition();
-                            logger.debug("committing :" + pollPosition);
-                            eventProcessor.committing(progress.getEndPosition(), pollPosition);
-                        }
-
                         // check status
                         if (progress.getStatus() == TransferProgress.Status.ERROR)
                         {
@@ -694,7 +686,16 @@ public class TransferServiceImpl2 implements TransferService2
                             clientState = ClientTransferState.Finished;
                             break;
                         }
-                        else if (progress.getStatus() == TransferProgress.Status.COMPLETE)
+                        
+                        // notify transfer progress
+                        if (progress.getCurrentPosition() != pollPosition)
+                        {
+                            pollPosition = progress.getCurrentPosition();
+                            logger.debug("committing :" + pollPosition);
+                            eventProcessor.committing(progress.getEndPosition(), pollPosition);
+                        }
+                        
+                        if (progress.getStatus() == TransferProgress.Status.COMPLETE)
                         {
                             clientState = ClientTransferState.Finished;
                             break;
@@ -828,7 +829,17 @@ public class TransferServiceImpl2 implements TransferService2
             {
                 logger.debug("Exception - unable to transfer", e);
                 failureException = e;
-                clientState = ClientTransferState.Finished;
+                
+                if (transfer != null && (clientState == ClientTransferState.Begin || clientState == ClientTransferState.Prepare))
+                {
+                    // we must first inform the target repository that a client failure has occurred to allow it to
+                    // clean up appropriately, too
+                    clientState = ClientTransferState.Cancel;
+                }
+                else
+                {
+                    clientState = ClientTransferState.Finished;
+                }
             }
         }
         

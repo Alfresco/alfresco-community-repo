@@ -156,7 +156,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         wsPropertyDef.setPropertyType(PROPERTY_TYPE_ENUM_MAPPING.get(propertyDefinition.getDataType()));
         wsPropertyDef.setCardinality(CARDINALITY_ENUM_MAPPING.get(propertyDefinition.getCardinality()));
         wsPropertyDef.setUpdatability(UPDATABILITY_ENUM_MAPPING.get(propertyDefinition.getUpdatability()));
-        wsPropertyDef.setInherited(!typeDefinition.getOwnedPropertyDefinitions().containsKey(propertyDefinition.getPropertyId()));
+        wsPropertyDef.setInherited(!typeDefinition.getOwnedPropertyDefinitions().containsKey(propertyDefinition.getPropertyId().getId()));
         wsPropertyDef.setRequired(propertyDefinition.isRequired());
         wsPropertyDef.setQueryable(propertyDefinition.isQueryable());
         wsPropertyDef.setOrderable(propertyDefinition.isOrderable());
@@ -344,7 +344,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
         }
 
-        cmisTypeDefinition.setQueryName(typeDefinition.getBaseType().getQueryName());
         cmisTypeDefinition.setDescription(typeDefinition.getDescription());
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
         cmisTypeDefinition.setFileable(typeDefinition.isFileable());

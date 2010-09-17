@@ -195,7 +195,7 @@ var Evaluator =
                status[wcStatus] = true;
             }
             // Locked?
-            else if (node.isLocked)
+            else if (node.isLocked && !node.hasAspect("trx:transferred"))
             {
                var lockStatus = "";
                lockedBy = Common.getPerson(node.properties["cm:lockOwner"]);

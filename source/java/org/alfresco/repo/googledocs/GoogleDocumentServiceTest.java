@@ -231,7 +231,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
     	return result;
     }
     
-    public void testCreateSheet() throws Exception
+    public void xtestCreateSheet() throws Exception
     {
         DocsService client = new DocsService("Alfresco");
         client.setUserCredentials("rwetherall@alfresco.com", "123test123");
@@ -269,7 +269,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         client.insert(new URL(((MediaContent)childFolderEntry.getContent()).getUri()), newEntry);            
     }
     
-    public void testGoogleDocUploadDownload() throws Exception
+    public void xtestGoogleDocUploadDownload() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
     	{
@@ -305,7 +305,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         
     }
     
-    public void testCheckOutCheckIn() throws Exception
+    public void xtestCheckOutCheckIn() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
     	{

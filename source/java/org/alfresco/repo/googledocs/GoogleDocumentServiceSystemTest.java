@@ -63,7 +63,7 @@ import com.google.gdata.data.media.MediaStreamSource;
 import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 
-public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsModel
+public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleDocsModel
 {
     private NodeService nodeService;
     private GoogleDocsService googleDocsService;
@@ -231,45 +231,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
     	return result;
     }
     
-    public void xtestCreateSheet() throws Exception
-    {
-        DocsService client = new DocsService("Alfresco");
-        client.setUserCredentials("rwetherall@alfresco.com", "123test123");
-        
-        // Create the folder entry
-        FolderEntry folder = new FolderEntry();
-        folder.setTitle(new PlainTextConstruct("RootFolder" + GUID.generate()));
-        FolderEntry rootFolderEntry = client.insert(
-                new URL("http://docs.google.com/feeds/default/private/full"),
-                folder);   
-        
-        FolderEntry folder2 = new FolderEntry();
-        folder2.setTitle(new PlainTextConstruct("ChildFolder" + GUID.generate()));
-        FolderEntry childFolderEntry = client.insert(
-                new URL(((MediaContent)rootFolderEntry.getContent()).getUri()),
-                folder2);   
-        
-        MediaContent mediaContent = new MediaContent();            
-        mediaContent.setMimeType(new ContentType(MimetypeMap.MIMETYPE_EXCEL));
-        
-        InputStream is = getClass().getClassLoader().getResourceAsStream("alfresco/subsystems/googledocs/default/testBook.xls");
-        mediaContent.setMediaSource(new MediaStreamSource(is, MediaType.XLS.getMimeType()));
-        
-        System.out.println(" **** " + MimetypeMap.MIMETYPE_EXCEL + " = " + MediaType.XLS.getMimeType());
-        
-        
-        SpreadsheetEntry  newEntry = new SpreadsheetEntry();
-        newEntry = new SpreadsheetEntry();
-        
-        
-
-        newEntry.setContent(mediaContent);
-        newEntry.setTitle(new PlainTextConstruct("mytestdoc.xls"));
-
-        client.insert(new URL(((MediaContent)childFolderEntry.getContent()).getUri()), newEntry);            
-    }
-    
-    public void xtestGoogleDocUploadDownload() throws Exception
+    public void testGoogleDocUploadDownload() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
     	{
@@ -305,7 +267,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         
     }
     
-    public void xtestCheckOutCheckIn() throws Exception
+    public void testCheckOutCheckIn() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
     	{

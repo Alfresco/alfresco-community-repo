@@ -140,7 +140,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                            destModified != null &&
                            srcModified instanceof Date && 
                            destModified instanceof Date &&
-                           ((Date)srcModified).getTime() >= ((Date)destModified).getTime())
+                           ((Date)srcModified).getTime() <= ((Date)destModified).getTime())
                         {
                             if(log.isDebugEnabled())
                             {

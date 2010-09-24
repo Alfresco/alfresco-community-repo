@@ -18,20 +18,26 @@
  */
 package org.alfresco.repo.tenant;
 
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import java.util.List;
+
+import org.alfresco.repo.admin.patch.AppliedPatch;
+import org.alfresco.repo.admin.patch.PatchService;
+import org.alfresco.repo.admin.patch.impl.MigrateAttrTenantsPatch;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
- * This component is responsible for ensuring that patches are applied
- * at the appropriate time.
+ * This component is responsible for starting the enabled tenants (if MT is enabled).
  * 
- * @author Derek Hulley
+ * @author Derek Hulley, janv
  */
 public class MultiTenantBootstrap extends AbstractLifecycleBean
 {
     private TenantAdminService tenantAdminService;
-
+    private PatchService patchService;
+    private MigrateAttrTenantsPatch migrateAttrTenantsPatch;
+    
     /**
      * @param tenantAdminService        the service that will perform the bootstrap
      */
@@ -39,12 +45,47 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
     {
         this.tenantAdminService = tenantAdminService;
     }
-
+    
+    public void setPatchService(PatchService patchService)
+    {
+        this.patchService = patchService;
+    }
+    
+    public void setMigrateAttrTenantsPatch(MigrateAttrTenantsPatch migrateAttrTenantsPatch)
+    {
+        this.migrateAttrTenantsPatch = migrateAttrTenantsPatch;
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);
-        tenantAdminService.startTenants();
+        PropertyCheck.mandatory(this, "patchService", patchService);
+        
+        if (tenantAdminService.isEnabled())
+        {
+            // Upgrade to 3.4 (chicken & egg)
+            if (tenantAdminService.getAllTenants().size() == 0)
+            {
+                boolean applied = false;
+                List<AppliedPatch> appliedPatches = patchService.getPatches(null, null);
+                for (AppliedPatch appliedPatch : appliedPatches)
+                {
+                    if (appliedPatch.getId().equals("patch.migrateAttrTenants"))
+                    {
+                        applied = true;
+                        break;
+                    }
+                }
+                
+                if (! applied)
+                {
+                    migrateAttrTenantsPatch.apply();
+                }
+            }
+            
+            tenantAdminService.startTenants();
+        }
     }
 
     @Override

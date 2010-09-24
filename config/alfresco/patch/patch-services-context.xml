@@ -2215,18 +2215,32 @@
         </property>
     </bean>
     
+    <!--  
+         Note: MT-specific (ALF-4875)
+         
+               This patch will be applied directly (by MultiTenantBootstrap) before any tenants are started
+               and hence before any outstanding patches are applied (ie. prior to patch execution.
+               
+               Hence, fixesToSchema/targetSchema is specified as 0/1 (rather than 4106/4107) to avoid error 
+               that patch has already been applied.
+    -->
     <bean id="patch.migrateAttrTenants" class="org.alfresco.repo.admin.patch.impl.MigrateAttrTenantsPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrTenants</value></property>
         <property name="description"><value>patch.migrateAttrTenants.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4106</value></property>
-        <property name="targetSchema"><value>4107</value></property>
+        <property name="fixesToSchema"><value>0</value></property>
+        <property name="targetSchema"><value>1</value></property>
         <property name="applyToTenants"><value>false</value></property>
         <property name="attributeService">
             <ref bean="attributeService"/>
         </property>
         <property name="patchDAO">
             <ref bean="patchDAO"/>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
+            </list>
         </property>
     </bean>
     
@@ -2243,6 +2257,11 @@
         <property name="patchDAO">
             <ref bean="patchDAO"/>
         </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
+            </list>
+        </property>
     </bean>
     
     <bean id="patch.migrateAttrPropBackedBeans" class="org.alfresco.repo.admin.patch.impl.MigrateAttrPropBackedBeanPatch" parent="basePatch">
@@ -2258,6 +2277,11 @@
         <property name="patchDAO">
             <ref bean="patchDAO"/>
         </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
+            </list>
+        </property>
     </bean>
     
     <bean id="patch.migrateAttrChainingURS" class="org.alfresco.repo.admin.patch.impl.MigrateAttrChainingURSPatch" parent="basePatch">
@@ -2272,6 +2296,11 @@
         </property>
         <property name="patchDAO">
             <ref bean="patchDAO"/>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
+            </list>
         </property>
     </bean>
     

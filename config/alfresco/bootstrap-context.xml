@@ -308,7 +308,9 @@
     
     <!-- Bootstrap MT (multi-tenancy) if applicable -->
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
-        <property name="tenantAdminService" ref="tenantAdminService" />
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+        <property name="patchService" ref="PatchService"/>
+        <property name="migrateAttrTenantsPatch" ref="patch.migrateAttrTenants"/>
     </bean>
        
     <!-- Bootstrap any extensions -->

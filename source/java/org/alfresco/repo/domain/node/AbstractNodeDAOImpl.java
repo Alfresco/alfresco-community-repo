@@ -2622,6 +2622,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return parentAssocs.getPrimaryParentAssoc();
     }
     
+    private static final int PARENT_ASSOCS_CACHE_FILTER_THRESHOLD = 2000;
+    
     public void getParentAssocs(
             Long childNodeId,
             QName assocTypeQName,
@@ -2629,9 +2631,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Boolean isPrimary,
             ChildAssocRefQueryCallback resultsCallback)
     {
-        // Do we go for the cache or do we have to query
         if (assocTypeQName == null && assocQName == null && isPrimary == null)
         {
+            // Go for the cache (and return all)
             ParentAssocsInfo parentAssocs = getParentAssocsCached(childNodeId);
             for (ChildAssocEntity assoc : parentAssocs.getParentAssocs().values())
             {
@@ -2643,7 +2645,30 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         else
         {
-            selectParentAssocs(childNodeId, assocTypeQName, assocQName, isPrimary, resultsCallback);
+            // Decide whether we query or filter
+            ParentAssocsInfo parentAssocs = getParentAssocsCacheOnly(childNodeId);
+            if ((parentAssocs == null) || (parentAssocs.getParentAssocs().size() > PARENT_ASSOCS_CACHE_FILTER_THRESHOLD))
+            {
+                // Query
+                selectParentAssocs(childNodeId, assocTypeQName, assocQName, isPrimary, resultsCallback);
+            }
+            else
+            {
+                // Go for the cache (and filter)
+                for (ChildAssocEntity assoc : parentAssocs.getParentAssocs().values())
+                {
+                    Pair<Long, ChildAssociationRef> assocPair = assoc.getPair(qnameDAO);
+                    if (((assocTypeQName == null) || (assocPair.getSecond().getTypeQName().equals(assocTypeQName))) &&
+                        ((assocQName == null) || (assocPair.getSecond().getQName().equals(assocQName))))
+                    {
+                        resultsCallback.handle(
+                                assocPair,
+                                assoc.getParentNode().getNodePair(),
+                                assoc.getChildNode().getNodePair());
+                    }
+                }
+            }
+            
         }
     }
     
@@ -2829,6 +2854,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
         }
         return cacheEntry.getSecond();
+    }
+    
+    private ParentAssocsInfo getParentAssocsCacheOnly(Long nodeId)
+    {
+        // can be null
+        return parentAssocsCache.getValue(nodeId);
     }
     
     /**

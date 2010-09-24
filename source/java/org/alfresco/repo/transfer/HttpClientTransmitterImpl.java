@@ -307,22 +307,22 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 
                 int responseStatus = httpClient.executeMethod(hostConfig, postSnapshotRequest, httpState);
                 checkResponseStatus("sendManifest", responseStatus, postSnapshotRequest);
-                
                
                 InputStream is = postSnapshotRequest.getResponseBodyAsStream();
-                InputStreamReader reader = new InputStreamReader(is);
                 
-                BufferedReader br = new BufferedReader(reader);                
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(result));
-
-                String s = br.readLine();
-                while(s != null)
+                final ReadableByteChannel inputChannel = Channels.newChannel(is);
+                final WritableByteChannel outputChannel = Channels.newChannel(result);
+                try
                 {
-                    bw.write(s);
-                    s = br.readLine();
+                    // copy the channels
+                    channelCopy(inputChannel, outputChannel);
                 }
-                bw.close();
-                           
+                finally
+                {
+                    inputChannel.close();
+                    outputChannel.close();
+                }
+                                           
                 return;
             } 
             catch (RuntimeException e)

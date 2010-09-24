@@ -780,17 +780,26 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             ContentData contentData = (ContentData) contentEntry.getValue();
             String contentUrl = contentData.getContentUrl();
-            String fileName = TransferCommons.URLToPartName(contentUrl);
-            File stagedFile = new File(stagingDir, fileName);
-            if (!stagedFile.exists())
+            if(contentUrl == null || contentUrl.isEmpty())
             {
-                error(MSG_REFERENCED_CONTENT_FILE_MISSING);
+                log.debug("content data is null or empty:" + nodeToUpdate);
+                ContentData cd = new ContentData(null, null, 0, null);
+                nodeService.setProperty(nodeToUpdate, contentEntry.getKey(), cd);
             }
-            ContentWriter writer = contentService.getWriter(nodeToUpdate, contentEntry.getKey(), true);
-            writer.setEncoding(contentData.getEncoding());
-            writer.setMimetype(contentData.getMimetype());
-            writer.setLocale(contentData.getLocale());
-            writer.putContent(stagedFile);
+            else
+            {
+                String fileName = TransferCommons.URLToPartName(contentUrl);
+                File stagedFile = new File(stagingDir, fileName);
+                if (!stagedFile.exists())
+                {
+                    error(MSG_REFERENCED_CONTENT_FILE_MISSING);
+                }
+                ContentWriter writer = contentService.getWriter(nodeToUpdate, contentEntry.getKey(), true);
+                writer.setEncoding(contentData.getEncoding());
+                writer.setMimetype(contentData.getMimetype());
+                writer.setLocale(contentData.getLocale());
+                writer.putContent(stagedFile);
+            }
         }
     }
 

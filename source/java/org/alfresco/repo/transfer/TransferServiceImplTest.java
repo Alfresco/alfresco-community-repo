@@ -21,15 +21,23 @@ package org.alfresco.repo.transfer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -47,6 +55,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -614,18 +623,20 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Step 2: Update Node title property
      * transfer
      *  
-     * Step 3: Update Content property
+     * Step 3: Update Content property (add content)
      * transfer
      * 
      * Step 4: Transfer again
      * transfer (Should transfer but not request the content item)
-     *      
-     * Step 5: Delete the node
      * 
-     * Step 6: Negative test : transfer no nodes
+     * Step 5: Update Content property (update content)
+     *      
+     * Step 6: Delete the node
+     * 
+     * Step 7: Negative test : transfer no nodes
      * transfer (should throw exception)
      * 
-     * Step 7: Negative test : transfer to a disabled transfer target
+     * Step 8: Negative test : transfer to a disabled transfer target
      * transfer (should throw exception)
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
@@ -637,7 +648,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         String CONTENT_TITLE = "ContentTitle";
         String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         Locale CONTENT_LOCALE = Locale.GERMAN; 
-        String CONTENT_STRING = "Hello";
+        String CONTENT_STRING = "Hello World";
+        String CONTENT_UPDATE_STRING = "Foo Bar";
 
         /**
          *  For unit test 
@@ -801,17 +813,28 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
 
-            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-            writer.setLocale(CONTENT_LOCALE);
-            writer.putContent(CONTENT_STRING);
-  
         }
         finally
         {
             endTransaction();
         }
         
-        logger.debug("Transfer again - this is an update with new content");
+        /**
+         * Step 3 - update to add content
+         */
+        startNewTransaction();
+        try
+        {
+            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        logger.debug("Transfer again - this is an update to add new content");
         startNewTransaction();
         try
         {
@@ -831,7 +854,20 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
-  
+ 
+        startNewTransaction();
+        try
+        {
+            ContentReader reader = contentService.getReader(destNodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("reader is null", reader);
+            String contentStr = reader.getContentString();
+            assertEquals("Content is wrong", contentStr, CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+     
         /**
          * Step 4:
          * Now transfer nothing - content items do not need to be transferred since its already on 
@@ -861,6 +897,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE_UPDATED); 
             assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
             
+            ContentReader reader = contentService.getReader(destNodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("reader is null", reader);
+            String contentStr = reader.getContentString();
+            assertEquals("Content is wrong", contentStr, CONTENT_STRING);
+            
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
 
@@ -869,12 +910,61 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
+     
+        /**
+         * Step 5 - update content through transfer
+         */
+        startNewTransaction();
+        try
+        {
+            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_UPDATE_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        logger.debug("Transfer again - this is an update to add new content");
+        startNewTransaction();
+        try
+        {
+            /**
+             * Step 3:
+             * Transfer our node again - so this is an update
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+ 
+        startNewTransaction();
+        try
+        {
+            ContentReader reader = contentService.getReader(destNodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("reader is null", reader);
+            String contentStr = reader.getContentString();
+            assertEquals("Content is wrong", CONTENT_UPDATE_STRING, contentStr);
+        }
+        finally
+        {
+            endTransaction();
+        }
         
         /**
-         * Step 5
+         * Step 6
          * Delete the node through transfer of the archive node
          */
-        logger.debug("Transfer again - with no new content");
+        logger.debug("Transfer again - to delete a node through transferring an archive node");
         startNewTransaction();
         try
         {
@@ -912,7 +1002,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
 
         /**
-          * Step 6
+          * Step 7
           * Negative test transfer nothing
           */
         logger.debug("Transfer again - with no content - should throw exception");
@@ -1882,6 +1972,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             }
             finally    
             {
+                int status = trx.getStatus();
+                    
                 trx.commit();
             }
         }
@@ -2022,7 +2114,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     } // test async cancel
 
     
-    /**
+       /**
      * Test the transfer report.
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
@@ -2294,6 +2386,24 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }    
     } // test transfer report    
+
+
+    private void dumpToSystemOut(NodeRef nodeRef) throws IOException
+    {
+        ContentReader reader2 = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull("transfer reader is null", reader2);
+        InputStream is = reader2.getContentInputStream();
+    
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    
+        String s = br.readLine();
+        while(s != null)
+        {
+            System.out.println(s);   
+            s = br.readLine();
+        }
+    }
+
     
 //    /**
 //     * Test the transfer method with big content - commented out since it takes a long time to run.
@@ -6746,8 +6856,247 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
     } // copy node
     
+    /**
+     * Test the transfer method with regard to an empty content property.  ALF-4865
+     * 
+     * Step 1: create a node with an empty content property
+     * transfer
+     * 
+     * Step 2: add non empty content property 
+     * transfer
+     * 
+     * Step 3: update to empty content property
+     * transfer
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testEmptyContent() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.CANADA; 
+        String CONTENT_STRING = "Hello";
 
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testTransferEmptyContent";
+        TransferTarget transferMe;
+        NodeRef contentNodeRef;
+        NodeRef destNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
     
+            /**
+             * Create a test node with an empty content that we will read and write
+             */       
+            String name = GUID.generate();
+            ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_CONTENT);
+            contentNodeRef = child.getChildRef();
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, name);
+            ContentData cd = new ContentData(null, null, 0, null);
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, cd);
+                        
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+            transferService.enableTransferTarget(targetName, true);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        logger.debug("First transfer - create new node (empty content)");
+        startNewTransaction();
+        try 
+        {
+            ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+            assertNull("test setup content reader not null", reader);
+            Map<QName, Serializable> props = nodeService.getProperties(contentNodeRef);
+            assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
+           
+            /**
+             * Step 1: Transfer our node which has empty content
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            NodeRef destinationNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            assertTrue("content node (dest) does not exist", nodeService.exists(destinationNodeRef));
+            
+            ContentReader reader = contentService.getReader(destinationNodeRef, ContentModel.PROP_CONTENT);
+            assertNull("content reader not null", reader);
+            Map<QName, Serializable> props = nodeService.getProperties(destinationNodeRef);
+            assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
+            
+          }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 2
+         */
+        logger.debug("Second transfer - replace empty content");
+        
+        startNewTransaction();
+        try 
+        {
+            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+       
+        
+        startNewTransaction();
+        try 
+        {
+            ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("test setup content reader not null", reader);
+            Map<QName, Serializable> props = nodeService.getProperties(contentNodeRef);
+            assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
+           
+            /**
+             * Step 2: replace empty content with new content
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            NodeRef destinationNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            ContentReader reader = contentService.getReader(destinationNodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("content reader is null", reader);
+            assertTrue("content does not exist", reader.exists());
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 3
+         */
+        logger.debug("Third transfer - remove existing content");
+        
+        startNewTransaction();
+        try 
+        {
+            ContentData cd = new ContentData(null, null, 0, null);
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, cd);
+        }
+        finally
+        {
+            endTransaction();
+        }
+            
+        startNewTransaction();
+        try 
+        {
+            ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+            assertNull("test setup content reader not null", reader);
+            Map<QName, Serializable> props = nodeService.getProperties(contentNodeRef);
+            assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
+           
+            /**
+             * Step 3: Transfer our node which has empty content to over-write existing
+             * content
+             */
+            TransferDefinition definition = new TransferDefinition();
+            Set<NodeRef>nodes = new HashSet<NodeRef>();
+            nodes.add(contentNodeRef);
+            definition.setNodes(nodes);
+            transferService.transfer(targetName, definition);
+            
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            NodeRef destinationNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            assertTrue("content node (dest) does not exist", nodeService.exists(destinationNodeRef));
+            
+            ContentReader reader = contentService.getReader(destinationNodeRef, ContentModel.PROP_CONTENT);
+            assertNull("content reader not null", reader);
+            Map<QName, Serializable> props = nodeService.getProperties(destinationNodeRef);
+            assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
+            
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+    }
     
     private void createUser(String userName, String password)
     {

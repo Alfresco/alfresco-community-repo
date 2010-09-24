@@ -19,38 +19,29 @@
 
 package org.alfresco.repo.transfer;
 
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.requisite.TransferRequsiteWriter;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.xml.sax.SAXParseException;
 
 /**
  * @author mrogers
  * 
- * The requsite manifest processor performs a parse of the manifest file to determine which 
- * resources are required.
+ * The requisite manifest processor performs a parse of the manifest file to determine which 
+ * resources are required.    In particular it returns a list of nodes which require content to be transferred.
  * 
  */
 public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcessorBase
@@ -60,7 +51,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
     private TransferRequsiteWriter out;
     
     
-    private static final Log log = LogFactory.getLog(RepoRequisiteManifestProcessorImpl.class);
+    private static final Log log = LogFactory.getLog(CopyRepoRequisiteManifestProcessorImpl.class);
 
     /**
      * @param receiver 
@@ -123,45 +114,50 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                 if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
                 {
                     ContentData srcContent = (ContentData)value;
-                    Serializable destSer = destProps.get(propEntry.getKey());
-                    if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
+
+                    if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty() )
                     {
-                        ContentData destContent = (ContentData)destProps.get(propEntry.getKey());
-                        
-                        /**
-                         * If the modification dates for the node are different
-                         */
-                        Serializable srcModified = node.getProperties().get(ContentModel.PROP_MODIFIED);
-                        Serializable destModified = destProps.get(ContentModel.PROP_MODIFIED);
-                        
-                        log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
-                        
-                        if(srcModified != null && 
-                           destModified != null &&
-                           srcModified instanceof Date && 
-                           destModified instanceof Date &&
-                           ((Date)srcModified).getTime() <= ((Date)destModified).getTime())
+                        Serializable destSer = destProps.get(propEntry.getKey());
+                        if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
                         {
-                            if(log.isDebugEnabled())
+                            ContentData destContent = (ContentData)destProps.get(propEntry.getKey());
+                            /**
+                             * If the modification dates for the node are different
+                             */
+                            Serializable srcModified = node.getProperties().get(ContentModel.PROP_MODIFIED);
+                            Serializable destModified = destProps.get(ContentModel.PROP_MODIFIED);
+
+                            log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
+
+                            if(srcModified != null && 
+                                    destModified != null &&
+                                    srcModified instanceof Date && 
+                                    destModified instanceof Date &&
+                                    ((Date)srcModified).getTime() <= ((Date)destModified).getTime())
                             {
-                                log.debug("the modified date is the same - no need to send it:" + destContent.getContentUrl());
+                                if(log.isDebugEnabled())
+                                {
+                                    log.debug("the modified date is the same or before - no need to send it:" + destContent.getContentUrl());
+                                }
+                            }
+                            else
+                            {
+                                log.debug("require content for node : " + node.getNodeRef());
+                                out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                             }
                         }
                         else
                         {
+                            //  We don't have the property on the destination node 
                             out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                         }
-                    }
-                    else
-                    {
-                        //  We don't have the property on the destination node 
-                        out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
-                    }
-                }
+                    } // content url not null
+                } // value is content data
             }
         }
         else
         {
+            log.debug("Node does not exist on destination");
             /**
              * there is no corresponding node so all content properties are "missing."
              */
@@ -177,9 +173,12 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                 }
                 if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
                 {
-                    ContentData content = (ContentData)value;
-                    // 
-                    out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(content.getContentUrl()));
+                    ContentData srcContent = (ContentData)value;
+                    if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
+                    {
+                        // 
+                        out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
+                    }
                 }
             }
         }        

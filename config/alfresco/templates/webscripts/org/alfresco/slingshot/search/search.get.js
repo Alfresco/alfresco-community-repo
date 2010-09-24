@@ -5,6 +5,7 @@ function main()
    {
       siteId: (args.site !== null) ? args.site : null,
       containerId: (args.container !== null) ? args.container : null,
+      repo: (args.repo !== null) ? (args.repo == "true") : false,
       term: (args.term !== null) ? args.term : null,
       tag: (args.tag !== null) ? args.tag : null,
       query: (args.query !== null) ? args.query : null,

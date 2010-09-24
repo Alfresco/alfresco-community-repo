@@ -99,31 +99,57 @@ function checkProcessed(category, key)
 }
 
 /**
- * Returns the name path for a space
+ * Returns an item outside of a site in the main repository.
  */
-function getSpaceNamePath(siteId, containerId, space)
+function getRepositoryItem(folderPath, node)
 {
-   // first find the container to which we are relative to
-   var site = siteService.getSite(siteId);
-   var container = site.getContainer(containerId);
-   var folders = [];
-   while (! space.nodeRef.equals(container.nodeRef))
+   // check whether we already processed this document
+   var cat = "repository", refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
-      folders.push(space.name);
-      space = space.parent;
+      return null;
    }
-   var path = "";
-   for (var x = folders.length - 1; x >= 0; x--)
+   addToProcessed(cat, refkey);
+   
+   // check whether this is a valid folder or a file
+   var item = null;
+   if (node.isContainer || node.isDocument)
    {
-      path += "/" + folders[x];
+      item =
+      {
+         nodeRef: node.nodeRef.toString(),
+         tags: (node.tags !== null) ? node.tags : [],
+         name: node.name,
+         displayName: node.name,
+         title: node.properties["cm:title"],
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
+         path: folderPath.join("/")
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
-   return path;
+   if (node.isContainer)
+   {
+      item.type = "folder";
+      item.size = -1;
+   }
+   else if (node.isDocument)
+   {
+      item.type = "document";
+      item.size = node.size;
+   }
+   
+   return item;
 }
 
 /**
  * Returns an item of the document library component.
  */
-function getDocumentItem(siteId, containerId, restOfPath, node)
+function getDocumentItem(siteId, containerId, pathParts, node)
 {
    // PENDING: how to handle comments? the document should
    //          be returned instead
@@ -148,11 +174,13 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
          tags: (node.tags !== null) ? node.tags : [],
          name: node.name,
          displayName: node.name,
+         title: node.properties["cm:title"],
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
          createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"]         
+         createdByUser: node.properties["cm:creator"],
+         path: pathParts.join("/")
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
       item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -161,19 +189,17 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    {
       item.type = "folder";
       item.size = -1;
-      item.browseUrl = "documentlibrary?path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
    }
    else if (node.isDocument)
    {
       item.type = "document";
       item.size = node.size;
-      item.browseUrl = "document-details?nodeRef=" + node.nodeRef.toString();
    }
    
    return item;
 }
 
-function getBlogPostItem(siteId, containerId, restOfPath, node)
+function getBlogPostItem(siteId, containerId, pathParts, node)
 {
    /**
     * Investigate the rest of the path. the first item is the blog post, ignore everything that follows
@@ -222,8 +248,7 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
       createdOn: child.properties["cm:created"],
       createdByUser: child.properties["cm:creator"],
       size: child.size,
-      displayName: child.properties["cm:title"],
-      browseUrl: "blog-postview?container=" + containerId + "&postId=" + child.name
+      displayName: child.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);  
@@ -231,7 +256,7 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    return item;
 }
 
-function getForumPostItem(siteId, containerId, restOfPath, node)
+function getForumPostItem(siteId, containerId, pathParts, node)
 {
    // try to find the first fm:topic node, that's what we return as search result
    var topicNode = node;
@@ -271,8 +296,7 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
       createdOn: topicNode.properties["cm:created"],
       createdByUser: topicNode.properties["cm:creator"],
       size: topicNode.size,
-      displayName: postNode.properties["cm:title"],
-      browseUrl: "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name
+      displayName: postNode.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -280,7 +304,7 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    return item;
 }
 
-function getCalendarItem(siteId, containerId, restOfPath, node)
+function getCalendarItem(siteId, containerId, pathParts, node)
 {
    // only process nodes of the correct type
    if (node.type != "{http://www.alfresco.org/model/calendar}calendarEvent")
@@ -310,8 +334,7 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: -1,
-      displayName: node.properties["ia:whatEvent"],
-      browseUrl: containerId // this is "calendar"
+      displayName: node.properties["ia:whatEvent"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -319,7 +342,7 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    return item;
 }
 
-function getWikiItem(siteId, containerId, restOfPath, node)
+function getWikiItem(siteId, containerId, pathParts, node)
 {
    // only process documents
    if (!node.isDocument)
@@ -349,8 +372,7 @@ function getWikiItem(siteId, containerId, restOfPath, node)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: node.size,
-      displayName: ("" + node.properties["cm:name"]).replace(/_/g, " "),
-      browseUrl: "wiki-page?title=" + node.properties["cm:name"]
+      displayName: ("" + node.name).replace(/_/g, " ")
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -358,7 +380,7 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    return item;
 }
 
-function getLinkItem(siteId, containerId, restOfPath, node)
+function getLinkItem(siteId, containerId, pathParts, node)
 {
    // only process documents
    if (!node.isDocument)
@@ -388,8 +410,7 @@ function getLinkItem(siteId, containerId, restOfPath, node)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: -1,
-      displayName: node.properties["lnk:title"],
-      browseUrl: "links-view?linkId=" + node.properties["cm:name"]
+      displayName: node.properties["lnk:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);   
@@ -398,68 +419,78 @@ function getLinkItem(siteId, containerId, restOfPath, node)
 
 /**
  * Delegates the extraction to the correct extraction function
- * depending site/container id.
+ * depending on containerId.
  */
-function getItem(siteId, containerId, restOfPath, node)
+function getItem(siteId, containerId, pathParts, node)
 {
-   switch ("" + containerId)
+   var item = null;
+   if (siteId == null)
    {
-      case "documentLibrary":
-         return getDocumentItem(siteId, containerId, restOfPath, node);
-         break;
-      case "blog":
-         return getBlogPostItem(siteId, containerId, restOfPath, node);
-         break;
-      case "discussions":
-         return getForumPostItem(siteId, containerId, restOfPath, node);
-         break;
-      case "calendar":
-         return getCalendarItem(siteId, containerId, restOfPath, node);
-         break;
-      case "wiki":
-         return getWikiItem(siteId, containerId, restOfPath, node);
-         break;
-      case "links":
-         return getLinkItem(siteId, containerId, restOfPath, node);
-         break;
+      item = getRepositoryItem(pathParts, node);
    }
-   return null;
+   else
+   {
+      switch ("" + containerId)
+      {
+         case "documentLibrary":
+            item = getDocumentItem(siteId, containerId, pathParts, node);
+            break;
+         case "blog":
+            item = getBlogPostItem(siteId, containerId, pathParts, node);
+            break;
+         case "discussions":
+            item = getForumPostItem(siteId, containerId, pathParts, node);
+            break;
+         case "calendar":
+            item = getCalendarItem(siteId, containerId, pathParts, node);
+            break;
+         case "wiki":
+            item = getWikiItem(siteId, containerId, pathParts, node);
+            break;
+         case "links":
+            item = getLinkItem(siteId, containerId, pathParts, node);
+            break;
+      }
+   }
+   return item;
 }
 
 /**
- * Returns an array with [0] = site and [1] = container or null if the node does not match
+ * Splits the qname path to a node.
+ * 
+ * Returns an array with:
+ * [0] = site
+ * [1] = container or null if the node does not match
+ * [2] = remaining part of the cm:name based path to the object - as an array
  */
 function splitQNamePath(node)
 {
    var path = node.qnamePath;
    var displayPath = node.displayPath.split("/");
+   var parts = null;
    
-   if (path.match("^"+SITES_SPACE_QNAME_PATH) != SITES_SPACE_QNAME_PATH)
+   if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
    {
-      return null;
+      var tmp = path.substring(SITES_SPACE_QNAME_PATH.length);
+      var pos = tmp.indexOf('/');
+      if (pos >= 1)
+      {
+         // site id is the cm:name for the site - we cannot use the encoded QName version
+         var siteId = displayPath[3];
+         tmp = tmp.substring(pos + 1);
+         pos = tmp.indexOf('/');
+         if (pos >= 1)
+         {
+            // strip container id from the path
+            var containerId = tmp.substring(0, pos);
+            containerId = containerId.substring(containerId.indexOf(":") + 1);
+            
+            parts = [ siteId, containerId, displayPath.slice(5, displayPath.length) ];
+         }
+      }
    }
    
-   var tmp = path.substring(SITES_SPACE_QNAME_PATH.length);
-   var pos = tmp.indexOf('/');
-   if (pos < 1)
-   {
-      return null;
-   }
-   
-   // site id is the cm:name for the site - we cannot use the encoded QName version
-   var siteId = displayPath[3];
-   tmp = tmp.substring(pos + 1);
-   pos = tmp.indexOf('/');
-   if (pos < 1)
-   {
-      return null;
-   }
-   
-   var containerId = tmp.substring(0, pos);
-   containerId = containerId.substring(containerId.indexOf(":") + 1);
-   var restOfPath = tmp.substring(pos + 1);
-   
-   return [ siteId, containerId, restOfPath ];
+   return (parts != null ? parts : [ null, null, displayPath ]);
 }
 
 /**
@@ -612,26 +643,33 @@ function getSearchResults(params)
    if (ftsQuery.length !== 0)
    {
       // we processed the search terms, so suffix the PATH query
-      var path = SITES_SPACE_QNAME_PATH;
-      if (params.siteId !== null && params.siteId.length > 0)
+      var path = null;
+      if (!params.repo)
       {
-         path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
+         path = SITES_SPACE_QNAME_PATH;
+         if (params.siteId !== null && params.siteId.length > 0)
+         {
+            path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
+         }
+         else
+         {
+            path += "*/";
+         }
+         if (params.containerId !== null && params.containerId.length > 0)
+         {
+            path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
+         }
+         else
+         {
+            path += "*/";
+         }
       }
-      else
+      
+      if (path != null)
       {
-         path += "*/";
+         ftsQuery = 'PATH:"' + path + '/*" AND ' + ftsQuery;
       }
-      if (params.containerId !== null && params.containerId.length > 0)
-      {
-         path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
-      }
-      else
-      {
-         path += "*/";
-      }
-   	
-      ftsQuery  = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
-      ftsQuery += 'AND -TYPE:"cm:thumbnail"';
+      ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail"';
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name

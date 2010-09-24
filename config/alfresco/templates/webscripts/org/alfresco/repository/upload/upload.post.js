@@ -370,15 +370,17 @@ function main()
    }
    catch (e)
    {
-      status.code = 500;
-      status.message = "Unexpected error occured during upload of new content.";
+      // capture exception, annotate it accordingly and re-throw
       if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
-         status.code = 413;
-         status.message = e.message;
+         e.code = 413;
       }
-      status.redirect = true;
-      return;
+      else
+      {
+         e.code = 500;
+         e.message = "Unexpected error occured during upload of new content.";      
+      }
+      throw e;
    }
 }
 

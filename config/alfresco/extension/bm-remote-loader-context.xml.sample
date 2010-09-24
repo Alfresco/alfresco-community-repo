@@ -21,7 +21,7 @@
         </property>
     </bean>
     
-    <bean id="fileFolderRemoteRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+    <bean id="fileFolderRemoteRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
         <property name="service">
             <ref bean="fileFolderRemoteServer"/>
         </property>
@@ -62,7 +62,7 @@
         </property>
     </bean>
     
-    <bean id="loaderRemoteServerRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+    <bean id="loaderRemoteServerRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
         <property name="service">
             <ref bean="loaderRemoteServer"/>
         </property>

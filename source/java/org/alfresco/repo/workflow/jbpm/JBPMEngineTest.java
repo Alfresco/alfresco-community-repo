@@ -21,25 +21,22 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowPackageComponent;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -49,8 +46,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.PropertyMap;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -58,22 +57,39 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
-public class JBPMEngineTest extends BaseSpringTest
+public class JBPMEngineTest extends BaseAlfrescoSpringTest
 {
-    AuthenticationComponent authenticationComponent;
-    NodeService nodeService;
-    WorkflowComponent workflowComponent;
-    TaskComponent taskComponent;
-    WorkflowPackageComponent packageComponent;
-    WorkflowDefinition testWorkflowDef;
-    NodeRef testNodeRef;
-        
+    /**
+     * 
+     */
+    private static final String USER3 = "JbpmEngineTestJoe";
+    /**
+     * 
+     */
+    private static final String USER2 = "JbpmEngineTestJane";
+    /**
+     * 
+     */
+    private static final String USER1 = "JbpmEngineTestJohn";
+    private WorkflowComponent workflowComponent;
+    private TaskComponent taskComponent;
+    private WorkflowPackageComponent packageComponent;
+    private PersonService personService;
+    private WorkflowDefinition testWorkflowDef;
+    private NodeRef person1;
+    private NodeRef person2;
+    private NodeRef person3;
+    
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
-        // run as system
-        authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        super.onSetUpInTransaction();
+
+        personService = (PersonService) applicationContext.getBean("PersonService");
+        person1 = createPerson(USER1);
+        person2 = createPerson(USER2);
+        person3 = createPerson(USER3);
         
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent("jbpm");
@@ -92,21 +108,10 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals("jbpm$test", testWorkflowDef.name);
         assertEquals("1", testWorkflowDef.version);
         assertTrue(workflowComponent.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
-
-        // get valid node ref
-        nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
-        testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
-        nodeService.setProperty(testNodeRef, ContentModel.PROP_CREATED, new Date());
+        
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     }
 
-    
-    @Override
-    protected void onTearDownInTransaction()
-    {
-        authenticationComponent.clearCurrentSecurityContext();
-    }
-    
-    
     public void testGetWorkflowDefinitions()
     {
         List<WorkflowDefinition> workflowDefs = workflowComponent.getDefinitions();
@@ -135,6 +140,7 @@ public class JBPMEngineTest extends BaseSpringTest
         }
         catch(WorkflowException e)
         {
+            // Do nothing.
         }
 
         // TODO: Determine why process definition is loaded, even though it doesn't exist
@@ -325,7 +331,7 @@ public class JBPMEngineTest extends BaseSpringTest
     }
 
     
-    public void testCancelWorkflowInstance()
+    public void testCancelWorkflowInstance() throws Exception
     {
     	WorkflowDefinition workflowDef = getTestDefinition();
         workflowComponent.startWorkflow(workflowDef.id, null);
@@ -347,11 +353,80 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(0, tasks1.size());
     }
     
-     
+
+    /**
+     * See Alf-2764 in Jira.
+     * @throws Exception
+     */
+    public void testCancelForEachFork() throws Exception
+    {
+        // Deploy Parallel Loop Review process definition.
+        ClassPathResource processDef = new ClassPathResource("test/alfresco/parallel_loop_review_processdefinition.xml");
+        WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(),
+                    MimetypeMap.MIMETYPE_XML);
+        WorkflowDefinition parallelDef = deployment.getDefinition();
+        assertNotNull(parallelDef);
+        
+        // Set Current User to USER1.
+        AuthenticationUtil.setFullyAuthenticatedUser(USER1);
+        
+        // Set up parameters
+        QName approvePercentName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "requiredApprovePercent");
+        NodeRef pckgNode = packageComponent.createPackage(null);
+        List<NodeRef> assignees = Arrays.asList(person1, person2, person3);
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        parameters.put(WorkflowModel.ASSOC_ASSIGNEES, (Serializable) assignees);
+        parameters.put(WorkflowModel.ASSOC_PACKAGE, pckgNode);
+        parameters.put(approvePercentName, 60f );
+
+        // Start workflow
+        WorkflowPath path = workflowComponent.startWorkflow(parallelDef.getId(), parameters);
+        WorkflowTask startTask = workflowComponent.getTasksForWorkflowPath(path.getId()).get(0);
+        taskComponent.endTask(startTask.getId(), null);
+        checkInstanceExists(path.instance.getId(), parallelDef.getId(), true);
+        
+        // Set all users to reject document.
+        ParallelReject(USER1);
+        ParallelReject(USER2);
+        ParallelReject(USER3);
+        
+        // Send review back round the loop.
+        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.getId());
+        assertEquals(1, tasks.size());
+        taskComponent.endTask(tasks.get(0).getId(), "again");
+        
+        // Try to cancel workflow
+        WorkflowInstance cancelledWf = workflowComponent.cancelWorkflow(path.getInstance().getId());
+        checkInstanceExists(cancelledWf.getId(), parallelDef.getId(), false);
+    }
+
+    private void checkInstanceExists(String instanceId, String defId, boolean expected)
+    {
+        boolean match=false;
+        List<WorkflowInstance> activeWfs = workflowComponent.getActiveWorkflows(defId);
+        for (WorkflowInstance instance : activeWfs)
+        {
+            if(instance.getId().equals(instanceId))
+            {
+                match = true;
+                break;
+            }
+        }
+        assertEquals( expected, match);
+    }
+
+    private void ParallelReject(String user)
+    {
+        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(user, WorkflowTaskState.IN_PROGRESS);
+        assertEquals(1, tasks.size());
+        WorkflowTask task = tasks.get(0);
+        taskComponent.endTask(task.getId(), "reject");
+    }
+    
     public void testSignal()
     {
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         WorkflowDefinition workflowDef = getTestDefinition();
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -365,7 +440,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -395,7 +470,7 @@ public class JBPMEngineTest extends BaseSpringTest
         bpm_assignees.add("fred");
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignees"), (Serializable)bpm_assignees);
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
@@ -411,7 +486,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -435,7 +510,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
         assertNotNull(path);
@@ -453,7 +528,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -477,7 +552,7 @@ public class JBPMEngineTest extends BaseSpringTest
         
         WorkflowDefinition workflowDef = deployment.definition;
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -500,6 +575,29 @@ public class JBPMEngineTest extends BaseSpringTest
         return testWorkflowDef;
     }
     
+    
+    private NodeRef createPerson(String userName)
+    {
+        // if user with given user name doesn't already exist then create user
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            // create user
+            this.authenticationService.createAuthentication(userName, "password".toCharArray());
+        }
+
+        // if person node with given user name doesn't already exist then create
+        // person
+        if (this.personService.personExists(userName) == false)
+        {
+            // create person properties
+            PropertyMap personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, userName);
+
+            // create person node for user
+            return personService.createPerson(personProps);
+        }
+        return personService.getPerson(userName);
+    }
 
     /**
      * Filter task list by workflow instance

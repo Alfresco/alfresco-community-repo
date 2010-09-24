@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:parallelreview">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="wf:submitParallelReviewTask" swimlane="initiator" />
+        <transition name="" to="startreview"/>
+    </start-state>
+
+    <node name="startreview">
+        <action class="org.alfresco.repo.workflow.jbpm.ForEachFork">
+            <foreach>#{bpm_assignees}</foreach>
+            <var>reviewer</var>
+        </action>
+        <event type="node-enter">
+            <script>
+                <variable name="wf_approveCount" access="write" />
+                <expression>
+                    wf_approveCount = 0;
+                </expression>
+            </script>
+        </event>
+        <transition name="review" to="review" />
+    </node>
+
+    <task-node name="review">
+        <task name="wf:reviewTask">
+            <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+               <actor>#{reviewer}</actor>
+            </assignment>
+            <event type="task-create">
+                <script>
+                    if (bpm_workflowDueDate != void) taskInstance.dueDate = bpm_workflowDueDate;
+                    if (bpm_workflowPriority != void) taskInstance.priority = bpm_workflowPriority;
+                </script>
+            </event>
+        </task>
+        <transition name="approve" to="endreview">
+            <script>
+                <variable name="wf_approveCount" access="read,write" />
+                <expression>
+                    wf_approveCount = wf_approveCount +1;
+                 </expression>
+            </script>
+        </transition>
+        <transition name="reject" to="endreview" />
+    </task-node>
+
+    <join name="endreview">
+        <transition to="isapproved" />
+    </join>
+
+    <decision name="isapproved">
+        <event type="node-enter">
+           <script>
+              <variable name="wf_reviewerCount" access="write"/>
+              <variable name="wf_requiredPercent" access="write"/>
+              <variable name="wf_actualPercent" access="write"/>
+              <expression>
+                  wf_requiredPercent = wf_requiredApprovePercent;
+                  wf_reviewerCount = bpm_assignees.size();
+                  wf_actualPercent = ((wf_approveCount * 100) / wf_reviewerCount);
+              </expression>
+           </script>
+        </event>
+        <transition name="reject" to="rejected" />
+        <transition name="approve" to="approved">
+            <condition>#{wf_actualPercent >= wf_requiredApprovePercent}</condition>
+        </transition>
+    </decision>
+               
+   <task-node name="rejected">
+      <task name="wf:rejectedParallelTask" swimlane="initiator" />
+      <transition to="startreview" name="again" />
+      <transition to="end" />
+   </task-node> 
+
+    <task-node name="approved">
+        <task name="wf:approvedParallelTask" swimlane="initiator" />
+        <transition to="end" />
+    </task-node>
+
+    <end-state name="end"/>
+
+</process-definition>

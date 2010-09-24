@@ -72,19 +72,32 @@ public class ReportCommandProcessor implements CommandProcessor
         try
         {
             OutputStream out = resp.getOutputStream();
-            resp.setContentType("text/xml");
-            resp.setContentEncoding("utf-8");
-            
-            BufferedInputStream br = new BufferedInputStream(receiver.getProgressMonitor().getLogInputStream(transferId));
-            byte[] buffer = new byte[1000];
-            int i = br.read(buffer);
-            while(i > 0)
+            try
             {
-                out.write(buffer, 0, i);
-                i = br.read(buffer);
+                resp.setContentType("text/xml");
+                resp.setContentEncoding("utf-8");
+            
+                BufferedInputStream br = new BufferedInputStream(receiver.getProgressMonitor().getLogInputStream(transferId));
+                try
+                {
+                    byte[] buffer = new byte[1000];
+                    int i = br.read(buffer);
+                    while(i > 0)
+                    {
+                        out.write(buffer, 0, i);
+                        i = br.read(buffer);
+                    }
+                }
+                finally
+                {
+                    br.close();
+                }
             }
-            out.flush();
-            out.close();
+            finally
+            {
+                out.flush();
+                out.close();
+            }
          
             return Status.STATUS_OK;
         }

@@ -27,6 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckIn;
+import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -53,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPolicy,
                                              CheckOutCheckInServicePolicies.OnCheckOut,
                                              CheckOutCheckInServicePolicies.BeforeCheckIn,
+                                             CheckOutCheckInServicePolicies.OnCheckIn,
                                              NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Indicates whether behaviour is enabled or not */
@@ -140,6 +142,9 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
                                                GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
                                                new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT));
+            policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
+                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
+                                               new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
             policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
                                                GoogleDocsModel.ASPECT_GOOGLERESOURCE,
                                                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
@@ -213,7 +218,7 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             
             // Write the google content into the node
             ContentWriter writer = contentService.getWriter(workingCopyNodeRef, ContentModel.PROP_CONTENT, true);
-            writer.putContent(is);           
+            writer.putContent(is);
         }        
     }
 
@@ -265,5 +270,11 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
         {
             return Collections.emptyMap();
         }
+    }
+
+    @Override
+    public void onCheckIn(NodeRef nodeRef)
+    {
+        nodeService.removeAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE);        
     }
 }

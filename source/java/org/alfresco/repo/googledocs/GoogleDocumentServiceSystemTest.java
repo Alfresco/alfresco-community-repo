@@ -84,8 +84,6 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
     private static final String USER_SIX = "GoogleDocUserSix";
     private static final String USER_SEVEN = "GoogleDocUserSeven";
     
-    //private static final String EMAIL_DOMAIN = "@alfresco.com";
-    
     private NodeRef folder = null;
     private NodeRef nodeRefDoc = null;
     private NodeRef nodeRefSpread = null;
@@ -166,9 +164,6 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
         contentWriter.setEncoding("UTF-8");
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
         contentWriter.putContent("");
-        
-        ContentData contentData = (ContentData)nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
-        System.out.println(" ********** Content data = " + contentData.toString());
     }
     
     private NodeRef createTestDocument(String name, String contentPath, String mimetype)
@@ -271,9 +266,6 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
     {
     	if (isGoogleServiceAvailable() == true)
     	{
-	        ContentReader contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
-	        //assertNull(contentReader);
-	        
 	        // Check out the empty google document
 	        NodeRef workingCopy = checkOutCheckInService.checkout(nodeRef2);
 	        
@@ -288,9 +280,12 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
 	        
 	        checkOutCheckInService.checkin(workingCopy, null);
 	        
-	        assertFalse(nodeService.hasAspect(nodeRefDoc, ASPECT_GOOGLERESOURCE));
-	        contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
-	        assertNotNull(contentReader);        
+	        assertFalse(nodeService.hasAspect(nodeRef2, ASPECT_GOOGLERESOURCE));	        
+	        ContentReader contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
+	        assertNotNull(contentReader);     
+	        
+	        // Lets try and delete the checked in node reference
+	        nodeService.deleteNode(nodeRef2);
     	}
     }    
     

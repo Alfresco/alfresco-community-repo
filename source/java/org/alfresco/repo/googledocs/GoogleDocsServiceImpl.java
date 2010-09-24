@@ -341,13 +341,11 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         {
             // Get the entry
             DocumentListEntry entry = getDocumentListEntry(nodeRef);
-            if (entry == null)
+            if (entry != null)
             {
-                throw new AlfrescoRuntimeException("Unable to find google resource to delete for node " + nodeRef.toString());
+                // Mark the resource for deletion upon completion of the transaction
+                markResource(KEY_MARKED_DELETE, entry.getResourceId());
             }
-            
-            // Mark the resource for deletion upon completion of the transaction
-            markResource(KEY_MARKED_DELETE, entry.getResourceId());
             
             // Remove the aspect from the node
             nodeService.removeAspect(nodeRef, ASPECT_GOOGLERESOURCE);
@@ -644,9 +642,14 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
      */
     private DocumentListEntry getDocumentListEntry(NodeRef docNodeRef)
     {
+        DocumentListEntry result = null;
         String docType = (String)nodeService.getProperty(docNodeRef, PROP_RESOURCE_TYPE);
         String docId = (String)nodeService.getProperty(docNodeRef, PROP_RESOURCE_ID);        
-        return getDocumentListEntry(docType + ":" + docId);
+        if (docType != null && docId != null)
+        {
+            result = getDocumentListEntry(docType + ":" + docId);
+        }
+        return result;
     }
     
     /**
@@ -708,12 +711,21 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         
         try
         { 
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Creating media content object for mimetype " + mimetype);
+            }
+            
             // Create the media content object
             MediaContent mediaContent = new MediaContent();            
             mediaContent.setMimeType(new ContentType(mimetype));
             
             if (is != null)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... input stream has been set");
+                }
                 mediaContent.setMediaSource(new MediaStreamSource(is, mimetype));
             }
             
@@ -722,6 +734,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             if (parentFolder != null)
             {
                 parentFolderUrl = ((MediaContent)parentFolder.getContent()).getUri();
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... parent folder URL is " + parentFolderUrl);
+                }
             }
             
             // Create the document entry object
@@ -730,19 +746,35 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 MediaType.XLSX.getMimeType().equals(mimetype) == true ||
                 MediaType.ODS.getMimeType().equals(mimetype) == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Creating SpreadsheetEntry for mimetype " + mimetype);
+                }
                 docEntry = new SpreadsheetEntry();
             }
             else if (MediaType.PPS.getMimeType().equals(mimetype) == true ||
                      MediaType.PPT.getMimeType().equals(mimetype) == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Creating PresentationEntry for mimetype " + mimetype);
+                }
                 docEntry = new PresentationEntry();
             }
             else if (MediaType.PDF.getMimeType().equals(mimetype) == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Creating PdfEntry for mimetype " + mimetype);
+                }
                 docEntry = new PdfEntry();
             }
             else
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Creating DocumentEntry for mimetype " + mimetype);
+                }
                 docEntry = new DocumentEntry();
             }
             

@@ -499,24 +499,104 @@ public final class People extends BaseScopableProcessorExtension implements Init
             filter = filter.trim();
             if (filter.length() != 0)
             {
+                SearchParameters params = new SearchParameters();
+                
                 // define the query to find people by their first or last name
-                StringBuilder query = new StringBuilder(128);
-                for (StringTokenizer t = new StringTokenizer(filter, " "); t.hasMoreTokens(); /**/)
+                StringBuilder query = new StringBuilder(256);
+                
+                query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
+                
+                String term = filter.replace("\\", "").replace("\"", "");
+                StringTokenizer t = new StringTokenizer(term, " ");
+                if (t.countTokens() == 1)
                 {
-                    String term = LuceneQueryParser.escape(t.nextToken().replace('"', ' '));
-                    query.append("+TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" ");
-                    query.append("+(@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-                    query.append(term);
-                    query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-                    query.append(term);
-                    query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:\"*");
-                    query.append(term);
-                    query.append("*\") ");
+                    if (term.indexOf(':') == -1)
+                    {
+                        // simple search: first name, last name and username starting with term
+                        query.append("firstName:\"");
+                        query.append(term);
+                        query.append("*\" lastName:\"");
+                        query.append(term);
+                        query.append("*\" userName:\"");
+                        query.append(term);
+                        query.append("*\"");
+                    }
+                    else
+                    {
+                        // fts-alfresco property search i.e. "location:maidenhead"
+                        query.append(term);
+                    }
                 }
+                else
+                {
+                    // scan for non-fts-alfresco property search tokens
+                    int nonFtsTokens = 0;
+                    while (t.hasMoreTokens())
+                    {
+                        if (t.nextToken().indexOf(':') == -1) nonFtsTokens++;
+                    }
+                    t = new StringTokenizer(term, " ");
+                    
+                    // multiple terms supplied - look for first and second name etc.
+                    // assume first term is first name, any more are second i.e. "Fraun van de Wiels"
+                    // also allow fts-alfresco property search to reduce results
+                    params.setDefaultOperator(SearchParameters.Operator.AND);
+                    boolean firstToken = true;
+                    boolean tokenSurname = false;
+                    boolean propertySearch = false;
+                    while (t.hasMoreTokens())
+                    {
+                        term = t.nextToken();
+                        if (!propertySearch && term.indexOf(':') == -1)
+                        {
+                            if (nonFtsTokens == 1)
+                            {
+                                // simple search: first name, last name and username starting with term
+                                query.append("(firstName:\"");
+                                query.append(term);
+                                query.append("*\" OR lastName:\"");
+                                query.append(term);
+                                query.append("*\" OR userName:\"");
+                                query.append(term);
+                                query.append("*\") ");
+                            }
+                            else
+                            {
+                                if (firstToken)
+                                {
+                                    query.append("firstName:\"");
+                                    query.append(term);
+                                    query.append("*\" ");
+                                    
+                                    firstToken = false;
+                                }
+                                else
+                                {
+                                    if (tokenSurname)
+                                    {
+                                        query.append("OR ");
+                                    }
+                                    query.append("lastName:\"");
+                                    query.append(term);
+                                    query.append("*\" ");
+                                    
+                                    tokenSurname = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // fts-alfresco property search i.e. "location:maidenhead"
+                            query.append(term);
+                            
+                            propertySearch = true;
+                        }
+                    }
+                }
+                query.append(")");
                 
                 // define the search parameters
-                SearchParameters params = new SearchParameters();
-                params.setLanguage(SearchService.LANGUAGE_LUCENE);
+                params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
                 params.addStore(this.storeRef);
                 params.setQuery(query.toString());
                 if (maxResults > 0)
@@ -530,6 +610,12 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 {
                     results = services.getSearchService().query(params);
                     people = results.getNodeRefs().toArray();
+                }
+                catch (Throwable err)
+                {
+                    // hide query parse error from users
+                    if (logger.isDebugEnabled())
+                        logger.debug("Failed to execute people search: " + query.toString(), err);
                 }
                 finally
                 {

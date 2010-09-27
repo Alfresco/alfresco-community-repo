@@ -772,7 +772,7 @@ public class TransferServiceImpl2 implements TransferService2
                                 logger.warn("Exception - unable to notify end transfer state", e);
                             }
                             
-                            reportName += "_" + new SimpleDateFormat("yyyyMMddhhmmssSSSZ").format(new Date());
+                            reportName += "_" + new SimpleDateFormat("yyyyMMddhhmmssSSS").format(new Date());
 
                             try
                             {

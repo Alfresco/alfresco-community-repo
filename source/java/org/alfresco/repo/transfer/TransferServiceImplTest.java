@@ -2113,8 +2113,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
     } // test async cancel
 
-    
-       /**
+    /**
      * Test the transfer report.
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
@@ -2152,26 +2151,33 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
           * This needs to be committed before we can call transfer asycnc.
           */
         String CONTENT_TITLE = "ContentTitle";
-        String CONTENT_NAME_A = "Demo Node A";
-        String CONTENT_NAME_B = "Demo Node B";
+        String CONTENT_NAME_A = "Report Node A";
+        String CONTENT_NAME_B = "Report Node B";
         Locale CONTENT_LOCALE = Locale.GERMAN; 
         String CONTENT_STRING = "Hello";
         
         NodeRef nodeRefA = null;
         NodeRef nodeRefB = null;
+        NodeRef testFolder = null;
+        
         String targetName = "testTransferReport";
      
         startNewTransaction();
         try
         {
-            nodeRefA = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_A);
-                    
-            if(nodeRefA == null)
+            {
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                testFolder = child.getChildRef();
+                nodeService.setProperty(testFolder, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(testFolder, ContentModel.PROP_NAME, name);
+            }
+            
             {
                 /**
                  * Create a test node that we will read and write
                  */
-                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
+                ChildAssociationRef child = nodeService.createNode(testFolder, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
                 nodeRefA = child.getChildRef();
                 nodeService.setProperty(nodeRefA, ContentModel.PROP_TITLE, CONTENT_TITLE);   
                 nodeService.setProperty(nodeRefA, ContentModel.PROP_NAME, CONTENT_NAME_A);
@@ -2181,11 +2187,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 writer.putContent(CONTENT_STRING);
             }
                     
-            nodeRefB = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_B);
-                    
-            if(nodeRefB == null)
             {
-                ChildAssociationRef  child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
+                ChildAssociationRef  child = nodeService.createNode(testFolder, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
                 nodeRefB = child.getChildRef();
                 nodeService.setProperty(nodeRefB, ContentModel.PROP_TITLE, CONTENT_TITLE);   
                 nodeService.setProperty(nodeRefB, ContentModel.PROP_NAME, CONTENT_NAME_B);
@@ -2211,12 +2214,117 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef transferReport = null;
         NodeRef transferDestReport = null;
         
+        /**
+         * Step 1.
+         * Call the transfer method. to get a failed transfer - orphan nodes exist
+         */
+        setDefaultRollback(true);
         startNewTransaction();
         try
         {
-            /**
-              * Call the transfer method.
-              */
+               TestTransferCallback callback = new TestTransferCallback();
+               Set<TransferCallback> callbacks = new HashSet<TransferCallback>();
+               callbacks.add(callback);
+               TransferDefinition definition = new TransferDefinition();
+               Set<NodeRef>nodes = new HashSet<NodeRef>();
+               nodes.add(nodeRefA);
+               nodes.add(nodeRefB);
+               // missing the folder node (testFolder)
+               definition.setNodes(nodes);
+               
+               // Do the transfer here
+               
+               try 
+               {
+                   transferService.transfer(targetName, definition, callbacks);
+                   fail("transfer should have failed with an orphan not found exception");
+               }
+               catch (TransferException te)
+               {
+                   logger.debug("deliberatly caught and ignored exception");
+               }
+               
+               // Can't dirty read transfer report here
+               
+               boolean foundSourceReport = false;
+               boolean foundDestReport = false;
+               
+               for(TransferEvent event : callback.getEvents())
+               {
+                   if(event instanceof TransferEventReport)
+                   {
+                       TransferEventReport reportEvent = (TransferEventReport)event;
+                       switch (reportEvent.getReportType())
+                       {
+                           case DESTINATION:
+                               foundDestReport = true;
+                               transferDestReport = reportEvent.getNodeRef();
+                               assertNotNull("dest transfer nodeId null", transferDestReport);
+                               break;
+                               
+                           case SOURCE:
+                               foundSourceReport = true;
+                               transferReport = reportEvent.getNodeRef();
+                               break; 
+                       }
+                   }
+               }
+               
+               assertTrue("source report not found", foundSourceReport);
+               assertTrue("dest report not found", foundDestReport);
+       }
+       finally
+       {    
+           endTransaction();
+       }
+       
+       setDefaultRollback(false);
+       
+       /**
+        * Now validate the client side error transfer report against the xsd file
+        */
+       startNewTransaction();
+       try
+       {
+           ContentReader reader = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
+           assertNotNull("transfer reader is null", reader);
+           assertEquals("client report mimetype not set", reader.getMimetype(), MimetypeMap.MIMETYPE_XML);
+           String name = (String)nodeService.getProperty(transferReport, ContentModel.PROP_NAME);
+           assertTrue("client report does not end with .xml", name.endsWith(".xml"));
+           
+           logger.debug("This report should have failed");
+           if(logger.isDebugEnabled())
+           {
+               dumpToSystemOut(transferReport);
+           }
+           
+           // Now validate the client side transfer report against the XSD
+           Source transferReportSource = new StreamSource(reader.getContentInputStream());
+           SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+           final String TRANSFER_REPORT_SCHEMA_LOCATION = "classpath:org/alfresco/repo/transfer/report/TransferReport2.xsd";
+           Schema schema = sf.newSchema(ResourceUtils.getURL(TRANSFER_REPORT_SCHEMA_LOCATION));
+           Validator validator = schema.newValidator();
+           try 
+           {
+               validator.validate(transferReportSource);
+           }
+           catch (Exception e)
+           {
+               fail(e.getMessage() );
+           }
+       }
+       finally
+       {
+           endTransaction();
+       }
+            
+       /**
+         * Step 2
+         * Call the transfer method to get a good success transfer report
+         */
+       startNewTransaction();
+       try
+       {
             {
                 TestTransferCallback callback = new TestTransferCallback();
                 Set<TransferCallback> callbacks = new HashSet<TransferCallback>();
@@ -2225,6 +2333,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 Set<NodeRef>nodes = new HashSet<NodeRef>();
                 nodes.add(nodeRefA);
                 nodes.add(nodeRefB);
+                nodes.add(testFolder);
                 definition.setNodes(nodes);
                     
                 transferReport = transferService.transfer(targetName, definition, callbacks);
@@ -2275,17 +2384,16 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             ContentReader reader = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
             assertNotNull("transfer reader is null", reader);
             
-//            ContentReader reader2 = contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
-//            assertNotNull("transfer reader is null", reader2);
-//            
-//            logger.debug("now show the contents of the transfer report");
-//            System.out.println("Client side transfer report");
-//            reader2.getContent(System.out);  
+            logger.debug("This report should succeed");
+            if(logger.isDebugEnabled())
+            {
+                dumpToSystemOut(transferReport);
+            }
             
             // Now validate the client side transfer report against the XSD
             Source transferReportSource = new StreamSource(reader.getContentInputStream());
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            final String TRANSFER_REPORT_SCHEMA_LOCATION = "classpath:org/alfresco/repo/transfer/report/TransferReport.xsd";
+            final String TRANSFER_REPORT_SCHEMA_LOCATION = "classpath:org/alfresco/repo/transfer/report/TransferReport2.xsd";
             Schema schema = sf.newSchema(ResourceUtils.getURL(TRANSFER_REPORT_SCHEMA_LOCATION));
             Validator validator = schema.newValidator();
             try 
@@ -2310,6 +2418,15 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             ContentReader reader = contentService.getReader(transferDestReport, ContentModel.PROP_CONTENT);
             assertNotNull("transfer reader is null", reader);
+            
+            assertEquals("dest report mimetype not set", reader.getMimetype(), MimetypeMap.MIMETYPE_XML);
+            String name = (String)nodeService.getProperty(transferReport, ContentModel.PROP_NAME);
+            assertTrue("dest report does not end with .xml", name.endsWith(".xml"));
+            
+            if(logger.isDebugEnabled())
+            {
+                dumpToSystemOut(transferDestReport);
+            }
                         
             // Now validate the destination side transfer report against the XSD
             Source transferReportSource = new StreamSource(reader.getContentInputStream());
@@ -2386,7 +2503,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }    
     } // test transfer report    
-
 
     private void dumpToSystemOut(NodeRef nodeRef) throws IOException
     {

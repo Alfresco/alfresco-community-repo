@@ -98,7 +98,7 @@ public class TransferReporterImpl implements TransferReporter
         
         String title = transferName;
         String description = "Transfer Report - target: " + target.getName();
-        String name = transferName;
+        String name = transferName + ".xml";
         
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
@@ -109,7 +109,6 @@ public class TransferReporterImpl implements TransferReporter
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding(DEFAULT_ENCODING);
         
-        //
         XMLTransferReportWriter reportWriter = new XMLTransferReportWriter();
         
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(writer.getContentOutputStream()));
@@ -118,14 +117,12 @@ public class TransferReporterImpl implements TransferReporter
         {
             reportWriter.startTransferReport(DEFAULT_ENCODING, bufferedWriter);
             
-            // Header
             reportWriter.writeTarget(target);
             
             reportWriter.writeDefinition(definition);
             
             reportWriter.writeException(e);
             
-            // Detail
             reportWriter.writeTransferEvents(events);
             
             reportWriter.endTransferReport();
@@ -166,7 +163,7 @@ public class TransferReporterImpl implements TransferReporter
                
         String title = transferName;
         String description = "Transfer Report - target: " + target.getName();
-        String name = transferName;
+        String name = transferName + ".xml";
         
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
@@ -189,7 +186,11 @@ public class TransferReporterImpl implements TransferReporter
             // Header
             reportWriter.writeTarget(target);
             
+            // Definition of transfer
             reportWriter.writeDefinition(definition);
+            
+            // Events of transfer
+            reportWriter.writeTransferEvents(events);
             
             /**
              * Write the node summary details to the transfer report
@@ -248,9 +249,6 @@ public class TransferReporterImpl implements TransferReporter
                 return null;
             }
               
-            // Detail Events
-            reportWriter.writeTransferEvents(events);
-            
             reportWriter.endTransferReport();
             
             return ref.getChildRef();
@@ -289,7 +287,7 @@ public class TransferReporterImpl implements TransferReporter
        
         String title = transferName + "_destination";
         String description = "Transfer Destination Report - target: " + target.getName();
-        String name = title;
+        String name = title + ".xml";
         
         logger.debug("writing destination transfer report " + title);
         logger.debug("parent node ref " + target.getNodeRef());

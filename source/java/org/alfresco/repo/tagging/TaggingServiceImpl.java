@@ -176,6 +176,7 @@ public class TaggingServiceImpl implements TaggingService,
                 OnCreateNodePolicy.QNAME, 
                 ContentModel.ASPECT_TAGGABLE, 
                 createTagBehaviour);
+        
         // We need to register on content and folders, rather than
         //  tagable, so we can pick up when things start and
         //  stop being tagged
@@ -233,7 +234,7 @@ public class TaggingServiceImpl implements TaggingService,
             for (String tag : tags)
             {
                 tagUpdates.put(tag, isAdd);
-                
+
                 if (nodeQueuedUpdates != null)
                 {
                     Boolean queuedOp = (Boolean)nodeQueuedUpdates.get(tag);
@@ -243,7 +244,7 @@ public class TaggingServiceImpl implements TaggingService,
                         nodeQueuedUpdates.remove(tag);
                     }
                 }
-             }
+            }
             updateTagScope(parentNodeRef, tagUpdates, false);
         }
     }
@@ -261,66 +262,72 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * Fired once per node, before a copy overrides one node
-     *  (which is possibly newly created) with the contents
-     *  of another one.
-     * We should remove any tags from the scope, as they'll
-     *  shortly be overwritten.
+     * Fired once per node, before a copy overrides one node (which is possibly newly created) with the contents
+     * of another one.
+     * We should remove any tags from the scope, as they'll shortly be overwritten.
      */
-    public void beforeCopy(QName classRef, NodeRef sourceNodeRef,
-          NodeRef targetNodeRef) {
-       if(this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE)) {
-          updateAllScopeTags(targetNodeRef, Boolean.FALSE);
-       }
+    public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        if (this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE))
+        {
+            updateAllScopeTags(targetNodeRef, Boolean.FALSE);
+        }
     }
 
     /**
-     * Fired once per node that was copied, after the copy
-     *  has completed. 
+     * Fired once per node that was copied, after the copy has completed. 
      * We need to add in all the tags to the scope.
      */
-    public void onCopyComplete(QName classRef, NodeRef sourceNodeRef,
-         NodeRef targetNodeRef, boolean copyToNewNode,
-         Map<NodeRef, NodeRef> copyMap) {
-      if(this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE)) {
-         updateAllScopeTags(targetNodeRef, Boolean.TRUE);
-      }
+    public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode,
+            Map<NodeRef, NodeRef> copyMap)
+    {
+        if (this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE))
+        {
+            updateAllScopeTags(targetNodeRef, Boolean.TRUE);
+        }
     }
 
-    public void onMoveNode(ChildAssociationRef oldChildAssocRef,
-         ChildAssociationRef newChildAssocRef) {
-      NodeRef oldRef = oldChildAssocRef.getChildRef();
-      NodeRef oldParent = oldChildAssocRef.getParentRef();
-      NodeRef newRef = newChildAssocRef.getChildRef();
-      NodeRef newParent = newChildAssocRef.getParentRef();
-      
-      // Do nothing if it's a "rename" not a move
-      if(oldParent.equals(newParent)) {
-         return;
-      }
-      
-      // It has moved somewhere
-      // Remove the tags from the old location
-      if(this.nodeService.hasAspect(oldRef, ContentModel.ASPECT_TAGGABLE)) {
-         // Use the parent we were passed in, rather than re-fetching
-         //  via the node, as we need to reference the old scope!
-         ChildAssociationRef scopeParent;
-         if(oldChildAssocRef.isPrimary()) {
-            scopeParent = oldChildAssocRef;
-         } else {
-            scopeParent = this.nodeService.getPrimaryParent(oldParent);
-         }
-         if(scopeParent != null) {
-            updateAllScopeTags(oldRef, scopeParent.getParentRef(), Boolean.FALSE);
-         }
-      }
-      // Add the tags at its new location
-      if(this.nodeService.hasAspect(newRef, ContentModel.ASPECT_TAGGABLE)) {
-         updateAllScopeTags(newRef, Boolean.TRUE);
-      }
-   }
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        NodeRef oldRef = oldChildAssocRef.getChildRef();
+        NodeRef oldParent = oldChildAssocRef.getParentRef();
+        NodeRef newRef = newChildAssocRef.getChildRef();
+        NodeRef newParent = newChildAssocRef.getParentRef();
+        
+        // Do nothing if it's a "rename" not a move
+        if (oldParent.equals(newParent))
+        {
+            return;
+        }
+        
+        // It has moved somewhere
+        // Remove the tags from the old location
+        if (this.nodeService.hasAspect(oldRef, ContentModel.ASPECT_TAGGABLE))
+        {
+            // Use the parent we were passed in, rather than re-fetching
+            // via the node, as we need to reference the old scope!
+            ChildAssociationRef scopeParent;
+            if (oldChildAssocRef.isPrimary())
+            {
+                scopeParent = oldChildAssocRef;
+            }
+            else
+            {
+                scopeParent = this.nodeService.getPrimaryParent(oldParent);
+            }
+            if (scopeParent != null)
+            {
+                updateAllScopeTags(oldRef, scopeParent.getParentRef(), Boolean.FALSE);
+            }
+        }
+        // Add the tags at its new location
+        if (this.nodeService.hasAspect(newRef, ContentModel.ASPECT_TAGGABLE))
+        {
+            updateAllScopeTags(newRef, Boolean.TRUE);
+        }
+    }
 
-   public void createTags(ChildAssociationRef childAssocRef)
+    public void createTags(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
         Map<QName, Serializable> before = new HashMap<QName, Serializable>(0);
@@ -390,9 +397,7 @@ public class TaggingServiceImpl implements TaggingService,
     public boolean isTag(StoreRef storeRef, String tag)
     {
         // Lower the case of the tag
-        tag = tag.toLowerCase();
-        
-        return (getTagNodeRef(storeRef, tag) != null);
+        return (getTagNodeRef(storeRef, tag.toLowerCase()) != null);
     }
 
     /**

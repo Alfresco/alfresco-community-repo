@@ -701,7 +701,17 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         startTask = workflowService.endTask(startTask.getId(), null);
 
         WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+        
+        // attempt to delete workflow as a user that is not the initiator
+        personManager.setUser(USER3);
+        Response unauthResponse = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 403);
+        assertEquals(Status.STATUS_FORBIDDEN, unauthResponse.getStatus());
+        
+        // make sure workflow instance is still present
+        assertNotNull(workflowService.getWorkflowById(adhocInstance.getId()));
 
+        // now delete as initiator of workflow
+        personManager.setUser(USER1);
         Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
 

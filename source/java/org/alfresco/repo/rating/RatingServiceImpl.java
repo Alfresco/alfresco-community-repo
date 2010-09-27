@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
@@ -47,14 +48,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RatingServiceImpl implements RatingService
 {
-    //TODO Add links to ActivityService. Straight calls? Behaviours?
-    
     private static final Log log = LogFactory.getLog(RatingServiceImpl.class);
     private RatingSchemeRegistry schemeRegistry;
     
     // Injected services
     private NodeService nodeService;
-
+    private BehaviourFilter behaviourFilter;
+    
     public void setRatingSchemeRegistry(RatingSchemeRegistry schemeRegistry)
     {
         this.schemeRegistry = schemeRegistry;
@@ -63,6 +63,11 @@ public class RatingServiceImpl implements RatingService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     public Map<String, RatingScheme> getRatingSchemes()
@@ -131,10 +136,21 @@ public class RatingServiceImpl implements RatingService
             throw new RatingServiceException("Rating " + rating + " violates range for " + ratingScheme);
         }
 
-        // Add the cm:rateable aspect if it's not there already.
+        
+        // Ensure that the application of a rating does not cause updates
+        // to the modified, modifier properties on the rated node.
         if (nodeService.hasAspect(targetNode, ContentModel.ASPECT_RATEABLE) == false)
         {
-            nodeService.addAspect(targetNode, ContentModel.ASPECT_RATEABLE, null);
+            behaviourFilter.disableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                // Add the cm:rateable aspect if it's not there already.
+                nodeService.addAspect(targetNode, ContentModel.ASPECT_RATEABLE, null);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            }
         }
 
         // We're looking for child cm:rating nodes whose qname matches the current user.
@@ -150,7 +166,15 @@ public class RatingServiceImpl implements RatingService
             ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
             ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
 
-            nodeService.createNode(targetNode, ContentModel.ASSOC_RATINGS, assocQName, ContentModel.TYPE_RATING, ratingProps);
+            behaviourFilter.disableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                nodeService.createNode(targetNode, ContentModel.ASSOC_RATINGS, assocQName, ContentModel.TYPE_RATING, ratingProps);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            }
         }
         else
         {
@@ -251,8 +275,8 @@ public class RatingServiceImpl implements RatingService
         {
             return null;
         }
-        ChildAssociationRef lastChild = ratingChildren.get(0);
-        Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
+        ChildAssociationRef child = ratingChildren.get(0);
+        Map<QName, Serializable> properties = nodeService.getProperties(child.getChildRef());
         
         Rating result = null;
         // If the rating is for the specified scheme delete it.
@@ -262,7 +286,7 @@ public class RatingServiceImpl implements RatingService
             Float score = (Float) properties.get(ContentModel.PROP_RATING_SCORE);
             Date date = (Date)properties.get(ContentModel.PROP_RATED_AT);
             
-            nodeService.deleteNode(lastChild.getChildRef());
+            nodeService.deleteNode(child.getChildRef());
             result = new Rating(getRatingScheme(ratingSchemeName), score, user, date);
         }
         

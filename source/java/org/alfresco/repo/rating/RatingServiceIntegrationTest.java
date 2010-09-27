@@ -89,7 +89,6 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         companyHome = this.repositoryHelper.getCompanyHome();
         
-        //TODO These could be created @BeforeClass
         testFolder = createNode(companyHome, "testFolder", ContentModel.TYPE_FOLDER);
         testFolderCopyDest = createNode(companyHome, "testFolderCopyDest", ContentModel.TYPE_FOLDER);
         testDoc_Admin = createNode(testFolder, "testDocInFolder", ContentModel.TYPE_CONTENT);
@@ -191,6 +190,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         final float fiveStarScore = 5;
         
         ratingService.applyRating(testDoc_Admin, fiveStarScore, FIVE_STAR_SCHEME_NAME);
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
         
         // Some basic node structure tests.
         assertTrue(ContentModel.ASPECT_RATEABLE + " aspect missing.",
@@ -221,6 +221,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         // Now we'll update a rating
         final float updatedFiveStarScore = 3;
         ratingService.applyRating(testDoc_Admin, updatedFiveStarScore, FIVE_STAR_SCHEME_NAME);
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
         
         // Some basic node structure tests.
         allChildren = nodeService.getChildAssocs(testDoc_Admin,
@@ -246,6 +247,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         
         // And delete the 'five star' rating.
         Rating deletedStarRating = ratingService.removeRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
         // 'five star' rating data should be unchanged.
         assertNotNull("'5*' rating was null.", deletedStarRating);
         assertEquals("Wrong score for rating", updatedFiveStarScore, deletedStarRating.getScore());
@@ -331,14 +333,23 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals("Wrong number of child nodes", 1 , nodeService.getChildAssocs(testDoc_Admin).size());
     }
     
+    /**
+     * This test method applies ratings to a single node as a number of different users.
+     * It checks that the ratings are applied correctly and that the cm:modifier is not
+     * updated by these changes.
+     */
     public void testApplyRating_MultipleUsers() throws Exception
     {
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
+        
         // 2 different users rating the same piece of content in the same rating scheme
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         ratingService.applyRating(testDoc_Admin, 4.0f, FIVE_STAR_SCHEME_NAME);
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
         
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         ratingService.applyRating(testDoc_Admin, 2.0f, FIVE_STAR_SCHEME_NAME);
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
         
         float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         assertEquals("Document had wrong mean rating.", 3f, meanRating);
@@ -348,6 +359,18 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         assertEquals("Document had wrong ratings count.", 2, ratingsCount);
+    }
+
+    /**
+     * This method asserts that the modifier of the specified node is equal to the
+     * provided modifier name.
+     * @param nodeRef the nodeRef to check.
+     * @param expectedModifier the expected modifier e.g. "admin".
+     */
+    private void assertModifierIs(NodeRef nodeRef, final String expectedModifier)
+    {
+        String actualModifier = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("Incorrect cm:modifier", expectedModifier, actualModifier);
     }
     
     public void testUsersCantRateTheirOwnContent() throws Exception

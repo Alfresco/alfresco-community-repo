@@ -22,7 +22,9 @@ package org.alfresco.service.cmr.rating;
 import org.alfresco.repo.rating.RatingSchemeRegistry;
 
 /**
- * This data type represents a rating scheme as used in the {@link RatingService}.
+ * This interface defines a Rating Scheme, which is a named scheme for user-supplied
+ * ratings with a defined minimum value and a defined maximum value. The minimum must
+ * not be greater than the maximum but the two values can be equal.
  * These schemes are defined within spring context files and injected into the
  * {@link RatingSchemeRegistry} at startup.
  * 

@@ -39,25 +39,14 @@
       class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
    <!-- Rating Service base bean -->
-	<bean id="ratingService" class="org.alfresco.repo.rating.RatingServiceImpl" >
+	<bean id="ratingService" class="org.alfresco.repo.rating.RatingServiceImpl">
 	    <property name="ratingSchemeRegistry">
 	       <ref local="ratingSchemeRegistry"/>
 	    </property>
-	    <property name="nodeService" ref="nodeService"/>
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="nodeService" ref="nodeService"/>
 	</bean>
 
-   <!-- i18n TODO Needed? -->
-   <!--
-   <bean id="ratingResourceBundles"
-      class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-            <value>alfresco.messages.rating-config</value>
-         </list>
-      </property>
-   </bean>
-   -->
-   
    <!-- The rating scheme registry maintains the collection of registered rating schemes. -->   
    <bean id="ratingSchemeRegistry" class="org.alfresco.repo.rating.RatingSchemeRegistry" />
    

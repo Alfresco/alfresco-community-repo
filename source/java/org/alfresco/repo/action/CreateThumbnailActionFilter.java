@@ -43,8 +43,25 @@ public class CreateThumbnailActionFilter extends AbstractAsynchronousActionFilte
 		{
 			String thName1 = (String)nodeAction1.getAction().getParameterValue(PARAM_THUMBNAIL_NAME);
 			String thName2 = (String)nodeAction2.getAction().getParameterValue(PARAM_THUMBNAIL_NAME);
-			
-			return thName1.compareTo(thName2);
+
+			// Need to allow for the possibility of null values for thumbnail-name. (ALF-4946)
+			if (thName1 == null && thName2 == null)
+			{
+				// Two null-valued thumbnail-names are considered equal under the compareTo contract.
+				return 0;
+			}
+			else if (thName1 == null && thName2 != null)
+			{
+				return -1;
+			}
+			else if (thName1 != null && thName2 == null)
+			{
+				return 1;
+			}
+			else
+			{
+				return thName1.compareTo(thName2);
+			}
 		}
 	}
 }

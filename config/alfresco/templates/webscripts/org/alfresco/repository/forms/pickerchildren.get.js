@@ -264,7 +264,7 @@ function findUsers(searchTerm, maxResults, results)
    
    if (searchTerm != null && searchTerm.length > 0)
    {
-      searchTerm = searchTerm.replace("\"", "");
+      searchTerm = searchTerm.replace(/\"/g, "");
          
       query += ' AND (@cm\\:firstName:"*' + searchTerm + '*" @cm\\:lastName:"*' + searchTerm + 
          '*" @cm\\:userName:' + searchTerm + '* )';

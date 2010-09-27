@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -371,6 +372,27 @@ public class CreateWebContentWizard extends CreateContentWizard
          }
       }
       this.getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
+
+      for (final AVMDifference diff : diffList)
+      {
+         final String path = diff.getDestinationPath();
+         String storeId = AVMUtil.getStoreId(path);
+         String storePath = AVMUtil.getStoreRelativePath(path);
+         String storeName = AVMUtil.getStoreName(path);
+
+         String lockOwner = getAvmLockingService().getLockOwner(storeId, storePath);
+         Map<String, String> lockData = getAvmLockingService().getLockData(storeId, storePath);
+         String fromStoreName = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
+         lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, storeName);
+
+         if (logger.isDebugEnabled())
+         {
+            logger.debug("modifying lock on " + path + ".  chaging store from " + fromStoreName + " to " + storeName);
+         }
+
+         this.getAvmLockingService().modifyLock(storeId, AVMUtil.getStoreRelativePath(diff.getSourcePath()), lockOwner, storeId, AVMUtil.getStoreRelativePath(path), lockData);
+      }
+      
       if (this.startWorkflow)
       {
          final List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>(1 + this.getUploadedFiles().size() + this.getRenditions().size());

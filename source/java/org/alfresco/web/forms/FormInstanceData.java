@@ -45,25 +45,30 @@ public interface FormInstanceData
       private final String path;
       private final Rendition r;
       private final Exception e;
+      private final String lockOwner; // existing lock owner otherwise null
 
       public RegenerateResult(final RenderingEngineTemplate ret, 
               final String path,
-              final Rendition r)
+              final Rendition r,
+              final String lockOwner)
       {
          this.ret = ret;
          this.r = r;
          this.e = null;
          this.path = path;
+         this.lockOwner = lockOwner;
       }
       
       public RegenerateResult(final RenderingEngineTemplate ret,
                               final String path,
-                              final Exception e)
+                              final Exception e,
+                              final String lockOwner)
       {
          this.ret = ret;
          this.e = e;
          this.r = null;
          this.path = path;
+         this.lockOwner = lockOwner;
       }
 
       public RenderingEngineTemplate getRenderingEngineTemplate()
@@ -84,6 +89,11 @@ public interface FormInstanceData
       public Exception getException()
       {
          return this.e;
+      }
+      
+      public String getLockOwner()
+      {
+          return this.lockOwner;
       }
    }
 

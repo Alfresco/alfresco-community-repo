@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
@@ -39,6 +40,8 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
@@ -188,7 +191,6 @@ import org.xml.sax.SAXException;
          new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
       final List<RegenerateResult> result = new LinkedList<RegenerateResult>();
       // regenerate existing renditions
-      boolean renditionLockedBefore = false;
       String path = null;
       
       for (final Rendition r : this.getRenditions())
@@ -213,6 +215,8 @@ import org.xml.sax.SAXException;
          {
             continue;
          }
+         
+         String lockOwner = null;
          try
          {
             if (logger.isDebugEnabled())
@@ -220,13 +224,10 @@ import org.xml.sax.SAXException;
                logger.debug("regenerating rendition " + r + " using template " + ret);
             }
             
-            renditionLockedBefore = false;
             path = r.getPath();
-            String lockOwner = avmLockService.getLockOwner(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+            lockOwner = avmLockService.getLockOwner(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
             if (lockOwner != null)
             {
-               renditionLockedBefore = true;
-               
                if (logger.isDebugEnabled())
                {
                   logger.debug("Lock already exists for " + path);
@@ -235,14 +236,14 @@ import org.xml.sax.SAXException;
             
             ret.render(this, r);
             allRets.remove(ret);
-            result.add(new RegenerateResult(ret, path, r));
+            result.add(new RegenerateResult(ret, path, r, lockOwner));
          }
          catch (Exception e)
          {
-            result.add(new RegenerateResult(ret, path, e));
+            result.add(new RegenerateResult(ret, path, e, lockOwner));
             
             // remove lock if there wasn't one before
-            if (renditionLockedBefore == false)
+            if (lockOwner == null)
             {
                avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
                
@@ -254,13 +255,19 @@ import org.xml.sax.SAXException;
          }
       }
       
+      // get current username for lock checks
+      String username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
+      
       // render all renditions for newly added templates
       for (final RenderingEngineTemplate ret : allRets)
       {
+          String lockOwner = null;
+          String currentLockStore = null;
+          boolean lockModified = false;
+          
          try
          {
-            renditionLockedBefore = false;
-            path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName());
+            path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName().replaceAll("(.+)\\..*", "$1"));
             
             if (logger.isDebugEnabled())
             {
@@ -268,32 +275,69 @@ import org.xml.sax.SAXException;
                             " at " + path + " using template " + ret);
             }
             
-            String lockOwner = avmLockService.getLockOwner(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+            String storeId = AVMUtil.getStoreId(path);
+            String storePath = AVMUtil.getStoreRelativePath(path);
+            String storeName = AVMUtil.getStoreName(path);
+
+            lockOwner = avmLockService.getLockOwner(storeId, storePath);
+            Map<String, String> lockData = avmLockService.getLockData(storeId, storePath);
+            currentLockStore = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
+            
             if (lockOwner != null)
             {
-               renditionLockedBefore = true;
-               
                if (logger.isDebugEnabled())
                {
                   logger.debug("Lock already exists for " + path);
                }
+               
+               if (currentLockStore.equals(storeName) == false)
+               {
+                   if (lockOwner.equals(username))
+                   {
+                      lockModified = true;
+                      
+                      // lock already exists on path, check it's owned by the current user
+                      if (logger.isDebugEnabled())
+                      {
+                         logger.debug("transferring lock from " + currentLockStore + " to " + storeName + " for path: " + path);
+                      }
+                      
+                      lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, storeName);
+                      avmLockService.modifyLock(storeId, storePath, lockOwner, storeId, storePath, lockData);
+                   }
+               }
             }
             
-            result.add(new RegenerateResult(ret, path, ret.render(this, path)));
+            result.add(new RegenerateResult(ret, path, ret.render(this, path), lockOwner));
          }
          catch (Exception e)
          {
-            result.add(new RegenerateResult(ret, path, e));
+            result.add(new RegenerateResult(ret, path, e, lockOwner));
+
+            String storeId = AVMUtil.getStoreId(path);
+            String storePath = AVMUtil.getStoreRelativePath(path);
+            String storeName = AVMUtil.getStoreName(path);
             
-            // remove lock if there wasn't one before
-            if (renditionLockedBefore == false)
+            if (lockOwner == null)
             {
-               avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+               // remove lock if there wasn't one before
+               avmLockService.removeLock(storeId, storePath);
                
                if (logger.isDebugEnabled())
                {
                   logger.debug("Removed lock for " + path + " as it failed to generate");
                }
+            }
+            else if (lockModified)
+            {
+                if (logger.isDebugEnabled())
+                {
+                   logger.debug("transferring lock from " + storeName + " to " + currentLockStore + " for path: " + path);
+                }
+                
+                Map<String, String> lockData = avmLockService.getLockData(storeId, storePath);
+                lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, currentLockStore);
+                avmLockService.modifyLock(storeId, storePath, lockOwner, storeId, storePath, lockData);
             }
          }
       }

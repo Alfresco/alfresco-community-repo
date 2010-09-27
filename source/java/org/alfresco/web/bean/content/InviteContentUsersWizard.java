@@ -35,18 +35,11 @@ public class InviteContentUsersWizard extends BaseInviteUsersWizard
 {
    private static final long serialVersionUID = 9198783146031469545L;
    
-   /** Cache of available content permissions */
-   Set<String> contentPermissions = null;
-   
    @Override
    protected Set<String> getPermissionsForType()
    {
-      if (this.contentPermissions == null)
-      {
-         this.contentPermissions = this.getPermissionService().getSettablePermissions(getNode().getType());
-      }
-       
-      return this.contentPermissions;
+      // Let the permission service do the caching to allow for dynamic model updates, etc.
+      return this.permissionService.getSettablePermissions(getNode().getType());
    }
 
    @Override

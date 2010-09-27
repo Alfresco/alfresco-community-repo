@@ -615,7 +615,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       sorter.sort();
       
       // select the first workflow in the list
-      if (this.availableWorkflows.size() > 0)
+      if (this.availableWorkflows.size() > 0 && previouslySelectedWorkflow == null)
       {
          this.selectedWorkflow = (String)this.availableWorkflows.get(0).getValue();
       }

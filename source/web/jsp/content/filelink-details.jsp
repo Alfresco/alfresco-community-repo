@@ -61,7 +61,7 @@
       <h:panelGroup id="props-panel-facets">
          <f:facet name="title">
             <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
-               <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editLinkProperties" actionListener="#{DialogManager.setupParameters}" >
+               <a:actionLink id="titleLink10" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editLinkProperties" actionListener="#{DialogManager.setupParameters}" >
                    <f:param name="nodeRef" value="#{DialogManager.bean.document.nodeRefAsString}" />
                </a:actionLink>
             </r:permissionEvaluator>
@@ -98,7 +98,7 @@
       <%-- Document Actions --%> 
       <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center" progressive="true"
          expanded='#{DialogManager.bean.panels["actions-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
-         <r:actions id="actions_doc" value="filelink_details_actions" context="#{DialogManager.bean.document}" verticalSpacing="3" style="white-space:nowrap" />
+         <r:actions id="actions_link_doc" value="filelink_details_actions" context="#{DialogManager.bean.document}" verticalSpacing="3" style="white-space:nowrap" />
       </a:panel><f:verbatim></td>
    </tr>
 </table>

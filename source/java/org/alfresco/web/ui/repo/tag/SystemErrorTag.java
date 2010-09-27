@@ -19,10 +19,13 @@
 package org.alfresco.web.ui.repo.tag;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -31,6 +34,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
 import org.alfresco.web.bean.ErrorBean;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * A non-JSF tag library that displays the currently stored system error
@@ -46,6 +50,9 @@ public class SystemErrorTag extends TagSupport
    private static final String MSG_HIDE_DETAILS  = "hide_details";
    private static final String MSG_SHOW_DETAILS  = "show_details";
    private static final String MSG_LOGOUT        = "logout";
+   private static final String MSG_ERROR_NOT_STORED  = "error_not_stored";
+   private static final String MSG_ERROR_NO_STACK_TRACE  = "error_no_stack_trace";
+   private static final String MSG_CAUSED_BY = "caused_by";
    
    private String styleClass;
    private String detailsStyleClass;
@@ -104,10 +111,7 @@ public class SystemErrorTag extends TagSupport
     * @see javax.servlet.jsp.tagext.TagSupport#doStartTag()
     */
    public int doStartTag() throws JspException
-   {
-      String errorMessage = "No error currently stored";
-      String errorDetails = "No details";
-      
+   {      
       // get the error details from the bean, this may be in a portlet
       // session or a normal servlet session.
       ErrorBean errorBean = null;
@@ -121,12 +125,7 @@ public class SystemErrorTag extends TagSupport
                         getAttribute(ErrorBean.ERROR_BEAN_NAME);
       }
 
-      if (errorBean != null)
-      {
-         errorMessage = errorBean.getLastErrorMessage();
-         errorDetails = errorBean.getStackTrace();
-      }
-      else
+      if (errorBean == null)
       {
          // if we reach here the error was caught by the declaration in web.xml so
          // pull all the information from the request and create the error bean
@@ -138,15 +137,28 @@ public class SystemErrorTag extends TagSupport
          pageContext.getSession().setAttribute(ErrorBean.ERROR_BEAN_NAME, errorBean);
          errorBean.setLastError(error);
          errorBean.setReturnPage(uri);
-         errorMessage = errorBean.getLastErrorMessage();
-         errorDetails = errorBean.getStackTrace();
       }
+      Throwable lastError = errorBean.getLastError();      
       
       try
       {
          Writer out = pageContext.getOut();
          
          ResourceBundle bundle = Application.getBundle(pageContext.getSession());
+         
+         String errorMessage;
+         String errorDetails;
+         if (lastError == null)
+         {
+            String messageKey = errorBean.getErrorMessageKey();
+            errorMessage = bundle.getString(messageKey == null ? MSG_ERROR_NOT_STORED : messageKey);
+            errorDetails = bundle.getString(MSG_ERROR_NO_STACK_TRACE);
+         }
+         else
+         {
+            errorMessage = getLastErrorMessage(lastError, bundle);
+            errorDetails = getStackTrace(lastError);
+         }         
          
          out.write("<div");
          
@@ -289,4 +301,52 @@ public class SystemErrorTag extends TagSupport
       
       super.release();
    }
+   
+   /**
+    * @return Returns the last error to occur in string form
+    */
+   private String getLastErrorMessage(Throwable lastError, ResourceBundle bundle)
+   {
+      StringBuilder builder = new StringBuilder(lastError.toString());;
+      Throwable cause = lastError.getCause();
+      
+      // build up stack trace of all causes
+      while (cause != null)
+      {
+         builder.append("\n").append(bundle.getString(MSG_CAUSED_BY)).append("\n");
+         builder.append(cause.toString());
+         
+         if (cause instanceof ServletException && 
+               ((ServletException)cause).getRootCause() != null)
+         {
+            cause = ((ServletException)cause).getRootCause();
+         }
+         else
+         {
+            cause = cause.getCause();
+         }  
+      }
+      
+      String message = Utils.encode(builder.toString());
+      
+      // format the message for HTML display
+      message = message.replaceAll("\n", "<br>");
+      return message;
+   }
+   
+   /**
+    * @return Returns the stack trace for the last error
+    */
+   private String getStackTrace(Throwable lastError)
+   {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter writer = new PrintWriter(stringWriter);
+      lastError.printStackTrace(writer);
+      
+      // format the message for HTML display
+      String trace = Utils.encode(stringWriter.toString());
+      trace = trace.replaceAll("\n", "<br>");
+      return trace;
+   }
+   
 }

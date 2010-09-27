@@ -35,10 +35,23 @@ public final class SortableSelectItem extends SelectItem implements Comparable
    
    public int compareTo(Object obj2)
    {
-      if (this.sort == null && obj2 == null) return 0;
-      if (this.sort == null) return -1;
-      if (obj2 == null) return 1;
-      return this.sort.compareToIgnoreCase( ((SortableSelectItem)obj2).sort );
+      SortableSelectItem s2 = ((SortableSelectItem)obj2);
+      if (this.sort == null)
+      {
+          if (s2 == null || s2.sort == null)
+          {
+             return 0;
+          }
+          return -1;
+      }
+      else
+      {
+         if (s2 == null || s2.sort == null)
+         {
+            return 1;
+         }
+         return this.sort.compareToIgnoreCase( s2.sort );
+      }
    }
    
    private String sort;

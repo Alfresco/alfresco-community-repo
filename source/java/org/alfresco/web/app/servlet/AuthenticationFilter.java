@@ -112,8 +112,6 @@ public class AuthenticationFilter extends AbstractLifecycleBean implements Depen
         }
         else
         {
-            BaseServlet.setLanguageFromRequestHeader(httpReq, context);
-         
             // continue filter chaining
             chain.doFilter(req, res);
         }

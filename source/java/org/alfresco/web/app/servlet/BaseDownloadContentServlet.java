@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -47,11 +46,9 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.apache.commons.logging.Log;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -97,6 +94,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
    protected static final String MIMETYPE_OCTET_STREAM = "application/octet-stream";
    
    protected static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
+   protected static final String MSG_ERROR_NOT_FOUND = "error_not_found";
    
    protected static final String URL_DIRECT        = "d";
    protected static final String URL_DIRECT_LONG   = "direct";
@@ -114,19 +112,21 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
     * @return The logger
     */
    protected abstract Log getLogger();
-   
+
    /**
-    * Processes the download request using the current context i.e. no
-    * authentication checks are made, it is presumed they have already
-    * been done.
+    * Processes the download request using the current context i.e. no authentication checks are made, it is presumed
+    * they have already been done.
     * 
-    * @param req The HTTP request
-    * @param res The HTTP response
-    * @param redirectToLogin Flag to determine whether to redirect to the login
-    *                        page if the user does not have the correct permissions
+    * @param req
+    *           The HTTP request
+    * @param res
+    *           The HTTP response
+    * @param allowLogIn
+    *           Indicates whether guest users without access to the content should be redirected to the log in page. If
+    *           <code>false</code>, a status 403 forbidden page is displayed instead.
     */
    protected void processDownloadRequest(HttpServletRequest req, HttpServletResponse res,
-         boolean redirectToLogin, boolean transmitContent)
+         boolean allowLogIn, boolean transmitContent)
          throws ServletException, IOException
    {   
       Log logger = getLogger();
@@ -160,10 +160,18 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       if (path != null && path.length() != 0)
       {
          // process the name based path to resolve the NodeRef and the Filename element
-         PathRefInfo pathInfo = resolveNamePath(getServletContext(), path); 
-         
-         nodeRef = pathInfo.NodeRef;
-         filename = pathInfo.Filename;
+         try
+         {
+            PathRefInfo pathInfo = resolveNamePath(getServletContext(), path);
+            nodeRef = pathInfo.NodeRef;
+            filename = pathInfo.Filename;
+         }
+         catch (IllegalArgumentException e)
+         {
+            Application.handleSystemError(getServletContext(), req, res, MSG_ERROR_NOT_FOUND,
+                  HttpServletResponse.SC_NOT_FOUND, logger);
+            return;
+         }         
       }
       else
       {
@@ -200,7 +208,9 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
             }
             catch (FileNotFoundException e)
             {
-               throw new AlfrescoRuntimeException("Unable to find node reference by relative path:" + uri);
+               Application.handleSystemError(getServletContext(), req, res, MSG_ERROR_NOT_FOUND,
+                     HttpServletResponse.SC_NOT_FOUND, logger);
+               return;
             }
          }
          else
@@ -229,35 +239,20 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       // get the services we need to retrieve the content
       NodeService nodeService = serviceRegistry.getNodeService();
       ContentService contentService = serviceRegistry.getContentService();
-      PermissionService permissionService = serviceRegistry.getPermissionService();
       
+      // Check that the node still exists
+      if (!nodeService.exists(nodeRef))
+      {
+         Application.handleSystemError(getServletContext(), req, res, MSG_ERROR_NOT_FOUND,
+               HttpServletResponse.SC_NOT_FOUND, logger);
+         return;         
+      }
+
       try
       {
-         // check that the user has at least READ_CONTENT access - else redirect to the login page
-         if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+         // check that the user has at least READ_CONTENT access - else redirect to an error or login page
+         if (!checkAccess(req, res, nodeRef, PermissionService.READ_CONTENT, allowLogIn))
          {
-            if (logger.isDebugEnabled())
-               logger.debug("User does not have permissions to read content for NodeRef: " + nodeRef.toString());
-            
-            if (redirectToLogin)
-            {
-               if (logger.isDebugEnabled())
-                  logger.debug("Redirecting to login page...");
-               
-               // TODO: replace with serviceRegistry.getAuthorityService().hasGuestAuthority() from 3.1E
-               if (!AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getGuestUserName()))
-               {
-                   req.getSession().setAttribute(LoginBean.LOGIN_NOPERMISSIONS, Boolean.TRUE);
-               }
-               redirectToLoginPage(req, res, getServletContext());
-            }
-            else
-            {
-               if (logger.isDebugEnabled())
-                  logger.debug("Returning 403 Forbidden error...");
-               
-               res.sendError(HttpServletResponse.SC_FORBIDDEN);
-            }  
             return;
          }
          
@@ -512,7 +507,6 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       throws IOException
    {
       final Log logger = getLogger();
-      final boolean trace = logger.isTraceEnabled();
       
       // return the sets of bytes as requested in the content-range header
       // the response will be formatted as multipart/byteranges media type message

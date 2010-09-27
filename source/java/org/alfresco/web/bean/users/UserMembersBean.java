@@ -37,6 +37,7 @@ import javax.faces.model.ListDataModel;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -814,16 +815,26 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             
             // clear the currently set permissions for this user
             // and add each of the new permissions in turn
-            NodeRef nodeRef = getNode().getNodeRef();
-            this.getPermissionService().clearPermission(nodeRef, getPersonAuthority());
-            for (PermissionWrapper wrapper : personRoles)
+            final NodeRef nodeRef = getNode().getNodeRef();
+            if (this.getPermissionService().hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
             {
-               this.getPermissionService().setPermission(
-                     nodeRef,
-                     getPersonAuthority(),
-                     wrapper.getPermission(),
-                     true);
-            }
+               AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+                 public Object doWork() throws Exception
+                 {
+                    getPermissionService().clearPermission(nodeRef, getPersonAuthority());
+                    for (PermissionWrapper wrapper : personRoles)
+                    {
+                       getPermissionService().setPermission(
+                    	       nodeRef,
+                               getPersonAuthority(),
+                               wrapper.getPermission(),
+                               true);
+                    }
+                    return null;
+                 }
+               
+               }, AuthenticationUtil.getSystemUserName());
+            } 
             
             tx.commit();
          }

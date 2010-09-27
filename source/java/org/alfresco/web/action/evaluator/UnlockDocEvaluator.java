@@ -18,6 +18,10 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import javax.faces.context.FacesContext;
+
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -34,6 +38,16 @@ public class UnlockDocEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.isLocked() == true);
+      if (node.isLocked())
+      {
+         FacesContext fc = FacesContext.getCurrentInstance();
+         CheckOutCheckInService checkOutCheckInService =  (CheckOutCheckInService) FacesHelper.getManagedBean(fc, "CheckoutCheckinService");
+         if (checkOutCheckInService.getWorkingCopy(node.getNodeRef()) == null)
+         {
+            return true;
+         }
+      }
+       
+      return false;
    }
 }

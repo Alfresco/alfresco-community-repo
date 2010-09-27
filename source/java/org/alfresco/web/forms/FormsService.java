@@ -378,7 +378,11 @@ public final class FormsService
             LOGGER.debug("removing configuration for " + formName +
                          " from web project " + this.nodeService.getProperty(parentRef, ContentModel.PROP_NAME));
          }
-         this.nodeService.removeChild(parentRef, ref);
+		 // ALF-3751: Validate this is the real form folder rather than a copy
+         if (childRef.getParentRef().equals(parentRef))
+         {
+            this.nodeService.removeChild(parentRef, ref);
+         }
       }
    }
 

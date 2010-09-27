@@ -218,7 +218,7 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
       	out.write("  <span class='pickerActionButton'><a href='javascript:" + objId + ".showSelector();'>");
       	if (selectedNames == null)
       	{
-      	   if (getLabel() == "")
+      	   if ("".equals(getLabel()))
       	   {
       	      setLabel(msg.getString(MSG_CLICK_TO_SELECT_TAG));
       	   }

@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -194,6 +195,78 @@ public class Application
       }
    }
    
+   /**
+    * Handles error conditions detected by servlets.
+    * 
+    * @param servletContext
+    *           The servlet context
+    * @param request
+    *           The HTTP request
+    * @param response
+    *           The HTTP response
+    * @param messageKey
+    *           the resource bundle key for the error mesage
+    * @param statusCode
+    *           the status code to set on the response
+    * @param logger
+    *           The logger
+    * @throws IOException
+    *            Signals that an I/O exception has occurred.
+    * @throws ServletException
+    *            the servlet exception
+    */
+   public static void handleSystemError(ServletContext servletContext, HttpServletRequest request,
+         HttpServletResponse response, String messageKey, int statusCode, Log logger)
+         throws IOException, ServletException
+   {
+      // get the error bean from the session and set the error that occurred.
+      HttpSession session = request.getSession();
+      ErrorBean errorBean = (ErrorBean)session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+      if (errorBean == null)
+      {
+         errorBean = new ErrorBean();
+         session.setAttribute(ErrorBean.ERROR_BEAN_NAME, errorBean);
+      }
+      errorBean.setErrorMessageKey(messageKey);
+      errorBean.setReturnPage(null);
+      
+      // try and find the configured error page
+      boolean errorShown = false;
+      String errorPage = getErrorPage(servletContext);
+      
+      if (errorPage != null)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("An error has occurred, forwarding to error page: " + errorPage);
+         
+         if (!response.isCommitted())
+         {
+            errorShown = true;
+            response.reset();
+            response.setStatus(statusCode);
+            response.setContentType(MimetypeMap.MIMETYPE_HTML);
+            response.setCharacterEncoding("utf-8");
+            servletContext.getRequestDispatcher(errorPage).include(request, response);
+         }
+         else
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Response is already committed, re-throwing error");
+         }
+      }
+      else
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("No error page defined, re-throwing error");
+      }
+      
+      // if we could not show the error page for whatever reason, re-throw the error
+      if (!errorShown)
+      {
+         throw new ServletException(getMessage(session, messageKey));
+      }
+   }
+
    /**
     * Retrieves the DialogManager managed bean 
     * 

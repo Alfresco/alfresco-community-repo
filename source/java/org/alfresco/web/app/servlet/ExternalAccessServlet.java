@@ -155,12 +155,9 @@ public class ExternalAccessServlet extends BaseServlet
          
          if (nodeRef != null)
          {
-            // check that the user has at least READ access - else redirect to the login page
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+            // check that the user has at least READ access - else redirect to an error or login page
+            if (!checkAccess(req, res, nodeRef, PermissionService.READ_CONTENT, true))
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             
@@ -189,12 +186,9 @@ public class ExternalAccessServlet extends BaseServlet
          
          if (nodeRef != null)
          {
-            // check that the user has at least READ access - else redirect to the login page
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+            // check that the user has at least READ access - else redirect to an error or login page
+            if (!checkAccess(req, res, nodeRef, PermissionService.READ_CONTENT, true))
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             
@@ -225,12 +219,9 @@ public class ExternalAccessServlet extends BaseServlet
          
          if (nodeRef != null)
          {
-            // check that the user has at least READ access - else redirect to the login page
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+            // check that the user has at least READ access - else redirect to an error or login page
+            if (!checkAccess(req, res, nodeRef, PermissionService.READ_CONTENT, true))
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("User does not have permissions to READ NodeRef: " + nodeRef.toString());
-               redirectToLoginPage(req, res, getServletContext());
                return;
             }
             

@@ -114,11 +114,6 @@ public final class AuthenticationHelper
       {
          I18NUtil.setLocale(Application.getLanguage(req.getSession()));
       }
-      else
-      {
-         // Set the current thread locale (also for JSF context)
-         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
-      }
    
       // Programatically retrieve the UserPreferencesBean from JSF
       UserPreferencesBean userPreferencesBean = (UserPreferencesBean) fc.getApplication().createValueBinding(

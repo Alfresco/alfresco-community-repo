@@ -28,6 +28,7 @@
 <%@ page import="org.alfresco.web.ui.common.Utils" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.bean.LoginBean" %>
+<%@ page import="org.springframework.extensions.surf.util.I18NUtil" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="javax.servlet.http.Cookie" %>
 <%@ page import="java.util.Locale" %>
@@ -56,9 +57,7 @@
          session.setAttribute(AuthenticationHelper.SESSION_USERNAME, authCookieValue);
       }
    }
-   
-   // setup system locale from the Accept-Language header value
-   Locale locale = BaseServlet.setLanguageFromRequestHeader(request, application);
+
 %>
 
 <body bgcolor="#ffffff" style="background-image: url(<%=request.getContextPath()%>/images/logo/AlfrescoFadedBG.png); background-repeat: no-repeat; background-attachment: fixed">
@@ -69,8 +68,8 @@
 <%
    FacesContext fc = FacesContext.getCurrentInstance();
 
-   // set locale for JSF framework usage
-   fc.getViewRoot().setLocale(locale);
+   // set locale for JSF framework usage (passed on by Localization Filter)
+   fc.getViewRoot().setLocale(I18NUtil.getLocale());
    
    // set permissions error if applicable
    if (session.getAttribute(LoginBean.LOGIN_NOPERMISSIONS) != null)

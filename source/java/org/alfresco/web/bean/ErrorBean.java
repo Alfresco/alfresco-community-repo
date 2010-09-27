@@ -18,9 +18,7 @@
  */
 package org.alfresco.web.bean;
 
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 
 import javax.servlet.ServletException;
 
@@ -37,6 +35,7 @@ public class ErrorBean implements Serializable
    
    private String returnPage;
    private Throwable lastError;
+   private String errorMessageKey;
 
    /**
     * @return Returns the page to go back to after the error has been displayed
@@ -79,68 +78,29 @@ public class ErrorBean implements Serializable
       {
          this.lastError = error;
       }
+      this.errorMessageKey = null;
    }
-   
+         
    /**
-    * @return Returns the last error to occur in string form
+    * Gets the error message key.
+    * 
+    * @return the error message key
     */
-   public String getLastErrorMessage()
+   public String getErrorMessageKey()
    {
-      String message = "No error currently stored";
-      
-      if (this.lastError != null)
-      {
-         StringBuilder builder = new StringBuilder(this.lastError.toString());;
-         Throwable cause = this.lastError.getCause();
-         
-         // build up stack trace of all causes
-         while (cause != null)
-         {
-            builder.append("\ncaused by:\n");
-            builder.append(cause.toString());
-            
-            if (cause instanceof ServletException && 
-                  ((ServletException)cause).getRootCause() != null)
-            {
-               cause = ((ServletException)cause).getRootCause();
-            }
-            else
-            {
-               cause = cause.getCause();
-            }  
-         }
-         
-         message = builder.toString();
-         
-         // format the message for HTML display
-         message = message.replaceAll("<", "&lt;");
-         message = message.replaceAll(">", "&gt;");
-         message = message.replaceAll("\n", "<br>");
-      }
-      
-      return message;
+      return errorMessageKey;
    }
-   
+
    /**
-    * @return Returns the stack trace for the last error
+    * Sets the error message key.
+    * 
+    * @param errorMessageKey
+    *           the new error message key
     */
-   public String getStackTrace()
+   public void setErrorMessageKey(String errorMessageKey)
    {
-      String trace = "No stack trace available";
-      
-      if (this.lastError != null)
-      {
-         StringWriter stringWriter = new StringWriter();
-         PrintWriter writer = new PrintWriter(stringWriter);
-         this.lastError.printStackTrace(writer);
-         
-         // format the message for HTML display
-         trace = stringWriter.toString();
-         trace = trace.replaceAll("<", "&lt;");
-         trace = trace.replaceAll(">", "&gt;");
-         trace = trace.replaceAll("\n", "<br>");
-      }
-      
-      return trace;
+      this.errorMessageKey = errorMessageKey;
+      this.lastError = null;
    }
+
 }

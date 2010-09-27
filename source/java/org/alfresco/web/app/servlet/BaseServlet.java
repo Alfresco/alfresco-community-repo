@@ -23,17 +23,16 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
@@ -44,14 +43,15 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.surf.util.URLDecoder;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.LoginOutcomeBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -71,6 +71,8 @@ public abstract class BaseServlet extends HttpServlet
    
    /** forcing guess access is available on most servlets */
    private static final String ARG_GUEST    = "guest";
+   
+   private static final String MSG_ERROR_PERMISSIONS = "error_permissions";   
    
    /** list of valid JSPs for redirect after a clean login */
    // TODO: make this list configurable
@@ -161,6 +163,56 @@ public abstract class BaseServlet extends HttpServlet
    }
    
    /**
+    * Check the user has the given permission on the given node. If they do not either force a log on if this is a guest
+    * user or forward to an error page.
+    * 
+    * @param req
+    *           the request
+    * @param res
+    *           the response
+    * @param nodeRef
+    *           the node in question
+    * @param allowLogIn
+    *           Indicates whether guest users without access to the node should be redirected to the log in page. If
+    *           <code>false</code>, a status 403 forbidden page is displayed instead.
+    * @return <code>true</code>, if the user has access
+    * @throws IOException
+    *            Signals that an I/O exception has occurred.
+    * @throws ServletException
+    *            On other errors
+    */
+   public boolean checkAccess(HttpServletRequest req, HttpServletResponse res, NodeRef nodeRef, String permission,
+         boolean allowLogIn) throws IOException, ServletException
+   {
+      ServletContext sc = getServletContext();
+      ServiceRegistry serviceRegistry = getServiceRegistry(sc);
+      PermissionService permissionService = serviceRegistry.getPermissionService();
+
+      // check that the user has the permission
+      if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("User does not have " + permission + " permission for NodeRef: " + nodeRef.toString());
+
+         if (allowLogIn && serviceRegistry.getAuthorityService().hasGuestAuthority())
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Redirecting to login page...");
+            redirectToLoginPage(req, res, sc);
+         }
+         else
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Forwarding to error page...");
+            Application
+                  .handleSystemError(sc, req, res, MSG_ERROR_PERMISSIONS, HttpServletResponse.SC_FORBIDDEN, logger);
+         }
+         return false;
+      }
+      return true;
+   }
+   
+   /**
     * Redirect to the Login page - saving the current URL which can be redirected back later
     * once the user has successfully completed the authentication process.
     */
@@ -192,43 +244,23 @@ public abstract class BaseServlet extends HttpServlet
          redirectURL.append(LoginOutcomeBean.PARAM_REDIRECT_URL);
          redirectURL.append('=');
          String url = uri;
-         if (req.getQueryString() != null && req.getQueryString().length() != 0)
+         
+         // Append the query string if necessary
+         String queryString = req.getQueryString();
+         if (queryString != null)
          {
-            url += "?" + req.getQueryString();
+            // Strip out leading ticket arguments
+            queryString = queryString.replaceAll("(?<=^|&)" + ARG_TICKET + "(=[^&=]*)?&", "");
+            // Strip out trailing ticket arguments
+            queryString = queryString.replaceAll("(^|&)" + ARG_TICKET + "(=[^&=]*)?(?=&|$)", "");
+            if (queryString.length() != 0)
+            {
+               url += "?" + queryString;
+            }
          }
          redirectURL.append(URLEncoder.encode(url, "UTF-8"));
       }
       res.sendRedirect(redirectURL.toString());
-   }
-   
-   /**
-    * Apply Client and Repository language locale based on the 'Accept-Language' request header
-    */
-   public static Locale setLanguageFromRequestHeader(HttpServletRequest req, ServletContext sc)
-   {
-      Locale locale = null;
-      
-      // Set the current locale and language
-      if (Application.getClientConfig(sc).isLanguageSelect())
-      {
-         locale = Application.getLanguage(req.getSession());
-      }
-      else
-      {
-         // set language locale from browser header
-         String acceptLang = req.getHeader("Accept-Language");
-         if (acceptLang != null && acceptLang.length() != 0)
-         {
-            StringTokenizer t = new StringTokenizer(acceptLang, ",; ");
-            // get language and convert to java locale format
-            String language = t.nextToken().replace('-', '_');
-            Application.setLanguage(req.getSession(), language);
-            locale = I18NUtil.parseLocale(language);
-            I18NUtil.setLocale(locale);
-         }
-      }
-      
-      return locale;
    }
    
    /**

@@ -722,7 +722,7 @@
          <!-- Import into Space -->
          <action id="import_space">
             <permissions>
-               <permission allow="true">Write</permission>
+               <permission allow="true">CreateChildren</permission>
             </permissions>
             <label-id>import</label-id>
             <image>/images/icons/import.gif</image>

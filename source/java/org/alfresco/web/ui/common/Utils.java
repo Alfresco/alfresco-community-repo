@@ -1059,13 +1059,14 @@ public final class Utils extends StringUtils
       for (StringTokenizer t = new StringTokenizer(term.trim(), " "); t.hasMoreTokens(); /**/)
       {
          String token = LuceneQueryParser.escape(t.nextToken());
-         query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+         query.append("+TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" ");
+         query.append("+(@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
          query.append(token);
          query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
          query.append(token);
          query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
          query.append(token);
-         query.append("* ");
+         query.append("*) ");
       }
    }
 }

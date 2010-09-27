@@ -112,25 +112,22 @@ function getRepositoryItem(folderPath, node)
    addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
-   var item = null;
+   var item = null, t = null;
    if (node.isContainer || node.isDocument)
    {
       item =
       {
          nodeRef: node.nodeRef.toString(),
-         tags: (node.tags !== null) ? node.tags : [],
+         tags: ((t = node.tags) !== null) ? t : [],
          name: node.name,
          displayName: node.name,
          title: node.properties["cm:title"],
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
-         createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"],
          path: folderPath.join("/")
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    if (node.isContainer)
    {
@@ -163,7 +160,7 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
-   var item = null;
+   var item = null, t = null;
    if (node.isContainer || node.isDocument)
    {
       item =
@@ -171,19 +168,16 @@ function getDocumentItem(siteId, containerId, pathParts, node)
          site: getSiteData(siteId),
          container: containerId,
          nodeRef: node.nodeRef.toString(),
-         tags: (node.tags !== null) ? node.tags : [],
+         tags: ((t = node.tags) !== null) ? t : [],
          name: node.name,
          displayName: node.name,
          title: node.properties["cm:title"],
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
-         createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"],
          path: pathParts.join("/")
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    if (node.isContainer)
    {
@@ -235,23 +229,21 @@ function getBlogPostItem(siteId, containerId, pathParts, node)
    addToProcessed(cat, refkey);
    
    // child is our blog post
+   var item, t = null;
    item =
    {
       site: getSiteData(siteId),
       container: containerId,
       nodeRef: child.nodeRef.toString(),
       type: "blogpost",
-      tags: (child.tags !== null) ? child.tags : [],
+      tags: ((t = child.tags) !== null) ? t : [],
       name: child.name,
       modifiedOn: child.properties["cm:modified"],
       modifiedByUser: child.properties["cm:modifier"],
-      createdOn: child.properties["cm:created"],
-      createdByUser: child.properties["cm:creator"],
       size: child.size,
       displayName: child.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);  
    
    return item;
 }
@@ -282,24 +274,22 @@ function getForumPostItem(siteId, containerId, pathParts, node)
    var postNode = topicNode.childAssocs["cm:contains"][0];
    
    // child is our forum post
-   var item =
+   var item, t = null;
+   item =
    {
       site: getSiteData(siteId),
       container: containerId,
       nodeRef: topicNode.nodeRef.toString(),
       type: "forumpost",
-      tags: (topicNode.tags != null) ? topicNode.tags : [],
+      tags: ((t = topicNode.tags) !== null) ? t : [],
       name: topicNode.name,
       description: topicNode.properties["cm:description"],
       modifiedOn: topicNode.properties["cm:modified"],
       modifiedByUser: topicNode.properties["cm:modifier"],
-      createdOn: topicNode.properties["cm:created"],
-      createdByUser: topicNode.properties["cm:creator"],
       size: topicNode.size,
       displayName: postNode.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);
 
    return item;
 }
@@ -320,24 +310,22 @@ function getCalendarItem(siteId, containerId, pathParts, node)
    }
    addToProcessed(cat, refkey);
    
-   var item =
+   var item, t = null;
+   item =
    {
       site: getSiteData(siteId),
       container: containerId,
       nodeRef: node.nodeRef.toString(),
       type: "calendarevent",
-      tags: (node.tags != null) ? node.tags : [],
+      tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
       description: node.properties["ia:descriptionEvent"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      createdOn: node.properties["cm:created"],
-      createdByUser: node.properties["cm:creator"],
       size: -1,
       displayName: node.properties["ia:whatEvent"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);
       
    return item;
 }
@@ -358,24 +346,22 @@ function getWikiItem(siteId, containerId, pathParts, node)
    }
    addToProcessed(cat, refkey);
    
-   var item =
+   var item, t = null;
+   item =
    {
       site: getSiteData(siteId),
       container: containerId,
       nodeRef: node.nodeRef.toString(),
       type: "wikipage",
-      tags: (node.tags != null) ? node.tags : [],
+      tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      createdOn: node.properties["cm:created"],
-      createdByUser: node.properties["cm:creator"],
       size: node.size,
       displayName: ("" + node.name).replace(/_/g, " ")
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);
       
    return item;
 }
@@ -396,24 +382,77 @@ function getLinkItem(siteId, containerId, pathParts, node)
    }
    addToProcessed(cat, refkey);
    
-   var item =
+   var item, t = null;
+   item =
    {
       site: getSiteData(siteId),
       container: containerId,
       nodeRef: node.nodeRef.toString(),
       type: "link",
-      tags: (node.tags !== null) ? node.tags : [],
+      tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      createdOn: node.properties["cm:created"],
-      createdByUser: node.properties["cm:creator"],
       size: -1,
       displayName: node.properties["lnk:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);   
+   
+   return item;
+}
+
+function getDataItem(siteId, containerId, pathParts, node)
+{
+   // make sure we haven't already added this item
+   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
+   {
+      return null;
+   }
+   addToProcessed(cat, refkey);
+   
+   var item = null;
+   
+   // data item can be either ba containing dl:dataList or any dl:dataListItem subtype
+   if (node.type == "{http://www.alfresco.org/model/datalist/1.0}dataList")
+   {
+      // found a data list
+      item =
+      {
+         site: getSiteData(siteId),
+         container: containerId,
+         nodeRef: node.nodeRef.toString(),
+         type: "datalist",
+         tags: [],
+         name: node.name,
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         size: -1,
+         displayName: node.properties["cm:title"]
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   }
+   else if (node.isSubType("{http://www.alfresco.org/model/datalist/1.0}dataListItem"))
+   {
+      // found a data list item
+      item =
+      {
+         site: getSiteData(siteId),
+         container: containerId,
+         nodeRef: node.nodeRef.toString(),
+         type: "datalistitem",
+         tags: [],
+         name: node.parent.name,    // used to generate link to parent datalist - not ideal
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         size: -1,
+         displayName: node.name     // unfortunately does not have a common display name property
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   }
+   
    return item;
 }
 
@@ -449,6 +488,9 @@ function getItem(siteId, containerId, pathParts, node)
             break;
          case "links":
             item = getLinkItem(siteId, containerId, pathParts, node);
+            break;
+         case "dataLists":
+            item = getDataItem(siteId, containerId, pathParts, node);
             break;
       }
    }

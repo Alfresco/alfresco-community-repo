@@ -1479,7 +1479,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             	{
             		// Check for the machine account name
             		
-            		if ( userName.endsWith( "$") && userName.equals( userName.toUpperCase()))
+                    // ALF-4395: Sometimes machine account name comes lowercase
+                    // and new Alfresco user is being created with machine name 
+                    // if ( userName.endsWith( "$") && userName.equals( userName.toUpperCase()))
+                    if ( userName.endsWith( "$"))
             		{
             			// Null logon
             			
@@ -1510,7 +1513,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                         
                         // Store the full user name in the client information, indicate that this is not a guest logon
                         
-                        client.setUserName( krbDetails.getSourceName());
+                        // ALF-4599: CIFS access to alfresco creates wrong users with Realm suffix 
+                        // client.setUserName( krbDetails.getSourceName());
+                        client.setUserName( krbDetails.getUserName());
                         client.setGuest( false);
 	                        
                         // Indicate that the session is logged on

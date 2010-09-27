@@ -56,17 +56,22 @@
         </property>
     </bean>
 
+    <bean id="common-placeholder-configurer" class="org.alfresco.config.FixedPropertyPlaceholderConfigurer" abstract="true">
+        <property name="valueSeparator">
+            <null/>
+        </property>
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+    </bean>
+    
     <!-- Expand global properties and version information in bean definitions -->
-    <bean id="repository-properties"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <bean id="repository-properties" parent="common-placeholder-configurer">
         <property name="locations">
             <list>
                 <!--  Non-overridable version information -->
                 <value>classpath:alfresco/version.properties</value>
             </list>
-        </property>
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
         </property>
         <property name="properties">
             <ref bean="global-properties"/>
@@ -90,10 +95,7 @@
     <!--        or custom-db-and-data-context.xml file.         -->
 
     <bean id="shared-properties"
-          class="org.alfresco.config.JndiPropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>
+          parent="common-placeholder-configurer" class="org.alfresco.config.JndiPropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
                 <value>classpath:alfresco/alfresco-shared.properties</value>
@@ -337,6 +339,9 @@
         </property>
         <property name="maxOpenPreparedStatements" >
             <value>${db.pool.statements.max}</value>
+        </property>
+        <property name="logAbandoned" >
+            <value>${db.pool.abandoned.log}</value>
         </property>
     </bean>
 
@@ -1161,12 +1166,6 @@
         </property>
         <property name="searchService">
             <ref bean="ADMSearchService" />
-        </property>
-        <property name="permissionService">
-            <ref bean="PermissionService" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="AuthenticationService" />
         </property>
         <property name="internalNodeService">
             <ref bean="nodeService" />

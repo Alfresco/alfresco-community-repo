@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 
 /**
@@ -60,6 +61,22 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
         return true;
+    }
+
+    /**
+     * Default behaviour:<br/>
+     * * {@link AssocCopySourceAction#COPY_REMOVE_EXISTING}<br/>
+     * * {@link AssocCopyTargetAction#USE_COPIED_OTHERWISE_ORIGINAL_TARGET}
+     */
+    @Override
+    public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
+            QName classQName,
+            CopyDetails copyDetails,
+            CopyAssociationDetails assocCopyDetails)
+    {
+        return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(
+                AssocCopySourceAction.COPY_REMOVE_EXISTING,
+                AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET);
     }
 
     /**

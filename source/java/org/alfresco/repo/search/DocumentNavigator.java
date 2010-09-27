@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.jaxen.DefaultNavigator;
 import org.jaxen.JaxenException;
@@ -182,12 +183,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     public String getAttributeName(Object o)
     {
         // Get the local name
-        String escapedLocalName = ISO9075.encode(((Property) o).qname.getLocalName());
-        if(escapedLocalName == ((Property) o).qname.getLocalName())
-        {
-            return escapedLocalName;
-        }
-        return escapedLocalName;
+        return ISO9075.encode(((Property) o).qname.getLocalName());
     }
 
     public String getAttributeNamespaceUri(Object o)
@@ -199,7 +195,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
     {
         QName qName = ((Property) o).qname;
         String escapedLocalName = ISO9075.encode(qName.getLocalName());
-        if(escapedLocalName == qName.getLocalName())
+        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))        
         {
             return qName.toString();
         }
@@ -250,7 +246,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
             return "";
         }
         String escapedLocalName = ISO9075.encode(qName.getLocalName());
-        if(escapedLocalName == qName.getLocalName())
+        if (EqualsHelper.nullSafeEquals(escapedLocalName, qName.getLocalName()))        
         {
             return qName.toString();
         }

@@ -103,8 +103,15 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
             QName className = nodeService.getType(nodeRef);
             if (dictionaryService.isSubClass(className, ContentModel.TYPE_CONTENT) == true)
             {
-                result.put(nodeRef.toString(), 
-                        (String)nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+                String title = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
+                if (title != null)
+                {
+                    result.put(nodeRef.toString(), title);
+                }
+                else
+                {
+                    result.put(nodeRef.toString(), (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                }
             }
             else if (dictionaryService.isSubClass(className, ContentModel.TYPE_FOLDER) == true)
             {

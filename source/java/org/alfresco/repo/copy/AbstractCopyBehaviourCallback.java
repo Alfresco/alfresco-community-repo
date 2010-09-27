@@ -24,10 +24,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.copy.CopyBehaviourCallback.AssocCopySourceAction;
+import org.alfresco.repo.copy.CopyBehaviourCallback.AssocCopyTargetAction;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Abstract implementation to allow for easier migration if the interface changes.
@@ -39,6 +42,22 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
 {
     private static final String KEY_NODEREF_REPOINTING_PREFIX = "recordNodeRefPropertiesForRepointing-";
     
+    /**
+     * @return          Returns
+     *                  {@link AssocCopySourceAction#COPY_REMOVE_EXISTING} and
+     *                  {@link AssocCopyTargetAction#USE_COPIED_TARGET}
+     */
+    @Override
+    public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
+                QName classQName,
+                CopyDetails copyDetails,
+                CopyAssociationDetails assocCopyDetails)
+    {
+        return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(
+                AssocCopySourceAction.COPY_REMOVE_EXISTING,
+                AssocCopyTargetAction.USE_COPIED_TARGET);
+    }
+
     /**
      * @return      Returns {@link ChildAssocRecurseAction#RESPECT_RECURSE_FLAG}
      */
@@ -85,7 +104,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
     {
         Serializable parameterValue = properties.get(propertyQName);
         if (parameterValue != null &&
-                (parameterValue instanceof Collection || parameterValue instanceof NodeRef))
+                (parameterValue instanceof Collection<?> || parameterValue instanceof NodeRef))
         {
             String key = KEY_NODEREF_REPOINTING_PREFIX + propertyQName.toString();
             // Store it for later

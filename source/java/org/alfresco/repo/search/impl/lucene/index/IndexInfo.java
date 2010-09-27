@@ -329,6 +329,8 @@ public class IndexInfo implements IndexMonitor
     private boolean mergerUseCompoundFile = true;
 
     private int mergerTargetOverlays = 5;
+    
+    private int mergerTargetIndexes = 5;
 
     private int mergerTargetOverlaysBlockingFactor = 1;
 
@@ -499,6 +501,7 @@ public class IndexInfo implements IndexMonitor
             this.mergerMaxMergeDocs = config.getMergerMaxMergeDocs();
             this.termIndexInterval = config.getTermIndexInterval();
             this.mergerTargetOverlays = config.getMergerTargetOverlayCount();
+            this.mergerTargetIndexes = config.getMergerTargetIndexCount();
             this.mergerTargetOverlaysBlockingFactor = config.getMergerTargetOverlaysBlockingFactor();
             // Work out the relative path of the index
             try
@@ -1542,7 +1545,7 @@ public class IndexInfo implements IndexMonitor
         public boolean beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             // We want to block until the merger has executed if we have more than a certain number of indexes
-            return indexEntries.size() <= mergerMergeBlockingFactor * mergerMergeFactor + mergerTargetOverlaysBlockingFactor * mergerTargetOverlays;
+            return indexEntries.size() <= mergerMergeBlockingFactor * mergerTargetIndexes + mergerTargetOverlaysBlockingFactor * mergerTargetOverlays;
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -3318,7 +3321,7 @@ public class IndexInfo implements IndexMonitor
                 if (!mergingIndexes && !applyingDeletions)
                 {
 
-                    if (indexes > mergerMergeFactor) 
+                    if (indexes > mergerTargetIndexes) 
                     {
                         // Try merge
                         action = MergeAction.MERGE_INDEX;
@@ -3821,7 +3824,7 @@ public class IndexInfo implements IndexMonitor
                             }
                         }
 
-                        int position = findMergeIndex(1, mergerMaxMergeDocs, mergerMergeFactor, mergeList);
+                        int position = findMergeIndex(1, mergerMaxMergeDocs, mergerTargetIndexes, mergeList);
                         String firstMergeId = mergeList.get(position).getName();
 
                         long count = 0;
@@ -4052,21 +4055,21 @@ public class IndexInfo implements IndexMonitor
             return MergeAction.MERGE_INDEX;
         }
 
-        private final int findMergeIndex(long min, long max, int factor, List<IndexEntry> entries) throws IOException
+        private final int findMergeIndex(long min, long max, int target, List<IndexEntry> entries) throws IOException
         {
             // TODO: Support max
-            if (entries.size() <= factor)
+            if (entries.size() <= target)
             {
                 return -1;
             }
 
             int total = 0;
-            for (int i = factor; i < entries.size(); i++)
+            for (int i = target; i < entries.size(); i++)
             {
                 total += entries.get(i).getDocumentCount();
             }
 
-            for (int i = factor - 1; i > 0; i--)
+            for (int i = target - 1; i > 0; i--)
             {
                 total += entries.get(i).getDocumentCount();
                 if (total < entries.get(i - 1).getDocumentCount())

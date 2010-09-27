@@ -1,5 +1,5 @@
-/*-----------------------------------------------------------------------------
-*  Copyright 2007-2010 Alfresco Software Limited.
+/*
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -15,26 +15,19 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
-*  
-*  
-*  Author  Jon Cox  <jcox@alfresco.com>
-*  File    AVMRemoveAllSrcWebappsHandler.java
-*----------------------------------------------------------------------------*/
+ */
 
 package org.alfresco.repo.avm.wf;
 
-import java.util.Map;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.RawServices;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
@@ -46,18 +39,11 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Jon Cox
  */
-public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler 
+public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler
 {
     static final long serialVersionUID = 3004374776252613278L;
-
-    private static Log    log = 
-        LogFactory.getLog(AVMRemoveAllSrcWebappsHandler.class);
-
-    /**
-     * The AVMService instance.
-     */
-    private AVMService fAVMService;    
-
+    
+    private static Log logger = LogFactory.getLog(AVMRemoveAllSrcWebappsHandler.class);
     
     /**
      * Initialize service references.
@@ -66,7 +52,6 @@ public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory) 
     {
-        fAVMService = (AVMService)factory.getBean("AVMService");
     }
 
     /**
@@ -75,35 +60,43 @@ public class AVMRemoveAllSrcWebappsHandler extends JBPMSpringActionHandler
      */
     public void execute(ExecutionContext executionContext) throws Exception 
     {
-        if (log.isDebugEnabled())
-            log.debug("AVMRemoveAllSrcWebappsHandler.execute()");
-
-        // retrieve submitted package
-        NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().
-                                 getVariable("bpm_package")).getNodeRef();
-
-        Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
-
-        Integer version     =  pkgPath.getFirst();
-        String  www_dir     =  pkgPath.getSecond();
-        String  appbase_dir =  www_dir + "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
-
-        if (log.isDebugEnabled())
+        String workflowName = executionContext.getProcessDefinition().getName();
+        
+        // optimization: direct submits no longer virtualize the workflow sandbox
+        boolean isSubmitDirectWorkflowSandbox = ((workflowName != null) && (workflowName.equals(WCMUtil.WORKFLOW_SUBMITDIRECT_NAME)));
+        
+        if (logger.isDebugEnabled())
         {
-            log.debug("version:     " +  version );
-            log.debug("appbase_dir: " +  appbase_dir );
+            logger.debug("AVMRemoveAllSrcWebappsHandler.execute: "+workflowName);
         }
-
-        ApplicationContext springContext   = RawServices.Instance().getContext();
-        VirtServerRegistry vServerRegistry = (VirtServerRegistry) 
-                                             springContext.getBean("VirtServerRegistry");
-
-        if (log.isDebugEnabled())
-            log.debug("Sending JMX message to shut down workflow webapps");
-
-        vServerRegistry.removeAllWebapps( version,  appbase_dir, true );
-
-        if (log.isDebugEnabled())
-            log.debug("Sent JMX message to shut down workflow webapps");
+        
+        if (! isSubmitDirectWorkflowSandbox)
+        {
+            // retrieve submitted package
+            NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().
+                                     getVariable("bpm_package")).getNodeRef();
+            
+            Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
+            
+            Integer version     =  pkgPath.getFirst();
+            String  www_dir     =  pkgPath.getSecond();
+            String  appbase_dir =  www_dir + "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
+            
+            ApplicationContext springContext   = RawServices.Instance().getContext();
+            VirtServerRegistry vServerRegistry = (VirtServerRegistry) 
+                                                 springContext.getBean("VirtServerRegistry");
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Sending JMX message to shut down workflow webapps: ["+version+", "+appbase_dir+"]");
+            }
+            
+            vServerRegistry.removeAllWebapps( version,  appbase_dir, true );
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Sent JMX message to shut down workflow webapps: ["+version+", "+appbase_dir+"]");
+            }
+        }
     }
 }

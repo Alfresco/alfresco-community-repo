@@ -500,6 +500,9 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 
                 // Set the owner of the document
                 setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
+                
+                // Set the owner of the document
+                setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
             }
         }
         

@@ -56,7 +56,7 @@ public final class Presence extends BaseScopableProcessorExtension
        String presenceProvider = (String)person.getProperties().get(ContentModel.PROP_PRESENCEPROVIDER);
        String presenceUsername = (String)person.getProperties().get(ContentModel.PROP_PRESENCEUSERNAME);
 
-       return ((presenceProvider != "") && (presenceUsername != ""));
+       return (!"".equals((presenceProvider)) && (!"".equals(presenceUsername)));
    }
 
    /**

@@ -82,7 +82,7 @@ public class SandboxServiceImpl implements SandboxService
     /** Logger */
     private static Log logger = LogFactory.getLog(SandboxServiceImpl.class);
     
-    private static final String WORKFLOW_SUBMITDIRECT = "jbpm$wcmwf:submitdirect";
+    private static final String WORKFLOW_SUBMITDIRECT = "jbpm$"+WCMUtil.WORKFLOW_SUBMITDIRECT_NAME;
     
     private WebProjectService wpService;
     private SandboxFactory sandboxFactory;
@@ -188,6 +188,8 @@ public class SandboxServiceImpl implements SandboxService
     
     private SandboxInfo createAuthorSandboxImpl(String wpStoreId, String userName)
     {
+        long start = System.currentTimeMillis();
+        
         WebProjectInfo wpInfo = wpService.getWebProject(wpStoreId);
         
         final NodeRef wpNodeRef = wpInfo.getNodeRef();
@@ -223,9 +225,9 @@ public class SandboxServiceImpl implements SandboxService
         CreateSandboxTransactionListener tl = new CreateSandboxTransactionListener(sandboxInfoList, wpService.listWebApps(wpNodeRef));
         AlfrescoTransactionSupport.bindListener(tl);
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-           logger.info("Created author sandbox: " + sbInfo.getSandboxId() + " (web project id: " + wpStoreId + ")");
+           logger.debug("createAuthorSandboxImpl: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
         }
         
         return sbInfo;
@@ -236,6 +238,8 @@ public class SandboxServiceImpl implements SandboxService
      */
     public List<SandboxInfo> listSandboxes(String wpStoreId)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
         List<SandboxInfo> sbInfos = null;
@@ -262,6 +266,11 @@ public class SandboxServiceImpl implements SandboxService
                 
                 sbInfos.add(getSandbox(WCMUtil.buildStagingStoreName(wpStoreId))); // get staging sandbox
             }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("listSandboxes: " + wpStoreId + " in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
         }
         
         return sbInfos;
@@ -313,6 +322,8 @@ public class SandboxServiceImpl implements SandboxService
      */
     public SandboxInfo getSandbox(String sbStoreId)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
@@ -337,7 +348,21 @@ public class SandboxServiceImpl implements SandboxService
             }
         }
         
-        return sandboxFactory.getSandbox(sbStoreId);
+        SandboxInfo sbInfo = sandboxFactory.getSandbox(sbStoreId);
+        
+        if (logger.isTraceEnabled())
+        {
+           if (sbInfo != null)
+           {
+               logger.trace("getSandbox: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
+           }
+           else
+           {
+               logger.trace("getSandbox: " + sbStoreId +" (does not exist)  in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
+           }
+        }
+        
+        return sbInfo;
     }
     
     /* (non-Javadoc)
@@ -377,6 +402,8 @@ public class SandboxServiceImpl implements SandboxService
      */
     public void deleteSandbox(String sbStoreId)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
@@ -411,9 +438,9 @@ public class SandboxServiceImpl implements SandboxService
             }
         }
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-           logger.info("Deleted sandbox: " + sbStoreId + " (web project id: " + wpStoreId + ")");
+           logger.debug("deleteSandbox: " + sbStoreId + " in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
         }
     }
     
@@ -506,11 +533,11 @@ public class SandboxServiceImpl implements SandboxService
             }
         }
         
-        if (logger.isTraceEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.trace("listChanged: "+assets.size()+" assets in "+(System.currentTimeMillis()-start)+" ms (between "+srcVersion+","+srcPath+" and "+dstVersion+","+dstPath);
+            logger.debug("listChanged: "+assets.size()+" assets in "+(System.currentTimeMillis()-start)+" ms (between "+srcVersion+","+srcPath+" and "+dstVersion+","+dstPath);
         }
-
+        
         return assets;
     }
     
@@ -623,6 +650,8 @@ public class SandboxServiceImpl implements SandboxService
                                    final String submitLabel, final String submitComment,
                                    final Map<String, Date> expirationDates, final Date launchDate, final boolean autoDeploy)
     {
+        long start = System.currentTimeMillis();
+        
         // checks sandbox access (TODO review)
         getSandbox(sbStoreId); // ignore result
         
@@ -632,10 +661,13 @@ public class SandboxServiceImpl implements SandboxService
         final String finalWorkflowName;
         final Map<QName, Serializable> finalWorkflowParams;
         
+        boolean isSubmitDirectWorkflowSandbox = false;
+        
         if ((workflowName == null) || (workflowName.equals("")))
         {
             finalWorkflowName = WORKFLOW_SUBMITDIRECT;
             finalWorkflowParams = new HashMap<QName, Serializable>();
+            isSubmitDirectWorkflowSandbox = true;
         }
         else
         {
@@ -673,7 +705,11 @@ public class SandboxServiceImpl implements SandboxService
             // inform the virtualisation server if the workflow sandbox was created
             if (virtUpdatePath != null)
             {
-                WCMUtil.updateVServerWebapp(virtServerRegistry, virtUpdatePath, true);
+                // optimization: direct submits no longer virtualize the workflow sandbox
+                if (! isSubmitDirectWorkflowSandbox)
+                {
+                    WCMUtil.updateVServerWebapp(virtServerRegistry, virtUpdatePath, true);
+                }
             }
             
             try
@@ -696,6 +732,11 @@ public class SandboxServiceImpl implements SandboxService
                 cleanupWorkflowSandbox(wfSandboxInfo);
                 throw new AlfrescoRuntimeException("Failed to submit to workflow", err);
             }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("submitViaWorkflow: " + sbStoreId + " ["+submitLabel+", "+finalWorkflowName+"] in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
         }
     }
     
@@ -789,7 +830,7 @@ public class SandboxServiceImpl implements SandboxService
        
         return new Pair<SandboxInfo, String>(sandboxInfo, virtUpdatePath);
     }
-
+    
     /**
      * Starts the configured workflow to allow the submitted items to be link
      * checked and reviewed.
@@ -854,7 +895,7 @@ public class SandboxServiceImpl implements SandboxService
             public String execute() throws Throwable
             {
                 // delete AVM stores in the workflow sandbox
-                sandboxFactory.deleteSandbox(sandboxInfo, true);
+                sandboxFactory.deleteSandbox(sandboxInfo.getSandboxId());
                 return null;
             }
         };
@@ -934,6 +975,8 @@ public class SandboxServiceImpl implements SandboxService
      */
     public void revertListAssets(String sbStoreId, List<AssetInfo> assets)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
         // checks sandbox access (TODO review)
@@ -980,9 +1023,9 @@ public class SandboxServiceImpl implements SandboxService
             
             if (parent.isLayeredDirectory())
             {
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                   logger.debug("reverting " + parentChild[1] + " in " + parentChild[0]);
+                   logger.trace("reverting " + parentChild[1] + " in " + parentChild[0]);
                 }
                 
                 avmService.makeTransparent(parentChild[0], parentChild[1]);
@@ -993,9 +1036,9 @@ public class SandboxServiceImpl implements SandboxService
                 // is file or deleted file
                 String relativePath = asset.getPath();
                 
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("unlocking file " + relativePath + " in web project " + wpStoreId);
+                    logger.trace("unlocking file " + relativePath + " in web project " + wpStoreId);
                 }
                 
                 if (avmLockingService.getLockOwner(wpStoreId, relativePath) != null)
@@ -1010,6 +1053,11 @@ public class SandboxServiceImpl implements SandboxService
                     }
                 }
             }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("revertListAssets: " + sbStoreId + " ["+assets.size()+", "+assetsToRevert.size()+"] in "+(System.currentTimeMillis()-start)+" ms (web project id: " + wpStoreId + ")");
         }
     }
     
@@ -1026,8 +1074,7 @@ public class SandboxServiceImpl implements SandboxService
             throw new AccessDeniedException("Only content managers may list snapshots '"+sbStoreId+"' (web project id: "+wpStoreId+")");
         }
         
-        List<VersionDescriptor> allVersions = avmService.getStoreVersions(sbStoreId);
-        return listSnapshots(allVersions, includeSystemGenerated);
+        return listSnapshots(sbStoreId, null, null, includeSystemGenerated);
     }
     
     /* (non-Javadoc)
@@ -1043,23 +1090,40 @@ public class SandboxServiceImpl implements SandboxService
             throw new AccessDeniedException("Only content managers may list snapshots '"+sbStoreId+"' (web project id: "+wpStoreId+")");
         }
         
-        List<VersionDescriptor> versionsToFilter = avmService.getStoreVersions(sbStoreId, from, to);
-        return listSnapshots(versionsToFilter, includeSystemGenerated);
+        return listSnapshotsImpl(sbStoreId, from, to, includeSystemGenerated);
     }
         
-    private List<SandboxVersion> listSnapshots(List<VersionDescriptor> versionsToFilter, boolean includeSystemGenerated)
+    private List<SandboxVersion> listSnapshotsImpl(String sbStoreId, Date from, Date to, boolean includeSystemGenerated)
     {
+        long start = System.currentTimeMillis();
+        
+        List<VersionDescriptor> versionsToFilter = null;
+        
+        if ((from != null) && (to != null))
+        {
+            versionsToFilter = avmService.getStoreVersions(sbStoreId, from, to);
+        }
+        else
+        {
+            versionsToFilter = avmService.getStoreVersions(sbStoreId);
+        }
+        
         List<SandboxVersion> versions = new ArrayList<SandboxVersion>(versionsToFilter.size());
         
         for (int i = versionsToFilter.size() - 1; i >= 0; i--) // reverse order
         {
             VersionDescriptor item = versionsToFilter.get(i);
-
+            
             // only display snapshots with a valid tag - others are system generated snapshots
             if ((includeSystemGenerated == true) || ((item.getTag() != null) && (item.getVersionID() != 0)))
             {
                 versions.add(new SandboxVersionImpl(item));
             }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("listSnapshotsImpl: " + sbStoreId + " ["+from+", "+to+", "+versions.size()+"] in "+(System.currentTimeMillis()-start)+" ms (web project id: "+WCMUtil.getWebProjectStoreId(sbStoreId)+")");
         }
         
         return versions;
@@ -1070,6 +1134,8 @@ public class SandboxServiceImpl implements SandboxService
      */
     public void revertSnapshot(final String sbStoreId, final int revertVersion)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
@@ -1104,6 +1170,11 @@ public class SandboxServiceImpl implements SandboxService
                 break;
             }
         }
+        
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("revertSnapshot: " + sbStoreId + " ["+revertVersion+"] in "+(System.currentTimeMillis()-start)+" ms (web project id: "+WCMUtil.getWebProjectStoreId(sbStoreId)+")");
+        }
     }
     
     /**
@@ -1126,14 +1197,14 @@ public class SandboxServiceImpl implements SandboxService
        {
            avmService.addAspect(srcPath, WCMAppModel.ASPECT_EXPIRES);
        }
-
+       
        // set the expiration date
        avmService.setNodeProperty(srcPath, WCMAppModel.PROP_EXPIRATIONDATE, 
                                        new PropertyValue(DataTypeDefinition.DATETIME, expirationDate));
-
-       if (logger.isDebugEnabled())
+       
+       if (logger.isTraceEnabled())
        {
-           logger.debug("Set expiration date of " + expirationDate + " for " + srcPath);
+           logger.trace("Set expiration date of " + expirationDate + " for " + srcPath);
        }
     }
     

@@ -61,17 +61,32 @@ public class DeletedContentBackupCleanerListener implements ContentStoreCleanerL
             // Nothing to copy over
             return;
         }
-        // write the content into the target store
-        ContentWriter writer = store.getWriter(context);
-        // copy across
-        writer.putContent(reader);
-        // done
-        if (logger.isDebugEnabled())
+        if (store.isContentUrlSupported(contentUrl))
         {
-            logger.debug("Moved content before deletion: \n" +
-                    "   URL:    " + contentUrl + "\n" +
-                    "   Source: " + sourceStore + "\n" +
-                    "   Target: " + store);
+            // write the content into the target store
+            ContentWriter writer = store.getWriter(context);
+            // copy across
+            writer.putContent(reader);
+            // done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Moved content before deletion: \n" +
+                        "   URL:    " + contentUrl + "\n" +
+                        "   Source: " + sourceStore + "\n" +
+                        "   Target: " + store);
+            }
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Content cannot be moved during deletion.  A backup will not be made: \n" +
+                        "   URL:    " + contentUrl + "\n" +
+                        "   Source: " + sourceStore + "\n" +
+                        "   Target: " + store);
+            }
         }
     }
 }

@@ -658,18 +658,18 @@ public class NodeMonitor extends TransactionListenerAdapter
 			
 			// If change notifications are enabled then send an event to registered listeners
 			
-			if ( m_changeHandler != null) {
+			if ( m_filesysCtx.hasChangeHandler()) {
 				
 				// Check if there are any active notifications
 				
-				if ( m_changeHandler.getGlobalNotifyMask() != 0) {
+				if ( m_filesysCtx.getChangeHandler().getGlobalNotifyMask() != 0) {
 					
 					// Send a file created event to the change notification handler
 					
 					if ( createEvent.getFileType() == FileFolderServiceType.FILE)
-						m_changeHandler.notifyFileChanged(NotifyChange.ActionAdded, relPath);
+					    m_filesysCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionAdded, relPath);
 					else
-						m_changeHandler.notifyDirectoryChanged(NotifyChange.ActionAdded, relPath);
+					    m_filesysCtx.getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, relPath);
 
 					// DEBUG
 					
@@ -738,18 +738,18 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
 		// If change notifications are enabled then send an event to registered listeners
 		
-		if ( m_changeHandler != null) {
+		if ( m_filesysCtx.hasChangeHandler()) {
 			
 			// Check if there are any active notifications
 			
-			if ( m_changeHandler.getGlobalNotifyMask() != 0) {
+			if ( m_filesysCtx.getChangeHandler().getGlobalNotifyMask() != 0) {
 				
 				// Send a file deleted event to the change notification handler
 				
 				if ( deleteEvent.getFileType() == FileFolderServiceType.FILE)
-					m_changeHandler.notifyFileChanged(NotifyChange.ActionRemoved, relPath);
+				    m_filesysCtx.getChangeHandler().notifyFileChanged(NotifyChange.ActionRemoved, relPath);
 				else
-					m_changeHandler.notifyDirectoryChanged(NotifyChange.ActionRemoved, relPath);
+				    m_filesysCtx.getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, relPath);
 
 				// DEBUG
 				
@@ -830,15 +830,15 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
 		// If change notifications are enabled then send an event to registered listeners
 		
-		if ( m_changeHandler != null) {
+		if ( m_filesysCtx.hasChangeHandler()) {
 			
 			// Check if there are any active notifications
 			
-			if ( m_changeHandler.getGlobalNotifyMask() != 0) {
+			if ( m_filesysCtx.getChangeHandler().getGlobalNotifyMask() != 0) {
 				
 				// Send a file renamed event to the change notification handler
 
-				m_changeHandler.notifyRename( fromPath, toPath);
+			    m_filesysCtx.getChangeHandler().notifyRename( fromPath, toPath);
 
 				// DEBUG
 				
@@ -881,11 +881,11 @@ public class NodeMonitor extends TransactionListenerAdapter
 			
 			// Node has been locked or unlocked, send a change notification to indicate the file attributes have changed
 
-			if ( m_changeHandler != null) {
+			if ( m_filesysCtx.hasChangeHandler()) {
 				
 				// Send out a change of attributes notification
 				
-				m_changeHandler.notifyAttributesChanged( relPath, lockEvent.getFileType() == FileFolderServiceType.FILE ? false : true);
+			    m_filesysCtx.getChangeHandler().notifyAttributesChanged( relPath, lockEvent.getFileType() == FileFolderServiceType.FILE ? false : true);
 
 				// DEBUG
 				

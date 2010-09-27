@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -83,6 +84,45 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         return sb.toString();
     }
     
+    @Override
+    public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
+            QName classQName,
+            CopyDetails copyDetails,
+            CopyAssociationDetails assocCopyDetails)
+    {
+        AssocCopySourceAction bestSourceAction = AssocCopySourceAction.COPY;
+        AssocCopyTargetAction bestTargetAction = AssocCopyTargetAction.USE_ORIGINAL_TARGET;
+        for (CopyBehaviourCallback callback : callbacks)
+        {
+            Pair<AssocCopySourceAction, AssocCopyTargetAction> action = callback.getAssociationCopyAction(
+                    classQName,
+                    copyDetails,
+                    assocCopyDetails);
+            if (action.getFirst().compareTo(bestSourceAction) > 0)
+            {
+                // We've trumped the last best one
+                bestSourceAction = action.getFirst();
+            }
+            if (action.getSecond().compareTo(bestTargetAction) > 0)
+            {
+                // We've trumped the last best one
+                bestTargetAction = action.getSecond();
+            }
+        }
+        Pair<AssocCopySourceAction, AssocCopyTargetAction> bestAction =
+                new Pair<AssocCopySourceAction, AssocCopyTargetAction>(bestSourceAction, bestTargetAction);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Association copy behaviour: " + bestAction + "\n" +
+                    "   " + assocCopyDetails + "\n" +
+                    "   " + copyDetails + "\n" +
+                    "   " + this);
+        }
+        return bestAction;
+    }
+
     /**
      * Individual callbacks effectively have a veto on the copy i.e. if one of the
      * callbacks returns <tt>false</tt> for {@link CopyBehaviourCallback#mustCopy(NodeRef)},

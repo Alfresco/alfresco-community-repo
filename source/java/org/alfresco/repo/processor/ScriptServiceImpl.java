@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.jscript.ScriptUrls;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -55,6 +57,8 @@ public class ScriptServiceImpl implements ScriptService
     /** The node service */
     private NodeService nodeService;
 
+    private SysAdminParams sysAdminParams;
+
     /**
      * Sets the name of the default script processor
      * 
@@ -73,6 +77,16 @@ public class ScriptServiceImpl implements ScriptService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * Set the sysAdminParams
+     * 
+     * @param sysAdminParams the sysAdminParams 
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
     }
 
     /**
@@ -403,6 +417,15 @@ public class ScriptServiceImpl implements ScriptService
     }
     
     /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#buildCoreModel(java.util.Map)
+     */
+    public void buildCoreModel(Map<String, Object> inputMap)
+    {
+        ParameterCheck.mandatory("InputMap", inputMap);
+        inputMap.put("urls", new ScriptUrls(sysAdminParams));
+    }
+
+    /**
      * @see org.alfresco.service.cmr.repository.ScriptService#buildDefaultModel(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     public Map<String, Object> buildDefaultModel(
@@ -414,6 +437,7 @@ public class ScriptServiceImpl implements ScriptService
             NodeRef space)
     {
         Map<String, Object> model = new HashMap<String, Object>();
+        buildCoreModel(model);
         
         // add the well known node wrapper objects
         model.put("companyhome", companyHome);

@@ -712,6 +712,7 @@
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.AuthorityService.hasAdminAuthority=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.hasGuestAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.isAdminAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.isGuestAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorities=ACL_ALLOW

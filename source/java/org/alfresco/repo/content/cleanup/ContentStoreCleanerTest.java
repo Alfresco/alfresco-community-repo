@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.lock.JobLockService;
@@ -90,7 +91,10 @@ public class ContentStoreCleanerTest extends TestCase
         // we need a store
         store = (ContentStore) ctx.getBean("fileContentStore");
         // and a listener
+        List<ContentStoreCleanerListener> listeners = new ArrayList<ContentStoreCleanerListener>(2);
         listener = new DummyCleanerListener();
+        listeners.add(listener);
+        listeners.add(new DummyUnsupportiveCleanerListener());
         // initialise record of deleted URLs
         deletedUrls = new ArrayList<String>(5);
         
@@ -98,7 +102,7 @@ public class ContentStoreCleanerTest extends TestCase
         eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
         eagerCleaner.setEagerOrphanCleanup(false);
         eagerCleaner.setStores(Collections.singletonList(store));
-        eagerCleaner.setListeners(Collections.singletonList(listener));
+        eagerCleaner.setListeners(listeners);
         
         cleaner = new ContentStoreCleaner();
         cleaner.setEagerContentStoreCleaner(eagerCleaner);
@@ -386,6 +390,16 @@ public class ContentStoreCleanerTest extends TestCase
         public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException
         {
             deletedUrls.add(contentUrl);
+        }
+    }
+    /**
+     * Cleaner listener that doesn't support the URLs passed in
+     */
+    private class DummyUnsupportiveCleanerListener implements ContentStoreCleanerListener
+    {
+        public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException
+        {
+            throw new UnsupportedContentUrlException(store, contentUrl);
         }
     }
 }

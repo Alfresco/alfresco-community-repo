@@ -258,6 +258,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     {
         Map<String, Object> inputMap = createInputMap(context, services, variableAccesses);
         ScriptService scriptService = services.getScriptService();
+        scriptService.buildCoreModel(inputMap);
         Object result = scriptService.executeScriptString(expression, inputMap);
         result = convertForJBPM(result, services);
         return result;

@@ -3035,7 +3035,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                             // Copy content data from the old file to the new file
 
-                            copyContentData(sess, tree, nodeToMoveRef, targetNodeRef);
+                            copyContentData(sess, tree, nodeToMoveRef, targetNodeRef, newName);
 
                             final NodeRef finalTargetNodeRef = targetNodeRef;
                             postTxn.add(new Runnable()
@@ -3724,10 +3724,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	 * @param tree TreeConnection
 	 * @param fromNode NodeRef
 	 * @param toNode NodeRef
+	 * @param newName String
 	 */
-	private void copyContentData( SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode)
+	private void copyContentData( SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode, String newName)
 	{
         ContentData content = (ContentData) nodeService.getProperty(fromNode, ContentModel.PROP_CONTENT);
+        if ( newName != null)
+            content = ContentData.setMimetype( content, mimetypeService.guessMimetype( newName));
         nodeService.setProperty(toNode, ContentModel.PROP_CONTENT, content);
 	}
 	

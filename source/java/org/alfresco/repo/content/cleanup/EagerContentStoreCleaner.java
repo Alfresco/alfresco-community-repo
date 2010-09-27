@@ -215,9 +215,33 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
             {
                 for (ContentStoreCleanerListener listener : listeners)
                 {
-                    listener.beforeDelete(store, contentUrl);
+                    try
+                    {
+                        // Since we are in post-commit, we do best-effort
+                        listener.beforeDelete(store, contentUrl);
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error(
+                                "Content deletion listener failed: \n" +
+                                "   URL:    " + contentUrl + "\n" +
+                                "   Source: " + store,
+                                e);
+                    }
                 }
-                store.delete(contentUrl);
+                try
+                {
+                    // Since we are in post-commit, we do best-effort
+                    store.delete(contentUrl);
+                }
+                catch (Throwable e)
+                {
+                    logger.error(
+                            "Content deletion failed: \n" +
+                            "   URL:    " + contentUrl + "\n" +
+                            "   Source: " + store,
+                            e);
+                }
             }
         }
     }

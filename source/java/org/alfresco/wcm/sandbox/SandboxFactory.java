@@ -146,6 +146,8 @@ public final class SandboxFactory extends WCMUtil
                                            NodeRef webProjectNodeRef,
                                            String branchStoreId)
    {
+      long start = System.currentTimeMillis();
+      
       // create the 'staging' store for the website
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
       
@@ -159,9 +161,9 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(stagingStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created staging sandbox: " + stagingStoreName);
+         logger.trace("Created staging sandbox: " + stagingStoreName);
       }
       
       // we can either branch from an existing staging store or create a new structure
@@ -204,9 +206,9 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(previewStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created staging preview sandbox store: " + previewStoreName +
+         logger.trace("Created staging preview sandbox store: " + previewStoreName +
                       " above " + stagingStoreName);
       }
       
@@ -238,8 +240,15 @@ public final class SandboxFactory extends WCMUtil
          dumpStoreProperties(avmService, stagingStoreName);
          dumpStoreProperties(avmService, previewStoreName);
       }
-
-      return getSandbox(stagingStoreName);
+      
+      SandboxInfo sbInfo =  getSandbox(stagingStoreName);
+      
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("createStagingSandbox: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms");
+      }
+      
+      return sbInfo;
    }
    
    /**
@@ -568,6 +577,8 @@ public final class SandboxFactory extends WCMUtil
                                         String username, 
                                         String role)
    {
+      long start = System.currentTimeMillis();
+      
       // create the user 'main' store
       String userStoreName    = WCMUtil.buildUserMainStoreName(storeId, username);
       String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
@@ -575,9 +586,9 @@ public final class SandboxFactory extends WCMUtil
       SandboxInfo userSandboxInfo = getSandbox(userStoreName);
       if (userSandboxInfo != null)
       {
-          if (logger.isDebugEnabled())
+          if (logger.isTraceEnabled())
           {
-             logger.debug("Not creating author sandbox as it already exists: " + userStoreName);
+             logger.trace("Not creating author sandbox as it already exists: " + userStoreName);
           }
           return userSandboxInfo;
       }
@@ -604,9 +615,9 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(userStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created user sandbox: " + userStoreName + " above staging store " + stagingStoreName);
+         logger.trace("Created user sandbox: " + userStoreName + " above staging store " + stagingStoreName);
       }
       
       // create a layered directory pointing to 'www' in the staging area
@@ -623,7 +634,7 @@ public final class SandboxFactory extends WCMUtil
       addToGroupIfRequired(stagingStoreName, currentUser, PermissionService.WCM_CONTENT_MANAGER);
       String cms = authorityService.getName(AuthorityType.GROUP, stagingStoreName + "-" + PermissionService.WCM_CONTENT_MANAGER);
       permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER, true);
-
+      
       permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
       // apply the manager role permission for each manager in the web project
@@ -654,9 +665,9 @@ public final class SandboxFactory extends WCMUtil
       // create the user 'preview' store
       avmService.createStore(previewStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created user preview sandbox store: " + previewStoreName +
+         logger.trace("Created user preview sandbox store: " + previewStoreName +
                       " above " + userStoreName);
       }
       
@@ -687,7 +698,14 @@ public final class SandboxFactory extends WCMUtil
          dumpStoreProperties(avmService, previewStoreName);
       }
       
-      return getSandbox(userStoreName);
+      SandboxInfo sbInfo =  getSandbox(userStoreName);
+      
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("createUserSandbox: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms");
+      }
+      
+      return sbInfo;
    }
    
    /**
@@ -704,6 +722,8 @@ public final class SandboxFactory extends WCMUtil
     */
    public SandboxInfo createWorkflowSandbox(final String storeId)
    {
+      long start = System.currentTimeMillis();
+      
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
       
       // create the workflow 'main' store
@@ -730,9 +750,9 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(mainStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created workflow sandbox store: " + mainStoreName);
+         logger.trace("Created workflow sandbox store: " + mainStoreName);
       }
       
       // create a layered directory pointing to 'www' in the staging area
@@ -765,9 +785,9 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(previewStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created workflow sandbox preview store: " + previewStoreName);
+         logger.trace("Created workflow sandbox preview store: " + previewStoreName);
       }
          
       // create a layered directory pointing to 'www' in the workflow 'main' store
@@ -784,7 +804,14 @@ public final class SandboxFactory extends WCMUtil
          dumpStoreProperties(avmService, previewStoreName);
       }
       
-      return getSandbox(mainStoreName);
+      SandboxInfo sbInfo =  getSandbox(mainStoreName);
+      
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("createWorkflowSandbox: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms");
+      }
+      
+      return sbInfo;
    }
    
    /**
@@ -808,6 +835,8 @@ public final class SandboxFactory extends WCMUtil
     */
    public SandboxInfo createReadOnlyWorkflowSandbox(final String storeId)
    {
+      long start = System.currentTimeMillis();
+       
       String wpStoreId = WCMUtil.getWebProjectStoreId(storeId);
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
       
@@ -835,11 +864,11 @@ public final class SandboxFactory extends WCMUtil
       
       avmService.createStore(mainStoreName, props);
       
-      if (logger.isDebugEnabled())
+      if (logger.isTraceEnabled())
       {
-         logger.debug("Created read-only workflow sandbox store: " + mainStoreName);
+         logger.trace("Created read-only workflow sandbox store: " + mainStoreName);
       }
-         
+      
       // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(stagingStoreName), 
                                         mainStoreName + ":/", 
@@ -850,7 +879,14 @@ public final class SandboxFactory extends WCMUtil
          dumpStoreProperties(avmService, mainStoreName);
       }
       
-      return getSandbox(wpStoreId, mainStoreName, false); // no preview store
+      SandboxInfo sbInfo = getSandbox(wpStoreId, mainStoreName, false); // no preview store
+      
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("createReadOnlyWorkflowSandbox: " + sbInfo.getSandboxId() + " in "+(System.currentTimeMillis()-start)+" ms");
+      }
+      
+      return sbInfo;
    }
 
    
@@ -865,6 +901,8 @@ public final class SandboxFactory extends WCMUtil
    // TODO refactor AVMExpiredContentProcessor ...
    public String createUserWorkflowSandbox(String stagingStore, String userStore)
    {
+       long start = System.currentTimeMillis();
+       
        // create the workflow 'main' store
        String packageName = "workflow-" + GUID.generate();
        String workflowStoreName = userStore + STORE_SEPARATOR + packageName;
@@ -891,9 +929,9 @@ public final class SandboxFactory extends WCMUtil
        
        avmService.createStore(workflowStoreName, props);
        
-       if (logger.isDebugEnabled())
+       if (logger.isTraceEnabled())
        {
-           logger.debug("Created user workflow sandbox store: " + workflowStoreName);
+           logger.trace("Created user workflow sandbox store: " + workflowStoreName);
        }
         
        // create a layered directory pointing to 'www' in the users store
@@ -927,9 +965,9 @@ public final class SandboxFactory extends WCMUtil
        
        avmService.createStore(previewStoreName, props);
        
-       if (logger.isDebugEnabled())
+       if (logger.isTraceEnabled())
        {
-           logger.debug("Created user workflow sandbox preview store: " + previewStoreName);
+           logger.trace("Created user workflow sandbox preview store: " + previewStoreName);
        }
         
        // create a layered directory pointing to 'www' in the workflow 'main' store
@@ -939,6 +977,11 @@ public final class SandboxFactory extends WCMUtil
        
        // snapshot the store
        avmService.createSnapshot(previewStoreName, null, null);
+       
+       if (logger.isTraceEnabled())
+       {
+          logger.trace("createUserWorkflowSandbox: " + workflowStoreName + " in "+(System.currentTimeMillis()-start)+" ms");
+       }
        
        // return the main workflow store name
        return workflowStoreName;
@@ -951,6 +994,8 @@ public final class SandboxFactory extends WCMUtil
    
    public List<SandboxInfo> listAllSandboxes(String wpStoreId, boolean includeWorkflowSandboxes, boolean includeLocalhostDeployed)
    {
+       long start = System.currentTimeMillis();
+       
        List<AVMStoreDescriptor> stores = avmService.getStores();
        
        List<SandboxInfo> sbInfos = new ArrayList<SandboxInfo>();
@@ -969,22 +1014,29 @@ public final class SandboxFactory extends WCMUtil
            }
        }
        
+       if (logger.isTraceEnabled())
+       {
+          logger.trace("listAllSandboxes: " + wpStoreId + "[" + sbInfos.size() + "] in "+(System.currentTimeMillis()-start)+" ms");
+       }
+       
        return sbInfos;
    }
    public void deleteSandbox(String sbStoreId)
    {
-       deleteSandbox(WCMUtil.getWebProjectStoreId(sbStoreId), sbStoreId);
+       deleteSandbox(sbStoreId, false);
    }
    
-   public void deleteSandbox(String wpStoreId, String sbStoreId)
+   public void deleteSandbox(String sbStoreId, boolean isSubmitDirectWorkflowSandbox)
    {
-       deleteSandbox(getSandbox(wpStoreId, sbStoreId, true), true);
+       deleteSandbox(getSandbox(WCMUtil.getWebProjectStoreId(sbStoreId), sbStoreId, true), isSubmitDirectWorkflowSandbox, true);
    }
    
-   public void deleteSandbox(SandboxInfo sbInfo, boolean removeLocks)
+   public void deleteSandbox(SandboxInfo sbInfo, boolean isSubmitDirectWorkflowSandbox, boolean removeLocks)
    {
        if (sbInfo != null)
        {
+           long start = System.currentTimeMillis();
+           
            String mainSandboxStore = sbInfo.getMainStoreName();
            String wpStoreId = WCMUtil.getWebProjectStoreId(mainSandboxStore);
            
@@ -1008,7 +1060,11 @@ public final class SandboxFactory extends WCMUtil
             //     accessing a preview layer whose main layer has been torn
             //     out from under it.
             
-            WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
+            // optimization: direct submits no longer virtualize the workflow sandbox
+            if (! isSubmitDirectWorkflowSandbox)
+            {
+                WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
+            }
             
             // NOTE: Could use the .sandbox-id. GUID property to delete all sandboxes,
             //       rather than assume a sandbox always had a single preview
@@ -1033,9 +1089,9 @@ public final class SandboxFactory extends WCMUtil
                 }
             }
             
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-               logger.debug("Deleted sandbox: " + mainSandboxStore);
+               logger.trace("deleteSandbox: " + mainSandboxStore + " in "+(System.currentTimeMillis()-start)+" ms");
             }
        }
    }

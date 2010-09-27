@@ -1072,11 +1072,13 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 public NodeDescription next()
                 {
                     this.pos++;
-                    String[] authorityNames = new String[17];
+
+                    // Just for fun, make the last group one that includes ALL authorities!
+                    String[] authorityNames = new String[this.pos == RandomGroupCollection.this.size ? RandomGroupCollection.this.size : 17];
                     for (int i = 0; i < authorityNames.length; i++)
                     {
                         // Choose an authority at random from the list of known authorities
-                        int index = RandomGroupCollection.this.generator.nextInt(RandomGroupCollection.this.authorities
+                        int index = this.pos == RandomGroupCollection.this.size ? i : RandomGroupCollection.this.generator.nextInt(RandomGroupCollection.this.authorities
                                 .size());
                         authorityNames[i] = ChainingUserRegistrySynchronizerTest.this.authorityService
                                 .getShortName((String) RandomGroupCollection.this.authorities.get(index));

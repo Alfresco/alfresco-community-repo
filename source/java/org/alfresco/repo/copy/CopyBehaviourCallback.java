@@ -21,9 +21,11 @@ package org.alfresco.repo.copy;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * A callback to modify copy behaviour associated with a given type or aspect.  This
@@ -34,6 +36,70 @@ import org.alfresco.service.namespace.QName;
  */
 public interface CopyBehaviourCallback
 {
+    /**
+     * Description of how the copy process should handle multiplicity of peer associations
+     * at the <b>source</b> end of the association.<br/>
+     * The order of this enum denotes the priority when mixing behaviour as well;
+     * that is to say that a 'ignore' behaviour will occur even if an 'copy' is
+     * also provided by the registered behaviour callbacks.
+     * 
+     * @author Derek Hulley
+     * @since 3.3SP3
+     */
+    public enum AssocCopySourceAction implements Comparable<AssocCopySourceAction>
+    {
+        /**
+         * Always copy the association.
+         * <br/>
+         * Note that this can cause duplicate associations when copying over
+         * {@link CopyAssociationDetails#isTargetNodeIsNew() existing target nodes}.
+         */
+        COPY,
+        /**
+         * Always copy the association but remove the copy-target's matching associations
+         * when copying over an existing node.
+         * <br/>
+         * This is akin to the original CopyService behaviour
+         * (see <a href=https://issues.alfresco.com/jira/browse/ALF-958>ALF-958</a>).
+         */
+        COPY_REMOVE_EXISTING,
+        /**
+         * Ignore the association
+         */
+        IGNORE,
+    }
+    
+    /**
+     * Description of how the copy process should handle multiplicity of peer associations
+     * at the <b>target</b> end of the association.<br/>
+     * The order of this enum denotes the priority when mixing behaviour as well;
+     * that is to say that a 'ignore' behaviour will occur even if an 'copy' is
+     * also provided by the registered behaviour callbacks.
+     * 
+     * @author Derek Hulley
+     * @since 3.3SP3
+     */
+    public enum AssocCopyTargetAction implements Comparable<AssocCopyTargetAction>
+    {
+        /**
+         * The copied association will use, as target, the original association's target
+         * i.e. the target of the association will remain as it was.
+         */
+        USE_ORIGINAL_TARGET,
+        /**
+         * The copied association will use, as target, the node <i>copied from</i> the
+         * original target; if the original association's target is <i>not</i> copied
+         * in the process, then nothing is done.
+         */
+        USE_COPIED_TARGET,
+        /**
+         * The copied association will use, as target, the node <i>copied from</i> the
+         * original target; if the original association's target is <i>not</i> copied
+         * in the original target is used.
+         */
+        USE_COPIED_OTHERWISE_ORIGINAL_TARGET,
+    }
+    
     /**
      * Description of how the copy process should traverse a child association.
      * The order of this enum denotes the priority when mixing behaviour as well;
@@ -48,21 +114,15 @@ public interface CopyBehaviourCallback
         /**
          * Ignore the child association
          */
-        IGNORE
-        {
-        },
+        IGNORE,
         /**
          * Copy the association only, keeping the existing child node
          */
-        COPY_ASSOC
-        {
-        },
+        COPY_ASSOC,
         /**
          * Traverse the child association and <b>copy</b> the child node
          */
-        COPY_CHILD
-        {
-        };
+        COPY_CHILD,
     }
     
     /**
@@ -76,9 +136,7 @@ public interface CopyBehaviourCallback
         /**
          * Respect the client's recursion decision
          */
-        RESPECT_RECURSE_FLAG
-        {
-        },
+        RESPECT_RECURSE_FLAG,
         /**
          * Force all further copies of the source hierarchy to recurse into children.
          * This allows behaviour to force a copy of a subtree that it expects to
@@ -88,17 +146,81 @@ public interface CopyBehaviourCallback
          *              so this is mainly useful where the subtree contains the default
          *              behaviour.
          */
-        FORCE_RECURSE
+        FORCE_RECURSE,
+    }
+    
+    /**
+     * A simple bean class to convey information to the callback methods dealing with
+     * copying of associations.
+     *
+     * @see CopyBehaviourCallback#getAssociationCopyAction(QName, CopyDetails, CopyAssociationDetails)
+     * 
+     * @author Derek Hulley
+     * @since 3.3SP3
+     */
+    public static final class CopyAssociationDetails
+    {
+        private final AssociationRef assocRef;
+        private final NodeRef copyTarget;
+        private final boolean copyTargetIsNew;
+        
+        public CopyAssociationDetails(
+                AssociationRef assocRef,
+                NodeRef copyTarget,
+                boolean copyTargetIsNew)
         {
-        },
+            this.assocRef = assocRef;
+            this.copyTarget = copyTarget;
+            this.copyTargetIsNew = copyTargetIsNew;
+        }
+        
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder(256);
+            sb.append("CopyChildAssociationDetails ")
+              .append("[ assocRef=").append(assocRef)
+              .append(", copyTarget=").append(copyTarget)
+              .append(", copyTargetIsNew=").append(copyTargetIsNew)
+              .append("]");
+            return sb.toString();
+        }
+
+        /**
+         * @return          Returns the association being examined
+         */
+        public final AssociationRef getAssocRef()
+        {
+            return assocRef;
+        }
+
+        /**
+         * @return          Returns the node that will be the
+         *                  new source if the association is copied
+         */
+        public final NodeRef getCopyTarget()
+        {
+            return copyTarget;
+        }
+
+        /**
+         * 
+         * @return          Returns <tt>true</tt> if the {@link #getCopyTarget() copy target node}
+         *                  has been newly created by the copy process or <tt>false</tt> if it
+         *                  is a node that existed prior to the copy
+         */
+        public final boolean getCopyTargetIsNew()
+        {
+            return copyTargetIsNew;
+        }
     }
     
     /**
      * A simple bean class to convey information to the callback methods dealing with
      * copying of child associations.
      *
-     * @see CopyBehaviourCallback#getChildAssociationCopyAction(QName, CopyDetails, ChildAssociationRef, NodeRef, boolean)
-     * @see CopyBehaviourCallback#getChildAssociationRecurseAction(QName, CopyDetails, ChildAssociationRef, boolean)
+     * @see CopyBehaviourCallback#getChildAssociationCopyAction(QName, CopyDetails, CopyChildAssociationDetails)
+     * @see CopyBehaviourCallback#getChildAssociationRecurseAction(QName, CopyDetails, CopyChildAssociationDetails)
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -106,19 +228,19 @@ public interface CopyBehaviourCallback
     public static final class CopyChildAssociationDetails
     {
         private final ChildAssociationRef childAssocRef;
-        private final NodeRef targetNodeRef;
-        private final boolean targetNodeIsNew;
+        private final NodeRef copyTarget;
+        private final boolean copyTargetIsNew;
         private final boolean copyChildren;
         
         public CopyChildAssociationDetails(
                 ChildAssociationRef childAssocRef,
-                NodeRef targetNodeRef,
-                boolean targetNodeIsNew,
+                NodeRef copyTarget,
+                boolean copyTargetIsNew,
                 boolean copyChildren)
         {
             this.childAssocRef = childAssocRef;
-            this.targetNodeRef = targetNodeRef;
-            this.targetNodeIsNew = targetNodeIsNew;
+            this.copyTarget = copyTarget;
+            this.copyTargetIsNew = copyTargetIsNew;
             this.copyChildren = copyChildren;
         }
         
@@ -128,8 +250,8 @@ public interface CopyBehaviourCallback
             StringBuilder sb = new StringBuilder(256);
             sb.append("CopyChildAssociationDetails ")
               .append("[ childAssocRef=").append(childAssocRef)
-              .append(", targetNodeRef=").append(targetNodeRef)
-              .append(", targetNodeIsNew=").append(targetNodeIsNew)
+              .append(", copyTarget=").append(copyTarget)
+              .append(", copyTargetIsNew=").append(copyTargetIsNew)
               .append(", copyChildren=").append(copyChildren)
               .append("]");
             return sb.toString();
@@ -144,23 +266,23 @@ public interface CopyBehaviourCallback
         }
 
         /**
-         * @return          Returns the target node that will be the
+         * @return          Returns the node that will be the
          *                  new parent if the association is copied
          */
-        public final NodeRef getTargetNodeRef()
+        public final NodeRef getCopyTarget()
         {
-            return targetNodeRef;
+            return copyTarget;
         }
 
         /**
          * 
-         * @return          Returns <tt>true</tt> if the {@link #getTargetNodeRef() target node}
+         * @return          Returns <tt>true</tt> if the {@link #getCopyTarget() target node}
          *                  has been newly created by the copy process or <tt>false</tt> if it
          *                  is a node that existed prior to the copy
          */
-        public final boolean isTargetNodeIsNew()
+        public final boolean getCopyTargetIsNew()
         {
-            return targetNodeIsNew;
+            return copyTargetIsNew;
         }
 
         /**
@@ -186,6 +308,21 @@ public interface CopyBehaviourCallback
      *                              represents must be copied.
      */
     boolean getMustCopy(QName classQName, CopyDetails copyDetails);
+    
+    /**
+     * Determine the copy behaviour associated with a given peer association.
+     * 
+     * @param classQName            the name of the class that this is being invoked for
+     * @param copyDetails           the source node's copy details for quick reference
+     * @param assocCopyDetails      all other details relating to the association
+     * @return                      Returns the copy actions
+     *                              ({@link AssocCopySourceAction source} and {@link AssocCopySourceAction target})
+     *                              to take with the given association
+     */
+    Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
+            QName classQName,
+            CopyDetails copyDetails,
+            CopyAssociationDetails assocCopyDetails);
     
     /**
      * Determine if a copy should copy the child, the association only or do nothing with

@@ -1158,7 +1158,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
             public boolean preLoadNodes()
             {
-                return true;
+                return false;
             }
 
             public void done()

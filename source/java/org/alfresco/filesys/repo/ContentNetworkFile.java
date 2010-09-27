@@ -382,6 +382,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             catch (IOException ex) {
                 logger.error( ex);
             }
+            
+            // Indicate that the file is open
+            
+            setClosed( false);
         }
     }
 
@@ -399,12 +403,14 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         {
         	// Nothing to do
         	
+            setClosed( true);
             return;
         }
         else if (!hasContent())
         {
         	// File was not read/written so channel was not opened
         	
+            setClosed( true);
             return;
         }
         
@@ -479,6 +485,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                 {
                     content = null;
                     preUpdateContentURL = null;
+                    
+                    setClosed( true);
                 }
             });
         }

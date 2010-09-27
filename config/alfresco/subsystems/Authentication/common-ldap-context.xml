@@ -110,6 +110,11 @@
             <entry key="java.naming.security.authentication">
                <value>${ldap.authentication.java.naming.security.authentication}</value>
             </entry>
+
+            <!-- Automatically follow referrals -->
+            <entry key="java.naming.referral">
+               <value>follow</value>
+            </entry>
          </map>
       </property>
       <property name="defaultIntialDirContextEnvironment">
@@ -153,6 +158,11 @@
             <!-- Pool the default connection -->
             <entry key="com.sun.jndi.ldap.connect.pool">
                <value>true</value>
+            </entry>
+
+            <!-- Automatically follow referrals -->
+            <entry key="java.naming.referral">
+               <value>follow</value>
             </entry>
          </map>
       </property>

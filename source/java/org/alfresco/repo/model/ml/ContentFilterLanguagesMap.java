@@ -31,6 +31,7 @@ import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
+import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -220,7 +221,7 @@ public class ContentFilterLanguagesMap implements ContentFilterLanguagesService
                     this.defaultLanguage = code;
                 }
             }
-            if (defaultLanguage == code)
+            if (EqualsHelper.nullSafeEquals(defaultLanguage, code))
             {
                 orderedLangCodes.add(0, code);
             }

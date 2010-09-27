@@ -1696,6 +1696,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                             fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
                         }
                         
+                        // Check if change notifications should be enabled
+                        
+                        if ( filesysContext.getDisableChangeNotifications() == false)
+                            filesysContext.enableChangeHandler( true);
+                        
                         // Start the filesystem
 
                         filesysContext.startFilesystem(filesys);

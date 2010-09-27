@@ -24,7 +24,7 @@ import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
-import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.util.WCMUtil;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -39,10 +39,7 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 4113360751217684995L;
     
-    /**
-     * The WCM SandboxService instance.
-     */
-    private SandboxService sbService;
+    private SandboxFactory sandboxFactory;
     
     /**
      * Initialize service references.
@@ -51,7 +48,7 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory) 
     {
-        sbService = (SandboxService)factory.getBean("SandboxService");
+        sandboxFactory = (SandboxFactory)factory.getBean("sandboxFactory");
     }
     
     /**
@@ -67,6 +64,11 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
         NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
         Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
         
+        String workflowName = executionContext.getProcessDefinition().getName();
+        
+        // optimization: direct submits no longer virtualize the workflow sandbox
+        final boolean isSubmitDirectWorkflowSandbox = ((workflowName != null) && (workflowName.equals(WCMUtil.WORKFLOW_SUBMITDIRECT_NAME)));
+        
         // Now delete the stores in the WCM workflow sandbox
         final String avmPath = pkgPath.getSecond();
         
@@ -74,11 +76,10 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
         {
             public Object doWork() throws Exception
             {
-                sbService.deleteSandbox(WCMUtil.getSandboxStoreId(avmPath));
+                sandboxFactory.deleteSandbox(WCMUtil.getSandboxStoreId(avmPath), isSubmitDirectWorkflowSandbox);
                 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
     }
 }

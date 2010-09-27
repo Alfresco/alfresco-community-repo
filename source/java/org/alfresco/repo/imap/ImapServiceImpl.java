@@ -972,12 +972,10 @@ public class ImapServiceImpl implements ImapService
             FileInfo mountPointFileInfo = fileFolderService.getFileInfo(mountPoint);
             NodeRef mountParent = nodeService.getParentAssocs(mountPoint).get(0).getParentRef();
             ImapViewMode viewMode = imapConfigMountPoints.get(mountPointName).getMode();
-            /*
             if (!mailboxPattern.equals("*"))
             {
                 mountPoint = mountParent;
             }
-            */
             List<AlfrescoImapFolder> folders = expandFolder(mountPoint, mountPoint, user, mailboxPattern, listSubscribed, viewMode);
             if (folders != null)
             {

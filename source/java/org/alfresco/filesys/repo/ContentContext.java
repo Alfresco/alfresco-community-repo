@@ -57,6 +57,10 @@ public class ContentContext extends AlfrescoContext
     
     private boolean m_disableNodeMonitor;
     
+    // Disable change notifications for CIFS
+    
+    private boolean m_disableChangeNotifications;
+    
     private AccessControlListBean m_accessControlList;
         
     // Enable/disable oplocks
@@ -130,6 +134,15 @@ public class ContentContext extends AlfrescoContext
         m_disableNodeMonitor = disableNodeMonitor;
     }        
 
+    /**
+     * Disable change notifications
+     * 
+     * @param disableChangeNotify boolean
+     */
+    public void setDisableChangeNotifications( boolean disableChangeNotify) {
+        m_disableChangeNotifications = disableChangeNotify;
+    }
+    
     public void setAccessControlList(AccessControlListBean accessControlList)
     {
         m_accessControlList = accessControlList;
@@ -235,6 +248,15 @@ public class ContentContext extends AlfrescoContext
      */
     public boolean getDisableOplocks() {
     	return m_oplocksDisabled;
+    }
+    
+    /**
+     * Determine if change notifications are disabled
+     * 
+     * @return boolean
+     */
+    public boolean getDisableChangeNotifications() {
+        return m_disableChangeNotifications;
     }
     
     /**

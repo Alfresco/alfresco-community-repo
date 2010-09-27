@@ -80,6 +80,9 @@ public class ModuleManagementTool
     private static final String OPTION_NOBACKUP = "-nobackup";
     private static final String OPTION_DIRECTORY = "-directory";
     
+    private static final int ERROR_EXIT_CODE = 1;
+    private static final int SUCCESS_EXIT_CODE = 0;
+    
     /** Default zip detector */
     public static final ZipDetector DETECTOR_AMP_AND_WAR = new DefaultRaesZipDetector("amp|war");
     
@@ -720,7 +723,7 @@ public class ModuleManagementTool
         if (args.length <= 1)
         {
             outputUsage();
-            return;
+            System.exit(ERROR_EXIT_CODE);
         }
         ModuleManagementTool manager = new ModuleManagementTool();
         
@@ -775,12 +778,14 @@ public class ModuleManagementTool
                     // Install the modules from the directory
                     manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
                 }
+                System.exit(SUCCESS_EXIT_CODE);
             }
             catch (ModuleManagementToolException e)
             {
                 // These are user-friendly
                 manager.outputMessage(e.getMessage());
                 outputUsage();
+                System.exit(ERROR_EXIT_CODE);
             }
         }
         else if (OP_LIST.equals(operation) == true && args.length == 2)
@@ -788,10 +793,12 @@ public class ModuleManagementTool
             // List the installed modules
             String warFileLocation = args[1];
             manager.listModules(warFileLocation);                
+            System.exit(SUCCESS_EXIT_CODE);
         }
         else
         {
             outputUsage();
+            System.exit(SUCCESS_EXIT_CODE);
         }
     }
 

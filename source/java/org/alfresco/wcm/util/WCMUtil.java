@@ -40,11 +40,11 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.FileNameValidator;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Helper methods and constants related to WCM directories, paths and store name manipulation.
@@ -698,7 +698,7 @@ public class WCMUtil extends AVMUtil
 
    protected static Map<String, String> listWebUsers(NodeService nodeService, NodeRef wpNodeRef)
    {
-       List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+       List<ChildAssociationRef> userInfoRefs = listWebUserRefs(nodeService, wpNodeRef, true);
        
        Map<String, String> webUsers = new HashMap<String, String>(23);
        
@@ -710,8 +710,13 @@ public class WCMUtil extends AVMUtil
            
            webUsers.put(userName, userRole);
         }
-
+       
        return webUsers;
+   }
+   
+   protected static List<ChildAssociationRef> listWebUserRefs(NodeService nodeService, NodeRef wpNodeRef, boolean preLoad)
+   {
+       return nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL, preLoad);
    }
    
    /**
@@ -885,4 +890,6 @@ public class WCMUtil extends AVMUtil
    private final static Pattern SANDBOX_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +
                       AVM_PATH_SEPARATOR + JNDIConstants.DIR_DEFAULT_APPBASE + ")(.*)");
+   
+   public static final String WORKFLOW_SUBMITDIRECT_NAME = "wcmwf:submitdirect";
 }

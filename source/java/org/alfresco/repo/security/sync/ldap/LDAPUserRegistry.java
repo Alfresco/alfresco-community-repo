@@ -893,7 +893,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     {
         SearchControls userSearchCtls = new SearchControls();
         userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        userSearchCtls.setReturningAttributes(new String[] {});
+
+        // Although we don't actually need any attributes, we ask for the UID for compatibility with Sun Directory Server. See ALF-3868
+        userSearchCtls.setReturningAttributes(new String[]
+        {
+            this.userIdAttributeName
+        });
+
         InitialDirContext ctx = null;
         try
         {

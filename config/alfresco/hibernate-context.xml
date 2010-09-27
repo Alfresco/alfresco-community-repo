@@ -21,10 +21,7 @@
     </bean>
 
     <!-- load hibernate entity cache strategies -->
-    <bean id="cacheStrategiesPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>
+    <bean id="cacheStrategiesPlaceholderConfigurer" parent="common-placeholder-configurer">
         <property name="locations">
             <list>
                 <value>classpath:alfresco/domain/cache-strategies.properties</value>

@@ -25,7 +25,7 @@ import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Node operations service interface.
+ * Copy operations service interface.
  * <p>
  * This interface provides methods to copy nodes within and across workspaces and to 
  * update the state of a node, with that of another node, within and across workspaces.

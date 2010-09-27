@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -549,6 +550,11 @@ public class CopyServiceImplTest extends BaseSpringTest
         QName nodeThreeAssocName = QName.createQName("{test}nodeThree");
         QName nodeFourAssocName = QName.createQName("{test}nodeFour");
         
+        NodeRef nodeNotCopied = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                nodeOneAssocName,
+                TEST_TYPE_QNAME).getChildRef();
         NodeRef nodeOne = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -571,6 +577,7 @@ public class CopyServiceImplTest extends BaseSpringTest
                 TEST_TYPE_QNAME).getChildRef();
         this.nodeService.addChild(nodeFour, nodeThree, TEST_CHILD_ASSOC_TYPE_QNAME, TEST_CHILD_ASSOC_QNAME);
         this.nodeService.createAssociation(nodeTwo, nodeThree, TEST_ASSOC_TYPE_QNAME);
+        this.nodeService.createAssociation(nodeTwo, nodeNotCopied, TEST_ASSOC_TYPE_QNAME);
         
         // Make node one actionable with a rule to copy nodes into node two
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
@@ -633,13 +640,15 @@ public class CopyServiceImplTest extends BaseSpringTest
         ChildAssociationRef child = children.get(0);
         assertEquals(child.getChildRef(), nodeThree);
         
-//        // Check the target assoc
-//        List<AssociationRef> assocs = this.nodeService.getTargetAssocs(nodeTwoCopy, TEST_ASSOC_TYPE_QNAME);
-//        assertNotNull(assocs);
-//        assertEquals(1, assocs.size());
-//        AssociationRef assoc = assocs.get(0);
-//        assertEquals(assoc.getTargetRef(), nodeThreeCopy);        
-//        
+        // Check the target assoc
+        List<AssociationRef> assocs = this.nodeService.getTargetAssocs(nodeTwoCopy, TEST_ASSOC_TYPE_QNAME);
+        assertNotNull(assocs);
+        assertEquals(2, assocs.size());
+        AssociationRef assoc0 = assocs.get(0);
+        assertTrue(assoc0.getTargetRef().equals(nodeThreeCopy) || assoc0.getTargetRef().equals(nodeNotCopied));        
+        AssociationRef assoc1 = assocs.get(1);
+        assertTrue(assoc1.getTargetRef().equals(nodeThreeCopy) || assoc1.getTargetRef().equals(nodeNotCopied));        
+        
         // Check that the rule parameter values have been made relative
         List<Rule> rules = this.ruleService.getRules(nodeOneCopy);
         assertNotNull(rules);

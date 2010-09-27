@@ -184,6 +184,16 @@ public interface ScriptService
     @Auditable
     public void resetScriptProcessors();
     
+    
+    /**
+     * Add core data-model to provided Map
+     * 
+     * @param inputMap initial Map of global scope scriptable Node objects
+     * @return A Map of global scope scriptable Node objects
+     */
+    @Auditable(parameters = {"inputMap"})
+    public void buildCoreModel(Map<String, Object> inputMap);
+    
     /**
      * Create the default data-model available to scripts as global scope level objects:
      * <p>

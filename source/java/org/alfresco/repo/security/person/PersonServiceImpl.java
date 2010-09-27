@@ -787,13 +787,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // Ignore this
         }
 
-        // remove user from any containing authorities
-        Set<String> containerAuthorities = authorityService.getContainingAuthorities(null, userName, true);
-        for (String containerAuthority : containerAuthorities)
-        {
-            authorityService.removeAuthority(containerAuthority, userName);
-        }
-
         // remove any user permissions
         permissionServiceSPI.deletePermissions(userName);
 

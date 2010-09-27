@@ -185,6 +185,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     public WebProjectInfo createWebProject(WebProjectInfo wpInfo)
     {
+        long start = System.currentTimeMillis();
+        
         String wpStoreId = wpInfo.getStoreId();
         String name = wpInfo.getName();
         String title = wpInfo.getTitle();
@@ -290,9 +292,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         CreateWebProjectTransactionListener tl = new CreateWebProjectTransactionListener(wpStoreId);
         AlfrescoTransactionSupport.bindListener(tl);
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-           logger.info("Created web project: " + wpNodeRef + " (store id: " + wpStoreId + ")");
+           logger.debug("Created web project: " + wpNodeRef + " in "+(System.currentTimeMillis()-start)+" ms (store id: " + wpStoreId + ")");
         }
         
         // Return created web project info
@@ -312,6 +314,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void createWebApp(NodeRef wpNodeRef, final String webAppName, final String webAppDescription)
     {
+        long start = System.currentTimeMillis();
+        
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
         
         if (isContentManager(wpNodeRef))
@@ -345,9 +349,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 }
             }, AuthenticationUtil.getSystemUserName());
             
-            if (logger.isInfoEnabled())
+            if (logger.isDebugEnabled())
             {
-               logger.info("Created web app: "+webAppName+" (store id: "+wpInfo.getStoreId()+")");
+               logger.debug("Created web app: "+webAppName+" in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpInfo.getStoreId()+")");
             }
         }
         else
@@ -392,6 +396,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void deleteWebApp(NodeRef wpNodeRef, final String webAppName)
     {
+        long start = System.currentTimeMillis();
+        
         ParameterCheck.mandatoryString("webAppName", webAppName);
         
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
@@ -422,9 +428,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 }
             }, AuthenticationUtil.getSystemUserName());
             
-            if (logger.isInfoEnabled())
+            if (logger.isDebugEnabled())
             {
-               logger.info("Deleted web app: "+webAppName+" (store id: "+wpStoreId+")");
+               logger.debug("Deleted web app: "+webAppName+" in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpStoreId+")");
             }
         }
         else
@@ -623,6 +629,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void updateWebProject(WebProjectInfo wpInfo)
     {
+        long start = System.currentTimeMillis();
+        
         NodeRef wpNodeRef = getWebProjectNodeFromStore(wpInfo.getStoreId());
         if (wpNodeRef == null)
         {
@@ -667,7 +675,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         if (logger.isDebugEnabled())
         {
-           logger.debug("Updated web project: " + wpNodeRef + " (store id: " + wpInfo.getStoreId() + ")");
+           logger.debug("Updated web project: " + wpNodeRef + " in "+(System.currentTimeMillis()-start)+" ms (store id: " + wpInfo.getStoreId() + ")");
         }
     }
     
@@ -693,6 +701,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void deleteWebProject(final NodeRef wpNodeRef)
     {
+        long start = System.currentTimeMillis();
+        
         if (! isContentManager(wpNodeRef))
         {
             // the current user is not a content manager since the web project does not exist (or is not visible)
@@ -701,7 +711,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         // delete all attached website sandboxes in reverse order to the layering
         final String wpStoreId = (String)nodeService.getProperty(wpNodeRef, WCMAppModel.PROP_AVMSTORE);
-
+        
         if (wpStoreId != null)
         {
             // Notify virtualization server about removing this website
@@ -754,7 +764,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                                     }
                                     
                                     // delete sandbox (and associated preview sandbox, if it exists)
-                                    sandboxFactory.deleteSandbox(sbInfo, false);
+                                    sandboxFactory.deleteSandbox(sbInfo, false, false);
                                 }
                                 
                                 // delete all web project locks in one go (ie. all those currently held against staging store)
@@ -778,9 +788,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 
                 transactionService.getRetryingTransactionHelper().doInTransaction(deleteWebProjectWork);
                 
-                if (logger.isInfoEnabled())
+                if (logger.isDebugEnabled())
                 {
-                   logger.info("Deleted web project: " + wpNodeRef + " (store id: " + wpStoreId + ")");
+                   logger.debug("Deleted web project: " + wpNodeRef + " in "+(System.currentTimeMillis()-start)+" ms (store id: " + wpStoreId + ")");
                 }
             }
             catch (Throwable err)
@@ -867,7 +877,16 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public int getWebUserCount(NodeRef wpNodeRef)
     {
-        return WCMUtil.listWebUsers(nodeService, wpNodeRef).size();
+        long start = System.currentTimeMillis();
+        
+        int cnt = WCMUtil.listWebUserRefs(nodeService, wpNodeRef, false).size();
+        
+        if (logger.isTraceEnabled())
+        {
+           logger.trace("Get web user cnt: " + wpNodeRef + "(" + cnt + ") in "+(System.currentTimeMillis()-start)+" ms");
+        }
+        
+        return cnt;
     }
     
     /* (non-Javadoc)
@@ -883,19 +902,28 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public Map<String, String> listWebUsers(NodeRef wpNodeRef)
     {
+        long start = System.currentTimeMillis();
+        
         // special case: allow System - eg. to allow user to create their own sandbox on-demand (createAuthorSandbox)
         if (isContentManager(wpNodeRef) 
            || (AuthenticationUtil.getRunAsUser().equals(AuthenticationUtil.getSystemUserName())
            || (permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)))
         {
-            return WCMUtil.listWebUsers(nodeService, wpNodeRef);
+            Map<String, String> users = WCMUtil.listWebUsers(nodeService, wpNodeRef);
+            
+            if (logger.isTraceEnabled())
+            {
+               logger.trace("List web users: " + wpNodeRef + "(" + users.size() + ") in "+(System.currentTimeMillis()-start)+" ms");
+            }
+            
+            return users;
         }
         else
         {
             throw new AccessDeniedException("Only content managers may list users in a web project");
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#getWebUserRole(java.lang.String, java.lang.String)
      */
@@ -1039,6 +1067,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
     {
+        long start = System.currentTimeMillis();
+        
         if (! (isContentManager(wpNodeRef) ||
                 permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED))
         {
@@ -1191,7 +1221,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 }
             }
         }
-
+        
         // TODO - split out into separate 'change role'
         // update user's roles
         if (usersToUpdate.size() != 0)
@@ -1199,9 +1229,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             sandboxFactory.updateSandboxRoles(wpStoreId, usersToUpdate, perms);
         }
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-           logger.info("Invited "+invitedCount+" web users (store id: "+wpStoreId+")");
+           logger.debug("Invited "+invitedCount+" web users in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpStoreId+")");
         }
     }
     
@@ -1226,6 +1256,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUser(NodeRef wpNodeRef, String userAuth, String role, boolean autoCreateAuthorSandbox)
     {
+        long start = System.currentTimeMillis();
+        
         if (! (isContentManager(wpNodeRef) ||
                permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED))
         {
@@ -1234,7 +1266,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
         final String wpStoreId = wpInfo.getStoreId();
-
+        
         // build a list of managers who will have full permissions on ALL staging areas
         List<String> managers = new ArrayList<String>(4);
         
@@ -1286,9 +1318,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 
                 sandboxFactory.updateSandboxRoles(wpStoreId, usersToUpdate, perms);
                 
-                if (logger.isInfoEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    logger.info("Web user "+userAuth +"'s role has been changed from '" + oldUserRole + "' to '" + role + "' (store id: "+wpStoreId+")");
+                    logger.debug("Web user "+userAuth +"'s role has been changed from '" + oldUserRole + "' to '" + role + "' in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpStoreId+")");
                 }
             }
         }
@@ -1333,9 +1365,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 }
             }
             
-            if (logger.isInfoEnabled())
+            if (logger.isDebugEnabled())
             {
-               logger.info("Invited web user: "+userAuth+" (store id: "+wpStoreId+")");
+               logger.debug("Invited web user: "+userAuth+" in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpStoreId+")");
             }
         }
     }
@@ -1374,6 +1406,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void uninviteWebUser(NodeRef wpNodeRef, String userAuth, boolean autoDeleteAuthorSandbox)
     {
+        long start = System.currentTimeMillis();
+        
         if (! isContentManager(wpNodeRef))
         {
             throw new AccessDeniedException("Only content managers may uninvite web user '"+userAuth+"' from web project: "+wpNodeRef);
@@ -1385,7 +1419,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
         String wpStoreId = wpInfo.getStoreId();
         String userMainStore = WCMUtil.buildUserMainStoreName(wpStoreId, userAuth);
-       
+        
         if (autoDeleteAuthorSandbox)
         {
             sandboxFactory.deleteSandbox(userMainStore);
@@ -1420,12 +1454,12 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                  
                 // remove permission for the user (also fixes ETWOONE-338)
                 permissionService.clearPermission(wpNodeRef, userAuth);
-                 
-                if (logger.isInfoEnabled())
+                
+                if (logger.isDebugEnabled())
                 {
-                    logger.info("Uninvited web user: "+userAuth+" (store id: "+wpStoreId+")");
+                    logger.debug("Uninvited web user: "+userAuth+" in "+(System.currentTimeMillis()-start)+" ms (store id: "+wpStoreId+")");
                 }
-                 
+                
                 break; // for loop
             }
        }

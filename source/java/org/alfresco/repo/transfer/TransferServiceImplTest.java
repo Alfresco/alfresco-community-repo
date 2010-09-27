@@ -6981,7 +6981,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Step 2: add non empty content property 
      * transfer
      * 
-     * Step 3: update to empty content property
+     * Step 3: update from non empty content to empty content property
      * transfer
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
@@ -6992,8 +6992,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         String CONTENT_TITLE = "ContentTitle";
         String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        Locale CONTENT_LOCALE = Locale.CANADA; 
-        String CONTENT_STRING = "Hello";
+        Locale CONTENT_LOCALE = Locale.ENGLISH; 
+        String CONTENT_ENCODING = "UTF-8";
+        String CONTENT_STRING = "The quick brown fox jumps over the lazy dog.";
 
         /**
          *  For unit test 
@@ -7058,6 +7059,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
         
+        /**
+         * Step 1: Transfer our node which has empty content
+         */
         logger.debug("First transfer - create new node (empty content)");
         startNewTransaction();
         try 
@@ -7067,16 +7071,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             Map<QName, Serializable> props = nodeService.getProperties(contentNodeRef);
             assertTrue(props.containsKey(ContentModel.PROP_CONTENT));
            
-            /**
-             * Step 1: Transfer our node which has empty content
-             */
-            {
-                TransferDefinition definition = new TransferDefinition();
-                Set<NodeRef>nodes = new HashSet<NodeRef>();
-                nodes.add(contentNodeRef);
-                definition.setNodes(nodes);
-                transferService.transfer(targetName, definition);
-            }  
+            TransferDefinition definition = new TransferDefinition();
+            Set<NodeRef>nodes = new HashSet<NodeRef>();
+            nodes.add(contentNodeRef);
+            definition.setNodes(nodes);
+            transferService.transfer(targetName, definition);
+              
         }
         finally
         {
@@ -7101,22 +7101,23 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         /**
-         * Step 2
+         * Step 2: replace empty content with new content
          */
-        logger.debug("Second transfer - replace empty content");
+        logger.debug("Second transfer - replace empty content with some content");
         
         startNewTransaction();
         try 
         {
             ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
             writer.setLocale(CONTENT_LOCALE);
+            writer.setEncoding(CONTENT_ENCODING);
             writer.putContent(CONTENT_STRING);
+
         }
         finally
         {
             endTransaction();
         }
-       
         
         startNewTransaction();
         try 
@@ -7129,13 +7130,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Step 2: replace empty content with new content
              */
-            {
-                TransferDefinition definition = new TransferDefinition();
-                Set<NodeRef>nodes = new HashSet<NodeRef>();
-                nodes.add(contentNodeRef);
-                definition.setNodes(nodes);
-                transferService.transfer(targetName, definition);
-            }  
+            TransferDefinition definition = new TransferDefinition();
+            Set<NodeRef>nodes = new HashSet<NodeRef>();
+            nodes.add(contentNodeRef);
+            definition.setNodes(nodes);
+            transferService.transfer(targetName, definition);
+              
         }
         finally
         {
@@ -7147,8 +7147,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             NodeRef destinationNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
             ContentReader reader = contentService.getReader(destinationNodeRef, ContentModel.PROP_CONTENT);
+            assertEquals("content encoding is wrong", reader.getEncoding(), CONTENT_ENCODING);
+            assertEquals("content locale is wrong", reader.getLocale(), CONTENT_LOCALE);
             assertNotNull("content reader is null", reader);
             assertTrue("content does not exist", reader.exists());
+            String contentStr = reader.getContentString();
+            assertEquals("Content is wrong", contentStr, CONTENT_STRING);
         }
         finally
         {
@@ -7156,7 +7160,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         /**
-         * Step 3
+         * Step 3 - transition from a content property having content to one that is empty
          */
         logger.debug("Third transfer - remove existing content");
         
@@ -7188,7 +7192,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             nodes.add(contentNodeRef);
             definition.setNodes(nodes);
             transferService.transfer(targetName, definition);
-            
         }
         finally
         {
@@ -7212,7 +7215,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
 
-    }
+    } // end of testEmptyContent
     
     private void createUser(String userName, String password)
     {

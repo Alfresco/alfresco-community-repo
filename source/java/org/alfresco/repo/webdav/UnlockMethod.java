@@ -22,6 +22,7 @@ import java.util.LinkedList;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WebDAVModel;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -140,8 +141,11 @@ public class UnlockMethod extends WebDAVMethod
         LockStatus lockSts = lockService.getLockStatus(lockNodeInfo.getNodeRef());
         if (lockSts == LockStatus.LOCK_OWNER)
         {
-            // Unlock the node
-            lockService.unlock(lockNodeInfo.getNodeRef());
+            // Unlock the node if it is not a Working Copy (ALF-4479)
+            if (!nodeService.hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+            {
+                lockService.unlock(lockNodeInfo.getNodeRef());
+            }
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_DEPTH);
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE);

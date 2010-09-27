@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +47,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -908,13 +910,10 @@ public class PropFindMethod extends WebDAVMethod
 
             xml.startElement(WebDAV.DAV_NS, WebDAV.XML_SUPPORTED_LOCK, WebDAV.XML_NS_SUPPORTED_LOCK, nullAttr);
 
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
-            xml.write(DocumentHelper.createElement(WebDAV.XML_NS_EXCLUSIVE));
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE);
-
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE, nullAttr);
-            xml.write(DocumentHelper.createElement(WebDAV.XML_NS_WRITE));
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE);
+            // Output exclusive lock
+            writeLock(xml, WebDAV.XML_NS_EXCLUSIVE);
+            // Output shared lock
+            writeLock(xml, WebDAV.XML_NS_SHARED);
 
             xml.endElement(WebDAV.DAV_NS, WebDAV.XML_SUPPORTED_LOCK, WebDAV.XML_NS_SUPPORTED_LOCK);
         }
@@ -922,5 +921,28 @@ public class PropFindMethod extends WebDAVMethod
         {
             throw new AlfrescoRuntimeException("XML write error", ex);
         }
+    }
+    
+    /**
+     * Output the lockentry element of the specified type
+     * @param xml XMLWriter
+     * @param lockType lock type. Can be WebDAV.XML_NS_EXCLUSIVE or WebDAV.XML_NS_SHARED
+     * @param lockType lock type containing namespace
+     * @throws SAXException
+     * @throws IOException
+     */
+    private void writeLock(XMLWriter xml, String lockType) throws SAXException, IOException
+    {
+        AttributesImpl nullAttr = getDAVHelper().getNullAttributes();
+
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY, nullAttr); 
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
+        xml.write(DocumentHelper.createElement(lockType));
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE);
+
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE, nullAttr);
+        xml.write(DocumentHelper.createElement(WebDAV.XML_NS_WRITE));
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE);
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_ENTRY, WebDAV.XML_NS_LOCK_ENTRY); 
     }
 }

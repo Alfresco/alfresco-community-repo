@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,14 +33,10 @@ import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.dom4j.DocumentHelper;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
 
 /**
  * Implements the WebDAV LOCK method
@@ -52,13 +47,13 @@ public class LockMethod extends WebDAVMethod
 {
     public static final String EMPTY_NS = "";
     
-    protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
+    private int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
     
-    protected LockInfo lockInfo = new LockInfo();
+    private LockInfo lockInfo = new LockInfo();
 
-    protected String m_scope = null;
+    private boolean createExclusive;
 
-    protected String lockToken= null;
+    private String lockToken= null;
 
     /**
      * Default constructor
@@ -104,6 +99,10 @@ public class LockMethod extends WebDAVMethod
      */
     protected void parseRequestHeaders() throws WebDAVServerException
     {
+        // Get user Agent
+        
+        m_userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
+
         // Get the depth
 
         parseDepthHeader();
@@ -179,35 +178,20 @@ public class LockMethod extends WebDAVMethod
         Document body = getRequestBodyAsDocument();
         if (body != null)
         {
-            Element rootElement = body.getDocumentElement();
-            NodeList childList = rootElement.getChildNodes();
-
-            for (int i = 0; i < childList.getLength(); i++)
+            OUTER: for (Node currentNode = body.getDocumentElement().getFirstChild(); currentNode != null; currentNode = currentNode.getNextSibling())
             {
-                Node currentNode = childList.item(i);
-                switch (currentNode.getNodeType())
+                if (currentNode instanceof Element && WebDAV.DEFAULT_NAMESPACE_URI.equals(((Element) currentNode).getNamespaceURI())
+                        && WebDAV.XML_LOCK_SCOPE.equals(((Element) currentNode).getLocalName()))
                 {
-                case Node.TEXT_NODE:
-                    break;
-                case Node.ELEMENT_NODE:
-                    if (currentNode.getNodeName().endsWith(WebDAV.XML_LOCK_SCOPE))
+                    for (Node propertiesNode = currentNode.getFirstChild(); propertiesNode != null; propertiesNode = propertiesNode.getNextSibling())
                     {
-                        NodeList propertiesList = currentNode.getChildNodes();
-
-                        for (int j = 0; j < propertiesList.getLength(); j++)
+                        if (propertiesNode instanceof Element && WebDAV.DEFAULT_NAMESPACE_URI.equals(((Element) propertiesNode).getNamespaceURI()))
                         {
-                            Node propertiesNode = propertiesList.item(j);
-                            switch (propertiesNode.getNodeType())
-                            {
-                            case Node.TEXT_NODE:
-                                break;
-                            case Node.ELEMENT_NODE:
-                                m_scope = propertiesNode.getLocalName();
-                                break;
-                            }
+                            this.createExclusive = WebDAV.XML_EXCLUSIVE.equals(propertiesNode.getLocalName());
+                            break OUTER;
                         }
                     }
-                    break;
+                    break OUTER;
                 }
             }
         }
@@ -286,12 +270,17 @@ public class LockMethod extends WebDAVMethod
         if (hasLockToken())
         {
             this.lockInfo = checkNode(lockNodeInfo);
+            // If a request body is not defined and "If" header is sent we have createExclusive as false,
+            // but we need to check a previous LOCK was an exclusive. I.e. get the property for node. It
+            // is already has got in a checkNode method, so we need just get a scope from lockInfo.
+            // This particular case was raised as ALF-4008.
+            this.createExclusive = WebDAV.XML_EXCLUSIVE.equals(this.lockInfo.getScope());
             // Refresh an existing lock
             refreshLock(lockNodeInfo, userName);
         }
         else
         {
-            this.lockInfo = checkNode(lockNodeInfo, true, WebDAV.XML_EXCLUSIVE.equals(m_scope));
+            this.lockInfo = checkNode(lockNodeInfo, true, this.createExclusive);
             // Create a new lock
             createLock(lockNodeInfo, userName);
         }
@@ -318,7 +307,7 @@ public class LockMethod extends WebDAVMethod
         // Create Lock token
         lockToken = WebDAV.makeLockToken(lockNode.getNodeRef(), userName);
 
-        if (WebDAV.XML_EXCLUSIVE.equals(m_scope))
+        if (this.createExclusive)
         {
             // Lock the node
             lockService.lock(lockNode.getNodeRef(), LockType.WRITE_LOCK, getLockTimeout());
@@ -338,7 +327,7 @@ public class LockMethod extends WebDAVMethod
         getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_LOCK_DEPTH, WebDAV.getDepthName(m_depth));
 
         // Store lock scope (shared/exclusive)
-        getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE, m_scope);
+        getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE, this.createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED);
 
     }
 
@@ -349,126 +338,72 @@ public class LockMethod extends WebDAVMethod
      * @param userName String
      * @exception WebDAVServerException
      */
-    protected final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
+    private final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
     {
-        LockService lockService = getLockService();
-
-        if (WebDAV.XML_EXCLUSIVE.equals(m_scope))
+        if (this.createExclusive)
         {
             // Update the expiry for the lock
-            lockService.lock(lockNode.getNodeRef(), LockType.WRITE_LOCK, getLockTimeout());
+            getLockService().lock(lockNode.getNodeRef(), LockType.WRITE_LOCK, getLockTimeout());
         }
     }
 
     /**
      * Generates the XML lock discovery response body
      */
-    protected void generateResponse(NodeRef lockNode, String userName) throws Exception
+    private void generateResponse(NodeRef lockNode, String userName) throws Exception
     {
+        String scope;
+        String lt;
+        if (lockToken != null)
+        {
+            // In case of lock creation take the scope from request header
+            scope = this.createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
+            // Output created lock
+            lt = lockToken;
+        }
+        else
+        {
+            // In case of lock refreshing take the scope from previously stored lock
+            scope = this.lockInfo.getScope();
+            // Output refreshed lock
+            lt = this.lockInfo.getToken();
+        }
+        String owner = (String) getNodeService().getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
+
         XMLWriter xml = createXMLWriter();
 
         xml.startDocument();
 
-        String nsdec = generateNamespaceDeclarations(null);
-        xml.startElement(EMPTY_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_PROP + nsdec,
-                getDAVHelper().getNullAttributes());
-
         // Output the lock details
-        generateLockDiscoveryXML(xml, lockNode);
+        String nsdec = generateNamespaceDeclarations(null);
 
-        // Close off the XML
-        xml.endElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP);
+        if (WebDAV.AGENT_MS_6_1_7600.equals(m_userAgent))
+        {
+            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
+
+            // Output the lock details
+            generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
+
+            // Close off the XML
+            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
+
+        }
+        else
+        {
+            xml.startElement(EMPTY_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_PROP + nsdec, getDAVHelper().getNullAttributes());
+
+            // Output the lock details
+            generateLockDiscoveryXML(xml, lockNode, true, scope, WebDAV.getDepthName(m_depth), lt, owner);
+
+            // Close off the XML
+            xml.endElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP);
+        }
 
         // Send the XML back to the client
         xml.flush();
     }
     
     
-    /**
-     * Generates the lock discovery XML response
-     * 
-     * @param xml XMLWriter
-     * @param lockNode NodeRef
-     */
-    protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode) throws Exception
-    {
-        Attributes nullAttr= getDAVHelper().getNullAttributes();
-        
-        if (lockNode != null)
-        {
-            
-            // Get the lock details
-
-            NodeService nodeService = getNodeService();
-            
-            String owner = (String) nodeService.getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
-            Date expiryDate = (Date) nodeService.getProperty(lockNode, ContentModel.PROP_EXPIRY_DATE);
-            
-            // Output the XML response
-            
-            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_LOCK_DISCOVERY, nullAttr);  
-            xml.startElement(EMPTY_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_ACTIVE_LOCK, nullAttr);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_LOCK_TYPE, nullAttr);
-            xml.write(DocumentHelper.createElement(WebDAV.XML_WRITE));
-            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_LOCK_TYPE);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_LOCK_SCOPE, nullAttr);
-            if (lockToken != null)
-            {
-                // In case of lock creation take the scope from request header
-                xml.write(DocumentHelper.createElement(m_scope));
-            }
-            else
-            {
-                // In case of lock refreshing take the scope from previously stored lock
-                xml.write(DocumentHelper.createElement(this.lockInfo.getScope()));
-            }
-            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_LOCK_SCOPE);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_DEPTH, WebDAV.XML_DEPTH, nullAttr);
-            xml.write(WebDAV.getDepthName(m_depth));
-            xml.endElement(EMPTY_NS, WebDAV.XML_DEPTH, WebDAV.XML_DEPTH);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_OWNER, WebDAV.XML_OWNER, nullAttr);
-            xml.write(owner);
-            xml.endElement(EMPTY_NS, WebDAV.XML_OWNER, WebDAV.XML_OWNER);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_TIMEOUT, nullAttr);
-
-            // Output the expiry time
-            
-            String strTimeout = WebDAV.INFINITE;
-            if (expiryDate != null)
-            {
-                  long timeoutRemaining = (expiryDate.getTime() - System.currentTimeMillis())/1000L;
-              
-                  strTimeout = WebDAV.SECOND + timeoutRemaining;
-            }
-            xml.write(strTimeout);
-           
-            xml.endElement(EMPTY_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_TIMEOUT);
-             
-            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_LOCK_TOKEN, nullAttr);
-            xml.startElement(EMPTY_NS, WebDAV.XML_HREF, WebDAV.XML_HREF, nullAttr);
-            if (lockToken != null)
-            {
-                // Output created lock
-                xml.write(lockToken);
-            }
-            else
-            {
-                // Output refreshed lock
-                xml.write(this.lockInfo.getToken());
-            }
-            xml.endElement(EMPTY_NS, WebDAV.XML_HREF, WebDAV.XML_HREF);
-            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_LOCK_TOKEN);
-           
-            xml.endElement(EMPTY_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_ACTIVE_LOCK);
-            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_LOCK_DISCOVERY);
-        }
-    }
-
     /**
      * Generates a list of namespace declarations for the response
      */

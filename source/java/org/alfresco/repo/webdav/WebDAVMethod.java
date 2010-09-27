@@ -106,6 +106,9 @@ public abstract class WebDAVMethod
 
     protected String m_strPath = null;
 
+    // User Agent
+    
+    protected String m_userAgent = null;
 
     // If header conditions 
     
@@ -691,7 +694,7 @@ public abstract class WebDAVMethod
         return writer;
     }
 
-    /**
+   /**
      * Generates the lock discovery XML response
      * 
      * @param xml XMLWriter
@@ -699,8 +702,26 @@ public abstract class WebDAVMethod
      */
     protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode, LockInfo lockInfo) throws Exception
     {
+	    String owner = (String) getNodeService().getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
+	    generateLockDiscoveryXML(xml, lockNode, false, lockInfo.getScope(), lockInfo.getDepth(), WebDAV.makeLockToken(lockNode, owner), owner);
+	}
+  
+    /**
+     * Generates the lock discovery XML response
+     * 
+     * @param xml XMLWriter
+     * @param lockNode NodeRef
+     * @param emptyNamespace boolean True if namespace should be empty. Used to avoid bugs in WebDAV clients.
+     * @param scope String lock scope
+     * @param depth String lock depth
+     * @param lToken String locktoken
+     * @param owner String lock owner
+     * 
+     */
+    protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode, boolean emptyNamespace, String scope, String depth, String lToken, String owner) throws Exception
+    {
         Attributes nullAttr= getDAVHelper().getNullAttributes();
-        
+        String ns = emptyNamespace ? "" : WebDAV.DAV_NS;
         if (lockNode != null)
         {
             
@@ -708,35 +729,32 @@ public abstract class WebDAVMethod
 
             NodeService nodeService = getNodeService();
             
-            String owner = (String) nodeService.getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
             Date expiryDate = (Date) nodeService.getProperty(lockNode, ContentModel.PROP_EXPIRY_DATE);
             
             // Output the XML response
             
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_NS_LOCK_DISCOVERY, nullAttr);  
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_NS_ACTIVE_LOCK, nullAttr);
+            xml.startElement(ns, WebDAV.XML_LOCK_DISCOVERY, emptyNamespace ? WebDAV.XML_LOCK_DISCOVERY : WebDAV.XML_NS_LOCK_DISCOVERY, nullAttr);  
+            xml.startElement(ns, WebDAV.XML_ACTIVE_LOCK, emptyNamespace ? WebDAV.XML_ACTIVE_LOCK : WebDAV.XML_NS_ACTIVE_LOCK, nullAttr);
              
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE, nullAttr);
-            xml.write(DocumentHelper.createElement(WebDAV.XML_NS_WRITE));
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_NS_LOCK_TYPE);
+            xml.startElement(ns, WebDAV.XML_LOCK_TYPE, emptyNamespace ? WebDAV.XML_LOCK_TYPE : WebDAV.XML_NS_LOCK_TYPE, nullAttr);
+            xml.write(DocumentHelper.createElement(emptyNamespace ? WebDAV.XML_WRITE : WebDAV.XML_NS_WRITE));
+            xml.endElement(ns, WebDAV.XML_LOCK_TYPE, emptyNamespace ? WebDAV.XML_LOCK_TYPE : WebDAV.XML_NS_LOCK_TYPE);
              
-            // NOTE: We only do exclusive lock tokens at the moment
-           
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
-            xml.write(DocumentHelper.createElement(lockInfo.getScope()));
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_NS_LOCK_SCOPE);
+            xml.startElement(ns, WebDAV.XML_LOCK_SCOPE, emptyNamespace ? WebDAV.XML_LOCK_SCOPE : WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
+            xml.write(DocumentHelper.createElement(scope));
+            xml.endElement(ns, WebDAV.XML_LOCK_SCOPE, emptyNamespace ? WebDAV.XML_LOCK_SCOPE : WebDAV.XML_NS_LOCK_SCOPE);
              
             // NOTE: We only support one level of lock at the moment
            
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_DEPTH, WebDAV.XML_NS_DEPTH, nullAttr);
-            xml.write(lockInfo.getDepth());
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_DEPTH, WebDAV.XML_NS_DEPTH);
+            xml.startElement(ns, WebDAV.XML_DEPTH, emptyNamespace ? WebDAV.XML_DEPTH : WebDAV.XML_NS_DEPTH, nullAttr);
+            xml.write(depth);
+            xml.endElement(ns, WebDAV.XML_DEPTH, emptyNamespace ? WebDAV.XML_DEPTH : WebDAV.XML_NS_DEPTH);
              
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_OWNER, WebDAV.XML_NS_OWNER, nullAttr);
+            xml.startElement(ns, WebDAV.XML_OWNER, emptyNamespace ? WebDAV.XML_OWNER : WebDAV.XML_NS_OWNER, nullAttr);
             xml.write(owner);
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_OWNER, WebDAV.XML_NS_OWNER);
+            xml.endElement(ns, WebDAV.XML_OWNER, emptyNamespace ? WebDAV.XML_OWNER : WebDAV.XML_NS_OWNER);
              
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_NS_TIMEOUT, nullAttr);
+            xml.startElement(ns, WebDAV.XML_TIMEOUT, emptyNamespace ? WebDAV.XML_TIMEOUT : WebDAV.XML_NS_TIMEOUT, nullAttr);
 
             // Output the expiry time
             
@@ -749,18 +767,18 @@ public abstract class WebDAVMethod
             }
             xml.write(strTimeout);
            
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_NS_TIMEOUT);
+            xml.endElement(ns, WebDAV.XML_TIMEOUT, emptyNamespace ? WebDAV.XML_TIMEOUT : WebDAV.XML_NS_TIMEOUT);
              
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_NS_LOCK_TOKEN, nullAttr);
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, nullAttr);
+            xml.startElement(ns, WebDAV.XML_LOCK_TOKEN, emptyNamespace ? WebDAV.XML_LOCK_TOKEN : WebDAV.XML_NS_LOCK_TOKEN, nullAttr);
+            xml.startElement(ns, WebDAV.XML_HREF, emptyNamespace ? WebDAV.XML_HREF : WebDAV.XML_NS_HREF, nullAttr);
            
-            xml.write(WebDAV.makeLockToken(lockNode, owner));
+            xml.write(lToken);
             
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF);
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_NS_LOCK_TOKEN);
+            xml.endElement(ns, WebDAV.XML_HREF, emptyNamespace ? WebDAV.XML_HREF : WebDAV.XML_NS_HREF);
+            xml.endElement(ns, WebDAV.XML_LOCK_TOKEN, emptyNamespace ? WebDAV.XML_LOCK_TOKEN : WebDAV.XML_NS_LOCK_TOKEN);
            
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_NS_ACTIVE_LOCK);
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_NS_LOCK_DISCOVERY);
+            xml.endElement(ns, WebDAV.XML_ACTIVE_LOCK, emptyNamespace ? WebDAV.XML_ACTIVE_LOCK : WebDAV.XML_NS_ACTIVE_LOCK);
+            xml.endElement(ns, WebDAV.XML_LOCK_DISCOVERY, emptyNamespace ? WebDAV.XML_LOCK_DISCOVERY : WebDAV.XML_NS_LOCK_DISCOVERY);
         }
     }
     

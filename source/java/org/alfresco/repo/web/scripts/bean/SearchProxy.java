@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URLConnection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +46,7 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.webscripts.AbstractWebScript;
@@ -52,7 +55,6 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
-import org.springframework.beans.factory.InitializingBean;
 
 
 /**
@@ -166,7 +168,8 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         }
         
         HttpServletResponse servletRes = WebScriptServletRuntime.getHttpServletResponse(res);
-        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(), engine, engineUrl, servletRes);
+        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(),
+                engine, engineUrl, servletRes, Collections.singletonMap("User-Agent", req.getHeader("User-Agent")));
         proxy.service();
     }
     
@@ -184,20 +187,38 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         private final static String ATOM_LINK_XPATH = "atom:link[@rel=\"first\" or @rel=\"last\" or @rel=\"next\" or @rel=\"previous\" or @rel=\"self\" or @rel=\"alternate\"]";
         private String engine;
         private String rootPath;
+        private Map<String, String> headers;
         
         /**
          * Construct
          * 
          * @param requestUrl
          * @param response
+         * @param headers request headers
          * @throws MalformedURLException
          */
-        public SearchEngineHttpProxy(String rootPath, String engine, String engineUrl, HttpServletResponse response)
+        public SearchEngineHttpProxy(String rootPath, String engine, String engineUrl, HttpServletResponse response, Map<String, String> headers)
             throws MalformedURLException
         {
             super(engineUrl.startsWith("/") ? rootPath + engineUrl : engineUrl, response);
             this.engine = engine;
             this.rootPath = rootPath;
+            this.headers = headers;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.web.app.servlet.HTTPProxy#setRequestHeaders(java.net.URLConnection)
+         */
+        @Override
+        protected void setRequestHeaders(URLConnection urlConnection)
+        {
+            if (headers != null)
+            {
+                for (Map.Entry<String, String> entry: headers.entrySet())
+                {
+                    urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
         }
 
         /* (non-Javadoc)

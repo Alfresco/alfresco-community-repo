@@ -172,7 +172,8 @@ public class PropPatchMethod extends PropFindMethod
     @Override
     protected void parseRequestHeaders() throws WebDAVServerException
     {
-        // Nothing to do in this method
+        // Parse Lock tokens and ETags, if any
+        parseIfHeader();
     }
 
     /**

@@ -114,6 +114,7 @@ public class WebDAV
     public static final String HEADER_OVERWRITE = "Overwrite";
     public static final String HEADER_RANGE = "Range";
     public static final String HEADER_TIMEOUT = "Timeout";
+    public static final String HEADER_USER_AGENT = "User-Agent";
 
     // If-Modified/If-Unmodified date format
     
@@ -123,6 +124,10 @@ public class WebDAV
     
     public static final String HEADER_KEY_NOT = "Not";
 
+    // User agents
+    
+    public static final  String AGENT_MS_6_1_7600 = "Microsoft-WebDAV-MiniRedir/6.1.7600";
+    
     // General string constants
     
     public static final String ASTERISK = "*";
@@ -158,6 +163,7 @@ public class WebDAV
     public static final String XML_GET_LAST_MODIFIED = "getlastmodified";
     public static final String XML_HREF = "href";
     public static final String XML_LOCK_DISCOVERY = "lockdiscovery";
+    public static final String XML_LOCK_ENTRY = "lockentry";
     public static final String XML_LOCK_SCOPE = "lockscope";
     public static final String XML_LOCK_TOKEN = "locktoken";
     public static final String XML_LOCK_TYPE = "locktype";
@@ -194,6 +200,7 @@ public class WebDAV
     public static final String XML_NS_GET_LAST_MODIFIED = DAV_NS_PREFIX + "getlastmodified";
     public static final String XML_NS_HREF = DAV_NS_PREFIX + "href";
     public static final String XML_NS_LOCK_DISCOVERY = DAV_NS_PREFIX + "lockdiscovery";
+    public static final String XML_NS_LOCK_ENTRY = DAV_NS_PREFIX + "lockentry";
     public static final String XML_NS_LOCK_SCOPE = DAV_NS_PREFIX + "lockscope";
     public static final String XML_NS_LOCK_TOKEN = DAV_NS_PREFIX + "locktoken";
     public static final String XML_NS_LOCK_TYPE = DAV_NS_PREFIX + "locktype";

@@ -63,6 +63,7 @@ public class HTTPProxy
         throws IOException
     {
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        setRequestHeaders(connection);
         initialiseResponse(connection);
         InputStream input = connection.getInputStream();
         OutputStream output = response.getOutputStream();
@@ -117,6 +118,15 @@ public class HTTPProxy
         }
     }
     
+    /**
+     * Set request headers
+     *
+     * @param urlConnection  url connection
+     */
+    protected void setRequestHeaders(URLConnection urlConnection)
+    {
+    }
+
     /**
      * Write response
      * 

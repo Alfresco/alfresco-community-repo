@@ -11,10 +11,10 @@
 		   <#if authority.adminGroup??>"isAdminGroup": ${authority.adminGroup?string("true", "false")},</#if>
 		   <#-- end of group specific properties -->
 		   <#if authority.authorityType = "GROUP">
-		   "url": "/api/groups/${authority.shortName}"
+		   "url": "/api/groups/${authority.shortName?url}"
 		   </#if>
 		   <#if authority.authorityType = "USER">
-		   "url": "/api/people/${authority.shortName}"
+		   "url": "/api/people/${authority.shortName?url}"
 		   </#if>
 }
 </#escape>

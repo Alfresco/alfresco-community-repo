@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Holds a FormProcessor implementation for each of the types of form that
- * can be processed. By default a node, task and XML schema form processor
+ * can be processed. By default a node, type, task, and workflow form processor
  * are available.
  * <p>
  * Given an item the registry selects the relevant form processor, the match

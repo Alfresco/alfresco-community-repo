@@ -35,10 +35,10 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 
 /**
+ * Utility class that assists in persisting workflow related form data.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class WorkflowFormPersister extends ContentModelFormPersister<WorkflowInstance>
 {
@@ -101,7 +101,7 @@ public class WorkflowFormPersister extends ContentModelFormPersister<WorkflowIns
     @Override
     protected boolean addTransientAssociation(String fieldName, List<NodeRef> values)
     {
-        if(PackageItemsFieldProcessor.KEY.equals(fieldName))
+        if (PackageItemsFieldProcessor.KEY.equals(fieldName))
         {
             builder.addPackageItems(values);
             return true;

@@ -263,7 +263,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 22 fields", 22, fieldDefs.size());
+        assertEquals("Expecting to find 18 fields", 18, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -301,6 +301,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting to find the cm:subjectline field", subjectField);
         assertNotNull("Expecting to find the cm:sentdate field", sentDateField);
         assertNotNull("Expecting to find the cm:references field", referencesField);
+        
+        // check the system properties are not present by default
+        assertFalse(fieldDefMap.containsKey("sys:node-dbid"));
+        assertFalse(fieldDefMap.containsKey("sys:store-identifier"));
+        assertFalse(fieldDefMap.containsKey("sys:node-uuid"));
+        assertFalse(fieldDefMap.containsKey("sys:store-protocol"));
         
         // check the labels of all the fields
         assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
@@ -655,7 +661,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 11 fields", 11, fieldDefs.size());
+        assertEquals("Expecting to find 7 fields", 7, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -673,6 +679,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check fields are present
         assertNotNull("Expecting to find the cm:name field", nameField);
         assertNotNull("Expecting to find the cm:contains field", containsField);
+        
+        // check the system properties are not present by default
+        assertFalse(fieldDefMap.containsKey("sys:node-dbid"));
+        assertFalse(fieldDefMap.containsKey("sys:store-identifier"));
+        assertFalse(fieldDefMap.containsKey("sys:node-uuid"));
+        assertFalse(fieldDefMap.containsKey("sys:store-protocol"));
         
         // check the labels of all the fields
         assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
@@ -828,7 +840,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 11 fields", 11, fieldDefs.size());
+        assertEquals("Expecting to find 7 fields", 7, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -1301,7 +1313,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private List<String> getExpectedTaskFields()
     {
         ArrayList<String> fields = new ArrayList<String>(4);
-        fields.add(WorkflowModel.PROP_TASK_ID.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_STATUS.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_PRIORITY.toPrefixString(namespaceService));

@@ -191,8 +191,11 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
 
     private List<String> getIgnoredFields()
     {
-        if(ignoredFields != null)
+        if (ignoredFields != null)
+        {
             return ignoredFields;
+        }
+        
         return getDefaultIgnoredFields();
     }
 

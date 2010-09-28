@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.ParameterCheck;
 
 /**
+ * Abstract base class for workflow based form processors.
  * 
  * @since 3.4
  * @author Nick Smith
@@ -80,12 +81,9 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     {
         this.workflowService = workflowService;
     }
-
     
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem
-     * (org.alfresco.repo.forms.Item)
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
      */
     @Override
     protected ItemType getTypedItem(Item item)
@@ -111,7 +109,7 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     private String decodeId(String itemId)
     {
         String decodedId = itemId;
-        if (itemId.contains("$")==false)
+        if (itemId.contains("$") == false)
         {
             decodedId = itemId.replaceFirst("_", Matcher.quoteReplacement("$"));
         }
@@ -124,32 +122,40 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     @Override
     protected List<String> getDefaultIgnoredFields()
     {
-        ArrayList<String> fields = new ArrayList<String>(5);
+        List<String> fields = super.getDefaultIgnoredFields();
+        
+        if (fields == null)
+        {
+            fields = new ArrayList<String>(20);
+        }
+        
+        // ignore document related properties
         fields.add("cm:name");
         fields.add("cm:owner");
+        fields.add("cm:creator");
+        fields.add("cm:modifier");
+        fields.add("cm:content");
+        fields.add("cm:accessed");
+        fields.add("cm:modified");
+        fields.add("cm:created");
+        
+        // ignore task properties that shouldn't be directly edited
         fields.add("bpm:package"); 
         fields.add("bpm:pooledActors");
         fields.add("bpm:completedItems");
-        fields.add("sys:node-dbid");
-        fields.add("sys:store-identifier");
         fields.add("bpm:completionDate");
         fields.add("bpm:context");
-        fields.add("sys:node-uuid");
         fields.add("bpm:hiddenTransitions");
         fields.add("bpm:reassignable");
-        fields.add("cm:creator");
-        fields.add("cm:modifier");
+        fields.add("bpm:startDate");
         fields.add("bpm:packageActionGroup");
         fields.add("bpm:packageItemActionGroup");
         fields.add("bpm:outcome");
-        fields.add("cm:content");
-        fields.add("cm:accessed");
-        fields.add("bpm:startDate");
-        fields.add("cm:modified");
-        fields.add("cm:created");
-        fields.add("sys:store-protocol");
+        fields.add("bpm:taskId");
+        
         return fields;
     }
+    
     /**
      * Returns an implementation of {@link ContentModelFormPersister} which is
      * used to accumulate all the changes specified in the {@link Form} and then persist them.

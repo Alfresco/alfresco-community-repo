@@ -22,10 +22,10 @@ package org.alfresco.repo.forms.processor.node;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 
 /**
+ * FieldProcessorRegistry that exclusively handles content model based field processors.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class ContentModelFieldProcessorRegistry extends FieldProcessorRegistry
 {

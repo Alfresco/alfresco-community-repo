@@ -28,10 +28,10 @@ import org.alfresco.service.namespace.QName;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 
 /**
+ * Utility class used for matching data keys.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class DataKeyMatcher
 {
@@ -71,7 +71,7 @@ public class DataKeyMatcher
         {
             return matchProperty(dataKey);
         }
-        else if(dataKey.startsWith(ASSOC_DATA_PREFIX))
+        else if (dataKey.startsWith(ASSOC_DATA_PREFIX))
         {
             return matchAssociation(dataKey);
         }
@@ -96,7 +96,7 @@ public class DataKeyMatcher
     private DataKeyInfo matchTransientAssociation(String keyName)
     {
         Matcher matcher = transientAssociationPattern.matcher(keyName);
-        if(matcher.matches())
+        if (matcher.matches())
         {
             boolean isAdd = isAdd(matcher, 2);
             String name = matcher.group(1);

@@ -34,10 +34,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Helper class for building the default fields for a form where an explicit
+ * set of fields was not provided.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class DefaultFieldBuilder
 {
@@ -76,10 +77,6 @@ public class DefaultFieldBuilder
         this.ItemData = (ContentModelItemData<?>) formData.getItemData();
     }
 
-    /**
-     * @param ignoredTransientFields2
-     * @return
-     */
     private <T> List<T> getNonNullList(List<T> list)
     {
         return list == null ? Collections.<T>emptyList() : list;
@@ -104,7 +101,7 @@ public class DefaultFieldBuilder
         List<Field> fields = new ArrayList<Field>(names.size());
         for (QName name : names)
         {
-            if(ignoreQName(name)==false)
+            if (ignoreQName(name) == false)
             {
                 fields.add(buildPropertyField(name));
             }

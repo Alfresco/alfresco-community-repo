@@ -32,7 +32,7 @@ function testGetFormForContentNode()
 
     var fieldDefs = form.fieldDefinitions;
     test.assertNotNull(fieldDefs, "field definitions should not be null.");
-    test.assertEquals(22, fieldDefs.length);
+    test.assertEquals(18, fieldDefs.length);
 
     // as we know there are no duplicates we can safely create a map of the 
     // field definitions for the purposes of this test
@@ -154,7 +154,7 @@ function testGetFormForFolderNode()
 
     var fieldDefs = form.fieldDefinitions;
     test.assertNotNull(fieldDefs, "field definitions should not be null.");
-    test.assertEquals(11, fieldDefs.length);
+    test.assertEquals(7, fieldDefs.length);
 
     // as we know there are no duplicates we can safely create a map of the 
     // field definitions for the purposes of this test

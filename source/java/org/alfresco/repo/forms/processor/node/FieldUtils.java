@@ -41,17 +41,33 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class FieldUtils
 {
-
+    /**
+     * Generates a property field.
+     * 
+     * @param propDef The definition of the property to generate
+     * @param value The value of the field
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return The generated Field object
+     */
     public static Field makePropertyField(
-                PropertyDefinition property,
+                PropertyDefinition propDef,
                 Object value,
                 FieldGroup group,
                 NamespaceService namespaceService)
     {
         PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, null);
-        return processor.makeField(property, value, group);
+        return processor.makeField(propDef, value, group);
     }
     
+    /**
+     * Generates a list of property fields without values.
+     * 
+     * @param propDefs List of property defintions to create
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makePropertyFields(
                 Collection<PropertyDefinition> propDefs,
                 FieldGroup group,
@@ -60,6 +76,14 @@ public class FieldUtils
         return makePropertyFields(propDefs, null, group, namespaceService);
     }
     
+    /**
+     * Generates a list of property fields with values.
+     * 
+     * @param propDefAndValue Map of property definitions and corresponding values
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makePropertyFields(
                 Map<PropertyDefinition, Object> propDefAndValue,
                 FieldGroup group,
@@ -68,6 +92,15 @@ public class FieldUtils
         return makePropertyFields(propDefAndValue.keySet(), propDefAndValue, group, namespaceService);
     }
     
+    /**
+     * Generates a list of property fields with values.
+     * 
+     * @param propDefs List of property definitions to generate
+     * @param values Map containing the values to use for each property
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makePropertyFields(
                 Collection<PropertyDefinition> propDefs,
                 Map<PropertyDefinition, Object> values,
@@ -78,13 +111,22 @@ public class FieldUtils
         ArrayList<Field> fields = new ArrayList<Field>(propDefs.size());
         for (PropertyDefinition propDef : propDefs)
         {
-            Object value = values==null?null:values.get(propDef);
+            Object value = values == null ? null : values.get(propDef);
             Field field = processor.makeField(propDef, value, group);
             fields.add(field);
         }
         return fields;
     }
     
+    /**
+     * Generates an asssociation field.
+     * 
+     * @param assocDef The definition of the association to generate
+     * @param value The value of the field
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return The generated Field object
+     */
     public static Field makeAssociationField(
                 AssociationDefinition assocDef,
                 Object value,
@@ -95,7 +137,14 @@ public class FieldUtils
         return processor.makeField(assocDef, value, group);
     }
     
-
+    /**
+     * Generates a list of association fields without values.
+     * 
+     * @param assocDefs List of association defintions to create
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makeAssociationFields(
                 Collection<AssociationDefinition> assocDefs,
                 FieldGroup group,
@@ -104,6 +153,14 @@ public class FieldUtils
         return makeAssociationFields(assocDefs, null, group, namespaceService);
     }
     
+    /**
+     * Generates a list of association fields with values.
+     * 
+     * @param assocDefAndValue Map of association definitions and corresponding values
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makeAssociationFields(
                 Map<AssociationDefinition, Object> assocDefAndValue,
                 FieldGroup group,
@@ -112,6 +169,15 @@ public class FieldUtils
         return makeAssociationFields(assocDefAndValue.keySet(), assocDefAndValue, group, namespaceService);
     }
     
+    /**
+     * Generates a list of association fields with values.
+     * 
+     * @param assocDefs List of association definitions to generate
+     * @param values Map containing the values to use for each property
+     * @param group The group the field belongs to
+     * @param namespaceService NamespaceService instance
+     * @return List of generated Field objects
+     */
     public static List<Field> makeAssociationFields(
                 Collection<AssociationDefinition> assocDefs,
                 Map<AssociationDefinition, Object> values,
@@ -122,7 +188,7 @@ public class FieldUtils
         ArrayList<Field> fields = new ArrayList<Field>(assocDefs.size());
         for (AssociationDefinition propDef : assocDefs)
         {
-            Object value = values==null?null:values.get(propDef);
+            Object value = values == null ? null : values.get(propDef);
             Field field = processor.makeField(propDef, value, group);
             fields.add(field);
         }

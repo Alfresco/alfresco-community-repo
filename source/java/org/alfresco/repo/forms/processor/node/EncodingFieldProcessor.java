@@ -23,16 +23,17 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DAT
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
+ * {@link FieldProcessor} implementation representing the <code>encoding</code> transient field.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class EncodingFieldProcessor extends TransientFieldProcessor
 {

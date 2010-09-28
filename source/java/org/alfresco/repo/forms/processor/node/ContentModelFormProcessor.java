@@ -164,7 +164,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected void addPropertyDataIfRequired(QName propName, Form form, ContentModelItemData<?> itemData)
     {
         String dataKey = makePropDataKey(propName);
-        if(form.dataExists(dataKey)== false)
+        if (form.dataExists(dataKey) == false)
         {
             PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
             Object value = processor.getValue(propName, itemData);
@@ -199,6 +199,19 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         Map<QName, Serializable> assocValues = getAssociationValues(item);
         Map<String, Object> transientValues = getTransientValues(item);
         return new ContentModelItemData<ItemType>(item, propDefs, assocDefs, propValues, assocValues, transientValues);
+    }
+    
+    protected List<String> getDefaultIgnoredFields()
+    {
+        ArrayList<String> fields = new ArrayList<String>(8);
+        
+        // ignore system properties by default
+        fields.add("sys:node-dbid");
+        fields.add("sys:store-identifier");
+        fields.add("sys:node-uuid");
+        fields.add("sys:store-protocol");
+        
+        return fields;
     }
 
     protected Set<QName> getAspectNames(ItemType item)
@@ -374,8 +387,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     }
                     else if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
                     {
-                        // check for browser representation of true, that being
-                        // "on"
+                        // check for browser representation of true, that being "on"
                         if (value instanceof String && ON.equals(value))
                         {
                             value = Boolean.TRUE;
@@ -419,8 +431,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             }
             else if (getLogger().isWarnEnabled())
             {
-                getLogger().warn(
-                            "Ignoring field '" + fieldData.getName() + "' as a property definition can not be found");
+                getLogger().warn("Ignoring field '" + fieldData.getName() + "' as a property definition can not be found");
             }
         }
         else
@@ -442,8 +453,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 }
                 else if (fieldName.equals(SizeFieldProcessor.KEY))
                 {
-                    // the size property is well known but should never be
-                    // persisted
+                    // the size property is well known but should never be persisted
                     // as it is calculated so this is intentionally ignored
                 }
                 else if (getLogger().isWarnEnabled())
@@ -482,20 +492,14 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
 
             QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
 
-            // ensure that the association being persisted is defined in the
-            // model
+            // ensure that the association being persisted is defined in the model
             AssociationDefinition assocDef = assocDefs.get(fullQName);
 
-            // TODO: if the association is not defined on the node, check for
-            // the association
-            // in all models, however, the source of an association can be
-            // critical so we
-            // can't just look up the association in the model regardless. We
-            // need to
-            // either check the source class of the node and the assoc def match
-            // or we
-            // check that the association was defined as part of an aspect
-            // (where by it's
+            // TODO: if the association is not defined on the node, check for the association
+            // in all models, however, the source of an association can be critical so we
+            // can't just look up the association in the model regardless. We need to
+            // either check the source class of the node and the assoc def match or we
+            // check that the association was defined as part of an aspect (where by it's
             // nature can have any source type)
 
             if (assocDef == null)
@@ -511,8 +515,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             String value = (String) fieldData.getValue();
             String[] nodeRefs = value.split(",");
 
-            // Each element in this array will be a new target node in
-            // association
+            // Each element in this array will be a new target node in association
             // with the current node.
             for (String nextTargetNode : nodeRefs)
             {
@@ -529,7 +532,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             }
                             else
                             {
-                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
+                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), 
+                                            fullQName));
                             }
                         }
                         else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
@@ -588,8 +592,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         try
         {
             // if the name property changes the rename method of the file folder
-            // service should be called rather than updating the property
-            // directly
+            // service should be called rather than updating the property directly
             this.fileFolderService.rename(nodeRef, (String) fieldData.getValue());
         }
         catch (FileExistsException fee)
@@ -859,8 +862,7 @@ class RemoveAssocCommand extends AbstractAssocCommand
 }
 
 /**
- * A class representing a request to add a new child association between two
- * nodes.
+ * A class representing a request to add a new child association between two nodes.
  * 
  * @author Neil McErlean
  */
@@ -889,16 +891,15 @@ class AddChildAssocCommand extends AbstractAssocCommand
                 return;
             }
         }
-        // We are following the behaviour of the JSF client here in using the
-        // same
+        
+        // We are following the behaviour of the JSF client here in using the same
         // QName value for the 3rd and 4th parameters in the below call.
         nodeService.addChild(sourceNodeRef, targetNodeRef, assocQName, assocQName);
     }
 }
 
 /**
- * A class representing a request to remove a child association between two
- * nodes.
+ * A class representing a request to remove a child association between two nodes.
  * 
  * @author Neil McErlean
  */

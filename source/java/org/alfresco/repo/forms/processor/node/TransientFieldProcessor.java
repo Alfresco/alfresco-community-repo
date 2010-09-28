@@ -22,13 +22,14 @@ package org.alfresco.repo.forms.processor.node;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.processor.AbstractFieldProcessor;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 
 /**
+ * Abstract base class for all transient {@link FieldProcessor}s.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public abstract class TransientFieldProcessor extends AbstractFieldProcessor<TransientValueGetter>
 {

@@ -65,7 +65,7 @@ public class WorkflowBuilder
     
     public void addAssociationParameter(QName name, List<NodeRef> values)
     {
-        if(values instanceof Serializable)
+        if (values instanceof Serializable)
         {
             params.put(name, (Serializable) values);
         }
@@ -96,13 +96,15 @@ public class WorkflowBuilder
     private void signalStartTask(WorkflowPath path)
     {
         List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
-        if(tasks.size() == 1)
+        if (tasks.size() == 1)
         {
             WorkflowTask startTask = tasks.get(0);
             workflowService.endTask(startTask.id, null);
         }
         else
+        {
             throw new WorkflowException("Start task not found! Expected 1 task but found: " + tasks.size());
+        }
     }
 
 }

@@ -31,7 +31,7 @@ import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_POOLED_ACTORS;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_DESCRIPTION;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_PRIORITY;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_WORKFLOW_PRIORITY;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_STATUS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
@@ -61,6 +61,7 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -93,7 +94,7 @@ public class WorkflowFormProcessorTest extends TestCase
 {
     private static final String TASK_DEF_NAME = "TaskDef";
     private static final String WF_DEF_NAME = "foo$wf:bar";
-    private static final QName PRIORITY_NAME = PROP_PRIORITY;
+    private static final QName PRIORITY_NAME = PROP_WORKFLOW_PRIORITY;
     private static final QName DESC_NAME = PROP_DESCRIPTION;
     private static final QName STATUS_NAME = PROP_STATUS;
     private static final QName PROP_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
@@ -207,7 +208,6 @@ public class WorkflowFormProcessorTest extends TestCase
         Form form = processForm();
         List<String> fieldDefs = form.getFieldDefinitionNames();
         assertTrue(fieldDefs.contains(ASSIGNEE_NAME.toPrefixString(namespaceService)));
-        assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(PRIORITY_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(PackageItemsFieldProcessor.KEY));
 
@@ -215,12 +215,16 @@ public class WorkflowFormProcessorTest extends TestCase
         assertFalse(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
         assertFalse(fieldDefs.contains(PROP_PACKAGE_ACTION_GROUP.toPrefixString(namespaceService)));
         assertFalse(fieldDefs.contains(PROP_PACKAGE_ITEM_ACTION_GROUP.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(WorkflowModel.PROP_DESCRIPTION.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(WorkflowModel.PROP_DUE_DATE.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(WorkflowModel.PROP_PRIORITY.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(WorkflowModel.PROP_TASK_ID.toPrefixString(namespaceService)));
 
         Serializable fieldData = (Serializable) Collections.emptyList();
         FormData formData = form.getFormData();
         assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
         checkPackageActionGroups(formData);
-        assertEquals("2", formData.getFieldData("prop_bpm_priority").getValue());
+        assertEquals("2", formData.getFieldData("prop_bpm_workflowPriority").getValue());
     }
 
     public void testGeneratePackageItems() throws Exception

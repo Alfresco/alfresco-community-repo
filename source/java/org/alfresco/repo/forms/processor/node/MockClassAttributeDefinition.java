@@ -40,10 +40,10 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Mock implementation of the repository ClassDefinition.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class MockClassAttributeDefinition implements PropertyDefinition, AssociationDefinition
 {
@@ -139,8 +139,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints()
      */
     public List<ConstraintDefinition> getConstraints()
     {
@@ -148,8 +147,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#getContainerClass
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getContainerClass
      * ()
      */
     public ClassDefinition getContainerClass()
@@ -166,8 +164,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#getDefaultValue()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getDefaultValue()
      */
     public String getDefaultValue()
     {
@@ -175,8 +172,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#getDescription()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getDescription()
      */
     public String getDescription()
     {
@@ -184,8 +180,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @seeorg.alfresco.service.cmr.dictionary.PropertyDefinition#
-     * getIndexTokenisationMode()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getIndexTokenisationMode()
      */
     public IndexTokenisationMode getIndexTokenisationMode()
     {
@@ -225,9 +220,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#isIndexedAtomically
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isIndexedAtomically()
      */
     public boolean isIndexedAtomically()
     {
@@ -243,9 +236,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#isMandatoryEnforced
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isMandatoryEnforced()
      */
     public boolean isMandatoryEnforced()
     {
@@ -253,8 +244,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#isMultiValued()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isMultiValued()
      */
     public boolean isMultiValued()
     {
@@ -278,8 +268,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.PropertyDefinition#isStoredInIndex()
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isStoredInIndex()
      */
     public boolean isStoredInIndex()
     {
@@ -287,9 +276,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceClass
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceClass()
      */
     public ClassDefinition getSourceClass()
     {
@@ -297,9 +284,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceRoleName
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceRoleName()
      */
     public QName getSourceRoleName()
     {
@@ -307,9 +292,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetClass
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetClass()
      */
     public ClassDefinition getTargetClass()
     {
@@ -317,9 +300,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetRoleName
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetRoleName()
      */
     public QName getTargetRoleName()
     {
@@ -335,9 +316,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMandatory
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMandatory()
      */
     public boolean isSourceMandatory()
     {
@@ -345,8 +324,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMany()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMany()
      */
     public boolean isSourceMany()
     {
@@ -354,9 +332,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatory
-     * ()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatory()
      */
     public boolean isTargetMandatory()
     {
@@ -364,8 +340,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @seeorg.alfresco.service.cmr.dictionary.AssociationDefinition#
-     * isTargetMandatoryEnforced()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatoryEnforced()
      */
     public boolean isTargetMandatoryEnforced()
     {
@@ -373,8 +348,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     /*
-     * @see
-     * org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMany()
+     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMany()
      */
     public boolean isTargetMany()
     {

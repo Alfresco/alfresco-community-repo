@@ -12,6 +12,7 @@ import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -20,10 +21,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * {@link FieldProcessor} implementation that handles associations.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDefinition>
 {

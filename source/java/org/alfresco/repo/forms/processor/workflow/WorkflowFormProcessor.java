@@ -19,7 +19,9 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
@@ -35,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  * FormProcessor implementation that can generate and persist 
  * Form objects for workflow definitions.
  *
- *@since 3.4
+ * @since 3.4
  * @author Nick Smith
  */
 public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<WorkflowDefinition, WorkflowInstance>
@@ -58,7 +60,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     @Override
     protected TypeDefinition getBaseType(WorkflowDefinition item)
     {
-        //TODO I'm not sure this is safe as getStartTaskDefinition() is 'optional'.
+        // TODO: I'm not sure this is safe as getStartTaskDefinition() is 'optional'.
         WorkflowTaskDefinition startTask = item.getStartTaskDefinition();
         return startTask.getMetadata();
     }
@@ -137,7 +139,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
      */
     private String decodeWorkflowDefinitionName(String name)
     {
-        if (name.contains(":")==false)
+        if (name.contains(":") == false)
         {
             name = name.replaceFirst("_", ":");
         }
@@ -152,5 +154,27 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     {
         ContentModelItemData<WorkflowDefinition> itemData = makeItemData(item);
         return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, logger);
+    }
+
+    /*
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getDefaultIgnoredFields()
+     */
+    @Override
+    protected List<String> getDefaultIgnoredFields()
+    {
+        List<String> fields = super.getDefaultIgnoredFields();
+        
+        if (fields == null)
+        {
+            fields = new ArrayList<String>(3);
+        }
+        
+        // for the workflow form processor also hide the task specific
+        // description, due date and priority fields
+        fields.add("bpm:description");
+        fields.add("bpm:dueDate");
+        fields.add("bpm:priority");
+        
+        return fields;
     }
 }

@@ -32,6 +32,7 @@ import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -46,10 +47,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 /**
+ * {@link FieldProcessor} implementation that handles properties.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefinition>
 {
@@ -130,7 +131,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     private Object getDefaultValue(QName name, ContentModelItemData<?> data)
     {
         PropertyDefinition propDef = data.getPropertyDefinition(name);
-        if(propDef !=null)
+        if (propDef != null)
         {
             return propDef.getDefaultValue();
         }

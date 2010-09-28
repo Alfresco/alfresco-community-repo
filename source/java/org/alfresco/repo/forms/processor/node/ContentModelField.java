@@ -29,6 +29,8 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * DTO for a content model based Field.
+ * 
  * @author Nick Smith
  * @since 3.4
  */

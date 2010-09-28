@@ -24,6 +24,7 @@ import org.alfresco.repo.forms.FormException;
 import org.apache.commons.logging.Log;
 
 /**
+ * Abstract base class for all field processors.
  * 
  * @since 3.4
  * @author Nick Smith

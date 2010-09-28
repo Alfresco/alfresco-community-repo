@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
+ * Utility class that assists in persisting content model related form data.
  * 
  * @since 3.4
  * @author Nick Smith
@@ -75,7 +76,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         else
         {
             boolean wasApplied = persistField(fieldData, keyInfo);
-            if(wasApplied == false)
+            if (wasApplied == false)
             {
                 logIgnore(fieldData);
             }
@@ -84,14 +85,14 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
 
     private boolean persistField(FieldData fieldData, DataKeyInfo keyInfo)
     {
-        switch(keyInfo.getFieldType())
+        switch (keyInfo.getFieldType())
         {
-        case PROPERTY:
-            return addProperty(keyInfo.getQName(), fieldData);
-        case TRANSIENT_PROPERTY:
-            return updateTransientProperty(keyInfo.getFieldName(), fieldData);
-        default: // Handle properties
-            return changeAssociation(keyInfo, fieldData);
+            case PROPERTY:
+                return addProperty(keyInfo.getQName(), fieldData);
+            case TRANSIENT_PROPERTY:
+                return updateTransientProperty(keyInfo.getFieldName(), fieldData);
+            default: // Handle properties
+                return changeAssociation(keyInfo, fieldData);
         }
     }
 
@@ -102,7 +103,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
 
     protected boolean changeTransientAssociation(String fieldName, List<NodeRef> values, boolean add)
     {
-        if(add)
+        if (add)
         {
             return addTransientAssociation(fieldName, values);
         }
@@ -152,7 +153,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
             if (values.isEmpty()==false)
             {
                 boolean add = info.isAdd();
-                if(info.getFieldType() == FieldType.ASSOCIATION)
+                if (info.getFieldType() == FieldType.ASSOCIATION)
                 {
                     return changeAssociation(info.getQName(), values, add);
                 }
@@ -167,7 +168,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
 
     private boolean changeAssociation(QName qName, List<NodeRef> values, boolean add)
     {
-        if(add)
+        if (add)
         {
             return addAssociation(qName, values);
         }
@@ -179,7 +180,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
 
     protected void logIgnore(FieldData fieldData)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
             logger.debug("Ignoring unrecognized field: " + fieldData.getName());
     }
 

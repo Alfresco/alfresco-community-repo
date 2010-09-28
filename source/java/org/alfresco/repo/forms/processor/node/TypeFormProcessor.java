@@ -19,9 +19,11 @@
 
 package org.alfresco.repo.forms.processor.node;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DATA_KEY_SEPARATOR;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP;
+
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -40,8 +42,6 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
-
 /**
  * FormProcessor implementation that can generate and persist Form objects for
  * types in the Alfresco content model.
@@ -57,15 +57,12 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     
     private static QName ASPECT_FILE_PLAN_COMPONENT = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "filePlanComponent");
 
-    protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm"
-                + DATA_KEY_SEPARATOR + "name";
+    protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
 
     public static final String DESTINATION = "alf_destination";
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger
-     * ()
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
      */
     @Override
     protected Log getLogger()
@@ -74,9 +71,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     }
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem
-     * (org.alfresco.repo.forms.Item)
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
      */
     @Override
     protected TypeDefinition getTypedItem(Item item)
@@ -129,9 +124,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     }
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist
-     * (java.lang.Object, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
     protected NodeRef internalPersist(TypeDefinition item, final FormData data)
@@ -233,9 +226,8 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             nodeRef = this.nodeService.createNode(
                         parentRef,
                         ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
-                                    .createValidLocalName(nodeName)), typeDef.getName(), nodeProps)
-                        .getChildRef();
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
+                        QName.createValidLocalName(nodeName)), typeDef.getName(), nodeProps).getChildRef();
         }
 
         return nodeRef;
@@ -279,15 +271,6 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     
     @Override
     protected Map<String, Object> getTransientValues(TypeDefinition item)
-    {
-        return null;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
-     */
-    @Override
-    protected List<String> getDefaultIgnoredFields()
     {
         return null;
     }

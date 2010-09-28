@@ -38,10 +38,10 @@ import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
+ * Utility class that retrieves the appropriately typed value for a property.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class TypedPropertyValueGetter
 {
@@ -74,7 +74,7 @@ public class TypedPropertyValueGetter
 
             // make sure empty strings stay as empty strings, everything else
             // should be represented as null
-            if(valStr.length()==0 && !isTextProperty(propDef))
+            if (valStr.length() == 0 && !isTextProperty(propDef))
             {
                 // Do nothing, leave typedValue as null.
             }

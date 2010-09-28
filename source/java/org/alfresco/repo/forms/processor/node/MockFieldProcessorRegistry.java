@@ -37,10 +37,10 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
+ * Mock implementation of a FieldProcessorRegistry.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegistry
 {

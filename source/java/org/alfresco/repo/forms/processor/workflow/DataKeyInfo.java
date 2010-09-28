@@ -22,10 +22,10 @@ package org.alfresco.repo.forms.processor.workflow;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Data transfer object that represents a data key.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class DataKeyInfo
 {

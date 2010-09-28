@@ -21,6 +21,7 @@ package org.alfresco.repo.forms.processor.node;
 
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -29,10 +30,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
+ * Default {@link FieldProcessor} implementation, used when an explicit FieldProcessor can not be located.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDefinition> implements InitializingBean
 {

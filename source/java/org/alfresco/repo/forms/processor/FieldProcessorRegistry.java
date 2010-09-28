@@ -25,9 +25,11 @@ import java.util.Map;
 import org.alfresco.repo.forms.Field;
 
 /**
+ * Holds a FieldProcessor implementation for the fields that can be processed by
+ * the FormProcessor.
+ * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class FieldProcessorRegistry 
 {
@@ -58,7 +60,6 @@ public class FieldProcessorRegistry
         return processors.get(key);
     }
 
-
     /**
      * Attempts to build a {@link Field}. The method first tries to derive a key from the fieldname, then uses this key to look up a {@link FieldProcessor}.
      * This {@link FieldProcessor} is then used to generate a {@link Field}.
@@ -76,6 +77,12 @@ public class FieldProcessorRegistry
         return fieldProcessor.generateField(fieldName, data);
     }
 
+    /**
+     * Returns a FieldProcessor for the given field name.
+     * 
+     * @param fieldName
+     * @return The FieldProcessor implementation for the field or null if there isn't one regsitered.
+     */
     protected FieldProcessor getFieldProcessor(String fieldName)
     {
         FieldProcessor fieldProcessor = get(getKey(fieldName));
@@ -107,6 +114,7 @@ public class FieldProcessorRegistry
     }
 
     /**
+     * Sets the default field processor instance.
      * @param defaultProcessor the defaultProcessor to set
      */
     public void setDefaultProcessor(FieldProcessor defaultProcessor)

@@ -24,6 +24,7 @@ import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.processor.AbstractFieldProcessor;
+import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -31,6 +32,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * {@link FieldProcessor} implementation that handles QName fields.
  * 
  * @since 3.4
  * @author Nick Smith

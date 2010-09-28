@@ -56,9 +56,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     private static Log logger = LogFactory.getLog(NodeFormProcessor.class);
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger
-     * ()
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
      */
     @Override
     protected Log getLogger()
@@ -67,9 +65,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     }
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.FilteredFormProcessor#getTypedItem(
-     * org.alfresco.repo.forms.Item)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
      */
     @Override
     protected NodeRef getTypedItem(Item item)
@@ -102,13 +98,16 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         }
 
         // check we have a valid node ref
-        if (nodeRef == null) { throw new FormNotFoundException(item, new IllegalArgumentException(item.getId())); }
+        if (nodeRef == null) 
+        { 
+            throw new FormNotFoundException(item, new IllegalArgumentException(item.getId())); 
+        }
 
         // check the node itself exists
         if (this.nodeService.exists(nodeRef) == false)
         {
-            throw new FormNotFoundException(item, new InvalidNodeRefException("Node does not exist: " + nodeRef,
-                        nodeRef));
+            throw new FormNotFoundException(item, 
+                        new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef));
         }
         else
         {
@@ -172,7 +171,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     private void addAssocToMap(QName name, NodeRef target, HashMap<QName, Serializable> assocs)
     {
         Serializable value = assocs.get(name);
-        if(value == null)
+        if (value == null)
         {
             LinkedHashSet<NodeRef> values = new LinkedHashSet<NodeRef>();
             values.add(target);
@@ -180,7 +179,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         }
         else
         {
-            if(value instanceof Set<?>)
+            if (value instanceof Set<?>)
             {
                 ((Set<NodeRef>)value).add(target);
             }
@@ -192,7 +191,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     {
         Map<String, Object> values = new HashMap<String, Object>(3);
         ContentData contentData = getContentData(item);
-        if(contentData!=null)
+        if (contentData != null)
         {
             values.put(EncodingFieldProcessor.KEY, contentData.getEncoding());
             values.put(MimetypeFieldProcessor.KEY, contentData.getMimetype());
@@ -273,9 +272,7 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
     }
 
     /*
-     * @see
-     * org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist
-     * (java.lang.Object, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
     protected NodeRef internalPersist(NodeRef item, FormData data)
@@ -287,14 +284,5 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         persistNode(item, data);
 
         return item;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
-     */
-    @Override
-    protected List<String> getDefaultIgnoredFields()
-    {
-        return null;
     }
 }

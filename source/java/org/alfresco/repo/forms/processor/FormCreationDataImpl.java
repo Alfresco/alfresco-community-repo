@@ -67,7 +67,10 @@ public class FormCreationDataImpl implements FormCreationData
     public boolean isForcedField(String fieldName)
     {
         if (forcedFields == null)
+        {
             return false;
+        }
+        
         return forcedFields.contains(fieldName);
     }
 

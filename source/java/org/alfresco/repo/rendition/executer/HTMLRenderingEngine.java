@@ -93,17 +93,6 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      */
     public static final String NAME = "htmlRenderingEngine";
     
-    protected static final QName PRIMARY_IMAGE = QName.createQName(
-          "http://www.alfresco.org/model/website/1.0", "primaryImage");
-    protected static final QName SECONDARY_IMAGE = QName.createQName(
-          "http://www.alfresco.org/model/website/1.0", "secondaryImage");
-
-    private DictionaryService dictionaryService;
-    
-    public void setDictionaryService(DictionaryService dictionaryService) {
-       this.dictionaryService = dictionaryService;
-    }
-    
     
     @Override
     protected Collection<ParameterDefinition> getParameterDefinitions() {
@@ -219,19 +208,9 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
           ).getChildRef();
        }
        
-       // If we can, associate it with the rendered HTML, so
-       //  that they're properly linked
-       QName assocType = SECONDARY_IMAGE;
-       if(primary)
-       {
-          assocType = PRIMARY_IMAGE;
-       }
-       if(dictionaryService.getAssociation(assocType) != null)
-       {
-          nodeService.createAssociation(
-                context.getDestinationNode(), img, assocType
-          );
-       }
+       // TODO Once composite content is properly supported,
+       //  at this point we'll associate the new image with
+       //  the rendered HTML node so the dependency is tracked.
        
        // Put the image into the node
        ContentWriter writer = contentService.getWriter(

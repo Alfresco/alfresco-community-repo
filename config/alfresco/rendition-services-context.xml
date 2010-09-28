@@ -133,9 +133,7 @@
 
    <bean id="htmlRenderingEngine"
       class="org.alfresco.repo.rendition.executer.HTMLRenderingEngine"
-      parent="baseRenderingAction">
-      <property name="dictionaryService" ref="DictionaryService" />
-   </bean>
+      parent="baseRenderingAction" />
 
    <bean id="compositeRenderingEngine"
       class="org.alfresco.repo.rendition.executer.CompositeRenderingEngine"

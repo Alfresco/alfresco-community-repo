@@ -97,6 +97,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        
        if(MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype) ||
              MimetypeMap.MIMETYPE_HTML.equals(targetMimetype) ||
+             MimetypeMap.MIMETYPE_XHTML.equals(targetMimetype) ||
              MimetypeMap.MIMETYPE_XML.equals(targetMimetype))
        {
           // We can output to this
@@ -134,7 +135,8 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        {
           handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "html");
        }
-       else if(MimetypeMap.MIMETYPE_XML.equals(targetMimeType))
+       else if(MimetypeMap.MIMETYPE_XHTML.equals(targetMimeType) ||
+               MimetypeMap.MIMETYPE_XML.equals(targetMimeType))
        {
           handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "xml");
        }

@@ -97,9 +97,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
              */
             NodeRef destinationNode = resolvedNodes.resolvedChild;
             
-            Map<QName, Serializable> destProps = nodeService.getProperties(destinationNode);
-            
-
+            Map<QName, Serializable> destinationProps = nodeService.getProperties(destinationNode);
             
             for (Map.Entry<QName, Serializable> propEntry : node.getProperties().entrySet())
             {
@@ -117,18 +115,21 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
 
                     if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty() )
                     {
-                        Serializable destSer = destProps.get(propEntry.getKey());
+                        Serializable destSer = destinationProps.get(propEntry.getKey());
                         if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
                         {
-                            ContentData destContent = (ContentData)destProps.get(propEntry.getKey());
+                            ContentData destContent = (ContentData)destinationProps.get(propEntry.getKey());
                             /**
                              * If the modification dates for the node are different
                              */
                             Serializable srcModified = node.getProperties().get(ContentModel.PROP_MODIFIED);
-                            Serializable destModified = destProps.get(ContentModel.PROP_MODIFIED);
+                            Serializable destModified = destinationProps.get(ContentModel.PROP_MODIFIED);
 
-                            log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
-
+                            if(log.isDebugEnabled())
+                            {
+                                log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
+                            }
+                            
                             if(srcModified != null && 
                                     destModified != null &&
                                     srcModified instanceof Date && 
@@ -137,27 +138,34 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                             {
                                 if(log.isDebugEnabled())
                                 {
-                                    log.debug("the modified date is the same or before - no need to send it:" + destContent.getContentUrl());
+                                    log.debug("the modified date is the same or before - no need send content:" + node.getNodeRef());
                                 }
                             }
                             else
                             {
-                                log.debug("require content for node : " + node.getNodeRef());
+                                if(log.isDebugEnabled())
+                                {
+                                    log.debug("time different, require content for node : " + node.getNodeRef());
+                                }
                                 out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                             }
                         }
                         else
                         {
+                            if(log.isDebugEnabled())
+                            {
+                                log.debug("no content on destination, content is required" + propEntry.getKey() + srcContent.getContentUrl());
+                            }
                             //  We don't have the property on the destination node 
                             out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                         }
-                    } // content url not null
+                    } // src content url not null
                 } // value is content data
             }
         }
         else
         {
-            log.debug("Node does not exist on destination");
+            log.debug("Node does not exist on destination nodeRef:" + node.getNodeRef());
             /**
              * there is no corresponding node so all content properties are "missing."
              */
@@ -176,7 +184,10 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                     ContentData srcContent = (ContentData)value;
                     if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
                     {
-                        // 
+                        if(log.isDebugEnabled())
+                        {
+                            log.debug("no node on destination, content is required" + propEntry.getKey() + srcContent.getContentUrl());
+                        }
                         out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                     }
                 }

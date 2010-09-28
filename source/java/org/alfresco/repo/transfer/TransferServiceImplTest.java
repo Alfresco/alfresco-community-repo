@@ -91,7 +91,6 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.apache.abdera.i18n.text.io.CharsetSniffingInputStream.Encoding;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;

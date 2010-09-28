@@ -50,6 +50,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -89,6 +91,7 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.apache.abdera.i18n.text.io.CharsetSniffingInputStream.Encoding;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;
@@ -7219,6 +7222,150 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
 
     } // end of testEmptyContent
+    
+    
+    /**
+     * Test the transfer method with regard to a repeated update of content.by sending one node (CRUD).
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testRepeatUpdateOfContent() throws Exception
+    {
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        final String CONTENT_TITLE = "ContentTitle";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_ENCODING = "UTF-8";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
+         */
+        final TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        final String targetName = "testRepeatUpdateOfContent";
+        
+        class TestContext
+        {
+           TransferTarget transferMe;
+           NodeRef contentNodeRef;
+           NodeRef destNodeRef;
+           String contentString;
+        };
+       
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+        {
+            @Override
+            public TestContext execute() throws Throwable
+            {
+                TestContext testContext = new TestContext();
+            
+                /**
+                 * Get guest home
+                 */
+               String guestHomeQuery = "/app:company_home/app:guest_home";
+               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+               assertEquals("", 1, guestHomeResult.length());
+               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+   
+               /**
+                * Create a test node that we will read and write
+                */  
+               String name = GUID.generate();
+               ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_CONTENT);
+               testContext.contentNodeRef = child.getChildRef();
+               nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+               nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_NAME, name);
+           
+               /**
+                * Make sure the transfer target exists and is enabled.
+                */
+               if(!transferService.targetExists(targetName))
+               {
+                   testContext.transferMe = createTransferTarget(targetName);
+               }
+               else
+               {
+                   testContext.transferMe = transferService.getTransferTarget(targetName);
+               }
+               transferService.enableTransferTarget(targetName, true);
+               return testContext;
+            } 
+        };
+        
+        final TestContext testContext = tran.doInTransaction(setupCB); 
+        
+        RetryingTransactionCallback<Void> updateContentCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                ContentWriter writer = contentService.getWriter(testContext.contentNodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.setEncoding(CONTENT_ENCODING);
+                writer.putContent(testContext.contentString);
+                return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               TransferDefinition definition = new TransferDefinition();
+               Set<NodeRef>nodes = new HashSet<NodeRef>();
+               nodes.add(testContext.contentNodeRef);
+               definition.setNodes(nodes);
+               transferService.transfer(targetName, definition);
+               return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> checkTransferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Now validate that the target node exists and has similar properties to the source
+                NodeRef destNodeRef = testNodeFactory.getMappedNodeRef(testContext.contentNodeRef);
+           
+                ContentReader reader = contentService.getReader(destNodeRef, ContentModel.PROP_CONTENT);
+                assertNotNull("content reader is null", reader);
+                assertEquals("content encoding is wrong", reader.getEncoding(), CONTENT_ENCODING);
+                assertEquals("content locale is wrong", reader.getLocale(), CONTENT_LOCALE);
+                assertTrue("content does not exist", reader.exists());
+                String contentStr = reader.getContentString();
+                assertEquals("Content is wrong", contentStr, testContext.contentString);
+                
+                return null;
+            }
+        };
+        
+        /**
+         * This is the test
+         */
+        for(int i = 0; i < 6 ; i++)
+        {
+            logger.debug("testRepeatUpdateContent - iteration:" + i);
+            testContext.contentString = String.valueOf(i);
+            tran.doInTransaction(updateContentCB);
+            tran.doInTransaction(transferCB); 
+            tran.doInTransaction(checkTransferCB); 
+        }
+    } // test repeat update content
+
     
     private void createUser(String userName, String password)
     {

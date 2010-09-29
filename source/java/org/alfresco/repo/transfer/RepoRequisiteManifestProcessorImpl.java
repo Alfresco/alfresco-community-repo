@@ -20,6 +20,7 @@
 package org.alfresco.repo.transfer;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -119,6 +120,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                         if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
                         {
                             ContentData destContent = (ContentData)destinationProps.get(propEntry.getKey());
+                            
                             /**
                              * If the modification dates for the node are different
                              */
@@ -127,7 +129,19 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
 
                             if(log.isDebugEnabled())
                             {
+                                SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");  
+                                
                                 log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
+                                
+                                if(srcModified instanceof Date)
+                                {
+                                    log.debug("srcModified: "  + SDF.format(srcModified));
+                                }
+                                
+                                if(destModified instanceof Date)
+                                {
+                                    log.debug("destModified: " + SDF.format(destModified));
+                                }  
                             }
                             
                             if(srcModified != null && 

@@ -27,6 +27,9 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
 
 /**
  * Provides basic services for {@link org.alfresco.repo.content.transform.ContentTransformer}
@@ -45,6 +48,8 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
     private ContentTransformerRegistry registry;
     private double averageTime = 0.0;
     private long count = 0L;
+    
+    private TikaConfig tikaConfig;
     
     /**
      * All transformers start with an average transformation time of 0.0ms.
@@ -167,11 +172,29 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
             // will be prejudiced against transformers that tend to fail
             recordTime(60 * 1000);   // 1 minute, i.e. rubbish
             
-            throw new ContentIOException("Content conversion failed: \n" +
-                    "   reader: " + reader + "\n" +
-                    "   writer: " + writer + "\n" +
-                    "   options: " + options,
-                    e);
+            // Ask Tika to detect the document, and report back on if
+            //  the current mime type is plausible
+            String differentType = checkMimeTypeMatches(reader.getReader());
+    
+            // Report the error
+            if(differentType == null)
+            {
+               throw new ContentIOException("Content conversion failed: \n" +
+                       "   reader: " + reader + "\n" +
+                       "   writer: " + writer + "\n" +
+                       "   options: " + options,
+                       e);
+            }
+            else
+            {
+               throw new ContentIOException("Content conversion failed: \n" +
+                     "   reader: " + reader + "\n" +
+                     "   writer: " + writer + "\n" +
+                     "   options: " + options + "\n" +
+                     "   claimed mime type: " + reader.getMimetype() + "\n" +
+                     "   detected mime type: " + differentType,
+                     e);
+            }
         }
         finally
         {
@@ -245,5 +268,55 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
         count++;
         double diffTime = ((double) transformationTime) - averageTime;
         averageTime += diffTime / (double) count;
+    }
+    
+    /**
+     * Use Apache Tika to check if the mime type of the document really matches
+     *  what it claims to be.
+     * This is typically used when a transformation fails, and you want to know
+     *  if someone has renamed a file and consequently it has the wrong mime type. 
+     * @return Null if the mime type seems ok, otherwise the mime type it probably is
+     */
+    protected String checkMimeTypeMatches(ContentReader reader)
+    {
+       if(tikaConfig == null)
+       {
+          try {
+             tikaConfig = TikaConfig.getDefaultConfig();
+          } catch(Exception e) {
+             logger.warn("Error creating Tika detector", e);
+             return null;
+          }
+       }
+       
+       Metadata metadata = new Metadata();
+       MediaType type;
+       try {
+          type = tikaConfig.getMimeRepository().detect(
+                reader.getContentInputStream(), metadata
+          );
+          logger.debug(reader + " detected by Tika as being " + type.toString());
+       } catch(Exception e) {
+          logger.warn("Error identifying content type of problem document", e);
+          return null;
+       }
+       
+       // Is it a good match?
+       if(type.toString().equals(reader.getMimetype())) 
+       {
+          return null;
+       }
+       
+       // Is it close?
+       MediaType claimed = MediaType.parse(reader.getMimetype());
+       if(tikaConfig.getMediaTypeRegistry().isSpecializationOf(claimed, type) ||
+          tikaConfig.getMediaTypeRegistry().isSpecializationOf(type, claimed))
+       {
+          // Probably close enough
+          return null;
+       }
+       
+       // If we get here, then most likely the type is wrong
+       return type.toString();
     }
 }

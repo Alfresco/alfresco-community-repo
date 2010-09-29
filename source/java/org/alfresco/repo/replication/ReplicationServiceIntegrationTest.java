@@ -116,6 +116,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private NodeRef content2a_1;
     private NodeRef thumbnail2a_2; // Thumbnail extends content
     private NodeRef zone2a_3;      // Zone doesn't
+    private NodeRef deletedFolder;
     
     private final String ACTION_NAME  = "testName";
     private final String ACTION_NAME2 = "testName2";
@@ -172,6 +173,9 @@ public class ReplicationServiceIntegrationTest extends TestCase
         content2a_1 = makeNode(folder2a, ContentModel.TYPE_CONTENT);
         thumbnail2a_2 = makeNode(folder2a, ContentModel.TYPE_THUMBNAIL);
         zone2a_3 = makeNode(folder2a, ContentModel.TYPE_ZONE);
+        
+        deletedFolder = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER);
+        nodeService.deleteNode(deletedFolder);
         
         // Tell the transfer service not to use HTTP
         makeTransferServiceLocal();
@@ -558,6 +562,8 @@ public class ReplicationServiceIntegrationTest extends TestCase
        rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        rd.setTargetName(TRANSFER_TARGET);
        rd.getPayload().add( folder1 );
+       // A deleted folder is fine, will be skipped
+       rd.getPayload().add( deletedFolder ); 
        
        // Will execute without error
        txn = transactionService.getUserTransaction();

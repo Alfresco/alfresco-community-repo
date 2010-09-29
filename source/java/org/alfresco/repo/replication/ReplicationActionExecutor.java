@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 import org.alfresco.service.cmr.transfer.TransferCallback;
@@ -63,6 +64,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
     */
    private static Log logger = LogFactory.getLog(ReplicationActionExecutor.class);
    
+   private NodeService nodeService;
    private JobLockService jobLockService;
    private TransferService2 transferService;
    private NodeCrawlerFactory nodeCrawlerFactory;
@@ -75,6 +77,16 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
     * By default, we lock for 30 minutes
     */
    private long replicationActionLockDuration = 30*60*1000;
+
+   /**
+    * Injects the NodeService bean.
+    * 
+    * @param nodeService the NodeService.
+    */
+   public void setNodeService(NodeService nodeService)
+   {
+       this.nodeService = nodeService;
+   }
 
    /**
     * Injects the JobLockService bean.
@@ -167,9 +179,17 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
             ContentModel.TYPE_CONTENT
       ));
       
-      for(NodeRef payload : replicationDef.getPayload()) {
-         Set<NodeRef> crawledNodes = crawler.crawl(payload);
-         toTransfer.addAll(crawledNodes);
+      for(NodeRef payload : replicationDef.getPayload()) 
+      {
+         if(nodeService.exists(payload))
+         {
+            Set<NodeRef> crawledNodes = crawler.crawl(payload);
+            toTransfer.addAll(crawledNodes);
+         }
+         else
+         {
+            logger.warn("Skipping replication of non-existant node " + payload);
+         }
       }
       
       return toTransfer;

@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -7061,6 +7062,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
         
+        SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");  
+                
+
+        
+        
         /**
          * Step 1: Transfer our node which has empty content
          */
@@ -7088,6 +7094,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try 
         {
+            Serializable modifiedDate = nodeService.getProperty(contentNodeRef, ContentModel.PROP_MODIFIED);
+            if(modifiedDate instanceof Date)
+            {
+                logger.debug("srcModified: "  + SDF.format(modifiedDate));
+            }
+            
             NodeRef destinationNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
             savedDestinationNodeRef = destinationNodeRef;
             assertTrue("content node (dest) does not exist", nodeService.exists(destinationNodeRef));
@@ -7111,11 +7123,16 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try 
         {
+            Serializable modifiedDate = nodeService.getProperty(contentNodeRef, ContentModel.PROP_MODIFIED);
+            if(modifiedDate instanceof Date)
+            {
+                logger.debug("srcModified: "  + SDF.format(modifiedDate));
+            }
+            
             ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
             writer.setLocale(CONTENT_LOCALE);
             writer.setEncoding(CONTENT_ENCODING);
             writer.putContent(CONTENT_STRING);
-
         }
         finally
         {

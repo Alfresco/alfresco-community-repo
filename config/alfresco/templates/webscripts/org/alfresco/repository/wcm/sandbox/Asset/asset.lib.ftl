@@ -26,8 +26,8 @@
 	 	 	],
 	 	 	</#if>
 	 	<#else>
-	 	"version" : ${asset.version},
-	 	"fileSize" : ${asset.fileSize}, 
+	 	"version" : ${asset.version?c},
+	 	"fileSize" : ${asset.fileSize?c}, 
 	 	</#if>
 	 	"url" : <#escape x as jsonUtils.encodeJSONString(x)>"${url.serviceContext + "/api/wcm/webprojects/" + webproject.webProjectRef + "/sandboxes/" + sandbox.sandboxRef + "/assets" + asset.path}" </#escape>,
 	 	"contentURL" : <#escape x as jsonUtils.encodeJSONString(x)>"${url.serviceContext + "/api/path/content/avm/" + sandbox.sandboxRef + asset.path}" </#escape>

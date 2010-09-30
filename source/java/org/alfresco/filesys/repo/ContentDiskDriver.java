@@ -22,11 +22,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import javax.transaction.UserTransaction;
@@ -133,10 +136,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     // File state attributes
     
     public static final String AttrLinkNode = "ContentLinkNode";
-    
-    // List of properties to copy during rename
+        
+    // List of content properties to copy during rename
     
     private static QName[] _copyProperties = { ContentModel.PROP_AUTHOR, ContentModel.PROP_TITLE, ContentModel.PROP_DESCRIPTION };
+
+    // List of property namespaces to exclude from copy during rename
+    
+    private static Set<String> _excludedNamespaces = new TreeSet<String>(Arrays.asList(new String[]
+    {
+        NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_1_0_URI
+    }));
     
     // Services and helpers
     
@@ -1957,7 +1967,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Create it - the path will be created, if necessary
             
-                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, true);
+                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
                     nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
                     
                     return new Pair<String, NodeRef>(parentPath, nodeRef);
@@ -2135,7 +2145,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                     // Create it - the path will be created, if necessary
 
-                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, false);
+                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_FOLDER);
                     
                     return new Pair<String, NodeRef>(parentPath, nodeRef);                    
                 }
@@ -2882,6 +2892,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         NodeRef targetNodeRef = null;
 
                         boolean isFromVersionable = nodeService.hasAspect( nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
+                        boolean typesCompatible = true;
                         
                         if ( newExists == FileStatus.FileExists) {
                             
@@ -2900,9 +2911,33 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Using renamed node, " + newState);
                                 
-                                // Use the renamed node to clone aspects/state
-                                
-                                cloneNodeAspects( name, (NodeRef) newState.getFilesystemObject(), nodeToMoveRef, ctx);
+                                NodeRef newStateNode = (NodeRef)newState.getFilesystemObject();
+                                QName oldType = nodeService.getType(nodeToMoveRef); 
+                                QName newType = nodeService.getType(newStateNode);
+                                if (oldType.equals(newType)) {
+
+                                    // Use the renamed node to clone aspects/state if it is of the correct type
+
+                                    cloneNodeAspects(name, newStateNode, nodeToMoveRef, ctx);
+                                }
+                                else
+                                {
+                                    // Otherwise we must create a node of the correct type
+                                    targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, newType);
+                                    
+                                    // Force a copy to this target
+                                    typesCompatible = false;
+                                    
+                                    // DEBUG
+                                    
+                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                        logger.debug("  Created new node for " + newName + " type " + newType);
+            
+                                    // Copy aspects from the original state
+                                    
+                                    cloneNodeAspects( name, newStateNode, targetNodeRef, ctx);
+                                    
+                                }
                             }
                             else if ( newState.getFileStatus() == DeleteOnClose) {
                                 
@@ -2920,7 +2955,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Found archived node " + archivedNode);
                                 
-                                if ( archivedNode != null && getNodeService().exists( archivedNode))
+                                if ( archivedNode != null )
                                 {
                                     // Restore the node
                                     
@@ -2969,7 +3004,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 
                                 // Create a new node for the target
                                 
-                                targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, true);
+                                targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, nodeService.getType(nodeToMoveRef));
                                 
                                 // DEBUG
                                 
@@ -2982,9 +3017,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             }
                         }
 
-                        // If the original or target nodes are not versionable then just use a standard rename of the
+                        // If the original or target nodes are not versionable and types are compatible then just use a standard rename of the
                         // node
-                        if ( isFromVersionable == false &&
+                        if ( isFromVersionable == false && typesCompatible &&
                                 ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)) {
 
                             // Rename the file/folder
@@ -3819,6 +3854,26 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             }
         }
         
+        // Copy over all aspects from non-system namespaces (we will copy their properties later)
+
+        for (QName aspectName : nodeService.getAspects(fromNode))
+        {
+            if (!_excludedNamespaces.contains(aspectName.getNamespaceURI()))
+            {
+                nodeService.addAspect(toNode, aspectName, null);                
+            }            
+        }
+
+        // Copy over all other properties from non system namespaces
+
+        for ( Map.Entry<QName, Serializable> entry : nodeService.getProperties(fromNode).entrySet()) {
+            QName propName = entry.getKey();
+            if (!_excludedNamespaces.contains(propName.getNamespaceURI()))
+            {
+                nodeService.setProperty( toNode, propName, entry.getValue());                
+            }
+        }
+
         // Check if the new file name is a temporary file, remove any versionable aspect from it
         
         String newNameNorm = newName.toLowerCase();

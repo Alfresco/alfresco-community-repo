@@ -324,7 +324,7 @@ public class CifsHelper
      * @return Returns a newly created file or folder node
      * @throws FileExistsException if the file or folder already exists
      */
-    public NodeRef createNode(NodeRef rootNodeRef, String path, boolean isFile) throws FileExistsException
+    public NodeRef createNode(NodeRef rootNodeRef, String path, QName typeQName) throws FileExistsException
     {
         // split the path up into its constituents
         StringTokenizer tokenizer = new StringTokenizer(path, FileName.DOS_SEPERATOR_STR, false);
@@ -355,8 +355,6 @@ public class CifsHelper
                     folderPathElements,
                     ContentModel.TYPE_FOLDER).getNodeRef();
         }
-        // add the file or folder
-        QName typeQName = isFile ? ContentModel.TYPE_CONTENT : ContentModel.TYPE_FOLDER;
         try
         {
             NodeRef nodeRef = fileFolderService.create(parentFolderNodeRef, name, typeQName).getNodeRef();
@@ -367,7 +365,7 @@ public class CifsHelper
                 logger.debug("Created node: \n" +
                         "   device root: " + rootNodeRef + "\n" +
                         "   path: " + path + "\n" +
-                        "   is file: " + isFile + "\n" +
+                        "   type: " + typeQName + "\n" +
                         "   new node: " + nodeRef);
             }
             return nodeRef;

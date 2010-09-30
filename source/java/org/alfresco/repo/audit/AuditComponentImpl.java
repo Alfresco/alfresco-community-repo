@@ -448,6 +448,11 @@ public class AuditComponentImpl implements AuditComponent
         ParameterCheck.mandatory("rootPath", rootPath);
         AuditApplication.checkPathFormat(rootPath);
         
+        if (values == null || values.isEmpty() || !areAuditValuesRequired())
+        {
+            return Collections.emptyMap();
+        }
+        
         // Log inbound values
         if (loggerInbound.isDebugEnabled())
         {
@@ -464,11 +469,6 @@ public class AuditComponentImpl implements AuditComponent
             loggerInbound.debug(sb.toString());
         }
 
-        if (values == null || values.isEmpty() || !areAuditValuesRequired())
-        {
-            return Collections.emptyMap();
-        }
-        
         // Build the key paths using the session root path
         Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
         for (Map.Entry<String, Serializable> entry : values.entrySet())
@@ -642,18 +642,46 @@ public class AuditComponentImpl implements AuditComponent
         {
             // Persist the values
             entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append(
+                        "\nNew audit entry: \n" +
+                        "\tApplication ID: " + applicationId + "\n" +
+                        "\tEntry ID:       " + entryId + "\n" +
+                        "\tValues:         " + "\n");
+                for (Map.Entry<String, Serializable> entry : values.entrySet())
+                {
+                    sb.append("\t\t").append(entry).append("\n");
+                }
+                sb.append("\n\tAudit Data: \n");
+                for (Map.Entry<String, Serializable> entry : auditData.entrySet())
+                {
+                    sb.append("\t\t").append(entry).append("\n");
+                }
+                logger.debug(sb.toString());
+            }
+        }
+        else
+        {
+            // Done ... nothing
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append(
+                        "\nNothing audited: \n" +
+                        "\tApplication ID: " + applicationId + "\n" +
+                        "\tEntry ID:       " + entryId + "\n" +
+                        "\tValues:         " + "\n");
+                for (Map.Entry<String, Serializable> entry : values.entrySet())
+                {
+                    sb.append("\t\t").append(entry).append("\n");
+                }
+                logger.debug(sb.toString());
+            }
         }
         
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(
-                    "New audit entry: \n" +
-                    "   Application ID: " + applicationId + "\n" +
-                    "   Entry ID:       " + entryId + "\n" +
-                    "   Values:         " + values + "\n" +
-                    "   Audit Data:     " + auditData);
-        }
         return auditData;
     }
     
@@ -720,10 +748,21 @@ public class AuditComponentImpl implements AuditComponent
         // Done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Extracted audit data: \n" +
-                    "   Application: " + application + "\n" +
-                    "   Raw values:  " + values + "\n" +
-                    "   Extracted:   " + newData);
+            StringBuilder sb = new StringBuilder();
+            sb.append(
+                    "\nExtracted audit data: \n" +
+                    "\tApplication:    " + application + "\n" +
+                    "\tValues:         " + "\n");
+            for (Map.Entry<String, Serializable> entry : values.entrySet())
+            {
+                sb.append("\t\t").append(entry).append("\n");
+            }
+            sb.append("\n\tNew Data: \n");
+            for (Map.Entry<String, Serializable> entry : newData.entrySet())
+            {
+                sb.append("\t\t").append(entry).append("\n");
+            }
+            logger.debug(sb.toString());
         }
         return newData;
     }

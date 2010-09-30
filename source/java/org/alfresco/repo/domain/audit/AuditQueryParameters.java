@@ -154,4 +154,12 @@ public class AuditQueryParameters
     {
         this.searchValueId = searchValueId;
     }
+    
+    /**
+     * @return              Returns <tt>true</tt> if this object includes a key- or value-based search
+     */
+    public boolean isKeyOrValueSearch()
+    {
+        return searchKeyId != null || searchValueId != null;
+    }
 }

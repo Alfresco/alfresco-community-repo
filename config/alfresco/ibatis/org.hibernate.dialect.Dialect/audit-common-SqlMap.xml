@@ -166,10 +166,10 @@
                 <![CDATA[entry.audit_time < #auditToTime#]]>
             </isNotNull>
             <isNotNull prepend="and" property="searchKeyId">
-                sp_kpl.key_prop_id = #searchKeyId#
+                sp_pl.key_prop_id = #searchKeyId#
             </isNotNull>
             <isNotNull prepend="and" property="searchValueId">
-                sp_mpl.value_prop_id = #searchValueId#
+                sp_pl.value_prop_id = #searchValueId#
             </isNotNull>
         </dynamic>
     </sql>
@@ -208,12 +208,9 @@
             alf_audit_app app
             join alf_audit_entry entry on (entry.audit_app_id = app.id)
             
-        <isNotNull property="searchKeyId">
-            join alf_prop_link sp_kpl on (sp_kpl.root_prop_id = entry.audit_values_id)
-        </isNotNull>
-        <isNotNull property="searchValueId">
-            join alf_prop_link sp_mpl on (sp_mpl.root_prop_id = entry.audit_values_id)
-        </isNotNull>
+        <isEqual property="keyOrValueSearch" compareValue="true">
+            join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
+        </isEqual>
         
             join alf_prop_link pl on (pl.root_prop_id = entry.audit_values_id)
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
@@ -236,12 +233,9 @@
             alf_audit_app app
             join alf_audit_entry entry on (entry.audit_app_id = app.id)
             
-        <isNotNull property="searchKeyId">
-            join alf_prop_link sp_kpl on (sp_kpl.root_prop_id = entry.audit_values_id)
-        </isNotNull>
-        <isNotNull property="searchValueId">
-            join alf_prop_link sp_mpl on (sp_mpl.root_prop_id = entry.audit_values_id)
-        </isNotNull>
+        <isEqual property="keyOrValueSearch" compareValue="true">
+            join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
+        </isEqual>
         
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>

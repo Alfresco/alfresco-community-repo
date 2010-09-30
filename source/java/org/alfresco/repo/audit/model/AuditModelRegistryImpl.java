@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -355,8 +356,8 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
          */
         public void start()
         {
-            auditApplicationsByKey = new HashMap<String, AuditApplication>(7);
-            auditApplicationsByName = new HashMap<String, AuditApplication>(7);
+            auditApplicationsByKey = new TreeMap<String, AuditApplication>();
+            auditApplicationsByName = new TreeMap<String, AuditApplication>();
             auditPathMapper = new PathMapper();
 
             // If we are globally disabled, skip processing the models

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+   An example of how user login details can be captured.
+-->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+       <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue"/>
+       <DataExtractor name="nodeNameValue" registeredName="auditModel.extractor.nodeName"/>
+       <DataExtractor name="nodeTypeValue" registeredName="auditModel.extractor.nodeType"/>
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/alfresco-api/post/NodeService/createNode" target="/auditexampleextractors"/>
+    </PathMappings>
+
+    <Application name="AuditExampleExtractors" key="auditexampleextractors">
+        <AuditPath key="create">
+            <AuditPath key="in">
+                <RecordValue key="a" dataExtractor="simpleValue" dataSource="/auditexampleextractors/args/parentRef" dataTrigger="/auditexampleextractors/no-error"/>
+                <RecordValue key="b" dataExtractor="simpleValue" dataSource="/auditexampleextractors/args/nodeTypeQName" dataTrigger="/auditexampleextractors/no-error"/>
+                <RecordValue key="c" dataExtractor="simpleValue" dataSource="/auditexampleextractors/args/assocTypeQName" dataTrigger="/auditexampleextractors/no-error"/>
+                <RecordValue key="d" dataExtractor="simpleValue" dataSource="/auditexampleextractors/args/assocQName" dataTrigger="/auditexampleextractors/no-error"/>
+            </AuditPath>
+            <AuditPath key="out">
+                <RecordValue key="a" dataExtractor="simpleValue" dataSource="/auditexampleextractors/result" dataTrigger="/auditexampleextractors/no-error"/>
+            </AuditPath>
+            <AuditPath key="derived">
+                <RecordValue key="parent-node-null" dataExtractor="nullValue"     dataSource="/auditexampleextractors/args/parentRef" dataTrigger="/auditexampleextractors/no-error"/>
+                <RecordValue key="parent-node-name" dataExtractor="nodeNameValue" dataSource="/auditexampleextractors/args/parentRef" dataTrigger="/auditexampleextractors/no-error"/>
+                <RecordValue key="parent-node-type" dataExtractor="nodeTypeValue" dataSource="/auditexampleextractors/args/parentRef" dataTrigger="/auditexampleextractors/no-error"/>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

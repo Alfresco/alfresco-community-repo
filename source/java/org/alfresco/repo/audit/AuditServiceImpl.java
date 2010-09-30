@@ -20,6 +20,7 @@ package org.alfresco.repo.audit;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -72,7 +73,7 @@ public class AuditServiceImpl implements AuditService
     {
         Map<String, org.alfresco.repo.audit.model.AuditApplication> apps = auditComponent.getAuditApplications();
 
-        Map<String, AuditApplication> ret = new HashMap<String, AuditApplication>(apps.size() * 2);
+        Map<String, AuditApplication> ret = new TreeMap<String, AuditApplication>();
         for (String app : apps.keySet())
         {
             String name = app;

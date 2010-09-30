@@ -125,9 +125,12 @@ function getRepositoryItem(folderPath, node)
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
          path: folderPath.join("/")
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    if (node.isContainer)
    {
@@ -175,9 +178,12 @@ function getDocumentItem(siteId, containerId, pathParts, node)
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
          path: pathParts.join("/")
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    if (node.isContainer)
    {
@@ -240,10 +246,13 @@ function getBlogPostItem(siteId, containerId, pathParts, node)
       name: child.name,
       modifiedOn: child.properties["cm:modified"],
       modifiedByUser: child.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
       size: child.size,
       displayName: child.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
    
    return item;
 }
@@ -286,10 +295,13 @@ function getForumPostItem(siteId, containerId, pathParts, node)
       description: topicNode.properties["cm:description"],
       modifiedOn: topicNode.properties["cm:modified"],
       modifiedByUser: topicNode.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
       size: topicNode.size,
       displayName: postNode.properties["cm:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
 
    return item;
 }
@@ -322,10 +334,13 @@ function getCalendarItem(siteId, containerId, pathParts, node)
       description: node.properties["ia:descriptionEvent"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
       size: -1,
       displayName: node.properties["ia:whatEvent"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
       
    return item;
 }
@@ -358,10 +373,13 @@ function getWikiItem(siteId, containerId, pathParts, node)
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
       size: node.size,
       displayName: ("" + node.name).replace(/_/g, " ")
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
       
    return item;
 }
@@ -394,10 +412,13 @@ function getLinkItem(siteId, containerId, pathParts, node)
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
       size: -1,
       displayName: node.properties["lnk:title"]
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
    
    return item;
 }
@@ -429,10 +450,13 @@ function getDataItem(siteId, containerId, pathParts, node)
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
          size: -1,
          displayName: node.properties["cm:title"]
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    else if (node.isSubType("{http://www.alfresco.org/model/datalist/1.0}dataListItem"))
    {
@@ -447,10 +471,13 @@ function getDataItem(siteId, containerId, pathParts, node)
          name: node.parent.name,    // used to generate link to parent datalist - not ideal
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
          size: -1,
          displayName: node.name     // unfortunately does not have a common display name property
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
    }
    
    return item;

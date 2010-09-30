@@ -10,9 +10,8 @@ function getDraftBlogPostList()
            " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\"" +
            " +@cm\\:creator:" + person.properties.userName;
    
-   // get the data
-   nodes = search.luceneSearch(q,'cm:modified',false);
-   // return nodes.length;
+   nodes = search.luceneSearch(q, 'cm:modified', false, 3);
+   
    return processResults(nodes, 3);
 }
 
@@ -22,7 +21,7 @@ function getWikiPages()
            " +PATH:\"/app:company_home/st:sites/*/cm:wiki/*\"" +
            " +@cm\\:modifier:" + person.properties.userName;
 
-   nodes = search.luceneSearch(q,'cm:modified',false);
+   nodes = search.luceneSearch(q, 'cm:modified', false, 3);
 
    return processResults(nodes, 3);
 }
@@ -33,7 +32,7 @@ function getDiscussions()
            " +PATH:\"/app:company_home/st:sites/*/cm:discussions//*\"" +
            " +@cm\\:creator:" + person.properties.userName;
 
-   nodes = search.luceneSearch(q,'cm:modified',false);
+   nodes = search.luceneSearch(q, 'cm:modified', false, 3);
 
    return processResults(nodes, 3);         
 }

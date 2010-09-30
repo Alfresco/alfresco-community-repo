@@ -5,6 +5,7 @@
   <format default="json" />
   <authentication>admin</authentication>
   <transaction>required</transaction>
+  <family>Audit</family>
   <lifecycle>internal</lifecycle>
   <args>
     <arg>

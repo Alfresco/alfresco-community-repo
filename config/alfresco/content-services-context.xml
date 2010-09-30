@@ -230,7 +230,7 @@
 
    <!-- Abstract bean definition defining base definition for all transformers -->
    <bean id="baseContentTransformer"
-         class="org.alfresco.repo.content.transform.AbstractContentTransformer"
+         class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
          abstract="true"
          init-method="register">
       <property name="mimetypeService">

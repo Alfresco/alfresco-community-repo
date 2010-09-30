@@ -48,16 +48,6 @@
                   <cm:name>Inbound Transfer Records</cm:name>
                </view:properties>
             </cm:folder>
-            <cm:folder view:childName="${spaces.outbound_transfer_records.childname}">
-               <view:aspects>
-               </view:aspects>
-               <view:properties>
-                  <cm:description>Folder containing records of outbound transfers.</cm:description>
-                  <app:icon>space-icon-default</app:icon>
-                  <cm:title>Outbound Transfer Records</cm:title>
-                  <cm:name>Outbound Transfer Records</cm:name>
-               </view:properties>
-            </cm:folder>
             <cm:folder view:childName="${spaces.transfer_temp.childname}">
                <view:aspects>
                </view:aspects>

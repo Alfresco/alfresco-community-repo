@@ -352,7 +352,6 @@
                 <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
                 <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
                 <prop key="spaces.inbound_transfer_records.childname">${spaces.inbound_transfer_records.childname}</prop>
-                <prop key="spaces.outbound_transfer_records.childname">${spaces.outbound_transfer_records.childname}</prop>
                 <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
                 <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
                 <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>

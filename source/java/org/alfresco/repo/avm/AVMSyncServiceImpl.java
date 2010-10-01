@@ -774,6 +774,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if ((srcDesc.isDirectory() && dstDesc.isFile()) ||
             (srcDesc.isFile() && dstDesc.isDirectory()))
         {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("compareOne(1): conflict ["+srcDesc+","+dstDesc+"]");
+            }
             return AVMDifference.CONFLICT;
         }
         
@@ -784,6 +788,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
             if (common == null)
             {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("compareOne(2): conflict ["+srcDesc+","+dstDesc+"]");
+                }
                 return AVMDifference.CONFLICT;
             }
             if (common.getId() == srcDesc.getId())
@@ -822,6 +830,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             
             // Must be a conflict.
+            if (logger.isInfoEnabled())
+            {
+                logger.info("compareOne(3): conflict ["+srcDesc+","+dstDesc+"]");
+            }
             return AVMDifference.CONFLICT;
         }
         
@@ -852,6 +864,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         {
                             return dirDiffCode;
                         }
+                        
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("compareOne(4): conflict ["+srcDesc+","+dstDesc+"]");
+                        }
                     }
                     
                     // drop through to check common ancestor
@@ -862,6 +879,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 // Conflict case.
                 if (common == null)
                 {
+                    if (logger.isInfoEnabled())
+                    {
+                        logger.info("compareOne(5): conflict ["+srcDesc+","+dstDesc+"]");
+                    }
                     return AVMDifference.CONFLICT;
                 }
                 if (common.getId() == srcDesc.getId())
@@ -871,6 +892,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 if (common.getId() == dstDesc.getId())
                 {
                     return AVMDifference.NEWER;
+                }
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("compareOne(6): conflict ["+srcDesc+","+dstDesc+"]");
                 }
                 // They must, finally, be in conflict.
                 return AVMDifference.CONFLICT;
@@ -888,6 +914,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 {
                     return AVMDifference.SAME;
                 }
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("compareOne(7): conflict ["+srcDesc+","+dstDesc+"]");
+                }
                 // We know that they are in conflict since they are of different types.
                 return AVMDifference.CONFLICT;
             }
@@ -895,6 +926,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
             if (common == null)
             {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("compareOne(8): conflict ["+srcDesc+","+dstDesc+"]");
+                }
                 return AVMDifference.CONFLICT;
             }
             if (common.getId() == srcDesc.getId())
@@ -904,6 +939,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             if (common.getId() == dstDesc.getId())
             {
                 return AVMDifference.NEWER;
+            }
+            if (logger.isInfoEnabled())
+            {
+                logger.info("compareOne(9): conflict ["+srcDesc+","+dstDesc+"]");
             }
             // Finally we know they are in conflict.
             return AVMDifference.CONFLICT;
@@ -921,6 +960,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
             if (common == null)
             {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("compareOne(10): conflict ["+srcDesc+","+dstDesc+"]");
+                }
                 return AVMDifference.CONFLICT;
             }
             if (common.getId() == srcDesc.getId())
@@ -941,6 +984,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
             }
             
+            if (logger.isInfoEnabled())
+            {
+                logger.info("compareOne(11): conflict ["+srcDesc+","+dstDesc+"]");
+            }
             return AVMDifference.CONFLICT;
         }
         // Destination is a plain file.
@@ -949,6 +996,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         // Conflict case.
         if (common == null)
         {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("compareOne(12): conflict ["+srcDesc+","+dstDesc+"]");
+            }
             return AVMDifference.CONFLICT;
         }
         if (common.getId() == srcDesc.getId())
@@ -969,6 +1020,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
         }
         
+        if (logger.isInfoEnabled())
+        {
+            logger.info("compareOne(13): conflict ["+srcDesc+","+dstDesc+"]");
+        }
         // They must, finally, be in conflict.
         return AVMDifference.CONFLICT;
     }
@@ -1032,6 +1087,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 else
                 {
+                    if (logger.isInfoEnabled())
+                    {
+                        logger.info("compareNodeProps(1): conflict ["+srcDesc+","+dstDesc+"]");
+                    }
                     return AVMDifference.CONFLICT;
                 }
             }
@@ -1039,6 +1098,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
             return AVMDifference.SAME;
         }
         
+        if (logger.isInfoEnabled())
+        {
+            logger.info("compareNodeProps(2): conflict ["+srcDesc+","+dstDesc+"]");
+        }
         return AVMDifference.CONFLICT;
     }
     
@@ -1114,6 +1177,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 return AVMDifference.SAME;
             }
+        }
+        
+        if (logger.isInfoEnabled())
+        {
+            logger.info("compareACLs: conflict ["+srcDesc+","+dstDesc+"]");
         }
         
         return AVMDifference.CONFLICT;

@@ -307,10 +307,6 @@ public class ExternalAccessServlet extends BaseServlet
                browseBean.setupContentAction(currentNodeId, true);
             }
             
-            // set the external container session flag so that a plain container gets used
-            fc.getExternalContext().getSessionMap().put(
-                     AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION, Boolean.TRUE);
-            
             NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
             navigationHandler.handleNavigation(fc, null, outcome + ':' + args[0]);
          }

@@ -116,9 +116,11 @@ public interface SiteService
     SiteInfo getSite(String shortName);
     
     /**
+     * This method gets the {@link SiteInfo} for the Share Site which contains the given NodeRef.
+     * If the given NodeRef is not contained within a Share Site, then <code>null</code> is returned.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef   the node whose containing site's info is to be found.
+     * @return SiteInfo  site information for the containing site or <code>null</code> if node is not in a site.
      */
     @NotAuditable
     SiteInfo getSite(NodeRef nodeRef);

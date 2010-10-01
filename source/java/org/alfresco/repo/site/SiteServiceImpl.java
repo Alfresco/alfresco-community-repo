@@ -932,16 +932,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
     
     /**
-     * Gets the site node reference for a particular node reference
+     * This method gets the <code>st:site</code> NodeRef for the Share Site which contains the given NodeRef.
+     * If the given NodeRef is not contained within a Share Site, then <code>null</code> is returned.
      * 
-     * @param nodeRef   node reference
+     * @param nodeRef   the node whose containing site is to be found.
      * @return NodeRef  site node reference or null if node is not in a site
      */
     private NodeRef getSiteNodeRef(NodeRef nodeRef)
     {
         NodeRef siteNodeRef = null;        
         QName nodeRefType = nodeService.getType(nodeRef);
-        if (dictionaryService.isSubClass(TYPE_SITE, nodeRefType) == true)
+        if (dictionaryService.isSubClass(nodeRefType, TYPE_SITE) == true)
         {
             siteNodeRef = nodeRef;
         }

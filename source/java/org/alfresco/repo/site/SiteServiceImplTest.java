@@ -564,6 +564,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteInfo = this.siteService.getSite("testGetSite");
         assertNotNull(siteInfo);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
+        
+        // Create a path to content within the site
+        NodeRef container = siteService.createContainer(siteInfo.getShortName(), "folder.component", ContentModel.TYPE_FOLDER, null);
+        NodeRef content = nodeService.createNode(container, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT).getChildRef();
+        
+        // Get the site from the lower-level child node.
+        siteInfo = siteService.getSite(content);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
     }
        
     public void testUpdateSite()

@@ -19,6 +19,9 @@
 package org.alfresco.repo.lock;
 
 import java.util.TreeSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.domain.locks.LockDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -29,8 +32,11 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.sun.star.uno.RuntimeException;
 
 /**
  * {@inheritDoc JobLockService}
@@ -49,6 +55,9 @@ public class JobLockServiceImpl implements JobLockService
     private int defaultRetryCount;
     private long defaultRetryWait;
     
+    private ScheduledExecutorService scheduler;
+    private VmShutdownListener shutdownListener;
+    
     /**
      * Stateless listener that does post-transaction cleanup.
      */
@@ -59,6 +68,8 @@ public class JobLockServiceImpl implements JobLockService
         defaultRetryWait = 20;
         defaultRetryCount = 10;
         txnListener = new LockTransactionListener();
+        scheduler = Executors.newScheduledThreadPool(1);
+        shutdownListener = new VmShutdownListener("JobLockService");
     }
 
     /**
@@ -228,6 +239,155 @@ public class JobLockServiceImpl implements JobLockService
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void refreshLock(
+            final String lockToken, final QName lockQName, final long timeToLive,
+            final JobLockRefreshCallback callback)
+    {
+        // Do nothing if the scheduler has shut down
+        if (scheduler.isShutdown() || scheduler.isTerminated())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Lock refresh failed: \n" +
+                        "   Lock:     " + lockQName + "\n" +
+                        "   TTL:      " + timeToLive + "\n" +
+                        "   Txn:      " + lockToken + "\n" +
+                        "   Error:    " + "Lock refresh scheduler has shut down.  The VM may be terminating.");
+            }
+            // Don't schedule
+            throw new LockAcquisitionException(lockQName, lockToken);
+        }
+        
+        final long delay = timeToLive / 2;
+        if (delay < 1)
+        {
+            throw new IllegalArgumentException("Very small timeToLive: " + timeToLive);
+        }
+        // Our runnable does the callbacks
+        Runnable runnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // Most lock debug is done elsewhere; just note that this is a timed process.
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Initiating timed Lock refresh: \n" +
+                            "   Lock:     " + lockQName + "\n" +
+                            "   TTL:      " + timeToLive + "\n" +
+                            "   Txn:      " + lockToken);
+                }
+                
+                // First check the VM
+                if (shutdownListener.isVmShuttingDown())
+                {
+                    callback.lockReleased();
+                    return;
+                }
+                boolean isActive = false;
+                try
+                {
+                    isActive = callIsActive(callback, delay);
+                }
+                catch (Throwable e)
+                {
+                    logger.error(
+                            "Lock isActive check failed: \n" +
+                            "   Lock:     " + lockQName + "\n" +
+                            "   TTL:      " + timeToLive + "\n" +
+                            "   Txn:      " + lockToken,
+                            e);
+                    // The callback must be informed
+                    callLockReleased(callback);
+                    return;
+                }
+                
+                if (!isActive)
+                {
+                    // Debug
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(
+                                "Lock callback is inactive.  Releasing lock: \n" +
+                                "   Lock:     " + lockQName + "\n" +
+                                "   TTL:      " + timeToLive + "\n" +
+                                "   Txn:      " + lockToken);
+                    }
+                    // The callback is no longer active, so we don't need to refresh.
+                    // Release the lock in case the initiator did not do it.
+                    try
+                    {
+                        releaseLock(lockToken, lockQName);
+                    }
+                    catch (LockAcquisitionException e)
+                    {
+                        // The lock is already gone: job done
+                    }
+                    // The callback must be informed
+                    callLockReleased(callback);
+                }
+                else
+                {
+                    try
+                    {
+                        refreshLock(lockToken, lockQName, timeToLive);
+                        // Success.  The callback does not need to know.
+                    }
+                    catch (LockAcquisitionException e)
+                    {
+                        // The callback must be informed
+                        callLockReleased(callback);
+                    }
+                }
+            }
+        };
+        // Schedule this
+        scheduler.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+    }
+    
+    /**
+     * Calls the callback {@link JobLockRefreshCallback#isActive() isActive} with time-check.
+     */
+    private boolean callIsActive(JobLockRefreshCallback callback, long delay) throws Throwable
+    {
+        long t1 = System.nanoTime();
+        
+        boolean isActive = callback.isActive();
+        
+        long t2 = System.nanoTime();
+        double timeWastedMs = (double)(t2 - t1)/(double)10E6;
+        if (timeWastedMs > delay || timeWastedMs > 1000L)
+        {
+            // The isActive did not come back quickly enough.  There is no point taking longer than
+            // the delay, but in any case 1s to provide a boolean is too much.  This is probably an
+            // indication that the isActive implementation is performing complex state determination,
+            // which is specifically referenced in the API doc.
+            throw new RuntimeException(
+                    "isActive check took " + timeWastedMs + " to return, which is too long.");
+        }
+        return isActive;
+    }
+    /**
+     * Calls the callback {@link JobLockRefreshCallback#lockReleased()}.
+     */
+    private void callLockReleased(JobLockRefreshCallback callback)
+    {
+        try
+        {
+            callback.lockReleased();
+        }
+        catch (Throwable ee)
+        {
+            logger.error("Callback to lockReleased failed.", ee);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

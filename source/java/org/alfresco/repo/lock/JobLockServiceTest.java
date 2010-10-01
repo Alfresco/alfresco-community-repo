@@ -21,6 +21,7 @@ package org.alfresco.repo.lock;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.domain.locks.LockDAO;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -276,6 +277,125 @@ public class JobLockServiceTest extends TestCase
             {
                 otherFailure = e;
             }
+        }
+    }
+    
+    public synchronized void testLockCallbackReleaseInactive() throws Exception
+    {
+        final QName lockQName = QName.createQName(NAMESPACE, getName());
+        final long lockTTL = 1000L;
+        final String lockToken = jobLockService.getLock(lockQName, lockTTL);
+
+        final boolean[] released = new boolean[1];
+        // Immediately-inactive job
+        JobLockRefreshCallback callback = new JobLockRefreshCallback()
+        {
+            @Override
+            public boolean isActive()
+            {
+                return false;
+            }
+            
+            @Override
+            public void lockReleased()
+            {
+                released[0] = true;
+            }
+        };
+
+        jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
+        // The first refresh will occur in 500ms
+        wait(1000L);
+        // Should have been released by now
+        assertTrue("Expected lockReleased to have been called", released[0]);
+        try
+        {
+            jobLockService.getLock(lockQName, lockTTL);
+        }
+        catch (LockAcquisitionException e)
+        {
+            fail("Lock should have been released by callback infrastructure");
+        }
+    }
+    
+    public synchronized void testLockCallbackReleaseSelf() throws Exception
+    {
+        final QName lockQName = QName.createQName(NAMESPACE, getName());
+        final long lockTTL = 1000L;
+        final String lockToken = jobLockService.getLock(lockQName, lockTTL);
+
+        final boolean[] released = new boolean[1];
+        // Immediately-inactive job, releasing the lock
+        JobLockRefreshCallback callback = new JobLockRefreshCallback()
+        {
+            @Override
+            public boolean isActive()
+            {
+                jobLockService.releaseLock(lockToken, lockQName);
+                return false;
+            }
+            
+            @Override
+            public void lockReleased()
+            {
+                released[0] = true;
+            }
+        };
+
+        jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
+        // The first refresh will occur in 500ms
+        wait(1000L);
+        // Should have been released by now
+        assertTrue("Expected lockReleased to have been called", released[0]);
+        try
+        {
+            jobLockService.getLock(lockQName, lockTTL);
+        }
+        catch (LockAcquisitionException e)
+        {
+            fail("Lock should have been released by callback infrastructure");
+        }
+    }
+    
+    public synchronized void testLockCallbackReleaseTimed() throws Exception
+    {
+        final QName lockQName = QName.createQName(NAMESPACE, getName());
+        final long lockTTL = 1000L;
+        final String lockToken = jobLockService.getLock(lockQName, lockTTL);
+
+        final boolean[] checked = new boolean[1];
+        final boolean[] released = new boolean[1];
+        // Do not release and remain active
+        JobLockRefreshCallback callback = new JobLockRefreshCallback()
+        {
+            @Override
+            public boolean isActive()
+            {
+                checked[0] = true;
+                return true;
+            }
+            
+            @Override
+            public void lockReleased()
+            {
+                released[0] = true;
+            }
+        };
+
+        jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
+        // The first refresh will occur in 500ms
+        wait(1000L);
+        
+        assertTrue("Active check has not occured", checked[0]);
+        assertFalse("lockReleased should NOT have been called", released[0]);
+        try
+        {
+            jobLockService.getLock(lockQName, lockTTL);
+            fail("Lock should still be held");
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Expected
         }
     }
 }

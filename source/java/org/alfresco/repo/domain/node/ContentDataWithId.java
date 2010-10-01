@@ -42,12 +42,6 @@ public class ContentDataWithId extends ContentData
         this.id = id;
     }
 
-    @Override
-    public String toString()
-    {
-        return "ContentData [id=" + id + "]";
-    }
-
     public Long getId()
     {
         return id;

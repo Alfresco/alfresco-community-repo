@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- =================================== -->
+<!--         Video Thumbnailing          -->
+<!--                                     -->
+<!-- Uses FFMPEG [http://ffmpeg.org/] to -->
+<!-- provide thumbnails of video files   -->
+<!-- =================================== -->
+
+<beans>
+  <!-- Content Transformations -->
+
+  <!-- Video Thumbnails FFmpeg transformation worker -->
+  <bean id="transformer.worker.ffmpeg.thumbnail" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="checkCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="command">
+          <list>
+            <value>${ffmpeg.exe}</value>
+            <value>-version</value>
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="transformCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandsAndArguments">
+          <map>
+            <entry key="Windows.*">
+              <list>
+                <value>cmd</value>
+                <value>/C</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i "${source}" ${outfile_opts} "${target}" 2&gt; NUL</value>
+              </list>
+            </entry>
+            <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+          </map>
+        </property>
+        <property name="waitForCompletion">
+          <value>true</value>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="opts">-y</prop>
+            <prop key="infile_opts">-ss 10</prop>
+            <prop key="outfile_opts">-f image2 -vframes 1</prop>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <property name="explicitTransformations">
+      <list>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-flv</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/mpeg</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/mp4</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/mpeg2</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-sgi-movie</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-msvideo</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/quicktime</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-ms-asf</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-ms-wmv</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/x-rad-screenplay</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/ogg</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+      </list>
+    </property>
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ffmpeg.thumbnail" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ffmpeg.thumbnail"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.complex.ffmpeg.Image" class="org.alfresco.repo.content.transform.ComplexContentTransformer" parent="baseContentTransformer">
+    <property name="transformers">
+      <list>
+        <ref bean="transformer.ffmpeg.thumbnail"/>
+        <ref bean="transformer.ImageMagick"/>
+      </list>
+    </property>
+    <property name="intermediateMimetypes">
+      <list>
+        <value>image/jpeg</value>
+      </list>
+    </property>
+  </bean>
+
+ 
+  <!-- Register extra Thumbnail Definitions -->
+
+  <!-- FLV preview thumbnail options -->
+  <bean id="thumbnail.register.flvpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinitionSpringRegisterer">
+    <property name="thumbnailRegistry" ref="thumbnailRegistry" />
+    <property name="thumbnailDefinition">
+        <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+          <property name="name" value="flvpreview"/>
+          <property name="mimetype" value="video/x-flv"/>
+          <property name="transformationOptions">
+            <bean class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions">
+              <property name="propertyValues">
+                <props>
+                  <prop key="outfile_opts">-f flv -ab 56 -ar 44100 -b 200 -r 15 -s 320x240</prop>
+                </props>
+              </property>
+            </bean>
+          </property>
+          <property name="runAs" value="System"/>
+        </bean>
+    </property>
+  </bean>
+
+  <!-- H264 preview thumbnail options -->
+  <bean id="thumbnail.register.h264preview" class="org.alfresco.repo.thumbnail.ThumbnailDefinitionSpringRegisterer">
+    <property name="thumbnailRegistry" ref="thumbnailRegistry" />
+    <property name="thumbnailDefinition">
+        <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+          <property name="name" value="h264preview"/>
+          <property name="mimetype" value="video/mp4"/>
+          <property name="transformationOptions">
+            <bean class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions">
+              <property name="propertyValues">
+                <props>
+                  <!--
+	    							<prop key="outfile_opts">-f mpeg4 -acodec aac -ab 128kb -vcodec mpeg4 -b 1200kb -mbd 2 -flags +4mv+trell -aic 2 -cmp 2 -subcmp 2 -s 320x180</prop>
+	    							-->
+                  <prop key="outfile_opts">-f mp4 -ar 44100 -ab 96k -vcodec libx264 -crf 25 -g 250 -r 25</prop>
+                  <prop key="vpre">medium</prop>
+                </props>
+              </property>
+            </bean>
+          </property>
+          <property name="runAs" value="System"/>
+        </bean>
+    </property>
+  </bean>
+
+  <!-- MP3 preview thumbnail options -->
+  <bean id="thumbnail.register.mp3preview" class="org.alfresco.repo.thumbnail.ThumbnailDefinitionSpringRegisterer">
+    <property name="thumbnailRegistry" ref="thumbnailRegistry" />
+    <property name="thumbnailDefinition">
+        <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+          <property name="name" value="mp3preview"/>
+          <property name="mimetype" value="audio/x-mpeg"/>
+          <property name="transformationOptions">
+            <bean class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions">
+              <property name="propertyValues">
+                <props>
+                  <prop key="outfile_opts">-f mp3 -ar 44100 -ab 128k</prop>
+                </props>
+              </property>
+            </bean>
+          </property>
+          <property name="runAs" value="System"/>
+        </bean>
+    </property>
+  </bean>
+
+</beans>

@@ -15,9 +15,10 @@
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
         <property name="CMISSpecVersion"><value>1.0</value></property>
         <property name="CMISSpecTitle"><value>Version 1.0 OASIS Standard</value></property>
-        <property name="defaultStore"><value>workspace://SpacesStore</value></property>
-        <property name="defaultRootPath"><value>/Company Home</value></property>
+        <property name="defaultStore"><value>${spaces.store}</value></property>
+        <property name="defaultRootPath"><value>/${spaces.company_home.childname}</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
+        <property name="namespaceService" ref="namespaceService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
         <property name="CMISRenditionService" ref="CMISRenditionService" />
         <property name="searchService" ref="SearchService" />

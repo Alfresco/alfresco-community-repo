@@ -140,6 +140,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private RetryingTransactionHelper retryingTransactionHelper;
     private DictionaryService dictionaryService;
     private CMISDictionaryService cmisDictionaryService;
+    private NamespaceService namespaceService;
     private SearchService searchService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -219,6 +220,14 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+
+    /**
+     * @param namespaceService
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     /**
@@ -454,8 +463,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     {
                         public NodeRef execute() throws Exception
                         {
-                            String path = defaultStoreRef.getProtocol() + "/" + defaultStoreRef.getIdentifier() + defaultRootPath;
-                            return repository.findNodeRef("path", path.split("/"));
+                            NodeRef root = nodeService.getRootNode(defaultStoreRef);
+                            List<NodeRef> rootNodes = searchService.selectNodes(root, defaultRootPath, null, namespaceService, false);
+                            if (rootNodes.size() != 1)
+                            {
+                                throw new AlfrescoRuntimeException("Unable to locate CMIS root path " + defaultRootPath);
+                            }
+                            return rootNodes.get(0);
                         };
                     });
                 }

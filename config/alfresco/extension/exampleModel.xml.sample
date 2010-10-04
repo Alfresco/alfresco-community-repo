@@ -43,7 +43,7 @@
             <association name="my:signOff">
                <source>
                   <mandatory>false</mandatory>
-                  <many>false</many>
+                  <many>true</many>
                </source>
                <target>
                   <class>cm:content</class>
@@ -54,7 +54,7 @@
             <child-association name="my:processSteps">
                <source>
                   <mandatory>false</mandatory>
-                  <many>false</many>
+                  <many>true</many>
                </source>
                <target>
                   <class>cm:content</class>

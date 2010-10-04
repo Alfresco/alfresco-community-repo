@@ -208,7 +208,7 @@ public interface TaggingService
      * Finds the 'nearest' tag scope for the specified node.
      * <p>
      * The 'nearest' tag scope is discovered by walking up the primary parent path
-     * untill a tag scope is found or the root node is reached.
+     * until a tag scope is found or the root node is reached.
      * <p>
      * If no tag scope if found then a null value is returned.
      * 

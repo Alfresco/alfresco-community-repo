@@ -597,6 +597,13 @@
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
    
+   
+   <!-- JMX Admin Dump - as ZIP file content -->
+   <bean id="webscript.org.alfresco.repository.admin.jmxdump.get" class="org.alfresco.repo.web.scripts.content.StreamJMXDump" parent="webscript">
+      <property name="MBeanServer" ref="alfrescoMBeanServer" />
+   </bean>
+   
+   
    <!--                             -->
    <!-- DICTIONARY Service REST API -->
    <!--                             -->

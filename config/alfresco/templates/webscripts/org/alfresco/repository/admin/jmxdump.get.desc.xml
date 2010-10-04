@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>JMXDump</shortname>
+  <description>
+  <![CDATA[Stream the JMX property dump as a .zip content file]]>
+  </description>
+  <url>/api/admin/jmxdump</url>
+  <authentication>admin</authentication>
+  <transaction allow="readonly"/>
+  <lifecycle>internal</lifecycle>
+</webscript>

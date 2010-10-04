@@ -79,9 +79,7 @@ public class StreamContent extends AbstractWebScript
     protected NodeService nodeService;
     protected ContentService contentService;
     protected MimetypeService mimetypeService;    
-    
-    /** Cached file modified date */
-//    private Date resouceFileModifiedDate;
+
 
     /**
      * @param mimetypeService

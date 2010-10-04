@@ -149,6 +149,14 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        }
        return handler;
     }
+
+    /**
+     * By default returns a ParseContent that does not recurse
+     */
+    protected ParseContext buildParseContext(Metadata metadata, String targetMimeType, TransformationOptions options)
+    {
+       return new ParseContext();
+    }
     
     public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
     throws Exception
@@ -162,7 +170,8 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        
        Parser parser = getParser();
        Metadata metadata = new Metadata();
-       ParseContext context = new ParseContext();
+       
+       ParseContext context = buildParseContext(metadata, targetMimeType, options);
        
        ContentHandler handler = getContentHandler(targetMimeType, ow);
        if(handler == null)

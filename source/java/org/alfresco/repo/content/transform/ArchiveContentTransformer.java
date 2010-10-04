@@ -18,106 +18,96 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.pkg.PackageParser;
 
 /**
- * This class transforms archive files (currently only ZIPs) to text, which enables indexing
- * and searching of archives as well as webpreviewing.
- * The transformation simply lists the names of the entries within the zip file and does not consider their content.
+ * This class transforms archive files (zip, tar etc) to text, which enables indexing
+ *  and searching of archives as well as webpreviewing.
+ * The transformation can simply list the names of the entries within the archive, or
+ *  it can also include the textual content of the entries themselves.
+ * The former is suggested for web preview, the latter for indexing.
+ * This behaviour is controlled by the recurse flag. 
  * 
  * @author Neil McErlean
- * @since Swift
+ * @author Nick Burch
+ * @since 3.4
  */
-public class ArchiveContentTransformer extends AbstractContentTransformer2
-{
+public class ArchiveContentTransformer extends TikaPoweredContentTransformer
+{ 
     /**
      * The logger
      */
     private static Log logger = LogFactory.getLog(ArchiveContentTransformer.class);
 
-    /**
-     * Currently the only transformation performed is that of text extraction from PDF documents.
+    private boolean includeContents = false;
+    public void setIncludeContents(String includeContents)
+    {
+       // Spring really ought to be able to handle
+       //  setting a boolean that might still be
+       //  ${foo} (i.e. not overridden in a property).
+       // As we can't do that with spring, we do it...
+       this.includeContents = false;
+       if(includeContents != null && includeContents.length() > 0)
+       {
+          if(includeContents.equalsIgnoreCase("true") ||
+             includeContents.equalsIgnoreCase("t") ||
+             includeContents.equalsIgnoreCase("yes") ||
+             includeContents.equalsIgnoreCase("y"))
+          {
+             this.includeContents = true;
+          }
+       }
+    }
+    
+    /** 
+     * We support all the archive mimetypes that the Tika
+     *  office parser can handle
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        // TODO: Expand to other archive types e.g. tar.
-        if (!MimetypeMap.MIMETYPE_ZIP.equals(sourceMimetype) ||
-            !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
-        {
-            // Currently only support ZIP -> Text
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+    public static ArrayList<String> SUPPORTED_MIMETYPES;
+    static {
+       SUPPORTED_MIMETYPES = new ArrayList<String>();
+       Parser p = new PackageParser();
+       for(MediaType mt : p.getSupportedTypes(null)) {
+          // Tika can probably do some useful text
+          SUPPORTED_MIMETYPES.add( mt.toString() );
+       }
+    }
+     
+    public ArchiveContentTransformer() {
+        super(SUPPORTED_MIMETYPES);
+    }
+    
+    @Override
+    protected Parser getParser() {
+      return new PackageParser();
     }
 
-    protected void transformInternal(
-            ContentReader reader,
-            ContentWriter writer,
-            TransformationOptions options) throws Exception
-    {
-        InputStream is = null;
-        try
-        {
-            is = reader.getContentInputStream();
-
-            List<String> zipEntryNames = new ArrayList<String>();
-        	ZipInputStream zin = new ZipInputStream(is);
-
-            // Enumerate each entry
-        	ZipEntry nextZipEntry = null;
-        	while ((nextZipEntry = zin.getNextEntry()) != null)
-        	{
-        		String entryName = nextZipEntry.getName();
-        		zipEntryNames.add(entryName);
-        		
-        		// Currently we do not recurse into 'zips within zips'.
-        	}
-        	
-        	if (logger.isDebugEnabled())
-        	{
-        	    StringBuilder msg = new StringBuilder();
-        	    msg.append("Transformed ")
-       	           .append(zipEntryNames.size())
-       	           .append(zipEntryNames.size() == 1 ? " zip entry" : " zip entries");
-        	    logger.debug(msg.toString());
-        	}
-
-            String text = createTextContentFrom(zipEntryNames);
-            
-            // dump it all to the writer
-            writer.putContent(text);
-        }
-        finally
-        {
-            if (is != null)
-            {
-                try { is.close(); } catch (Throwable e) {e.printStackTrace(); }
-            }
-        }
-    }
-
-    private String createTextContentFrom(List<String> zipEntryNames)
-    {
-        StringBuilder result = new StringBuilder();
-        for (String entryName : zipEntryNames)
-        {
-            result.append(entryName)
-                  .append('\n');
-        }
-        return result.toString();
+    @Override
+    protected ParseContext buildParseContext(Metadata metadata,
+         String targetMimeType, TransformationOptions options) {
+      ParseContext context = super.buildParseContext(metadata, targetMimeType, options);
+      
+      boolean recurse = includeContents;
+      if(options.getIncludeEmbedded() != null)
+      {
+         recurse = options.getIncludeEmbedded();
+      }
+System.err.println(includeContents + " " + recurse + " " + options.getIncludeEmbedded());      
+      if(recurse)
+      {
+         context.set(Parser.class, new AutoDetectParser());
+      }
+      
+      return context;
     }
 }

@@ -19,8 +19,13 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.faces.el.MethodNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -28,6 +33,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -38,8 +47,14 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class ComplexContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(ComplexContentTransformer.class);
+   
     private List<ContentTransformer> transformers;
     private List<String> intermediateMimetypes;
+    private Map<String,Serializable> transformationOptionOverrides;
     
     public ComplexContentTransformer()
     {
@@ -74,6 +89,20 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     }
 
     /**
+     * Sets any properties to be set on the TransformationOption as passed in.
+     * This allows you to force certain properties to always be set on it, 
+     *  to control the transformers in a different way to their default.
+     * Note that only properties that are supported by the passed-in 
+     *  {@link TransformationOptions} are changed, others are ignored.
+     * @param transformationOptionOverrides
+     */
+    public void setTransformationOptionOverrides(
+          Map<String, Serializable> transformationOptionOverrides) 
+    {
+        this.transformationOptionOverrides = transformationOptionOverrides;
+    }
+
+   /**
      * Ensures that required properties have been set
      */
     public void afterPropertiesSet() throws Exception
@@ -102,6 +131,29 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     {
         boolean result = true;
         String currentSourceMimetype = sourceMimetype;
+        
+        // Set any transformation options overrides if we can
+        if(options != null && transformationOptionOverrides != null)
+        {
+           for(String key : transformationOptionOverrides.keySet())
+           {
+              if(PropertyUtils.isWriteable(options, key))
+              {
+                 try 
+                 {
+                    PropertyUtils.setProperty(options, key, transformationOptionOverrides.get(key));
+                 } 
+                 catch(MethodNotFoundException mnfe) {}
+                 catch(NoSuchMethodException nsme) {}
+                 catch(InvocationTargetException ite) {}
+                 catch(IllegalAccessException iae) {}
+              }
+              else
+              {
+                 logger.warn("Unable to set override Transformation Option " + key + " on " + options);
+              }
+           }
+        }
         
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
         Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();

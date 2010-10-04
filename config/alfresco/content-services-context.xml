@@ -504,6 +504,7 @@
             </bean>
          </list>
       </property>
+      <property name="includeContents" value="${transformer.Archive.includeContents}" />
    </bean>
 
 </beans>

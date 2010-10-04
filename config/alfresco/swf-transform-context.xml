@@ -74,6 +74,11 @@
             <value>application/pdf</value>
          </list>
       </property>
+      <property name="transformationOptionOverrides">
+         <map>
+            <entry key="includeContents" value="no" />
+         </map>
+      </property>
    </bean>
 
 </beans>

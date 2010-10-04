@@ -60,6 +60,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
      */
     public ImageMagickContentTransformerWorker()
     {
+        // Intentionally empty
     }
     
     /**
@@ -142,6 +143,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     /**
      * Transform the image content from the source file to the target file
      */
+    @Override
     protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
     {
         Map<String, String> properties = new HashMap<String, String>(5);

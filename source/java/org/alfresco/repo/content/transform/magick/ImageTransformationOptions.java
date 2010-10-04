@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -27,6 +30,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class ImageTransformationOptions extends TransformationOptions
 {
+    public static final String OPT_COMMAND_OPTIONS = "commandOptions";
+    public static final String OPT_IMAGE_RESIZE_OPTIONS = "imageResizeOptions";
+    public static final String OPT_IMAGE_CROP_OPTIONS = "imageCropOptions";
+   
     /** Command string options, provided for backward compatibility */
     private String commandOptions = "";
     
@@ -87,6 +94,21 @@ public class ImageTransformationOptions extends TransformationOptions
     	
     	return msg.toString();
     }
+    
+    /**
+     * Overrides the base class implementation to add our options
+     */
+    @Override
+    public Map<String, Object> toMap()
+    {
+        Map<String, Object> baseProps = super.toMap();
+        Map<String, Object> props = new HashMap<String, Object>(baseProps);
+        props.put(OPT_COMMAND_OPTIONS, commandOptions);
+        props.put(OPT_IMAGE_RESIZE_OPTIONS, resizeOptions);
+        props.put(OPT_IMAGE_CROP_OPTIONS, cropOptions);
+        return props;
+    }
+
     
     /**
      * @param cropOptions the cropOptions to set

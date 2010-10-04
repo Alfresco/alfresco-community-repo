@@ -41,6 +41,7 @@ public class TransformationOptions
     public static final String OPT_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";
     public static final String OPT_TARGET_NODEREF = "contentWriterNodeRef";
     public static final String OPT_TARGET_CONTENT_PROPERTY = "targetContentProperty";
+    public static final String OPT_INCLUDE_EMBEDDED = "includeEmbedded"; 
     
     /** The source node reference */
     private NodeRef sourceNodeRef;
@@ -53,6 +54,9 @@ public class TransformationOptions
     
     /** The target content property */
     private QName targetContentProperty;
+    
+    /** The include embedded resources yes/no */
+    private Boolean includeEmbedded;
 
     /**
      * Default construtor
@@ -76,10 +80,11 @@ public class TransformationOptions
         this.sourceContentProperty = sourceContentProperty;
         this.targetNodeRef = targetNodeRef;
         this.targetContentProperty = targetContentProperty;
+        this.includeEmbedded = null;
     }
     
     /**
-     * Constrcutor.  Creates a transformation options object from a map.  
+     * Constructor.  Creates a transformation options object from a map.  
      * Provided for back ward compatibility.
      * 
      * @param optionsMap    options map
@@ -90,6 +95,7 @@ public class TransformationOptions
         this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
         this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
         this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
+        this.includeEmbedded = (Boolean)optionsMap.get(OPT_INCLUDE_EMBEDDED);
     }
     
     /**
@@ -171,8 +177,36 @@ public class TransformationOptions
     {
         return targetContentProperty;
     }
+    
+    /**
+     * If the source content includes embedded resources,
+     *  should the transformer attempt to transform these
+     *  as well?
+     * Not many transformers do support embedded resources,
+     *  so this option will only affect those that can.
+     *  
+     * @param includeEmbedded the include embedded flag.
+     */
+    public void setIncludeEmbedded(Boolean includeEmbedded) 
+    {
+       this.includeEmbedded = includeEmbedded;
+    }
 
     /**
+     * If the source content includes embedded resources,
+     *  should the transformer attempt to transform these
+     *  as well?
+     * Not many transformers do support embedded resources,
+     *  so this option will only affect those that can.
+     *  
+     * @return true, false, or null for the default for the transformer
+     */
+    public Boolean getIncludeEmbedded() 
+    {
+        return includeEmbedded;
+    }
+
+   /**
      * Convert the transformation options into a map.
      * <p>
      * Basic options (optional) are:
@@ -181,6 +215,7 @@ public class TransformationOptions
      *   <li>{@link #OPT_SOURCE_CONTENT_PROPERTY}</li>
      *   <li>{@link #OPT_TARGET_NODEREF}</li>
      *   <li>{@link #OPT_TARGET_CONTENT_PROPERTY}</li>
+     *   <li>{@link #OPT_INCLUDE_EMBEDDED}</li>
      * </ul>
      * <p>
      * Override this method to append option values to the map.  Derived classes should call
@@ -193,6 +228,7 @@ public class TransformationOptions
         optionsMap.put(OPT_SOURCE_CONTENT_PROPERTY, sourceContentProperty);
         optionsMap.put(OPT_TARGET_NODEREF, targetNodeRef);
         optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, targetContentProperty);
+        optionsMap.put(OPT_INCLUDE_EMBEDDED, includeEmbedded);
         return optionsMap;
     }
 }

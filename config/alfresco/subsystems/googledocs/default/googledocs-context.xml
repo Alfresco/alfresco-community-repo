@@ -35,7 +35,8 @@
         <property name="ownableService" ref="OwnableService"/>        
         <property name="authorityService" ref="AuthorityService"/>
         <property name="dictionaryService" ref="DictionaryService"/>       
-        <property name="url" value="${googledocs.url}"/>     
+        <property name="url" value="${googledocs.url}"/>
+        <property name="downloadUrl" value="${googledocs.downloadurl}"/>     
         <property name="username" value="${googledocs.username}"/>
         <property name="password" value="${googledocs.password}"/>        
         <property name="permissionMap">

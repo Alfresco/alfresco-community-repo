@@ -107,6 +107,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     
     /** GoogleDoc base feed url */
     private String url = "http://docs.google.com/feeds/default/private/full";
+    private String downloadUrl = "https://docs.google.com/feeds/download";
     
     /** Authentication credentials */
     private boolean initialised = false;
@@ -202,6 +203,14 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setUrl(String url)
     {
         this.url = url;
+    }
+    
+    /**
+     * @param downloadUrl   root download URL
+     */
+    public void setDownloadUrl(String downloadUrl)
+    {
+        this.downloadUrl = downloadUrl;
     }
 
     /**
@@ -308,6 +317,11 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         
         // Get the parent folder id
         DocumentListEntry parentFolder = getParentFolder(nodeRef);
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Creating google document (" + name + "," + mimetype + ")");
+        }
         
         // Create the new google document
         DocumentListEntry document = createGoogleDocument(name, mimetype, parentFolder, is);
@@ -482,27 +496,30 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             	// Get the parent folder
                 DocumentListEntry parentFolder = getParentFolder(parentNodeRef);
                 
-                // Determine the name of the new google folder
-                String name = null;
-                QName parentNodeType = nodeService.getType(parentNodeRef);
-                if (dictionaryService.isSubClass(parentNodeType, ContentModel.TYPE_STOREROOT) == true)
+                if (parentFolder != null)
                 {
-                	name = parentNodeRef.getStoreRef().getIdentifier();
+                    // Determine the name of the new google folder
+                    String name = null;
+                    QName parentNodeType = nodeService.getType(parentNodeRef);
+                    if (dictionaryService.isSubClass(parentNodeType, ContentModel.TYPE_STOREROOT) == true)
+                    {
+                    	name = parentNodeRef.getStoreRef().getIdentifier();
+                    }
+                    else
+                	{
+                    	name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
+                	}
+                    
+                    // Create the folder and set the meta data in Alfresco
+                    folder = createGoogleFolder(name, parentFolder);               
+                    setResourceDetails(parentNodeRef, folder);                
+                    
+                    // Set the owner of the document
+                    setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
+                    
+                    // Set the owner of the document
+                    setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
                 }
-                else
-            	{
-                	name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
-            	}
-                
-                // Create the folder and set the meta data in Alfresco
-                folder = createGoogleFolder(name, parentFolder);               
-                setResourceDetails(parentNodeRef, folder);                
-                
-                // Set the owner of the document
-                setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
-                
-                // Set the owner of the document
-                setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
             }
         }
         
@@ -563,60 +580,74 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             {
                 String downloadUrl = null;
                 DocumentListEntry document = getDocumentListEntry(nodeRef);
-                String docType = document.getType();
-                
-                ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-                String fileExtension = mimetypeService.getExtension(contentData.getMimetype());
-                if (fileExtension.equals("docx"))
+                if (document != null)
                 {
-                    fileExtension = "doc";
-                }
-            
-                if (docType.equals(TYPE_DOCUMENT) || docType.equals(TYPE_PRESENTATION))
-                {
-                    downloadUrl = ((MediaContent)document.getContent()).getUri() + "&exportFormat=" + fileExtension;
-                }
-                else if (docType.equals(TYPE_SPREADSHEET))
-                {
-                    downloadUrl = ((MediaContent)document.getContent()).getUri() + "&exportFormat=" + fileExtension;
-
-                    // If exporting to .csv or .tsv, add the gid parameter to specify which sheet to export
-                    if (fileExtension.equals("csv") || fileExtension.equals("tsv")) 
+                    String docType = document.getType();
+                    
+                    ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                    String fileExtension = mimetypeService.getExtension(contentData.getMimetype());
+                    if (fileExtension.equals("docx"))
                     {
-                        downloadUrl += "&gid=0";  // gid=0 will download only the first sheet
+                        fileExtension = "doc";
                     }
-                }
-                else if (docType.equals(TYPE_PDF))
-                {            
-                    MediaContent mc = (MediaContent)document.getContent();
-                    downloadUrl = mc.getUri();
+                
+                    if (docType.equals(TYPE_DOCUMENT) || docType.equals(TYPE_PRESENTATION))
+                    {
+                        downloadUrl = this.downloadUrl + "/" + docType + "s/Export?docId=" + document.getDocId() + 
+                                                                           "&exportFormat=" + fileExtension;
+                    }
+                    else if (docType.equals(TYPE_SPREADSHEET))
+                    {
+                        downloadUrl = ((MediaContent)document.getContent()).getUri() + "&exportFormat=" + fileExtension;
+    
+                        // If exporting to .csv or .tsv, add the gid parameter to specify which sheet to export
+                        if (fileExtension.equals("csv") || fileExtension.equals("tsv")) 
+                        {
+                            downloadUrl += "&gid=0";  // gid=0 will download only the first sheet
+                        }
+                    }
+                    else if (docType.equals(TYPE_PDF))
+                    {            
+                        MediaContent mc = (MediaContent)document.getContent();
+                        downloadUrl = mc.getUri();
+                    }
+                    else
+                    {
+                        throw new AlfrescoRuntimeException("Unsuported document type: " + docType);
+                    }
+            
+                    // Log the download URI
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Download URL for " + docType + " is " + downloadUrl);
+                    }
+                    
+                    // TODO need to verify that download of a spreadsheet works before we delete this historical code ...
+                    
+                    UserToken docsToken = null;
+                    if (docType.equals(TYPE_SPREADSHEET) == true)
+                    {
+                        docsToken = (UserToken) googleDocumentService.getAuthTokenFactory().getAuthToken();
+                        UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
+                        googleDocumentService.setUserToken(spreadsheetsToken.getValue());
+            
+                    }
+            
+                    MediaContent mc = new MediaContent();
+                    mc.setUri(downloadUrl);            
+                    MediaSource ms = googleDocumentService.getMedia(mc);
+            
+                    if (docType.equals(TYPE_SPREADSHEET) == true)
+                    {
+                        googleDocumentService.setUserToken(docsToken.getValue());
+                    }
+            
+                    result = ms.getInputStream(); 
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException("Unsuported document type: " + docType);
+                    throw new AlfrescoRuntimeException("Can not download google doc content since no corresponsing google resource could be found");
                 }
-        
-                // TODO need to verify that download of a spreadsheet works before we delete this historical code ...
-                
-                UserToken docsToken = null;
-                if (docType.equals(TYPE_SPREADSHEET) == true)
-                {
-                    docsToken = (UserToken) googleDocumentService.getAuthTokenFactory().getAuthToken();
-                    UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
-                    googleDocumentService.setUserToken(spreadsheetsToken.getValue());
-        
-                }
-        
-                MediaContent mc = new MediaContent();
-                mc.setUri(downloadUrl);            
-                MediaSource ms = googleDocumentService.getMedia(mc);
-        
-                if (docType.equals(TYPE_SPREADSHEET) == true)
-                {
-                    googleDocumentService.setUserToken(docsToken.getValue());
-                }
-        
-                result = ms.getInputStream();                
             }
             else
             {
@@ -684,11 +715,19 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         }
         catch (ServiceException e)
         {
-            throw new AlfrescoRuntimeException("Unable to get document list entry for resource " + resourceId, e);
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Unable to get document list entry for resource " + resourceId + " because " + e.getMessage());
+            }
+            result = null;
         }
         catch (IOException e)
         {
-            throw new AlfrescoRuntimeException("Unable to get document list entry for resource " + resourceId, e);            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Unable to get document list entry for resource " + resourceId + " because " + e.getMessage());
+            }
+            result = null;            
         }
         return result;
     }
@@ -1082,8 +1121,18 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 // Delete resource
                 try
                 {
-                    DocumentListEntry entry = getDocumentListEntry(resourceId);                
-                    googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                    DocumentListEntry entry = getDocumentListEntry(resourceId);  
+                    if (entry != null)
+                    {
+                        googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Unable to delete resource " + resourceId + " during commit.");
+                        }
+                    }
                 } 
                 catch (Throwable e)
                 {
@@ -1122,8 +1171,18 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 // Delete resource
                 try
                 {
-                    DocumentListEntry entry = getDocumentListEntry(resourceId);                
-                    googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                    DocumentListEntry entry = getDocumentListEntry(resourceId);   
+                    if (entry != null)
+                    {
+                        googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Unable to delete resource " + resourceId + " during rollback.");
+                        }                        
+                    }
                 } 
                 catch (Throwable e)
                 {

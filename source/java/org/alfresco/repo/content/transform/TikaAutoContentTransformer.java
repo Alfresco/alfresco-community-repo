@@ -61,16 +61,20 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
           
           if(mt.getType().equals("image") ||
              mt.getType().equals("audio") ||
-             mt.getType().equals("video") ||
-             mt.toString().equals("application/zip") ||
-             mt.toString().equals("application/tar"))
+             mt.getType().equals("video")) 
           {
              // Skip these, as Tika mostly just does
              //  metadata rather than content
           }
+          else if(mt.toString().equals("application/zip") ||
+                  mt.toString().equals("application/tar") || 
+                  mt.toString().equals("application/x-tar"))
+          {
+             // Skip these, as we handle container formats in a different
+             //  transformer to give the user control over recursion
+          }
           else
           {
-             
              // Tika can probably do some useful text
              SUPPORTED_MIMETYPES.add( mt.toString() );
           }

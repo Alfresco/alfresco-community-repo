@@ -48,7 +48,7 @@ public class DeleteMethod extends WebDAVMethod
      */
     protected void parseRequestHeaders() throws WebDAVServerException
     {
-        // Nothing to do in this method
+        parseIfHeader();
     }
 
     /**

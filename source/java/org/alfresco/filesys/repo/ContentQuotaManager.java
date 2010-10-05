@@ -98,12 +98,18 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
      * @return long
      */
 	public long getAvailableFreeSpace() {
+
+		// Get the live free space value from the content store, if supported
 		
-	    // Return a dummy value for now
-	    //
-	    // Need to find the content store size and return the live available space value if possible
-	    
-		return 100 * MemorySize.GIGABYTE;
+		long freeSpace = m_filesys.getContentService().getStoreFreeSpace();
+		if ( freeSpace == -1L) {
+			
+			// Content store does not support sizing, return a large dummy value
+		
+			freeSpace = ContentDiskDriver.DiskFreeDefault;
+		}
+		
+		return freeSpace;
 	}
 
     /**

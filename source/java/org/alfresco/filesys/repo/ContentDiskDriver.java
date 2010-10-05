@@ -44,8 +44,10 @@ import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
 import org.alfresco.jlan.server.filesys.DirectoryNotEmptyException;
+import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.DiskSizeInterface;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
@@ -54,6 +56,7 @@ import org.alfresco.jlan.server.filesys.FileSharingException;
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
+import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
@@ -72,6 +75,7 @@ import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.jlan.smb.WinNT;
 import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
+import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -110,7 +114,7 @@ import org.springframework.extensions.config.ConfigElement;
  * 
  * @author gkspencer
  */
-public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface
+public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface, DiskSizeInterface
 {
     // Logging
     
@@ -147,6 +151,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_1_0_URI
     }));
+    
+    // Disk sizing contants
+    
+    private static final int DiskBlockSize			= 512;	// bytes per block
+    private static final long DiskAllocationUnit	= 32 * MemorySize.KILOBYTE;
+    private static final long DiskBlocksPerUnit		= DiskAllocationUnit / DiskBlockSize;
+    
+    // Disk size returned in the content store does not support free/total size
+    
+    protected static final long DiskSizeDefault		= 1 * MemorySize.TERABYTE;
+    protected static final long DiskFreeDefault		= DiskSizeDefault / 2;
     
     // Services and helpers
     
@@ -3935,5 +3950,39 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
         
         return fstatus;
+    }
+    
+    /**
+     * Get the disk information for this shared disk device.
+     *
+     * @param ctx		DiskDeviceContext
+     * @param diskDev 	SrvDiskInfo
+     * @exception IOException
+     */
+    public void getDiskInformation(DiskDeviceContext ctx, SrvDiskInfo diskDev)
+      throws IOException {
+    	
+    	// Set the block size and blocks per allocation unit
+    	
+    	diskDev.setBlockSize( DiskBlockSize);
+    	diskDev.setBlocksPerAllocationUnit( DiskBlocksPerUnit);
+    	
+    	// Get the free and total disk size in bytes from the content store
+    	
+    	long freeSpace = contentService.getStoreFreeSpace();
+    	long totalSpace= contentService.getStoreTotalSpace();
+    	
+    	if ( totalSpace == -1L) {
+    		
+    		// Use a fixed value for the total space, content store does not support size information
+    		
+    		totalSpace = DiskSizeDefault;
+    		freeSpace  = DiskFreeDefault;
+    	}
+
+    	// Convert the total/free space values to allocation units
+    	
+    	diskDev.setTotalUnits( totalSpace / DiskAllocationUnit);
+    	diskDev.setFreeUnits( freeSpace / DiskAllocationUnit);
     }
 }

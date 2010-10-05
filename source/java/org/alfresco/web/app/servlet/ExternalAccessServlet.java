@@ -165,7 +165,6 @@ public class ExternalAccessServlet extends BaseServlet
             browseBean.setupContentAction(nodeRef.getId(), true);
          }
          
-         fc.getExternalContext().getSessionMap().put(AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION, Boolean.TRUE);
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_DOCDETAILS);
@@ -195,7 +194,7 @@ public class ExternalAccessServlet extends BaseServlet
             // setup the Space on the browse bean
             browseBean.setupSpaceAction(nodeRef.getId(), true);
          }
-         fc.getExternalContext().getSessionMap().put(AlfrescoNavigationHandler.EXTERNAL_CONTAINER_SESSION, Boolean.TRUE);         
+       
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_SPACEDETAILS);

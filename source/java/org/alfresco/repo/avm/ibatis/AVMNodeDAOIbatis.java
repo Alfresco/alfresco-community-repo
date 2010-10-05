@@ -270,43 +270,11 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMNodeDAO#flush()
-     */
-    public void flush()
-    {
-        // NOOP
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMNodeDAO#evict(org.alfresco.repo.avm.AVMNode)
-     */
-    public void evict(AVMNode node)
-    {
-        // NOOP
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNodeDAO#clear()
      */
     public void clear()
     {
         AVMDAOs.Instance().newAVMNodeDAO.clearNodeEntityCache();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMNodeDAO#noCache()
-     */
-    public void noCache()
-    {
-        // NOOP
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.AVMNodeDAO#yesCache()
-     */
-    public void yesCache()
-    {
-        // NOOP
     }
     
     /* (non-Javadoc)

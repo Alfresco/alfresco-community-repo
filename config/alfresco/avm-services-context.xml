@@ -102,9 +102,6 @@
 	    <property name="purgeVersionTxnListener">
 		    <ref bean="purgeVersionTxnListener"/>
 		</property>
-		<property name="qnameDAO">
-		    <ref bean="qnameDAO"/>
-		</property>
 		<property name="avmStoreDAO">
 		    <ref bean="avmStoreDAO"/>
 		</property>
@@ -122,9 +119,6 @@
 		</property>
 		<property name="childEntryDAO">
 		    <ref bean="childEntryDAO"/>
-		</property>
-		<property name="dictionaryService">
-		    <ref bean="dictionaryService"/>
 		</property>
 	</bean>
 

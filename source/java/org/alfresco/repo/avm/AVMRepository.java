@@ -35,7 +35,6 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.domain.permissions.Acl;
-import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -49,7 +48,6 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -95,8 +93,6 @@ public class AVMRepository
      */
     private LookupCache fLookupCache;
 
-    private QNameDAO qnameDAO;
-
     private AVMStoreDAO fAVMStoreDAO;
 
     private AVMNodeDAO fAVMNodeDAO;
@@ -110,8 +106,6 @@ public class AVMRepository
     private ChildEntryDAO fChildEntryDAO;
 
     private PermissionService fPermissionService;
-
-    private DictionaryService fDictionaryService;
 
     // A bunch of TransactionListeners that do work for this.
 
@@ -183,11 +177,6 @@ public class AVMRepository
         fPurgeVersionTxnListener = listener;
     }
 
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
-    }
-
     public void setAvmStoreDAO(AVMStoreDAO dao)
     {
         fAVMStoreDAO = dao;
@@ -221,11 +210,6 @@ public class AVMRepository
     public void setPermissionService(PermissionService service)
     {
         fPermissionService = service;
-    }
-
-    public void setDictionaryService(DictionaryService service)
-    {
-        fDictionaryService = service;
     }
 
     /**

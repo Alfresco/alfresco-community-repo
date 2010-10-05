@@ -25,7 +25,6 @@ import java.util.List;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
-import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.VersionRoot;
 import org.alfresco.repo.avm.VersionRootDAO;

@@ -77,6 +77,40 @@ public class FileServerDebugInterface extends DebugInterfaceBase {
     }
   }
 
+	/**
+	 * Output an exception
+	 * 
+	 * @param ex Throwable
+	 * @param level int
+	 */
+	public void debugPrintln( Throwable ex, int level) {
+		
+		// Check if the logging level is enabled
+		  
+		if ( level <= getLogLevel()) {
+
+			// Output the exception
+			
+			switch ( level) {
+				case Debug.Debug:
+				  logger.debug( ex, ex);
+				  break;
+				case Debug.Info:
+				  logger.info( ex, ex);
+				  break;
+				case Debug.Warn:
+				  logger.warn( ex, ex);
+				  break;
+				case Debug.Fatal:
+				  logger.fatal( ex, ex);
+				  break;
+				case Debug.Error:
+				  logger.error( ex, ex);
+				  break;
+			  }
+		}
+	}
+	
   /**
    * Output to the logger at the appropriate log level
    * 

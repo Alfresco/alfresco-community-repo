@@ -62,6 +62,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Alfresco File Server Configuration Bean Class
@@ -407,7 +408,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       DebugConfigSection debugConfig = new DebugConfigSection( this);
       try
       {
-          debugConfig.setDebug("org.alfresco.filesys.debug.FileServerDebugInterface", null);
+          debugConfig.setDebug("org.alfresco.filesys.debug.FileServerDebugInterface", new GenericConfigElement( "params"));
       }
       catch ( InvalidConfigurationException ex)
       {

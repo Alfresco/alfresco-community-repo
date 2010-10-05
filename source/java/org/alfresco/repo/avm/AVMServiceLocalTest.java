@@ -2982,6 +2982,14 @@ public class AVMServiceLocalTest extends TestCase
             diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
             
+            /*
+            // For testing ALF-4800 (testLayeredFileDelete1 / testLayeredFileDelete2 - error in dispatchUpdate)
+            // In addition to sleep below, increase frequency of OrphanReaper (eg. set startDelay/repeatInterval to 2000/500 msecs)
+            logger.debug("start sleep");
+            Thread.sleep(30000);
+            logger.debug("finish sleep");
+            */
+            
             // ETHREEOH-2844
             fSyncService.update(diffs, null, false, false, false, false, "one", "one");
             fSyncService.flatten("mainB--layer:/a", "mainB:/a");
@@ -3104,6 +3112,14 @@ public class AVMServiceLocalTest extends TestCase
             
             diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals("[mainB--layer:/a/foo[-1] > mainB:/a/foo[-1]]", diffs.toString());
+            
+            /*
+            // For testing ALF-4800 (testLayeredFileDelete1 / testLayeredFileDelete2 - error in dispatchUpdate)
+            // In addition to sleep below, increase frequency of OrphanReaper (eg. set startDelay/repeatInterval to 2000/500 msecs)
+            logger.debug("start sleep");
+            Thread.sleep(30000);
+            logger.debug("finish sleep");
+            */
             
             // ETHREEOH-2829
             fSyncService.update(diffs, null, false, false, false, false, "one", "one");

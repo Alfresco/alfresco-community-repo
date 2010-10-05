@@ -812,7 +812,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
             }
             
-            if (srcDesc.isDeleted() && (srcDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY))
+            if (srcDesc.isDeleted() && 
+                ((srcDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY) || (srcDesc.getDeletedType() == AVMNodeType.LAYERED_FILE)))
             {
                 Integer diff = compareLayeredCommonAncestor(common, srcDesc, dstDesc);
                 if (diff != null)
@@ -820,7 +821,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     return diff;
                 }
             }
-            else if (dstDesc.isDeleted() && (dstDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY))
+            else if (dstDesc.isDeleted() && 
+                     ((dstDesc.getDeletedType() == AVMNodeType.LAYERED_DIRECTORY) || (dstDesc.getDeletedType() == AVMNodeType.LAYERED_FILE)))
             {
                 Integer diff = compareLayeredCommonAncestor(common, dstDesc, srcDesc);
                 if (diff != null)
@@ -1054,7 +1056,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 diff = diffType;
             }
-            else if (common.isLayeredFile())
+            else if (common.isLayeredFile() || (compareAncNode.getType() == AVMNodeType.LAYERED_FILE))
             {
                 // TODO review (alongside createSnapshot+COW)
                 diff = compareLayeredCommonAncestor(common, compareAncNode.getId(), diffType);

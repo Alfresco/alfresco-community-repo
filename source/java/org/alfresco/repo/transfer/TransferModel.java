@@ -39,13 +39,13 @@ public interface TransferModel
     static final QName ASPECT_TRANSFERRED = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferred");
     static final QName PROP_REPOSITORY_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "repositoryId");
     static final QName PROP_FROM_REPOSITORY_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "fromRepositoryId");
+    static final QName PROP_FROM_CONTENT = QName.createQName(TRANSFER_MODEL_1_0_URI, "fromContent");
 
     /**
      * Aspect : alien
      */
     static final QName ASPECT_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
     static final QName PROP_INVADED_BY = QName.createQName(TRANSFER_MODEL_1_0_URI, "invadedBy");
-//    static final QName PROP_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
 
     /*
      * Type : Transfer Group

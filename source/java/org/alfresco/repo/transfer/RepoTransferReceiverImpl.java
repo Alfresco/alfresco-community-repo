@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -96,7 +97,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     NodeServicePolicies.OnCreateChildAssociationPolicy,
     NodeServicePolicies.BeforeDeleteNodePolicy,
     NodeServicePolicies.OnRestoreNodePolicy,
-    NodeServicePolicies.OnMoveNodePolicy
+    NodeServicePolicies.OnMoveNodePolicy,
+    ContentServicePolicies.OnContentUpdatePolicy
     
 {
     /**
@@ -213,6 +215,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 TransferModel.ASPECT_TRANSFERRED, 
                 new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
         
+        /**
+         * For every update of a transferred node 
+         */ 
+        this.getPolicyComponent().bindClassBehaviour(
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
+                TransferModel.ASPECT_TRANSFERRED, 
+                new JavaBehaviour(this, "onContentUpdate", NotificationFrequency.EVERY_EVENT));
+
         /**
          * For every copy of a transferred node run onCopyTransferred
          */
@@ -1103,8 +1113,23 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         log.debug("onMoveNode"); 
         log.debug("oldChildAssocRef:" + oldChildAssocRef);
         log.debug("newChildAssocRef:" + newChildAssocRef);
-        alienProcessor.beforeDeleteAlien(newChildAssocRef.getChildRef(), oldChildAssocRef);
-        alienProcessor.afterMoveAlien(newChildAssocRef);
+        
+        NodeRef oldParentRef = oldChildAssocRef.getParentRef();
+        NodeRef newParentRef = newChildAssocRef.getParentRef();
+        
+        if(newParentRef.equals(oldParentRef))
+        {
+            log.debug("old parent and new parent are the same - this is a rename, do nothing");
+        }
+        else
+        {
+            if(log.isDebugEnabled())
+            {
+                log.debug("moving node from oldParentRef:" + oldParentRef +" to:" + newParentRef);
+            }
+            alienProcessor.beforeDeleteAlien(newChildAssocRef.getChildRef(), oldChildAssocRef);
+            alienProcessor.afterMoveAlien(newChildAssocRef);
+        }
     }
     
     /**
@@ -1222,5 +1247,19 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     public AlienProcessor getAlienProcessor()
     {
         return alienProcessor;
+    }
+
+    @Override
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    {
+        /**
+         *  On update of a transferred node remove the from content from property.
+         */
+        log.debug("on content update called:" + nodeRef);
+        if(newContent)
+        {
+            log.debug("new content remove PROP_FROM_CONTENT from node:" + nodeRef);
+            nodeService.setProperty(nodeRef, TransferModel.PROP_FROM_CONTENT, null);
+        }
     }
 }

@@ -21,6 +21,7 @@ package org.alfresco.repo.transfer;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -94,92 +95,102 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
         {
             /**
              * there is a corresponding node so we need to check whether we already 
-             * have the content item
+             * have the part for each content item
              */
             NodeRef destinationNode = resolvedNodes.resolvedChild;
             
-            Map<QName, Serializable> destinationProps = nodeService.getProperties(destinationNode);
-            
+            Map<QName, Serializable> destinationProps = nodeService.getProperties(destinationNode);            
+            /**
+             * For each property on the source node
+             */
             for (Map.Entry<QName, Serializable> propEntry : node.getProperties().entrySet())
             {
                 Serializable value = propEntry.getValue();
+                QName propName = propEntry.getKey();
+                
                 if (log.isDebugEnabled())
                 {
                     if (value == null)
                     {
-                        log.debug("Received a null value for property " + propEntry.getKey());
+                        log.debug("Received a null value for property " + propName);
                     }
                 }
                 if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
                 {
+                    /**
+                     * Got a content property from source node.
+                     */
                     ContentData srcContent = (ContentData)value;
-
+                    
                     if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty() )
                     {
-                        Serializable destSer = destinationProps.get(propEntry.getKey());
-                        if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
+                        /**
+                         * Source Content is not empty
+                         */
+                        String partName = TransferCommons.URLToPartName(srcContent.getContentUrl());
+                    
+                        Serializable destSer = destinationProps.get(propName);
+                        if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))                  
                         {
-                            ContentData destContent = (ContentData)destinationProps.get(propEntry.getKey());
-                            
                             /**
-                             * If the modification dates for the node are different
+                             * Content property not empty and content property already exists on destination
                              */
-                            Serializable srcModified = node.getProperties().get(ContentModel.PROP_MODIFIED);
-                            Serializable destModified = destinationProps.get(ContentModel.PROP_MODIFIED);
-
-                            if(log.isDebugEnabled())
-                            {
-                                SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");  
-                                
-                                log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
-                                
-                                if(srcModified instanceof Date)
-                                {
-                                    log.debug("srcModified: "  + SDF.format(srcModified));
-                                }
-                                
-                                if(destModified instanceof Date)
-                                {
-                                    log.debug("destModified: " + SDF.format(destModified));
-                                }  
-                            }
+                            ContentData destContent = (ContentData)destSer;
                             
-                            if(srcModified != null && 
-                                    destModified != null &&
-                                    srcModified instanceof Date && 
-                                    destModified instanceof Date &&
-                                    ((Date)srcModified).getTime() <= ((Date)destModified).getTime())
+                            Serializable destFromContents = destinationProps.get(TransferModel.PROP_FROM_CONTENT);
+                            
+                            if(destFromContents != null && Collection.class.isAssignableFrom(destFromContents.getClass()))
                             {
-                                if(log.isDebugEnabled())
+                                Collection<String> contents = (Collection<String>)destFromContents;
+                                /**
+                                 * Content property not empty and content property already exists on destination
+                                 */
+                                if(contents.contains(partName))
                                 {
-                                    log.debug("the modified date is the same or before - no need send content:" + node.getNodeRef());
+                                    if(log.isDebugEnabled())
+                                    {
+                                        log.debug("part already transferred, no need to send it again, partName:" + partName + ", nodeRef:" + node.getNodeRef());
+                                    }   
+                                }
+                                else
+                                {
+                                    if(log.isDebugEnabled())
+                                    {
+                                        log.debug("part name not transferred, requesting new content item partName:" + partName + ", nodeRef:" + node.getNodeRef());
+                                    }
+                                    out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                                 }
                             }
                             else
                             {
+                                // dest from contents is null
                                 if(log.isDebugEnabled())
                                 {
-                                    log.debug("time different, require content for node : " + node.getNodeRef());
+                                    log.debug("from contents is null, requesting new content item partName:" + partName + ", nodeRef:" + node.getNodeRef());
                                 }
                                 out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                             }
                         }
                         else
                         {
+                            /**
+                             * Content property not empty and does not exist on destination
+                             */
                             if(log.isDebugEnabled())
                             {
-                                log.debug("no content on destination, content is required" + propEntry.getKey() + srcContent.getContentUrl());
+                                log.debug("no content on destination, all content is required" + propEntry.getKey() + srcContent.getContentUrl());
                             }
                             //  We don't have the property on the destination node 
                             out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                         }
-                    } // src content url not null
-                } // value is content data
-            }
+                    }
+                } // src content url not null
+            } // value is content data
         }
         else
         {
             log.debug("Node does not exist on destination nodeRef:" + node.getNodeRef());
+    
             /**
              * there is no corresponding node so all content properties are "missing."
              */

@@ -210,6 +210,13 @@
                     <type>d:text</type>
                     <mandatory enforced="true">true</mandatory>
                 </property>
+                <property name="trx:fromContent">
+                    <title>ContentProperties</title>
+                    <description>The content URLs transferred with this node</description>
+                    <type>d:text</type>
+                    <mandatory enforced="false">false</mandatory>
+                    <multiple>true</multiple>
+                </property>
             </properties>
         </aspect>
         

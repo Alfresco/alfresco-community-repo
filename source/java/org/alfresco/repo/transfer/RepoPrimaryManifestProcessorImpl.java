@@ -524,16 +524,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
             Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
             
-            // inject transferred property here
+            // inject transferred properties/aspect here
             injectTransferred(props);
-            
-//            if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
-//            {
-//                log.debug("injecting repositoryId property");
-//                props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
-//            }
-//            props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
-            
+             
             // Remove the invadedBy property since that is used by the transfer service 
             // and is local to this repository.
             props.remove(TransferModel.PROP_INVADED_BY);
@@ -937,13 +930,33 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * inject transferred
      */
     private void injectTransferred(Map<QName, Serializable> props)
-    {
+    {       
         if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
         {
             log.debug("injecting repositoryId property");
             props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
         }
         props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
+        
+        /**
+         * For each property
+         */
+        List<String> contentProps = new ArrayList();
+        for (Serializable value : props.values())
+        {
+            if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
+            {
+                ContentData srcContent = (ContentData)value;
+
+                if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
+                {
+                    log.debug("adding part name to from content field");
+                    contentProps.add(TransferCommons.URLToPartName(srcContent.getContentUrl()));
+                }  
+            }
+        }
+        
+        props.put(TransferModel.PROP_FROM_CONTENT, (Serializable)contentProps);
     }
 
     public void setAlienProcessor(AlienProcessor alienProcessor)

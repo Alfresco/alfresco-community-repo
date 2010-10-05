@@ -25,6 +25,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -52,6 +54,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -498,7 +501,30 @@ public class NavigationBean implements Serializable
     */
    public void setHelpUrl(String helpUrl)
    {
-      this.helpUrl = helpUrl;
+      if (this.helpUrl == null)
+      {
+         Descriptor serverDescriptor = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDescriptorService().getServerDescriptor();
+         // search / replace each available key occurrence in the template string
+         // Note: server descriptor is looking for "version.major", "version.minor", etc.
+         Pattern p = Pattern.compile("\\{(\\w+\\.?\\w+)\\}");
+         Matcher m = p.matcher(helpUrl);
+         boolean result = m.find();
+         if (result)
+         {
+            StringBuffer sb = new StringBuffer();
+            String value = null;
+            do
+            {
+               value = serverDescriptor.getDescriptor(m.group(1));
+               m.appendReplacement(sb, value != null ? value.toLowerCase() : m.group(1));
+               result = m.find();
+            } while (result);
+            m.appendTail(sb);
+            helpUrl = sb.toString();
+         }
+
+         this.helpUrl = helpUrl;
+      }
    }
    
    /**
@@ -1047,7 +1073,7 @@ public class NavigationBean implements Serializable
    /* package */ void initFromClientConfig()
    {
       this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
-      this.helpUrl = clientConfig.getHelpUrl();
+      this.setHelpUrl(clientConfig.getHelpUrl());
       this.shelfExpanded = clientConfig.isShelfVisible();
    }
    

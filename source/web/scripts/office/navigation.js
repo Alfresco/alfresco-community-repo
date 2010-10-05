@@ -14,7 +14,6 @@ var OfficeNavigation =
    
    init: function()
    {
-      $('overlayPanel').setStyle('opacity', 0);
       OfficeNavigation.setupToggles();
       OfficeNavigation.setupCreateSpace();
       OfficeNavigation.getDocumentNames();
@@ -24,7 +23,6 @@ var OfficeNavigation =
       {
          OfficeNavigation.showCreateSpace();
       }
-
    },
    
    setupToggles: function()

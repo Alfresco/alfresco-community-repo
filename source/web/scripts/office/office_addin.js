@@ -11,6 +11,8 @@ var OfficeAddin =
    
    init: function()
    {
+      $('overlayPanel').setStyle('opacity', 0);
+
       window.queryObject = OfficeAddin.toQueryObject(document.location.search);
       window.contextPath = OfficeAddin.getContextPath();
       window.serviceContextPath = OfficeAddin.getServiceContextPath();

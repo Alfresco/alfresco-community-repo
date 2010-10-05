@@ -16,7 +16,7 @@ function getContents(user, type, maxResults)
    
    var query = "+PATH:\"/app:company_home/st:sites/*//*\" "+
                "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
-               "+@cm\\:" + userType +":" + user + " " +
+               "+@cm\\:" + userType + ":\"" + user + "\" " +
                "+@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
                "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
    

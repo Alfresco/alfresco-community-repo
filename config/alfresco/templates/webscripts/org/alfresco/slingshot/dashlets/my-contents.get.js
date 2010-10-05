@@ -8,7 +8,7 @@ function getDraftBlogPostList()
    var q = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
            " +PATH:\"/app:company_home/st:sites/*/cm:blog/*\"" +
            " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\"" +
-           " +@cm\\:creator:" + person.properties.userName;
+           " +@cm\\:creator:\"" + person.properties.userName + '"';
    
    nodes = search.luceneSearch(q, 'cm:modified', false, 3);
    
@@ -19,7 +19,7 @@ function getWikiPages()
 {
    var q = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
            " +PATH:\"/app:company_home/st:sites/*/cm:wiki/*\"" +
-           " +@cm\\:modifier:" + person.properties.userName;
+           " +@cm\\:modifier:\"" + person.properties.userName + '"';
 
    nodes = search.luceneSearch(q, 'cm:modified', false, 3);
 
@@ -30,7 +30,7 @@ function getDiscussions()
 {
    var q = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
            " +PATH:\"/app:company_home/st:sites/*/cm:discussions//*\"" +
-           " +@cm\\:creator:" + person.properties.userName;
+           " +@cm\\:creator:\"" + person.properties.userName + '"';
 
    nodes = search.luceneSearch(q, 'cm:modified', false, 3);
 

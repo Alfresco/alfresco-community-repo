@@ -103,7 +103,7 @@ function getFilterQuery(filter)
          break;
          
       case "myPages":
-         filterQuery += "+@cm\\:creator:" + person.properties.userName;
+         filterQuery += "+@cm\\:creator:\"" + person.properties.userName + '"';
          break;   
    }
    

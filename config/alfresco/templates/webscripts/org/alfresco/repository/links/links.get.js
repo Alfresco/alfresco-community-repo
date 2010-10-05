@@ -12,7 +12,7 @@ function getLinksList(node, filter, tag, numdays, index, count)
 {
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/linksmodel/1.0}link\" +PATH:\"" + node.qnamePath + "/*\"";
-    
+   
    if (filter == "recent")
    {
       var fromDate = getTodayMinusXDays(DEFAULT_NUM_DAYS);
@@ -22,41 +22,41 @@ function getLinksList(node, filter, tag, numdays, index, count)
    }
    else if (filter == "user")
    {
-      luceneQuery += " +@cm\\:creator:" + person.properties.userName;
+      luceneQuery += " +@cm\\:creator:\"" + person.properties.userName + '"';
    }
-
+   
    if (tag !== null)
    {
       luceneQuery += " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
-
-    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
-
+   
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getLinksData);
 }
 
 function main()
 {
-    // get requested node
+   // get requested node
    var node = getRequestNode();
    if (status.getCode() != status.STATUS_OK)
    {
       return;
    }
-
+   
    var pNumber = parseInt(args.page, 10);
    var pSize = parseInt(args.pageSize, 10);
    var filter = args.filter;
    var tag = (args.tag != undefined && args.tag.length > 0) ? args.tag : null;
-
+   
    if ((pNumber === undefined) || (pSize === undefined))
    {
       model.error = "Parameters missing!";
       return;
    }
-    model.links = node;
-    model.data = getLinksList(node,filter,tag,7,(pNumber - 1) * pSize,pSize);
+   model.links = node;
+   model.data = getLinksList(node,filter,tag,7,(pNumber - 1) * pSize,pSize);
 }
 
 main();

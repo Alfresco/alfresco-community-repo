@@ -97,7 +97,7 @@ var Filters =
             filterQuery += " +@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00.000 TO " + toQuery + "T23\\:59\\:59.999]";
             if (onlySelf)
             {
-               filterQuery += " +@cm\\:" + ownerField + ":" + person.properties.userName;
+               filterQuery += " +@cm\\:" + ownerField + ":\"" + person.properties.userName + '"';
             }
             filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
 
@@ -123,7 +123,7 @@ var Filters =
                filterQuery += "/*/cm:dataLists";
             }
             filterQuery += "\"";
-            filterQuery += " +@cm\\:modifier:" + person.properties.userName;
+            filterQuery += " +@cm\\:modifier:\"" + person.properties.userName + '"';
             filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;

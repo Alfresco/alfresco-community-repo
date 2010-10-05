@@ -223,6 +223,8 @@ public interface AVMRemote
      * @throws           AVMNotFound
      * @throws           AVMExists
      * @throws           AVMWrongType
+     * 
+     * @deprecated
      */
     public void createLayeredFile(String targetPath, String parent, String name);
     

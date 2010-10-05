@@ -26,6 +26,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -74,12 +75,18 @@ public class EditMLContainerDialog extends  BaseDialogBean
       // get the modified properties
       Map<String, Object> editProperties = this.editableNode.getProperties();
 
-      // modify the properties of the container with the user modified properties
+      // Modify the properties of the container with the user modified properties
+      // (We don't know which properties have been edited at this point, so edit
+      //  all non-core ones)
       for(Map.Entry<String, Object> entry : editProperties.entrySet())
       {
          QName qname = QName.createQName(entry.getKey());
-
-         getNodeService().setProperty(container, qname, (Serializable) entry.getValue());
+         
+         if(! qname.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI) )
+         {
+            // Update the property on the real node
+            getNodeService().setProperty(container, qname, (Serializable) entry.getValue());
+         }
       }
 
       return outcome;

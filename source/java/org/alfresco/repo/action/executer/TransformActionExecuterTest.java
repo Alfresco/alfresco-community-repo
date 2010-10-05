@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.junit.Test;
 
@@ -106,4 +107,5 @@ class DummyMimetypeService implements MimetypeService
     public Map<String, String> getMimetypesByExtension()  { return null; }
     public String guessMimetype(String filename)          { return null; }
     public boolean isText(String mimetype)                { return false;}
+    public String getMimetypeIfNotMatches(ContentReader reader) { return null; }
 }

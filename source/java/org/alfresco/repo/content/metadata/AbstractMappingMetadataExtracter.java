@@ -660,12 +660,24 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         catch (Throwable e)
         {
+            // Ask Tika to detect the document, and report back on if
+            //  the current mime type is plausible
+            String typeErrorMessage = null;
+            String differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
+            if(differentType != null)
+            {
+               typeErrorMessage = "\n" +
+                  "   claimed mime type: " + reader.getMimetype() + "\n" +
+                  "   detected mime type: " + differentType;
+            }
+           
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Metadata extraction failed: \n" +
                         "   Extracter: " + this + "\n" +
-                        "   Content:   " + reader,
+                        "   Content:   " + reader +
+                        typeErrorMessage,
                         e);
             }
             else
@@ -674,7 +686,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                         "Metadata extraction failed (turn on DEBUG for full error): \n" +
                         "   Extracter: " + this + "\n" +
                         "   Content:   " + reader + "\n" +
-                        "   Failure:   " + e.getMessage());
+                        "   Failure:   " + e.getMessage() +
+                        typeErrorMessage);
             }
         }
         finally

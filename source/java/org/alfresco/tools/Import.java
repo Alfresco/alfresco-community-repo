@@ -152,9 +152,12 @@ public class Import extends Tool
             {
                 context.setVerbose(true);
             }
-            else if (i == (args.length - 1))
+            else if (!args[i].startsWith("-"))
             {
-                context.packageName = args[i];
+                context.packageNames = new String[args.length - i];
+                context.zipFile = new boolean[context.packageNames.length];
+                System.arraycopy(args, i, context.packageNames, 0, context.packageNames.length);
+                break;
             }
             else
             {
@@ -194,8 +197,8 @@ public class Import extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#getToolName()
      */
-    protected @Override
-    /*package*/ String getToolName()
+    @Override
+    protected String getToolName()
     {
         return "Alfresco Repository Importer";
     }
@@ -203,33 +206,46 @@ public class Import extends Tool
     /* (non-Javadoc)
      * @see org.alfresco.tools.Tool#execute()
      */
-    protected @Override
-    /*package*/ int execute() throws ToolException
+    @Override
+    protected int execute() throws ToolException
     {
         ImporterService importer = getServiceRegistry().getImporterService();
         
         // determine type of import (from zip or file system)
         ImportPackageHandler importHandler;
-        if (context.zipFile)
+        
+        int status = 0;
+        for (int i = 0; i < context.packageNames.length; i++)
         {
-            importHandler = new ZipHandler(context.getSourceDir(), context.getPackageFile(), context.encoding);
-        }
-        else
-        {
-            importHandler = new FileHandler(context.getSourceDir(), context.getPackageFile(), context.encoding);
+            importHandler = new ZipHandler(context.getSourceDir(), context.getPackageFile(i), context.encoding);
+            try
+            {
+                if (context.zipFile[i])
+                {
+                    importHandler = new ZipHandler(context.getSourceDir(), context.getPackageFile(i), context.encoding);
+                }
+                else
+                {
+                    importHandler = new FileHandler(context.getSourceDir(), context.getPackageFile(i), context.encoding);
+                }
+
+                try
+                {
+                    ImportBinding binding = new ImportBinding(context.uuidBinding);
+                    importer.importView(importHandler, context.getLocation(), binding, new ImportProgress());
+                }
+                catch (ImporterException e)
+                {
+                    throw new ToolException("Failed to import package due to " + e.getMessage(), e);
+                }
+            }
+            catch (Throwable t)
+            {
+                status = handleError(t);
+            }
         }
         
-        try
-        {
-            ImportBinding binding = new ImportBinding(context.uuidBinding);
-            importer.importView(importHandler, context.getLocation(), binding, new ImportProgress());
-        }
-        catch(ImporterException e)
-        {
-            throw new ToolException("Failed to import package due to " + e.getMessage(), e);
-        }
-        
-        return 0;
+        return status;
     }
 
     /**
@@ -379,13 +395,13 @@ public class Import extends Tool
         /** Source directory to import from */
         private String sourceDir;
         /** The package name to import */
-        private String packageName;
+        private String[] packageNames;
         /** The package encoding */
         private String encoding = null;
         /** The UUID Binding */
         private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW;
         /** Zip Package? */
-        private boolean zipFile = false;
+        private boolean[] zipFile;
 
         /* (non-Javadoc)
          * @see org.alfresco.tools.ToolContext#validate()
@@ -399,7 +415,7 @@ public class Import extends Tool
             {
                 throw new ToolArgumentException("Store to import into has not been specified.");
             }
-            if (packageName == null)
+            if (packageNames == null)
             {
                 throw new ToolArgumentException("Package name has not been specified.");
             }
@@ -411,21 +427,24 @@ public class Import extends Tool
                     throw new ToolArgumentException("Source directory " + fileSourceDir.getAbsolutePath() + " does not exist.");
                 }
             }
-            if (packageName.endsWith(".acp") || packageName.endsWith(".zip"))
+            for (int i = 0; i < packageNames.length; i++)
             {
-                File packageFile = new File(getSourceDir(), packageName);
-                if (!packageFile.exists())
+                if (packageNames[i].endsWith(".acp") || packageNames[i].endsWith(".zip"))
                 {
-                    throw new ToolArgumentException("Package zip file " + packageFile.getAbsolutePath() + " does not exist.");
+                    File packageFile = new File(getSourceDir(), packageNames[i]);
+                    if (!packageFile.exists())
+                    {
+                        throw new ToolArgumentException("Package zip file " + packageFile.getAbsolutePath() + " does not exist.");
+                    }
+                    zipFile[i] = true;
                 }
-                zipFile = true;
-            }
-            else
-            {
-                File packageFile = new File(getSourceDir(), getDataFile().getPath());
-                if (!packageFile.exists())
+                else
                 {
-                    throw new ToolArgumentException("Package file " + packageFile.getAbsolutePath() + " does not exist.");
+                    File packageFile = new File(getSourceDir(), getDataFile(i).getPath());
+                    if (!packageFile.exists())
+                    {
+                        throw new ToolArgumentException("Package file " + packageFile.getAbsolutePath() + " does not exist.");
+                    }
                 }
             }
         }
@@ -458,9 +477,9 @@ public class Import extends Tool
          * 
          * @return the package file
          */
-        private File getDataFile()
+        private File getDataFile(int i)
         {
-            String dataFile = (packageName.indexOf('.') != -1) ? packageName : packageName + ".xml";
+            String dataFile = (packageNames[i].indexOf('.') != -1) ? packageNames[i] : packageNames[i] + ".xml";
             File file = new File(dataFile); 
             return file;
         }
@@ -470,9 +489,9 @@ public class Import extends Tool
          * 
          * @return the zip package file
          */
-        private File getPackageFile()
+        private File getPackageFile(int i)
         {
-            return (zipFile) ? new File(packageName) : getDataFile();
+            return (zipFile[i]) ? new File(packageNames[i]) : getDataFile(i);
         }        
     }
  

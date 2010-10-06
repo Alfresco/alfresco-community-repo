@@ -65,6 +65,12 @@ public class RegenerateRenditionsEvaluator extends BaseActionEvaluator
       final WebProjectService webProjectService = services.getWebProjectService();
       final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
 
+      // before looking for web projects ensure the root folder is present i.e. WCM is enabled!
+      if (!webProjectService.hasWebProjectsRoot())
+      {
+         return false; 
+      }
+      
       // check that the authenticated user has CONTENT MANAGER permissions for at least one web project
       // this will ensure that the action appears only if the user is able to regenerate renditions
       // for at least one web project

@@ -1830,7 +1830,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         if (getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
         {
             throw new IllegalArgumentException(
-                    "getChildAssocsByPropertyValue does not allow search of system maintaied properties: " + propertyQName);
+                    "getChildAssocsByPropertyValue does not allow search of system maintained properties: " + propertyQName);
         }
                 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);

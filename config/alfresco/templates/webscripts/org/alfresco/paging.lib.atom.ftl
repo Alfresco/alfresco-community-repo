@@ -63,11 +63,7 @@
 [#macro opensearch cursor]
 [#-- NOTE: this macro requires the definition of xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" in --]
 [#--       the enclosing document                                                                           --]
-[#-- don't display totalResults if totalPages is < 0 (CMIS) and pageSize is > 0 --]
-[#-- because in this case we don't know the total number of results --]
-[#if (cursor.totalPages != -1 && cursor.pageSize > 0)]
-   <opensearch:totalResults>${cursor.totalRows?c}</opensearch:totalResults>
-[/#if]
+<opensearch:totalResults>${cursor.totalRows?c}</opensearch:totalResults>
 <opensearch:startIndex>${cursor.startRow?c}</opensearch:startIndex>
 <opensearch:itemsPerPage>${cursor.pageSize?c}</opensearch:itemsPerPage>
 [/#macro]
@@ -75,11 +71,7 @@
 [#macro cmis cursor]
 [#-- NOTE: this macro requires the definition of xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" in --]
 [#--       the enclosing document                                                                                      --]
-[#-- don't display totalResults if totalPages is < 0 (CMIS) and pageSize is > 0 --]
-[#-- because in this case we don't know the total number of results --]
-[#if (cursor.totalPages != -1 && cursor.pageSize > 0)]
-   <cmisra:numItems>${cursor.totalRows?c}</cmisra:numItems>
-[/#if]
+<cmisra:numItems>${cursor.totalRows?c}</cmisra:numItems>
 [/#macro]
 
 [#macro changelinks changeLog] 

@@ -649,9 +649,8 @@ public class CMISScript extends BaseScopableProcessorExtension
         CMISQueryOptions options = new CMISQueryOptions(statement, cmisService.getDefaultRootStoreRef());
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         options.setSkipCount(unknownRows.getStartRow());
-        options.setMaxItems(unknownRows.getPageSize());
         CMISResultSet resultSet = cmisQueryService.query(options);
-        Cursor cursor = paging.createCursor(unknownRows.getStartRow() + resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
+        Cursor cursor = paging.createCursor(unknownRows.getStartRow() + resultSet.getLength(), page);
         return paging.createPagedResult(resultSet, cursor);
     }
     

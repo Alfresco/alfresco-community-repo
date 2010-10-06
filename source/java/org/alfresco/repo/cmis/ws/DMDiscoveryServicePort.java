@@ -76,15 +76,13 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         // TODO: includeRelationships, includeRenditions
         CMISQueryOptions options = new CMISQueryOptions(parameters.getStatement(), cmisService.getDefaultRootStoreRef());
 
+        int skipCount = 0;
         if (parameters.getSkipCount() != null && parameters.getSkipCount().getValue() != null)
         {
-            options.setSkipCount(parameters.getSkipCount().getValue().intValue());
+            skipCount = parameters.getSkipCount().getValue().intValue();
+            options.setSkipCount(skipCount);
         }
 
-        if (parameters.getMaxItems() != null && parameters.getMaxItems().getValue() != null)
-        {
-            options.setMaxItems(parameters.getMaxItems().getValue().intValue());
-        }
         boolean includeAllowableActions = ((null != parameters.getIncludeAllowableActions()) && (null != parameters.getIncludeAllowableActions().getValue())) ? (parameters
                 .getIncludeAllowableActions().getValue()) : (false);
         String renditionFilter = (null != parameters.getRenditionFilter()) ? (parameters.getRenditionFilter().getValue()) : null;
@@ -103,9 +101,21 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         EnumIncludeRelationships cmisDirection = (null != parameters.getIncludeRelationships()) ? (parameters.getIncludeRelationships().getValue()) : (null);
         CMISRelationshipDirectionEnum includeRelationships = INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(cmisDirection);
 
+        int maxItems = -1;
+        if (parameters.getMaxItems() != null && parameters.getMaxItems().getValue() != null)
+        {
+            maxItems = parameters.getMaxItems().getValue().intValue();
+        }
+
         // for each row...
+        int idx = 0;
         for (CMISResultSetRow row : resultSet)
         {
+            if (maxItems != -1 && idx == maxItems)
+            {
+                break;
+            }
+            
             CmisPropertiesType properties = new CmisPropertiesType();
             Map<String, Serializable> values = row.getValues();
 
@@ -150,8 +160,9 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
                 }
             }
             response.getObjects().getObjects().add(object);
+            idx++;
         }
-        response.getObjects().setNumItems(BigInteger.valueOf(response.getObjects().getObjects().size()));
+        response.getObjects().setNumItems(BigInteger.valueOf(skipCount + resultSet.getLength()));
         response.getObjects().setHasMoreItems(resultSet.hasMore());
         return response;
     }

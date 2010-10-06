@@ -18,7 +18,7 @@
 [@pagingLib.opensearch cursor/]
 [@pagingLib.cmis cursor/]
 
-[#assign rs = cmisresultset(resultset)]
+[#assign rs = cmisresultset(resultset, cursor)]
 [#list rs.rows as row]
 [@entryLib.row row=row renditionfilter=renditionFilter includeallowableactions=includeAllowableActions includerelationships=includeRelationships/]
 [/#list]

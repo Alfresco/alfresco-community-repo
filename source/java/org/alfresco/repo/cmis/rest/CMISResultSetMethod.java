@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
+import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 
@@ -60,7 +61,7 @@ public final class CMISResultSetMethod implements TemplateMethodModelEx
     {
         CMISTemplateResultSet resultSet = null;
         
-        if (args.size() == 1)
+        if (args.size() > 0)
         {
             Object arg0 = args.get(0);
             if (arg0 instanceof BeanModel)
@@ -71,7 +72,20 @@ public final class CMISResultSetMethod implements TemplateMethodModelEx
                 {
                     if (wrapped instanceof CMISResultSet)
                     {
-                        resultSet = new CMISTemplateResultSet((CMISResultSet)wrapped, serviceRegistry, imageResolver);
+                        Cursor cursor = null;
+                        if (args.size() == 2)
+                        {
+                            Object arg1 = args.get(1);
+                            if (arg1 instanceof BeanModel)
+                            {
+                                Object wrapped1 = ((BeanModel)arg1).getWrappedObject();
+                                if (wrapped1 != null && wrapped1 instanceof Cursor)
+                                {
+                                    cursor = (Cursor)wrapped1;
+                                }
+                            }
+                        }
+                        resultSet = new CMISTemplateResultSet((CMISResultSet)wrapped, cursor, serviceRegistry, imageResolver);
                     }
                 }
             }

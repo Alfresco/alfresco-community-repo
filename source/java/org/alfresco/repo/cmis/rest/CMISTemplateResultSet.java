@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISResultSet;
@@ -31,6 +32,7 @@ import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.template.TemplateNode;
+import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -51,6 +53,7 @@ public class CMISTemplateResultSet implements Serializable
     private static final long serialVersionUID = 2245418238171563934L;
     
     private CMISResultSet resultSet;
+    private Cursor cursor;
     private ServiceRegistry serviceRegistry;
     private TemplateImageResolver imageResolver;
     
@@ -61,9 +64,10 @@ public class CMISTemplateResultSet implements Serializable
      * @param serviceRegistry
      * @param imageResolver
      */
-    public CMISTemplateResultSet(CMISResultSet resultSet, ServiceRegistry serviceRegistry, TemplateImageResolver imageResolver)
+    public CMISTemplateResultSet(CMISResultSet resultSet, Cursor cursor, ServiceRegistry serviceRegistry, TemplateImageResolver imageResolver)
     {
         this.resultSet = resultSet;
+        this.cursor = cursor;
         this.serviceRegistry = serviceRegistry;
         this.imageResolver = imageResolver;
     }
@@ -119,6 +123,7 @@ public class CMISTemplateResultSet implements Serializable
     public class TemplateIterator implements Iterator<TemplateIterator.TemplateRow>
     {
         private Iterator<CMISResultSetRow> iter;
+        private int idx = 0;
 
         /**
          * Construct
@@ -135,7 +140,7 @@ public class CMISTemplateResultSet implements Serializable
          */
         public boolean hasNext()
         {
-            return iter.hasNext();
+            return (cursor == null || idx < cursor.getRowCount()) && iter.hasNext();
         }
 
         /* (non-Javadoc)
@@ -143,7 +148,18 @@ public class CMISTemplateResultSet implements Serializable
          */
         public TemplateRow next()
         {
-            return new TemplateRow(iter.next());
+            if (!hasNext())
+            {
+                throw new NoSuchElementException();
+            }
+            try
+            {
+                return new TemplateRow(iter.next());
+            }
+            finally
+            {
+                idx++;
+            }
         }
 
         /* (non-Javadoc)

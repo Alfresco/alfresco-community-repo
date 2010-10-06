@@ -195,13 +195,14 @@ function updateNode(node, entry, exclude, validator)
             return null;
         }
         
-        if (entry.contentType != null && entry.contentType == "MEDIA")
+        if ((entry.contentType != null && entry.contentType != "MEDIA") ||
+            (entry.contentMimeType != null && entry.contentMimeType.primaryType == "text"))
         {
-            node.properties.content.write(entry.contentStream);
+            node.content = entry.content;
         }
         else
         {
-            node.content = entry.content;
+            node.properties.content.write(entry.contentStream);
         }
         node.properties.content.encoding = "UTF-8";
         node.properties.content.mimetype = atom.toMimeType(entry);

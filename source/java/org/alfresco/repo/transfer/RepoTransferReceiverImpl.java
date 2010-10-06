@@ -464,15 +464,17 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSSZ");
         String timeNow = format.format(new Date());
-        QName recordName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, timeNow);
+        String name = timeNow + ".xml";
+        
+        QName recordName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
 
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, timeNow);
+        props.put(ContentModel.PROP_NAME, name);
         props.put(TransferModel.PROP_PROGRESS_POSITION, 0);
         props.put(TransferModel.PROP_PROGRESS_ENDPOINT, 1);
         props.put(TransferModel.PROP_TRANSFER_STATUS, TransferProgress.Status.PRE_COMMIT.toString());
 
-        log.debug("Creating transfer record with name: " + timeNow);
+        log.debug("Creating transfer record with name: " + name);
         ChildAssociationRef assoc = nodeService.createNode(inboundTransferRecordsFolder, ContentModel.ASSOC_CONTAINS,
                 recordName, TransferModel.TYPE_TRANSFER_RECORD, props);
         log.debug("<-createTransferRecord: " + assoc.getChildRef());

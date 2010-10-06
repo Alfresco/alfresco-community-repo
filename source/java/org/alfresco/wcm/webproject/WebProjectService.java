@@ -113,6 +113,14 @@ public interface WebProjectService
     public WebProjectInfo createWebProject(WebProjectInfo wpInfo);
     
     /**
+     * Determines whether the "Web Projects" container node is present.
+     * 
+     * @return true if the "Web Projects" container node is present
+     */
+    @NotAuditable
+    public boolean hasWebProjectsRoot();
+    
+    /**
      * Returns the Web Projects container
      * 
      * @return NodeRef        the node ref of the "Web Projects" container node

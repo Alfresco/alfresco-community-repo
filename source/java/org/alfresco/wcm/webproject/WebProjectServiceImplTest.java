@@ -142,6 +142,12 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
     }
     
+    public void testHasWebProjectsRoot()
+    {
+        // make sure there is a "Web Projects" container node
+        assertTrue(wpService.hasWebProjectsRoot());
+    }
+    
     public void testCreateWebProjectSimple()
     {
         // Create a web project

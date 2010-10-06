@@ -438,7 +438,39 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             throw new AccessDeniedException("Only content managers may delete webapp '"+webAppName+"' (web project: "+wpNodeRef+")");
         }
     }
+
+    /*
+     * @see org.alfresco.wcm.webproject.WebProjectService#hasWebProjectsRoot()
+     */
+    public boolean hasWebProjectsRoot()
+    {
+        boolean hasRoot = false;
         
+        // Get the root 'web projects' folder
+        ResultSet resultSet = null;
+        try
+        {
+            resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+getWebProjectsPath()+"\"");
+            if (resultSet.length() == 1)
+            {
+                hasRoot = true;
+            }
+            else if (resultSet.length() > 1 && logger.isWarnEnabled())
+            {
+                logger.warn("More than one root 'Web Projects' folder exists");
+            }
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        } 
+        
+        return hasRoot;
+    }
+    
     /**
      * Get the node reference that is the web projects root
      * 

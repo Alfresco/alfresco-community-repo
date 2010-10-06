@@ -126,7 +126,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         recordActionComplete((ActionImpl) action);
     }
 
-    private void recordActionComplete(ActionImpl action)
+    private void recordActionComplete(final ActionImpl action)
     {
         if (logger.isDebugEnabled() == true)
         {
@@ -137,9 +137,55 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         action.setExecutionEndDate(new Date());
         action.setExecutionStatus(ActionStatus.Completed);
         action.setExecutionFailureMessage(null);
+        
+        // Do we need to update the persisted details?
         if (action.getNodeRef() != null)
         {
-            runtimeActionService.saveActionImpl(action.getNodeRef(), action);
+           // Make sure we re-fetch the latest action details and save
+           //  this version back into the repository
+           // (That way, if someone has a reference to the
+           // action and plays with it, we still save the
+           // correct information)
+           final Date startedAt = action.getExecutionStartDate();
+           final Date endedAt = action.getExecutionEndDate();
+           final NodeRef actionNode = action.getNodeRef();
+           
+           AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+           {
+               public void afterCommit()
+               {
+                  transactionService.getRetryingTransactionHelper().doInTransaction(
+                      new RetryingTransactionCallback<Object>()
+                      {
+                         public Object execute() throws Throwable
+                         {
+                           // Update the action as the system user
+                          return AuthenticationUtil.runAs(new RunAsWork<Action>() 
+                             {
+                                public Action doWork() throws Exception
+                                {
+                                   // Grab the latest version of the
+                                   // action
+                                   ActionImpl action = (ActionImpl) runtimeActionService
+                                   .createAction(actionNode);
+
+                                   // Update it
+                                   action.setExecutionStatus(ActionStatus.Completed);
+                                   action.setExecutionFailureMessage(null);
+                                   action.setExecutionStartDate(startedAt);
+                                   action.setExecutionEndDate(endedAt);
+                                   runtimeActionService.saveActionImpl(actionNode, action);
+
+                                   // All done
+                                   return action;
+                                }
+                             }, AuthenticationUtil.SYSTEM_USER_NAME
+                          );
+                         }
+                      }, false, true
+                  );
+               }
+           });
         }
 
         // Remove it from the cache, as it's finished

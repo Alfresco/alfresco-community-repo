@@ -667,11 +667,18 @@ public class ActionTrackingServiceImplTest extends TestCase
              3, actionTrackingService.getExecutingActions(sa13).size()
        );
 
+       // Let the update change the stored node
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
        
        actionTrackingService.recordActionComplete(sa13);
        actionTrackingService.recordActionComplete(moveAction);
        
+       txn.commit();
+       Thread.sleep(50);
+
        
+       // Check
        assertEquals(
              2, actionTrackingService.getAllExecutingActions().size()
        );
@@ -862,6 +869,12 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertBefore(action.getExecutionEndDate(), new Date());
        assertNull(action.getExecutionFailureMessage());
        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+       
+       // Let the update change the stored node
+       txn.commit();
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       Thread.sleep(50);
        
        // Now re-load and check the stored one
        action = runtimeActionService.createAction(actionNode);

@@ -51,7 +51,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.VersionNumber;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -203,7 +203,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         {
             versionProperties.putAll(origVersionProperties);
         }
-
+        
         // If the version aspect is not there then add it to the 'live' (versioned) node
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
         {
@@ -260,6 +260,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             }
         }
         
+        Version currentVersion = null;
+        
         if (versionHistoryRef == null)
         {
             // Create the version history
@@ -273,33 +275,49 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             
             // Since we have an existing version history we should be able to lookup
             // the current version
-            currentVersionRef = getCurrentVersionNodeRef(versionHistoryRef, nodeRef);
-
-            if (currentVersionRef == null)
+            Pair<Boolean, Version> result = getCurrentVersionImpl(versionHistoryRef, nodeRef);
+            boolean headVersion = false;
+            
+            if (result != null)
+            {
+                currentVersion = result.getSecond();
+                headVersion = result.getFirst();
+            }
+            
+            if (currentVersion == null)
             {
                 throw new VersionServiceException(MSGID_ERR_NOT_FOUND);
             }
-
-            // Need to check that we are not about to create branch since this is not currently supported
-            VersionHistory versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
-            Version currentVersion = getVersion(currentVersionRef);
-            if (versionHistory.getSuccessors(currentVersion).size() != 0)
-            {
-                throw new VersionServiceException(MSGID_ERR_NO_BRANCHES);
-            }
             
+            // Need to check that we are not about to create branch since this is not currently supported
+            if (! headVersion)
+            {
+                // belt-and-braces - remove extra check at some point
+                // although child assocs should be in ascending time (hence version creation) order
+                VersionHistory versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
+                if (versionHistory.getSuccessors(currentVersion).size() == 0)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Belt-and-braces: current version does seem to be head version ["+versionHistoryRef+", "+nodeRef+"]");
+                    }
+                }
+                else
+                {
+                    throw new VersionServiceException(MSGID_ERR_NO_BRANCHES);
+                }
+            }
         }
-
+        
         // Create the node details
         QName classRef = this.nodeService.getType(nodeRef);
         PolicyScope nodeDetails = new PolicyScope(classRef);
-
+        
         // Get the node details by calling the onVersionCreate policy behaviour
         invokeOnCreateVersion(nodeRef, versionProperties, nodeDetails);
-
+        
         // Calculate the version label
-        Version preceedingVersion = getVersion(currentVersionRef);
-        String versionLabel = invokeCalculateVersionLabel(classRef, preceedingVersion, versionNumber, versionProperties);
+        String versionLabel = invokeCalculateVersionLabel(classRef, currentVersion, versionNumber, versionProperties);
         
         // Extract Type Definition
         QName sourceTypeRef = nodeService.getType(nodeRef);
@@ -426,18 +444,21 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         
         Version version = null;
-
+        
         // get the current version, if the 'live' (versioned) node has the "versionable" aspect
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
         {
-            VersionHistory versionHistory = getVersionHistory(nodeRef);
-            if (versionHistory != null)
+            NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+            if (versionHistoryRef != null)
             {
-                String versionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-                version = versionHistory.getVersion(versionLabel);
+                Pair<Boolean, Version> result = getCurrentVersionImpl(versionHistoryRef, nodeRef);
+                if (result != null)
+                {
+                    version = result.getSecond();
+                }
             }
         }
-
+        
         return version;
     }
 
@@ -698,20 +719,22 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     protected List<Version> getAllVersions(NodeRef versionHistoryRef)
     {
-        List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, true);
         
-        List<Version> versions = new ArrayList<Version>(versionsAssoc.size());
+        List<Version> versions = new ArrayList<Version>(versionAssocs.size());
         
-        for (ChildAssociationRef versionAssoc : versionsAssoc)
+        for (ChildAssociationRef versionAssoc : versionAssocs)
         {
-            String localName = versionAssoc.getQName().getLocalName();
-            if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
-            {
-                versions.add(getVersion(versionAssoc.getChildRef()));
-            }
+            versions.add(getVersion(versionAssoc.getChildRef()));
         }
         
         return versions;
+    }
+    
+    private List<ChildAssociationRef> getVersionAssocs(NodeRef versionHistoryRef, boolean preLoad)
+    {
+        // note: resultant list is ordered by (a) explicit index and (b) association creation time
+        return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
     }
     
     /**
@@ -871,33 +894,46 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     }
 
     /**
-     * Gets a reference to the node for the current version of the passed node ref.
+     * Gets current version of the passed node ref
      *
-     * This uses the version label as a mechanism for looking up the version node in
-     * the version history.
-     *
-     * @param nodeRef  a node reference
-     * @return         a reference to a version reference
+     * This uses the version label as a mechanism for looking up the version node.
      */
-    private NodeRef getCurrentVersionNodeRef(NodeRef versionHistory, NodeRef nodeRef)
+    private Pair<Boolean, Version> getCurrentVersionImpl(NodeRef versionHistoryRef, NodeRef nodeRef)
     {
-        NodeRef result = null;
+        Pair<Boolean, Version> result = null;
+        
         String versionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-
-        Collection<ChildAssociationRef> versions = this.dbNodeService.getChildAssocs(versionHistory);
-        for (ChildAssociationRef version : versions)
+        
+        // note: resultant list is ordered by (a) explicit index and (b) association creation time
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, false);
+        
+        // Current version should be head version (since no branching)
+        int cnt = versionAssocs.size();
+        for (int i = cnt; i > 0; i--)
         {
-            String tempLabel = (String)this.dbNodeService.getProperty(version.getChildRef(), Version2Model.PROP_QNAME_VERSION_LABEL);
+            ChildAssociationRef versionAssoc = versionAssocs.get(i-1);
+            
+            String tempLabel = (String)this.dbNodeService.getProperty(versionAssoc.getChildRef(), Version2Model.PROP_QNAME_VERSION_LABEL);
             if (tempLabel != null && tempLabel.equals(versionLabel) == true)
             {
-                result = version.getChildRef();
+                boolean headVersion = (i == cnt);
+                
+                if (! headVersion)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unexpected: current version does not appear to be 1st version in the list  ["+versionHistoryRef+", "+nodeRef+"]");
+                    }
+                }
+                
+                result = new Pair<Boolean, Version>(headVersion, getVersion(versionAssoc.getChildRef()));
                 break;
             }
         }
-
+        
         return result;
     }
-
+    
     /**
      * Check if versions are marked with invalid version label, if true > apply default serial version label (e.g. "1.0", "1.1") 
      * 
@@ -943,7 +979,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 NodeRef versionNodeRef = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, version.getFrozenStateNodeRef().getStoreRef().getIdentifier(), version.getFrozenStateNodeRef()
                         .getId());
                 this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_VERSION_LABEL, versionLabel);
-
+                
                 version.getVersionProperties().put(VersionBaseModel.PROP_VERSION_LABEL, versionLabel);
 
                 // remember preceding version

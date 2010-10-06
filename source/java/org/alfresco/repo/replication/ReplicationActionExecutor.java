@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.ActionCancelledException;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.lock.JobLockService;
@@ -173,10 +174,14 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       Set<NodeRef> toTransfer = new HashSet<NodeRef>(89);
 
       NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler(); 
-      crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
+      crawler.setNodeFinders(new ChildAssociatedNodeFinder(
+            ContentModel.ASSOC_CONTAINS, 
+            RenditionModel.ASSOC_RENDITION
+      ));
       crawler.setNodeFilters(new ContentClassFilter(
             ContentModel.TYPE_FOLDER,
-            ContentModel.TYPE_CONTENT
+            ContentModel.TYPE_CONTENT,
+            ContentModel.TYPE_THUMBNAIL
       ));
       
       for(NodeRef payload : replicationDef.getPayload()) 
@@ -212,8 +217,9 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       // Exclude aspects from transfer
       // NOTE: this list of aspects should be synced up with the NodeCrawler in expandPayload to
       //       ensure a coherent set of nodes are transferred
-      transferDefinition.setExcludedAspects(RuleModel.ASPECT_RULES);
-      
+      transferDefinition.setExcludedAspects(RuleModel.ASPECT_RULES,
+          ContentModel.ASPECT_VERSIONABLE);
+            
       return transferDefinition;
    }
    

@@ -9,7 +9,13 @@
    <dt>firstName</dt> <dd>mandatory - the given Name</dd>
    <dt>lastName</dt> <dd>mandatory - the family name</dd>
    <dt>email</dt> <dd>mandatory - the email address  </dd>
-   <dt>password</dt> <dd>optional - the new user's password.  If not specified then a value of "password" is used which should be changed as soon as possible.</dd> 
+   <dt>password</dt> <dd>optional - the new user's password.  If not specified then a value of "password" is used which should be changed as soon as possible.</dd>
+   <dt>disableAccount</dt> <dd>optional - If present and set to "true" the user is created but their account will be disabled.</dd>
+   <dt>quota</dt> <dd>optional - Sets the quota size for the new user, in bytes.</dd>
+   <dt>groups</dt> <dd>optional - Array of group names to assign the new user to.</dd>
+   <dt>title</dt> <dd>optional - the title for the new user.</dd>
+   <dt>organisation</dt> <dd>optional - the organisation the new user belongs to.</dd>
+   <dt>jobtitle</dt> <dd>optional - the job title of the new user.</dd>
    </dl>
    
    ]]></description>

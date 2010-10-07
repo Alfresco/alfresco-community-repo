@@ -1507,6 +1507,82 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Description", checkProperties.get(PROP_QNAME_TEST_DESCRIPTION));
     }
     
+    public void testDefaultPropertyOverride_AddAspect() throws Exception
+    {
+        Serializable nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNull("Property should not be present", nullValue);
+        
+        String valueOverride = "VALUE_OVERRIDE";
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP2, (Serializable)valueOverride);
+        nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, properties);
+
+        Serializable checkValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertEquals("Property should not be defaulted", valueOverride, checkValue);
+    }
+    
+    public void testDefaultPropertyOverride_CreateNode() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_EXTENDED_CONTENT).getChildRef();
+
+        Serializable checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertEquals("Property should be defaulted", DEFAULT_VALUE, checkValue);
+
+        String valueOverride = "VALUE_OVERRIDE";
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable)valueOverride);
+        nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_EXTENDED_CONTENT,
+                properties).getChildRef();
+
+        checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertEquals("Property should not be defaulted", valueOverride, checkValue);
+    }
+    
+    public void testDefaultPropertyOverride_SpecializeWithoutProperty() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+
+        Serializable checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertNull("Property should not exist", checkValue);
+        
+        // Specialize the type
+        nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
+
+        checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertEquals("Property should be defaulted", DEFAULT_VALUE, checkValue);
+    }
+    
+    public void testDefaultPropertyOverride_SpecializeWithProperty() throws Exception
+    {
+        String valueOverride = "VALUE_OVERRIDE";
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable)valueOverride);
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTENT,
+                properties).getChildRef();
+
+        Serializable checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertEquals("Property should not be defaulted", valueOverride, checkValue);
+        
+        // Specialize the type
+        nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
+
+        checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
+        assertEquals("Property should *still* not be defaulted", valueOverride, checkValue);
+    }
+    
     public void testRemoveProperty() throws Exception
     {
         Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
@@ -1515,6 +1591,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Get the default value
         Serializable defaultValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNotNull("No default property value assigned", defaultValue);
+        assertEquals("Property should be defaulted", DEFAULT_VALUE, defaultValue);
         // Now apply the original node properties which didn't contain the value
         nodeService.setProperties(rootNodeRef, properties);
         // Ensure that it is now null

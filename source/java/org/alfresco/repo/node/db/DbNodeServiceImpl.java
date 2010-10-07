@@ -639,7 +639,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Work out what is missing
         Map<QName, Serializable> missingProperties = new HashMap<QName, Serializable>(allDefaultProperties);
-        missingProperties.entrySet().removeAll(existingProperties.entrySet());
+        missingProperties.keySet().removeAll(existingProperties.keySet());
         // Done
         return missingProperties;
     }

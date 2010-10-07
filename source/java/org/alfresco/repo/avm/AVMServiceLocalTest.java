@@ -50,8 +50,6 @@ import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -499,23 +497,8 @@ public class AVMServiceLocalTest extends TestCase
     
     public void testSimpleUpdateLD5() throws Exception
     {
-        Logger lg1 = null;
-        Level l1 = null;
-        
-        Logger lg2 = null;
-        Level l2 = null;
-        
         try
         {
-            // TEMP
-            lg1 = Logger.getLogger("org.alfresco.repo.avm.AVMServiceLocalTest");
-            l1 = lg1.getLevel();
-            lg1.setLevel(Level.DEBUG);
-            
-            lg2 = Logger.getLogger("org.alfresco.repo.avm.OrphanReaper");
-            l2 = lg2.getLevel();
-            lg2.setLevel(Level.DEBUG);
-            
             logger.debug("start: testSimpleUpdateLD5");
             
             logger.debug("created 2 stores: main, layer");
@@ -642,11 +625,6 @@ public class AVMServiceLocalTest extends TestCase
         {
             e.printStackTrace(System.err);
             throw e;
-        }
-        finally
-        {
-            lg1.setLevel(l1);
-            lg2.setLevel(l2);
         }
     }
     
@@ -2417,23 +2395,8 @@ public class AVMServiceLocalTest extends TestCase
     
     public void testLayeredFolder4() throws Exception
     {
-        Logger lg1 = null;
-        Level l1 = null;
-        
-        Logger lg2 = null;
-        Level l2 = null;
-        
         try
         {
-            // TEMP
-            lg1 = Logger.getLogger("org.alfresco.repo.avm.AVMServiceLocalTest");
-            l1 = lg1.getLevel();
-            lg1.setLevel(Level.DEBUG);
-            
-            lg2 = Logger.getLogger("org.alfresco.repo.avm.OrphanReaper");
-            l2 = lg2.getLevel();
-            lg2.setLevel(Level.DEBUG);
-            
             logger.debug("start: testLayeredFolder4");
             
             fService.createStore("mainA");
@@ -2593,9 +2556,6 @@ public class AVMServiceLocalTest extends TestCase
             fService.purgeStore("mainB");
             fService.purgeStore("mainB--layer");
             if (fService.getStore("mainB--workflow1") != null) { fService.purgeStore("mainB--workflow1"); }
-            
-            lg1.setLevel(l1);
-            lg2.setLevel(l2);
         }
     }
     

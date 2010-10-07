@@ -463,9 +463,10 @@ public class JobLockServiceImpl implements JobLockService
      */
     private int doWithRetry(RetryingTransactionCallback<? extends Object> callback, long retryWait, int retryCount)
     {
+        int maxAttempts = retryCount > 0 ? retryCount : 1;
         int lockAttempt = 0;
         LockAcquisitionException lastException = null;
-        while (lockAttempt++ <= retryCount)     // lockAttempt incremented after check i.e. 1 for first iteration
+        while (++lockAttempt <= maxAttempts)     // lockAttempt incremented before check i.e. 1 for first check
         {
             try
             {
@@ -478,10 +479,10 @@ public class JobLockServiceImpl implements JobLockService
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Lock attempt " + lockAttempt + " of " + retryCount + " failed: " + e.getMessage());
+                    logger.debug("Lock attempt " + lockAttempt + " of " + maxAttempts + " failed: " + e.getMessage());
                 }
                 lastException = e;
-                if (lockAttempt >= retryCount)
+                if (lockAttempt >= maxAttempts)
                 {
                     // Avoid an unnecessary wait if this is the last attempt
                     break;

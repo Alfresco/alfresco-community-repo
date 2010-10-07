@@ -41,7 +41,7 @@
       It specifies a domain model plus a set of services and protocol bindings for Web Services (SOAP) and AtomPub.
       <p/>
       This Alfresco server supports CMIS <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/cmis-spec-v1.0.doc"><b>${cmisSpecTitle}</b></a>.
-      <p/
+      <p/>
       <a name="repo"></a>
       <h3>Alfresco CMIS Content Repository</h3>
       <p>Point your CMIS client to one of the following Alfresco CMIS bindings (with <strong>user=admin</strong> and <strong>password=admin</strong>).</p>
@@ -142,8 +142,8 @@
       <h3>Apache Chemistry</h3>
       <ul>
         <li><a href="http://incubator.apache.org/chemistry/">Home Page</a></li>
-        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/chemistry/chemistry-tck-atompub/">Source Code</a> for TCK</li>
-        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/opencmis/opencmis-test/">Source Code</a> for Browser</li>
+        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/tck/trunk/">Source Code</a> for TCK</li>
+        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/opencmis/trunk/chemistry-opencmis-test/chemistry-opencmis-test-browser/">Source Code</a> for Browser</li>
       </ul>
       <h3>Provide Feedback</h3>
       <ul>

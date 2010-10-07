@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
@@ -47,7 +49,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  * @author britt
  * @author mrogers
  */
-public class FSDeploymentTest extends AVMServiceTestBase
+public class DeploymentServiceImplFSTest extends AVMServiceTestBase
 {
     private File log = null;
     private File metadata = null;
@@ -59,6 +61,8 @@ public class FSDeploymentTest extends AVMServiceTestBase
     private String TEST_TARGET = "sampleTarget";
     
     DeploymentService service = null;
+    
+    private static Log logger = LogFactory.getLog(DeploymentServiceImplFSTest.class);
     
 	
     @Override
@@ -410,6 +414,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
      */
     public void testWrongPassword() 
     {
+        logger.debug("Start testWrongPassword");
 
             try {
             	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, "Wrong!", TEST_TARGET, null, false, false, false, null);
@@ -428,6 +433,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
      */
     public void testWrongTarget()
     {
+        logger.debug("Start testWrongTarget");
             try {
             	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, "crapTarget", null, false, false, false, null);
             	fail("Wrong target should have thrown an exception");
@@ -443,6 +449,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
      */
     public void testNoExclusionFilter() throws Exception
     {
+        logger.debug("Start testNoExclusionFilter");
         DeploymentReport report = new DeploymentReport();
         List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
         callbacks.add(new DeploymentReportCallback(report));
@@ -471,6 +478,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
      */
     public void testRevertToPreviousVersion() throws Exception
     {
+        logger.debug("Start testRevertToPreviousVersion");
         DeploymentReport report = new DeploymentReport();
         List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
         callbacks.add(new DeploymentReportCallback(report));
@@ -526,7 +534,8 @@ public class FSDeploymentTest extends AVMServiceTestBase
 	 *  Do a deployment - should only see start and end events and the two above. 
 	 */
     public void testBulkLoad() throws Exception
-    {
+    {   
+        logger.debug("Start testBulkLoad");
         DeploymentReport report = new DeploymentReport();
         List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
         callbacks.add(new DeploymentReportCallback(report));

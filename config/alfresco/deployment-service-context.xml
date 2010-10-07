@@ -75,6 +75,17 @@
             <value>${deployment.service.numberOfSendingThreads}</value>
         </property>
         
+        <!-- Short timeout, to detect a shutdown server -->
+        <property name="targetLockRefreshTime">
+            <value>${deployment.service.targetLockRefreshTime}</value>
+        </property>
+        
+        <!-- Long timeout, how long to wait for the next step in the deployment process, may need to be fairly 
+        long to cope with large transfers over slow networks -->
+        <property name="targetLockTimeToLive">
+            <value>${deployment.service.targetLockTimeout}</value>
+        </property>
+        
         <!-- Which adapters are provided to communicate with remote File System Receivers -->
         <property name="deploymentReceiverTransportAdapters">
             <map>

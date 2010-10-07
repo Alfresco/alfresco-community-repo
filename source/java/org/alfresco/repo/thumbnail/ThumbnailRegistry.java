@@ -181,6 +181,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         
         if (result == null)
         {
+            boolean foundAtLeastOneTransformer = false;
             result = new ArrayList<ThumbnailDefinition>(7);
             
             for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
@@ -191,10 +192,24 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
                         thumbnailDefinition.getTransformationOptions()) != null)
                 {
                     result.add(thumbnailDefinition);
+                    foundAtLeastOneTransformer = true;
                 }
             }
             
-            this.mimetypeMap.put(mimetype, result);
+            // If we have found no transformers for the given MIME type then we do
+            // not cache the empty list. We prevent this because we want to allow for
+            // transformers only coming online *during* system operation - as opposed
+            // to coming online during startup.
+            //
+            // An example of such a transient transformer would be those that use OpenOffice.org.
+            // It is possible that the system might start without OOo-based transformers
+            // being available. Therefore we must not cache an empty list for the relevant
+            // MIME types - otherwise this class would hide the fact that OOo (soffice) has
+            // been launched and that new transformers are available.
+            if (foundAtLeastOneTransformer)
+            {
+                this.mimetypeMap.put(mimetype, result);
+            }
         }
         
         return result;

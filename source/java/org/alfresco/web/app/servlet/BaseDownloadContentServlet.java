@@ -274,7 +274,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                }
             }
             res.setDateHeader(HEADER_LAST_MODIFIED, modified.getTime());
-            res.setHeader(HEADER_CACHE_CONTROL, "must-revalidate max-age=0");
+            res.setHeader(HEADER_CACHE_CONTROL, "must-revalidate, max-age=0");
             res.setHeader(HEADER_ETAG, "\"" + Long.toString(modified.getTime()) + "\"");
          }
          

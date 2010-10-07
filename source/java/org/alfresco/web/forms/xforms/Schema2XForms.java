@@ -2486,7 +2486,7 @@ public class Schema2XForms implements Serializable
          case XSConstants.STRING_DT:
          {
             result = xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
-                                                    NamespaceConstants.XFORMS_PREFIX + ":textarea");
+                                                    NamespaceConstants.XFORMS_PREFIX + ":textarea");            
             if (appearance == null || appearance.length() == 0)
             {
                appearance = "compact";
@@ -2843,7 +2843,7 @@ public class Schema2XForms implements Serializable
                                        typeName);
          }
          final StringList lexicalPatterns = ((XSSimpleTypeDefinition)controlType).getLexicalPattern();
-         
+                           
          // NOTE: from glen.johnson@alfresco.com
          // Workaround to fix issue WCM-952
          //
@@ -2878,8 +2878,22 @@ public class Schema2XForms implements Serializable
             }
             constraints.add("chiba:match(., '" + pattern + "',null)");
          }
-      }
+     
+         XSSimpleTypeDefinition simpleControlType = ((XSSimpleTypeDefinition) controlType);
 
+         if (simpleControlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
+         {
+             constraints.add("string-length(.) <= " + simpleControlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
+         }
+
+         if (simpleControlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH))
+         {
+             constraints.add("string-length(.) >= " + simpleControlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH));
+         }
+                               
+      }
+          
+      
       final short constraintType =
          (owner != null && owner instanceof XSElementDeclaration
           ? ((XSElementDeclaration)owner).getConstraintType()

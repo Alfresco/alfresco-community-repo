@@ -2655,13 +2655,16 @@ alfresco.xforms.AbstractGroup = alfresco.xforms.Widget.extend({
     var result = [];
     for (var i = 0; i < this._children.length; i++)
     {
-      if (this._children[i] instanceof alfresco.xforms.AbstractGroup)
+      if ((this._children[i].domContainer.style.display != "none") || (this._children[i].xformsNode.localName != "case"))
       {
-        result = result.concat(this._children[i].getWidgetsInvalidForSubmit());
-      }
-      else if (!this._children[i].isValidForSubmit())
-      {
-        result.push(this._children[i]);
+        if (this._children[i] instanceof alfresco.xforms.AbstractGroup)
+        {
+          result = result.concat(this._children[i].getWidgetsInvalidForSubmit());
+        }
+        else if (!this._children[i].isValidForSubmit())
+        {
+          result.push(this._children[i]);
+        }
       }
     }
     return result;
@@ -4457,10 +4460,12 @@ alfresco.xforms.XForm = new Class({
       case "chiba-state-changed":
       {
         alfresco.log("handleStateChanged(" + xfe.targetId + ")");
-        xfe.getTarget().setModified(true);
+        var isModified = false;
+        
         if ("valid" in xfe.properties)
         {
           xfe.getTarget().setValid(xfe.properties["valid"] == "true");
+          isModified= true;
         }
         if ("required" in xfe.properties)
         {
@@ -4478,7 +4483,9 @@ alfresco.xforms.XForm = new Class({
         {
           alfresco.log("setting " + xfe.getTarget().id + " = " + xfe.properties["value"]);
           xfe.getTarget().setValue(xfe.properties["value"]);
+          isModified= true;
         }
+        xfe.getTarget().setModified(isModified);
         break;
       }
       case "chiba-prototype-cloned":

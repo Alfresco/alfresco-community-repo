@@ -92,6 +92,21 @@ function alfresco_TinyMCE_file_browser_callback(field_name, url, type, win)
   cssEl.media = 'screen';
   headEl.appendChild(cssEl);
   
+  // ALF-872:
+  // Drop-down and list boxes do not have a z-index property, these are window level controls. 
+  // When you want to show a div in a page that contains these controls, you will face an overlapping problem.
+  // This is a well-known problem with the IE 6 browser.
+  // To solve this we just hiding form's divs until FilePickerWidget is undestroyed.
+
+  if (window.ie6)
+  {
+    var divs = win.document.getElementsByTagName("div");        
+    for (var i = 0; i < divs.length; i++)
+    {    
+      divs[i].style.visibility = "hidden";
+    }                                                                                    
+  }
+  
   var div = win.document.createElement("div");
   div.style.width = "100%";
   div.style.height = "100%";
@@ -117,6 +132,17 @@ function alfresco_TinyMCE_file_browser_callback(field_name, url, type, win)
                                              function()
                                              {
                                                picker.destroy();
+                                               
+                                               // Please see comment above
+                                               if (window.ie6)
+                                               {
+                                                 var divs = win.document.getElementsByTagName("div");       
+                                                 for (var i = 0; i < divs.length; i++)
+                                                 {    
+                                                   divs[i].style.visibility = "visible";
+                                                 }                                                                                         
+                                               }
+                                               
                                                div.parentNode.removeChild(div);
                                              },
                                              function(picker)

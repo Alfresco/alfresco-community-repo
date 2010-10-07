@@ -228,7 +228,7 @@ public interface JobLockService
          * to terminate.
          * <p/>
          * This method is also called if the initiating process is self-terminated i.e. if the originating
-         * process releases the lock itself.  This method is not called if the process is not
+         * process releases the lock itself.  This method is <b>not</b> called if the process is not
          * {@link #isActive() active}.
          * 
          * @since 3.4.0b

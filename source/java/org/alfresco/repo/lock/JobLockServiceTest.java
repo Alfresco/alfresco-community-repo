@@ -305,20 +305,22 @@ public class JobLockServiceTest extends TestCase
         final long lockTTL = 1000L;
         final String lockToken = jobLockService.getLock(lockQName, lockTTL);
 
-        final boolean[] released = new boolean[1];
+        final int[] checked = new int[1];
+        final int[] released = new int[1];
         // Immediately-inactive job
         JobLockRefreshCallback callback = new JobLockRefreshCallback()
         {
             @Override
             public boolean isActive()
             {
+                checked[0]++;
                 return false;
             }
             
             @Override
             public void lockReleased()
             {
-                released[0] = true;
+                released[0]++;
             }
         };
 
@@ -326,7 +328,7 @@ public class JobLockServiceTest extends TestCase
         // The first refresh will occur in 500ms
         wait(1000L);
         // Should have been released by now
-        assertTrue("Expected lockReleased to have been called", released[0]);
+        assertTrue("Expected lockReleased to have been called", released[0] > 0);
         try
         {
             jobLockService.getLock(lockQName, lockTTL);
@@ -335,6 +337,13 @@ public class JobLockServiceTest extends TestCase
         {
             fail("Lock should have been released by callback infrastructure");
         }
+        
+        // Check that the timed callback is killed properly
+        int checkedCount = checked[0];
+        int releasedCount = released[0];
+        wait(2000L);
+        assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
+        assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
     
     public synchronized void testLockCallbackReleaseSelf() throws Exception
@@ -343,13 +352,15 @@ public class JobLockServiceTest extends TestCase
         final long lockTTL = 1000L;
         final String lockToken = jobLockService.getLock(lockQName, lockTTL);
 
-        final boolean[] released = new boolean[1];
+        final int[] checked = new int[1];
+        final int[] released = new int[1];
         // Immediately-inactive job, releasing the lock
         JobLockRefreshCallback callback = new JobLockRefreshCallback()
         {
             @Override
             public boolean isActive()
             {
+                checked[0]++;
                 jobLockService.releaseLock(lockToken, lockQName);
                 return false;
             }
@@ -357,15 +368,15 @@ public class JobLockServiceTest extends TestCase
             @Override
             public void lockReleased()
             {
-                released[0] = true;
+                released[0]++;
             }
         };
 
         jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
         // The first refresh will occur in 500ms
         wait(1000L);
-        // Should have been released by now
-        assertTrue("Expected lockReleased to have been called", released[0]);
+        // Should NOT get a callback saying that the lock has been released
+        assertFalse("DID NOT expect lockReleased to have been called", released[0] > 0);
         try
         {
             jobLockService.getLock(lockQName, lockTTL);
@@ -374,39 +385,57 @@ public class JobLockServiceTest extends TestCase
         {
             fail("Lock should have been released by callback infrastructure");
         }
+        
+        // Check that the timed callback is killed properly
+        int checkedCount = checked[0];
+        int releasedCount = released[0];
+        wait(2000L);
+        assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
+        assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
     
+    /**
+     * Lets job "run" for 3 seconds and checks at 2s and 4s.
+     */
     public synchronized void testLockCallbackReleaseTimed() throws Exception
     {
         final QName lockQName = QName.createQName(NAMESPACE, getName());
         final long lockTTL = 1000L;
+        final long lockNow = System.currentTimeMillis();
         final String lockToken = jobLockService.getLock(lockQName, lockTTL);
 
-        final boolean[] checked = new boolean[1];
-        final boolean[] released = new boolean[1];
+        final int[] checked = new int[1];
+        final int[] released = new int[1];
         // Do not release and remain active
         JobLockRefreshCallback callback = new JobLockRefreshCallback()
         {
             @Override
             public boolean isActive()
             {
-                checked[0] = true;
-                return true;
+                checked[0]++;
+                if (System.currentTimeMillis() - lockNow > 3000L)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             
             @Override
             public void lockReleased()
             {
-                released[0] = true;
+                released[0]++;
             }
         };
 
         jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
         // The first refresh will occur in 500ms
-        wait(1000L);
+        wait(2000L);
         
-        assertTrue("Active check has not occured", checked[0]);
-        assertFalse("lockReleased should NOT have been called", released[0]);
+        assertTrue("Expected at least 2 active checks; only got " + checked[0], checked[0] >= 2);
+        assertFalse("lockReleased should NOT have been called", released[0] > 0);
         try
         {
             jobLockService.getLock(lockQName, lockTTL);
@@ -416,5 +445,15 @@ public class JobLockServiceTest extends TestCase
         {
             // Expected
         }
+        
+        // Wait for another 2s to be sure that the lock is run to completion
+        wait(2000L);
+
+        // Check that the timed callback is killed properly
+        int checkedCount = checked[0];
+        int releasedCount = released[0];
+        wait(2000L);
+        assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
+        assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
 }

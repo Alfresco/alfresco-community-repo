@@ -287,7 +287,7 @@ public class JobLockServiceImpl implements JobLockService
                 // First check the VM
                 if (shutdownListener.isVmShuttingDown())
                 {
-                    callback.lockReleased();
+                    callLockReleased(callback);
                     return;
                 }
                 boolean isActive = false;
@@ -324,13 +324,13 @@ public class JobLockServiceImpl implements JobLockService
                     try
                     {
                         releaseLock(lockToken, lockQName);
+                        // The callback must be informed as we released the lock automatically
+                        callLockReleased(callback);
                     }
                     catch (LockAcquisitionException e)
                     {
                         // The lock is already gone: job done
                     }
-                    // The callback must be informed
-                    callLockReleased(callback);
                 }
                 else
                 {
@@ -338,6 +338,8 @@ public class JobLockServiceImpl implements JobLockService
                     {
                         refreshLock(lockToken, lockQName, timeToLive);
                         // Success.  The callback does not need to know.
+                        // NB: Reschedule this task
+                        scheduler.schedule(this, delay, TimeUnit.MILLISECONDS);
                     }
                     catch (LockAcquisitionException e)
                     {

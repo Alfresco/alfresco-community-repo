@@ -50,6 +50,8 @@ import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -497,17 +499,43 @@ public class AVMServiceLocalTest extends TestCase
     
     public void testSimpleUpdateLD5() throws Exception
     {
+        Logger lg1 = null;
+        Level l1 = null;
+        
+        Logger lg2 = null;
+        Level l2 = null;
+        
         try
         {
+            // TEMP
+            lg1 = Logger.getLogger("org.alfresco.repo.avm.AVMServiceLocalTest");
+            l1 = lg1.getLevel();
+            lg1.setLevel(Level.DEBUG);
+            
+            lg2 = Logger.getLogger("org.alfresco.repo.avm.OrphanReaper");
+            l2 = lg2.getLevel();
+            lg2.setLevel(Level.DEBUG);
+            
+            logger.debug("start: testSimpleUpdateLD5");
+            
             logger.debug("created 2 stores: main, layer");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             fService.createLayeredDirectory("main:/", "layer:/", "layer");
             
             logger.debug("created layered dir: layer:/layer -> main:/");
             
+            recursiveList("main");
+            recursiveList("layer");
+            
             fService.createDirectory("layer:/layer", "b");
             
             logger.debug("created dir in layer: layer:/layer/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
@@ -515,17 +543,34 @@ public class AVMServiceLocalTest extends TestCase
             
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             
+            logger.debug("updated: created directory: main:/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(0, diffs.size());
             
             fSyncService.flatten("layer:/layer", "main:/");
             
-            logger.debug("updated & flattened: created directory: main:/b");
+            logger.debug("flattened: created directory: main:/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             fService.createFile("layer:/layer/b", "foo").close();
+            
+            logger.debug("created file: layer:/layer/b/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
             fService.createFile("layer:/layer/b", "bar").close();
             
-            logger.debug("created 2 files in layer: layer:/layer/b/foo and layer:/layer/b/bar");
+            logger.debug("created file: layer:/layer/b/bar");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(2, diffs.size());
@@ -539,18 +584,35 @@ public class AVMServiceLocalTest extends TestCase
             
             fSyncService.update(selected, null, false, false, false, false, null, null);
             
+            logger.debug("updated: created file: main:/b/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
             assertEquals("[layer:/layer/b/bar[-1] > main:/b/bar[-1]]", diffs.toString());
             
             fSyncService.flatten("layer:/layer", "main:/");
             
-            logger.debug("updated & flattened: created file: main:/b/foo");
+            logger.debug("flattened: created file: main:/b/foo");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             fService.removeNode("layer:/layer", "b");
+            
+            logger.debug("removed dir in layer: layer:/layer/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
             fService.createSnapshot("layer", null, null);
             
-            logger.debug("removed dir in layer & snapshot: layer:/layer/b");
+            logger.debug("snapshot: layer");
+            
+            recursiveList("main");
+            recursiveList("layer");
             
             // ETWOTWO-1266
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
@@ -559,20 +621,32 @@ public class AVMServiceLocalTest extends TestCase
             
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             
+            logger.debug("updated: deleted dir: main:/b");
+            
+            recursiveList("main");
+            recursiveList("layer");
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(0, diffs.size());
             
             fSyncService.flatten("layer:/layer", "main:/");
             
-            logger.debug("updated & flattened: deleted dir: main:/b");
+            logger.debug("flattened: deleted dir: main:/b");
             
             recursiveList("main");
             recursiveList("layer");
+            
+            logger.debug("finish: testSimpleUpdateLD5");
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            lg1.setLevel(l1);
+            lg2.setLevel(l2);
         }
     }
     
@@ -2343,13 +2417,34 @@ public class AVMServiceLocalTest extends TestCase
     
     public void testLayeredFolder4() throws Exception
     {
+        Logger lg1 = null;
+        Level l1 = null;
+        
+        Logger lg2 = null;
+        Level l2 = null;
+        
         try
         {
+            // TEMP
+            lg1 = Logger.getLogger("org.alfresco.repo.avm.AVMServiceLocalTest");
+            l1 = lg1.getLevel();
+            lg1.setLevel(Level.DEBUG);
+            
+            lg2 = Logger.getLogger("org.alfresco.repo.avm.OrphanReaper");
+            l2 = lg2.getLevel();
+            lg2.setLevel(Level.DEBUG);
+            
+            logger.debug("start: testLayeredFolder4");
+            
             fService.createStore("mainA");
             fService.createStore("mainB");
             fService.createStore("mainB--layer");
             
             logger.debug("created stores: mainA, mainB and mainB--layer");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
             
             fService.createDirectory("mainA:/", "a");
             fService.createDirectory("mainA:/a", "b");
@@ -2358,18 +2453,34 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created directories: mainA:/a/b/c and mainB:/a");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
             fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
             
             logger.debug("created layered directory: mainB--layer:/a -> mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
             
             // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
             fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
             
             logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
             fService.createDirectory("mainB--layer:/a/b/c", "d");
             
             logger.debug("created directory: mainB--layer:/a/b/c/d");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
             
             List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals(1, diffs.size());
@@ -2379,9 +2490,17 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("updated: mainB--layer:/a/b/c/d to mainB:/a/b/c/d");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
             fSyncService.flatten("mainB--layer:/a", "mainB:/a");
             
             logger.debug("flattened: mainB--layer:/a to mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
             
             fService.createFile("mainB--layer:/a/b/c/d", "foo");
             
@@ -2391,13 +2510,27 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created file: mainB--layer:/a/b/c/foo");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            
             fService.createStore("mainB--workflow1");
             
             logger.debug("created store: mainB--workflow1");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
             fService.createLayeredDirectory("mainB:/a", "mainB--workflow1:/", "a");
             
             logger.debug("created layered dir: mainB--workflow1:/a -> mainB:/a");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
             
             diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
             assertEquals(0, diffs.size());
@@ -2412,6 +2545,11 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("updated: added file: mainB--workflow1:/a/b/c/d/foo");
             
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
             diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals("[mainB--layer:/a/b/c/d/foo[-1] > mainB:/a/b/c/d/foo[-1]]", diffs.toString());
             
@@ -2419,9 +2557,22 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals("[mainB--workflow1:/a/b/c/d/foo[-1] > mainB:/a/b/c/d/foo[-1]]", diffs.toString());
             
             fSyncService.update(diffs, null, false, false, true, true, "two", "two");
+            
+            logger.debug("updated: added file: mainB:/a/b/c/d/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
+            
             fSyncService.flatten("mainB--workflow1:/a", "mainB:/a");
             
-            logger.debug("updated & flattened: added file: mainB:/a/b/c/d/foo");
+            logger.debug("flattened: added file: mainB:/a/b/c/d/foo");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+            recursiveList("mainB--workflow1");
             
             diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
             assertEquals(0, diffs.size());
@@ -2429,11 +2580,7 @@ public class AVMServiceLocalTest extends TestCase
             diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB--layer:/a", null);
             assertEquals(0, diffs.size());
             
-            fService.purgeStore("mainB--workflow1");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
+            logger.debug("finish: testLayeredFolder4");
         }
         catch (Exception e)
         {
@@ -2446,6 +2593,9 @@ public class AVMServiceLocalTest extends TestCase
             fService.purgeStore("mainB");
             fService.purgeStore("mainB--layer");
             if (fService.getStore("mainB--workflow1") != null) { fService.purgeStore("mainB--workflow1"); }
+            
+            lg1.setLevel(l1);
+            lg2.setLevel(l2);
         }
     }
     

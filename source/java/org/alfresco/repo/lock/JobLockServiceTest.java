@@ -88,6 +88,25 @@ public class JobLockServiceTest extends TestCase
         assertNotNull(jobLockService);
     }
     
+    public void testSimpleLock()
+    {
+        String lockToken = jobLockService.getLock(lockAAA, 20L);
+        jobLockService.refreshLock(lockToken, lockAAA, 20L);
+        jobLockService.releaseLock(lockToken, lockAAA);
+        try
+        {
+            jobLockService.refreshLock(lockToken, lockAAA, 20L);
+            fail("Lock refresh should have failed after release");
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Expected
+        }
+        lockToken = jobLockService.getLock(lockAAA, 20L, 5L, 0);            // No retries
+        jobLockService.refreshLock(lockToken, lockAAA, 20L);
+        jobLockService.releaseLock(lockToken, lockAAA);
+    }
+    
     public void testEnforceTxn()
     {
         try

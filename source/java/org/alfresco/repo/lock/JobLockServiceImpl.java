@@ -409,6 +409,11 @@ public class JobLockServiceImpl implements JobLockService
      */
     private void getLockImpl(final String lockToken, final QName lockQName, final long timeToLive, long retryWait, int retryCount)
     {
+        if (retryCount < 0)
+        {
+            throw new IllegalArgumentException("Job lock retry count cannot be negative: " + retryCount);
+        }
+        
         RetryingTransactionCallback<Object> getLockCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
@@ -453,13 +458,14 @@ public class JobLockServiceImpl implements JobLockService
     }
     
     /**
-     * Does the high-level retrying around the callback
+     * Does the high-level retrying around the callback.  At least one attempt is made to call the
+     * provided callback.
      */
     private int doWithRetry(RetryingTransactionCallback<? extends Object> callback, long retryWait, int retryCount)
     {
-        int iteration = 0;
+        int lockAttempt = 0;
         LockAcquisitionException lastException = null;
-        while (iteration++ < retryCount)
+        while (lockAttempt++ <= retryCount)     // lockAttempt incremented after check i.e. 1 for first iteration
         {
             try
             {
@@ -472,10 +478,10 @@ public class JobLockServiceImpl implements JobLockService
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Lock attempt " + iteration + " of " + retryCount + " failed: " + e.getMessage());
+                    logger.debug("Lock attempt " + lockAttempt + " of " + retryCount + " failed: " + e.getMessage());
                 }
                 lastException = e;
-                if (iteration >= retryCount)
+                if (lockAttempt >= retryCount)
                 {
                     // Avoid an unnecessary wait if this is the last attempt
                     break;
@@ -490,7 +496,7 @@ public class JobLockServiceImpl implements JobLockService
         if (lastException == null)
         {
             // Success
-            return iteration;
+            return lockAttempt;
         }
         else
         {

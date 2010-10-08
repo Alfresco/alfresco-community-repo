@@ -26,44 +26,55 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Tagging service implementation unit test
  * 
  * @author Roy Wetherall
+ * @author Nick Burch
  */
-public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
+public class TaggingServiceImplTest extends TestCase
 {
+   private static ConfigurableApplicationContext ctx = 
+      (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
+   
     /** Services */
     private TaggingService taggingService;
+    private NodeService nodeService;
     private CopyService copyService;
     private CheckOutCheckInService checkOutCheckInService;
     private ScriptService scriptService;
-    private PolicyComponent policyComponent;
+    private AuditService auditService;
+    private ActionService actionService;
     private ActionTrackingService actionTrackingService;
+    private TransactionService transactionService;
+    private AuthenticationComponent authenticationComponent;
     
     private static StoreRef storeRef;
     private static NodeRef rootNode;
@@ -84,32 +95,28 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     
     private static boolean init = false;
     
+    
     @Override
-    protected void onSetUpBeforeTransaction() throws Exception
+    protected void setUp() throws Exception
     {
-        super.onSetUpBeforeTransaction();
-        
         // Get services
-        this.taggingService = (TaggingService)this.applicationContext.getBean("TaggingService");
-        this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
-        this.copyService = (CopyService) this.applicationContext.getBean("CopyService");
-        this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
-        this.checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("CheckoutCheckinService");
-        this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
-        this.actionService = (ActionService)this.applicationContext.getBean("ActionService");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.scriptService = (ScriptService)this.applicationContext.getBean("scriptService");        
-        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        this.actionTrackingService = (ActionTrackingService)this.applicationContext.getBean("actionTrackingService");
+        this.taggingService = (TaggingService)ctx.getBean("TaggingService");
+        this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.copyService = (CopyService) ctx.getBean("CopyService");
+        this.checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
+        this.actionService = (ActionService)ctx.getBean("ActionService");
+        this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        this.auditService = (AuditService)ctx.getBean("auditService");
+        this.scriptService = (ScriptService)ctx.getBean("scriptService");        
+        this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");
+        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
 
         if (init == false)
         {
-            UserTransaction tx = this.transactionService.getUserTransaction();
+            UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
             tx.begin();
             
             // Authenticate as the system user
-            AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
-                    .getBean("authenticationComponent");
             authenticationComponent.setSystemUserAsCurrentUser();
             
             // Create the store and get the root node
@@ -133,14 +140,22 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
             
             tx.commit();            
         }
+    
+        // Create the folders and documents to be tagged
+        createTestDocumentsAndFolders();
     }
     
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void tearDown() throws Exception {
+      removeTestDocumentsAndFolders();
+    }
+
+    private void createTestDocumentsAndFolders() throws Exception
     {
+        UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
+        tx.begin();
+       
         // Authenticate as the system user
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
-                .getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
         
         String guid = GUID.generate();
@@ -183,9 +198,40 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 ContentModel.TYPE_CONTENT,
                 props).getChildRef();
         
-        //tx.commit();
-        setComplete();
-        endTransaction();
+        tx.commit();
+    }
+    private void removeTestDocumentsAndFolders() throws Exception
+    {
+        UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
+        tx.begin();
+       
+        // Authenticate as the system user
+        authenticationComponent.setSystemUserAsCurrentUser();
+        
+        // If anything is a tag scope, stop it being
+        NodeRef[] nodes = new NodeRef[] { subDocument, subFolder, document, folder };
+        for(NodeRef nodeRef : nodes)
+        {
+           if(taggingService.isTagScope(nodeRef))
+           {
+              taggingService.removeTagScope(nodeRef);
+           }
+        }
+        
+        // Remove the sample nodes
+        for(NodeRef nodeRef : nodes)
+        {
+           nodeService.deleteNode(nodeRef);
+        }
+        
+        // Tidy up the audit component, now all the nodes have gone
+        auditService.clearAudit(
+              TaggingServiceImpl.TAGGING_AUDIT_APPLICATION_NAME, 
+              0l, System.currentTimeMillis()+1
+        );
+        
+        // All done
+        tx.commit();
     }
     
     public void testTagCRUD()
@@ -203,10 +249,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         this.taggingService.createTag(TaggingServiceImplTest.storeRef, TAG_1);
         this.taggingService.createTag(TaggingServiceImplTest.storeRef, UPPER_TAG);
         
-        //setComplete();
-        //endTransaction();
         tx.commit();
-        
         tx = this.transactionService.getUserTransaction();
         tx.begin();
         
@@ -905,7 +948,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         UserTransaction tx = this.transactionService.getUserTransaction();
         tx.begin();
         
-        Map model = new HashMap<String, Object>(0);
+        Map<String, Object> model = new HashMap<String, Object>(0);
         model.put("folder", this.folder);
         model.put("subFolder", this.subFolder);
         model.put("document", this.document);
@@ -915,6 +958,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
         this.scriptService.executeScript(location, model);
         
+        // Let the script run
+        tx = waitForActionExecution(tx);
         tx.commit();
     }
     
@@ -950,9 +995,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.folder, TAG_1);
         tx = waitForActionExecution(tx);
-        tx.commit();
         
-        Map model = new HashMap<String, Object>(0);
+        Map<String, Object> model = new HashMap<String, Object>(0);
         model.put("folder", this.folder);
         model.put("subFolder", this.subFolder);
         model.put("document", this.document);
@@ -962,9 +1006,197 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
         this.scriptService.executeScript(location, model);
+        
+        // Let the script run
+        tx = waitForActionExecution(tx);
+        tx.commit();
     }
     
-    private static Object mutex = new Object();
+    /**
+     * Test that the scheduled task will do the right thing
+     *  when it runs.
+     */
+    public void testOnStartupJob() throws Exception
+    {
+       UserTransaction tx = this.transactionService.getUserTransaction();
+       tx.begin();
+       
+       // Nothing is pending to start with
+       UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter)
+          ctx.getBean("update-tagscope");
+       assertEquals(0, updateTagsAction.searchForTagScopesPendingUpdates().size());
+       
+       
+       // Take the tag scope lock, so that no real updates will happen
+       String lockF = updateTagsAction.lockTagScope(this.folder);
+       String lockSF = updateTagsAction.lockTagScope(this.subFolder);
+       
+       // Do some tagging
+       this.taggingService.addTagScope(this.folder);
+       this.taggingService.addTagScope(this.subFolder);
+       
+       this.taggingService.addTag(this.subDocument, TAG_1);
+       this.taggingService.addTag(this.subDocument, TAG_2);
+       this.taggingService.addTag(this.subFolder, TAG_1);
+       this.taggingService.addTag(this.document, TAG_1);
+       this.taggingService.addTag(this.folder, TAG_1);
+       this.taggingService.addTag(this.folder, TAG_3);
+       tx = waitForActionExecution(tx);
+       
+       
+       // Tag scope updates shouldn't have happened yet,
+       //  as the scopes are locked
+       TagScope ts1 = this.taggingService.findTagScope(this.folder);
+       TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             0, ts1.getTags().size()
+       );
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             0, ts2.getTags().size()
+       );
+       
+       
+       // Check the pending list now
+       assertEquals(2, updateTagsAction.searchForTagScopesPendingUpdates().size());
+       List<NodeRef> pendingScopes = updateTagsAction.searchForTagScopesPendingUpdates();
+       assertTrue("Not found in " + pendingScopes, pendingScopes.contains(this.folder));
+       assertTrue("Not found in " + pendingScopes, pendingScopes.contains(this.subFolder));
+       
+       
+       // Give back our locks, so we can proceed
+       updateTagsAction.unlockTagScope(this.folder, lockF);
+       updateTagsAction.unlockTagScope(this.subFolder, lockSF);
+       
+       
+       // Fire off the quartz bean
+       UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
+       job.execute(actionService, updateTagsAction);
+       
+       
+       // Now check again
+       assertEquals(0, updateTagsAction.searchForTagScopesPendingUpdates().size());
+       
+       ts1 = this.taggingService.findTagScope(this.folder);
+       ts2 = this.taggingService.findTagScope(this.subFolder);
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             3, ts1.getTags().size()
+       );
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             2, ts2.getTags().size()
+       );
+       
+       assertEquals(4, ts1.getTag(TAG_1).getCount());
+       assertEquals(1, ts1.getTag(TAG_2).getCount());
+       assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
+       
+       assertEquals(2, ts2.getTag(TAG_1).getCount());
+       assertEquals(1, ts2.getTag(TAG_2).getCount());
+    }
+    
+    /**
+     * Test that when multiple threads do tag updates, the right
+     *  thing still happens
+     */
+    public void DISABLEDtestMultiThreaded() throws Exception
+    {
+       UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
+       tx.begin();
+       this.taggingService.addTagScope(this.folder);
+       this.taggingService.addTagScope(this.subFolder);
+       tx.commit();
+       
+       // Prepare a bunch of threads to do tagging 
+       final List<Thread> threads = new ArrayList<Thread>();
+       String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5 };
+       for(String tmpTag : tags)
+       {
+          final String tag = tmpTag;
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+               // Let everything catch up
+               try {
+                  Thread.sleep(250);
+               } catch(InterruptedException e) {}
+System.out.println(Thread.currentThread() + " - About to start tagging");               
+               
+               // Do the updates
+               AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+               transactionService.getRetryingTransactionHelper().doInTransaction(
+                   new RetryingTransactionCallback<Void>() {
+                       public Void execute() throws Throwable {
+                          taggingService.addTag(folder, tag);
+                          taggingService.addTag(subFolder, tag);
+                          taggingService.addTag(subDocument, tag);
+System.out.println(Thread.currentThread() + " - Tagging");                          
+                          return null;
+                       }
+                   }, false, true
+               );
+System.out.println(Thread.currentThread() + " - Done tagging");                          
+            }
+          });
+          threads.add(t);
+          t.start();
+       }
+       
+       
+       // Release the threads
+       Thread.sleep(50);
+       for(Thread t : threads) {
+          t.interrupt();
+       }
+       Thread.sleep(100);
+       System.out.println("Done waiting, proceeding with multi-threaded test");
+
+       
+       // Wait for all the threads to finish working
+       try {
+          // Wait for a maximum of 10 seconds
+          for(int i=0; i<1000; i++)
+          {
+             if(actionTrackingService.getAllExecutingActions().size() > 0)
+             {
+                Thread.sleep(10);
+             }
+             else {
+                break;
+             }
+          }
+       } catch(InterruptedException e) {}
+    
+       
+       // Now check that things ended up as planned
+       tx = this.transactionService.getUserTransaction();
+       tx.begin();
+       
+       TagScope ts1 = this.taggingService.findTagScope(this.folder);
+       TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             5, ts1.getTags().size()
+       );
+       assertEquals(
+             "Wrong tags on folder tagscope: " + ts1.getTags(),
+             5, ts2.getTags().size()
+       );
+       
+       // Each tag should crop up 3 times on the folder
+       //  and twice for the subfolder
+       for(String tag : tags)
+       {
+          assertEquals(3, ts1.getTag(tag.toLowerCase()).getCount());
+          assertEquals(2, ts2.getTag(tag.toLowerCase()).getCount());
+       }
+       
+       // All done
+       tx.commit();
+    }
+
     
     private UserTransaction waitForActionExecution(UserTransaction txn)
         throws Exception

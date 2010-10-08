@@ -482,5 +482,38 @@
         </property>
           
     </bean>
+
+    <!-- Tagging Service Scope Updates -->
+    <!-- (Catches any updates queued but not executed around repo shutdown -->
+    
+    <bean id="taggingStartupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.tagging.UpdateTagScopesQuartzJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="updateTagsAction">
+                    <ref bean="update-tagscope" />
+                </entry>
+                <entry key="actionService">
+                    <ref bean="ActionService" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="taggingStartupTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <ref bean="taggingStartupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="startDelayMinutes">
+            <value>2</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>60</value> <!-- Periodically catch any that get missed -->
+        </property>
+    </bean>
     
 </beans>

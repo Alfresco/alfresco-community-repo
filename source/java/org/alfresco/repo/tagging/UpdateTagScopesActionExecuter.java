@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -87,7 +89,16 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     
     /** What's the largest number of updates we should claim for a tag scope in one transaction? */
     private static final int tagUpdateBatchSize = 100;
-    
+
+    // For searching
+    private static final String noderefPath =
+       TaggingServiceImpl.TAGGING_AUDIT_ROOT_PATH + "/" +
+       TaggingServiceImpl.TAGGING_AUDIT_KEY_NODEREF + "/value";
+    private static final String tagsPath =
+       TaggingServiceImpl.TAGGING_AUDIT_ROOT_PATH + "/" +
+       TaggingServiceImpl.TAGGING_AUDIT_KEY_TAGS + "/value";
+   
+
     /**
      * Set the node service
      * 
@@ -174,10 +185,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                //  to worry as they'll handle the update for us!
                try 
                {
-                  QName lockQName = QName.createQName("TagScope_" + tagScope.toString());
-                  String lock = jobLockService.getLock(
-                        lockQName, 2500, 0, 0
-                  );
+                  String lock = lockTagScope(tagScope);
                   
                   // If we got here, we're the only thread currently
                   //  processing this tag scope
@@ -236,7 +244,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                   );
                   
                   // We're done with this tag scope
-                  jobLockService.releaseLock(lock, lockQName);
+                  unlockTagScope(tagScope, lock);
                } catch(LockAcquisitionException e) {}
                
                // Now proceed to the next tag scope
@@ -257,19 +265,13 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
      */
     private List<Long> searchForUpdates(final NodeRef tagScopeNode, final Map<String,Integer> updates)
     {
-        final String noderefPath =
-           TaggingServiceImpl.TAGGING_AUDIT_ROOT_PATH + "/" +
-           TaggingServiceImpl.TAGGING_AUDIT_KEY_NODEREF + "/value";
-        final String tagsPath =
-           TaggingServiceImpl.TAGGING_AUDIT_ROOT_PATH + "/" +
-           TaggingServiceImpl.TAGGING_AUDIT_KEY_TAGS + "/value";
-       
         // Build the query
-        AuditQueryParameters params = new AuditQueryParameters();
+        final AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(TaggingServiceImpl.TAGGING_AUDIT_APPLICATION_NAME);
         params.addSearchKey(noderefPath, tagScopeNode.toString());
        
-        // Execute it
+        // Execute the query, in a new transaction
+        // (Avoid contention issues with repeated runs / updates)
         final List<Long> ids = new ArrayList<Long>();
         auditService.auditQuery(new AuditQueryCallback() {
            @Override
@@ -412,6 +414,92 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           contentWriter.putContent(tagContent);    
        }
     }
+    
+    /**
+     * Checks several batches of updates in the Audit event log,
+     *  and returns the list of Tag Scope Node References found there.
+     * You should generally call this action to process the list of
+     *  tag nodes before re-calling this method.
+     * You may need to call this method several times if lots of work
+     *  is backed up, when an empty list is returned then you know
+     *  that all work is handled.
+     */
+    public List<NodeRef> searchForTagScopesPendingUpdates()
+    {
+       final Set<String> tagNodesStrs = new HashSet<String>();
+       
+       // We want all entries for tagging
+       final AuditQueryParameters params = new AuditQueryParameters();
+       params.setApplicationName(TaggingServiceImpl.TAGGING_AUDIT_APPLICATION_NAME);
+      
+       // Execute the query, in a new transaction
+       // (Avoid contention issues with repeated runs / updates)
+       transactionService.getRetryingTransactionHelper().doInTransaction(
+         new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable {
+             auditService.auditQuery(new AuditQueryCallback() {
+                @Override
+                public boolean valuesRequired() {
+                   return true;
+                }
+              
+                @Override
+                public boolean handleAuditEntryError(Long entryId, String errorMsg,
+                    Throwable error) {
+                   logger.warn("Error fetching tagging update entry - " + errorMsg, error);
+                   // Keep trying
+                   return true;
+                }
+              
+                @Override
+                public boolean handleAuditEntry(Long entryId, String applicationName,
+                    String user, long time, Map<String, Serializable> values) {
+                   // Save the NodeRef
+                   if(values.containsKey(noderefPath))
+                   {
+                      String nodeRefStr = (String)values.get(noderefPath);
+                      if(! tagNodesStrs.contains(nodeRefStr))
+                         tagNodesStrs.add(nodeRefStr);
+                   }
+                   else
+                   {
+                      logger.warn("Unexpected Tag Scope update entry of " + values);
+                   }
+                   
+                   // Next entry please!
+                   return true;
+                }
+             }, params, 4*tagUpdateBatchSize);
+             return null;
+           }
+         }, false, true
+       );
+       
+       // Turn it into NodeRefs
+       List<NodeRef> tagNodes = new ArrayList<NodeRef>();
+       for(String nodeRefStr : tagNodesStrs)
+       {
+          tagNodes.add( new NodeRef(nodeRefStr) );
+       }
+       return tagNodes;
+    }
+    
+    private QName tagScopeToLockQName(NodeRef tagScope)
+    {
+       QName lockQName = QName.createQName("TagScope_" + tagScope.toString());
+       return lockQName;
+    }
+    protected String lockTagScope(NodeRef tagScope)
+    {
+       String lock = jobLockService.getLock(
+             tagScopeToLockQName(tagScope), 2500, 0, 0
+       );
+       return lock;
+    }
+    protected void unlockTagScope(NodeRef tagScope, String lockToken)
+    {
+       jobLockService.releaseLock(lockToken, tagScopeToLockQName(tagScope));
+    }
 
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
@@ -421,5 +509,4 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TAG_SCOPES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_TAG_SCOPES)));        
     }
-
 }

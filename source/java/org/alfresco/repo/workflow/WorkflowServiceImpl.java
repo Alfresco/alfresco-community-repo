@@ -665,9 +665,18 @@ public class WorkflowServiceImpl implements WorkflowService
             return true;
         }
         
-        // if the current user is not the owner or initiator check whether they are
-        // a member of the pooled actors for the task (if it has any)
-        return isUserInPooledActors(task, username);
+        if (task.getProperties().get(ContentModel.PROP_OWNER) == null)
+        {
+            // if the user is not the owner or initiator check whether they are
+            // a member of the pooled actors for the task (if it has any)
+            return isUserInPooledActors(task, username);
+        }
+        else
+        {
+            // if the task has an owner and the user is not the owner
+            // or the initiator do not allow editing
+            return false;
+        }
     }
     
     /*
@@ -980,7 +989,7 @@ public class WorkflowServiceImpl implements WorkflowService
                 String name = (String)props.get(ContentModel.PROP_AUTHORITY_NAME);
                 
                 // retrieve the users of the group
-                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, name, true);
+                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, name, false);
                 
                 // see if the user is one of the users in the group
                 if (users != null && !users.isEmpty() && users.contains(username))

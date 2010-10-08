@@ -67,6 +67,8 @@ public interface WorkflowModel
     static final QName PROP_WORKFLOW_DUE_DATE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDueDate");
     static final QName ASSOC_ASSIGNEE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignee");
     static final QName ASSOC_ASSIGNEES = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignees");
+    static final QName ASSOC_GROUP_ASSIGNEE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignee");
+    static final QName ASSOC_GROUP_ASSIGNEES = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignees");
 
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");

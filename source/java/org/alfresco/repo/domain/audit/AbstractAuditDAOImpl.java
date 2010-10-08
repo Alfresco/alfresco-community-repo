@@ -22,11 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -41,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 
 /**
@@ -306,7 +309,39 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         return entity.getId();
     }
     
+    public int deleteAuditEntries(List<Long> auditEntryIds)
+    {
+        // Ensure that we don't have duplicates
+        Set<Long> ids = new TreeSet<Long>(auditEntryIds);
+        int shouldDelete = ids.size();
+
+        int deleted = 0;
+        List<Long> batch = new ArrayList<Long>(shouldDelete > 512 ? 512 : shouldDelete);
+        for (Long id : ids)
+        {
+            batch.add(id);
+            if (batch.size() >= 512)
+            {
+                deleted += deleteAuditEntriesImpl(batch);
+                batch.clear();
+            }
+        }
+        // Process remaining
+        if (batch.size() > 0)
+        {
+            deleted += deleteAuditEntriesImpl(batch);
+        }
+        // Check concurrency
+        if (deleted != shouldDelete)
+        {
+            throw new ConcurrencyFailureException(
+                    "Deleted " + deleted + " audit entries out of a set of " + shouldDelete + " unique IDs.");
+        }
+        return deleted;
+    }
+
     protected abstract AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId);
+    protected abstract int deleteAuditEntriesImpl(List<Long> auditEntryIds);
     
     /*
      * Searches

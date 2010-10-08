@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.audit;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -131,6 +131,16 @@ public class AuditServiceImpl implements AuditService
     {
         toTime = (toTime == null) ? Long.valueOf(System.currentTimeMillis()) : toTime;
         return auditComponent.deleteAuditEntries(applicationName, fromTime, toTime);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public int clearAudit(List<Long> auditEntryIds)
+    {
+        return auditComponent.deleteAuditEntries(auditEntryIds);
     }
 
     /**

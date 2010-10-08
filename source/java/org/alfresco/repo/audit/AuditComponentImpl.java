@@ -147,6 +147,21 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
+    @Override
+    public int deleteAuditEntries(List<Long> auditEntryIds)
+    {
+        // Shortcut, if necessary
+        if (auditEntryIds.size() == 0)
+        {
+            return 0;
+        }
+        return auditDAO.deleteAuditEntries(auditEntryIds);
+    }
+
+    /**
      * @param application       the audit application object
      * @return                  Returns a copy of the set of disabled paths associated with the application
      */

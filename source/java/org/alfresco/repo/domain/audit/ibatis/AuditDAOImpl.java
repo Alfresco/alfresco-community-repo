@@ -171,6 +171,14 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     }
 
     @Override
+    protected int deleteAuditEntriesImpl(List<Long> auditEntryIds)
+    {
+        AuditDeleteParameters params = new AuditDeleteParameters();
+        params.setAuditEntryIds(auditEntryIds);
+        return template.delete(DELETE_ENTRIES, params);
+    }
+
+    @Override
     protected AuditEntryEntity createAuditEntry(Long applicationId, long time, Long usernameId, Long valuesId)
     {
         AuditEntryEntity entity = new AuditEntryEntity();

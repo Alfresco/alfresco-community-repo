@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.audit;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Deletion parameters for <b>alf_audit_entry</b> table.
@@ -31,6 +32,7 @@ public class AuditDeleteParameters
     private Long auditApplicationId;
     private Long auditFromTime;
     private Long auditToTime;
+    private List<Long> auditEntryIds;
     
     public AuditDeleteParameters()
     {
@@ -44,6 +46,7 @@ public class AuditDeleteParameters
           .append("[ auditApplicationId=").append(auditApplicationId)
           .append(", auditFromTime").append(auditFromTime == null ? null : new Date(auditFromTime))
           .append(", auditToTime").append(auditToTime == null ? null : new Date(auditToTime))
+          .append(", auditEntryIds").append(auditEntryIds == null ? null : auditEntryIds.size())
           .append("]");
         return sb.toString();
     }
@@ -76,5 +79,15 @@ public class AuditDeleteParameters
     public void setAuditToTime(Long auditToTime)
     {
         this.auditToTime = auditToTime;
+    }
+
+    public List<Long> getAuditEntryIds()
+    {
+        return auditEntryIds;
+    }
+
+    public void setAuditEntryIds(List<Long> auditEntryIds)
+    {
+        this.auditEntryIds = auditEntryIds;
     }
 }

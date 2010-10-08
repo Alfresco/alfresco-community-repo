@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.audit;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -165,6 +166,17 @@ public interface AuditDAO
      * @since 3.2
      */
     int deleteAuditEntries(Long applicationId, Long from, Long to);
+    
+    /**
+     * Delete a discrete list of audit entries.  Duplicate entries are collapsed
+     * and the number of entries deleted will match the count of unique IDs in
+     * the list; otherwise a concurrency condition has occured and an exception
+     * will be generated.
+     * 
+     * @param auditEntryIds     the IDs of all audit entries to delete
+     * @return                  Returns the number of entries deleted
+     */
+    int deleteAuditEntries(List<Long> auditEntryIds);
     
     /**
      * Create a new audit entry with the given map of values.

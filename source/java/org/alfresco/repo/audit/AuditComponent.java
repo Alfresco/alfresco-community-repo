@@ -19,6 +19,7 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -88,6 +89,14 @@ public interface AuditComponent
      * @since 3.2
      */
     int deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
+    
+    /**
+     * Delete a discrete list of audit entries based on ID
+     * 
+     * @param auditEntryIds     the audit entry IDs to delete
+     * @return                  Returns the number of entries deleted
+     */
+    int deleteAuditEntries(List<Long> auditEntryIds);
     
     /**
      * Check if an audit path is enabled.  The path will be disabled if it or any higher

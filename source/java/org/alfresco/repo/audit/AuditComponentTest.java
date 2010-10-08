@@ -523,7 +523,7 @@ public class AuditComponentTest extends TestCase
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
         
-        final List<Map<String, Serializable>> results = new ArrayList<Map<String,Serializable>>();
+        final List<Long> results = new ArrayList<Long>(5);
         final StringBuilder sb = new StringBuilder();
         AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
         {
@@ -539,7 +539,7 @@ public class AuditComponentTest extends TestCase
                     long time,
                     Map<String, Serializable> values)
             {
-                results.add(values);
+                results.add(entryId);
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
@@ -615,11 +615,28 @@ public class AuditComponentTest extends TestCase
         {
             // Expected
         }
+        try
+        {
+            authenticationService.authenticate("banana", "****".toCharArray());
+            fail("Invalid authentication attempt should fail");
+        }
+        catch (AuthenticationException e)
+        {
+            // Expected
+        }
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
-        assertFalse("Did not get any audit results after failed login", results.isEmpty());
+        assertEquals("Incorrect number of audit entries after failed login", 2, results.size());
+        
+        // Check that we can delete explicit entries
+        deleteAuditEntries(results);
+        results.clear();
+        sb.delete(0, sb.length());
+        queryAuditLog(auditQueryCallback, params, -1);
+        logger.debug(sb.toString());
+        assertEquals("Explicit audit entries were not deleted", 0, results.size());
     }
     
     public void testAuditQuery_MaxId() throws Exception
@@ -671,6 +688,23 @@ public class AuditComponentTest extends TestCase
             public Void doWork() throws Exception
             {
                 auditService.clearAudit(applicationName, null, null);
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
+    }
+
+    /**
+     * Clearn the audit log as 'admin'
+     */
+    private void deleteAuditEntries(final List<Long> auditEntryIds)
+    {
+        RunAsWork<Void> work = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                auditService.clearAudit(auditEntryIds);
                 return null;
             }
         };

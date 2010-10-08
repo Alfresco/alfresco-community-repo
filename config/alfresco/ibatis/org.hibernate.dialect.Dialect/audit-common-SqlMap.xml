@@ -135,14 +135,20 @@
        delete
        from
            alf_audit_entry
-       where
-           audit_app_id = #auditApplicationId#
-       <isNotNull property="auditFromTime">
-           <![CDATA[and audit_time >= #auditFromTime#]]>
-       </isNotNull>
-       <isNotNull property="auditFromTime">
-           <![CDATA[and audit_time < #auditToTime#]]>
-       </isNotNull>
+       <dynamic prepend="where">
+           <isNotNull property="auditFromTime" prepend="and">
+               audit_app_id = #auditApplicationId#
+           </isNotNull>
+           <isNotNull property="auditFromTime" prepend="and">
+               <![CDATA[audit_time >= #auditFromTime#]]>
+           </isNotNull>
+           <isNotNull property="auditFromTime" prepend="and">
+               <![CDATA[audit_time < #auditToTime#]]>
+           </isNotNull>
+           <isNotNull property="auditEntryIds" prepend="and">
+                id in <iterate property="auditEntryIds" open="(" close=")" conjunction=", ">#auditEntryIds[]#</iterate>
+           </isNotNull>
+       </dynamic>
     </delete>
     
     <sql id="select_AuditEntriesWhereSnippet">

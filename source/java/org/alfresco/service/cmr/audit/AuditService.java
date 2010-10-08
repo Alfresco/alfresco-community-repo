@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.audit;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.PublicService;
@@ -144,6 +145,19 @@ public interface AuditService
      * @since 3.4
      */
     int clearAudit(String applicationName, Long fromTime, Long toTime);
+    
+    /**
+     * Delete a discrete list of audit entries.
+     * <p/>
+     * This method should not be called <i>while</i> processing
+     * {@link #auditQuery(AuditQueryCallback, AuditQueryParameters, int) query results}.
+     * 
+     * @param auditEntryIds     the IDs of all audit entries to delete
+     * @return                  Returns the number of audit entries deleted
+     * 
+     * @since 3.4
+     */
+    int clearAudit(List<Long> auditEntryIds);
     
     /**
      * The interface that will be used to give query results to the calling code.

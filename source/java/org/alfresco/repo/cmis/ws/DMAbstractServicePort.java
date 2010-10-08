@@ -454,10 +454,6 @@ public class DMAbstractServicePort
         List<CMISAccessControlEntry> result = new LinkedList<CMISAccessControlEntry>();
         for (CmisAccessControlEntryType cmisEntry : source)
         {
-            if (!cmisEntry.isDirect())
-            {
-                throw ExceptionUtil.createCmisException("Inherited Permissions can't be updated or deleted from Object", EnumServiceException.NOT_SUPPORTED);
-            }
             String principalId = cmisEntry.getPrincipal().getPrincipalId();
             if (CMIS_USER.equals(principalId))
             {

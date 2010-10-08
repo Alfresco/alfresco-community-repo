@@ -44,6 +44,7 @@ function postActivity()
       case "google-docs-checkin":
       case "inline-edit":
          data.title = json.get("fileName");
+         data.nodeRef = json.get("nodeRef");
          strParams = "?nodeRef=" + json.get("nodeRef");
          break;
       
@@ -52,10 +53,12 @@ function postActivity()
       case "files-updated":
          data.title = json.get("fileCount");
          strParams = "?path=" + json.get("path");
+         data.parentNodeRef = json.get("parentNodeRef");
          break;
       
       case "file-deleted":
          data.title = json.get("fileName");
+         data.nodeRef = json.get("nodeRef");
          strParams = "?path=" + json.get("path");
          break;
       

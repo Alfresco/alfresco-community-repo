@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
@@ -46,6 +47,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -62,6 +64,8 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Tagging service implementation
@@ -75,6 +79,13 @@ public class TaggingServiceImpl implements TaggingService,
                                            CopyServicePolicies.OnCopyCompletePolicy,
                                            CopyServicePolicies.BeforeCopyPolicy
 {
+    protected static final String TAGGING_AUDIT_APPLICATION_NAME = "Alfresco Tagging Service";
+    protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
+    protected static final String TAGGING_AUDIT_KEY_NODEREF = "node";
+    protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
+    
+    private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
+
     /** Node service */
     private NodeService nodeService;
     
@@ -95,6 +106,12 @@ public class TaggingServiceImpl implements TaggingService,
     
     /** Policy componenet */
     private PolicyComponent policyComponent;
+    
+    /** Audit Service */
+    private AuditService auditService;
+    
+    /** Audit Component, used with Audit Service */
+    private AuditComponent auditComponent;
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
@@ -160,6 +177,22 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
+     * Set the audit service
+     */
+    public void setAuditService(AuditService auditService)
+    {
+        this.auditService = auditService;
+    }
+    
+    /**
+     * Set the audit component
+     */
+    public void setAuditComponent(AuditComponent auditComponent)
+    {
+        this.auditComponent = auditComponent;
+    }
+    
+    /**
      * Init method
      */
     public void init()
@@ -208,6 +241,9 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * Called after a copy / delete / move, to trigger a 
      *  tag scope update of all the tags on the node.
+     * Will update all parent tag scopes for the node, by either 
+     *  adding or removing all tags from the node (based on the 
+     *  isAdd parameter).
      */
     private void updateAllScopeTags(NodeRef nodeRef, Boolean isAdd)
     {
@@ -222,6 +258,7 @@ public class TaggingServiceImpl implements TaggingService,
     {
         if (parentNodeRef != null)
         {
+            // Grab an currently pending changes for this node
             Map<NodeRef, Map<String, Boolean>> allQueuedUpdates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
             Map<String, Boolean> nodeQueuedUpdates = null;
             if (allQueuedUpdates != null)
@@ -229,6 +266,8 @@ public class TaggingServiceImpl implements TaggingService,
                 nodeQueuedUpdates = allQueuedUpdates.get(nodeRef);
             }
             
+            // Record the changes for the node, cancelling out existing
+            //  changes if needed
             List<String> tags = getTags(nodeRef);
             Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
             for (String tag : tags)
@@ -245,7 +284,9 @@ public class TaggingServiceImpl implements TaggingService,
                     }
                 }
             }
-            updateTagScope(parentNodeRef, tagUpdates, false);
+            
+            // Find the parent tag scopes and update them
+            updateTagScope(parentNodeRef, tagUpdates);
         }
     }
     
@@ -968,24 +1009,75 @@ public class TaggingServiceImpl implements TaggingService,
     public static final String TAG_UPDATES = "tagUpdates"; 
     
     /**
-     * Update the relevant tag scopes when a tag is added or removed from a node.
+     * Triggers an async update of all the relevant tag scopes when a tag is 
+     *  added or removed from a node.
+     * Uses the audit service as a persisted queue to hold the list of changes,
+     *  and triggers an sync action to work on the entries in the queue for us.
+     *  This should avoid contention problems and race conditions.
      * 
      * @param nodeRef       node reference
      * @param updates
-     * @param async         indicates whether the action is execute asynchronously
      */
-    @SuppressWarnings("unchecked")
-    private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates, boolean async)
+    private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates)
     {
-        // The map must be serializable
-        if (updates instanceof HashMap)
-        {        
-            Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
-            action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_UPDATES, (HashMap<String, Boolean>)updates);
-            this.actionService.executeAction(action, nodeRef, false, async);
-        }
+       // Warn if auditing is disabled - we need it!
+       if(! auditService.isAuditEnabled(TAGGING_AUDIT_APPLICATION_NAME, TAGGING_AUDIT_ROOT_PATH))
+       {
+          logger.warn("Tag updates won't propogate to the TagScope caches as auditing is disabled");
+          return;
+       }
+       
+       // First up, locate all the tag scopes for this node
+       // (Need to do a recursive search up to the root)
+       ArrayList<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
+       getTagScopes(nodeRef, tagScopeNodeRefs);
+       
+       if(tagScopeNodeRefs.size() == 0)
+       {
+          if(logger.isDebugEnabled())
+          {
+             logger.debug("No tag scopes found for " + nodeRef + " so no scope updates needed");
+          }
+          return;
+       }
+       
+       // Turn from tag+yes/no into tag+1/-1
+       // (Later we may roll things up better to be tag+#/-#)
+       HashMap<String,Integer> changes = new HashMap<String, Integer>(updates.size());
+       for(String tag : updates.keySet())
+       {
+          int val = -1;
+          if(updates.get(tag))
+             val = 1;
+          changes.put(tag, val);
+       }
+       
+       // Next, queue the updates for each tag scope
+       for(NodeRef tagScopeNode : tagScopeNodeRefs)
+       {
+          Map<String,Serializable> auditValues = new HashMap<String, Serializable>();
+          auditValues.put(TAGGING_AUDIT_KEY_TAGS, changes);
+          auditValues.put(TAGGING_AUDIT_KEY_NODEREF, tagScopeNode.toString());
+          auditComponent.recordAuditValues(TAGGING_AUDIT_ROOT_PATH, auditValues);
+       }
+       if(logger.isDebugEnabled())
+       {
+          logger.debug("Queueing async tag scope updates to tag scopes " + tagScopeNodeRefs + " of " + changes);
+       }
+       
+       // Finally, trigger the action to process the updates
+       // This will happen asynchronously
+       Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
+       action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_SCOPES, tagScopeNodeRefs); 
+       this.actionService.executeAction(action, null, false, true);
     }
     
+    /**
+     * Records the fact that the given tag for the given node will need to
+     *  be added or removed from its parent tags scopes.
+     * {@link #updateTagScope(NodeRef, Map, boolean)} will schedule the update
+     *  to occur, and an async action will do it. 
+     */
     @SuppressWarnings("unchecked")
     private void queueTagUpdate(NodeRef nodeRef, String tag, boolean add)
     {
@@ -1057,7 +1149,7 @@ public class TaggingServiceImpl implements TaggingService,
                 Map<String, Boolean> tagUpdates = updates.get(nodeRef);
                 if (tagUpdates != null && tagUpdates.size() != 0)
                 {
-                    updateTagScope(nodeRef, tagUpdates, true);
+                    updateTagScope(nodeRef, tagUpdates);
                 }
             }
         }

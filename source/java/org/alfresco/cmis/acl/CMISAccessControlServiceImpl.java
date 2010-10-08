@@ -184,7 +184,7 @@ public class CMISAccessControlServiceImpl implements CMISAccessControlService
     public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToRemove, List<CMISAccessControlEntry> acesToAdd, CMISAclPropagationEnum propagation,
             CMISAccessControlFormatEnum format) throws CMISConstraintException
     {
-        if (propagation != CMISAclPropagationEnum.PROPAGATE)
+        if (propagation == CMISAclPropagationEnum.OBJECT_ONLY)
         {
             throw new CMISConstraintException("Unsupported ACL propagation mode: " + propagation);
         }

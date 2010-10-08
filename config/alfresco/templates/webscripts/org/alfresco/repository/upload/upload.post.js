@@ -24,10 +24,11 @@ function main()
          majorVersion = false,
          description = "";
       
-      // Prevents Flash-sourced "null" values being set for those parmeters where they are invalid
+      // Prevents Flash- and IE8-sourced "null" values being set for those parameters where they are invalid.
+      // Note: DON'T use a "!==" comparison for "null" here.
       var fnFieldValue = function(p_field)
       {
-         return field.value.length() > 0 && field.value !== "null" ? field.value : null;
+         return field.value.length() > 0 && field.value != "null" ? field.value : null;
       };
 
       // Parse file attributes

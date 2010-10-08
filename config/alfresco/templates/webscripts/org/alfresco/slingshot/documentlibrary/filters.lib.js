@@ -6,9 +6,9 @@ var Filters =
     */
    TYPE_MAP:
    {
-      "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink" OR TYPE:"{http://www.alfresco.org/model/content/1.0}folder")',
-      "folders": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}folder" OR TYPE:"{http://www.alfresco.org/model/application/1.0}folderlink")',
-      "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
+      "documents": '+(TYPE:"content" OR TYPE:"app:filelink" OR TYPE:"folder")',
+      "folders": '+(TYPE:"folder" OR TYPE:"app:folderlink")',
+      "images": '-TYPE:"thumbnail" +@cm\\:content.mimetype:image/*'
    },
 
    /**
@@ -45,7 +45,7 @@ var Filters =
          limitResults: null,
          sort: [
          {
-            column: "@{http://www.alfresco.org/model/content/1.0}name",
+            column: "@cm:name",
             ascending: true
          }],
          language: "lucene",
@@ -72,21 +72,21 @@ var Filters =
       var filterData = String(args.filterData),
          filterQuery = "";
 
-      // Common types and aspects to filter from the UI
+      // Common types and aspects to filter from the UI - known subtypes of cm:content and cm:folder
       var filterQueryDefaults =
-         " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" +
-         " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"" +
-         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"" +
-         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"" +
-         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
-         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
+         " -TYPE:\"thumbnail\"" +
+         " -TYPE:\"systemfolder\"" +
+         " -TYPE:\"fm:forums\"" +
+         " -TYPE:\"fm:forum\"" +
+         " -TYPE:\"fm:topic\"" +
+         " -TYPE:\"fm:post\"" +
          " -@cm\\:lockType:READ_ONLY_LOCK";
 
       switch (String(filter))
       {
          case "all":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+            filterQuery += " +TYPE:\"content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
 
@@ -95,7 +95,7 @@ var Filters =
          case "recentlyCreatedByMe":
          case "recentlyModifiedByMe":
             var onlySelf = (filter.indexOf("ByMe")) > 0 ? true : false,
-               dateField = (filter.indexOf("Created") > 0) ? "created" : "modified",
+               dateField = (filter.indexOf("Modified") > 0) ? "modified" : "created",
                ownerField = (dateField == "created") ? "creator" : "modifier";
 
             // Default to 7 days - can be overridden using "days" argument
@@ -129,11 +129,11 @@ var Filters =
             {
                filterQuery += " +@cm\\:" + ownerField + ":\"" + person.properties.userName + '"';
             }
-            filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+            filterQuery += " +TYPE:\"content\"";
 
             filterParams.sort = [
             {
-               column: "@{http://www.alfresco.org/model/content/1.0}" + dateField,
+               column: "@cm:" + dateField,
                ascending: false
             }];
             filterParams.query = filterQuery + filterQueryDefaults;
@@ -141,14 +141,14 @@ var Filters =
 
          case "editingMe":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+            filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
             filterParams.query = filterQuery;
             break;
 
          case "editingOthers":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+            filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
             filterParams.query = filterQuery;
             break;

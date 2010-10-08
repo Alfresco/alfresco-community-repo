@@ -119,10 +119,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 {
                     writer.setMimetype(mimeType);
                 }
-                else
-                {
-                    throw ExceptionUtil.createCmisException("Content Stream Mime Type was not specified", EnumServiceException.INVALID_ARGUMENT);
-                }
                 InputStream inputstream = null;
                 try
                 {
@@ -410,7 +406,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         List<String> failedToDelete;
         try
         {
-            failedToDelete = cmisService.deleteTree(folderId, continueOnFailure, unfileObject != EnumUnfileObject.DELETE, allVersions == null || allVersions);
+            failedToDelete = cmisService.deleteTree(folderId, continueOnFailure == null ? false : continueOnFailure, unfileObject != EnumUnfileObject.DELETE, allVersions == null || allVersions);
         }
         catch (CMISServiceException e)
         {

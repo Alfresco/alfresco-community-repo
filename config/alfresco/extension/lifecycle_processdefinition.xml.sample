@@ -55,8 +55,8 @@
             </event>
         </task>
         
-        <transition name="reject" to="rejected" />
         <transition name="approve" to="approved" />
+        <transition name="reject" to="rejected" />
     </task-node>
 
     <task-node name="rejected">

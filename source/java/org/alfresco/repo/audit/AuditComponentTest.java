@@ -606,32 +606,30 @@ public class AuditComponentTest extends TestCase
 
         // Clear everything and check that unsuccessful authentication was audited
         clearAuditLog(APPLICATION_API_TEST);
-        try
+        int iterations = 1000;
+        for (int i = 0; i < iterations; i++)
         {
-            authenticationService.authenticate("banana", "****".toCharArray());
-            fail("Invalid authentication attempt should fail");
-        }
-        catch (AuthenticationException e)
-        {
-            // Expected
-        }
-        try
-        {
-            authenticationService.authenticate("banana", "****".toCharArray());
-            fail("Invalid authentication attempt should fail");
-        }
-        catch (AuthenticationException e)
-        {
-            // Expected
+            try
+            {
+                authenticationService.authenticate("banana", "****".toCharArray());
+                fail("Invalid authentication attempt should fail");
+            }
+            catch (AuthenticationException e)
+            {
+                // Expected
+            }
         }
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
-        assertEquals("Incorrect number of audit entries after failed login", 2, results.size());
+        assertEquals("Incorrect number of audit entries after failed login", iterations, results.size());
         
         // Check that we can delete explicit entries
+        long before = System.currentTimeMillis();
         deleteAuditEntries(results);
+        System.out.println(
+                "Clearing " + results.size() + " entries by ID took " + (System.currentTimeMillis() - before) + "ms.");
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, -1);

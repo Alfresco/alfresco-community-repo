@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.activities.feed.RepoCtx;
+import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
@@ -37,7 +38,13 @@ import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,6 +75,8 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     private SiteService siteService;
     private NodeService nodeService;
     private ContentService contentService;
+    private PermissionService permissionService;
+    
     private String defaultEncoding;
     private List<String> templateSearchPaths;
     private boolean useRemoteCallbacks;
@@ -105,6 +114,11 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
     
     public void setDefaultEncoding(String defaultEncoding)
@@ -203,6 +217,105 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     return members;
                 }
             }, AuthenticationUtil.getSystemUserName());
+        }
+    }
+    
+    protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
+    {
+        if (useRemoteCallbacks)
+        {
+            // note: not implemented
+            return super.canRead(ctx, connectedUser, model);
+        }
+        else
+        {
+            if (permissionService == null)
+            {
+                // if permission service not configured then fallback (ie. no read permission check)
+                return true;
+            }
+            
+            String nodeRefStr = (String)model.get(PostLookup.JSON_NODEREF);
+            if (nodeRefStr == null)
+            {
+                nodeRefStr = (String)model.get(PostLookup.JSON_NODEREF_PARENT);
+            }
+            
+            if (nodeRefStr != null)
+            {
+                final NodeRef nodeRef = new NodeRef(nodeRefStr);
+                
+                return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+                {
+                    public Boolean doWork() throws Exception
+                    {
+                        return canReadImpl(connectedUser, nodeRef);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            
+            return true;
+        }
+    }
+    
+    private boolean canReadImpl(final String connectedUser, final NodeRef nodeRef) throws Exception
+    {
+        // check for read permission
+        long start = System.currentTimeMillis();
+        
+        try
+        {
+            // note: deleted node does not exist (hence no permission, although default permission check would return true which is problematic)
+            final NodeRef checkNodeRef;
+            if (nodeService.exists(nodeRef))
+            {
+                checkNodeRef = nodeRef;
+            }
+            else
+            {
+                // TODO: require ghosting - this is temp workaround (we should not rely on archive - may be permanently deleted, ie. not archived or already purged)
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeRef.getId());
+                if (! nodeService.exists(archiveNodeRef))
+                {
+                    return false;
+                }
+                checkNodeRef = archiveNodeRef;
+            }
+            
+            if (connectedUser.equals(""))
+            {
+                // site feed (public site)
+                Set<AccessPermission> perms = permissionService.getAllSetPermissions(checkNodeRef);
+                for (AccessPermission perm : perms)
+                {
+                    if (perm.getAuthority().equals(PermissionService.ALL_AUTHORITIES) &&
+                        perm.getAuthorityType().equals(AuthorityType.EVERYONE) &&
+                        perm.getPermission().equals(PermissionService.READ_PERMISSIONS) &&
+                        perm.getAccessStatus().equals(AccessStatus.ALLOWED))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                // user feed
+                return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+                {
+                    public Boolean doWork() throws Exception
+                    {
+                        return (permissionService.hasPermission(checkNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+                    }
+                }, connectedUser);
+            }
+        }
+        finally
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("canRead: " + nodeRef + " in "+(System.currentTimeMillis()-start)+" msecs");
+            }
         }
     }
     

@@ -257,7 +257,14 @@ public abstract class FeedTaskProcessor
                             excludedConnections++;
                         }
                         else
-                        { 
+                        {
+                            // read permission check
+                            if (! canRead(ctx, connectedUser, model))
+                            {
+                                excludedConnections++;
+                                continue;
+                            }
+                            
                             for (String fmTemplate : fmTemplates)
                             {
                                 // determine format - based on template naming convention
@@ -446,6 +453,11 @@ public abstract class FeedTaskProcessor
         }
         
         return members;
+    }
+    
+    protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
+    {
+        throw new UnsupportedOperationException("FeedTaskProcessor: Remote callback for 'canRead' not implemented");
     }
     
     protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception

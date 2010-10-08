@@ -82,6 +82,8 @@
       <property name="siteService" ref="SiteService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="contentService" ref="ContentService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      
       <property name="templateSearchPaths">
           <list>
               <value>alfresco/extension/templates/activities</value>

@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -29,9 +30,9 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Activity Post Service Implementation
@@ -84,7 +85,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append("}");
+        sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append("}");
         
         postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
     }
@@ -97,7 +98,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append(",")
+        sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append(",")
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
@@ -116,10 +117,10 @@ public class ActivityPostServiceImpl implements ActivityPostService
         ParameterCheck.mandatory("parentNodeRef", parentNodeRef);
           
         StringBuffer sb = new StringBuffer();
-        sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append(",")
-                      .append("\"name\":\"").append(name).append("\"").append(",")
-                      .append("\"typeQName\":\"").append(typeQName.toPrefixString()).append("\"").append(",") // TODO toPrefixString does not return prefix ??!!
-                      .append("\"parentNodeRef\":\"").append(parentNodeRef.toString()).append("\"")
+        sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append(",")
+                      .append("\""+PostLookup.JSON_NAME+"\":\"").append(name).append("\"").append(",")
+                      .append("\""+PostLookup.JSON_TYPEQNAME+"\":\"").append(typeQName.toPrefixString()).append("\"").append(",") // TODO toPrefixString does not return prefix ??!!
+                      .append("\""+PostLookup.JSON_NODEREF_PARENT+"\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
         postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);

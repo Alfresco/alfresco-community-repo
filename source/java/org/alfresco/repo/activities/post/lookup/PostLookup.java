@@ -62,6 +62,20 @@ public class PostLookup
     private PersonService personService;
     private TenantService tenantService;
     
+    public static final String JSON_NODEREF_LOOKUP = "nodeRefL"; // requires additional lookup
+    
+    public static final String JSON_NODEREF = "nodeRef";
+    public static final String JSON_NODEREF_PARENT = "parentNodeRef";
+    
+    public static final String JSON_FIRSTNAME = "firstName";
+    public static final String JSON_LASTNAME = "lastName";
+    
+    public static final String JSON_NAME = "name";
+    public static final String JSON_TYPEQNAME = "typeQName";
+    public static final String JSON_PARENT_NODEREF = "parentNodeRef";
+    public static final String JSON_DISPLAY_PATH = "displayPath";
+    
+    
     public void setPostDAO(ActivityPostDAO postDAO)
     {
         this.postDAO = postDAO;
@@ -139,9 +153,9 @@ public class PostLookup
                             
                             String activityDataStr = null;
                             
-                            if (! jo.isNull("nodeRef"))
+                            if (! jo.isNull(JSON_NODEREF_LOOKUP))
                             {
-                                String nodeRefStr = jo.getString("nodeRef");
+                                String nodeRefStr = jo.getString(JSON_NODEREF_LOOKUP);
                                 NodeRef nodeRef = new NodeRef(nodeRefStr);
                                 
                                 // lookup additional node data
@@ -154,8 +168,8 @@ public class PostLookup
                                 Pair<String, String> firstLastName = lookupPerson(postUserId);
                                 if (firstLastName != null)
                                 {
-                                    jo.put("firstName", firstLastName.getFirst());
-                                    jo.put("lastName", firstLastName.getSecond());
+                                    jo.put(JSON_FIRSTNAME, firstLastName.getFirst());
+                                    jo.put(JSON_LASTNAME, firstLastName.getSecond());
                                     
                                     activityDataStr = jo.toString();
                                 }
@@ -283,22 +297,22 @@ public class PostLookup
                     public JSONObject execute() throws Throwable
                     {
                         String name = "";
-                        if (! jo.isNull("name"))
+                        if (! jo.isNull(JSON_NAME))
                         {
-                            name = jo.getString("name");
+                            name = jo.getString(JSON_NAME);
                         }
                         
                         NodeRef parentNodeRef = null;
-                        if (! jo.isNull("parentNodeRef"))
+                        if (! jo.isNull(JSON_PARENT_NODEREF))
                         {
-                            parentNodeRef = new NodeRef(jo.getString("parentNodeRef"));
+                            parentNodeRef = new NodeRef(jo.getString(JSON_PARENT_NODEREF));
                         }
                         
                         
                         String typeQName = "";
-                        if (! jo.isNull("typeQName"))
+                        if (! jo.isNull(JSON_TYPEQNAME))
                         {
-                            typeQName = jo.getString("typeQName");
+                            typeQName = jo.getString(JSON_TYPEQNAME);
                         }
                         
                         String displayPath = "";
@@ -341,25 +355,25 @@ public class PostLookup
                             // parent node exists, lookup parent node path
                             path = nodeService.getPath(parentNodeRef);
                         }
-
+                        
                         if (path != null)
                         {
                             // lookup display path
                             displayPath = path.toDisplayPath(nodeService, permissionService);
-    
+                            
                             // note: for now, also tack on the node name
                             displayPath += "/" + name;
                         }
                         
                         // merge with existing activity data
-                        jo.put("name", name);
-                        jo.put("nodeRef", nodeRef.toString());
-                        jo.put("typeQName", typeQName);
-                        jo.put("parentNodeRef", (parentNodeRef != null ? parentNodeRef.toString() : null));
-                        jo.put("displayPath", displayPath);
-                        jo.put("firstName", firstName);
-                        jo.put("lastName", lastName);
-
+                        jo.put(JSON_NAME, name);
+                        jo.put(JSON_NODEREF, nodeRef.toString());
+                        jo.put(JSON_TYPEQNAME, typeQName);
+                        jo.put(JSON_PARENT_NODEREF, (parentNodeRef != null ? parentNodeRef.toString() : null));
+                        jo.put(JSON_DISPLAY_PATH, displayPath);
+                        jo.put(JSON_FIRSTNAME, firstName);
+                        jo.put(JSON_LASTNAME, lastName);
+                        
                         return jo;
                     }
                 };

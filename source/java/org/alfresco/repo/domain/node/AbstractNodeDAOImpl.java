@@ -1984,7 +1984,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         catch (RuntimeException e)
         {
             // This could be because the cache is out of date
-            aspectsCache.deleteByKey(nodeId);
+            aspectsCache.removeByKey(nodeId);
             throw e;
         }
         finally

@@ -20,6 +20,7 @@ package org.alfresco.repo.tagging;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -99,6 +102,15 @@ public class TaggingServiceImplTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        // Detect any dangling transactions as there is a lot of direct UserTransaction manipulation
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new IllegalStateException(
+                    "There should not be any transactions when starting test: " +
+                    AlfrescoTransactionSupport.getTransactionId() + " started at " +
+                    new Date(AlfrescoTransactionSupport.getTransactionStartTime()));
+        }
+        
         // Get services
         this.taggingService = (TaggingService)ctx.getBean("TaggingService");
         this.nodeService = (NodeService) ctx.getBean("NodeService");
@@ -146,8 +158,13 @@ public class TaggingServiceImplTest extends TestCase
     }
     
     @Override
-    protected void tearDown() throws Exception {
-      removeTestDocumentsAndFolders();
+    protected void tearDown() throws Exception
+    {
+        removeTestDocumentsAndFolders();
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            fail("Test is not transaction-safe.  Fix up transaction handling and re-test.");
+        }
     }
 
     private void createTestDocumentsAndFolders() throws Exception
@@ -1095,109 +1112,120 @@ public class TaggingServiceImplTest extends TestCase
        
        assertEquals(2, ts2.getTag(TAG_1).getCount());
        assertEquals(1, ts2.getTag(TAG_2).getCount());
+       
+       // Force txn commit to prevent test leaks
+       tx.commit();
     }
     
     /**
-     * Test that when multiple threads do tag updates, the right
-     *  thing still happens
+     * Test that when multiple threads do tag updates, the right thing still
+     * happens
      */
-    public void DISABLEDtestMultiThreaded() throws Exception
+    public void testMultiThreaded() throws Exception
     {
-       UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
-       tx.begin();
-       this.taggingService.addTagScope(this.folder);
-       this.taggingService.addTagScope(this.subFolder);
-       tx.commit();
-       
-       // Prepare a bunch of threads to do tagging 
-       final List<Thread> threads = new ArrayList<Thread>();
-       String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5 };
-       for(String tmpTag : tags)
-       {
-          final String tag = tmpTag;
-          Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-               // Let everything catch up
-               try {
-                  Thread.sleep(250);
-               } catch(InterruptedException e) {}
-System.out.println(Thread.currentThread() + " - About to start tagging");               
-               
-               // Do the updates
-               AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-               transactionService.getRetryingTransactionHelper().doInTransaction(
-                   new RetryingTransactionCallback<Void>() {
-                       public Void execute() throws Throwable {
-                          taggingService.addTag(folder, tag);
-                          taggingService.addTag(subFolder, tag);
-                          taggingService.addTag(subDocument, tag);
-System.out.println(Thread.currentThread() + " - Tagging");                          
-                          return null;
-                       }
-                   }, false, true
-               );
-System.out.println(Thread.currentThread() + " - Done tagging");                          
-            }
-          });
-          threads.add(t);
-          t.start();
-       }
-       
-       
-       // Release the threads
-       Thread.sleep(50);
-       for(Thread t : threads) {
-          t.interrupt();
-       }
-       Thread.sleep(100);
-       System.out.println("Done waiting, proceeding with multi-threaded test");
+        UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
+        tx.begin();
+        this.taggingService.addTagScope(this.folder);
+        this.taggingService.addTagScope(this.subFolder);
+        tx.commit();
 
-       
-       // Wait for all the threads to finish working
-       try {
-          // Wait for a maximum of 10 seconds
-          for(int i=0; i<1000; i++)
-          {
-             if(actionTrackingService.getAllExecutingActions().size() > 0)
-             {
-                Thread.sleep(10);
-             }
-             else {
-                break;
-             }
-          }
-       } catch(InterruptedException e) {}
-    
-       
-       // Now check that things ended up as planned
-       tx = this.transactionService.getUserTransaction();
-       tx.begin();
-       
-       TagScope ts1 = this.taggingService.findTagScope(this.folder);
-       TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
-       assertEquals(
-             "Wrong tags on folder tagscope: " + ts1.getTags(),
-             5, ts1.getTags().size()
-       );
-       assertEquals(
-             "Wrong tags on folder tagscope: " + ts1.getTags(),
-             5, ts2.getTags().size()
-       );
-       
-       // Each tag should crop up 3 times on the folder
-       //  and twice for the subfolder
-       for(String tag : tags)
-       {
-          assertEquals(3, ts1.getTag(tag.toLowerCase()).getCount());
-          assertEquals(2, ts2.getTag(tag.toLowerCase()).getCount());
-       }
-       
-       // All done
-       tx.commit();
+        // Prepare a bunch of threads to do tagging
+        final List<Thread> threads = new ArrayList<Thread>();
+        String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5 };
+        for (String tmpTag : tags)
+        {
+            final String tag = tmpTag;
+            Thread t = new Thread(new Runnable()
+            {
+                @Override
+                public synchronized void run()
+                {
+                    // Let everything catch up
+                    try
+                    {
+                        wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                    }
+                    System.out.println(Thread.currentThread() + " - About to start tagging");
+
+                    // Do the updates
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    transactionService.getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<Void>()
+                            {
+                                public Void execute() throws Throwable
+                                {
+                                    taggingService.addTag(folder, tag);
+                                    taggingService.addTag(subFolder, tag);
+                                    taggingService.addTag(subDocument, tag);
+                                    System.out.println(Thread.currentThread() + " - Tagging");
+                                    return null;
+                                }
+                            }, false, true);
+                    System.out.println(Thread.currentThread() + " - Done tagging");
+                }
+            });
+            threads.add(t);
+            t.start();
+        }
+
+        // Release the threads
+        System.out.println("Releasing tagging threads");
+        for (Thread t : threads)
+        {
+            t.interrupt();
+        }
+        
+        // Wait for the threads to finish (and they will finish)
+        // The threads will generate further asynchronous actions
+        for (Thread t : threads)
+        {
+            t.join();
+        }
+
+        // Now we wait for the asynchronous tag execution to finish
+        try
+        {
+            // Wait for a maximum of 10 seconds
+            for (int i = 0; i < 1000; i++)
+            {
+                if (actionTrackingService.getAllExecutingActions().size() > 0)
+                {
+                    Thread.sleep(10);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        catch (InterruptedException e)
+        {
+        }
+
+        // Now check that things ended up as planned
+        tx = this.transactionService.getUserTransaction();
+        tx.begin();
+
+        TagScope ts1 = this.taggingService.findTagScope(this.folder);
+        TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
+        assertEquals("Wrong tags on folder tagscope: " + ts1.getTags(), 5, ts1.getTags().size());
+        assertEquals("Wrong tags on folder tagscope: " + ts1.getTags(), 5, ts2.getTags().size());
+
+        // Each tag should crop up 3 times on the folder
+        // and twice for the subfolder
+        for (String tag : tags)
+        {
+            assertEquals(3, ts1.getTag(tag.toLowerCase()).getCount());
+            assertEquals(2, ts2.getTag(tag.toLowerCase()).getCount());
+        }
+
+        // All done
+        tx.commit();
     }
 
-    
     private UserTransaction waitForActionExecution(UserTransaction txn)
         throws Exception
     {

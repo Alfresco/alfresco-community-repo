@@ -167,7 +167,14 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
         
-        return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS, params);
+        try
+        {
+            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS, params);
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException("Unable to query for store properties: " + params);
+        }
     }
     
     @SuppressWarnings("unchecked")

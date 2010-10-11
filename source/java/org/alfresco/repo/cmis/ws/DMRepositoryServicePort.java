@@ -150,7 +150,9 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     {
         CmisPropertyDefinitionType wsPropertyDef = createPropertyDefinitionType(propertyDefinition.getDataType());
         wsPropertyDef.setLocalName(propertyDefinition.getPropertyId().getLocalName());
+        wsPropertyDef.setLocalNamespace(propertyDefinition.getPropertyId().getLocalNamespace());
         wsPropertyDef.setId(propertyDefinition.getPropertyId().getId());
+        wsPropertyDef.setQueryName(propertyDefinition.getQueryName());
         wsPropertyDef.setDisplayName(propertyDefinition.getDisplayName());
         wsPropertyDef.setDescription(propertyDefinition.getDescription());
         wsPropertyDef.setPropertyType(PROPERTY_TYPE_ENUM_MAPPING.get(propertyDefinition.getDataType()));

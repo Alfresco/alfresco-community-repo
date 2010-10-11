@@ -149,6 +149,14 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         runtimeActionService.saveActionImpl(actionNodeRef, renderingAction);
     }
     
+    public void deleteRenditionDefinition(RenditionDefinition renderingAction)
+    {
+        NodeRef actionNodeRef = findOrCreateActionNode(renderingAction);
+        if(actionNodeRef != null) {
+           nodeService.deleteNode(actionNodeRef);
+        }
+    }
+    
     private NodeRef findActionNode(QName renditionDefinitionName)
     {
         checkRenderingActionRootNodeExists();

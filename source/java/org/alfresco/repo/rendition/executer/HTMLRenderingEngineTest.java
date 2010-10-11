@@ -28,6 +28,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.rendition.RenditionDefinitionPersisterImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -60,6 +61,8 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
     private NodeRef targetFolder;
     private String targetFolderPath;
     
+    private RenditionDefinition def;
+    
     private static final String MIMETYPE_DOC = "application/msword";
     private static final String MIMETYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -81,6 +84,17 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
         this.companyHome = repositoryHelper.getCompanyHome();
         
         createTargetFolder();
+        
+        // Setup the basic rendition definition
+        QName renditionName = QName.createQName("Test");
+        RenditionDefinition rd = renditionService.loadRenditionDefinition(renditionName); 
+        if(rd != null)
+        {
+           RenditionDefinitionPersisterImpl rdp = new RenditionDefinitionPersisterImpl();
+           rdp.setNodeService(nodeService);
+           rdp.deleteRenditionDefinition(rd);
+        }
+        def = renditionService.createRenditionDefinition(renditionName, HTMLRenderingEngine.NAME);
     }
     
     @Override
@@ -166,8 +180,6 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
 
     public void testBasics() throws Exception
     {
-       RenditionDefinition def = renditionService.createRenditionDefinition(
-             QName.createQName("Test"), HTMLRenderingEngine.NAME);
        def.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
              targetFolderPath + "/${name}.html"
@@ -230,8 +242,6 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
      */
     public void testDocWithoutImages() throws Exception
     {
-       RenditionDefinition def = renditionService.createRenditionDefinition(
-             QName.createQName("Test"), HTMLRenderingEngine.NAME);
        def.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
              targetFolderPath + "/${name}.html"
@@ -298,19 +308,21 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
     
     /**
      * Test for a .doc and a .docx, both of which have 
-     *  a single image each
+     *  images in them
      */
-    public void testDocWithOneImages() throws Exception
+    public void testDocWithImages() throws Exception
     {
-       RenditionDefinition def = renditionService.createRenditionDefinition(
-             QName.createQName("Test"), HTMLRenderingEngine.NAME);
        def.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
              targetFolderPath + "/${name}.html"
        );
+       
+       String[] files = new String[] {"quickImg1.doc","quickImg1.docx", "quickImg3.doc","quickImg3.docx"};
+       int[] imgCounts = new int[] {1,1, 3,3};
 
-       for(String name : new String[] {"quickImg1.doc","quickImg1.docx"})
+       for(int i=0; i<files.length; i++)
        {
+          String name = files[i];
           sourceDoc = createForDoc(name);
           
           String baseName = name.substring(0, name.lastIndexOf('.'));
@@ -374,7 +386,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
           assertNotNull("Couldn't find new folder named " + baseName + "_files", imgFolder);
           
           // Check the contents
-          assertEquals(1, nodeService.getChildAssocs(imgFolder).size());
+          assertEquals(imgCounts[i], nodeService.getChildAssocs(imgFolder).size());
           
           
           // TODO Check against composite content associations when present 
@@ -400,11 +412,92 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
     }
     
     /**
-     * Test for a .doc and a .docx, both of which have 
-     *  a multiple images each
+     * Test for the option to have the images written to the
+     *  same folder as the html, with a name prefix to them.
+     *  
+     * TODO Re-enable when we've figured out why the rendition service sulkts
      */
-    public void testDocWithManyImages() throws Exception
+    public void DISABLEDtestImagesSameFolder() throws Exception
     {
-       
+       def.setParameterValue(
+             RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
+             targetFolderPath + "/${name}.html"
+       );
+       def.setParameterValue(
+             HTMLRenderingEngine.PARAM_IMAGES_SAME_FOLDER,
+             true
+       );
+
+       for(String name : new String[] {"quickImg3.doc","quickImg3.docx"})
+       {
+          sourceDoc = createForDoc(name);
+          String baseName = name.substring(0, name.lastIndexOf('.'));
+          
+          int numItemsStart = nodeService.getChildAssocs(targetFolder).size();
+          
+          ChildAssociationRef rendition = renditionService.render(sourceDoc, def);
+          assertNotNull(rendition);
+          
+          // Check it was created
+          NodeRef htmlNode = rendition.getChildRef();
+          assertEquals(true, nodeService.exists(htmlNode));
+          
+          // Check it got the right name
+          assertEquals(
+                baseName + ".html",
+                nodeService.getProperty(htmlNode, ContentModel.PROP_NAME)
+          );
+          
+          // Check it ended up in the right place
+          assertEquals(
+                "Should have been in " + targetFolderPath + " but was  in" +
+                   nodeService.getPath(htmlNode),
+                targetFolder,
+                nodeService.getPrimaryParent(htmlNode).getParentRef()
+          );
+          
+          // Check it got the right contents
+          ContentReader reader = contentService.getReader(
+                htmlNode, ContentModel.PROP_CONTENT
+          );
+          String html = reader.getContentString();
+          assertEquals("<?xml", html.substring(0, 5));
+          
+          // Check that the html has the img tags
+          assertEquals(
+                "Couldn't find img tag in html:\n" + html,
+                true, html.contains("<img")
+          );
+          
+          // Check that it has the right img src
+          String expSource = "src=\""+ baseName + "_image";
+          assertEquals(
+                "Couldn't find correct img src in html:\n" + expSource + "\n" + html,
+                true, html.contains(expSource)
+          );
+          
+          // Check we got an image folder
+          int numItems = nodeService.getChildAssocs(targetFolder).size();
+          assertEquals(numItemsStart+4, numItems);
+          
+          // There shouldn't be an image folder created
+          for(ChildAssociationRef ref : nodeService.getChildAssocs(targetFolder)) {
+             if(nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_NAME).equals(
+                   baseName + "_files"
+             )) {
+                fail("Image folder was created but shouldn't be there");
+             }
+          }
+          
+          // Check we got the images in the same directory as the html
+          int images = 0;
+          for(ChildAssociationRef ref : nodeService.getChildAssocs(targetFolder)) {
+             String childName = (String)nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
+             if(childName.startsWith(baseName + "_image")) {
+                images++;
+             }
+          }
+          assertEquals(3, images);
+       }
     }
 }

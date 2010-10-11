@@ -41,7 +41,6 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionLocation;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -87,6 +86,13 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      * By default, the whole of the HTML document is used.
      */
     public static final String PARAM_BODY_CONTENTS_ONLY = "bodyContentsOnly";
+    /**
+     * This optional parameter, when set to true, causes any embedded
+     *  images to be written into the same folder as the html, with
+     *  a name prefix.
+     * By default, images are placed into a sub-folder.
+     */
+    public static final String PARAM_IMAGES_SAME_FOLDER = "imagesSameFolder";
 
     /*
      * Action constants
@@ -99,6 +105,8 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
        paramList.add(new ParameterDefinitionImpl(PARAM_BODY_CONTENTS_ONLY, DataTypeDefinition.BOOLEAN, false,
              getParamDisplayLabel(PARAM_BODY_CONTENTS_ONLY)));
+       paramList.add(new ParameterDefinitionImpl(PARAM_IMAGES_SAME_FOLDER, DataTypeDefinition.BOOLEAN, false,
+             getParamDisplayLabel(PARAM_IMAGES_SAME_FOLDER)));
        return paramList;
     }
 
@@ -128,30 +136,54 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         // This will also extract out any images as found
         generateHTML(p, context);
     }
-    
+
+    private String getHtmlBaseName(RenderingContext context)
+    {
+       // Based on the name of the source node, which will
+       //  also largely be the name of the html node
+       String baseName = nodeService.getProperty( 
+             context.getSourceNode(),
+             ContentModel.PROP_NAME
+       ).toString();
+       if(baseName.lastIndexOf('.') > -1)
+       {
+          baseName = baseName.substring(0, baseName.lastIndexOf('.'));
+       }
+       return baseName;
+    }
     /**
      * What name should be used for the images directory?
+     * Note this is only required if {@link #PARAM_IMAGES_SAME_FOLDER} is false (the default).
      */
     private String getImagesDirectoryName(RenderingContext context)
     {
        // Based on the name of the source node, which will
        //  also largely be the name of the html node
-       String folderName = nodeService.getProperty( 
-             context.getSourceNode(),
-             ContentModel.PROP_NAME
-       ).toString();
-       if(folderName.lastIndexOf('.') > -1)
-       {
-          folderName = folderName.substring(0, folderName.lastIndexOf('.'));
-       }
+       String folderName = getHtmlBaseName(context);
        folderName = folderName + "_files";
        return folderName;
+    }
+    /**
+     * What prefix should be applied to the name of images? 
+     */
+    private String getImagesPrefixName(RenderingContext context)
+    {
+       if( context.getParamWithDefault(PARAM_IMAGES_SAME_FOLDER, false) )
+       {
+          // Prefix with the name of the source node
+          return getHtmlBaseName(context) + "_";
+       }
+       else {
+          // They have their own folder, so no prefix is needed
+          return "";
+       }
     }
     
     /**
      * Creates a directory to store the images in.
      * The directory will be a sibling of the rendered
      *  HTML, and named similar to it.
+     * Note this is only required if {@link #PARAM_IMAGES_SAME_FOLDER} is false (the default).
      */
     private NodeRef createImagesDirectory(RenderingContext context)
     {
@@ -245,8 +277,17 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "xml");
        
        // Change the image links as they go past
+       String dirName = null, imgPrefix = null;
+       if(context.getParamWithDefault(PARAM_IMAGES_SAME_FOLDER, false))
+       {
+          imgPrefix = getImagesPrefixName(context);
+       }
+       else
+       {
+          dirName = getImagesDirectoryName(context);
+       }
        ContentHandler contentHandler = new TikaImageRewritingContentHandler(
-             handler, getImagesDirectoryName(context)
+             handler, dirName, imgPrefix
        );
        
        // If required, wrap it to only return the body 
@@ -342,6 +383,16 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
          types.add(MediaType.image("jpeg"));
          types.add(MediaType.image("png"));
          types.add(MediaType.image("tiff"));
+         
+         // Are images going in the same place as the HTML?
+         if( renderingContext.getParamWithDefault(PARAM_IMAGES_SAME_FOLDER, false) )
+         {
+            RenditionLocation location = resolveRenditionLocation(
+                  renderingContext.getSourceNode(), renderingContext.getDefinition(), 
+                  renderingContext.getDestinationNode()
+            );
+            imgFolder = location.getParentRef();
+         }
       }
       
       @Override
@@ -399,6 +450,9 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
             filename = "image-" + count + ".";
             filename += type.substring(type.indexOf('/')+1);
          }
+         
+         // Prefix the filename if needed
+         filename = getImagesPrefixName(renderingContext) + filename; 
 
          // Save the image
          createEmbeddedImage(imgFolder, (count==1), filename, type, stream, renderingContext);
@@ -411,10 +465,12 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
      */
     private class TikaImageRewritingContentHandler extends ContentHandlerDecorator {
        private String imageFolder;
+       private String imagePrefix;
        
-       private TikaImageRewritingContentHandler(ContentHandler handler, String imageFolder) {
+       private TikaImageRewritingContentHandler(ContentHandler handler, String imageFolder, String imagePrefix) {
           super(handler);
           this.imageFolder = imageFolder;
+          this.imagePrefix = imagePrefix;
        }
 
        @Override
@@ -434,9 +490,13 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
                 if("src".equals(attrs.getLocalName(i))) {
                    String src = attrs.getValue(i);
                    if(src.startsWith("embedded:")) {
-                      src = imageFolder + "/" +
-                               src.substring(src.indexOf(':')+1);
-                      attrs.setValue(i, src);
+                      String newSrc = "";
+                      if(imageFolder != null)
+                         newSrc += imageFolder + "/";
+                      if(imagePrefix != null)
+                         newSrc += imagePrefix;
+                      newSrc += src.substring(src.indexOf(':')+1);
+                      attrs.setValue(i, newSrc);
                    }
                 }
              }

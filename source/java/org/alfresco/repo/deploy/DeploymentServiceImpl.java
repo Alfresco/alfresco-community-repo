@@ -1880,7 +1880,6 @@ public class DeploymentServiceImpl implements DeploymentService
 		    {
 		        active = false;
 		    }
-		    
 		}
 
 		/**
@@ -1891,13 +1890,21 @@ public class DeploymentServiceImpl implements DeploymentService
         @Override
         public boolean isActive()
         {
-            // may need to sync active flag
-            if(fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug("deployment service callback active: " + active);
-            }
+            Date now = new Date();
+            
             synchronized(this)
             {
+                if(now.getTime() > lastActive.getTime() + targetLockTimeToLive)
+                {
+                    active = false;
+                }
+            
+                // may need to sync active flag
+                if(fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("deployment service callback active: " + active);
+                }
+            
                 return active;
             }
         }

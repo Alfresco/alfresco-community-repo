@@ -354,10 +354,10 @@ public class PropPatchMethod extends PropFindMethod
      * 
      * @author Ivan Rybnikov
      */
-    private class PropertyAction
+    protected class PropertyAction
     {
-        protected static final int SET = 0;
-        protected static final int REMOVE = 1;
+        public static final int SET = 0;
+        public static final int REMOVE = 1;
         
         // Property on which action should be performed
         private WebDAVProperty property;

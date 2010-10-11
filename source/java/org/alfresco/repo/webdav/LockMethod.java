@@ -47,13 +47,13 @@ public class LockMethod extends WebDAVMethod
 {
     public static final String EMPTY_NS = "";
     
-    private int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
+    protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
     
-    private LockInfo lockInfo = new LockInfo();
+    protected LockInfo lockInfo = new LockInfo();
 
-    private boolean createExclusive;
+    protected boolean createExclusive;
 
-    private String lockToken= null;
+    protected String lockToken= null;
 
     /**
      * Default constructor
@@ -338,7 +338,7 @@ public class LockMethod extends WebDAVMethod
      * @param userName String
      * @exception WebDAVServerException
      */
-    private final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
+    protected final void refreshLock(FileInfo lockNode, String userName) throws WebDAVServerException
     {
         if (this.createExclusive)
         {
@@ -350,7 +350,7 @@ public class LockMethod extends WebDAVMethod
     /**
      * Generates the XML lock discovery response body
      */
-    private void generateResponse(NodeRef lockNode, String userName) throws Exception
+    protected void generateResponse(NodeRef lockNode, String userName) throws Exception
     {
         String scope;
         String lt;
@@ -413,6 +413,8 @@ public class LockMethod extends WebDAVMethod
 
         ns.append(" ");
         ns.append(WebDAV.XML_NS);
+        ns.append(":");
+        ns.append(WebDAV.DAV_NS);
         ns.append("=\"");
         ns.append(WebDAV.DEFAULT_NAMESPACE_URI);
         ns.append("\"");

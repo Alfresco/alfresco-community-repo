@@ -35,7 +35,7 @@ var Filters =
          limitResults: null,
          sort: [
          {
-            column: "@{http://www.alfresco.org/model/content/1.0}name",
+            column: "@cm:name",
             ascending: true
          }],
          language: "lucene",
@@ -55,7 +55,7 @@ var Filters =
 
       // Common types and aspects to filter from the UI
       var filterQueryDefaults =
-         " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"" +
+         " -TYPE:\"systemfolder\"" +
          " -@cm\\:lockType:READ_ONLY_LOCK";
 
       switch (String(filter.filterId))
@@ -65,7 +65,7 @@ var Filters =
          case "recentlyCreatedByMe":
          case "recentlyModifiedByMe":
             var onlySelf = (filter.filterId.indexOf("ByMe")) > 0 ? true : false,
-               dateField = (filter.filterId.indexOf("Created") > 0) ? "created" : "modified",
+               dateField = (filter.filterId.indexOf("Modified") > 0) ? "modified" : "created",
                ownerField = (dateField == "created") ? "creator" : "modifier";
 
             // Default to 7 days - can be overridden using "days" argument
@@ -99,11 +99,11 @@ var Filters =
             {
                filterQuery += " +@cm\\:" + ownerField + ":\"" + person.properties.userName + '"';
             }
-            filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+            filterQuery += " -TYPE:\"folder\"";
 
             filterParams.sort = [
             {
-               column: "@{http://www.alfresco.org/model/content/1.0}" + dateField,
+               column: "@cm:" + dateField,
                ascending: false
             }];
             filterParams.query = filterQuery + filterQueryDefaults;
@@ -124,7 +124,7 @@ var Filters =
             }
             filterQuery += "\"";
             filterQuery += " +@cm\\:modifier:\"" + person.properties.userName + '"';
-            filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
+            filterQuery += " -TYPE:\"folder\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
 

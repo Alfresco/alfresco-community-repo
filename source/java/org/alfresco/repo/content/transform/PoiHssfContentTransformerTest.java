@@ -106,6 +106,27 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
                 "Content not properly CSV'd",
                 contents.contains("\"The\",\"quick\",\"brown\",\"fox\"")
           );
+       } else if(targetMimetype.equals(MimetypeMap.MIMETYPE_XML)) {
+          // First check we got the usual bits
+          super.additionalContentCheck(sourceMimetype, targetMimetype, contents);
+          
+          // Now check tables came out correctly
+          assertTrue(
+                "Content lacks XHTML table tags:\n" + contents,
+                contents.contains("<table>")
+          );
+          assertTrue(
+                "Content lacks XHTML table tags:\n" + contents,
+                contents.contains("<tr>")
+          );
+          assertTrue(
+                "Content lacks XHTML table tags:\n" + contents,
+                contents.contains("<td>1</td>")
+          );
+          assertTrue(
+                "Content lacks XHTML table tags:\n" + contents,
+                contents.contains("<td>The</td>")
+          );
        } else {
           super.additionalContentCheck(sourceMimetype, targetMimetype, contents);
        }

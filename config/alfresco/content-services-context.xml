@@ -347,6 +347,10 @@
                 <constructor-arg><value>application/pdf</value></constructor-arg>
             </bean>
             <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <constructor-arg><value>text/csv</value></constructor-arg>
+                <constructor-arg><value>application/pdf</value></constructor-arg>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <constructor-arg><value>text/xml</value></constructor-arg>
                 <constructor-arg><value>application/pdf</value></constructor-arg>
             </bean>

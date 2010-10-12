@@ -140,6 +140,18 @@
     </export-filters>
   </document-format>
 
+  <!-- Not properly supported by OpenOffice via the Java API -->
+<!--
+  <document-format><name>Comma Separated Values (CSV)</name>
+    <family>Spreadsheet</family>
+    <mime-type>text/csv</mime-type>
+    <file-extension>csv</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>CSV</string></entry>
+    </export-filters>
+  </document-format>
+-->
+
 
   <!-- Presentation Formats -->
 

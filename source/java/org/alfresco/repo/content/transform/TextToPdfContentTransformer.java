@@ -89,10 +89,11 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if ( (!MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
+              !MimetypeMap.MIMETYPE_TEXT_CSV.equals(sourceMimetype) &&
               !MimetypeMap.MIMETYPE_XML.equals(sourceMimetype) ) ||
             !MimetypeMap.MIMETYPE_PDF.equals(targetMimetype))
         {
-            // only support (text/plain OR text/xml) to (application/pdf)
+            // only support (text/plain OR text/csv OR text/xml) to (application/pdf)
             return false;
         }
         else

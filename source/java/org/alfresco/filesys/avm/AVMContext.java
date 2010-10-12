@@ -289,7 +289,7 @@ public class AVMContext extends AlfrescoContext
      * 
      * @param writeable boolean
      */
-    public final void setAllowAdminStaginWrites(boolean writeable) {
+    public final void setAllowAdminStagingWrites(boolean writeable) {
         m_allowAdminStagingWrites = writeable;
     }
     

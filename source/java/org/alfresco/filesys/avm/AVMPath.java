@@ -59,7 +59,7 @@ public class AVMPath {
 
     // Level identifiers
     
-    public enum LevelId { Invalid, Root, StoreRoot, Head, HeadData, HeadMetaData, VersionRoot, Version, VersionData, VersionMetaData, StorePath };
+    public enum LevelId { Invalid, Root, StoreRoot, Head, HeadData, HeadMetaData, VersionRoot, Version, VersionData, VersionMetaData, StoreRootPath, StorePath };
     
     // Level identifier for this path
     
@@ -138,9 +138,9 @@ public class AVMPath {
 	 * @return boolean
 	 */
 	public final boolean isReadOnlyAccess() {
-		return m_readOnly;
+	    return m_readOnly;
 	}
-	
+
 	/**
 	 * Return the store name
 	 * 
@@ -230,7 +230,7 @@ public class AVMPath {
 	 */
 	public final boolean isPseudoPath()
 	{
-		return m_levelId == LevelId.Invalid || m_levelId == LevelId.StorePath ? false : true;
+		return m_levelId == LevelId.Invalid || m_levelId == LevelId.StorePath || m_levelId == LevelId.StoreRootPath ? false : true;
 	}
 
 	/**
@@ -420,22 +420,32 @@ public class AVMPath {
 				}
 				
 				// If there are remaining paths then build a relative path
-
 				if ( paths.length > pathIdx)
 				{
-					StringBuilder pathStr = new StringBuilder();
-					
-					for ( int i = pathIdx; i < paths.length; i++)
-					{
-						pathStr.append( FileName.DOS_SEPERATOR);
-						pathStr.append( paths[i]);
-					}
-					
-					m_path = pathStr.toString();
+                    StringBuilder pathStr = new StringBuilder();
+                    
+                    for ( int i = pathIdx; i < paths.length; i++)
+                    {
+                        pathStr.append( FileName.DOS_SEPERATOR);
+                        pathStr.append( paths[i]);
+                    }
+                    
+                    m_path = pathStr.toString();
 
-					// Set the level to indicate a store relative path
-					
-					m_levelId = LevelId.StorePath;
+                    // ALF-1719: make "www" and "avm_webapps" read only by setting their level to
+                    // StoreRootPath (which is checked in AVMDiskDriver.checkPathAccess).
+				    String lastPath = paths[paths.length-1].toLowerCase();
+	                if(lastPath.equals("www") || lastPath.equals("avm_webapps"))
+	                {
+	                    // Set the level to indicate a store root path i.e. "www",
+	                    // "avm_webapps"
+	                    m_levelId = LevelId.StoreRootPath;
+	                }
+	                else
+	                {
+	                    // Set the level to indicate a store relative path
+	                    m_levelId = LevelId.StorePath;
+	                }
 				}
 
 				// Build the AVM path, in <store>:/<path> format
@@ -508,8 +518,19 @@ public class AVMPath {
     	m_avmPath = avmPath.toString();
     	
     	// Indicate that the path is to a store relative path
-    	
-    	m_levelId = LevelId.StorePath;
+
+        String lowerPath = path.toLowerCase();
+        String[] paths = FileName.splitAllPaths(lowerPath);
+        if(paths[paths.length - 1].equals("www") || paths[paths.length - 1].equals("avm_webapps"))
+        {
+            // Set the level to indicate a store root path i.e. "www",
+            // "avm_webapps"
+            m_levelId = LevelId.StoreRootPath;
+        }
+        else
+        {
+            m_levelId = LevelId.StorePath;
+        }
 	}
 	
 	/**
@@ -523,7 +544,7 @@ public class AVMPath {
 		
 		int fid = -1;
 		
-		if ( isLevel() == LevelId.StorePath)
+		if ( isLevel() == LevelId.StorePath || isLevel() == LevelId.StoreRootPath)
 		{
 			// Use the share relative path to generate the file id
 			
@@ -682,6 +703,7 @@ public class AVMPath {
 				str.append("\\");
 				str.append( MetaDataFolder);
 				break;
+            case StoreRootPath:
 			case StorePath:
 				str.append("[");
 				str.append(getStoreName());

@@ -1067,20 +1067,23 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        final AVMPath storePath = buildStorePath(ctx, dir, sess);
+
+        final String[] paths = FileName.splitPath(dir);
+        final AVMPath parentPath = buildStorePath(ctx, paths[0], sess);
+        final AVMPath dirPath = buildStorePath(ctx, dir, sess);
 
         // DEBUG
 
         if (logger.isDebugEnabled())
-            logger.debug("Delete directory, path=" + dir + ", storePath=" + storePath);
+            logger.debug("Delete directory, path=" + dir + ", dirPath=" + dirPath);
 
         // Check if the filesystem is the virtualization view
 
         if (ctx.isVirtualizationView())
         {
-        	if (storePath.isPseudoPath())
+        	if (parentPath.isPseudoPath())
         		throw new AccessDeniedException("Cannot delete folder in store/version layer, " + dir);
-        	else if ( storePath.isReadOnlyAccess())
+        	else if ( parentPath.isReadOnlyAccess())
         		throw new AccessDeniedException("Cannot delete folder " + dir + ", read-only path");
         }
 
@@ -1092,7 +1095,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 public Void call() throws IOException
                 {
-                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(dirPath.getVersion(), dirPath.getAVMPath());
                     if (nodeDesc != null)
                     {
                         // Check that we are deleting a folder
@@ -1107,7 +1110,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                             // Delete the folder
 
-                            m_avmService.removeNode(storePath.getAVMPath());
+                            m_avmService.removeNode(dirPath.getAVMPath());
                         }
                         else
                             throw new IOException("Delete directory path is not a directory, " + dir);
@@ -1146,20 +1149,23 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        final AVMPath storePath = buildStorePath(ctx, name, sess);
 
+        final String[] paths = FileName.splitPath(name);
+        final AVMPath parentPath = buildStorePath(ctx, paths[0], sess);
+        final AVMPath filePath = buildStorePath(ctx, name, sess);
+        
         // DEBUG
 
         if (logger.isDebugEnabled())
-            logger.debug("Delete file, path=" + name + ", storePath=" + storePath);
+            logger.debug("Delete file, path=" + name + ", filePath=" + filePath);
 
         // Check if the filesystem is the virtualization view
 
         if (ctx.isVirtualizationView())
         {
-        	if (storePath.isPseudoPath())
+        	if (parentPath.isPseudoPath())
         		throw new AccessDeniedException("Cannot delete file in store/version layer, " + name);
-        	else if ( storePath.isReadOnlyAccess())
+        	else if ( parentPath.isReadOnlyAccess())
         		throw new AccessDeniedException("Cannot delete file " + name + ", read-only path");
         }
 
@@ -1171,7 +1177,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 public Void call() throws IOException
                 {
-                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(filePath.getVersion(), filePath.getAVMPath());
                     if (nodeDesc != null)
                     {
                         // Check that we are deleting a file
@@ -1180,7 +1186,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                         {
                             // Delete the file
 
-                            m_avmService.removeNode(storePath.getAVMPath());
+                            m_avmService.removeNode(filePath.getAVMPath());
                         }
                         else
                             throw new IOException("Delete file path is not a file, " + name);
@@ -1697,7 +1703,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         		throw new AccessDeniedException("Cannot rename folder in store/version layer, " + oldName);
         	else if ( newAVMPath.isReadOnlyPseudoPath())
         		throw new AccessDeniedException("Cannot rename folder to store/version layer, " + newName);
-        	else if ( newAVMPath.isReadOnlyAccess())
+            else if ( oldAVMPath.isReadOnlyAccess() )
+                throw new AccessDeniedException("Cannot rename read-only folder, " + oldName);
+        	else if ( newAVMPath.isReadOnlyAccess() )
         		throw new AccessDeniedException("Cannot rename folder to read-only folder, " + newName);
         }
 
@@ -2892,14 +2900,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
     	// Allow access to the root folder
     	
-    	if ( avmPath.isLevel() == AVMPath.LevelId.Root) {
+    	if ( avmPath.isLevel() == AVMPath.LevelId.Root || avmPath.isLevel() == AVMPath.LevelId.HeadData || avmPath.isLevel() == AVMPath.LevelId.StoreRootPath ) {
     		
-    		// Allow read only access to the root
-    		
-    		avmPath.setReadOnlyAccess( true);
+    		// Allow read only access to the root, www and avm_webapps folders
+    		avmPath.setReadOnlyAccess(true);
     		return;
     	}
-    	
     	
     	// Get root file state, get the store pseudo folder details
 

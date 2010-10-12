@@ -58,6 +58,9 @@ import org.springframework.context.ConfigurableApplicationContext;
  * Action tracking service tests. These mostly need
  *  careful control over the transactions they use.
  * 
+ * TODO Replace various sleep statements in here with a wait on the async action executor.
+ * Needs a way to be notified of async actions completing, which isn't currently available.
+ * 
  * @author Nick Burch
  */
 public class ActionTrackingServiceImplTest extends TestCase

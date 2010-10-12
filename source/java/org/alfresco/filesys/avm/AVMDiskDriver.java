@@ -348,7 +348,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 // Check if the admin user should be allowed to write to the web project staging stores
                 
                 if ( cfg.getChild("adminWriteable") != null)
-                	context.setAllowAdminStaginWrites( true);
+                	context.setAllowAdminStagingWrites( true);
                 
             }
             else

@@ -174,6 +174,11 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
        }
        writer.putContent(f);
           
+       if (log.isDebugEnabled())
+       {
+           log.debug("Created document with name: " + docname + ", nodeRef: " + node + ", mimetype: " + writer.getMimetype());
+       }
+
        // All done
        return node;
     }
@@ -428,6 +433,8 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
              true
        );
 
+       // The documents listed below have 3 embedded images each.
+       final int expectedImageCount = 3;
        for(String name : new String[] {"quickImg3.doc","quickImg3.docx"})
        {
           sourceDoc = createForDoc(name);
@@ -478,7 +485,10 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
           
           // Check we got an image folder
           int numItems = nodeService.getChildAssocs(targetFolder).size();
-          assertEquals(numItemsStart+4, numItems);
+          
+          // We expect a number of images and one text/html node to be created.
+          final int additionalItems = expectedImageCount + 1;
+          assertEquals(numItemsStart+additionalItems, numItems);
           
           // There shouldn't be an image folder created
           for(ChildAssociationRef ref : nodeService.getChildAssocs(targetFolder)) {
@@ -497,7 +507,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
                 images++;
              }
           }
-          assertEquals(3, images);
+          assertEquals(expectedImageCount, images);
        }
     }
 }

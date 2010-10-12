@@ -469,6 +469,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         checkSourceNodeExists(sourceNode);
 
         ChildAssociationRef renditionAssoc = createRenditionNodeAssoc(sourceNode, renditionDefinition);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Created rendition assoc: " + renditionAssoc);
+        }
         QName targetContentProp = getRenditionContentProperty(renditionDefinition);
         NodeRef destinationNode = renditionAssoc.getChildRef();
         RenderingContext context = new RenderingContext(sourceNode,//

@@ -238,6 +238,10 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
                 ContentModel.TYPE_CONTENT,
                 properties
           ).getChildRef();
+          if (logger.isDebugEnabled())
+          {
+              logger.debug("Image node created: " + img);
+          }
        }
        
        // TODO Once composite content is properly supported,
@@ -250,6 +254,10 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        );
        writer.setMimetype(contentType);
        writer.putContent(imageSource);
+       if (logger.isDebugEnabled())
+       {
+           logger.debug("Image content written into " + img);
+       }
        
        // All done
        return img;

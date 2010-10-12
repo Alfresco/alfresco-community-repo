@@ -30,7 +30,7 @@
       <td class="paddingRow"></td>
    </tr>
    <tr>
-      <td class="mainSubText">1. </f:verbatim><h:outputText value="#{msg.locate_acp_upload}" /><f:verbatim></td>
+      <td class="mainSubText"> </f:verbatim><h:outputText value="#{msg.locate_acp_upload}" /><f:verbatim></td>
    </tr>
    <tr>
       <td class="paddingRow"></td>
@@ -38,9 +38,6 @@
    <tr>
          <td></f:verbatim>
          <h:panelGrid id="upload_panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumn,panelGridValueColumn">
-
-            <h:outputText value="#{msg.locate_doc_upload}" style="padding-left:10px"/>
-            <f:verbatim/>
 
             <h:outputText id="out_schema" value="#{msg.file_location}:" style="padding-left:10px" />
             <h:column id="upload_empty" rendered="#{empty DialogManager.bean.fileName}">
@@ -55,14 +52,13 @@
       </tr>
    <tr>
       <td class="paddingRow"></td>
-   </tr>
-   
+   </tr>  
    
    <tr>
       <td class="paddingRow"></td>
    </tr>
    <tr>
-      <td></f:verbatim><h:selectBooleanCheckbox value="#{DialogManager.bean.runInBackground}" /><f:verbatim>&nbsp; <span style="vertical-align: 20%">3. </f:verbatim><h:outputText value="#{msg.run_import_in_background}" /><f:verbatim></span></td>
+      <td></f:verbatim><h:selectBooleanCheckbox value="#{DialogManager.bean.runInBackground}" /><f:verbatim>&nbsp; <span style="vertical-align: 20%"> </f:verbatim><h:outputText value="#{msg.run_import_in_background}" /><f:verbatim></span></td>
    </tr>
    <tr>
       <td>

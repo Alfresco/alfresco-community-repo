@@ -18,11 +18,10 @@
  */
 package org.alfresco.web.bean.actions;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +34,6 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -63,6 +59,9 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Base class for the "Run Action" and "Create Rule" wizards.
@@ -73,6 +72,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
 {
    protected static final String PROP_ACTION_NAME = "actionName";
    protected static final String PROP_ACTION_SUMMARY = "actionSummary";
+   protected static final String PROP_ACTION_EMAIL_RECIPIENTS= "actionEmailRecipients";
    protected static final String NO_PARAMS_MARKER = "noParamsMarker"; 
    protected static final String ERROR_ACTION_CANNOT_BE_EXECUTE_REPEATEDLY = "action_cannot_be_execute_repeatedly";
    
@@ -91,10 +91,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected List<SelectItem> users;
    protected List<SelectItem> encodings;
    protected List<SelectItem> objectTypes;
-   protected List<RecipientWrapper> emailRecipients;
-   
    transient protected DataModel allActionsDataModel;
-   transient protected DataModel emailRecipientsDataModel;
+   transient protected DataModel currentEmailRecipientsDataModel;
    
    protected boolean editingAction;
    protected String action;
@@ -119,12 +117,13 @@ public abstract class BaseActionWizard extends BaseWizardBean
       this.action = null;
       this.users = null;
       this.actions = null;
-      this.emailRecipientsDataModel = null;
+      this.currentEmailRecipientsDataModel = null;
       this.usingTemplate = null;
       
-      this.emailRecipients = new ArrayList<RecipientWrapper>(4);
       this.allActionsProperties = new ArrayList<Map<String, Serializable>>();
       this.currentActionProperties = new HashMap<String, Serializable>(3);
+      
+      this.editingAction = false;
       
       initialiseActionHandlers();
    }
@@ -188,14 +187,14 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public DataModel getEmailRecipientsDataModel()
    {
-      if (this.emailRecipientsDataModel == null)
+      if (this.currentEmailRecipientsDataModel == null)
       {
-         this.emailRecipientsDataModel = new ListDataModel();
+         this.currentEmailRecipientsDataModel = new ListDataModel();
       }
+
+      this.currentEmailRecipientsDataModel.setWrappedData(getEmailRecipients(this.currentActionProperties));
       
-      this.emailRecipientsDataModel.setWrappedData(this.emailRecipients);
-      
-      return this.emailRecipientsDataModel;
+      return this.currentEmailRecipientsDataModel;
    }
    
    /**
@@ -590,9 +589,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
     * 
     * @return List of email recipients
     */
-   public List<RecipientWrapper> getEmailRecipients()
+   public List<RecipientWrapper> getEmailRecipients(Map<String, Serializable> actionProperties)
    {
-      return this.emailRecipients;
+      List<RecipientWrapper> currentEmailRecipients = (List<RecipientWrapper>) actionProperties.get(PROP_ACTION_EMAIL_RECIPIENTS);
+      if (currentEmailRecipients == null)
+      {
+         currentEmailRecipients = new ArrayList<RecipientWrapper>(4);
+         actionProperties.put(PROP_ACTION_EMAIL_RECIPIENTS, (Serializable)currentEmailRecipients);
+      }
+      return currentEmailRecipients;
    }
    
    // ------------------------------------------------------------------------------
@@ -613,6 +618,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       HashMap<String, Serializable> actionProps = new HashMap<String, Serializable>(3);
       actionProps.put(PROP_ACTION_NAME, this.action);
       this.currentActionProperties = actionProps;
+      this.currentEmailRecipientsDataModel = null;
       
       // get the handler for the action, if there isn't one we presume it
       // is a no-parameter action
@@ -660,9 +666,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
       // use the built in JSF support for retrieving the object for the
       // row that was clicked by the user
-      Map actionToEdit = (Map)this.allActionsDataModel.getRowData();
-      this.action = (String)actionToEdit.get(PROP_ACTION_NAME);
-      this.currentActionProperties = actionToEdit;
+      int index = this.allActionsDataModel.getRowIndex();
+      this.currentActionProperties = this.allActionsProperties.get(index);
+      this.action = (String)this.currentActionProperties.get(PROP_ACTION_NAME);
+      this.currentEmailRecipientsDataModel = null;
       
       // set the flag to show we are editing an action
       this.editingAction = true;
@@ -713,8 +720,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
       // use the built in JSF support for retrieving the object for the
       // row that was clicked by the user
       @SuppressWarnings("unchecked")
-      Map actionToRemove = (Map)this.allActionsDataModel.getRowData();
-      this.allActionsProperties.remove(actionToRemove);
+      int index = this.allActionsDataModel.getRowIndex();
+      this.allActionsProperties.remove(index);
       
       // reset the action drop down
       this.action = null;
@@ -750,13 +757,14 @@ public abstract class BaseActionWizard extends BaseWizardBean
       String[] results = picker.getSelectedResults();
       if (results != null && results.length != 0)
       {
+         List<RecipientWrapper> currentEmailRecipients = getEmailRecipients(this.currentActionProperties);
          for (String authority : results)
          {
             // first check the authority has not already been added to the list
             boolean alreadyAdded = false;
-            for (int i=0; i<emailRecipients.size(); i++)
+            for (int i=0; i<currentEmailRecipients.size(); i++)
             {
-               RecipientWrapper wrapper = emailRecipients.get(i);
+               RecipientWrapper wrapper = currentEmailRecipients.get(i);
                if (wrapper.getAuthority().equals(authority))
                {
                   alreadyAdded = true;
@@ -771,7 +779,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
                
                // add the recipient to the list
                RecipientWrapper wrapper = new RecipientWrapper(name, authority);
-               this.emailRecipients.add(wrapper);
+               currentEmailRecipients.add(wrapper);
             }
          }
       }
@@ -782,8 +790,9 @@ public abstract class BaseActionWizard extends BaseWizardBean
     */
    public void removeRecipient(ActionEvent event)
    {
-      RecipientWrapper wrapper = (RecipientWrapper)this.emailRecipientsDataModel.getRowData();
-      this.emailRecipients.remove(wrapper);
+      List<RecipientWrapper> currentEmailRecipients = getEmailRecipients(this.currentActionProperties);
+      int index = this.currentEmailRecipientsDataModel.getRowIndex();
+      currentEmailRecipients.remove(index);
    }
    
    /**
@@ -1065,9 +1074,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    
    public boolean isFinishButtonDisabled()
    {
-      if (emailRecipients != null)
+      List<RecipientWrapper> currentEmailRecipients = (List<RecipientWrapper>) this.currentActionProperties.get(PROP_ACTION_EMAIL_RECIPIENTS);
+      if (currentEmailRecipients != null)
       {
-         return emailRecipients.isEmpty();
+         return currentEmailRecipients.isEmpty();
       }
       return true; 
    }
@@ -1135,15 +1145,5 @@ public abstract class BaseActionWizard extends BaseWizardBean
       
       private String name;
       private String authority;
-   }
-
-   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
-   {
-      in.defaultReadObject();
-
-      this.allActionsDataModel = new ListDataModel();
-      this.allActionsDataModel.setWrappedData(this.allActionsProperties);
-      this.emailRecipientsDataModel = new ListDataModel();
-      this.emailRecipientsDataModel.setWrappedData(this.emailRecipients);
    }
 }

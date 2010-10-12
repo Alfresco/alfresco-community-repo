@@ -101,6 +101,7 @@ public class EditRuleWizard extends CreateCompositeRuleWizard
       for (Action action : actions)
       {
          this.currentActionProperties = new HashMap<String, Serializable>(3);
+         this.currentEmailRecipientsDataModel = null;
          this.action = action.getActionDefinitionName();
          this.currentActionProperties.put(PROP_ACTION_NAME, this.action);
          

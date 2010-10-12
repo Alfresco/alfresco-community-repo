@@ -62,10 +62,11 @@ public class MailHandler extends BaseActionHandler
             getWizardManager().getBean();
       
       // add the person(s) it's going to as a list of authorities
-      List<String> recipients = new ArrayList<String>(wizard.getEmailRecipients().size());
-      for (int i=0; i < wizard.getEmailRecipients().size(); i++)
+      List<RecipientWrapper> wizardRecipients = wizard.getEmailRecipients(actionProps);
+      List<String> recipients = new ArrayList<String>(wizardRecipients.size());
+      for (int i=0; i < wizardRecipients.size(); i++)
       {
-         RecipientWrapper wrapper = wizard.getEmailRecipients().get(i);
+         RecipientWrapper wrapper = wizardRecipients.get(i);
          recipients.add(wrapper.getAuthority());
       }
       
@@ -133,7 +134,7 @@ public void prepareForEdit(Map<String, Serializable> actionProps,
             // rebuild the list of RecipientWrapper objects from the stored action
             for (String authority : recipients)
             {
-               wizard.getEmailRecipients().add(
+               wizard.getEmailRecipients(actionProps).add(
                      new RecipientWrapper(wizard.displayLabelForAuthority(authority), 
                            authority));
             }
@@ -157,13 +158,14 @@ public void prepareForEdit(Map<String, Serializable> actionProps,
          
       if (addresses == null || addresses.length() == 0)
       {
-         if (actionWizard.getEmailRecipients().size() != 0)
+         List<RecipientWrapper> wizardRecipients = actionWizard.getEmailRecipients(actionProps); 
+         if (wizardRecipients.size() != 0)
          {
             StringBuilder builder = new StringBuilder();
             
-            for (int i=0; i < actionWizard.getEmailRecipients().size(); i++)
+            for (int i=0; i < wizardRecipients.size(); i++)
             {
-               RecipientWrapper wrapper = actionWizard.getEmailRecipients().get(i);
+               RecipientWrapper wrapper = wizardRecipients.get(i);
                if (i != 0)
                {
                   builder.append(", ");

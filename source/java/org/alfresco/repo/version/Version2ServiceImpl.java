@@ -959,7 +959,22 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     int result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
                     if (result == 0)
                     {
-                        result = v1.getFrozenStateNodeRef().getId().compareTo(v2.getFrozenStateNodeRef().getId());
+                        Long dbid1 = (Long)nodeService.getProperty(v1.getFrozenStateNodeRef(), ContentModel.PROP_NODE_DBID);
+                        Long dbid2 = (Long)nodeService.getProperty(v2.getFrozenStateNodeRef(), ContentModel.PROP_NODE_DBID);
+                        
+                        if (dbid1 != null && dbid2 != null)
+                        {
+                            result = dbid1.compareTo(dbid2);
+                        }
+                        else
+                        {
+                            result = 0;
+                            
+                            if (logger.isWarnEnabled())
+                            {
+                                logger.warn("node-dbid property is missing for versions: " + v1.toString() + " or " + v2.toString());
+                            }
+                        }
                     }
                     return result;
                 }

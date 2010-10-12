@@ -33,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -1167,20 +1168,37 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     public void testALF_3962()
     {
         NodeRef versionableNode = createNode(true, QName.createQName("http://www.alfresco.org/model/action/1.0", "action"));
-        // crete some versions of content without version label policy
+        
+        // create some versions of content without version label policy
         createVersion(versionableNode);
         createVersion(versionableNode);
         createVersion(versionableNode);
-
+        
+        // create some more versions and force them to have same frozen modified date
+        Version ver = createVersion(versionableNode);
+        Date frozenModifiedDate = ver.getFrozenModifiedDate();
+        
+        ver = createVersion(versionableNode);
+        NodeRef versionNodeRef = VersionUtil.convertNodeRef(ver.getFrozenStateNodeRef());
+        this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_MODIFIED, frozenModifiedDate);
+        
+        ver = createVersion(versionableNode);
+        versionNodeRef = VersionUtil.convertNodeRef(ver.getFrozenStateNodeRef());
+        this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_MODIFIED, frozenModifiedDate);
+        
         // corrupt versions
         Collection<Version> versions = versionService.getVersionHistory(versionableNode).getAllVersions();
+        
+        List<Version> oldVersions = new ArrayList<Version>(versions.size());
 
         for (Version version : versions)
         {
             // update version with corrupted label
-            NodeRef versionNodeRef = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, version.getFrozenStateNodeRef().getStoreRef().getIdentifier(), version.getFrozenStateNodeRef()
-                    .getId());
+            versionNodeRef = VersionUtil.convertNodeRef(version.getFrozenStateNodeRef());
             this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_VERSION_LABEL, "0");
+            
+            // cache results
+            oldVersions.add(version);
         }
         this.nodeService.setProperty(versionableNode, ContentModel.PROP_VERSION_LABEL, "0");
 
@@ -1188,17 +1206,33 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         versionService.createVersion(versionableNode, this.versionProperties);
 
         versions = versionService.getVersionHistory(versionableNode).getAllVersions();
+        List<Version> newVersions = new ArrayList<Version>(versions.size());
 
         for (Version version : versions)
         {
             assertFalse(version.getVersionLabel().equals("0"));
+            newVersions.add(version);
         }
 
         // check live node
         assertFalse(this.nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL).toString().equals("0"));
 
+        //check order        
+        for (int i = 0; i < oldVersions.size(); i++)
+        {
+            Version oldVersion = oldVersions.get(i);
+            Version newVersion = newVersions.get(i + 1);
+
+            assertEquals(oldVersion.getFrozenModifiedDate(), newVersion.getFrozenModifiedDate());
+
+            assertEquals(oldVersion.getVersionLabel(), newVersion.getVersionLabel());
+            String nodeDbidKey = ContentModel.PROP_NODE_DBID.getLocalName();
+            assertEquals(oldVersion.getVersionProperty(nodeDbidKey), newVersion.getVersionProperty(nodeDbidKey));
+            String nodeUuidKey = ContentModel.PROP_NODE_UUID.getLocalName();
+            assertEquals(oldVersion.getVersionProperty(nodeUuidKey), newVersion.getVersionProperty(nodeUuidKey));
+        }
     }
-    
+
     public static void main(String ... args)
     {
         try

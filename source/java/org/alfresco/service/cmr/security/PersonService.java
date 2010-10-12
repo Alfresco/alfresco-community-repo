@@ -184,6 +184,14 @@ public interface PersonService
      */
     @Auditable(parameters = {"userName"})
     public void deletePerson(String userName);
+    
+    /**
+     * Delete the person identified by the given ref.
+     * 
+     * @param personRef
+     */
+    @Auditable(parameters = {"personRef"})
+    public void deletePerson(NodeRef personRef);
 
     /**
      * Get all the people we know about.

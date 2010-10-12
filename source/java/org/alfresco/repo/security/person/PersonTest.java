@@ -34,7 +34,9 @@ import javax.transaction.UserTransaction;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -57,11 +59,13 @@ import org.springframework.context.ApplicationContext;
 
 public class PersonTest extends TestCase
 {
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TransactionService transactionService;
 
     private PersonService personService;
+    
+    private BehaviourFilter policyBehaviourFilter;
 
     private NodeService nodeService;
 
@@ -81,28 +85,28 @@ public class PersonTest extends TestCase
 
     public void setUp() throws Exception
     {
-        transactionService = (TransactionService) applicationContext.getBean("transactionService");
-        personService = (PersonService) applicationContext.getBean("personService");
-        nodeService = (NodeService) applicationContext.getBean("nodeService");
-        permissionService = (PermissionService) applicationContext.getBean("permissionService");
-        authorityService = (AuthorityService) applicationContext.getBean("authorityService");
-
+        transactionService = (TransactionService) ctx.getBean("transactionService");
+        personService = (PersonService) ctx.getBean("personService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        permissionService = (PermissionService) ctx.getBean("permissionService");
+        authorityService = (AuthorityService) ctx.getBean("authorityService");
+        policyBehaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-
+        
         for (NodeRef nodeRef : personService.getAllPeople())
         {
             String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
             if (!uid.equals("admin") && !uid.equals("guest") )
             {
-                nodeService.deleteNode(nodeRef);
+                personService.deletePerson(nodeRef);
             }
         }
-
+        
         personService.setCreateMissingPeople(true);
         
         testTX.commit();
@@ -784,38 +788,47 @@ public class PersonTest extends TestCase
         final NodeRef[] duplicates = transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionCallback<NodeRef[]>()
                 {
-
                     public NodeRef[] execute() throws Throwable
                     {
                         NodeRef[] duplicates = new NodeRef[10];
-
+                        
                         // Generate a first person node
                         Map<QName, Serializable> properties = createDefaultProperties(duplicateUserName, "firstName", "lastName", "email@orgId", "orgId", null); 
                         duplicates[0] = personService.createPerson(properties);
                         ChildAssociationRef container = nodeService.getPrimaryParent(duplicates[0]);
                         List<ChildAssociationRef> parents = nodeService.getParentAssocs(duplicates[0]);
-
+                        
                         // Generate some duplicates
-                        for (int i = 1; i < duplicates.length; i++)
+                        try
                         {
-                            // Create the node with the same parent assocs
-                            duplicates[i] = nodeService.createNode(container.getParentRef(), container.getTypeQName(),
-                                    container.getQName(), ContentModel.TYPE_PERSON, properties).getChildRef();
-                            for (ChildAssociationRef parent : parents)
+                            policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
+                            
+                            for (int i = 1; i < duplicates.length; i++)
                             {
-                                if (!parent.isPrimary())
+                                // Create the node with the same parent assocs
+                                duplicates[i] = nodeService.createNode(container.getParentRef(), container.getTypeQName(),
+                                        container.getQName(), ContentModel.TYPE_PERSON, properties).getChildRef();
+                                for (ChildAssociationRef parent : parents)
                                 {
-                                    nodeService.addChild(parent.getParentRef(), duplicates[i], parent.getTypeQName(),
-                                            parent.getQName());
+                                    if (!parent.isPrimary())
+                                    {
+                                        nodeService.addChild(parent.getParentRef(), duplicates[i], parent.getTypeQName(),
+                                                parent.getQName());
+                                    }
                                 }
                             }
                         }
+                        finally
+                        {
+                            policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_PERSON);
+                        }
+                        
                         // With the default settings, the last created node should be the one that wins
                         assertEquals(duplicates[duplicates.length - 1], personService.getPerson(duplicateUserName));
                         return duplicates;
                     }
                 }, false, true);
-
+        
         // Check the duplicates were processed appropriately in the previous transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -834,12 +847,309 @@ public class PersonTest extends TestCase
                         assertFalse(nodeService.exists(duplicates[i]));
                     }
                 }
-
+                
                 // Get rid of the non-split person
                 assertTrue(personService.personExists(duplicateUserName));
                 personService.deletePerson(duplicateUserName);
                 return null;
             }
         }, false, true);
+    }
+    
+    public void testCheckForDuplicateCaseInsensitive()
+    {
+        final String TEST_PERSON_MIXED = "Test_Person_One";
+        final String TEST_PERSON_UPPER = TEST_PERSON_MIXED.toUpperCase();
+        final String TEST_PERSON_LOWER = TEST_PERSON_MIXED.toLowerCase();
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final NodeRef peopleContainer = personService.getPeopleContainer();
+        
+        final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        
+        personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
+        
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                if (! personService.personExists(TEST_PERSON_UPPER))
+                {
+                    personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
+                    personService.createPerson(personProps);
+                }
+                
+                return null;
+            }
+        };
+        
+        txnHelper.doInTransaction(callback);
+        
+        @SuppressWarnings("unused")
+        NodeRef personRef = null;
+        
+        // -ve test
+        try
+        {
+            @SuppressWarnings("unused")
+            ChildAssociationRef childAssocRef = nodeService.createNode(
+                        peopleContainer,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}testperson"),
+                        ContentModel.TYPE_PERSON,
+                        personProps);
+            
+            fail("Shouldn't be able to create person node directly (within people container) - use createPerson instead");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("use PersonService"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        // -ve test
+        try
+        {
+            personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
+            personRef = personService.createPerson(personProps);
+            
+            fail("Shouldn't be able to create duplicate person");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("already exists"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        // -ve test
+        try
+        {
+            personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
+            personRef = personService.createPerson(personProps);
+            
+            fail("Shouldn't be able to create duplicate person");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("already exists"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+    }
+    
+    public void testCheckForDuplicateCaseSensitive()
+    {
+        final String TEST_PERSON_MIXED = "Test_Person_Two";
+        final String TEST_PERSON_UPPER = TEST_PERSON_MIXED.toUpperCase();
+        final String TEST_PERSON_LOWER = TEST_PERSON_MIXED.toLowerCase();
+        
+        UserNameMatcherImpl usernameMatcher = new UserNameMatcherImpl();
+        usernameMatcher.setUserNamesAreCaseSensitive(true);
+        ((PersonServiceImpl)personService).setUserNameMatcher(usernameMatcher); // case-sensitive
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final NodeRef peopleContainer = personService.getPeopleContainer();
+        
+        final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        
+        personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
+        
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                if (! personService.personExists(TEST_PERSON_MIXED))
+                {
+                    personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
+                    personService.createPerson(personProps);
+                }
+                
+                return null;
+            }
+        };
+        
+        txnHelper.doInTransaction(callback);
+        
+        @SuppressWarnings("unused")
+        NodeRef personRef = null;
+        
+        personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
+        personRef = personService.createPerson(personProps);
+        
+        personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
+        personRef = personService.createPerson(personProps);
+        
+        // -ve test
+        try
+        {
+            personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
+            personRef = personService.createPerson(personProps);
+            
+            fail("Shouldn't be able to create duplicate person");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("already exists"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        // -ve test
+        try
+        {
+            personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
+            personRef = personService.createPerson(personProps);
+            
+            fail("Shouldn't be able to create duplicate person");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("already exists"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        // -ve test
+        try
+        {
+            personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
+            personRef = personService.createPerson(personProps);
+            
+            fail("Shouldn't be able to create duplicate person");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("already exists"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        usernameMatcher.setUserNamesAreCaseSensitive(false);
+        ((PersonServiceImpl)personService).setUserNameMatcher(usernameMatcher); // case-insensitive
+    }
+    
+    public void testUpdateUserNameCase()
+    {
+        final String TEST_PERSON_UPPER = "TEST_PERSON_THREE";
+        final String TEST_PERSON_LOWER = TEST_PERSON_UPPER.toLowerCase();
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        
+        personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name ");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
+        
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
+                return personService.createPerson(personProps);
+            }
+        };
+        
+        final NodeRef personRef = txnHelper.doInTransaction(callback);
+        
+        RetryingTransactionCallback<Void> callback2 = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                nodeService.setProperty(personRef, ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
+                
+                return null;
+            }
+        };
+        
+        txnHelper.doInTransaction(callback2);
+    }
+    
+    public void testCheckForIndirectUsage()
+    {
+        final String TEST_PERSON = "Test_Person_Four";
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final NodeRef peopleContainer = personService.getPeopleContainer();
+        
+        final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        
+        personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON);
+        personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
+        
+        // -ve test
+        try
+        {
+            @SuppressWarnings("unused")
+            ChildAssociationRef childAssocRef = nodeService.createNode(
+                        peopleContainer,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}testperson"),
+                        ContentModel.TYPE_PERSON,
+                        personProps);
+            
+            fail("Shouldn't be able to create person node directly (within people container) - use createPerson instead");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("use PersonService"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        NodeRef personRef = personService.createPerson(personProps);
+        
+        // -ve test
+        try
+        {
+            nodeService.deleteNode(personRef);
+            
+            fail("Shouldn't be able to delete person node directly (within people container) - use deletePerson instead");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            if (! are.getMessage().contains("use PersonService"))
+            {
+                throw are;
+            }
+            // ignore - expected
+        }
+        
+        personService.deletePerson(TEST_PERSON);
     }
 }

@@ -20,6 +20,7 @@
 package org.alfresco.repo.invitation;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,6 +69,7 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of invitation service.
@@ -1010,7 +1012,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // Get invitee person NodeRef to add as assignee
         NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
 
-        siteService.getSite(resourceName);
+        SiteInfo siteInfo = siteService.getSite(resourceName);
 
         if (siteService.isMember(resourceName, inviteeUserName))
         {
@@ -1023,11 +1025,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         String roleGroup = siteService.getSiteRoleGroup(resourceName, SiteModel.SITE_MANAGER);
 
+        // get the workflow description
+        String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.moderated.workflow.description");
+        
         NodeRef wfPackage = this.workflowService.createPackage(null);
 
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
         workflowProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
         workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
+        workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
         workflowProps.put(WorkflowModelModeratedInvitation.ASSOC_GROUP_ASSIGNEE, roleGroup);
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE, inviteeRole);
@@ -1257,8 +1263,13 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             siteDescription = siteDescription.substring(0, 255);
         }
+        
+        // get the workflow description
+        String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.nominated.workflow.description");
+        
         // create workflow properties
-        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
+        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(32);
+        workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, inviterUserName);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL, inviteeEmail);
@@ -1421,5 +1432,23 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 return null;
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
+    }
+    
+    /**
+     * Generates a description for the workflow
+     * 
+     * @param siteInfo The site to generate a description for
+     * @param messageId The resource bundle key to use for the description 
+     * @return The workflow description
+     */
+    protected String generateWorkflowDescription(SiteInfo siteInfo, String messageId)
+    {
+        String siteTitle = siteInfo.getTitle();
+        if (siteTitle == null || siteTitle.length() == 0)
+        {
+            siteTitle = siteInfo.getShortName();
+        }
+        
+        return I18NUtil.getMessage(messageId, siteTitle);
     }
 }

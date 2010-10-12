@@ -452,7 +452,16 @@ public class Schema2XForms implements Serializable
                Element oldEl = (Element)old;
    
                // Copy the old instance element rather than cloning it, so we don't copy over attributes
-               Element clone = newInstanceDocument.createElementNS(oldEl.getNamespaceURI(), oldEl.getTagName());
+               Element clone = null; 
+               String nSUri = oldEl.getNamespaceURI(); 
+               if (nSUri == null) 
+               { 
+                  clone = newInstanceDocument.createElement(oldEl.getTagName()); 
+               } 
+               else 
+               {  
+                  clone = newInstanceDocument.createElementNS(nSUri, oldEl.getTagName()); 
+               }
                newInstanceNode.appendChild(clone);
                
                if (oldInstanceNode instanceof Document)

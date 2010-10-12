@@ -77,7 +77,7 @@ public class UIActions extends SelfRenderingComponent
    
    public final static Class ACTION_CLASS_ARGS[] = {javax.faces.event.ActionEvent.class};
    
-   private Set<String> groups = new HashSet<String>(4);
+   private transient Set<String> groups = new HashSet<String>(4);
    private final static String CONTEXTID_DEFAULT = "_default";
 
    /**
@@ -99,7 +99,7 @@ public class UIActions extends SelfRenderingComponent
       this.value = (String)values[1];
       this.showLink = (Boolean)values[2];
       this.verticalSpacing = (Integer)values[3];
-      this.groups = (HashSet<String>)values[4];
+      this.groups = new HashSet<String>(4);
    }
    
    /**
@@ -108,7 +108,7 @@ public class UIActions extends SelfRenderingComponent
    public Object saveState(FacesContext context)
    {
       Object values[] = new Object[] {
-            super.saveState(context), this.value, this.showLink, this.verticalSpacing, this.groups};
+            super.saveState(context), this.value, this.showLink, this.verticalSpacing};
       return (values);
    }
 

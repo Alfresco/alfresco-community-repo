@@ -45,6 +45,14 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
     {
         this.worker = worker;
     }
+    
+    /**
+     * Returns the worker that the converter uses
+     */
+    public ContentTransformerWorker getWorker()
+    {
+        return this.worker;
+    }
 
     /**
      * @see DocumentFormatRegistry

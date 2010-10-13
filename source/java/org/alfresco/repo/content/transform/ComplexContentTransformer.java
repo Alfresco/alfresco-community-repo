@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -226,5 +227,10 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
             currentReader = currentWriter.getReader();
         }
         // done
-    }    
+    }  
+    
+    public List<String> getIntermediateMimetypes()
+    {
+       return Collections.unmodifiableList(intermediateMimetypes);
+    }
 }

@@ -51,7 +51,7 @@ public interface RepoAdminService
      * Allows creation of new models and incremental update of existing models.
      * 
      */
-    @Auditable
+    @Auditable(parameters = {"modelStream", "modelFileName"}, recordable = {false, true})
     public void deployModel(InputStream modelStream, String modelFileName);
 
     /**

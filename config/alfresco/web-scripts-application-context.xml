@@ -458,6 +458,13 @@
    <bean id="webscript.org.alfresco.repository.authentication.get" class="org.alfresco.repo.web.scripts.bean.Authentication" parent="webscript">
       <property name="authenticationService" ref="authenticationService"/>
    </bean>
+
+   <!-- Mimetype information details -->
+   <bean id="webscript.org.alfresco.repository.content.mimetypes.get" class="org.alfresco.repo.web.scripts.content.MimetypesGet" parent="webscript">
+      <property name="mimetypeService" ref="mimetypeService" />
+      <property name="metadataExtracterRegistry" ref="metadataExtracterRegistry" />
+      <property name="contentTransformerRegistry" ref="contentTransformerRegistry" />
+   </bean>
    
    <!-- Patch webscript for RenditionService -->
    <bean id="webscript.org.alfresco.repository.rendition.patchthumbnailsasrenditions.get"

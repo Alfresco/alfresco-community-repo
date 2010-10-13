@@ -85,6 +85,25 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
        return super.isTransformable(sourceMimetype, targetMimetype, options);
     }
     
+    /**
+     * Make sure we win over openoffice when it comes to producing
+     *  HTML
+     */
+    @Override
+    public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+       if(sourceMimeTypes.contains(sourceMimetype) &&
+             (MimetypeMap.MIMETYPE_HTML.equals(targetMimetype) ||
+              MimetypeMap.MIMETYPE_XHTML.equals(targetMimetype)) )
+       {
+          // Special case to win for HTML 
+          return true;
+       }
+       
+       // Otherwise fall back on the default Tika rules
+       return super.isTransformable(sourceMimetype, targetMimetype, options);
+    }
+    
     @Override
     protected ContentHandler getContentHandler(String targetMimeType, Writer output) 
                    throws TransformerConfigurationException

@@ -39,7 +39,8 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
  *  do this, pending TIKA-408. When Apache POI 3.7 beta 2 has been
  *  released, we can switch to Tika and then handle Word 6,
  *  Word 95, Word 97, 2000, 2003, 2007 and 2010 formats.
- * TODO Switch to Tika in August 2010
+ *  
+ * TODO Switch to Tika in November 2010 once 3.4 is out
  * 
  * @author Nick Burch
  */

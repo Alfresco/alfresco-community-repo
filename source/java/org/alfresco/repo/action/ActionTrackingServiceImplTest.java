@@ -1031,7 +1031,7 @@ public class ActionTrackingServiceImplTest extends TestCase
        // End the transaction. Should allow the async action
        //  to be executed
        txn.commit();
-       Thread.sleep(200);
+       Thread.sleep(250);
        txn = transactionService.getUserTransaction();
        txn.begin();
        

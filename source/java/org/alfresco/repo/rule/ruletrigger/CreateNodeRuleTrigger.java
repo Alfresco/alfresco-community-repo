@@ -138,7 +138,7 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
+        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == true)
         {
             if (logger.isDebugEnabled() == true)
             {

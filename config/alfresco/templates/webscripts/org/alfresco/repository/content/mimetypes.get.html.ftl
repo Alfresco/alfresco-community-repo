@@ -7,7 +7,7 @@
 
  <#list mimetypes as mimetype>
    <a name="${mimetype}"></a>
-   <h3>${mimetype} <#if extensions[mimetype]??>- ${extensions[mimetype]}</#if></h3>
+   <h3 style="margin-bottom: 0em;">${mimetype} <#if extensions[mimetype]??>- ${extensions[mimetype]}</#if></h3>
    <#if details[mimetype]??>
     <div style="margin-left: 2em">
      <#if details[mimetype]["extractors"]?has_content>
@@ -48,7 +48,7 @@
      </div>
     </div>
    <#else>
-     <div style="font size: 75%">
+     <div style="font-size: 75%">
        <a href="?mimetype=${mimetype}#${mimetype}">(details for ${mimetype})</a>
      </div>
    </#if>

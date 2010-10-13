@@ -18,6 +18,7 @@
  */
 const DEFAULT_MAX_RESULTS = 250;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
+const COMMENT_QNAMEPATH = "/fm:discussion/cm:Comments/";
 const QUERY_TEMPLATES = [
    {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
 
@@ -112,35 +113,38 @@ function getRepositoryItem(folderPath, node)
    addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
-   var item = null, t = null;
-   if (node.isContainer || node.isDocument)
+   var item = t = null;
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
    {
-      item =
+      if (node.isContainer || node.isDocument)
       {
-         nodeRef: node.nodeRef.toString(),
-         tags: ((t = node.tags) !== null) ? t : [],
-         name: node.name,
-         displayName: node.name,
-         title: node.properties["cm:title"],
-         description: node.properties["cm:description"],
-         modifiedOn: node.properties["cm:modified"],
-         modifiedByUser: node.properties["cm:modifier"],
-         createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"],
-         path: folderPath.join("/")
-      };
-      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-      item.createdBy = getPersonDisplayName(item.createdByUser);
-   }
-   if (node.isContainer)
-   {
-      item.type = "folder";
-      item.size = -1;
-   }
-   else if (node.isDocument)
-   {
-      item.type = "document";
-      item.size = node.size;
+         item =
+         {
+            nodeRef: node.nodeRef.toString(),
+            tags: ((t = node.tags) !== null) ? t : [],
+            name: node.name,
+            displayName: node.name,
+            title: node.properties["cm:title"],
+            description: node.properties["cm:description"],
+            modifiedOn: node.properties["cm:modified"],
+            modifiedByUser: node.properties["cm:modifier"],
+            createdOn: node.properties["cm:created"],
+            createdByUser: node.properties["cm:creator"],
+            path: folderPath.join("/")
+         };
+         item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+         item.createdBy = getPersonDisplayName(item.createdByUser);
+      }
+      if (node.isContainer)
+      {
+         item.type = "folder";
+         item.size = -1;
+      }
+      else if (node.isDocument)
+      {
+         item.type = "document";
+         item.size = node.size;
+      }
    }
    
    return item;
@@ -163,37 +167,40 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
-   var item = null, t = null;
-   if (node.isContainer || node.isDocument)
+   var item = t = null;
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
    {
-      item =
+      if (node.isContainer || node.isDocument)
       {
-         site: getSiteData(siteId),
-         container: containerId,
-         nodeRef: node.nodeRef.toString(),
-         tags: ((t = node.tags) !== null) ? t : [],
-         name: node.name,
-         displayName: node.name,
-         title: node.properties["cm:title"],
-         description: node.properties["cm:description"],
-         modifiedOn: node.properties["cm:modified"],
-         modifiedByUser: node.properties["cm:modifier"],
-         createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"],
-         path: pathParts.join("/")
-      };
-      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-      item.createdBy = getPersonDisplayName(item.createdByUser);
-   }
-   if (node.isContainer)
-   {
-      item.type = "folder";
-      item.size = -1;
-   }
-   else if (node.isDocument)
-   {
-      item.type = "document";
-      item.size = node.size;
+         item =
+         {
+            site: getSiteData(siteId),
+            container: containerId,
+            nodeRef: node.nodeRef.toString(),
+            tags: ((t = node.tags) !== null) ? t : [],
+            name: node.name,
+            displayName: node.name,
+            title: node.properties["cm:title"],
+            description: node.properties["cm:description"],
+            modifiedOn: node.properties["cm:modified"],
+            modifiedByUser: node.properties["cm:modifier"],
+            createdOn: node.properties["cm:created"],
+            createdByUser: node.properties["cm:creator"],
+            path: pathParts.join("/")
+         };
+         item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+         item.createdBy = getPersonDisplayName(item.createdByUser);
+      }
+      if (node.isContainer)
+      {
+         item.type = "folder";
+         item.size = -1;
+      }
+      else if (node.isDocument)
+      {
+         item.type = "document";
+         item.size = node.size;
+      }
    }
    
    return item;
@@ -283,7 +290,7 @@ function getForumPostItem(siteId, containerId, pathParts, node)
    var postNode = topicNode.childAssocs["cm:contains"][0];
    
    // child is our forum post
-   var item, t = null;
+   var item = t = null;
    item =
    {
       site: getSiteData(siteId),
@@ -400,25 +407,28 @@ function getLinkItem(siteId, containerId, pathParts, node)
    }
    addToProcessed(cat, refkey);
    
-   var item, t = null;
-   item =
+   var item = t = null;
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
    {
-      site: getSiteData(siteId),
-      container: containerId,
-      nodeRef: node.nodeRef.toString(),
-      type: "link",
-      tags: ((t = node.tags) !== null) ? t : [],
-      name: node.name,
-      description: node.properties["cm:description"],
-      modifiedOn: node.properties["cm:modified"],
-      modifiedByUser: node.properties["cm:modifier"],
-      createdOn: node.properties["cm:created"],
-      createdByUser: node.properties["cm:creator"],
-      size: -1,
-      displayName: node.properties["lnk:title"]
-   };
-   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.createdBy = getPersonDisplayName(item.createdByUser);
+      item =
+      {
+         site: getSiteData(siteId),
+         container: containerId,
+         nodeRef: node.nodeRef.toString(),
+         type: "link",
+         tags: ((t = node.tags) !== null) ? t : [],
+         name: node.name,
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
+         size: -1,
+         displayName: node.properties["lnk:title"]
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
+   }
    
    return item;
 }

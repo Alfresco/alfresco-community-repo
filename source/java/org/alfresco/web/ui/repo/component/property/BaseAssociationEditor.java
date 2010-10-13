@@ -1015,9 +1015,17 @@ public abstract class BaseAssociationEditor extends UIInput
          }
          else
          {
-            // for all other types perform a lucene search
-            
+            // for all other types/aspects perform a lucene search
             StringBuilder query = new StringBuilder("+TYPE:\"");
+            if (assocDef.getTargetClass().isAspect()) 
+            { 
+               query = new StringBuilder("+ASPECT:\""); 
+            } 
+            else 
+            { 
+               query = new StringBuilder("+TYPE:\""); 
+            } 
+            
             query.append(type);
             query.append("\"");
             

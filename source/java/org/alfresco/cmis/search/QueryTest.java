@@ -3842,6 +3842,8 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = 'AAAA BBBB'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = 'AAAA'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = '%AAAA'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = '%AAA'", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = 'BBBB'", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth = 'CCCC DDDD'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleMLTextBoth <> 'EEEE FFFF'", 1, false, "cmis:name", new String(), false);

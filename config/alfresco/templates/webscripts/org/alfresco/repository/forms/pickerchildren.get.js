@@ -246,6 +246,13 @@ function isItemSelectable(node, selectableType)
    if (selectableType !== null && selectableType !== "")
    {
       selectable = node.isSubType(selectableType);
+      
+      if (!selectable)
+      {
+         // the selectableType could also be an aspect,
+         // if the node has that aspect it is selectable
+         selectable = node.hasAspect(selectableType);
+      }
    }
    
    return selectable;

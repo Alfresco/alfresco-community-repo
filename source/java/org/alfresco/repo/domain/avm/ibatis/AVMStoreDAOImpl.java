@@ -173,7 +173,7 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         }
         catch (Throwable e)
         {
-            throw new RuntimeException("Unable to query for store properties: " + params);
+            throw new RuntimeException("Unable to query for store properties: " + params, e);
         }
     }
     

@@ -204,6 +204,7 @@ public interface AuditService
     
     /**
      * Issue an audit query using the given parameters and consuming results in the callback.
+     * Results are returned in entry order, corresponding to time order.
      * 
      * @param callback          the callback that will handle results
      * @param parameters        the parameters for the query (may not be <tt>null</tt>)

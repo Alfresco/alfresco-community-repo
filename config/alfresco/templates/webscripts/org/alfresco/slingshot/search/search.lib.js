@@ -713,10 +713,13 @@ function getSearchResults(params)
          }
       }
       
-      // extract data type for this search - advanced search query is type specific
-      ftsQuery = 'TYPE:"' + formJson.datatype + '"' +
-                 (formQuery.length > 0 ? ' AND (' + formQuery + ')' : '') +
-                 (ftsQuery.length > 0 ? ' AND (' + ftsQuery + ')' : '');
+      if (formQuery.length !== 0 || ftsQuery.length !== 0)
+      {
+         // extract data type for this search - advanced search query is type specific
+         ftsQuery = 'TYPE:"' + formJson.datatype + '"' +
+                    (formQuery.length !== 0 ? ' AND (' + formQuery + ')' : '') +
+                    (ftsQuery.length !== 0 ? ' AND (' + ftsQuery + ')' : '');
+      }
    }
    
    if (ftsQuery.length !== 0)

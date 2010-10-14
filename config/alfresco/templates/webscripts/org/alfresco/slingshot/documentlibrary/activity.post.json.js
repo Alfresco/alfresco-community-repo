@@ -53,7 +53,10 @@ function postActivity()
       case "files-updated":
          data.title = json.get("fileCount");
          strParams = "?path=" + json.get("path");
-         data.parentNodeRef = json.get("parentNodeRef");
+         if (json.has("parentNodeRef"))
+         {
+            data.parentNodeRef = json.get("parentNodeRef");
+         }
          break;
       
       case "file-deleted":

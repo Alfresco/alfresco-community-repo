@@ -367,7 +367,7 @@ public class PageTag extends TagSupport
           CCProperties ccProps = (CCProperties)FacesHelper.getManagedBean(fc, "CCProperties");
           if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
           {
-             out.write("window.onload=onloadFunc(\"");
+             out.write("window.onload=function(){onloadFunc(\"");
              if (ccProps.getWebdavUrl() != null)
              {
                 out.write(ccProps.getWebdavUrl());
@@ -379,7 +379,7 @@ public class PageTag extends TagSupport
                 val = Utils.replace(val, "\\", "\\\\");   // encode escape character
                 out.write(val);
              }
-             out.write("\");");
+             out.write("\");};");
              
              // reset session bean state
              ccProps.setCifsPath(null);

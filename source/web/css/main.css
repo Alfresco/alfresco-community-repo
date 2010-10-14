@@ -661,7 +661,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 
 .navigator
 {
-   min-width: 220px;
+   min-width: auto;
 }
 
 .navigatorPanelBody

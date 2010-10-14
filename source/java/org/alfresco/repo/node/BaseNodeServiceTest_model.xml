@@ -379,6 +379,16 @@
             </association>
          </associations>
       </aspect>
+      
+      <!-- ano1 aspect - happens to be the same name as a child assoc name -->
+      <aspect name="test:aspect-child-assoc">
+         <title>Aspect ANO1</title>
+      </aspect>
+      
+      <!-- ano2 aspect - happens to be the same name as a peer assoc name -->
+      <aspect name="test:aspect-normal-assoc">
+         <title>Aspect ANO2</title>
+      </aspect>
 
       <aspect name="test:rendered">
          <title>Aspect for Hanging Renditions Off</title>

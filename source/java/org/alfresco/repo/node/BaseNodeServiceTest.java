@@ -736,14 +736,18 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CMOBJECT).getChildRef();
         assertTrue("Aspect not automatically added by child association during 'createNode'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS));
+        assertFalse("Unexpected 'aspect' added by child association during 'createNode'",
+               nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASSOC_ASPECT_CHILD_ASSOC));
         
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS);
         assertFalse("Child node should have been deleted", nodeService.exists(childNodeRef));
         
         // Check that normal association creation adds the aspect to the source
         nodeService.createAssociation(nodeRef, rootNodeRef, BaseNodeServiceTest.ASSOC_ASPECT_NORMAL_ASSOC);
-        assertTrue("Aspect not automatically added by child association during 'createAssociation'",
+        assertTrue("Aspect not automatically added by peer association during 'createAssociation'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS));
+        assertFalse("Unexpected aspect added by peer association during 'createAssociation'",
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASSOC_ASPECT_NORMAL_ASSOC));
     }
     
     public void testAspectRemoval() throws Exception

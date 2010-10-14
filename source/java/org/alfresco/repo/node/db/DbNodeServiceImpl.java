@@ -320,6 +320,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addAspectsAndProperties(
                     childNodePair,
                     nodeTypeQName,
+                    null,
                     Collections.<QName>emptySet(),
                     Collections.<QName, Serializable>emptyMap(),
                     Collections.<QName>emptySet(),
@@ -348,7 +349,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodeIndexer.indexCreateNode(childAssocRef);
         
         // Ensure that the parent node has the required aspects
-        addAspectsAndProperties(parentNodePair, assocTypeQName, null, null, null, null, false);
+        addAspectsAndPropertiesAssoc(parentNodePair, assocTypeQName, null, null, null, null, false);
         
         // done
         return childAssocRef;
@@ -416,9 +417,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @param nodePair              the node to which the details apply
      * @param classQName            the type or aspect QName for which the defaults must be applied.
-     *                              This may also be an association type.  If this is <tt>null</tt>
-     *                              then properties and aspects are only applied for 'extra' aspects
-     *                              and 'extra' properties.
+     *                              If this is <tt>null</tt> then properties and aspects are only applied
+     *                              for 'extra' aspects and 'extra' properties.
      * @param existingAspects       the existing aspects or <tt>null</tt> to have them fetched
      * @param existingProperties    the existing properties or <tt>null</tt> to have them fetched
      * @param extraAspects          any aspects that should be added to the 'missing' set (may be <tt>null</tt>)
@@ -436,12 +436,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Map<QName, Serializable> extraProperties,
             boolean overwriteExistingProperties)
     {
-        return addAspectsAndProperties(nodePair, classQName, existingAspects, existingProperties, extraAspects, extraProperties, overwriteExistingProperties, true);
+        return addAspectsAndProperties(nodePair, classQName, null, existingAspects, existingProperties, extraAspects, extraProperties, overwriteExistingProperties, true);
+    }
+    
+    private boolean addAspectsAndPropertiesAssoc(
+            Pair<Long, NodeRef> nodePair,
+            QName assocTypeQName,
+            Set<QName> existingAspects,
+            Map<QName, Serializable> existingProperties,
+            Set<QName> extraAspects,
+            Map<QName, Serializable> extraProperties,
+            boolean overwriteExistingProperties)
+    {
+        return addAspectsAndProperties(nodePair, null, assocTypeQName, existingAspects, existingProperties, extraAspects, extraProperties, overwriteExistingProperties, true);
     }
     
     private boolean addAspectsAndProperties(
                 Pair<Long, NodeRef> nodePair,
                 QName classQName,
+                QName assocTypeQName,
                 Set<QName> existingAspects,
                 Map<QName, Serializable> existingProperties,
                 Set<QName> extraAspects,
@@ -491,6 +504,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Get the 'missing' aspects and append the 'extra' aspects
         Set<QName> missingAspects = getMissingAspects(existingAspects, allProperties, classQName);
         missingAspects.addAll(extraAspects);
+        
+        if (assocTypeQName != null)
+        {
+            missingAspects.addAll(getMissingAspectsAssoc(existingAspects, allProperties, assocTypeQName));
+        }
+        
         // Notify 'before' adding aspect
         for (QName missingAspect : missingAspects)
         {
@@ -535,6 +554,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return changedAspects || changedProperties;
     }
     
+    private Set<QName> getMissingAspectsAssoc(
+            Set<QName> existingAspects,
+            Map<QName, Serializable> existingProperties,
+            QName assocTypeQName)
+    {
+            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+            if (assocDef == null)
+            {
+                return Collections.emptySet();
+            }
+            ClassDefinition classDefinition = assocDef.getSourceClass();
+            return getMissingAspects(existingAspects, existingProperties, classDefinition.getName());
+    }
+    
     /**
      * Get any aspects that should be added given the type, properties and existing aspects.
      * Note that this <b>does not</b> included a search for properties required for the missing
@@ -554,13 +587,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ClassDefinition classDefinition = dictionaryService.getClass(classQName);
         if (classDefinition == null)
         {
-            AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-            if (assocDef == null)
-            {
-                return Collections.emptySet();
-            }
-            classDefinition = assocDef.getSourceClass();
-            classQName = classDefinition.getName();
+            return Collections.emptySet();
         }
 
         Set<QName> missingAspects = new HashSet<QName>(7);
@@ -1103,7 +1130,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // The association may be sourced on an aspect, which may itself mandate further aspects
         for (Pair<Long, NodeRef> parentNodePair : parentNodePairs)
         {
-            addAspectsAndProperties(parentNodePair, assocTypeQName, null, null, null, null, false);
+            addAspectsAndPropertiesAssoc(parentNodePair, assocTypeQName, null, null, null, null, false);
         }
 
         // Index
@@ -1760,7 +1787,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeOnCreateAssociation(assocRef);
         
         // Add missing aspects
-        addAspectsAndProperties(sourceNodePair, assocTypeQName, null, null, null, null, false);
+        addAspectsAndPropertiesAssoc(sourceNodePair, assocTypeQName, null, null, null, null, false);
 
         return assocRef;
     }   

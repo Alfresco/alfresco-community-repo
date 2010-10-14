@@ -69,6 +69,11 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private ControlDAO controlDAO;
     private DictionaryService dictionaryService;
     
+    private int batchThreads = 2;
+    private int batchSize = 1000;
+    private long batchMaxQueryRange = Long.MAX_VALUE;
+    private int batchQuerySize = 2000;
+    
     private static Log logger = LogFactory.getLog(FixNameCrcValuesPatch.class);
     private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
     
@@ -105,6 +110,41 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         this.dictionaryService = dictionaryService;
     }
 
+    /**
+     * @param batchThreads              the number of threads that will write child association changes
+     */
+    public void setBatchThreads(int batchThreads)
+    {
+        this.batchThreads = batchThreads;
+    }
+
+    /**
+     * @param batchSize                 the number of child associations that will be modified per transaction
+     */
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize;
+    }
+
+    /**
+     * @param batchMaxQueryRange        the largest ID range that the work provider can query for.
+     *                                  Lower this if the distribution of ID in alf_child_assoc is not
+     *                                  uniform and memory problems are encountered.
+     */
+    public void setBatchMaxQueryRange(long batchMaxQueryRange)
+    {
+        this.batchMaxQueryRange = batchMaxQueryRange;
+    }
+
+    /**
+     * @param batchQuerySize            the maximum number of results to pull back before handing off to
+     *                                  the threads (usually threads * batch size)
+     */
+    public void setBatchQuerySize(int batchQuerySize)
+    {
+        this.batchQuerySize = batchQuerySize;
+    }
+
     @Override
     protected void checkProperties()
     {
@@ -139,6 +179,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         private FileChannel channel;
         private Integer assocCount;
         private Long minAssocId = 0L;
+        private Long maxAssocId;
         
         private FixNameCrcValuesHelper() throws IOException
         {
@@ -185,10 +226,17 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     return assocCount.intValue();
                 }
                 
-                public Collection<Map<String, Object>> getNextWork()
+                public synchronized Collection<Map<String, Object>> getNextWork()
                 {
+                    if (maxAssocId == null)
+                    {
+                        maxAssocId = patchDAO.getMaxChildAssocId();
+                    }
+                    double total = (double) getTotalEstimatedWorkSize();
+                    long rangeMultipler = Math.round(maxAssocId.doubleValue() / total);
                     // Get the next collection
-                    List<Map<String, Object>> results = patchDAO.getChildAssocsForCrcFix(minAssocId, 1000);
+                    List<Map<String, Object>> results = patchDAO.getChildAssocsForCrcFix(
+                            minAssocId, maxAssocId, rangeMultipler, batchMaxQueryRange, batchQuerySize);
                     // Find out what the last ID is
                     int resultsSize = results.size();
                     if (resultsSize > 0)
@@ -207,7 +255,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     "FixNameCrcValuesPatch",
                     transactionService.getRetryingTransactionHelper(),
                     workProvider,
-                    2, 20,
+                    batchThreads, batchSize,
                     applicationEventPublisher,
                     progress_logger, 1000);
 

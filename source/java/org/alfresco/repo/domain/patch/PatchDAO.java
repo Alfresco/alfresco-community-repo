@@ -142,6 +142,12 @@ public interface PatchDAO
     public int getChildAssocCount();
     
     /**
+     * 
+     * @return                      Returns the maximum child assoc ID or <tt>0</tt> if there are none
+     */
+    Long getMaxChildAssocId();
+    
+    /**
      * The results map contains:
      * <pre>
      * <![CDATA[
@@ -156,10 +162,21 @@ public interface PatchDAO
        ]]>
      * </pre>
      * @param minAssocId            the minimum child assoc ID
+     * @param stopAtAssocId         the child assoc ID to stop at i.e. once this ID has been reached,
+     *                              pull back no results
+     * @param rangeMultiplier       the ration of IDs to actual rows (how many IDs to select to get a row)
+     * @param maxIdRange            the largest ID range to use for selects.  Normally, the ID range should be
+     *                              allowed to grow in accordance with the general distribution of rows, but
+     *                              if memory problems are encountered, then the range will need to be set down.
      * @param maxResults            the number of child associations to fetch
      * @return                      Returns child associations <b>that need fixing</b>
      */
-    public List<Map<String, Object>> getChildAssocsForCrcFix(Long minAssocId, int maxResults);
+    public List<Map<String, Object>> getChildAssocsForCrcFix(
+            Long minAssocId,
+            Long stopAtAssocId,
+            long rangeMultiplier,
+            long maxIdRange,
+            int maxResults);
     
     public int updateChildAssocCrc(Long assocId, Long childNodeNameCrc, Long qnameCrc);
     

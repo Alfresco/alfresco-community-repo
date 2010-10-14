@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
@@ -68,6 +69,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT = "alfresco.patch.select_DmNodeCount";
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS = "alfresco.patch.select_DmNodeCountWherePermissionsHaveChanged";
     private static final String SELECT_CHILD_ASSOCS_COUNT = "alfresco.patch.select_allChildAssocsCount";
+    private static final String SELECT_CHILD_ASSOCS_MAX_ID = "alfresco.patch.select_maxChildAssocId";
     private static final String SELECT_CHILD_ASSOCS_FOR_CRCS = "alfresco.patch.select_allChildAssocsForCrcs";
     private static final String SELECT_NODES_BY_TYPE_AND_NAME_PATTERN = "alfresco.patch.select_nodesByTypeAndNamePattern";
     
@@ -370,15 +372,79 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         return (Integer) template.queryForObject(SELECT_CHILD_ASSOCS_COUNT);
     }
     
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getChildAssocsForCrcFix(Long minAssocId, int maxResults)
+    @Override
+    public Long getMaxChildAssocId()
     {
+        Long maxAssocId = (Long) template.queryForObject(SELECT_CHILD_ASSOCS_MAX_ID);
+        return maxAssocId == null ? 0L : maxAssocId;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getChildAssocsForCrcFix(
+            Long minAssocId,
+            Long stopAtAssocId,
+            long rangeMultiplier,
+            long maxIdRange,
+            int maxResults)
+    {
+        ParameterCheck.mandatory("minAssocId", minAssocId);
+        ParameterCheck.mandatory("stopAtAssocId", stopAtAssocId);
+        /*
+         * ALF-4529: Database connection problems when upgrading large sample 2.1.x data set
+         *           We have to set an upper bound on the query that is driven by an index
+         *           otherwise we get OOM on the resultset, even with a limit.
+         *           Since there can be voids in the sequence, we have to check if we have hit the max ID, yet.
+         */
         Long qnameId = qnameDAO.getOrCreateQName(ContentModel.PROP_NAME).getFirst();
+
+        int queryMaxResults = maxResults;
+        List<Map<String, Object>> results = new ArrayList<Map<String,Object>>(maxResults);
+        while (results.size() < maxResults && minAssocId <= stopAtAssocId)
+        {
+            // Avoid getting too few results because of voids.
+            // On the other hand, the distribution of child assoc types can result in swathes of
+            // the table containing voids and rows of no interest.  So we ramp up the multiplier
+            // to take larger and larger ID ranges in order to quickly walk through these zones.
+            Long maxAssocId = minAssocId + Math.min(maxResults * rangeMultiplier, maxIdRange);
+
+            IdsEntity entity = new IdsEntity();
+            entity.setIdOne(qnameId);
+            entity.setIdTwo(minAssocId);
+            entity.setIdThree(maxAssocId);
+            
+            try
+            {
+                List<Map<String, Object>> rows = template.queryForList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, 0, queryMaxResults);
+                // Add these rows to the result
+                results.addAll(rows);
+                // Calculate new maxResults
+                queryMaxResults = maxResults - results.size();
+                // Move the minAssocId up to ensure we get new results
+                // If we got fewer results than queryMaxResults, then there were too many voids and we
+                // requery using the previous maxAssocId
+                minAssocId = maxAssocId;
+                // Double the range multiplier if we have a low hit-rate (<50% of desired size)
+                if (rows.size() < queryMaxResults / 2)
+                {
+                    rangeMultiplier *= 2L;
+                }
+            }
+            catch (Throwable e)
+            {
+                // Hit a DB problem.  Log all the details of the query so that parameters can be adjusted externally.
+                String msg =
+                        "Failed to query for batch of alf_child_assoc rows; use a lower 'maxIdRange': \n" +
+                        "   minAssocId:      " + minAssocId + "\n" +
+                        "   maxAssocId:      " + maxAssocId + "\n" +
+                        "   maxIdRange:      " + maxIdRange + "\n" +
+                        "   stopAtAssocId:   " + stopAtAssocId + "\n" +
+                        "   rangeMultiplier: " + rangeMultiplier + "\n" +
+                        "   queryMaxResults: " + queryMaxResults;
+                logger.error(msg);
+                throw new RuntimeException(msg, e);
+            }
+        }
         
-        IdsEntity entity = new IdsEntity();
-        entity.setIdOne(qnameId);
-        entity.setIdTwo(minAssocId);
-        List<Map<String, Object>> results = template.queryForList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, 0, maxResults);
         // Done
         return results;
     }

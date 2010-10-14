@@ -163,6 +163,10 @@
         select count(*) from alf_child_assoc
     </select>
 
+    <select id="select_maxChildAssocId" resultClass="java.lang.Long">
+        select max(id) from alf_child_assoc
+    </select>
+
     <select id="select_allChildAssocsForCrcs" parameterClass="Ids" resultMap="result_childAssocsForCrc">
         <![CDATA[
         select
@@ -179,7 +183,8 @@
             join alf_node cn on (cn.id = ca.child_node_id)
             left join alf_node_properties cnp on (cnp.node_id = cn.id and cnp.qname_id = #idOne#)
         where
-            ca.id >= #idTwo#
+            ca.id >= #idTwo# and
+            ca.id < #idThree#
         ]]>
     </select>
 

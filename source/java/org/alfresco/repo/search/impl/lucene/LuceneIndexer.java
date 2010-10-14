@@ -33,5 +33,5 @@ public interface LuceneIndexer extends Indexer, TransactionSynchronisationAwareI
     public  void flushPending() throws LuceneIndexException;
     public Set<String> getDeletions();
     public boolean getDeleteOnlyNodes();   
-    public <R> R doWithWriteLock(IndexInfo.LockWork <R> lockWork);
+    public <R> R doReadOnly(IndexInfo.LockWork <R> lockWork);
 }

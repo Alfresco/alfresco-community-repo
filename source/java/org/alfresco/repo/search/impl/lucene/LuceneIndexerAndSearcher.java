@@ -28,12 +28,12 @@ public interface LuceneIndexerAndSearcher extends IndexerAndSearcher, LuceneConf
     public void rollback();
     
     
-    public interface WithAllWriteLocksWork<Result>
+    public interface ReadOnlyWork<Result>
     {
         public Result doWork() throws Exception;
     }
 
-    public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork);
+    public <R> R doReadOnly(ReadOnlyWork<R> lockWork);
  
     
 }

@@ -1186,8 +1186,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
             for (LuceneIndexerAndSearcher factory : factories)
             {
-                WithAllWriteLocksWork<Object> backupWork = new BackUpWithAllWriteLocksWork(factory, tempDir, targetDir);
-                factory.doWithAllWriteLocks(backupWork);
+                ReadOnlyWork<Object> backupWork = new BackUpReadOnlyWork(factory, tempDir, targetDir);
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Backing up Lucene indexes: \n" + "   Target directory: " + targetDir);
+                }
+               
+                factory.doReadOnly(backupWork);
 
                 if (logger.isDebugEnabled())
                 {
@@ -1196,7 +1202,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             }
         }
 
-        static class BackUpWithAllWriteLocksWork implements WithAllWriteLocksWork<Object>
+        static class BackUpReadOnlyWork implements ReadOnlyWork<Object>
         {
             LuceneIndexerAndSearcher factory;
 
@@ -1204,7 +1210,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
             File targetDir;
 
-            BackUpWithAllWriteLocksWork(LuceneIndexerAndSearcher factory, File tempDir, File targetDir)
+            BackUpReadOnlyWork(LuceneIndexerAndSearcher factory, File tempDir, File targetDir)
             {
                 this.factory = factory;
                 this.tempDir = tempDir;
@@ -1909,7 +1915,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     protected abstract List<StoreRef> getAllStores();
 
-    public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork)
+    public <R> R doReadOnly(ReadOnlyWork<R> lockWork)
     {
         // get all the available stores
         List<StoreRef> storeRefs = getAllStores();
@@ -1920,11 +1926,11 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         {
             if (currentLockWork == null)
             {
-                currentLockWork = new CoreLockWork<R>(getIndexer(storeRefs.get(i)), lockWork);
+                currentLockWork = new CoreReadOnlyWork<R>(getIndexer(storeRefs.get(i)), lockWork);
             }
             else
             {
-                currentLockWork = new NestingLockWork<R>(getIndexer(storeRefs.get(i)), currentLockWork);
+                currentLockWork = new NestingReadOnlyWork<R>(getIndexer(storeRefs.get(i)), currentLockWork);
             }
         }
 
@@ -1955,13 +1961,13 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
-    private static class NestingLockWork<R> implements IndexInfo.LockWork<R>
+    private static class NestingReadOnlyWork<R> implements IndexInfo.LockWork<R>
     {
         IndexInfo.LockWork<R> lockWork;
 
         LuceneIndexer indexer;
 
-        NestingLockWork(LuceneIndexer indexer, IndexInfo.LockWork<R> lockWork)
+        NestingReadOnlyWork(LuceneIndexer indexer, IndexInfo.LockWork<R> lockWork)
         {
             this.indexer = indexer;
             this.lockWork = lockWork;
@@ -1969,7 +1975,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         public R doWork() throws Exception
         {
-            return indexer.doWithWriteLock(lockWork);
+            return indexer.doReadOnly(lockWork);
         }
 
         public boolean canRetry()
@@ -1978,13 +1984,13 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
-    private static class CoreLockWork<R> implements IndexInfo.LockWork<R>
+    private static class CoreReadOnlyWork<R> implements IndexInfo.LockWork<R>
     {
-        WithAllWriteLocksWork<R> lockWork;
+        ReadOnlyWork<R> lockWork;
 
         LuceneIndexer indexer;
 
-        CoreLockWork(LuceneIndexer indexer, WithAllWriteLocksWork<R> lockWork)
+        CoreReadOnlyWork(LuceneIndexer indexer, ReadOnlyWork<R> lockWork)
         {
             this.indexer = indexer;
             this.lockWork = lockWork;
@@ -1992,7 +1998,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         public R doWork() throws Exception
         {
-            return indexer.doWithWriteLock(new IndexInfo.LockWork<R>()
+            return indexer.doReadOnly(new IndexInfo.LockWork<R>()
             {
                 public R doWork()
                 {

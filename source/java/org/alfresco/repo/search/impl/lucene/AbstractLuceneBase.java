@@ -327,15 +327,15 @@ public abstract class AbstractLuceneBase
     
 
     /**
-     * Excute actions while holding the write lock oin the index
+     * Execute actions against a read only index (all write ops will block)
      * 
      * @param <R>
      * @param lockWork
      * @return - the result returned by the action.
      */
-    public <R> R doWithWriteLock(LockWork<R> lockWork)
+    public <R> R doReadOnly(LockWork<R> lockWork)
     {
-        return indexInfo.doWithWriteLock(lockWork);
+        return indexInfo.doReadOnly(lockWork);
     }
 
     

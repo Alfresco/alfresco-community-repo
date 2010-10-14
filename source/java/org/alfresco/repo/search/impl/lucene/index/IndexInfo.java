@@ -225,6 +225,8 @@ public class IndexInfo implements IndexMonitor
      * Lock for the index entries
      */
     private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    
+    private ReentrantReadWriteLock readOnlyLock = new ReentrantReadWriteLock();
 
     /**
      * Read only index readers that also do reference counting.
@@ -865,7 +867,9 @@ public class IndexInfo implements IndexMonitor
     private IndexReader buildAndRegisterDeltaReader(String id) throws IOException
     {
         IndexReader reader;
-        File location = ensureDeltaIsRegistered(id);
+        // only register on write to avoid any locking for transactions that only ever read
+        File location = getDeltaLocation(id);
+        // File location = ensureDeltaIsRegistered(id);
         // Create a dummy index reader to deal with empty indexes and not
         // persist these.
         if (IndexReader.indexExists(location))
@@ -879,6 +883,12 @@ public class IndexInfo implements IndexMonitor
         return reader;
     }
 
+    private File getDeltaLocation(String id) throws IOException
+    {
+        File file = new File(indexDirectory, id).getCanonicalFile();
+        return file;
+    }
+    
     /**
      * The delta information does not need to be saved to disk.
      * 
@@ -896,7 +906,7 @@ public class IndexInfo implements IndexMonitor
         // A write lock is required if we have to update the local index
         // entries.
         // There should only be one thread trying to access this delta.
-        File location = new File(indexDirectory, id).getCanonicalFile();
+        File location = getDeltaLocation(id);
         getReadLock();
         try
         {
@@ -2432,16 +2442,25 @@ public class IndexInfo implements IndexMonitor
         public boolean canRetry();
     }
 
-    public <R> R doWithWriteLock(LockWork<R> lockWork)
+    public <R> R doReadOnly(LockWork<R> lockWork)
     {
-        getWriteLock();
+
+        readOnlyLock.writeLock().lock();
         try
         {
-            return doWithFileLock(lockWork);
+            getReadLock();
+            try
+            {
+                return doWithFileLock(lockWork);
+            }
+            finally
+            {
+                releaseReadLock();
+            }
         }
         finally
         {
-            releaseWriteLock();
+            readOnlyLock.writeLock().unlock();
         }
     }
 
@@ -4109,19 +4128,27 @@ public class IndexInfo implements IndexMonitor
 
     private void getWriteLock()
     {
-        String threadName = null;
-        long start = 0l;
-        if (s_logger.isDebugEnabled())
+        readOnlyLock.readLock().lock();
+        try
         {
-            threadName = Thread.currentThread().getName();
-            s_logger.debug("Waiting for WRITE lock  - " + threadName);
-            start = System.nanoTime();
+            String threadName = null;
+            long start = 0l;
+            if (s_logger.isDebugEnabled())
+            {
+                threadName = Thread.currentThread().getName();
+                s_logger.debug("Waiting for WRITE lock  - " + threadName);
+                start = System.nanoTime();
+            }
+            readWriteLock.writeLock().lock();
+            if (s_logger.isDebugEnabled())
+            {
+                long end = System.nanoTime();
+                s_logger.debug("...GOT WRITE LOCK  - " + threadName + " -  in " + ((end - start) / 10e6f) + " ms");
+            }
         }
-        readWriteLock.writeLock().lock();
-        if (s_logger.isDebugEnabled())
+        finally
         {
-            long end = System.nanoTime();
-            s_logger.debug("...GOT WRITE LOCK  - " + threadName + " -  in " + ((end - start) / 10e6f) + " ms");
+            readOnlyLock.readLock().unlock();
         }
     }
 

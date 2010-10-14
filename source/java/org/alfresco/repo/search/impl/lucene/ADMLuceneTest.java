@@ -38,7 +38,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -94,6 +98,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -525,6 +530,139 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     public ADMLuceneTest(String arg0)
     {
         super(arg0);
+    }
+    
+    /*
+     * Not normally run as index backup happens at 3.00 
+     */
+    public void doNotTestIndexBackAllowsReadOperations() throws Exception
+    {
+        testTX.commit();
+        
+        Thread queryThread = new QueryDuringBackupThread("Query", "PATH:\"//*\"", 2*60*1000);
+        queryThread.start();
+     
+        Thread createThread = new CreateDuringBackupThread("Create");
+        createThread.start();
+        
+        try
+        {
+            queryThread.join();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    class QueryDuringBackupThread extends Thread
+    {
+        String query;
+
+        long period;
+        
+        QueryDuringBackupThread(String name, String query, long period)
+        {
+            super(name);
+            this.setDaemon(true);
+            this.query = query;
+            this.period = period;
+        }
+
+        public void run()
+        {
+            long startTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
+            authenticationComponent.setSystemUserAsCurrentUser();
+            try
+            {
+                System.out.println("Start " + this.getName());
+                int i = 0;
+                int length = 0;
+                while(currentTime - startTime < period)
+                {
+                    RetryingTransactionCallback<Integer> queryCallback = new RetryingTransactionCallback<Integer>()
+                    {
+                        public Integer execute() throws Throwable
+                        {
+                            SearchParameters sp = new SearchParameters();
+                            sp.addStore(rootNodeRef.getStoreRef());
+                            sp.setLanguage("lucene");
+                            sp.setQuery(query);
+                          
+                            ResultSet results =   serviceRegistry.getSearchService().query(sp);
+                            int count = results.length();
+                            results.close();
+                            return count;
+                        }
+                    };
+                    length = retryingTransactionHelper.doInTransaction(queryCallback);
+                    i++;
+                    if(i % 1000 == 0)
+                    {
+                        currentTime = System.currentTimeMillis();
+                    }
+                    System.out.println("Query "+i+" count = "+length);
+                }
+
+                System.out.println("End " + this.getName());
+            }
+            catch (Exception e)
+            {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+        }
+
+    }
+
+    class CreateDuringBackupThread extends Thread
+    {
+       
+
+        CreateDuringBackupThread(String name)
+        {
+            super(name);
+            this.setDaemon(true);
+        }
+
+        public void run()
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            try
+            {
+                System.out.println("Start " + this.getName());
+                RetryingTransactionCallback<String> createAndDeleteCallback = new RetryingTransactionCallback<String>()
+                {
+                    public String execute() throws Throwable
+                    {
+                       String guid = GUID.generate();
+                       ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}"+guid), testSuperType);
+                       return guid;
+                    }
+                };
+                
+                while(true)
+                {
+                    String guid = retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
+                    System.out.println("Created " + guid);
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+        }
+
     }
 
     /**

@@ -193,7 +193,8 @@
              <property name="targetBeanName"><idref local="webscripts.registry.prototype"/></property>
           </bean>
       </property>
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->
+      <property name="transactionHelper" ref="web.retryingTransactionHelper" />
       <property name="authorityService" ref="AuthorityService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />

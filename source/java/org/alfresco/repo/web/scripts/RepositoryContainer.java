@@ -38,6 +38,7 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TooBusyException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -421,7 +422,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         
             boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
             boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
-            retryingTransactionHelper.doInTransaction(work, readonly, requiresNew);
+            try
+            {
+                retryingTransactionHelper.doInTransaction(work, readonly, requiresNew);
+            }
+            catch (TooBusyException e)
+            {
+                // Map TooBusyException to a 503 status code
+                throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
+            }
 
             // Ensure a response is always flushed after successful execution
             if (bufferedRes != null)

@@ -58,6 +58,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         // Actually perform the rendition.
         if (null == transformer)
         {
+            // There's no transformer available for the requested rendition!
             throw new RenditionServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimeType,
                         targetMimeType));
         }

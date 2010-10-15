@@ -19,6 +19,8 @@
 package org.alfresco.repo.tagging;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -77,9 +79,11 @@ public class UpdateTagScopesQuartzJob implements Job {
    {
        // Process
        final ArrayList<NodeRef> tagNodes = new ArrayList<NodeRef>();
+       final HashSet<NodeRef> handledTagNodes = new HashSet<NodeRef>();
+       
        while(true)
        {
-          // Fetch the list of changes
+          // Fetch a batch of the pending changes
           AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() 
              {
                 public Void doWork() throws Exception
@@ -93,12 +97,27 @@ public class UpdateTagScopesQuartzJob implements Job {
              }, AuthenticationUtil.getSystemUserName()
           );
           
-          // Log what we found
+          // If we're on our 2nd loop round for any of them, then skip them from now on
+          // (This can happen if another thread is already processing one of them)
+          Iterator<NodeRef> it = tagNodes.iterator();
+          while(it.hasNext())
+          {
+             NodeRef nodeRef = it.next();
+             if(handledTagNodes.contains(nodeRef))
+             {
+                it.remove();
+                if(logger.isDebugEnabled())
+                   logger.debug("Tag scope " + nodeRef + " must be being processed by another Thread, not updating it");
+             }
+          }
+          
+          // Log what we found to process
           if(logger.isDebugEnabled())
           {
              logger.debug("Checked for tag scopes with pending tag updates, found " + tagNodes);
           }
           
+          // If we're out of tag scopes, stop!
           if(tagNodes.size() == 0)
              break;
           
@@ -107,6 +126,9 @@ public class UpdateTagScopesQuartzJob implements Job {
           Action action = actionService.createAction(UpdateTagScopesActionExecuter.NAME);
           action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_SCOPES, (Serializable)tagNodes); 
           actionService.executeAction(action, null, false, false);
+          
+          // Record the scopes we've just done
+          handledTagNodes.addAll(tagNodes);
        }
    }
 }

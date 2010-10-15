@@ -1082,17 +1082,31 @@ public class TaggingServiceImplTest extends TestCase
        assertTrue("Not found in " + pendingScopes, pendingScopes.contains(this.subFolder));
        
        
+       // Have the Quartz bean fire now
+       // It won't be able to do anything, as the locks are taken
+       UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
+       job.execute(actionService, updateTagsAction);
+       tx = waitForActionExecution(tx);
+       
+       // Check that things are still pending despite the quartz run
+       assertEquals(2, updateTagsAction.searchForTagScopesPendingUpdates().size());
+       pendingScopes = updateTagsAction.searchForTagScopesPendingUpdates();
+       assertTrue("Not found in " + pendingScopes, pendingScopes.contains(this.folder));
+       assertTrue("Not found in " + pendingScopes, pendingScopes.contains(this.subFolder));
+       
+       
        // Give back our locks, so we can proceed
        updateTagsAction.unlockTagScope(this.folder, lockF);
        updateTagsAction.unlockTagScope(this.subFolder, lockSF);
        
        
-       // Fire off the quartz bean
-       UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
+       // Fire off the quartz bean, this time it can really work
+       job = new UpdateTagScopesQuartzJob();
        job.execute(actionService, updateTagsAction);
+       tx = waitForActionExecution(tx);
        
        
-       // Now check again
+       // Now check again - nothing should be pending
        assertEquals(0, updateTagsAction.searchForTagScopesPendingUpdates().size());
        
        ts1 = this.taggingService.findTagScope(this.folder);

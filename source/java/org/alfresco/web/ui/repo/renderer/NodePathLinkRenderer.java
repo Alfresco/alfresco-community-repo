@@ -27,16 +27,18 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.renderer.BaseRenderer;
-import org.alfresco.web.ui.repo.component.UINodeDescendants;
 import org.alfresco.web.ui.repo.component.UINodePath;
 
 /**
@@ -150,12 +152,12 @@ public class NodePathLinkRenderer extends BaseRenderer
          }
          catch (InvalidNodeRefException refErr)
          {
-            // this error simple means we cannot output the path
+            // this error simply means we cannot output the path
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
          catch (AccessDeniedException accessErr)
          {
-            // this error simple means we cannot output the path
+            // this error simply means we cannot output the path
             try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
          catch (Throwable err)
@@ -178,6 +180,8 @@ public class NodePathLinkRenderer extends BaseRenderer
    private String buildPathAsBreadcrumb(FacesContext context, UIComponent component, Path path, boolean showLeaf)
    {
       StringBuilder buf = new StringBuilder(1024);
+      NodeService nodeService = getNodeService(context);
+      PermissionService permissionService = getPermissionService(context);
       
       int size = (showLeaf ? path.size() : path.size() - 1);
       for (int i=0; i<size; i++)
@@ -189,7 +193,18 @@ public class NodePathLinkRenderer extends BaseRenderer
             ChildAssociationRef elementRef = ((Path.ChildAssocElement)element).getRef();
             if (elementRef.getParentRef() != null)
             {
-               String name = Repository.getNameForNode(getNodeService(context), elementRef.getChildRef());
+               String name = null;
+               if (permissionService.hasPermission(
+                     elementRef.getChildRef(), PermissionService.READ) == AccessStatus.ALLOWED)
+               {
+                  // use the name property if we are allowed access to it
+                  name = nodeService.getProperty(elementRef.getChildRef(), ContentModel.PROP_NAME).toString();
+               }
+               else
+               {
+                  // revert to using QName if not
+                  name = elementRef.getQName().getLocalName();
+               }
                elementString = renderPathElement(context, component, elementRef.getChildRef(), name);
             }
          }
@@ -220,6 +235,8 @@ public class NodePathLinkRenderer extends BaseRenderer
    private String buildPathAsSingular(FacesContext context, UIComponent component, Path path, boolean showLeaf, boolean disabled)
    {
       StringBuilder buf = new StringBuilder(512);
+      NodeService nodeService = getNodeService(context);
+      PermissionService permissionService = getPermissionService(context);
       
       NodeRef lastElementRef = null;
       int size = (showLeaf ? path.size() : path.size() - 1);
@@ -233,7 +250,18 @@ public class NodePathLinkRenderer extends BaseRenderer
             ChildAssociationRef elementRef = ((Path.ChildAssocElement)element).getRef();
             if (elementRef.getParentRef() != null)
             {
-               elementString = Repository.getNameForNode(getNodeService(context), elementRef.getChildRef());
+               String name = null;
+               if (permissionService.hasPermission(
+                     elementRef.getChildRef(), PermissionService.READ) == AccessStatus.ALLOWED)
+               {
+                  // use the name property if we are allowed access to it
+                  elementString = nodeService.getProperty(elementRef.getChildRef(), ContentModel.PROP_NAME).toString();
+               }
+               else
+               {
+                  // revert to using QName if not
+                  elementString = elementRef.getQName().getLocalName();
+               }
             }
             if (i == lastElementPos)
             {
@@ -330,6 +358,17 @@ public class NodePathLinkRenderer extends BaseRenderer
       if (service == null)
       {
          throw new IllegalStateException("Unable to obtain NodeService bean reference.");
+      }
+      
+      return service;
+   }
+   
+   private static PermissionService getPermissionService(FacesContext context)
+   {
+      PermissionService service = Repository.getServiceRegistry(context).getPermissionService();
+      if (service == null)
+      {
+         throw new IllegalStateException("Unable to obtain PermissionService bean reference.");
       }
       
       return service;

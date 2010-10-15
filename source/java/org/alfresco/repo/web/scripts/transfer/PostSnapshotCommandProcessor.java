@@ -105,8 +105,6 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
             receiver.generateRequsite(transferId, out);
             
             out.close();
-            
-            // TODO Does out need closing ?
                         
         } 
         catch (Exception ex) 

@@ -68,7 +68,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TraceableThreadFactory;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -94,7 +93,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.xml.dtm.ref.sax2dtm.SAX2DTM2.FollowingSiblingIterator;
 import org.safehaus.uuid.UUID;
 import org.saxpath.SAXPathException;
 import org.springframework.context.ApplicationContext;
@@ -224,7 +222,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Lock for the index entries
      */
-    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock readWriteLock;
     
     private ReentrantReadWriteLock readOnlyLock = new ReentrantReadWriteLock();
 
@@ -485,6 +483,7 @@ public class IndexInfo implements IndexMonitor
 
         if (config != null)
         {
+            this.readWriteLock = new ReentrantReadWriteLock(config.getFairLocking());            
             this.maxFieldLength = config.getIndexerMaxFieldLength();
             this.threadPoolExecutor = config.getThreadPoolExecutor();
             IndexInfo.useNIOMemoryMapping = config.getUseNioMemoryMapping();
@@ -518,6 +517,8 @@ public class IndexInfo implements IndexMonitor
         }
         else
         {
+            this.readWriteLock = new ReentrantReadWriteLock(false);            
+
             // need a default thread pool ....
             TraceableThreadFactory threadFactory = new TraceableThreadFactory();
             threadFactory.setThreadDaemon(true);

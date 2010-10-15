@@ -249,7 +249,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
     
     /**
-     * Fetches a value from the shared cache, checking for {@link NullValueMarker null markers}.
+     * Fetches a value from the shared cache.
      * 
      * @param key           the key
      * @return              Returns the value or <tt>null</tt>
@@ -257,16 +257,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     @SuppressWarnings("unchecked")
     private V getSharedCacheValue(K key)
     {
-        Object valueObj = sharedCache.get(key);
-        if (valueObj instanceof NullValueMarker)
-        {
-            // Someone has already marked this as a null
-            return null;
-        }
-        else
-        {
-            return (V) valueObj;
-        }
+        return (V) sharedCache.get(key);
     }
 
     /**
@@ -413,16 +404,13 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 CacheBucket<V> bucket = null;
                 if (existingValueObj == null)
                 {
-                    // Insert a 'null' marker into the shared cache
-                    NullValueMarker nullMarker = new NullValueMarker();
-                    sharedCache.put(key, nullMarker);
+                    // ALF-5134: Performance of Alfresco cluster less than performance of single node
+                    // The 'null' marker that used to be inserted also triggered an update in the afterCommit
+                    // phase; the update triggered cache invalidation in the cluster.  Now, the null cannot
+                    // be verified to be the same null - there is no null equivalence
+                    // 
                     // The value didn't exist before
-                    bucket = new NewCacheBucket<V>(nullMarker, value);
-                }
-                else if (existingValueObj instanceof NullValueMarker)
-                {
-                    // Record the null as is
-                    bucket = new NewCacheBucket<V>((NullValueMarker)existingValueObj, value);
+                    bucket = new NewCacheBucket<V>(value);
                 }
                 else
                 {
@@ -699,17 +687,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
     
     /**
-     * Instances of this class are used to mark the shared cache null values for cases where
-     * new values are going to be inserted into it.
-     * 
-     * @author Derek Hulley
-     */
-    public static class NullValueMarker implements Serializable
-    {
-        private static final long serialVersionUID = -8384777298845693563L;
-    }
-    
-    /**
      * Interface for the transactional cache buckets.  These hold the actual values along
      * with some state and behaviour around writing from the in-transaction caches to the
      * shared.
@@ -733,7 +710,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     
     /**
      * A bucket class to hold values for the caches.<br/>
-     * The cache assumes the presence of a marker object to 
      * 
      * @author Derek Hulley
      */
@@ -742,11 +718,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private static final long serialVersionUID = -8536386687213957425L;
         
         private final BV value;
-        private final NullValueMarker nullMarker;
-        public NewCacheBucket(NullValueMarker nullMarker, BV value)
+        public NewCacheBucket(BV value)
         {
             this.value = value;
-            this.nullMarker = nullMarker;
         }
         public BV getValue()
         {
@@ -757,20 +731,13 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             Object sharedValue = sharedCache.get(key);
             if (sharedValue != null)
             {
-                if (sharedValue == nullMarker)
-                {
-                    // The shared cache entry didn't change during the txn and is safe for writing
-                    sharedCache.put(key, value);
-                }
-                else
-                {
-                    // The shared value has moved on since
-                    sharedCache.remove(key);
-                }
+                // A value was added during the txn
+                sharedCache.remove(key);
             }
             else
             {
-                // The shared cache no longer has a value
+                // The shared cache value is still null (it might have changed a few times, though) so write
+                sharedCache.put(key, value);
             }
         }
     }

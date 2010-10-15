@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,35 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     
     private Map<Long, SimpleStoredMessage> messages = new TreeMap<Long, SimpleStoredMessage>();
     private Map<Long, Integer> msnCache = new HashMap<Long, Integer>();
+   
+    private Map<Long, CacheItem> messagesCache = Collections.synchronizedMap(new MaxSizeMap<Long, CacheItem>(10, CACHE_SIZE));
+    
+    /** 
+     * Map that ejects the last recently used element(s) to keep the size to a 
+     * specified maximum
+     * 
+     * @param <K> Key
+     * @param <V> Value
+     */
+    private class MaxSizeMap<K,V> extends LinkedHashMap<K,V> 
+    {
+        private int maxSize;
+
+        public MaxSizeMap(int initialSize, int maxSize) 
+        {
+            super(initialSize, 0.75f, true);
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K,V> eldest) 
+        {
+            boolean remove = super.size() > this.maxSize;
+            return remove;
+        }
+    }
+    
+    private final static int CACHE_SIZE = 20;
 
     private static final Flags PERMANENT_FLAGS = new Flags();
 
@@ -441,10 +471,40 @@ public class AlfrescoImapFolder extends AbstractImapFolder
      */
     @Override
     protected SimpleStoredMessage getMessageInternal(long uid) throws MessagingException
-        {
+    {
         AbstractMimeMessage mes = (AbstractMimeMessage) messages.get(uid).getMimeMessage();
         FileInfo mesInfo = mes.getMessageInfo();
-        return createImapMessage(mesInfo, uid, true);
+
+        Date modified = (Date) serviceRegistry.getNodeService().getProperty(mesInfo.getNodeRef(), ContentModel.PROP_MODIFIED);
+        if(modified != null)
+        {
+            CacheItem cached =  messagesCache.get(uid);
+            if (cached != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("retrieved message from cache uid: " + uid);
+                }
+                if (cached.getModified().equals(modified))
+                {
+                    return cached.getMessage();
+                }
+            }
+            SimpleStoredMessage message = createImapMessage(mesInfo, uid, true);
+            messagesCache.put(uid, new CacheItem(modified, message));
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("caching message uid: " + uid + " cacheSize: " + messagesCache.size());
+            }
+            
+            return message;
+        }
+        else
+        {
+            SimpleStoredMessage message = createImapMessage(mesInfo, uid, true);
+            return message;
+        }
     }
 
     /**
@@ -1053,6 +1113,38 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         writer.setMimetype(contentType.getBaseType());
         OutputStream os = writer.getContentOutputStream();
         FileCopyUtils.copy(part.getInputStream(), os);
+    }
+    
+    class CacheItem
+    {
+        private Date modified;
+        private SimpleStoredMessage message;
+        
+        public CacheItem(Date modified, SimpleStoredMessage message)
+        {
+            this.setMessage(message);
+            this.setModified(modified);
+        }
+
+        public void setModified(Date modified)
+        {
+            this.modified = modified;
+        }
+
+        public Date getModified()
+        {
+            return modified;
+        }
+
+        public void setMessage(SimpleStoredMessage message)
+        {
+            this.message = message;
+        }
+
+        public SimpleStoredMessage getMessage()
+        {
+            return message;
+        }
     }
     
 }

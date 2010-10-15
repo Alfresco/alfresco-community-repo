@@ -101,7 +101,38 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
+
+    /**
+     * Looks up a category by name under its immediate parent. Index-independent so can be used for cluster-safe
+     * existence checks.
+     * 
+     * @param parent
+     *            the parent
+     * @param aspectName
+     *            the aspect name
+     * @param name
+     *            the category name
+     * @return the category child association reference
+     */
+    public ChildAssociationRef getCategory(NodeRef parent, QName aspectName, String name);
     
+    /**
+     * Gets root categories by name, optionally creating one if one does not exist. Index-independent so can be used for
+     * cluster-safe existence checks.
+     * 
+     * @param storeRef
+     *            the store ref
+     * @param aspectName
+     *            the aspect name
+     * @param name
+     *            the aspect name
+     * @param create
+     *            should a category node be created if one does not exist?
+     * @return the root categories
+     */
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String name,
+            boolean create);
+
     /**
      * Get all the types that represent categories
      * 

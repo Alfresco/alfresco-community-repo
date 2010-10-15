@@ -268,4 +268,12 @@ public interface LuceneConfig
      */
     public double getMaxRamInMbForInMemoryIndex();
 
+    /**
+     * Should we use a 'fair' locking policy, giving queue-like access behaviour to the indexes and avoiding starvation?
+     * Default is <code>false</code> since fair locking appears to cause deadlock on old JVMs.
+     * 
+     * @return <code>true</code> if a fair locking policy should be used
+     */
+    public boolean getFairLocking();
+
 }

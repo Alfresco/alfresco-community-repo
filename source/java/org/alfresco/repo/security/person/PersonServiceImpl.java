@@ -47,9 +47,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -356,6 +356,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private NodeRef getPersonOrNull(String searchUserName)
     {
         Set<NodeRef> allRefs = getFromCache(searchUserName);
+        boolean addToCache = false;
         if (allRefs == null)
         {
             List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
@@ -370,6 +371,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 NodeRef nodeRef = childRef.getChildRef();
                 allRefs.add(nodeRef);
             }
+            addToCache = true;
         }
         
         List<NodeRef> refs = new ArrayList<NodeRef>(allRefs.size());
@@ -392,8 +394,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             returnRef = refs.get(0);
             
-            // Don't bother caching unless we get a result that doesn't need duplicate processing
-            putToCache(searchUserName, allRefs);
+            if (addToCache)
+            {
+                // Don't bother caching unless we get a result that doesn't need duplicate processing
+                putToCache(searchUserName, allRefs);
+            }
         }
         return returnRef;
     }

@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -93,7 +94,7 @@ public class ContentModelMessage extends AbstractMimeMessage
      */
     private Multipart buildContentModelMultipart() throws MessagingException
     {
-        MimeMultipart rootMultipart = new MimeMultipart("alternative");
+        MimeMultipart rootMultipart = new AlfrescoMimeMultipart("alternative", this.messageFileInfo);
         // Cite MOB-395: "email agent will be used to select an appropriate template" - we are not able to
         // detect an email agent so we use a default template for all messages.
         // See AlfrescoImapConst to see the possible templates to use.
@@ -112,5 +113,26 @@ public class ContentModelMessage extends AbstractMimeMessage
         result.addHeader(AlfrescoImapConst.CONTENT_TRANSFER_ENCODING, AlfrescoImapConst.BASE_64_ENCODING);
         return result;
     }
+
+    
+    class AlfrescoMimeMultipart extends MimeMultipart
+    {
+        public AlfrescoMimeMultipart(String subtype, FileInfo messageFileInfo)
+        {
+            super();
+            String boundary = getBoundaryValue(messageFileInfo);
+            ContentType cType = new ContentType("multipart", subtype, null);
+            cType.setParameter("boundary", boundary);
+            contentType = cType.toString();
+        }
+
+        public String getBoundaryValue(FileInfo messageFileInfo)
+        {
+            StringBuffer s = new StringBuffer();
+            s.append("----=_Part_").append(messageFileInfo.getNodeRef().getId());
+            return s.toString();
+        }
+    }
+
 
 }

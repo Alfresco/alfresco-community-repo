@@ -67,7 +67,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -181,6 +180,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private int mergerTargetOverlayCount = 5;
 
     private int mergerTargetOverlaysBlockingFactor = 1;
+    
+    private boolean fairLocking;
 
     private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
@@ -1746,6 +1747,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public void setMergerTargetOverlaysBlockingFactor(int mergerTargetOverlaysBlockingFactor)
     {
         this.mergerTargetOverlaysBlockingFactor = mergerTargetOverlaysBlockingFactor;
+    }
+
+    public boolean getFairLocking()
+    {
+        return this.fairLocking;
+    }
+    
+    public void setFairLocking(boolean fairLocking)
+    {
+        this.fairLocking = fairLocking;
     }
 
     public int getTermIndexInterval()

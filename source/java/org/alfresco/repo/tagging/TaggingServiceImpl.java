@@ -448,12 +448,8 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
-        
-        if (isTag(storeRef, tag) == false)
-        {
-            return this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_TAGGABLE, tag);
-        }
-        return null;
+		
+		return getTagNodeRef(storeRef, tag, true);
     }  
 
     /**
@@ -527,12 +523,7 @@ public class TaggingServiceImpl implements TaggingService,
             String tag = tagName.toLowerCase();
             
             // Get the tag node reference
-            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
-            if (newTagNodeRef == null)
-            {
-                // Create the new tag
-                newTagNodeRef = categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
-            }        
+            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
             
             List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
             if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
@@ -587,15 +578,27 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public NodeRef getTagNodeRef(StoreRef storeRef, String tag)
     {
+        return getTagNodeRef(storeRef, tag, false); 
+    }
+
+    /**
+     * Gets the node reference for a given tag.
+     * <p>
+     * Returns null if tag is not present and not created.
+     * 
+     * @param storeRef      store reference
+     * @param tag           tag
+     * @param create        create a node if one doesn't exist?
+     * @return NodeRef      tag node reference or null not exist
+     */
+    private NodeRef getTagNodeRef(StoreRef storeRef, String tag, boolean create)
+    {
         NodeRef tagNodeRef = null;
-        String query = "+PATH:\"cm:taggable/cm:" + ISO9075.encode(tag) + "\"";
-        ResultSet resultSet = this.searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-        if (resultSet.length() != 0)
+        Collection<ChildAssociationRef> results = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tag, create);
+        if (!results.isEmpty())
         {
-            tagNodeRef = resultSet.getNodeRef(0);
+            tagNodeRef = results.iterator().next().getChildRef();
         }
-        resultSet.close();
-        
         return tagNodeRef;
     }
 
@@ -701,12 +704,7 @@ public class TaggingServiceImpl implements TaggingService,
                 tag = tag.toLowerCase();
                 
                 // Get the tag node reference
-                NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
-                if (newTagNodeRef == null)
-                {
-                    // Create the new tag
-                    newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
-                } 
+                NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
                 
                 if (tagNodeRefs.contains(newTagNodeRef) == false)
                 {            
@@ -953,10 +951,10 @@ public class TaggingServiceImpl implements TaggingService,
     /*package*/ static List<TagDetails> readTagDetails(InputStream is)
     {
         List<TagDetails> result = new ArrayList<TagDetails>(25);
-        
+        BufferedReader reader = null;
         try
         {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String nextLine = reader.readLine();
             while (nextLine != null)
             {
@@ -969,6 +967,10 @@ public class TaggingServiceImpl implements TaggingService,
         catch (IOException exception)
         {
             throw new AlfrescoRuntimeException("Unable to read tag details", exception);
+        }
+        finally
+        {
+            try { reader.close(); } catch (Exception e) {}
         }
         
         return result;        

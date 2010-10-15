@@ -121,6 +121,21 @@ public class RetryingTransactionHelper
     private int maxRetryWaitMs;
     /** How much to increase the wait time with each retry. */
     private int retryWaitIncrementMs;
+
+    /**
+     * Optional time limit for execution time. When non-zero, retries will not continue when the projected time is
+     * beyond this time.
+     */
+    private long maxExecutionMs;
+
+    /** The number of concurrently exeucting transactions. Only maintained when maxExecutionMs is set. */
+    private int txnCount;
+
+    /**
+     * A 'ceiling' for the number of concurrent transactions that can execute. Dynamically maintained so that exeuction
+     * time is within maxExecutionMs. Transactions above this limit will be rejected with a {@link TooBusyException}.
+     */
+    private Integer txnCeiling;
     
     /**
      * Whether the the transactions may only be reads
@@ -205,6 +220,11 @@ public class RetryingTransactionHelper
         this.retryWaitIncrementMs = retryWaitIncrementMs;
     }
 
+    public void setMaxExecutionMs(long maxExecutionMs)
+    {
+        this.maxExecutionMs = maxExecutionMs;
+    }
+
     /**
      * Set whether this helper only supports read transactions.
      */
@@ -273,185 +293,256 @@ public class RetryingTransactionHelper
         {
             throw new AccessDeniedException(MSG_READ_ONLY);
         }
-        // Track the last exception caught, so that we
-        // can throw it if we run out of retries.
-        RuntimeException lastException = null;
-        for (int count = 0; count == 0 || count < maxRetries; count++)
+
+        // If we are time limiting, set ourselves a time limit and maintain the count of concurrent transactions
+        long startTime = 0, endTime = 0, txnStartTime = 0;
+        int txnCountWhenStarted = 0;
+        if (maxExecutionMs > 0)
         {
-            UserTransaction txn = null;
-            try
+            startTime = System.currentTimeMillis();
+            synchronized (this)
             {
-                if (requiresNew)
+                // If this transaction would take us above our ceiling, reject it
+                if (txnCeiling != null && txnCount >= txnCeiling)
                 {
-                    txn = txnService.getNonPropagatingUserTransaction(readOnly);
+                    throw new TooBusyException("Too busy: " + txnCount + " transactions");                                
                 }
-                else
+                txnCountWhenStarted = ++txnCount;
+            }
+            endTime = startTime + maxExecutionMs;
+        }
+
+        try
+        {        
+            // Track the last exception caught, so that we
+            // can throw it if we run out of retries.
+            RuntimeException lastException = null;
+            for (int count = 0; count == 0 || count < maxRetries; count++)
+            {
+                // Monitor duration of each retry so that we can project an end time
+                if (maxExecutionMs > 0)
+                {                        
+                    txnStartTime = System.currentTimeMillis();
+                }
+
+                UserTransaction txn = null;
+                try
                 {
-                    TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
-                    switch (readState)
+                    if (requiresNew)
                     {
-                        case TXN_READ_ONLY:
-                            if (!readOnly)
-                            {
-                                // The current transaction is read-only, but a writable transaction is requested
-                                throw new AlfrescoRuntimeException("Read-Write transaction started within read-only transaction");
-                            }
-                            // We are in a read-only transaction and this is what we require so continue with it.
-                            break;
-                        case TXN_READ_WRITE:
-                            // We are in a read-write transaction.  It cannot be downgraded so just continue with it.
-                            break;
-                        case TXN_NONE:
-                            // There is no current transaction so we need a new one.
-                            txn = txnService.getUserTransaction(readOnly);
-                            break;
-                        default:
-                            throw new RuntimeException("Unknown transaction state: " + readState);
-                    }
-                }
-                if (txn != null)
-                {
-                    txn.begin();
-                    // Wrap it to protect it
-                    UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();
-                    ProxyFactory proxyFactory = new ProxyFactory(txn);
-                    proxyFactory.addAdvice(advise);
-                    UserTransaction wrappedTxn = (UserTransaction) proxyFactory.getProxy();
-                    // Store the UserTransaction for static retrieval.  There is no need to unbind it
-                    // because the transaction management will do that for us.
-                    AlfrescoTransactionSupport.bindResource(KEY_ACTIVE_TRANSACTION, wrappedTxn);
-                }
-                // Do the work.
-                R result = cb.execute();
-                // Only commit if we 'own' the transaction.
-                if (txn != null)
-                {
-                    if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("\n" +
-                                        "Transaction marked for rollback: \n" +
-                                        "   Thread: " + Thread.currentThread().getName() + "\n" +
-                                        "   Txn:    " + txn + "\n" +
-                                        "   Iteration: " + count);
-                        }
-                        // Something caused the transaction to be marked for rollback
-                        // There is no recovery or retrying with this
-                        txn.rollback();
+                        txn = txnService.getNonPropagatingUserTransaction(readOnly);
                     }
                     else
                     {
-                        // The transaction hasn't been flagged for failure so the commit
-                        // sould still be good.
-                        txn.commit();
-                    }
-                }
-                if (logger.isDebugEnabled())
-                {
-                    if (count != 0)
-                    {
-                        logger.debug("\n" +
-                                "Transaction succeeded: \n" +
-                                "   Thread: " + Thread.currentThread().getName() + "\n" +
-                                "   Txn:    " + txn + "\n" +
-                                "   Iteration: " + count);
-                    }
-                }
-                return result;
-            }
-            catch (Throwable e)
-            {
-                // Somebody else 'owns' the transaction, so just rethrow.
-                if (txn == null)
-                {
-                    RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
-                            e, "Exception from transactional callback: " + cb);
-                    throw ee;
-                }
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("\n" +
-                            "Transaction commit failed: \n" +
-                            "   Thread: " + Thread.currentThread().getName() + "\n" +
-                            "   Txn:    " + txn + "\n" +
-                            "   Iteration: " + count + "\n" +
-                            "   Exception follows:",
-                            e);
-                }
-                // Rollback if we can.
-                if (txn != null)
-                {
-                    try
-                    {
-                        int txnStatus = txn.getStatus();
-                        // We can only rollback if a transaction was started (NOT NO_TRANSACTION) and
-                        // if that transaction has not been rolled back (NOT ROLLEDBACK).
-                        // If an exception occurs while the transaction is being created (e.g. no database connection)
-                        // then the status will be NO_TRANSACTION.
-                        if (txnStatus != Status.STATUS_NO_TRANSACTION && txnStatus != Status.STATUS_ROLLEDBACK)
+                        TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
+                        switch (readState)
                         {
-                            txn.rollback();
+                            case TXN_READ_ONLY:
+                                if (!readOnly)
+                                {
+                                    // The current transaction is read-only, but a writable transaction is requested
+                                    throw new AlfrescoRuntimeException("Read-Write transaction started within read-only transaction");
+                                }
+                                // We are in a read-only transaction and this is what we require so continue with it.
+                                break;
+                            case TXN_READ_WRITE:
+                                // We are in a read-write transaction.  It cannot be downgraded so just continue with it.
+                                break;
+                            case TXN_NONE:
+                                // There is no current transaction so we need a new one.
+                                txn = txnService.getUserTransaction(readOnly);
+                                break;
+                            default:
+                                throw new RuntimeException("Unknown transaction state: " + readState);
                         }
                     }
-                    catch (Throwable e1)
+                    if (txn != null)
                     {
-                        // A rollback failure should not preclude a retry, but logging of the rollback failure is required
-                        logger.error("Rollback failure.  Normal retry behaviour will resume.", e1);
+                        txn.begin();
+                        // Wrap it to protect it
+                        UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();
+                        ProxyFactory proxyFactory = new ProxyFactory(txn);
+                        proxyFactory.addAdvice(advise);
+                        UserTransaction wrappedTxn = (UserTransaction) proxyFactory.getProxy();
+                        // Store the UserTransaction for static retrieval.  There is no need to unbind it
+                        // because the transaction management will do that for us.
+                        AlfrescoTransactionSupport.bindResource(KEY_ACTIVE_TRANSACTION, wrappedTxn);
                     }
-                }
-                if (e instanceof RollbackException)
-                {
-                    lastException = (e.getCause() instanceof RuntimeException) ?
-                         (RuntimeException)e.getCause() : new AlfrescoRuntimeException("Exception in Transaction.", e.getCause());
-                }
-                else
-                {
-                    lastException = (e instanceof RuntimeException) ?
-                         (RuntimeException)e : new AlfrescoRuntimeException("Exception in Transaction.", e);
-                }
-                // Check if there is a cause for retrying
-                Throwable retryCause = extractRetryCause(e);
-                if (retryCause != null)
-                {
-                    // Sleep a random amount of time before retrying.
-                    // The sleep interval increases with the number of retries.
-                    int sleepIntervalRandom = (count > 0 &&  retryWaitIncrementMs > 0)
-                                                ? random.nextInt(count * retryWaitIncrementMs)
-                                                : minRetryWaitMs;
-                    int sleepInterval = Math.min(maxRetryWaitMs, sleepIntervalRandom);
-                    sleepInterval = Math.max(sleepInterval, minRetryWaitMs);
-                    if (logger.isInfoEnabled() && !logger.isDebugEnabled())
+                    // Do the work.
+                    R result = cb.execute();
+                    // Only commit if we 'own' the transaction.
+                    if (txn != null)
                     {
-                        String msg = String.format(
-                                "Retrying %s: count %2d; wait: %1.1fs; msg: \"%s\"; exception: (%s)",
-                                Thread.currentThread().getName(),
-                                count, (double)sleepInterval/1000D,
-                                retryCause.getMessage(),
-                                retryCause.getClass().getName());
-                        logger.info(msg);
+                        if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("\n" +
+                                            "Transaction marked for rollback: \n" +
+                                            "   Thread: " + Thread.currentThread().getName() + "\n" +
+                                            "   Txn:    " + txn + "\n" +
+                                            "   Iteration: " + count);
+                            }
+                            // Something caused the transaction to be marked for rollback
+                            // There is no recovery or retrying with this
+                            txn.rollback();
+                        }
+                        else
+                        {
+                            // The transaction hasn't been flagged for failure so the commit
+                            // sould still be good.
+                            txn.commit();
+                        }
                     }
-                    try
+                    if (logger.isDebugEnabled())
                     {
-                        Thread.sleep(sleepInterval);
+                        if (count != 0)
+                        {
+                            logger.debug("\n" +
+                                    "Transaction succeeded: \n" +
+                                    "   Thread: " + Thread.currentThread().getName() + "\n" +
+                                    "   Txn:    " + txn + "\n" +
+                                    "   Iteration: " + count);
+                        }
                     }
-                    catch (InterruptedException ie)
-                    {
-                        // Do nothing.
-                    }
-                    // Try again
-                    continue;
+                    return result;
                 }
-                else
+                catch (Throwable e)
                 {
-                    // It was a 'bad' exception.
-                    throw lastException;
+                    // Somebody else 'owns' the transaction, so just rethrow.
+                    if (txn == null)
+                    {
+                        RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
+                                e, "Exception from transactional callback: " + cb);
+                        throw ee;
+                    }
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("\n" +
+                                "Transaction commit failed: \n" +
+                                "   Thread: " + Thread.currentThread().getName() + "\n" +
+                                "   Txn:    " + txn + "\n" +
+                                "   Iteration: " + count + "\n" +
+                                "   Exception follows:",
+                                e);
+                    }
+                    // Rollback if we can.
+                    if (txn != null)
+                    {
+                        try
+                        {
+                            int txnStatus = txn.getStatus();
+                            // We can only rollback if a transaction was started (NOT NO_TRANSACTION) and
+                            // if that transaction has not been rolled back (NOT ROLLEDBACK).
+                            // If an exception occurs while the transaction is being created (e.g. no database connection)
+                            // then the status will be NO_TRANSACTION.
+                            if (txnStatus != Status.STATUS_NO_TRANSACTION && txnStatus != Status.STATUS_ROLLEDBACK)
+                            {
+                                txn.rollback();
+                            }
+                        }
+                        catch (Throwable e1)
+                        {
+                            // A rollback failure should not preclude a retry, but logging of the rollback failure is required
+                            logger.error("Rollback failure.  Normal retry behaviour will resume.", e1);
+                        }
+                    }
+                    if (e instanceof RollbackException)
+                    {
+                        lastException = (e.getCause() instanceof RuntimeException) ?
+                             (RuntimeException)e.getCause() : new AlfrescoRuntimeException("Exception in Transaction.", e.getCause());
+                    }
+                    else
+                    {
+                        lastException = (e instanceof RuntimeException) ?
+                             (RuntimeException)e : new AlfrescoRuntimeException("Exception in Transaction.", e);
+                    }
+                    // Check if there is a cause for retrying
+                    Throwable retryCause = extractRetryCause(e);
+                    if (retryCause != null)
+                    {
+                        // Sleep a random amount of time before retrying.
+                        // The sleep interval increases with the number of retries.
+                        int sleepIntervalRandom = (count > 0 &&  retryWaitIncrementMs > 0)
+                                                    ? random.nextInt(count * retryWaitIncrementMs)
+                                                    : minRetryWaitMs;
+                        int maxRetryWaitMs;
+                        
+                        // If we are time limiting only continue if we have enough time, based on the last duration
+                        if (maxExecutionMs > 0)
+                        {
+                            long txnEndTime = System.currentTimeMillis();
+                            long projectedEndTime = txnEndTime + (txnEndTime - txnStartTime);
+                            if (projectedEndTime > endTime)
+                            {
+							    // Force the ceiling to be lowered and reject
+							    endTime = 0;
+                                throw new TooBusyException("Too busy to retry", e);                                                                
+                            }
+                            // Limit the wait duration to fit into the time we have left
+                            maxRetryWaitMs = Math.min(this.maxRetryWaitMs, (int)(endTime - projectedEndTime));                            
+                        }
+                        else
+                        {
+                            maxRetryWaitMs = this.maxRetryWaitMs;
+                        }                        
+                        int sleepInterval = Math.min(maxRetryWaitMs, sleepIntervalRandom);
+                        sleepInterval = Math.max(sleepInterval, minRetryWaitMs);
+                        if (logger.isInfoEnabled() && !logger.isDebugEnabled())
+                        {
+                            String msg = String.format(
+                                    "Retrying %s: count %2d; wait: %1.1fs; msg: \"%s\"; exception: (%s)",
+                                    Thread.currentThread().getName(),
+                                    count, (double)sleepInterval/1000D,
+                                    retryCause.getMessage(),
+                                    retryCause.getClass().getName());
+                            logger.info(msg);
+                        }
+                        try
+                        {
+                            Thread.sleep(sleepInterval);
+                        }
+                        catch (InterruptedException ie)
+                        {
+                            // Do nothing.
+                        }
+                        // Try again
+                        continue;
+                    }
+                    else
+                    {
+                        // It was a 'bad' exception.
+                        throw lastException;
+                    }
                 }
             }
+            // We've worn out our welcome and retried the maximum number of times.
+            // So, fail.
+            throw lastException;
         }
-        // We've worn out our welcome and retried the maximum number of times.
-        // So, fail.
-        throw lastException;
+        finally
+        {
+            if (maxExecutionMs > 0)
+            {
+                synchronized (this)
+                {
+                    txnCount--;
+                    if(System.currentTimeMillis() > endTime)
+                    {
+                        // Lower the ceiling
+                        if (txnCeiling == null || txnCeiling > txnCountWhenStarted - 1)
+                        {
+                            txnCeiling = Math.max(1, txnCountWhenStarted - 1);
+                        }
+                    }
+                    else if (txnCeiling != null && txnCeiling < txnCountWhenStarted + 1)
+                    {
+                        // Raise the ceiling                        
+                        txnCeiling = txnCountWhenStarted + 1;
+                    }
+                }
+            }                        
+        }
     }
 
     /**

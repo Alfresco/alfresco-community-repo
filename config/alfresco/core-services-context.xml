@@ -401,6 +401,31 @@
         </property>
     </bean>
 
+    <!--
+        A special time-limited retrying transaction helper that will keep request times below
+        server.web.transaction.max-duration-ms
+    -->
+    <bean id="web.retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="maxRetries">
+            <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
+        </property>
+        <property name="maxExecutionMs">
+            <value>${server.web.transaction.max-duration-ms}</value>
+        </property>
+    </bean>
+
     <bean id="retryingWriteTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
         <property name="txnHelper">
             <ref bean="retryingTransactionHelper"/>
@@ -717,6 +742,9 @@
         </property>
         <property name="indexerMaxFieldLength">
             <value>${lucene.indexer.maxFieldLength}</value>
+        </property>
+        <property name="fairLocking">
+            <value>${lucene.indexer.fairLocking}</value>
         </property>
         <property name="writeLockTimeout">
             <value>${lucene.write.lock.timeout}</value>

@@ -18,12 +18,12 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -249,7 +249,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     private Collection<ChildAssociationRef> resultSetToChildAssocCollection(ResultSet resultSet)
     {
-        List<ChildAssociationRef> collection = new ArrayList<ChildAssociationRef>();
+        List<ChildAssociationRef> collection = new LinkedList<ChildAssociationRef>();
         if (resultSet != null)
         {
             for (ResultSetRow row : resultSet)
@@ -264,7 +264,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getCategories(StoreRef storeRef, QName aspectQName, Depth depth)
     {
-        Collection<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        Collection<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectQName);
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -331,7 +331,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)
     {
-        Collection<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        Collection<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -340,7 +340,49 @@ public class LuceneCategoryServiceImpl implements CategoryService
         return assocs;
     }
 
+    public ChildAssociationRef getCategory(NodeRef parent, QName aspectName, String name)
+    {
+        String uri = nodeService.getPrimaryParent(parent).getQName().getNamespaceURI();
+        String validLocalName = QName.createValidLocalName(name);
+        Collection<ChildAssociationRef> assocs = nodeService.getChildAssocs(parent, ContentModel.ASSOC_SUBCATEGORIES,
+                QName.createQName(uri, validLocalName), false);
+        if (assocs.isEmpty())
+        {
+            return null;
+        }
+        return assocs.iterator().next();
+    }
+
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String name,
+            boolean create)
+    {
+        Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+        if (nodeRefs.isEmpty())
+        {
+            return Collections.emptySet();
+        }
+        Collection<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            ChildAssociationRef category = getCategory(nodeRef, aspectName, name);
+            if (category != null)
+            {
+                assocs.add(category);
+            }
+        }
+        if (create && assocs.isEmpty())
+        {
+            assocs.add(createCategoryInternal(nodeRefs.iterator().next(), name));
+        }
+        return assocs;
+    }
+    
     public NodeRef createCategory(NodeRef parent, String name)
+    {
+        return createCategoryInternal(parent, name).getChildRef();
+    }
+
+    private ChildAssociationRef createCategoryInternal(NodeRef parent, String name)
     {
         if (!nodeService.exists(parent))
         {
@@ -348,8 +390,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
         }
         String uri = nodeService.getPrimaryParent(parent).getQName().getNamespaceURI();
         String validLocalName = QName.createValidLocalName(name);
-        NodeRef newCategory = publicNodeService.createNode(parent, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(uri, validLocalName), ContentModel.TYPE_CATEGORY).getChildRef();
-        publicNodeService.setProperty(newCategory, ContentModel.PROP_NAME, name);
+        ChildAssociationRef newCategory = publicNodeService.createNode(parent, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(uri, validLocalName), ContentModel.TYPE_CATEGORY);
+        publicNodeService.setProperty(newCategory.getChildRef(), ContentModel.PROP_NAME, name);
         return newCategory;
     }
 
@@ -412,7 +454,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
             {
                 LuceneSearcher luceneSearcher = (LuceneSearcher)searchService;
                 List<Pair<String, Integer>> topTerms = luceneSearcher.getTopTerms(field, count);
-                List<Pair<NodeRef, Integer>> answer = new ArrayList<Pair<NodeRef, Integer>>();
+                List<Pair<NodeRef, Integer>> answer = new LinkedList<Pair<NodeRef, Integer>>();
                 for (Pair<String, Integer> term : topTerms)
                 {
                     Pair<NodeRef, Integer> toAdd;

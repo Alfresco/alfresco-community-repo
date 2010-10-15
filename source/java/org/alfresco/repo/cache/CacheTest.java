@@ -27,11 +27,10 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
-import org.alfresco.repo.cache.TransactionalCache.NullValueMarker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -206,9 +205,9 @@ public class CacheTest extends TestCase
             // update 3 in the cache
             transactionalCache.put(UPDATE_TXN_THREE, "XXX");
             assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(UPDATE_TXN_THREE));
-            assertFalse("Item was put into backing cache (excl. NullValueMarker)",
-                    backingCache.contains(UPDATE_TXN_THREE) &&
-                    !(backingCache.get(UPDATE_TXN_THREE) instanceof NullValueMarker));
+            assertFalse(
+                    "Item was put into backing cache (excl. NullValueMarker)",
+                    backingCache.contains(UPDATE_TXN_THREE));
             
             // check that the keys collection is correct
             Collection<String> transactionalKeys = transactionalCache.getKeys();
@@ -597,7 +596,7 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        executeAndCheck(callback, COMMON_KEY, "AAA");   // Relaxed for ALF-5134
     }
     /**
      * <ul>

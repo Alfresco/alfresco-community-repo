@@ -281,6 +281,10 @@ public abstract class AbstractMimeMessage extends MimeMessage
         return model;
     }
 
+    protected void updateMessageID() throws MessagingException
+    {
+        setHeader("Message-ID", this.messageFileInfo.getNodeRef().getId());
+    }
 
     
 }

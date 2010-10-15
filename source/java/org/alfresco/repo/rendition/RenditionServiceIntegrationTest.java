@@ -1706,6 +1706,47 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertNotNull("Non-primary parent was not found.", nonPrimaryParent);
         assertEquals(nodeWithImageContent, nonPrimaryParent);
     }
+    
+    /**
+     * If we're using path based renditions, it's allowed for 
+     *  two source nodes to end up rendering into folder with
+     *  the same name as each other.
+     * One case is
+     *   /images/world/logo.png -> /smaller/logo.png
+     *   /images/europe/logo.png -> /smaller/logo.png
+     * Clearly this isn't a great situation to be in, since the
+     *  two source nodes are fighting over the rendered node!
+     * However, people will sometimes end up doing this, so we
+     *  need to ensure that the last rendered version wins, and
+     *  the previous rendered version is fully gone. We mustn't
+     *  end up with both source nodes thinking they have the same
+     *  rendition node, because it'd only be one of theirs!
+     */
+    public void testPathBasedRenditionOverwrite() throws Exception
+    {
+       
+    }
+    
+    public void testRenditionPlacements() throws Exception
+    {
+       // Using a dummy rendition engine
+       // ------------------------------
+       
+       // For both single and composite renditions, run more than once:
+       /// -----------------------------------------------------------
+       
+       // Anonymous rendition, no existing one there
+       
+       // Anonymous rendition, existing one there, same type
+       
+       // Anonymous rendition, existing one there, wrong type
+       
+       // Path based rendition, no existing one there
+       
+       // Path based rendition, existing one there, same type
+       
+       // Path based rendition, existing one there, wrong type
+    }
 
     
     private RenditionDefinition loadAndValidateRenditionDefinition(String renditionLocalName)

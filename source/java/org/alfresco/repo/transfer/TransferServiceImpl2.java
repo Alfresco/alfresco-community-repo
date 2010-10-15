@@ -631,8 +631,10 @@ public class TransferServiceImpl2 implements TransferService2
 
                     case Commit:
                     {
+                        logger.debug("about to start committing transferId:" + transfer.getTransferId());
                         eventProcessor.commit();
                         transmitter.commit(transfer);
+                      
                         logger.debug("committing transferId:" + transfer.getTransferId());
                         checkCancel(transfer.getTransferId());
 
@@ -828,9 +830,17 @@ public class TransferServiceImpl2 implements TransferService2
             catch(Exception e)
             {
                 logger.debug("Exception - unable to transfer", e);
-                failureException = e;
                 
-                if (transfer != null && (clientState == ClientTransferState.Begin || clientState == ClientTransferState.Prepare))
+                /**
+                 * Save the first exception that we encounter.
+                 */
+                if(failureException == null)
+                {
+                    failureException = e;
+                }
+                if (transfer != null && (clientState == ClientTransferState.Begin || 
+                        clientState == ClientTransferState.Prepare ||
+                        clientState == ClientTransferState.Commit))
                 {
                     // we must first inform the target repository that a client failure has occurred to allow it to
                     // clean up appropriately, too

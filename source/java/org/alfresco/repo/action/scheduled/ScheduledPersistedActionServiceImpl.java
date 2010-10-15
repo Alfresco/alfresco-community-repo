@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -123,16 +124,22 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
     protected void locatePersistanceFolder()
     {
-        NodeRef dataDictionary = startupNodeService.getChildByName(
-              repositoryHelper.getCompanyHome(),
-              ContentModel.ASSOC_CONTAINS,
-              "Data Dictionary"
-        );
-        SCHEDULED_ACTION_ROOT_NODE_REF = startupNodeService.getChildByName(
-              dataDictionary,
-              ContentModel.ASSOC_CONTAINS,
-              "Scheduled Actions"
-        );
+        List<ChildAssociationRef> dictionaryAssocs = startupNodeService.getChildAssocs(
+                repositoryHelper.getCompanyHome(),
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
+        if (dictionaryAssocs.size() > 0)
+        {
+            NodeRef dataDictionary = dictionaryAssocs.get(0).getChildRef();
+            List<ChildAssociationRef> scheduledAssocs = startupNodeService.getChildAssocs(
+                    dataDictionary, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Scheduled Actions"));
+            if (scheduledAssocs.size() > 0)
+            {
+                SCHEDULED_ACTION_ROOT_NODE_REF = scheduledAssocs.get(0).getChildRef();
+            }
+        }
     }
     
     /**

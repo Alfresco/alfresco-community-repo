@@ -38,6 +38,8 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
@@ -179,44 +181,174 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         
     }
     
+    /**
+     * Tests start and end with regard to locking.
+     * @throws Exception
+     */
     public void testStartAndEnd() throws Exception
     {
         log.info("testStartAndEnd");
-        startNewTransaction();
+        
+        RetryingTransactionHelper trx = transactionService.getRetryingTransactionHelper();
+       
+        RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
+        {
+            
+            @Override
+            public Void execute() throws Throwable
+            {
+                log.debug("about to call start");
+                String transferId = receiver.start();
+                File stagingFolder = null;
+                try
+                {
+                    System.out.println("TransferId == " + transferId);
+
+                    stagingFolder = receiver.getStagingFolder(transferId);
+                    assertTrue(receiver.getStagingFolder(transferId).exists());
+                    NodeRef tempFolder = receiver.getTempFolder(transferId);
+                    assertNotNull("tempFolder is null", tempFolder);
+
+                    Thread.sleep(1000);
+                    try
+                    {
+                        receiver.start();
+                        fail("Successfully started twice!");
+                    }
+                    catch (TransferException ex)
+                    {
+                        // Expected
+                    }
+                
+                    Thread.sleep(300);
+                    try
+                    {
+                        receiver.start();
+                        fail("Successfully started twice!");
+                    }
+                    catch (TransferException ex)
+                    {
+                        // Expected
+                    }
+                
+                    try
+                    {
+                        receiver.end(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()).toString());
+//                      fail("Successfully ended with transfer id that doesn't own lock.");
+                    }
+                    catch (TransferException ex)
+                    {
+                        // Expected
+                    }
+                } 
+                finally
+                {
+                    log.debug("about to call end");
+                    receiver.end(transferId);
+                    
+                    /**
+                     * Check clean-up
+                     */
+                    if(stagingFolder != null)
+                    {
+                        assertFalse(stagingFolder.exists());
+                    }
+                }
+       
+                return null;
+            }
+        };
+        
+        long oldRefreshTime = receiver.getLockRefreshTime();  
         try
         {
-            String transferId = receiver.start();
-            System.out.println("TransferId == " + transferId);
-
-            File stagingFolder = receiver.getStagingFolder(transferId);
-            assertTrue(receiver.getStagingFolder(transferId).exists());
-
-            try
+            receiver.setLockRefreshTime(500);
+        
+            for (int i = 0; i < 5; i++)
             {
-                receiver.start();
-                fail("Successfully started twice!");
+                log.info("test iteration:" + i);
+                trx.doInTransaction(cb, false, true);
             }
-            catch (TransferException ex)
-            {
-                // Expected
-            }
-            try
-            {
-                receiver.end(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()).toString());
-                fail("Successfully ended with transfer id that doesn't own lock.");
-            }
-            catch (TransferException ex)
-            {
-                // Expected
-            }
-            receiver.end(transferId);
-            assertFalse(stagingFolder.exists());
-
-            receiver.end(receiver.start());
         }
         finally
         {
-            endTransaction();
+            receiver.setLockRefreshTime(oldRefreshTime);
+        }
+    }
+    
+    /**
+     * Tests start and end with regard to locking.
+     * 
+     * Going to cut down the timeout to a very short period, the lock should expire
+     * @throws Exception
+     */
+    public void testLockTimeout() throws Exception
+    {
+        log.info("testStartAndEnd");
+        
+        RetryingTransactionHelper trx = transactionService.getRetryingTransactionHelper();
+        
+        /**
+         * Simulates a client starting a transfer and then "going away";
+         */
+        RetryingTransactionCallback<Void> startWithoutAnythingElse = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                log.debug("about to call start");
+                String transferId = receiver.start();
+                return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> slowTransfer = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                log.debug("about to call start");
+                String transferId = receiver.start();
+                Thread.sleep(1000);
+                try
+                {
+                    receiver.saveSnapshot(transferId, null);
+                    fail("did not timeout");
+                }
+                catch (TransferException te)
+                {
+                    logger.debug("expected to timeout", te);
+                    // expect to go here with a timeout
+                }
+                return null;
+            }
+        };
+        
+        
+        long lockRefreshTime = receiver.getLockRefreshTime();
+        long lockTimeOut = receiver.getLockTimeOut();
+        
+        try
+        {
+            receiver.setLockRefreshTime(500);
+            receiver.setLockTimeOut(200);
+        
+            /**
+             * This test simulates a client that starts a transfer and then "goes away".  
+             * We kludge the timeouts to far shorter than normal to make the test run in a reasonable time.
+             */
+            for (int i = 0; i < 3; i++)
+            {
+                log.info("test iteration:" + i);
+                trx.doInTransaction(startWithoutAnythingElse, false, true);
+                Thread.sleep(1000);
+            }
+            trx.doInTransaction(slowTransfer, false, true);
+        } 
+        finally
+        {
+            receiver.setLockRefreshTime(lockRefreshTime);
+            receiver.setLockTimeOut(lockTimeOut);
         }
     }
 

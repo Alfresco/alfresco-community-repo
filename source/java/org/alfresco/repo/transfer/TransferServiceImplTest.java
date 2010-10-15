@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -92,6 +94,7 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.TempFileProvider;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;
@@ -1666,77 +1669,74 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testAsyncCallback() throws Exception
     {
-        int MAX_SLEEPS = 5;
+        final int MAX_SLEEPS = 5;
        
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
         /**
-          * Get guest home
-          */
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
-        NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+         * Unit test kludge to transfer from guest home to company home
+         */
+        final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
 
         /**
-          *  For unit test 
-          *  - replace the HTTP transport with the in-process transport
-          *  - replace the node factory with one that will map node refs, paths etc.
-          */
-        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
-        transferServiceImpl.setTransmitter(transmitter);
-        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
-        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-        
-        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
-        transferServiceImpl.setDescriptorService(mockedDescriptorService);
-        
-        /**
-          * Now go ahead and create our first transfer target
           * This needs to be committed before we can call transfer asycnc.
           */
-        String CONTENT_TITLE = "ContentTitle";
-        String CONTENT_NAME_A = "Demo Node A";
-        String CONTENT_NAME_B = "Demo Node B";
-        Locale CONTENT_LOCALE = Locale.GERMAN; 
-        String CONTENT_STRING = "Hello";
+        final String CONTENT_TITLE = "ContentTitle";
+        final String CONTENT_NAME_A = "Demo Node A";
+        final String CONTENT_NAME_B = "Demo Node B";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_STRING = "Hello";
         
-        NodeRef nodeRefA = null;
-        NodeRef nodeRefB = null;
-        String targetName = "testAsyncCallback";
+        final String targetName = "testAsyncCallback";
+        class TestContext
         {
-            UserTransaction trx = transactionService.getNonPropagatingUserTransaction();
-            trx.begin();
-            try
+            TransferTarget transferMe;
+            NodeRef nodeRefA = null;
+            NodeRef nodeRefB = null;
+        };
+        
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+        {
+            @Override
+            public TestContext execute() throws Throwable
             {
-                nodeRefA = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_A);
+                TestContext ctx = new TestContext();
                 
-                if(nodeRefA == null)
+                /**
+                 * Get guest home
+                 */
+               String guestHomeQuery = "/app:company_home/app:guest_home";
+               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+               assertEquals("", 1, guestHomeResult.length());
+               final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                
+                ctx.nodeRefA = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_A);
+                
+                if(ctx.nodeRefA == null)
                 {
                     /**
                      * Create a test node that we will read and write
                      */
                     ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
-                    nodeRefA = child.getChildRef();
-                    nodeService.setProperty(nodeRefA, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-                    nodeService.setProperty(nodeRefA, ContentModel.PROP_NAME, CONTENT_NAME_A);
+                    ctx.nodeRefA = child.getChildRef();
+                    nodeService.setProperty(ctx.nodeRefA, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                    nodeService.setProperty(ctx.nodeRefA, ContentModel.PROP_NAME, CONTENT_NAME_A);
             
-                    ContentWriter writer = contentService.getWriter(nodeRefA, ContentModel.PROP_CONTENT, true);
+                    ContentWriter writer = contentService.getWriter(ctx.nodeRefA, ContentModel.PROP_CONTENT, true);
                     writer.setLocale(CONTENT_LOCALE);
                     writer.putContent(CONTENT_STRING);
                 }
                 
-                nodeRefB = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_B);
+                ctx.nodeRefB = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_B);
                 
-                if(nodeRefB == null)
+                if(ctx.nodeRefB == null)
                 {
                     ChildAssociationRef  child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate()), ContentModel.TYPE_CONTENT);
-                    nodeRefB = child.getChildRef();
-                    nodeService.setProperty(nodeRefB, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-                    nodeService.setProperty(nodeRefB, ContentModel.PROP_NAME, CONTENT_NAME_B);
+                    ctx.nodeRefB = child.getChildRef();
+                    nodeService.setProperty(ctx.nodeRefB, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                    nodeService.setProperty(ctx.nodeRefB, ContentModel.PROP_NAME, CONTENT_NAME_B);
             
-                    ContentWriter writer = contentService.getWriter(nodeRefB, ContentModel.PROP_CONTENT, true);
+                    ContentWriter writer = contentService.getWriter(ctx.nodeRefB, ContentModel.PROP_CONTENT, true);
                     writer.setLocale(CONTENT_LOCALE);
                     writer.putContent(CONTENT_STRING);
                 }
@@ -1751,33 +1751,28 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 else
                 {
                     transferService.getTransferTarget(targetName);
-                }   
-            }
-            finally    
-            {
-                trx.commit();
-            }
-        }
+                }           
+
+                return ctx;
+            } 
+        };
         
-        /**
-         * The transfer report is a plain report of the transfer - no async shenanigans to worry about
-         */
-        List<TransferEvent>transferReport = new ArrayList<TransferEvent>(50);
-        
-        startNewTransaction();
-        try 
-        {
-           /**
-             * Call the transferAsync method.
-             */
+        final TestContext testContext = tran.doInTransaction(setupCB); 
+    
+        RetryingTransactionCallback<List<TransferEvent>> transferCB = new RetryingTransactionCallback<List<TransferEvent>>() {
+
+            @Override
+            public List<TransferEvent> execute() throws Throwable
             {
+                List<TransferEvent>transferReport = new ArrayList<TransferEvent>(50);
+                
                 TestTransferCallback callback = new TestTransferCallback();
                 Set<TransferCallback> callbacks = new HashSet<TransferCallback>();
                 callbacks.add(callback);
                 TransferDefinition definition = new TransferDefinition();
                 Set<NodeRef>nodes = new HashSet<NodeRef>();
-                nodes.add(nodeRefA);
-                nodes.add(nodeRefB);
+                nodes.add(testContext.nodeRefA);
+                nodes.add(testContext.nodeRefB);
                 definition.setNodes(nodes);
                 
                 transferService.transferAsync(targetName, definition, callbacks);
@@ -1850,32 +1845,32 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                         event = events.poll();
                     }
                 }
-            }  
-                        
-            /**
-             * Now validate the transferReport
-             */
-            assertTrue("transfer report is too small", transferReport.size() > 2);
-            assertTrue("transfer report does not start with START", transferReport.get(0).getTransferState().equals(TransferEvent.TransferState.START));
             
-            boolean success = false;
-            for(TransferEvent event : transferReport)
-            {
-                if(event.getTransferState() == TransferEvent.TransferState.SUCCESS)
-                {
-                    success = true;
-                }
+                return transferReport;
             }
-            //assertTrue("transfer report does not contain SUCCESS", success));
-        }
-        finally     
-        {   
-//            UserTransaction trx = transactionService.getNonPropagatingUserTransaction();
-//            trx.begin();
-            transferService.deleteTransferTarget(targetName);     
-//            trx.commit();
-            endTransaction();
-        }
+        };
+        
+        /**
+         * The transfer report is a plain report of the transfer - no async shenanigans to worry about
+         */
+        final List<TransferEvent>transferReport = tran.doInTransaction(transferCB); 
+                     
+        /**
+          * Now validate the transferReport
+          */
+        assertTrue("transfer report is too small", transferReport.size() > 2);
+        assertTrue("transfer report does not start with START", transferReport.get(0).getTransferState().equals(TransferEvent.TransferState.START));
+            
+        boolean success = false;
+        for(TransferEvent event : transferReport)
+        {
+           if(event.getTransferState() == TransferEvent.TransferState.SUCCESS)
+           {
+               success = true;
+           }
+        } 
+        assertTrue("transfer report does not contain SUCCESS", success);
+
     } // test async callback
     
     
@@ -2523,93 +2518,170 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
 
+    private  UnitTestTransferManifestNodeFactory unitTestKludgeToTransferGuestHomeToCompanyHome()
+    {
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+   
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        return testNodeFactory;
+
+    }
     
-//    /**
-//     * Test the transfer method with big content - commented out since it takes a long time to run.
-//     */
-//    public void testTransferOneNodeWithBigContent() throws Exception
-//    {
-//        String CONTENT_TITLE = "ContentTitle";
-//        String CONTENT_NAME = "Demo Node 6";
-//        Locale CONTENT_LOCALE = Locale.GERMAN; 
-//        String CONTENT_STRING = "Hello";
-//        
-//        String targetName = "testTransferOneNodeWithBigContent";
-//        
-//        String guestHomeQuery = "/app:company_home/app:guest_home";
-//        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-//        
-//        assertEquals("", 1, result.length());
-//        NodeRef guestHome = result.getNodeRef(0);
-//        ChildAssociationRef childAssoc = result.getChildAssocRef(0);
-//        System.out.println("Guest home:" + guestHome);
-//        assertNotNull(guestHome);
-//        
-//        /**
-//         * Now go ahead and create our first transfer target
-//         */
-//        TransferTarget transferMe = createTransferTarget(targetName);
-//        
-//        /**
-//         * Create a test node that we will read and write
-//         */
-//        ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName("testNode6"), ContentModel.TYPE_CONTENT);
-//        
-//        
-//        File tempFile = TempFileProvider.createTempFile("test", ".dat");
-//        FileWriter fw = new FileWriter(tempFile);
-//        for(int i = 0; i < 100000000; i++)
-//        {
-//            fw.write("hello world this is my text, I wonder how much text I can transfer?" + i);
-//        }
-//        System.out.println("Temp File Size is:" + tempFile.length());
-//        fw.close();
-// 
-//        NodeRef contentNodeRef = child.getChildRef();
-//        ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-//        writer.setLocale(CONTENT_LOCALE);
-//        //File file = new File("c:/temp/images/BigCheese1.bmp");
-//        writer.setMimetype("application/data");
-//        //writer.putContent(file);
-//        writer.putContent(tempFile);
-//        
-//        tempFile.delete();
-//        
-//        nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//        nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, CONTENT_NAME);
-//
-//        try 
-//        {
-//            /**
-//             * Transfer the node created above 
-//             */
-//            {
-//                TransferDefinition definition = new TransferDefinition();
-//                Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                nodes.add(contentNodeRef);
-//                definition.setNodes(nodes);
-//                transferService.transfer(targetName, definition, null);
-//            }  
-//                      
-//            /**
-//             * Negative test transfer nothing
-//             */
-//            try
-//            {
-//                TransferDefinition definition = new TransferDefinition();
-//                transferService.transfer(targetName, definition, null);
-//                fail("exception not thrown");
-//            }
-//            catch(TransferException te)
-//            {
-//                    // expect to go here
-//            }
-//        }
-//        finally
-//        {
-//            transferService.deleteTransferTarget(targetName);
-//        } 
-//    }
+    /**
+     * Test the transfer method with regard to big content. 
+     * 
+     * This test takes a long time to run and is by default not run in the overnight build.
+     * 
+     * Turn it on by turning debug logging on for this class or by changing the "runTest" value;
+     */
+    public void testTransferOneNodeWithBigContent() throws Exception
+    { 
+        /**
+         * This test takes a long time to run - so switch it on and off here.
+         */
+        boolean runTest = false;
+        if(runTest || logger.isDebugEnabled())
+        {
+            final String CONTENT_TITLE = "ContentTitle";
+            final String CONTENT_NAME = "BigContent";
+            final Locale CONTENT_LOCALE = Locale.UK; 
+        
+            logger.debug("testTransferOneNodeWithBigContent starting");
+            
+            final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+            
+            /**
+             * Unit test kludge to transfer from guest home to company home
+             */
+            final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
+                
+            final String targetName = "testTransferOneNodeWithBigContent";
+        
+            class TestContext
+            {
+                TransferTarget transferMe;
+                NodeRef contentNodeRef;
+                NodeRef destNodeRef;
+            };
+            
+            RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+            {
+                @Override
+                public TestContext execute() throws Throwable
+                {
+                    TestContext ctx = new TestContext();
+                    
+                    String guestHomeQuery = "/app:company_home/app:guest_home";
+                    ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+                        
+                    assertEquals("", 1, result.length());
+                    NodeRef guestHome = result.getNodeRef(0);
+              
+                    System.out.println("Guest home:" + guestHome);
+                    assertNotNull(guestHome);
+                 
+                    ctx.contentNodeRef = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME);
+                    if(ctx.contentNodeRef == null)
+                    {
+                        /**
+                         * Create a test node that we will read and write
+                         */
+                        ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(CONTENT_NAME), ContentModel.TYPE_CONTENT);
+            
+                        File tempFile = TempFileProvider.createTempFile("test", ".dat");
+                        FileWriter fw = new FileWriter(tempFile);
+                        for(int i = 0; i < 100000000; i++)
+                        {
+                            fw.write("hello world this is my text, I wonder how much text I can transfer?" + i);
+                        }
+                        System.out.println("Temp File Size is:" + tempFile.length());
+                        fw.close();
+     
+                        ctx.contentNodeRef = child.getChildRef();
+                        ContentWriter writer = contentService.getWriter(ctx.contentNodeRef, ContentModel.PROP_CONTENT, true);
+                        writer.setLocale(CONTENT_LOCALE);
+                        writer.setMimetype("application/data");
+                        writer.putContent(tempFile);
+            
+                        tempFile.delete();
+            
+                        nodeService.setProperty(ctx.contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                        nodeService.setProperty(ctx.contentNodeRef, ContentModel.PROP_NAME, CONTENT_NAME);
+                    }
+                    if(!transferService.targetExists(targetName))
+                    {
+                        createTransferTarget(targetName);
+                    }
+                    
+                    return ctx;
+                } 
+            };
+            
+            final TestContext testContext = tran.doInTransaction(setupCB); 
+        
+            RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+                @Override
+                public Void execute() throws Throwable
+                {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(testContext.contentNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+                    
+                    return null;
+                }
+            };
+            
+            RetryingTransactionCallback<Void> finishCB = new RetryingTransactionCallback<Void>() {
+
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef oldDestNodeRef = testNodeFactory.getMappedNodeRef(testContext.contentNodeRef);
+                    
+                    ContentReader source = contentService.getReader(testContext.contentNodeRef, ContentModel.PROP_CONTENT);
+                    ContentReader destination = contentService.getReader(oldDestNodeRef, ContentModel.PROP_CONTENT);
+                    
+                    assertNotNull("source is null", source);
+                    assertNotNull("destination is null", destination);
+                    assertEquals("size different", source.getSize(), destination.getSize());
+                    
+                    /**
+                     * Now get rid of the transferred node so that the test can run again. 
+                     */
+                    nodeService.deleteNode(oldDestNodeRef);
+                    
+                    return null;
+                }
+            };
+            
+            /**
+             * This is the test
+             */
+            tran.doInTransaction(transferCB); 
+            tran.doInTransaction(finishCB); 
+        
+        }
+        else
+        {
+            System.out.println("test supressed");
+        }
+    } // test big content 
 
     /**
      * Test the transfer method behaviour with respect to sync folders - sending a complete set 
@@ -7382,6 +7454,183 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             tran.doInTransaction(checkTransferCB); 
         }
     } // test repeat update content
+
+    /**
+     * Test the transfer method with regard to replacing a node.  ALF-5109
+     * 
+     * Step 1: Create a new parent node and child node
+     * transfer
+     * 
+     * Step 2: Delete the parent node
+     * transfer
+     *  
+     * Step 3: Create new parent child node with same names and assocs.
+     * transfer
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testReplaceNode() throws Exception
+    {
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        final String CONTENT_TITLE = "ContentTitle";
+        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_STRING = "Hello World";
+        final String CONTENT_UPDATE_STRING = "Foo Bar";
+        
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        /**
+         * Get guest home
+         */
+        String guestHomeQuery = "/app:company_home/app:guest_home";
+        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+        assertEquals("", 1, guestHomeResult.length());
+        final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+        
+        final String targetName = "testRepeatUpdateOfContent";
+        
+        class TestContext
+        {
+           TransferTarget transferMe;
+           NodeRef parentNodeRef;
+           NodeRef middleNodeRef;
+           NodeRef childNodeRef;
+           QName parentName;
+           QName middleName;
+           QName childName;
+           
+        };
+       
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+        {
+            @Override
+            public TestContext execute() throws Throwable
+            {
+                TestContext testContext = new TestContext();
+            
+               /**
+                * Create a test node that we will read and write
+                */  
+               String name = GUID.generate();
+               
+               testContext.parentName = QName.createQName(name);
+               testContext.childName = QName.createQName("Ermintrude");
+               testContext.middleName = QName.createQName("Matilda");
+               
+               ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, testContext.parentName, ContentModel.TYPE_FOLDER);
+               testContext.parentNodeRef = child.getChildRef();
+               logger.debug("parentNodeRef created:"  + testContext.parentNodeRef );
+               nodeService.setProperty(testContext.parentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+               nodeService.setProperty(testContext.parentNodeRef, ContentModel.PROP_NAME, testContext.parentName.getLocalName());
+         
+               ChildAssociationRef child2 = nodeService.createNode(testContext.parentNodeRef, ContentModel.ASSOC_CONTAINS, testContext.childName, ContentModel.TYPE_FOLDER);
+               testContext.middleNodeRef = child2.getChildRef();
+               logger.debug("middleNodeRef created:"  + testContext.middleNodeRef );
+               nodeService.setProperty(testContext.middleNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+               nodeService.setProperty(testContext.middleNodeRef, ContentModel.PROP_NAME, testContext.childName.getLocalName());
+         
+               ChildAssociationRef child3 = nodeService.createNode(testContext.middleNodeRef, ContentModel.ASSOC_CONTAINS, testContext.childName, ContentModel.TYPE_CONTENT);
+               testContext.childNodeRef = child3.getChildRef();
+               logger.debug("childNodeRef created:"  + testContext.childNodeRef );
+               nodeService.setProperty(testContext.childNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+               nodeService.setProperty(testContext.childNodeRef, ContentModel.PROP_NAME, testContext.childName.getLocalName());
+         
+               /**
+                * Make sure the transfer target exists and is enabled.
+                */
+               if(!transferService.targetExists(targetName))
+               {
+                   testContext.transferMe = createTransferTarget(targetName);
+               }
+               else
+               {
+                   testContext.transferMe = transferService.getTransferTarget(targetName);
+               }
+               transferService.enableTransferTarget(targetName, true);
+               return testContext;
+            } 
+        };
+        
+        final TestContext testContext = tran.doInTransaction(setupCB); 
+        
+        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               TransferDefinition definition = new TransferDefinition();
+               Collection<NodeRef> nodes = new ArrayList<NodeRef>();
+               nodes.add(testContext.childNodeRef);
+               nodes.add(testContext.parentNodeRef);
+               nodes.add(testContext.middleNodeRef);
+               definition.setSync(true);
+               definition.setNodes(nodes);
+               transferService.transfer(targetName, definition);
+               return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> checkTransferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {        
+                return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> replaceNodesCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Delete the old nodes
+                
+                nodeService.deleteNode(testContext.middleNodeRef);
+                logger.debug("deleted node");
+                
+                ChildAssociationRef child2 = nodeService.createNode(testContext.parentNodeRef, ContentModel.ASSOC_CONTAINS, testContext.childName, ContentModel.TYPE_FOLDER);
+                testContext.middleNodeRef = child2.getChildRef();
+                logger.debug("middleNodeRef created:"  + testContext.middleNodeRef );
+                nodeService.setProperty(testContext.middleNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(testContext.middleNodeRef, ContentModel.PROP_NAME, testContext.childName.getLocalName());
+          
+                ChildAssociationRef child3 = nodeService.createNode(testContext.middleNodeRef, ContentModel.ASSOC_CONTAINS, testContext.childName, ContentModel.TYPE_CONTENT);
+                testContext.childNodeRef = child3.getChildRef();
+                logger.debug("childNodeRef created:"  + testContext.childNodeRef );
+                nodeService.setProperty(testContext.childNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(testContext.childNodeRef, ContentModel.PROP_NAME, testContext.childName.getLocalName());
+                   
+                return null;
+            }
+        };
+        
+        // This is the test
+        
+        tran.doInTransaction(transferCB); 
+        tran.doInTransaction(replaceNodesCB);
+        tran.doInTransaction(transferCB); 
+        tran.doInTransaction(checkTransferCB);         
+         
+    } // test replace node
 
     
     private void createUser(String userName, String password)

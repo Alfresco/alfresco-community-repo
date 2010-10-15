@@ -79,6 +79,7 @@
 		<property name="ruleService" ref="RuleService" />
 		<property name="descriptorService" ref="DescriptorService" />
 		<property name="alienProcessor" ref="alienProcessor" />
+		<property name="jobLockService" ref="JobLockService" />
 
 		<property name="transferLockFolderPath">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value>
@@ -92,6 +93,18 @@
 		<property name="rootStagingDirectory">
 			<value>${transferservice.receiver.stagingDir}</value>
 		</property>
+		<property name="lockRefreshTime">
+            <value>${transferservice.receiver.lockRefreshTime}</value>
+        </property>
+        <property name="lockRetryCount">
+            <value>${transferservice.receiver.lockRetryCount}</value>
+        </property>
+        <property name="lockRetryWait">
+            <value>${transferservice.receiver.lockRetryWait}</value>
+        </property>
+        <property name="lockTimeOut">
+            <value>${transferservice.receiver.lockTimeOut}</value>
+        </property>
 		<property name="manifestProcessorFactory" ref="transferManifestProcessorFactory" />
 		<property name="behaviourFilter" ref="policyBehaviourFilter" />
 		<property name="progressMonitor" ref="transferProgressMonitor" />

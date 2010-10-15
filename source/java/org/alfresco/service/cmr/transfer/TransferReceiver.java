@@ -61,13 +61,6 @@ public interface TransferReceiver
     void end(String transferId) throws TransferException;
 
     /**
-     * Nudge the transfer lock (to prevent it expiring) if the supplied transferId matches that referenced by the lock.
-     * @param transferId
-     * @throws TransferException if the lock doesn't exist or doesn't correspond to the supplied transferId.
-     */
-    void nudgeLock(String transferId) throws TransferException;
-
-    /**
      * Store the specified snapshot file into the transfer staging area.
      * The specified transfer must currently be the holder of the transfer lock, otherwise an exception is thrown.
      * This operation does not close the supplied stream, so the caller must do it as appropriate. The caller 

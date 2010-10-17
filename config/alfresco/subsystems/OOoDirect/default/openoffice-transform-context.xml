@@ -29,19 +29,8 @@
             <entry key=".*">
                <list>
                   <value>${ooo.exe}</value>
-                  <value>-accept=socket,host=localhost,port=8100;urp;StarOffice.ServiceManager</value>
-                  <bean class="org.alfresco.util.StringAppendingFactoryBean">
-                     <property name="items">
-                        <list>
-                           <value>-env:UserInstallation=</value>
-                           <ref bean="userInstallationURI" />
-                        </list>
-                     </property>
-                  </bean>
-                  <value>-nologo</value>
+                  <value>-accept=socket,host=127.0.0.1,port=${ooo.port};urp;StarOffice.ServiceManager</value>
                   <value>-headless</value>
-                  <value>-nofirststartwizard</value>
-                  <value>-nocrashrep</value>
                   <value>-norestore</value>
                </list>
             </entry>

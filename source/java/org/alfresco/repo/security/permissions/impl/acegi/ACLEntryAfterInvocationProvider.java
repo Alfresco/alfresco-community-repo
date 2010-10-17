@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -222,6 +223,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject) throws AccessDeniedException
     {
         if (log.isDebugEnabled())
@@ -266,6 +268,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             else if (FileInfo.class.isAssignableFrom(returnedObject.getClass()))
             {
                 return decide(authentication, object, config, (FileInfo) returnedObject);
+            }
+            else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                return decide(authentication, object, config, (Pair) returnedObject);
             }
             else if (ChildAssociationRef.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -418,11 +424,19 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     }
 
     private FileInfo decide(Authentication authentication, Object object, ConfigAttributeDefinition config, FileInfo returnedObject) throws AccessDeniedException
-
     {
         // Filter check done later
         NodeRef nodeRef = returnedObject.getNodeRef();
         // this is virtually equivalent to the noderef
+        decide(authentication, object, config, nodeRef);
+        // the noderef was allowed
+        return returnedObject;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Pair decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Pair returnedObject) throws AccessDeniedException
+    {
+        NodeRef nodeRef = (NodeRef) returnedObject.getSecond();
         decide(authentication, object, config, nodeRef);
         // the noderef was allowed
         return returnedObject;
@@ -845,9 +859,15 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((FileInfo) nextObject).getNodeRef();
                     }
+                    else if (Pair.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = (NodeRef) ((Pair)nextObject).getSecond();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException("The specified parameter is not a collection of NodeRefs, ChildAssociationRefs or FileInfos");
+                        throw new ACLEntryVoterException(
+                                "The specified parameter is not a collection of " +
+                                "NodeRefs, ChildAssociationRefs, FileInfos or Pair<Long, NodeRef>");
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
@@ -869,9 +889,15 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((FileInfo) nextObject).getNodeRef();
                     }
+                    else if (Pair.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = (NodeRef) ((Pair)nextObject).getSecond();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException("The specified parameter is not a collection of NodeRefs or ChildAssociationRefs");
+                        throw new ACLEntryVoterException(
+                                "The specified parameter is not a collection of " +
+                                "NodeRefs, FileInfos, ChildAssociationRefs or Pair<Long, NodeRef>");
                     }
                 }
 
@@ -903,6 +929,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
+    @SuppressWarnings("rawtypes")
     private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject) throws AccessDeniedException
 
     {
@@ -945,12 +972,15 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((FileInfo) current).getNodeRef();
                     }
+                    else if (Pair.class.isAssignableFrom(current.getClass()))
+                    {
+                        testNodeRef = (NodeRef) ((Pair)current).getSecond();
+                    }
                     else
                     {
                         throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
                     }
                 }
-
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
                 {
                     if (StoreRef.class.isAssignableFrom(current.getClass()))
@@ -968,6 +998,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     else if (FileInfo.class.isAssignableFrom(current.getClass()))
                     {
                         testNodeRef = ((FileInfo) current).getNodeRef();
+                    }
+                    else if (Pair.class.isAssignableFrom(current.getClass()))
+                    {
+                        testNodeRef = (NodeRef) ((Pair)current).getSecond();
                     }
                     else
                     {

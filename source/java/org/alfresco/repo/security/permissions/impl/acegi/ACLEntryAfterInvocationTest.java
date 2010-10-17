@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
@@ -181,6 +182,27 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
         assertEquals(answer, rootNodeRef);
 
+    }
+    
+    public void testBasicAllowNodePair() throws Exception
+    {
+        runAs("andy");
+
+        Object o = new ClassWithMethods();
+        Method method = o.getClass().getMethod("echoNodePair", new Class[] { NodeRef.class });
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+
+        Pair<Long, NodeRef> rootNodePair = new Pair<Long, NodeRef>(Long.valueOf(1), rootNodeRef);
+        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+        assertEquals(rootNodePair, answer);
     }
     
     public void testBasicAllowStore() throws Exception
@@ -826,6 +848,11 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         public NodeRef echoNodeRef(NodeRef nodeRef)
         {
             return nodeRef;
+        }
+
+        public Pair<Long, NodeRef> echoNodePair(NodeRef nodeRef)
+        {
+            return new Pair<Long, NodeRef>(Long.valueOf(1), nodeRef);
         }
 
         public ChildAssociationRef echoChildAssocRef(ChildAssociationRef car)

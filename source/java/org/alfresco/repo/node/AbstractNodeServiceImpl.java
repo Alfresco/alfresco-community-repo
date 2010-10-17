@@ -812,4 +812,10 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         }
         return properties;
     }
+
+    @Override
+    public List<NodeRef> findNodes(FindNodeParameters params)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

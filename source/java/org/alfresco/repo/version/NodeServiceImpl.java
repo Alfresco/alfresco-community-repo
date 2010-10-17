@@ -42,16 +42,15 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -285,6 +284,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Type translation for version store
      */
+    @SuppressWarnings("deprecation")
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return (QName)this.dbNodeService.getProperty(VersionUtil.convertNodeRef(nodeRef), PROP_QNAME_FROZEN_NODE_TYPE);
@@ -328,7 +328,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Translation for version store
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return new HashSet<QName>(
@@ -705,6 +705,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
     @Override
     public List<ChildAssociationRef> getChildAssocsByPropertyValue(
             NodeRef nodeRef, QName propertyQName, Serializable value)
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    @Override
+    public List<NodeRef> findNodes(FindNodeParameters params)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

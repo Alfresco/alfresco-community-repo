@@ -58,6 +58,7 @@ public class AuditBootstrapTest extends TestCase
     public void setUp() throws Exception
     {
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
+        auditModelRegistry.setProperty(AuditModelRegistryImpl.PROPERTY_AUDIT_CONFIG_STRICT, Boolean.TRUE.toString());
         
         // Register a new model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
@@ -69,6 +70,7 @@ public class AuditBootstrapTest extends TestCase
     protected void tearDown() throws Exception
     {
         // Throw away the reconfigured registry state
+        auditModelRegistry.setProperty(AuditModelRegistryImpl.PROPERTY_AUDIT_CONFIG_STRICT, Boolean.FALSE.toString());
         auditModelRegistry.destroy();
     }
 

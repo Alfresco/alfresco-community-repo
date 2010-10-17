@@ -13,14 +13,6 @@
     <import resource="classpath:alfresco/application-context-core.xml" />
 
     <!--
-         Import the CMIS context+dependencies, now that audit is on by default.
-         This is only required until ALF-5183 is fixed
-    -->
-    <import resource="classpath:alfresco/cmis-api-context.xml" />
-    <import resource="classpath:alfresco/rendition-services-context.xml" />
-    <import resource="classpath:alfresco/thumbnail-service-context.xml" />
-
-    <!--
          Import all modules and related components.
     -->
     <import resource="classpath*:alfresco/module-context.xml" />

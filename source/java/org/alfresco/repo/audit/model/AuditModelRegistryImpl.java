@@ -78,6 +78,13 @@ import org.xml.sax.SAXParseException;
  */
 public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implements AuditModelRegistry
 {
+    /** The name of the global enablement property. */
+    public static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
+    /** The name of the strict loading flag. */
+    public static final String PROPERTY_AUDIT_CONFIG_STRICT = "audit.config.strict";
+    /** The XSD classpath location. */
+    private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
+    
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
     
     private String[] searchPath;
@@ -383,7 +390,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                             }
                             catch (Throwable e)
                             {
-                                throw new AuditModelException("Failed to load audit model: " + auditModelUrl, e);
+                                String strictPropStr = getProperty(AuditModelRegistryImpl.PROPERTY_AUDIT_CONFIG_STRICT);
+                                if (Boolean.parseBoolean(strictPropStr))
+                                {
+                                    throw new AuditModelException("Failed to load audit model: " + auditModelUrl, e);
+                                }
+                                else
+                                {
+                                    logger.error("Failed to load audit model: " + auditModelUrl, e);
+                                }
                             }
                         }
                         // NOTE: If we support other types of loading, then that will have to go here, too

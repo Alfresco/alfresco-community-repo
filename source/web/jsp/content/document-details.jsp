@@ -35,7 +35,7 @@
 </f:verbatim>
 <h:panelGroup id="dashboard-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalChange">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalChange">
          <r:actionInstanceEvaluator id="eval1" value="#{DialogManager.bean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.UnlockedDocEvaluator">
             <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyDocTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
             <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DialogManager.bean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
@@ -49,7 +49,7 @@
       <table width=100% cellspacing=0 cellpadding=0 border=0>
          <tr>
             <td align=left></f:verbatim>
-               <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
+               <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalApply">
                   <r:actionInstanceEvaluator id="eval2" value="#{DialogManager.bean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.UnlockedDocEvaluator">
                      <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applyDocTemplate" />
                   </r:actionInstanceEvaluator>
@@ -93,7 +93,7 @@
 
 <h:panelGroup id="props-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties">
          <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="#{DialogManager.bean.editContentProperties}" />
       </r:permissionEvaluator>
    </f:facet>
@@ -159,7 +159,7 @@
 <%-- Multilingual properties --%>
 <h:panelGroup id="ml-props-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties">
          <a:actionLink id="titleLinkMl" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="dialog:editMlContainer" />
       </r:permissionEvaluator>
    </f:facet>

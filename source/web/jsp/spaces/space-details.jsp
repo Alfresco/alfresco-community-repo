@@ -33,7 +33,7 @@
       <%-- wrapper comment used by the panel to add additional component facets --%> 
       <h:panelGroup id="dashboard-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write" id="evalChange">
+            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="WriteProperties" id="evalChange">
                <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applySpaceTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
                <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DialogManager.bean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
             </r:permissionEvaluator>
@@ -45,7 +45,7 @@
          <table width=100% cellspacing=0 cellpadding=0 border=0>
             <tr>
                <td align=left></f:verbatim>
-               <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write" id="evalApply">
+               <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="WriteProperties" id="evalApply">
                   <a:actionLink id="actDashboard" value="#{msg.apply_template}" rendered="#{!DialogManager.bean.hasCustomView}" action="dialog:applySpaceTemplate" />
                </r:permissionEvaluator> 
                <f:verbatim></f:verbatim>
@@ -84,7 +84,7 @@
       <%-- wrapper comment used by the panel to add additional component facets --%> 
       <h:panelGroup id="props-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write">
+            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="WriteProperties">
                <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="dialog:editSpace" />
             </r:permissionEvaluator>
          </f:facet>

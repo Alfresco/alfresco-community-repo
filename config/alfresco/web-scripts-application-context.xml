@@ -195,6 +195,8 @@
       </property>
       <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->
       <property name="transactionHelper" ref="web.retryingTransactionHelper" />
+      <!-- The transaction helper used to generate error responses must be unlimited -->
+      <property name="fallbackTransactionHelper" ref="retryingTransactionHelper" />
       <property name="authorityService" ref="AuthorityService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />

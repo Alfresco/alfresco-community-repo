@@ -83,6 +83,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private Repository repository;
     private RepositoryImageResolver imageResolver;
     private RetryingTransactionHelper retryingTransactionHelper;
+    private RetryingTransactionHelper fallbackTransactionHelper;
     private AuthorityService authorityService;
     private DescriptorService descriptorService;
     private TenantAdminService tenantAdminService;
@@ -128,6 +129,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+    
+    /**
+     * @param fallbackTransactionHelper an unlimited transaction helper used to generate error responses
+     */
+    public void setFallbackTransactionHelper(RetryingTransactionHelper fallbackTransactionHelper)
+    {
+        this.fallbackTransactionHelper = fallbackTransactionHelper;
     }
 
     /**
@@ -180,7 +189,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public Map<String, Object> getTemplateParameters()
     {
         // Ensure we have a transaction - we might be generating the status template after the main transaction failed
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Map<String, Object>>()
+        return fallbackTransactionHelper.doInTransaction(new RetryingTransactionCallback<Map<String, Object>>()
         {
             public Map<String, Object> execute() throws Throwable
             {

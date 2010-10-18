@@ -30,7 +30,13 @@
       <td width="24"></td>
       <td width="300">
          <table width="100%" cellpadding="0" cellspacing="0">
+<#if node.isDocument>
 <#assign navurl='/navigate/showDocDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
+<#elseif node.isContainer>
+<#assign navurl='/navigate/showSpaceDetails/' + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
+<#else>
+<#assign navurl='#'>
+</#if>
 <#if node.isDocument>
             <tr>
    <#if node.isLocked>

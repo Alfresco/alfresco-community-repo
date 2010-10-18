@@ -139,10 +139,9 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     
     private void invokeOnAsyncActionExecutePolicy(Action action, NodeRef actionedUponNodeRef)
     {
-        // get qnames to invoke against
-        Set<QName> qnames = getTypeAndAspectQNames(actionedUponNodeRef);
-        // execute policy for node type and aspects
-        AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = onAsyncActionExecuteDelegate.get(actionedUponNodeRef, qnames);
+        // Execute the policy, passing it all details, firing as a general action case
+        AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = 
+           onAsyncActionExecuteDelegate.get(actionedUponNodeRef, ActionModel.TYPE_ACTION);
         policy.onAsyncActionExecute(action, actionedUponNodeRef);
     }
     
@@ -428,11 +427,19 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                         {
                             public Object execute()
                             {   
+                                // If we have rules, apply them
                                 if (ActionExecutionWrapper.this.executedRules != null)
                                 {
                                     AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
                                 }
                                 
+                                // Allow other classes to know when this action completes
+                                AlfrescoTransactionSupport.bindListener(new CallbackTransactionListener(
+                                      ActionExecutionWrapper.this.action,
+                                      ActionExecutionWrapper.this.actionedUponNodeRef
+                                ));
+                                
+                                // Have the action run
                                 ActionExecutionWrapper.this.actionService.executeActionImpl(
                                         ActionExecutionWrapper.this.action,
                                         ActionExecutionWrapper.this.actionedUponNodeRef,

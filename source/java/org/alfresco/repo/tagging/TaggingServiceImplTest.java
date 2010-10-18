@@ -30,12 +30,19 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionModel;
+import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
+import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -78,6 +85,7 @@ public class TaggingServiceImplTest extends TestCase
     private ActionTrackingService actionTrackingService;
     private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
+    private AsyncOccurs asyncOccurs;
     
     private static StoreRef storeRef;
     private static NodeRef rootNode;
@@ -152,6 +160,14 @@ public class TaggingServiceImplTest extends TestCase
             
             tx.commit();            
         }
+        
+        // We want to know when tagging actions have finished running
+        asyncOccurs = new AsyncOccurs();
+        ((PolicyComponent)ctx.getBean("policyComponent")).bindClassBehaviour(
+              AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME,
+              ActionModel.TYPE_ACTION,
+              new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT)
+        );
     
         // Create the folders and documents to be tagged
         createTestDocumentsAndFolders();
@@ -436,17 +452,18 @@ public class TaggingServiceImplTest extends TestCase
 
         // Add some more tags after the scopes have been added
         this.taggingService.addTag(this.subDocument, TAG_1); // folder+subfolder
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_2); // folder+subfolder
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_3); // folder+subfolder
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_1); // folder+subfolder
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_2); // folder+subfolder
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.folder, TAG_2); // folder only
-        tx = waitForActionExecution(tx);
+        
+        tx = asyncOccurs.awaitExecution(tx);
         
         // re get the tag scopes
         TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
@@ -480,16 +497,17 @@ public class TaggingServiceImplTest extends TestCase
         
         // Take some off again
         this.taggingService.removeTag(this.folder, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.removeTag(this.subFolder, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.removeTag(this.subFolder, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.removeTag(this.subDocument, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         // And add one more
         this.taggingService.addTag(this.folder, TAG_3);
-        tx = waitForActionExecution(tx);
+        
+        tx = asyncOccurs.awaitExecution(tx);
         
         // re get the tag scopes
         ts1 = this.taggingService.findTagScope(this.subDocument);
@@ -533,20 +551,26 @@ public class TaggingServiceImplTest extends TestCase
         //  tag1 = 2
         //  tag3 = 1
         this.taggingService.addTag(this.subDocument, TAG_1);
-        tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_2);   
-        tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_3);
-        tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_1);
-        tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_2);
-        tx = waitForActionExecution(tx);
         this.taggingService.addTag(this.folder, TAG_2);
-        tx = waitForActionExecution(tx);
+        
+        // Commit the changes. No action will fire, as there
+        //  aren't currently any tag scopes to be updated!
+        tx.commit();
+        tx = this.transactionService.getUserTransaction();
+        tx.begin();
         
         // Add the tag scope 
         this.taggingService.addTagScope(this.folder);
+        
+        // The updates in this case are synchronous, not
+        //  async, so we don't need to wait for any actions
+        tx.commit();
+        tx = this.transactionService.getUserTransaction();
+        tx.begin();
         
         // Get the tag scope and check that all the values have been set correctly
         TagScope tagScope = this.taggingService.findTagScope(this.folder);
@@ -571,19 +595,19 @@ public class TaggingServiceImplTest extends TestCase
         
         // Add some tags
         this.taggingService.addTag(this.folder, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.document, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.document, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_3);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
 
         // Check that tag scope
         TagScope ts1 = this.taggingService.findTagScope(this.folder);
@@ -602,7 +626,7 @@ public class TaggingServiceImplTest extends TestCase
         tags.add(TAG_4);
         
         this.taggingService.setTags(this.subDocument, tags);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         
         // Check that the tagscope has been updated correctly
         ts1 = this.taggingService.findTagScope(this.folder);
@@ -625,7 +649,7 @@ public class TaggingServiceImplTest extends TestCase
       
         this.taggingService.addTagScope(this.folder);
         this.taggingService.addTag(this.folder, TAG_I18N);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         
         // Get the tag from the node
         List<String> tags = this.taggingService.getTags(this.folder);
@@ -689,7 +713,7 @@ public class TaggingServiceImplTest extends TestCase
        // Check that the tag scopes are empty
        taggingService.addTagScope(container1);
        taggingService.addTagScope(container2);
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertTrue( taggingService.isTagScope(container1) );
        assertTrue( taggingService.isTagScope(container2) );
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
@@ -706,7 +730,10 @@ public class TaggingServiceImplTest extends TestCase
                ContentModel.TYPE_FOLDER,
                taggedFolderProps).getChildRef();
        
-       tx = waitForActionExecution(tx);
+       // No tags, so no changes should have occured, and no actions
+       tx.commit();
+       tx = transactionService.getUserTransaction();
+       tx.begin();
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        assertEquals(1, nodeService.getChildAssocs(container1).size());
@@ -721,9 +748,15 @@ public class TaggingServiceImplTest extends TestCase
        taggedFolderProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
        this.nodeService.addProperties(taggedFolder, taggedFolderProps);
        
-       tx = waitForActionExecution(tx);
-       assertEquals(2, taggingService.findTagScope(container1).getTags().size());
-       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       tx = asyncOccurs.awaitExecution(tx);
+       assertEquals(
+             "Unexpected tags " + taggingService.findTagScope(container1).getTags(),
+             2, taggingService.findTagScope(container1).getTags().size()
+       );
+       assertEquals(
+             "Unexpected tags " + taggingService.findTagScope(container2).getTags(),
+             0, taggingService.findTagScope(container2).getTags().size()
+       );
        
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
@@ -744,7 +777,7 @@ public class TaggingServiceImplTest extends TestCase
                ContentModel.TYPE_CONTENT,
                taggedDocProps).getChildRef();
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        
@@ -764,7 +797,7 @@ public class TaggingServiceImplTest extends TestCase
        //  because it isn't applied at suitable times to take not of)
        NodeRef checkedOutDoc = checkOutCheckInService.checkout(taggedDoc);
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        
@@ -780,7 +813,7 @@ public class TaggingServiceImplTest extends TestCase
        // Tags should go back to how they were
        checkOutCheckInService.checkin(checkedOutDoc, null);
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        
@@ -803,14 +836,14 @@ public class TaggingServiceImplTest extends TestCase
              ContentModel.TYPE_CONTENT,
              taggedDocProps).getChildRef();
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        assertEquals(1, nodeService.getChildAssocs(container2).size());
        
        copyService.copy(taggedDoc, taggedDoc2);
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(2, taggingService.findTagScope(container2).getTags().size());
        
@@ -835,7 +868,7 @@ public class TaggingServiceImplTest extends TestCase
              ContentModel.ASSOC_CHILDREN,
              true);
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        assertEquals(2, nodeService.getChildAssocs(container2).size());
@@ -858,7 +891,7 @@ public class TaggingServiceImplTest extends TestCase
        taggedDocProps.put(ContentModel.PROP_NAME, "UpdatedDocument");
        this.nodeService.addProperties(taggedDoc, taggedDocProps);
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        
@@ -875,7 +908,7 @@ public class TaggingServiceImplTest extends TestCase
        taggedDoc = nodeService.moveNode(taggedDoc, container2, 
              ContentModel.ASSOC_CONTAINS, 
              ContentModel.ASPECT_TAGGABLE).getChildRef();
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(2, taggingService.findTagScope(container1).getTags().size());
        assertEquals(4, taggingService.findTagScope(container2).getTags().size());
        
@@ -901,7 +934,7 @@ public class TaggingServiceImplTest extends TestCase
        // Delete the documents and folder one at a time
        nodeService.deleteNode(taggedDoc); // container 2, "bar"
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(2, taggingService.findTagScope(container1).getTags().size());
        assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        assertEquals(1, nodeService.getChildAssocs(container1).size());
@@ -918,7 +951,7 @@ public class TaggingServiceImplTest extends TestCase
        
        nodeService.deleteNode(taggedDoc2); // container 2, "foo1", "foo2"
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(2, taggingService.findTagScope(container1).getTags().size());
        assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        assertEquals(1, nodeService.getChildAssocs(container1).size());
@@ -935,7 +968,7 @@ public class TaggingServiceImplTest extends TestCase
        
        nodeService.deleteNode(taggedFolder); // container 1, "foo1", "foo3"
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
        assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        assertEquals(0, nodeService.getChildAssocs(container1).size());
@@ -948,7 +981,7 @@ public class TaggingServiceImplTest extends TestCase
        
        nodeService.deleteNode(taggedFolder2); // container 2, has a child also
        
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
        assertEquals(0, nodeService.getChildAssocs(container1).size());
@@ -976,7 +1009,7 @@ public class TaggingServiceImplTest extends TestCase
         this.scriptService.executeScript(location, model);
         
         // Let the script run
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         tx.commit();
     }
     
@@ -997,21 +1030,21 @@ public class TaggingServiceImplTest extends TestCase
         this.taggingService.addTagScope(this.subFolder);
         
         this.taggingService.addTag(this.subDocument, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subDocument, TAG_3);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.subFolder, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.document, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.document, TAG_2);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         this.taggingService.addTag(this.folder, TAG_1);
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         
         Map<String, Object> model = new HashMap<String, Object>(0);
         model.put("folder", this.folder);
@@ -1025,7 +1058,7 @@ public class TaggingServiceImplTest extends TestCase
         this.scriptService.executeScript(location, model);
         
         // Let the script run
-        tx = waitForActionExecution(tx);
+        tx = asyncOccurs.awaitExecution(tx);
         tx.commit();
     }
     
@@ -1058,7 +1091,7 @@ public class TaggingServiceImplTest extends TestCase
        this.taggingService.addTag(this.document, TAG_1);
        this.taggingService.addTag(this.folder, TAG_1);
        this.taggingService.addTag(this.folder, TAG_3);
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        
        
        // Tag scope updates shouldn't have happened yet,
@@ -1086,7 +1119,7 @@ public class TaggingServiceImplTest extends TestCase
        // It won't be able to do anything, as the locks are taken
        UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
        job.execute(actionService, updateTagsAction);
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        
        // Check that things are still pending despite the quartz run
        assertEquals(2, updateTagsAction.searchForTagScopesPendingUpdates().size());
@@ -1103,7 +1136,7 @@ public class TaggingServiceImplTest extends TestCase
        // Fire off the quartz bean, this time it can really work
        job = new UpdateTagScopesQuartzJob();
        job.execute(actionService, updateTagsAction);
-       tx = waitForActionExecution(tx);
+       tx = asyncOccurs.awaitExecution(tx);
        
        
        // Now check again - nothing should be pending
@@ -1135,7 +1168,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
-    public void DEACTIVATEDtestMultiThreaded() throws Exception
+    public void testMultiThreaded() throws Exception
     {
         UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
         tx.begin();
@@ -1198,35 +1231,52 @@ public class TaggingServiceImplTest extends TestCase
         {
             t.join();
         }
+        
+        // Have a brief pause, while we wait for their related
+        //  async actions to kick off
+        Thread.sleep(150);
+        
+        // At this point, the action tracking service should see
+        //  anything that will run as running, so we can use that
+        //  to wait for everything to finish as needed
 
         // Now we wait for the asynchronous tag execution to finish
-        try
+        // Wait a maximum of 60 seconds
+        for (int i = 0; i < 600; i++)
         {
-            // Wait for a maximum of 60 seconds
-            for (int i = 0; i < 60; i++)
+            if (actionTrackingService.getAllExecutingActions().size() > 0)
             {
-                if (actionTrackingService.getAllExecutingActions().size() > 0)
+                try
                 {
-                    Thread.sleep(1000);
+                   Thread.sleep(100);
                 }
-                else
+                catch (InterruptedException e)
                 {
-                    break;
                 }
             }
+            else
+            {
+                break;
+            }
         }
-        catch (InterruptedException e)
-        {
-        }
-
+        
+        // Extra sleep just to be sure things are quiet before we continue
+        Thread.sleep(150);
+        
         // Now check that things ended up as planned
         tx = this.transactionService.getUserTransaction();
         tx.begin();
 
         TagScope ts1 = this.taggingService.findTagScope(this.folder);
         TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
-        assertEquals("Wrong tags on folder tagscope: " + ts1.getTags(), 5, ts1.getTags().size());
-        assertEquals("Wrong tags on folder tagscope: " + ts1.getTags(), 5, ts2.getTags().size());
+        assertEquals(
+              "Wrong tags on folder tagscope: " + ts1.getTags(), 
+              5, ts1.getTags().size()
+        );
+        assertEquals(
+              "Wrong tags on subfolder tagscope: " + ts2.getTags(), 
+              5, ts2.getTags().size()
+        );
 
         // Each tag should crop up 3 times on the folder
         // and twice for the subfolder
@@ -1239,38 +1289,71 @@ public class TaggingServiceImplTest extends TestCase
         // All done
         tx.commit();
     }
-
-    private UserTransaction waitForActionExecution(UserTransaction txn)
-        throws Exception
-    {
-        int size = actionTrackingService.getAllExecutingActions().size();
-        if(size == 0)
-        {
-           System.err.println("No actions pending, is your action really async?");
-        }
+    
+    
+    public class AsyncOccurs implements OnAsyncActionExecute {
+       private Object waitForExecutionLock = new Object();
+       private static final long waitTime = 3500;
+       private static final String ACTION_TYPE = UpdateTagScopesActionExecuter.NAME;
        
-        // Finish the transaction, so that any background
-        //  actions can kick off
-        txn.commit();
-        
-        // Wait for it to run
-        try {
-            // Wait for a maximum of 10 seconds
-            for(int i=0; i<1000; i++)
+       @Override
+       public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef) 
+       {
+          if(action.getActionDefinitionName().equals(ACTION_TYPE))
+          {
+             synchronized (waitForExecutionLock) {
+                try {
+                   waitForExecutionLock.notify();
+                } catch(IllegalMonitorStateException e) {}
+             }
+          }
+          else
+          {
+             System.out.println("Ignoring unexpected async action:" + action);
+          }
+       }
+       
+       public UserTransaction awaitExecution(UserTransaction tx) throws Exception
+       {
+          synchronized (waitForExecutionLock) {
+            // Have things begin working
+            tx.commit();
+            
+            // Always wait 25ms
+            waitForExecutionLock.wait(25);
+            
+            // If there are actions if the required type
+            //  currently running, keep waiting longer for
+            //  them to finish
+            if(actionTrackingService.getExecutingActions(ACTION_TYPE).size() > 0)
             {
-               if(actionTrackingService.getAllExecutingActions().size() > 0)
+               long now = System.currentTimeMillis();
+               waitForExecutionLock.wait(waitTime);
+               
+               if(System.currentTimeMillis() - now >= waitTime)
                {
-                  Thread.sleep(10);
-               }
-               else {
-                  break;
+                  System.err.println("Warning - trigger wasn't received");
                }
             }
-        } catch(InterruptedException e) {}
-        
-        // Start a new transaction for the next one
-        txn = transactionService.getUserTransaction();
-        txn.begin();
-        return txn;
+          }
+          
+          // If there are any more actions of the same type,
+          //  then wait for them to finish too
+          for(int i=0; i<50; i++)
+          {
+             if( actionTrackingService.getExecutingActions(ACTION_TYPE).size() == 0 )
+             {
+                break;
+             }
+             try {
+                Thread.sleep(10);
+             } catch(InterruptedException e) {}
+          }
+          
+          // Now create a new transaction for them
+          tx = transactionService.getUserTransaction();
+          tx.begin();
+          return tx;
+       }
     }
 }

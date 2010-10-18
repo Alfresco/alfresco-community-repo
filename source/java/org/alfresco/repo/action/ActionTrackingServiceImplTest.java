@@ -32,11 +32,17 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImplTest.CancellableSleepAction;
 import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
+import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
@@ -57,9 +63,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 /**
  * Action tracking service tests. These mostly need
  *  careful control over the transactions they use.
- * 
- * TODO Replace various sleep statements in here with a wait on the async action executor.
- * Needs a way to be notified of async actions completing, which isn't currently available.
  * 
  * @author Nick Burch
  */
@@ -82,9 +85,21 @@ public class ActionTrackingServiceImplTest extends TestCase
     private ActionTrackingService actionTrackingService;
     private SimpleCache<String, ExecutionDetails> executingActionsCache;
     
+    private AsyncOccurs asyncOccurs;
+    
     @Override
     @SuppressWarnings("unchecked")
     protected void setUp() throws Exception {
+        // Detect any dangling transactions as there is a lot of direct UserTransaction manipulation
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+           throw new IllegalStateException(
+                   "There should not be any transactions when starting test: " +
+                   AlfrescoTransactionSupport.getTransactionId() + " started at " +
+                   new Date(AlfrescoTransactionSupport.getTransactionStartTime()));
+        }
+    
+        // Grab our beans
         this.nodeService = (NodeService)ctx.getBean("nodeService");
         this.scriptService = (ScriptService)ctx.getBean("scriptService");
         this.actionService = (ActionService)ctx.getBean("actionService");
@@ -129,6 +144,14 @@ public class ActionTrackingServiceImplTest extends TestCase
         
         // Register the test executor, if needed
         SleepActionExecuter.registerIfNeeded(ctx);
+        
+        // We want to know when async actions occur
+        asyncOccurs = new AsyncOccurs();
+        ((PolicyComponent)ctx.getBean("policyComponent")).bindClassBehaviour(
+              AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME,
+              ActionModel.TYPE_ACTION,
+              new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT)
+        );
     }
 
     /** Creating cache keys */
@@ -329,12 +352,12 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        
        // End the transaction. Should allow the async action
-       //  to be started
+       //  to start up, and begin sleeping
        txn.commit();
        Thread.sleep(150);
-
        
-       // Will get an execution instance id, so a new key
+       // The action should now be running 
+       // It will have got an execution instance id, so a new key
        key = ActionTrackingServiceImpl.generateCacheKey(action);
        
        
@@ -353,8 +376,8 @@ public class ActionTrackingServiceImplTest extends TestCase
 
        
        // Tell it to stop sleeping
-       sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(100);
+       // Then wait for it to finish
+       asyncOccurs.awaitExecution(null, sleepActionExec.getExecutingThread(), action.getActionDefinitionName()); 
        
        
        // Ensure it went away again
@@ -388,7 +411,7 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        
        // End the transaction. Should allow the async action
-       //  to be started
+       //  to be started, and move into its sleeping phase
        txn.commit();
        Thread.sleep(150);
        
@@ -412,8 +435,11 @@ public class ActionTrackingServiceImplTest extends TestCase
 
        
        // Tell it to stop sleeping
+       // Then wait for it to finish and go bang
+       // (Need to do it by hand, as it won't fire the complete policy
+       //  as the action has failed)
        sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(100);
+       Thread.sleep(150);
        
        
        // Ensure it went away again
@@ -774,8 +800,9 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertNotNull(executingActionsCache.get(key3));
        
        // Have it finish sleeping, will have been cancelled
+       // (Can't use the policy, as cancel is counted as a failure)
        sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(150);
+       Thread.sleep(150); 
 
        // Ensure the proper cancelled tracking
        assertEquals(ActionStatus.Cancelled, sleepAction3.getExecutionStatus());
@@ -874,10 +901,11 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
        
        // Let the update change the stored node
+       // (Can't use policy as the action has already finished!)
        txn.commit();
+       Thread.sleep(150);
        txn = transactionService.getUserTransaction();
        txn.begin();
-       Thread.sleep(50);
        
        // Now re-load and check the stored one
        action = runtimeActionService.createAction(actionNode);
@@ -962,8 +990,7 @@ public class ActionTrackingServiceImplTest extends TestCase
 
        // End the transaction. Should allow the async action
        //  to be executed
-       txn.commit();
-       Thread.sleep(150);
+       asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName()); 
        
        assertNotNull(action.getExecutionStartDate());
        assertNotNull(action.getExecutionEndDate());
@@ -992,8 +1019,8 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertNull(action.getExecutionFailureMessage());
        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
        
-       // End the transaction. Should allow the async action
-       //  to be executed
+       // End the transaction, and await the failure
+       // (Can't use the policy as fails not suceeds)
        txn.commit();
        Thread.sleep(150);
        
@@ -1030,8 +1057,8 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // End the transaction. Should allow the async action
        //  to be executed
-       txn.commit();
-       Thread.sleep(450);
+       asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName());
+       Thread.sleep(250); // Need to allow the post-commit update to the stored node
        txn = transactionService.getUserTransaction();
        txn.begin();
        
@@ -1072,12 +1099,12 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertNull(action.getExecutionFailureMessage());
        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
        
-       // End the transaction. Should allow the async action
-       //  to be executed
-       // Need to wait longer, as we have two async actions
-       //  that need to occur - action + record
+       // End the transaction, and await the failure
+       // (Can't use the policy as fails not suceeds)
        txn.commit();
-       Thread.sleep(350);
+       // Now also wait for the on-rollback to kick in and update
+       //  the persisted copy of the action node too
+       Thread.sleep(400);
        txn = transactionService.getUserTransaction();
        txn.begin();
        
@@ -1097,6 +1124,8 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertBefore(action.getExecutionEndDate(), new Date());
        assertNotNull(action.getExecutionFailureMessage());
        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+       
+       txn.commit();
     }
     
     public void testJavascriptAPI() throws Exception
@@ -1147,6 +1176,54 @@ public class ActionTrackingServiceImplTest extends TestCase
 
     
     // =================================================================== //
+    
+    public class AsyncOccurs implements OnAsyncActionExecute {
+       private Object waitForExecutionLock = new Object();
+       private String wantedType = null;
+       private static final long waitTime = 3500;
+       
+       @Override
+       public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef) 
+       {
+          if(wantedType == null || action.getActionDefinitionName().equals(wantedType))
+          {
+             synchronized (waitForExecutionLock) {
+                waitForExecutionLock.notify();
+             }
+          }
+          else
+          {
+             System.out.println("Ignoring unexpected async action:" + action);
+          }
+       }
+       
+       public void awaitExecution(UserTransaction tx, Thread toWake, String type) throws Exception
+       {
+          this.wantedType = type;
+          synchronized (waitForExecutionLock) {
+            // Have things begin working
+            if(tx != null)
+            {
+               tx.commit();
+            }
+            if(toWake != null)
+            {
+               toWake.interrupt();
+            }
+            
+            // Now wait for them to finish
+            try {
+               long now = System.currentTimeMillis();
+               waitForExecutionLock.wait(waitTime);
+               
+               if(System.currentTimeMillis() - now >= waitTime)
+               {
+                  System.err.println("Warning - trigger wasn't received");
+               }
+            } catch(InterruptedException e) {}
+         }
+       }
+    }
 
     
     private Action createFailingMoveAction() {

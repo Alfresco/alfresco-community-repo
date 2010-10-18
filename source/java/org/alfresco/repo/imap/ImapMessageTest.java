@@ -76,8 +76,8 @@ public class ImapMessageTest extends TestCase
 
     // IMAP client settings
     private static final String PROTOCOL = "imap";
-    private static final String HOST = "localhost";
-    private static final int PORT = 143;
+    //private static final String HOST = "localhost";
+    //private static final int PORT = 143;
 
     private static final String ADMIN_USER_NAME = "admin";
     private static final String ADMIN_USER_PASSWORD = "admin";
@@ -120,6 +120,7 @@ public class ImapMessageTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
 
+
         // start the transaction
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
@@ -158,6 +159,7 @@ public class ImapMessageTest extends TestCase
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
         ImapServiceImpl imapServiceImpl = (ImapServiceImpl) imapCtx.getBean("imapService");
+        AlfrescoImapServer imapServer = (AlfrescoImapServer) imapCtx.getBean("imapServer");
 
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
@@ -193,7 +195,8 @@ public class ImapMessageTest extends TestCase
 
         // Get the store
         this.store = session.getStore(PROTOCOL);
-        this.store.connect(HOST, PORT, anotherUserName, anotherUserName);
+        //this.store.connect(HOST, PORT, anotherUserName, anotherUserName);
+        this.store.connect(imapServer.getHost(), imapServer.getPort(), anotherUserName, anotherUserName);
 
         // Get folder
         folder = (IMAPFolder) store.getFolder(TEST_FOLDER);

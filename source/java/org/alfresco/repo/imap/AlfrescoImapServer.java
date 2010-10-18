@@ -62,6 +62,16 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         this.host = host;
     }
+    
+    public int getPort()
+    {
+        return port;
+    }
+
+    public String getHost()
+    {
+        return host;
+    }
 
     public void setImapHostManager(ImapHostManager imapHostManager)
     {

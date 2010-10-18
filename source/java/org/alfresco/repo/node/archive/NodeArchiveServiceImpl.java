@@ -19,10 +19,19 @@
 package org.alfresco.repo.node.archive;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.batch.BatchProcessWorkProvider;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -35,9 +44,11 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,11 +59,17 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NodeArchiveServiceImpl implements NodeArchiveService
 {
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "NodeArchive");
+    private static final long LOCK_TTL = 60000;
+    
+    private static final String MSG_BUSY = "node.archive.msg.busy";
+    
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
     
     private NodeService nodeService;
     private SearchService searchService;
     private TransactionService transactionService;
+    private JobLockService jobLockService;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -74,6 +91,11 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         return nodeService.getStoreArchiveNode(originalStoreRef);
     }
 
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
     public NodeRef getArchivedNode(NodeRef originalNodeRef)
     {
         StoreRef orginalStoreRef = originalNodeRef.getStoreRef();
@@ -84,11 +106,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 originalNodeRef.getId());
         return archivedNodeRef;
     }
-
+    
     /**
      * Get all the nodes that were archived <b>from</b> the given store.
+     * 
+     * @param originalStoreRef      the original store to process
+     * @param skipCount             the number of results to skip (used for paging)
+     * @param limit                 the number of items to retrieve or -1 to get the all    
+     * 
+     * @deprecated          To be replaced with a limiting search against the database
      */
-    private ResultSet getArchivedNodes(StoreRef originalStoreRef)
+    private ResultSet getArchivedNodes(StoreRef originalStoreRef, int skipCount, int limit)
     {
         // Get the archive location
         NodeRef archiveParentNodeRef = nodeService.getStoreArchiveNode(originalStoreRef);
@@ -100,11 +128,84 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         params.addStore(archiveStoreRef);
         params.setLanguage(SearchService.LANGUAGE_LUCENE);
         params.setQuery(query);
-//        params.addSort(ContentModel.PROP_ARCHIVED_DATE.toString(), false);
+        params.setSkipCount(skipCount);
+        params.setMaxItems(limit);
         // get all archived children using a search
         ResultSet rs = searchService.query(params);
         // done
         return rs;
+    }
+    
+    /**
+     * @return                      Returns a work provider for batch processing
+     * 
+     * @since 3.3.4
+     */
+    private BatchProcessWorkProvider<NodeRef> getArchivedNodesWorkProvider(final StoreRef originalStoreRef, final String lockToken)
+    {
+        return new BatchProcessWorkProvider<NodeRef>()
+        {
+            private VmShutdownListener vmShutdownLister = new VmShutdownListener("getArchivedNodesWorkProvider");
+            private Integer workSize;
+            private int skipResults = 0;
+            public synchronized int getTotalEstimatedWorkSize()
+            {
+                if (workSize == null)
+                {
+                    workSize = Integer.valueOf(0);
+                    ResultSet rs = null;
+                    try
+                    {
+                        rs = getArchivedNodes(originalStoreRef, 0, -1);
+                        workSize = rs.length();
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error("Failed to get archive size", e);
+                    }
+                    finally
+                    {
+                        if (rs != null) { rs.close(); }
+                    }
+                }
+                return workSize;
+            }
+            public synchronized Collection<NodeRef> getNextWork()
+            {
+                if (vmShutdownLister.isVmShuttingDown())
+                {
+                    return Collections.emptyList();
+                }
+                // Make sure we still have the lock
+                try
+                {
+                    // TODO: Replace with joblock callback mechanism that provides shutdown hints
+                    jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL);
+                }
+                catch (LockAcquisitionException e)
+                {
+                    // This is OK.  We don't have the lock so just quit
+                    return Collections.emptyList();
+                }
+                
+                Collection<NodeRef> results = new ArrayList<NodeRef>(100);
+                ResultSet rs = null;
+                try
+                {
+                    rs = getArchivedNodes(originalStoreRef, skipResults, 100);
+                    for (ResultSetRow row : rs)
+                    {
+                        results.add(row.getNodeRef());
+                    }
+                    skipResults += results.size();
+                }
+                finally
+                {
+                    if (rs != null) { rs.close(); }
+                }
+                return results;
+            }
+        };
     }
 
     /**
@@ -226,11 +327,43 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     }
 
     /**
-     * @see #restoreAllArchivedNodes(StoreRef, NodeRef, QName, QName)
+     * Uses batch processing and job locking to purge all archived nodes
      */
     public List<RestoreNodeReport> restoreAllArchivedNodes(StoreRef originalStoreRef)
     {
-        return restoreAllArchivedNodes(originalStoreRef, null, null, null);
+        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (user == null)
+        {
+            throw new IllegalStateException("Cannot restore as there is no authenticated user.");
+        }
+        
+        final List<RestoreNodeReport> results = Collections.synchronizedList(new ArrayList<RestoreNodeReport>(1000));
+        /**
+         * Worker that purges each node
+         */
+        BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
+        {
+            public void process(NodeRef entry) throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+                try
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+                    if (nodeService.exists(entry))
+                    {
+                        RestoreNodeReport report = restoreArchivedNode(entry);
+                        // Append the results (it is synchronized)
+                        results.add(report);
+                    }
+                }
+                finally
+                {
+                    AuthenticationUtil.popAuthentication();
+                }
+            }
+        };
+        doBulkOperation(user, originalStoreRef, worker);
+        return results;
     }
 
     /**
@@ -247,7 +380,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             QName assocQName)
     {
         // get all archived children using a search
-        ResultSet rs = getArchivedNodes(originalStoreRef);
+        ResultSet rs = getArchivedNodes(originalStoreRef, 0, -1);
         try
         {
             // loop through the resultset and attempt to restore all the nodes
@@ -308,29 +441,76 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         // done
     }
 
+    /**
+     * Uses batch processing and job locking to purge all archived nodes
+     */
     public void purgeAllArchivedNodes(StoreRef originalStoreRef)
     {
-        // get all archived children using a search
-        ResultSet rs = getArchivedNodes(originalStoreRef);
+        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (user == null)
+        {
+            throw new IllegalStateException("Cannot purge as there is no authenticated user.");
+        }
+        
+        /**
+         * Worker that purges each node
+         */
+        BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
+        {
+            public void process(NodeRef entry) throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+                try
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+                    if (nodeService.exists(entry))
+                    {
+                        nodeService.deleteNode(entry);
+                    }
+                }
+                finally
+                {
+                    AuthenticationUtil.popAuthentication();
+                }
+            }
+        };
+        doBulkOperation(user, originalStoreRef, worker);
+    }
+    
+    /**
+     * Do batch-controlled work
+     */
+    private void doBulkOperation(final String user, StoreRef originalStoreRef, BatchProcessWorker<NodeRef> worker)
+    {
+        String lockToken = null;
         try
         {
-            // loop through the resultset and attempt to restore all the nodes
-            List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
-            for (ResultSetRow row : rs)
-            {
-                NodeRef archivedNodeRef = row.getNodeRef();
-                purgeArchivedNode(archivedNodeRef);
-            }
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Deleted " + results.size() + " nodes originally in store " + originalStoreRef);
-            }
+            // Get a lock to keep refreshing
+            lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            // TODO: Should merely trigger a background job i.e. perhaps it should not be
+            //       triggered by a user-based thread
+            BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
+                    "ArchiveBulkPurgeOrRestore",
+                    transactionService.getRetryingTransactionHelper(),
+                    getArchivedNodesWorkProvider(originalStoreRef, lockToken),
+                    2, 20,
+                    null, null, 1000);
+            batchProcessor.process(worker, true);
+        }
+        catch (LockAcquisitionException e)
+        {
+            throw new AlfrescoRuntimeException(MSG_BUSY);
         }
         finally
         {
-            rs.close();
+            try
+            {
+                if (lockToken != null ) {jobLockService.releaseLock(lockToken, LOCK_QNAME); }
+            }
+            catch (LockAcquisitionException e)
+            {
+                // Ignore
+            }
         }
     }
-
 }

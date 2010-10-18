@@ -103,6 +103,9 @@
       <property name="transactionService">
          <ref bean="transactionService"/>
       </property>
+      <property name="jobLockService">
+         <ref bean="jobLockService"/>
+      </property>
    </bean>
 
    <!-- AVMNodeService -->

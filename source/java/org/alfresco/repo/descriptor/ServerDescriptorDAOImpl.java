@@ -19,6 +19,7 @@
 package org.alfresco.repo.descriptor;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
@@ -61,7 +62,15 @@ public class ServerDescriptorDAOImpl implements DescriptorDAO
     public void setResource(final Resource descriptorResource) throws IOException
     {
         this.serverProperties = new Properties();
-        this.serverProperties.load(descriptorResource.getInputStream());
+        InputStream is = descriptorResource.getInputStream();
+        try
+        {
+            this.serverProperties.load(is);
+        }
+        finally
+        {
+            if (is != null) try { is.close(); } catch (IOException e) {}
+        }
     }
 
     /*

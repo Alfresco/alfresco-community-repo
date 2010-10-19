@@ -1210,8 +1210,15 @@ public class TaggingServiceImplTest extends TestCase
                                     System.out.println(Thread.currentThread() + " - Tagging");
                                     return null;
                                 }
-                            }, false, true);
+                            }, false, true
+                    );
                     System.out.println(Thread.currentThread() + " - Done tagging");
+                    
+                    // Wait briefly for thing to catch up, before we
+                    //  declare ourselves to be done
+                    try {
+                       Thread.sleep(150);
+                    } catch (InterruptedException e) {}
                 }
             });
             threads.add(t);
@@ -1261,7 +1268,7 @@ public class TaggingServiceImplTest extends TestCase
         }
         
         // Extra sleep just to be sure things are quiet before we continue
-        Thread.sleep(150);
+        Thread.sleep(175);
         
         // Now check that things ended up as planned
         tx = this.transactionService.getUserTransaction();

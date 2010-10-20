@@ -1175,6 +1175,9 @@ public class TaggingServiceImplTest extends TestCase
         this.taggingService.addTagScope(this.folder);
         this.taggingService.addTagScope(this.subFolder);
         tx.commit();
+        
+        // Reset the action count
+        asyncOccurs.wantedActionsCount = 0;
 
         // Prepare a bunch of threads to do tagging
         final List<Thread> threads = new ArrayList<Thread>();
@@ -1195,7 +1198,7 @@ public class TaggingServiceImplTest extends TestCase
                     catch (InterruptedException e)
                     {
                     }
-                    System.out.println(Thread.currentThread() + " - About to start tagging");
+                    System.out.println(Thread.currentThread() + " - About to start tagging for " + tag);
 
                     // Do the updates
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -1207,12 +1210,12 @@ public class TaggingServiceImplTest extends TestCase
                                     taggingService.addTag(folder, tag);
                                     taggingService.addTag(subFolder, tag);
                                     taggingService.addTag(subDocument, tag);
-                                    System.out.println(Thread.currentThread() + " - Tagging");
+                                    System.out.println(Thread.currentThread() + " - Tagging for " + tag);
                                     return null;
                                 }
                             }, false, true
                     );
-                    System.out.println(Thread.currentThread() + " - Done tagging");
+                    System.out.println(Thread.currentThread() + " - Done tagging for " + tag);
                     
                     // Wait briefly for thing to catch up, before we
                     //  declare ourselves to be done
@@ -1238,37 +1241,43 @@ public class TaggingServiceImplTest extends TestCase
         {
             t.join();
         }
+        System.out.println("All threads should have finished");
         
         // Have a brief pause, while we wait for their related
         //  async actions to kick off
         Thread.sleep(150);
         
-        // At this point, the action tracking service should see
-        //  anything that will run as running, so we can use that
-        //  to wait for everything to finish as needed
-
-        // Now we wait for the asynchronous tag execution to finish
-        // Wait a maximum of 60 seconds
+        // Wait until we've had 5 async tagging actions run (One per Thread)
+        // Not all of the actions will do something, but we just need to
+        //  wait for all of them!
+        // As a backup check, also ensure that the action tracking service
+        //  shows none of them running either
         for (int i = 0; i < 600; i++)
         {
-            if (actionTrackingService.getAllExecutingActions().size() > 0)
-            {
-                try
-                {
-                   Thread.sleep(100);
-                }
-                catch (InterruptedException e)
-                {
-                }
-            }
-            else
-            {
-                break;
-            }
+           try
+           {
+              if(asyncOccurs.wantedActionsCount < 5)
+              {
+                 Thread.sleep(100);
+                 continue;
+              }
+              if (actionTrackingService.getAllExecutingActions().size() > 0)
+              {
+                 Thread.sleep(100);
+                 continue;
+              }
+              break;
+           }
+           catch (InterruptedException e)
+           {
+           }
         }
         
         // Extra sleep just to be sure things are quiet before we continue
+        // (Allows anything that runs after the async actions commit to
+        //  finish up for example)
         Thread.sleep(175);
+        System.out.println("Done waiting for tagging, now checking");
         
         // Now check that things ended up as planned
         tx = this.transactionService.getUserTransaction();
@@ -1303,11 +1312,14 @@ public class TaggingServiceImplTest extends TestCase
        private static final long waitTime = 3500;
        private static final String ACTION_TYPE = UpdateTagScopesActionExecuter.NAME;
        
+       private int wantedActionsCount = 0;
+       
        @Override
        public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef) 
        {
           if(action.getActionDefinitionName().equals(ACTION_TYPE))
           {
+             wantedActionsCount++;
              synchronized (waitForExecutionLock) {
                 try {
                    waitForExecutionLock.notify();

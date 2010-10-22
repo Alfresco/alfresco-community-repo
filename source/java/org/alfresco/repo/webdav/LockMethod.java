@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -196,7 +197,7 @@ public class LockMethod extends WebDAVMethod
             }
         }
     }
-
+    
     /**
      * Execute the request
      * 
@@ -221,7 +222,7 @@ public class LockMethod extends WebDAVMethod
         try
         {
             // Check if the path exists
-            lockNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), m_request.getServletPath());
+            lockNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), m_request.getServletPath());
         }
         catch (FileNotFoundException e)
         {
@@ -252,7 +253,7 @@ public class LockMethod extends WebDAVMethod
             }
             
             // create the file
-            lockNodeInfo = fileFolderService.create(dirInfo.getNodeRef(), splitPath[1], ContentModel.TYPE_CONTENT);
+            lockNodeInfo = createNode(dirInfo.getNodeRef(), splitPath[1], ContentModel.TYPE_CONTENT);
             
             if (logger.isDebugEnabled())
             {
@@ -291,6 +292,20 @@ public class LockMethod extends WebDAVMethod
 
         // We either created a new lock or refreshed an existing lock, send back the lock details
         generateResponse(lockNodeInfo.getNodeRef(), userName);
+    }
+    
+    /**
+     * Create a new node
+     * 
+     * @param parentNodeRef the parent node.  
+     * @param name the name of the node
+     * @param typeQName the type to create
+     * @return Returns the new node's file information
+     *  
+     */
+    protected FileInfo createNode(NodeRef parentNodeRef, String name, QName typeQName)
+    {
+        return getFileFolderService().create(parentNodeRef, name, ContentModel.TYPE_CONTENT);
     }
 
     /**
@@ -400,10 +415,9 @@ public class LockMethod extends WebDAVMethod
         }
 
         // Send the XML back to the client
-        xml.flush();
+        flushXML(xml);
     }
-    
-    
+        
     /**
      * Generates a list of namespace declarations for the response
      */

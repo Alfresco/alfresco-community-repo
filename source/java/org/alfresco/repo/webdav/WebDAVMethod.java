@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -346,9 +347,9 @@ public abstract class WebDAVMethod
             }
         }
     }
-
+        
     /**
-     * Access the content repository to satisfy the request and generates the appropriate WebDAV
+     * Access the content repository to satisfy the request and generates the appropriate WebDAV 
      * response.
      * 
      * @throws WebDAVServerException a general server exception
@@ -663,7 +664,7 @@ public abstract class WebDAVMethod
      * 
      * @return String
      */
-    protected final String getPath()
+    protected String getPath()
     {
         return m_strPath;
     }
@@ -674,7 +675,7 @@ public abstract class WebDAVMethod
      * @return XMLWriter
      * @exception IOException
      */
-    protected final XMLWriter createXMLWriter() throws IOException
+    protected XMLWriter createXMLWriter() throws IOException
     {
         // Check if debug output or XML pretty printing is enabled
 
@@ -1143,10 +1144,67 @@ public abstract class WebDAVMethod
     }
     
     /**
+     * Get the file info for the given paths
+     * 
+     * @param rootNodeRef the acting webdav root
+     * @param path the path to search for
+     * @param servletPath the base servlet path, which may be null or empty
+     * @return Return the file info for the path
+     * @throws FileNotFoundException if the path doesn't refer to a valid node
+     */
+    protected FileInfo getNodeForPath(NodeRef rootNodeRef, String path, String servletPath) throws FileNotFoundException
+    {
+        return getDAVHelper().getNodeForPath(rootNodeRef, path, servletPath);
+    }
+
+    /**
+     * Returns a URL that could be used to access the given path.
+     * 
+     * @param request HttpServletRequest
+     * @param path the path to search for
+     * @param isFolder indicates file or folder is requested
+     * @return URL that could be used to access the given path
+     */
+    protected String getURLForPath(HttpServletRequest request, String path, boolean isFolder)
+    {
+        return WebDAV.getURLForPath(request, path, isFolder);
+    }
+
+    /**
+     * Flushs a XML Writer.
+     * 
+     * @param xml XMLWriter that should be flushed
+     */
+    protected void flushXML(XMLWriter xml) throws IOException
+    {
+        xml.flush();
+    }
+
+    /**
+     * Returns a working copy of node for current user.
+     * 
+     * @param nodeRef node reference
+     * @return Returns the working copy's file information
+     */
+    protected FileInfo getWorkingCopy(NodeRef nodeRef)
+    {
+        FileInfo result = null;
+        NodeRef workingCopy = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
+        if (workingCopy != null)
+        {
+            String workingCopyOwner = getNodeService().getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER).toString();
+            if (workingCopyOwner.equals(getAuthenticationService().getCurrentUserName()))
+            {
+                result = getFileFolderService().getFileInfo(workingCopy);
+            }
+        }
+        return result;
+    }
+    
+    /**
      * Class used for storing conditions which comes with "If" header of the request
      * 
      * @author ivanry
-     *
      */
     protected class Condition
     {

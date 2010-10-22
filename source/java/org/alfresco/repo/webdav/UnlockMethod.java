@@ -117,7 +117,7 @@ public class UnlockMethod extends WebDAVMethod
         FileInfo lockNodeInfo = null;
         try
         {
-            lockNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+            lockNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
         }
         catch (FileNotFoundException e)
         {

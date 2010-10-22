@@ -54,7 +54,7 @@ public class PropPatchMethod extends PropFindMethod
         try
         {
             // Check that the path exists
-            pathNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), m_strPath, m_request.getServletPath());
+            pathNodeInfo = getNodeForPath(getRootNodeRef(), m_strPath, m_request.getServletPath());
         }
         catch (FileNotFoundException e)
         {
@@ -95,7 +95,7 @@ public class PropPatchMethod extends PropFindMethod
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
 
         // Send remaining data
-        xml.flush();
+        flushXML(xml);
     }
 
     /**
@@ -216,7 +216,7 @@ public class PropPatchMethod extends PropFindMethod
                 getDAVHelper().getNullAttributes());
 
         // Build the href string for the current node
-        String strHRef = WebDAV.getURLForPath(m_request, path, isFolder);
+        String strHRef = getURLForPath(m_request, path, isFolder);
 
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
         xml.write(strHRef);

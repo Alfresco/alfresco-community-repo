@@ -503,7 +503,7 @@
 [#-- recurse for depth greater than 1 --]
 [#if maxdepth == -1 || depth &lt; maxdepth]
 [#assign nested = typedefn.getSubTypes(false)/]
-[#if nested?size > 1]
+[#if nested?size > 0]
 <cmisra:children>
 [@feedLib.feed]
 [@feedLib.generic "urn:uuid:type-${typedefn.typeId.id}-descendants" "Type ${typedefn.displayName} Descendants" "${person.properties.userName}"]

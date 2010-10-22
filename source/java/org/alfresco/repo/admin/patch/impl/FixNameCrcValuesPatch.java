@@ -61,6 +61,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.fixNameCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixNameCrcValues.fixed";
     private static final String MSG_UNABLE_TO_CHANGE = "patch.fixNameCrcValues.unableToChange";
+    private static final String MSG_FIXING_LOCALNAME = "patch.fixNameCrcValues.fixingLocalname";
     private static final String ERR_ASSOCIATION_TYPE_NOT_DEFINED = "patch.fixNameCrcValues.associationTypeNotDefined";
     private static final String ERR_ASSOCIATION_TYPE_NOT_CHILD = "patch.fixNameCrcValues.associationTypeNotChild";
     
@@ -282,6 +283,14 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     String childNodeName = (String) row.get("childNodeName");
                     // Use the UUID if there is no cm:name
                     childNodeName = (childNodeName ==  null) ? childNodeUuid : childNodeName;
+                    // Ensure that we generate a valid QName (see comments on ALF-4529)
+                    if (qnameLocalName == null || qnameLocalName.length() == 0)
+                    {
+                        String qnameLocalNameNew = "fix-" + assocId;
+                        logger.warn(
+                                I18NUtil.getMessage(MSG_FIXING_LOCALNAME, assocId, qnameLocalName, qnameLocalNameNew));
+                        qnameLocalName = qnameLocalNameNew;
+                    }
                     // Resolve QNames
                     QName typeQName = qnameDAO.getQName(typeQNameId).getSecond();
                     String namespace = qnameDAO.getNamespace(qnameNamespaceId).getSecond();

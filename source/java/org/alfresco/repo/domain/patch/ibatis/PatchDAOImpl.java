@@ -415,6 +415,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
             try
             {
                 List<Map<String, Object>> rows = template.queryForList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, 0, queryMaxResults);
+                if (results.size() == 0 && rows.size() >= maxResults)
+                {
+                    // We have all we need
+                    results = rows;
+                    break;
+                }
                 // Add these rows to the result
                 results.addAll(rows);
                 // Calculate new maxResults

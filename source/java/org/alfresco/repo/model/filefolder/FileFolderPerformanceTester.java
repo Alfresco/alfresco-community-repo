@@ -155,7 +155,8 @@ public class FileFolderPerformanceTester extends TestCase
             final int threadCount,
             final boolean randomOrder,
             final int folderCount,
-            final int fileCount,
+            final int batchCount,
+            final int filesPerBatch,
             final double[] dumpPoints)
     {
         RetryingTransactionCallback<NodeRef[]> createFoldersCallback = new RetryingTransactionCallback<NodeRef[]>()
@@ -188,13 +189,13 @@ public class FileFolderPerformanceTester extends TestCase
                 // progress around the folders until they have been populated
                 start = System.currentTimeMillis();
                 int nextDumpNumber = 0;
-                for (int i = 0; i < fileCount; i++)
+                for (int i = 0; i < batchCount; i++)
                 {
                     // must we dump results
                     double completedCount = (double) i;
                     double nextDumpCount = (dumpPoints == null || dumpPoints.length == 0 || nextDumpNumber >= dumpPoints.length)
                                            ? -1.0
-                                           : (double) fileCount * dumpPoints[nextDumpNumber];
+                                           : (double) batchCount * dumpPoints[nextDumpNumber];
                     if ((nextDumpCount - 0.5) < completedCount && completedCount < (nextDumpCount + 0.5))
                     {
                         dumpResults(i);
@@ -210,36 +211,39 @@ public class FileFolderPerformanceTester extends TestCase
                     for (int j = 0; j < folders.length; j++)
                     {
                         final NodeRef folderRef = folders[j];
-                        RetryingTransactionCallback<FileInfo> createFileCallback = new RetryingTransactionCallback<FileInfo>()
+                        RetryingTransactionCallback<Void> createFileCallback = new RetryingTransactionCallback<Void>()
                         {
-                            public FileInfo execute() throws Exception
+                            public Void execute() throws Exception
                             {
-                                FileInfo fileInfo = fileFolderService.create(
-                                        folderRef,
-                                        GUID.generate(),
-                                        ContentModel.TYPE_CONTENT);
-                                NodeRef nodeRef = fileInfo.getNodeRef();
-                                // write the content
-                                ContentWriter writer = fileFolderService.getWriter(nodeRef);
-                                writer.putContent(dataFile);
+                                for (int i = 0; i < filesPerBatch; i++)
+                                {
+                                    FileInfo fileInfo = fileFolderService.create(
+                                            folderRef,
+                                            GUID.generate(),
+                                            ContentModel.TYPE_CONTENT);
+                                    NodeRef nodeRef = fileInfo.getNodeRef();
+                                    // write the content
+                                    ContentWriter writer = fileFolderService.getWriter(nodeRef);
+                                    writer.putContent(dataFile);
+                                }
                                 // done
-                                return fileInfo;
+                                return null;
                             }
                         };
                         retryingTransactionHelper.doInTransaction(createFileCallback);
                     }
                 }
-                dumpResults(fileCount);
+                dumpResults(batchCount);
             }
-            private void dumpResults(int currentFileCount)
+            private void dumpResults(int currentBatchCount)
             {
                 long end = System.currentTimeMillis();
                 long time = (end - start);
-                double average = (double) time / (double) (folderCount * currentFileCount);
-                double percentComplete = (double) currentFileCount / (double) fileCount * 100.0;
+                double average = (double) time / (double) (folderCount * currentBatchCount * filesPerBatch);
+                double percentComplete = (double) currentBatchCount / (double) batchCount * 100.0;
                 logger.debug("\n" +
                         "[" + Thread.currentThread().getName() + "] \n" +
-                        "   Created " + currentFileCount + " files in each of " + folderCount +
+                        "   Created " + (currentBatchCount*filesPerBatch) + " files in each of " + folderCount +
                             " folders (" + (randomOrder ? "shuffled" : "in order") + "): \n" +
                         "   Progress: " + String.format("%9.2f", percentComplete) +  " percent complete \n" +
                         "   Average: " + String.format("%10.2f", average) + " ms per file \n" +
@@ -250,10 +254,12 @@ public class FileFolderPerformanceTester extends TestCase
         // kick off the required number of threads
         logger.debug("\n" +
                 "Starting " + threadCount +
-                " threads loading " + fileCount +
+                " threads loading " + (batchCount * filesPerBatch) +
                 " files in each of " + folderCount +
                 " folders (" +
-                (randomOrder ? "shuffled" : "in order") + ").");
+                (randomOrder ? "shuffled" : "in order") +
+                (filesPerBatch > 1 ? (" and " + filesPerBatch + " files per txn") : "") +
+                ").");
         ThreadGroup threadGroup = new ThreadGroup(getName());
         Thread[] threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++)
@@ -384,6 +390,7 @@ public class FileFolderPerformanceTester extends TestCase
                 true,
                 10,
                 100,
+                20,
                 new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
     }
 //    public void test_1_ordered_1_50000() throws Exception

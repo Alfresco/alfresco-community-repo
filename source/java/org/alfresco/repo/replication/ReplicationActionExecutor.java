@@ -298,6 +298,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
           // Record details of the transfer reports (in success case)
           replicationDef.setLocalTransferReport(endEvent.getSourceReport());
           replicationDef.setRemoteTransferReport(endEvent.getDestinationReport());
+          replicationDefinitionPersister.saveReplicationDefinition(replicationDef);
       }
       catch(Exception e)
       {

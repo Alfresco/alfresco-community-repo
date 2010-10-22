@@ -25,7 +25,7 @@ CREATE TABLE t_alf_store
    root_node_id BIGINT,
    PRIMARY KEY (id),
    UNIQUE (protocol, identifier)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 -- --------------------------
 -- Populate the ADM nodes --
@@ -56,7 +56,7 @@ CREATE TABLE t_alf_node (
    CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES t_alf_store (id), 
    PRIMARY KEY (id),
    UNIQUE (store_id, uuid)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 -- Fill the store table
 INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
@@ -69,7 +69,7 @@ CREATE TABLE t_summary_nstat
    node_id BIGINT(20) NOT NULL,
    transaction_id BIGINT(20) DEFAULT NULL,
    PRIMARY KEY (node_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 --FOREACH alf_node_status.node_id system.upgrade.t_summary_nstat.batchsize
 INSERT INTO t_summary_nstat (node_id, transaction_id) 
   SELECT node_id, transaction_id
@@ -115,7 +115,7 @@ CREATE TABLE t_alf_version_count
    INDEX fk_alf_vc_store (store_id),
    CONSTRAINT fk_alf_vc_store FOREIGN KEY (store_id) REFERENCES t_alf_store (id),
    PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 INSERT INTO t_alf_version_count
    (
@@ -160,7 +160,7 @@ CREATE TABLE t_alf_child_assoc
    CONSTRAINT fk_alf_cass_qnns foreign key (qname_ns_id) REFERENCES alf_namespace (id),
    PRIMARY KEY (id),
    UNIQUE (parent_node_id, type_qname_id, child_node_name_crc, child_node_name)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --FOREACH alf_child_assoc.id system.upgrade.t_alf_child_assoc.batchsize
 INSERT INTO t_alf_child_assoc
@@ -210,7 +210,7 @@ CREATE TABLE t_alf_node_assoc
    CONSTRAINT fk_alf_nass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (id),
    UNIQUE (source_node_id, target_node_id, type_qname_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --FOREACH alf_node_assoc.id system.upgrade.t_alf_node_assoc.batchsize
 INSERT INTO t_alf_node_assoc
@@ -246,7 +246,7 @@ CREATE TABLE t_alf_node_aspects
    CONSTRAINT fk_alf_nasp_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --FOREACH alf_node_aspects.node_id system.upgrade.t_alf_node_aspects.batchsize
 -- Note the omission of sys:referencable.  This is implicit.
@@ -284,7 +284,7 @@ CREATE TABLE t_avm_aspects
    CONSTRAINT fk_avm_nasp_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
    CONSTRAINT fk_avm_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --FOREACH avm_aspects_new.id system.upgrade.t_avm_aspects.batchsize
 INSERT INTO t_avm_aspects
@@ -329,7 +329,7 @@ CREATE TABLE t_avm_store_properties
    CONSTRAINT fk_avm_sprop_store FOREIGN KEY (avm_store_id) REFERENCES avm_stores (id),
    CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 --FOREACH avm_store_properties.avm_store_id system.upgrade.t_avm_store_properties.batchsize
 INSERT INTO t_avm_store_properties
    (
@@ -370,7 +370,7 @@ CREATE TABLE t_avm_node_properties
    CONSTRAINT fk_avm_nprop_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
    CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 --FOREACH avm_node_properties_new.node_id system.upgrade.t_avm_node_properties.batchsize
 INSERT INTO t_avm_node_properties
    (
@@ -406,7 +406,7 @@ CREATE TABLE alf_locale
    locale_str VARCHAR(20) NOT NULL,
    PRIMARY KEY (id),
    UNIQUE (locale_str)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 INSERT INTO alf_locale (id, locale_str) VALUES (1, '.default');
 
@@ -447,7 +447,7 @@ CREATE TABLE t_alf_node_properties
    CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id),
    PRIMARY KEY (node_id, qname_id, list_index, locale_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --BEGIN TXN
 -- Copy values over

@@ -1162,6 +1162,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                             sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
                         }
                         
+                        if (this.dialect != null && this.dialect instanceof MySQLInnoDBDialect)
+                        {
+                        	// note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL, such as JBPM)
+                            sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
+                        }
+                        
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {

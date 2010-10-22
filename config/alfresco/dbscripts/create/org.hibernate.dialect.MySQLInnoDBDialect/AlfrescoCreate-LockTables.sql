@@ -16,7 +16,7 @@ CREATE TABLE alf_lock_resource
    CONSTRAINT fk_alf_lockr_ns FOREIGN KEY (qname_ns_id) REFERENCES alf_namespace (id),
    PRIMARY KEY (id),
    UNIQUE INDEX idx_alf_lockr_key (qname_ns_id, qname_localname)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE TABLE alf_lock
 (
@@ -31,7 +31,7 @@ CREATE TABLE alf_lock
    CONSTRAINT fk_alf_lock_excl FOREIGN KEY fk_alf_lock_excl (excl_resource_id) REFERENCES alf_lock_resource (id),
    PRIMARY KEY (id),
    UNIQUE INDEX idx_alf_lock_key (shared_resource_id, excl_resource_id)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 --
 -- Record script finish

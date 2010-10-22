@@ -11,26 +11,26 @@
         node_id bigint not null,
         qname_id bigint not null,
         primary key (node_id, qname_id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_child_entries (
         parent_id bigint not null,
         name varchar(160) not null,
         child_id bigint not null,
         primary key (parent_id, name)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_history_links (
         ancestor bigint not null,
         descendent bigint not null,
         primary key (ancestor, descendent)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_merge_links (
         mfrom bigint not null,
         mto bigint not null,
         primary key (mfrom, mto)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_node_properties (
         node_id bigint not null,
@@ -45,7 +45,7 @@
         serializable_value blob,
         qname_id bigint not null,
         primary key (node_id, qname_id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_nodes (
         id bigint not null auto_increment,
@@ -73,7 +73,7 @@
         encoding varchar(16),
         length bigint,
         primary key (id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_store_properties (
         id bigint not null auto_increment,
@@ -89,7 +89,7 @@
         string_value text,
         serializable_value blob,
         primary key (id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_stores (
         id bigint not null auto_increment,
@@ -99,14 +99,14 @@
         current_root_id bigint,
         acl_id bigint,
         primary key (id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_version_layered_node_entry (
         version_root_id bigint not null,
         md5sum varchar(32) not null,
         path text,
         primary key (version_root_id, md5sum)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     create table avm_version_roots (
         id bigint not null auto_increment,
@@ -119,7 +119,7 @@
         description text,
         primary key (id),
         unique (version_id, avm_store_id)
-    ) type=InnoDB;
+    ) ENGINE=InnoDB;
 
     alter table avm_aspects
         add index fk_avm_nasp_n (node_id),

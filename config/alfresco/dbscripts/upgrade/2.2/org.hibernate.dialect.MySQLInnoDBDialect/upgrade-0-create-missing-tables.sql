@@ -22,13 +22,13 @@ ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
         node_id bigint,
         qname varchar(200),
         primary key (id)
-    ) type=InnoDB;                                    -- (optional)
+    ) ENGINE=InnoDB;                                    -- (optional)
 
     create table avm_aspects_new (
         id bigint not null,
         name varchar(200) not null,
         primary key (id, name)
-    ) type=InnoDB;                                    -- (optional)
+    ) ENGINE=InnoDB;                                    -- (optional)
 
     create table avm_node_properties (
         id bigint not null auto_increment,
@@ -44,7 +44,7 @@ ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
         string_value text,
         serializable_value blob,
         primary key (id)
-    ) type=InnoDB;                                    -- (optional)
+    ) ENGINE=InnoDB;                                    -- (optional)
 
     create table avm_node_properties_new (
         node_id bigint not null,
@@ -59,7 +59,7 @@ ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
         serializable_value blob,
         qname varchar(200) not null,
         primary key (node_id, qname)
-    ) type=InnoDB;                                    -- (optional)
+    ) ENGINE=InnoDB;                                    -- (optional)
 
     create table avm_store_properties (
         id bigint not null auto_increment,
@@ -75,7 +75,7 @@ ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
         string_value text,
         serializable_value blob,
         primary key (id)
-    ) type=InnoDB;                                    -- (optional)
+    ) ENGINE=InnoDB;                                    -- (optional)
 
 -- Add ACL column for AVM tables
 ALTER TABLE avm_stores

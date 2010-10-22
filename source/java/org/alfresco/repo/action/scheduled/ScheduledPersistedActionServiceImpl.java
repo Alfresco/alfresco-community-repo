@@ -25,8 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.transaction.UserTransaction;
-
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -35,8 +34,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
@@ -128,18 +127,20 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
                 repositoryHelper.getCompanyHome(),
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
-        if (dictionaryAssocs.size() > 0)
+        if (dictionaryAssocs.size() == 0)
         {
-            NodeRef dataDictionary = dictionaryAssocs.get(0).getChildRef();
-            List<ChildAssociationRef> scheduledAssocs = startupNodeService.getChildAssocs(
-                    dataDictionary, 
-                    ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Scheduled Actions"));
-            if (scheduledAssocs.size() > 0)
-            {
-                SCHEDULED_ACTION_ROOT_NODE_REF = scheduledAssocs.get(0).getChildRef();
-            }
+            throw new AlfrescoRuntimeException("Failed to find 'app:dictionary' node");
         }
+        NodeRef dataDictionary = dictionaryAssocs.get(0).getChildRef();
+        List<ChildAssociationRef> scheduledAssocs = startupNodeService.getChildAssocs(
+                dataDictionary, 
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Scheduled Actions"));
+        if (scheduledAssocs.size() == 0)
+        {
+            throw new AlfrescoRuntimeException("Failed to find 'cm:Scheduled Actions' location.");
+        }
+        SCHEDULED_ACTION_ROOT_NODE_REF = scheduledAssocs.get(0).getChildRef();
     }
     
     /**

@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Task specific command processor implementation.
@@ -92,9 +93,9 @@ public final class TaskCommandProcessor implements CommandProcessor
    public void outputStatus(PrintWriter out)
    {
       out.print("Task command: '");
-      out.print(command);
+      out.print(Utils.encode(command));
       out.print("' executed against task: ");
-      out.println(taskId);
+      out.println(Utils.encode(taskId));
    }
 
 }

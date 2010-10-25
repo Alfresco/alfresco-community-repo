@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Workflow specific command processor implementation.
@@ -69,8 +70,8 @@ public final class WorkflowCommandProcessor extends BaseNodeCommandProcessor
    public void outputStatus(PrintWriter out)
    {
       out.print("Workflow command: '");
-      out.print(this.command);
+      out.print(Utils.encode(this.command));
       out.print("' executed against node: ");
-      out.println(this.targetRef.toString());
+      out.println(Utils.encode(this.targetRef.toString()));
    }
 }

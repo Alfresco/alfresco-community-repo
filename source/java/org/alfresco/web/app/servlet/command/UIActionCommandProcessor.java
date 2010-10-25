@@ -31,6 +31,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * UI action command processor implementation.
@@ -117,8 +118,8 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
    public void outputStatus(PrintWriter out)
    {
       out.print("UI Action command: '");
-      out.print(this.command);
+      out.print(Utils.encode(this.command));
       out.print("' executed with args: ");
-      out.println(this.args);
+      out.println(this.args != null ? (Utils.encode(this.args.toString())) : "");
    }
 }

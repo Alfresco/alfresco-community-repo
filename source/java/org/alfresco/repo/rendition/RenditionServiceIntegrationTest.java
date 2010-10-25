@@ -34,12 +34,14 @@ import javax.imageio.ImageIO;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.executer.ExporterActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.FreemarkerRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
@@ -56,8 +58,10 @@ import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -66,6 +70,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author Neil McErlean
@@ -108,7 +113,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        // Register our test rendering engine if needed
+        DummyHelloWorldRenditionEngine.registerIfNeeded(this.applicationContext);
 
+        // Create test folders
         NodeRef companyHome = this.repositoryHelper.getCompanyHome();
 
         // Create the test folder used for these tests
@@ -1727,25 +1736,238 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        
     }
     
-    public void testRenditionPlacements() throws Exception
+    /**
+     * Using a dummy rendition engine, perform a number of
+     *  renditions, both single and composite, to check that
+     *  the renditions always end up as they should do.
+     */
+    public void DISABLEDtestRenditionPlacements() throws Exception
     {
-       // Using a dummy rendition engine
-       // ------------------------------
+       QName plainQName = QName.createQName("Plain");
+       RenditionDefinition rdPlain = renditionService.createRenditionDefinition(
+             plainQName, DummyHelloWorldRenditionEngine.ENGINE_NAME
+       );
        
-       // For both single and composite renditions, run more than once:
-       /// -----------------------------------------------------------
+       QName compositeQName = QName.createQName("Composite");
+       CompositeRenditionDefinition rdComposite = renditionService.createCompositeRenditionDefinition(
+             compositeQName
+       );
+       rdComposite.addAction(renditionService.createRenditionDefinition(
+             QName.createQName("CompositePart1"), DummyHelloWorldRenditionEngine.ENGINE_NAME
+       ));
+       rdComposite.addAction(renditionService.createRenditionDefinition(
+             QName.createQName("CompositePart2"), DummyHelloWorldRenditionEngine.ENGINE_NAME
+       ));
        
-       // Anonymous rendition, no existing one there
+       NodeRef renditionNode;
        
-       // Anonymous rendition, existing one there, same type
+       // ============================================== //
+       //   Anonymous Rendition, no existing one there   //
+       // ============================================== //
        
-       // Anonymous rendition, existing one there, wrong type
+       assertNotNull(nodeWithDocContent);
+       assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
        
-       // Path based rendition, no existing one there
+       // Do a plain rendition, and check we acquired the one node
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(plainQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
        
-       // Path based rendition, existing one there, same type
+       // Tidy
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+       assertNotNull(nodeWithDocContent);
+       assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
        
-       // Path based rendition, existing one there, wrong type
+       // Now do a composite rendition
+       // Should once again have one node, despite there having been intermediate
+       //  nodes created during the composite stage
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(compositeQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
+       
+       // Tidy
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+       
+       
+       // ================================================ //
+       //   Anonymous Rendition, existing one, same type   //
+       // ================================================ //
+
+       // Create one of the right type for a plain rendition
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+
+       // Run again, shouldn't change, should re-use the node
+       renditionNode = nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef();
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(renditionNode, nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef());
+       assertEquals(plainQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
+       
+       
+       // Tidy, and re-create for composite
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       
+       // Run again, shouldn't change, should re-use the node
+       renditionNode = nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef();
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(renditionNode, nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef());
+       assertEquals(compositeQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
+       
+       // Tidy
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+
+       
+       // ================================================= //
+       //   Anonymous Rendition, existing one, wrong type   //
+       // Note - this situation is not possible!            //
+       // ================================================= //
+       
+       
+       // ================================================= //
+       //        Switch to being path based                 //
+       // ================================================= //
+
+       String path = "/" +
+           (String) nodeService.getProperty(repositoryHelper.getCompanyHome(), ContentModel.PROP_NAME) +
+           "/" +
+           (String) nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME)
+       ;
+       
+       rdPlain.setParameterValue(
+             RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path
+       );
+       rdComposite.setParameterValue(
+             RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path
+       );
+
+       
+       // ================================================= //
+       //   Path based rendition, no existing one there     //
+       // ================================================= //
+       
+       assertNotNull(nodeWithDocContent);
+       assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(testTargetFolder).size());
+       
+       // Do a plain rendition, and check we acquired the one node
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       // Tidy
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+       assertNotNull(nodeWithDocContent);
+       assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(testTargetFolder).size());
+       
+       // Now do a composite rendition
+       // Should once again have one node, despite there having been intermediate
+       //  nodes created during the composite stage
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       // Tidy
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+
+       
+       // ================================================= //
+       //   Path Based Rendition, existing one, same type   //
+       // ================================================= //
+       
+       // Create one of the right type for a plain rendition
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+
+       // Run again, shouldn't change, should re-use the node
+       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
+       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       
+       // Tidy, and re-create for composite
+       nodeService.deleteNode(
+             renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
+       );
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       
+       // Run again, shouldn't change, should re-use the node
+       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
+       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       
+       // ================================================= //
+       //   Path Based Rendition, existing one, wrong type  //
+       // ================================================= //
+
+       // We currently have a composite one
+       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       // Run the plain rendition, the composite one should be replaced
+       //  with the new one
+       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       
+       renditionService.render(nodeWithDocContent, rdPlain);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertNotSame(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
+       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       
+       // We now have a plain one, so run the composite one and see 
+       //  it get replaced again
+       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       
+       renditionService.render(nodeWithDocContent, rdComposite);
+       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertNotSame(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
+       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
     }
 
     
@@ -1884,4 +2106,56 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.scriptService.executeScript(location, model);
     }
 
+    /**
+     * A dummy rendering engine used in testing
+     */
+    private static class DummyHelloWorldRenditionEngine extends AbstractRenderingEngine
+    {
+       private static final String ENGINE_NAME = "helloWorldRenderingEngine";
+       
+       /**
+        * Loads this executor into the ApplicationContext, if it
+        *  isn't already there
+        */
+       public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+       {
+          if(!ctx.containsBean(ENGINE_NAME))
+          {
+             // Create, and do dependencies
+             DummyHelloWorldRenditionEngine hw = new DummyHelloWorldRenditionEngine();
+             hw.setRuntimeActionService(
+                   (RuntimeActionService)ctx.getBean("actionService")
+             );
+             hw.setNodeService(
+                   (NodeService)ctx.getBean("NodeService")
+             );
+             hw.setContentService(
+                   (ContentService)ctx.getBean("ContentService")
+             );
+             hw.setRenditionService(
+                   (RenditionService)ctx.getBean("RenditionService")
+             );
+             hw.setBehaviourFilter(
+                   (BehaviourFilter)ctx.getBean("policyBehaviourFilter")
+             );
+             hw.setRenditionLocationResolver(
+                   (RenditionLocationResolver)ctx.getBean("renditionLocationResolver")
+             );
+             
+             // Register
+             ctx.getBeanFactory().registerSingleton(
+                   ENGINE_NAME, hw
+             );
+             hw.init();
+          }
+       }
+       
+       @Override
+       protected void render(RenderingContext context) {
+System.err.print("Rendering " + context.getSourceNode() + " to " + context.getDestinationNode());
+          ContentWriter contentWriter = context.makeContentWriter();
+          contentWriter.setMimetype("text/plain");
+          contentWriter.putContent( "Hello, world!" );
+       }
+    }
 }

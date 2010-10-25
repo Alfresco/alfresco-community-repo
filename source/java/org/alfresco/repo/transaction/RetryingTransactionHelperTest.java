@@ -556,53 +556,18 @@ public class RetryingTransactionHelperTest extends TestCase
         txnHelper.setMaxExecutionMs(3000);
         final List<Throwable> caughtExceptions = Collections.synchronizedList(new LinkedList<Throwable>());
 
-        // Force ceiling of 2
-        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 5000));
-        if (caughtExceptions.size() > 0)
-        {
-            throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
-        }
-
-
-        // Try breaching ceiling
-        runThreads(txnHelper, caughtExceptions, new Pair(3, 1000));
-        assertTrue("Expected exception", caughtExceptions.size() > 0);
+        // Try submitting a request after a timeout
+        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 5000), new Pair(4, 1000));
+        assertEquals("Expected 1 exception", 1, caughtExceptions.size());
         assertTrue("Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
 
-        // Stay within ceiling, forcing expansion
+        // Stay within timeout limits
         caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(1, 1000), new Pair(1, 2000));
+        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 2000), new Pair(4, 1000));
         if (caughtExceptions.size() > 0)
         {
             throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
         }
-
-        // Test expansion
-        caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(3, 1000));
-        if (caughtExceptions.size() > 0)
-        {
-            throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
-        }
-        
-        // Ensure expansion no too fast
-        caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(5, 1000));
-        assertTrue("Expected exception", caughtExceptions.size() > 0);
-        assertTrue("Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
-
-        // Test contraction
-        caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 5000));
-        if (caughtExceptions.size() > 0)
-        {
-            throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
-        }
-
-        // Try breaching new ceiling
-        runThreads(txnHelper, caughtExceptions, new Pair(3, 1000));
-        assertTrue("Expected exception", caughtExceptions.size() > 0);
-        assertTrue("Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
 
         // Check retry limitation
         long startTime = System.currentTimeMillis();
@@ -629,59 +594,52 @@ public class RetryingTransactionHelperTest extends TestCase
     private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,
             Pair<Integer, Integer>... countDurationPairs)
     {
-        int threadCount = 0;
-        for (Pair<Integer, Integer> pair : countDurationPairs)
-        {
-            threadCount += pair.getFirst();
-        }
-
-        final CountDownLatch endLatch = new CountDownLatch(threadCount);
+        final CountDownLatch endLatch = new CountDownLatch(countDurationPairs.length);
 
         class Callback implements RetryingTransactionCallback<Void>
         {
-            private final CountDownLatch startLatch;
             private final int duration;
 
-            public Callback(CountDownLatch startLatch, int duration)
+            public Callback(int duration)
             {
-                this.startLatch = startLatch;
                 this.duration = duration;
             }
 
             public Void execute() throws Throwable
             {
-                long endTime = System.currentTimeMillis() + duration;
-
-                // Signal that we've started
-                startLatch.countDown();
-
-                long duration = endTime - System.currentTimeMillis();
-                if (duration > 0)
-                {
-                    Thread.sleep(duration);
-                }
+                Thread.sleep(duration);
                 return null;
             }
         }
         ;
         class Work implements Runnable
         {
+            private final CountDownLatch startLatch;
             private final Callback callback;
+            private final int execCount;
 
-            public Work(Callback callback)
+            public Work(CountDownLatch startLatch, Callback callback, int execCount)
             {
+                this.startLatch = startLatch;
                 this.callback = callback;
+                this.execCount = execCount;
             }
 
             public void run()
             {
-                try
+                // Signal that we've started
+                startLatch.countDown();
+
+                for (int i = 0; i < execCount; i++)
                 {
-                    txnHelper.doInTransaction(callback);
-                }
-                catch (Throwable e)
-                {
-                    caughtExceptions.add(e);
+                    try
+                    {
+                        txnHelper.doInTransaction(callback);
+                    }
+                    catch (Throwable e)
+                    {
+                        caughtExceptions.add(e);
+                    }
                 }
                 endLatch.countDown();
             }
@@ -693,21 +651,18 @@ public class RetryingTransactionHelperTest extends TestCase
         for (Pair<Integer, Integer> pair : countDurationPairs)
         {
             CountDownLatch startLatch = new CountDownLatch(1);
-            Runnable work = new Work(new Callback(startLatch, pair.getSecond()));
-            for (int i = 0; i < pair.getFirst(); i++)
+            Runnable work = new Work(startLatch, new Callback(pair.getSecond()), pair.getFirst());
+            Thread thread = new Thread(work);
+            thread.setName(getName() + "-" + j++);
+            thread.setDaemon(true);
+            thread.start();
+            try
             {
-                Thread thread = new Thread(work);
-                thread.setName(getName() + "-" + j++);
-                thread.setDaemon(true);
-                thread.start();
-                try
-                {
-                    // Wait for the thread to get up and running. We need them starting in sequence
-                    startLatch.await(60, TimeUnit.SECONDS);
-                }
-                catch (InterruptedException e)
-                {
-                }
+                // Wait for the thread to get up and running. We need them starting in sequence
+                startLatch.await(60, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e)
+            {
             }
         }
         // Wait for the threads to have finished

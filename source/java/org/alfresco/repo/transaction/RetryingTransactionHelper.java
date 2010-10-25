@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -128,14 +130,11 @@ public class RetryingTransactionHelper
      */
     private long maxExecutionMs;
 
+    /** Map of transaction start times to counts. Only maintained when maxExecutionMs is set. */
+    private SortedMap <Long, Integer> txnsInProgress = new TreeMap<Long, Integer>();
+    
     /** The number of concurrently exeucting transactions. Only maintained when maxExecutionMs is set. */
     private int txnCount;
-
-    /**
-     * A 'ceiling' for the number of concurrent transactions that can execute. Dynamically maintained so that exeuction
-     * time is within maxExecutionMs. Transactions above this limit will be rejected with a {@link TooBusyException}.
-     */
-    private Integer txnCeiling;
     
     /**
      * Whether the the transactions may only be reads
@@ -294,20 +293,52 @@ public class RetryingTransactionHelper
             throw new AccessDeniedException(MSG_READ_ONLY);
         }
 
+        // First validate the requiresNew setting
+		boolean startingNew = requiresNew;
+        if (!startingNew)
+        {
+            TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
+            switch (readState)
+            {
+                case TXN_READ_ONLY:
+                    if (!readOnly)
+                    {
+                        // The current transaction is read-only, but a writable transaction is requested
+                        throw new AlfrescoRuntimeException("Read-Write transaction started within read-only transaction");
+                    }
+                    // We are in a read-only transaction and this is what we require so continue with it.
+                    break;
+                case TXN_READ_WRITE:
+                    // We are in a read-write transaction.  It cannot be downgraded so just continue with it.
+                    break;
+                case TXN_NONE:
+                    // There is no current transaction so we need a new one.
+                    startingNew = true;
+                    break;
+                default:
+                    throw new RuntimeException("Unknown transaction state: " + readState);
+            }
+        }
+
         // If we are time limiting, set ourselves a time limit and maintain the count of concurrent transactions
         long startTime = 0, endTime = 0, txnStartTime = 0;
-        int txnCountWhenStarted = 0;
-        if (maxExecutionMs > 0)
+        if (startingNew && maxExecutionMs > 0)
         {
             startTime = System.currentTimeMillis();
             synchronized (this)
             {
-                // If this transaction would take us above our ceiling, reject it
-                if (txnCeiling != null && txnCount >= txnCeiling)
+                if (txnCount > 0)
                 {
-                    throw new TooBusyException("Too busy: " + txnCount + " transactions");                                
+                    // If this transaction would take us above our ceiling, reject it
+                    long oldestDuration = startTime - txnsInProgress.firstKey();
+                    if (oldestDuration > maxExecutionMs)
+                    {
+                        throw new TooBusyException("Too busy: " + txnCount + " transactions. Oldest " + oldestDuration + " milliseconds");
+                    }
                 }
-                txnCountWhenStarted = ++txnCount;
+                Integer count = txnsInProgress.get(startTime);
+                txnsInProgress.put(startTime, count == null ? 1 : count + 1);
+                ++txnCount;
             }
             endTime = startTime + maxExecutionMs;
         }
@@ -319,45 +350,19 @@ public class RetryingTransactionHelper
             RuntimeException lastException = null;
             for (int count = 0; count == 0 || count < maxRetries; count++)
             {
-                // Monitor duration of each retry so that we can project an end time
-                if (maxExecutionMs > 0)
-                {                        
-                    txnStartTime = System.currentTimeMillis();
-                }
-
                 UserTransaction txn = null;
                 try
                 {
-                    if (requiresNew)
+                    if (startingNew)
                     {
-                        txn = txnService.getNonPropagatingUserTransaction(readOnly);
-                    }
-                    else
-                    {
-                        TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
-                        switch (readState)
-                        {
-                            case TXN_READ_ONLY:
-                                if (!readOnly)
-                                {
-                                    // The current transaction is read-only, but a writable transaction is requested
-                                    throw new AlfrescoRuntimeException("Read-Write transaction started within read-only transaction");
-                                }
-                                // We are in a read-only transaction and this is what we require so continue with it.
-                                break;
-                            case TXN_READ_WRITE:
-                                // We are in a read-write transaction.  It cannot be downgraded so just continue with it.
-                                break;
-                            case TXN_NONE:
-                                // There is no current transaction so we need a new one.
-                                txn = txnService.getUserTransaction(readOnly);
-                                break;
-                            default:
-                                throw new RuntimeException("Unknown transaction state: " + readState);
+                        // Monitor duration of each retry so that we can project an end time
+                        if (maxExecutionMs > 0)
+                        {                        
+                            txnStartTime = System.currentTimeMillis();
                         }
-                    }
-                    if (txn != null)
-                    {
+
+                        txn = requiresNew ? txnService.getNonPropagatingUserTransaction(readOnly) : txnService
+                                .getUserTransaction(readOnly);
                         txn.begin();
                         // Wrap it to protect it
                         UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();
@@ -475,8 +480,7 @@ public class RetryingTransactionHelper
                             long projectedEndTime = txnEndTime + (txnEndTime - txnStartTime);
                             if (projectedEndTime > endTime)
                             {
-							    // Force the ceiling to be lowered and reject
-							    endTime = 0;
+							    // Reject the retry
                                 throw new TooBusyException("Too busy to retry", e);                                                                
                             }
                             // Limit the wait duration to fit into the time we have left
@@ -522,23 +526,22 @@ public class RetryingTransactionHelper
         }
         finally
         {
-            if (maxExecutionMs > 0)
+            if (startingNew && maxExecutionMs > 0)
             {
                 synchronized (this)
                 {
                     txnCount--;
-                    if(System.currentTimeMillis() > endTime)
+                    Integer count = txnsInProgress.get(startTime);
+                    if (count != null)
                     {
-                        // Lower the ceiling
-                        if (txnCeiling == null || txnCeiling > txnCountWhenStarted - 1)
+                        if (count == 1)
                         {
-                            txnCeiling = Math.max(1, txnCountWhenStarted - 1);
+                            txnsInProgress.remove(startTime);
                         }
-                    }
-                    else if (txnCeiling != null && txnCeiling < txnCountWhenStarted + 1)
-                    {
-                        // Raise the ceiling                        
-                        txnCeiling = txnCountWhenStarted + 1;
+                        else
+                        {
+                            txnsInProgress.put(startTime, count-1);
+                        }
                     }
                 }
             }                        

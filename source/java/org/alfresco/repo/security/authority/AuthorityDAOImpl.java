@@ -360,16 +360,38 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         if (parentAuthority != null)
         {
-           query.append(" AND PATH:\"/sys:system/sys:authorities/cm:").append(ISO9075.encode(parentAuthority));
-           if (!immediate)
+           if(immediate)
            {
-              query.append('/');
+               // use PARENT
+               NodeRef parentAuthorityNodeRef = getAuthorityNodeRefOrNull(parentAuthority); 
+               if(parentAuthorityNodeRef != null)
+               {
+                   query.append(" AND PARENT:\"").append(LuceneQueryParser.escape(parentAuthorityNodeRef.toString())).append("\""); 
+               }
+               else
+               {
+                   throw new UnknownAuthorityException("An authority was not found for " + parentAuthority);
+               }     
            }
-           query.append("/*\"");
+           else
+           {
+               // use PATH
+               query.append(" AND PATH:\"/sys:system/sys:authorities/cm:").append(ISO9075.encode(parentAuthority));
+               query.append("//*\"");
+           }
         }
         if (zoneName != null)
         {
-            query.append(" AND PATH:\"/sys:system/sys:zones/cm:").append(ISO9075.encode(zoneName)).append("/*\"");
+            // Zones are all direct links to those within so it is safe to use PARENT to look them up
+            NodeRef zoneNodeRef = getZone(zoneName);
+            if (zoneNodeRef != null)
+            {
+                query.append(" AND PARENT:\"").append(LuceneQueryParser.escape(zoneNodeRef.toString())).append("\"");
+            } 
+            else
+            {
+                throw new UnknownAuthorityException("A zone was not found for " + zoneName);
+            } 
         }
         sp.setQuery(query.toString());
         sp.setMaxItems(100);

@@ -31,7 +31,6 @@ import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
-import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -67,6 +67,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
     
     private NodeService nodeService;
+    private SearchService searchService;
     private TransactionService transactionService;
     private JobLockService jobLockService;
 
@@ -82,7 +83,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 
     public void setSearchService(SearchService searchService)
     {
-        logger.warn("Property 'searchService' has been deprecated as of 3.4.0b");
+        this.searchService = searchService;
     }
 
     public NodeRef getStoreArchiveNode(StoreRef originalStoreRef)
@@ -117,10 +118,21 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
      */
     private ResultSet getArchivedNodes(StoreRef originalStoreRef, int skipCount, int limit)
     {
+        // Get the archive location
         NodeRef archiveParentNodeRef = nodeService.getStoreArchiveNode(originalStoreRef);
-        List<ChildAssociationRef> archivedAssocs = nodeService.getChildAssocs(archiveParentNodeRef);
-        ResultSet rs = new ChildAssocRefResultSet(nodeService, archivedAssocs);
-        // Done
+        StoreRef archiveStoreRef = archiveParentNodeRef.getStoreRef();
+        // build the query
+        String query = String.format("PARENT:\"%s\" AND ASPECT:\"%s\"", archiveParentNodeRef, ContentModel.ASPECT_ARCHIVED);
+        // search parameters
+        SearchParameters params = new SearchParameters();
+        params.addStore(archiveStoreRef);
+        params.setLanguage(SearchService.LANGUAGE_LUCENE);
+        params.setQuery(query);
+        params.setSkipCount(skipCount);
+        params.setMaxItems(limit);
+        // get all archived children using a search
+        ResultSet rs = searchService.query(params);
+        // done
         return rs;
     }
     
@@ -134,9 +146,29 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         return new BatchProcessWorkProvider<NodeRef>()
         {
             private VmShutdownListener vmShutdownLister = new VmShutdownListener("getArchivedNodesWorkProvider");
-            public int getTotalEstimatedWorkSize()
+            private Integer workSize;
+            private int skipResults = 0;
+            public synchronized int getTotalEstimatedWorkSize()
             {
-                return 0;
+                if (workSize == null)
+                {
+                    workSize = Integer.valueOf(0);
+                    ResultSet rs = null;
+                    try
+                    {
+                        rs = getArchivedNodes(originalStoreRef, 0, -1);
+                        workSize = rs.length();
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error("Failed to get archive size", e);
+                    }
+                    finally
+                    {
+                        if (rs != null) { rs.close(); }
+                    }
+                }
+                return workSize;
             }
             public synchronized Collection<NodeRef> getNextWork()
             {
@@ -160,12 +192,12 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 ResultSet rs = null;
                 try
                 {
-                    // The results may be limited by permissions, but 0 results really means 0 results
-                    rs = getArchivedNodes(originalStoreRef, 0, 100);
+                    rs = getArchivedNodes(originalStoreRef, skipResults, 100);
                     for (ResultSetRow row : rs)
                     {
                         results.add(row.getNodeRef());
                     }
+                    skipResults += results.size();
                 }
                 finally
                 {
@@ -461,7 +493,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                     "ArchiveBulkPurgeOrRestore",
                     transactionService.getRetryingTransactionHelper(),
                     getArchivedNodesWorkProvider(originalStoreRef, lockToken),
-                    2, 100,
+                    2, 20,
                     null, null, 1000);
             batchProcessor.process(worker, true);
         }

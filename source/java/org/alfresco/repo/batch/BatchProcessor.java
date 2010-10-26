@@ -275,7 +275,7 @@ public class BatchProcessor<T> implements BatchMonitor
      */
     public synchronized String getPercentComplete()
     {
-        int totalResults = getTotalResults();
+        int totalResults = this.workProvider.getTotalEstimatedWorkSize();
         int processed = this.successfullyProcessedEntries + this.totalErrors;
         return processed <= totalResults ? NumberFormat.getPercentInstance().format(
                 totalResults == 0 ? 1.0F : (float) processed / totalResults) : "Unknown";
@@ -294,15 +294,7 @@ public class BatchProcessor<T> implements BatchMonitor
      */
     public int getTotalResults()
     {
-        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
-        {
-           @Override
-            public Integer execute() throws Throwable
-            {
-               return workProvider.getTotalEstimatedWorkSize();
-            } 
-        };
-        return retryingTransactionHelper.doInTransaction(callback, true, true);
+        return this.workProvider.getTotalEstimatedWorkSize();
     }
 
     /**
@@ -338,7 +330,7 @@ public class BatchProcessor<T> implements BatchMonitor
     @SuppressWarnings("serial")
     public int process(final BatchProcessWorker<T> worker, final boolean splitTxns)
     {
-        int count = getTotalResults();
+        int count = workProvider.getTotalEstimatedWorkSize();
         synchronized (this)
         {
             this.startTime = new Date();
@@ -381,7 +373,7 @@ public class BatchProcessor<T> implements BatchMonitor
                 threadFactory) : null;
         try
         {
-            Iterator<T> iterator = new WorkProviderIterator<T>(workProvider, retryingTransactionHelper);
+            Iterator<T> iterator = new WorkProviderIterator<T>(this.workProvider);
             List<T> batch = new ArrayList<T>(this.batchSize);
             while (iterator.hasNext())
             {
@@ -461,7 +453,7 @@ public class BatchProcessor<T> implements BatchMonitor
         {
             StringBuilder message = new StringBuilder(100).append(getProcessName()).append(": Processed ").append(
                     processed).append(" entries");
-            int totalResults = getTotalResults();
+            int totalResults = this.workProvider.getTotalEstimatedWorkSize();
             if (totalResults >= processed)
             {
                 message.append(" out of ").append(totalResults).append(". ").append(
@@ -551,13 +543,11 @@ public class BatchProcessor<T> implements BatchMonitor
     private static class WorkProviderIterator<T> implements Iterator<T>
     {
         private BatchProcessWorkProvider<T> workProvider;
-        private final RetryingTransactionHelper txnHelper;
         private Iterator<T> currentIterator;
         
-        private WorkProviderIterator(BatchProcessWorkProvider<T> workProvider, RetryingTransactionHelper txnHelper)
+        private WorkProviderIterator(BatchProcessWorkProvider<T> workProvider)
         {
             this.workProvider = workProvider;
-            this.txnHelper = txnHelper;
         }
         
         public boolean hasNext()
@@ -580,15 +570,7 @@ public class BatchProcessor<T> implements BatchMonitor
                 // go and get more results
                 if (!hasNext)
                 {
-                    RetryingTransactionCallback<Collection<T>> callback = new RetryingTransactionCallback<Collection<T>>()
-                    {
-                       @Override
-                        public Collection<T> execute() throws Throwable
-                        {
-                           return workProvider.getNextWork();
-                        } 
-                    };
-                    Collection<T> nextWork = txnHelper.doInTransaction(callback, true, true);
+                    Collection<T> nextWork = workProvider.getNextWork();
                     if (nextWork == null)
                     {
                         throw new RuntimeException("BatchProcessWorkProvider returned 'null' work: " + workProvider);

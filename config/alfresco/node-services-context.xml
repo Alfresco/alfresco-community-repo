@@ -97,9 +97,6 @@
       <property name="nodeService">
          <ref bean="NodeService"/>
       </property>
-      <property name="searchService">
-         <ref bean="SearchService"/>
-      </property>
       <property name="transactionService">
          <ref bean="transactionService"/>
       </property>

@@ -12,13 +12,13 @@
 --ASSIGN:hibernate_seq_next_value=value
 SELECT NEXTVAL('hibernate_sequence') AS value;
 
-CREATE SEQUENCE avm_stores_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+CREATE SEQUENCE avm_stores_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;               -- (optional)
 
-CREATE SEQUENCE avm_store_properties_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+CREATE SEQUENCE avm_store_properties_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;     -- (optional)
 
-CREATE SEQUENCE avm_nodes_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+CREATE SEQUENCE avm_nodes_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;                -- (optional)
 
-CREATE SEQUENCE avm_version_roots_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+CREATE SEQUENCE avm_version_roots_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;        -- (optional)
 
 --
 -- Record script finish

@@ -205,16 +205,25 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                               transactionService.getRetryingTransactionHelper().doInTransaction(
                                     new RetryingTransactionCallback<Void>() {
                                        public Void execute() throws Throwable {
-                                          // Search
+                                          // Search for updates
                                           Map<String,Integer> updates = new HashMap<String, Integer>();
                                           List<Long> entryIds = searchForUpdates(tagScope, updates);
                                           
+                                          // Log what we found
                                           if(logger.isDebugEnabled())
                                           {
                                              if(updates.size() > 0)
+                                             {
                                                 logger.debug("Found updates for tag scope " + tagScope + " : " + updates);
+                                             }
+                                             else if(updatesRemain.intValue() > 1)
+                                             {
+                                                logger.debug("All updates now processed for tag scope " + tagScope);
+                                             }
                                              else
+                                             {
                                                 logger.debug("No updates needed for tag scope " + tagScope);
+                                             }
                                           }
                                           
                                           // Does any work remain?
@@ -223,6 +232,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                                              updatesRemain.setValue(0);
                                              return null;
                                           }
+                                          updatesRemain.setValue(updatesRemain.intValue()+1);
                                           
                                           // Update the tags
                                           performUpdates(tagScope, updates);
@@ -245,7 +255,12 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                   
                   // We're done with this tag scope
                   unlockTagScope(tagScope, lock);
-               } catch(LockAcquisitionException e) {}
+               } catch(LockAcquisitionException e) {
+                  if(logger.isDebugEnabled())
+                  {
+                     logger.debug("Tag scope " + tagScope + " is already being processed by another action, skipping");
+                  }
+               }
                
                // Now proceed to the next tag scope
             }
@@ -354,6 +369,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           {
               tags = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
           }
+          String previousTagState = tags.toString();
           
           // Figure out what changes to make
           for (String tagName : updates.keySet())
@@ -412,6 +428,16 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           contentWriter.setEncoding("UTF-8");
           contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
           contentWriter.putContent(tagContent);    
+          
+          // Log this if required
+          if(logger.isDebugEnabled())
+          {
+             logger.debug(
+                   "Updated tag scope " + tagScopeNode + " with " + updates + ", " +
+                   "new contents are { " + tagContent.replace("\n", " : ") + " } " +
+                   "from old contents of " + previousTagState
+             );
+          }
        }
     }
     

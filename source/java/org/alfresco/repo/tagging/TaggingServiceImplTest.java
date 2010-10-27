@@ -1178,7 +1178,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
-    public void testMultiThreaded() throws Exception
+    public void DISABLEtestMultiThreaded() throws Exception
     {
         UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
         tx.begin();

@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -70,6 +71,7 @@ public class RenditionNodeManager
     private final RenditionDefinition renditionDefinition;
     private final RenditionLocation location;
     private final NodeService nodeService;
+    private BehaviourFilter behaviourFilter;
     private final RenditionService renditionService;
     private final NodeRef oldRendition;
     private ChildAssociationRef finalRenditionAssoc;
@@ -84,7 +86,8 @@ public class RenditionNodeManager
      * @param renditionService
      */
     public RenditionNodeManager(NodeRef sourceNode, NodeRef tempRenditionNode, RenditionLocation location,
-                RenditionDefinition renditionDefinition, NodeService nodeService, RenditionService renditionService)
+                RenditionDefinition renditionDefinition, NodeService nodeService, RenditionService renditionService,
+                BehaviourFilter behaviourFilter)
     {
         this.sourceNode = sourceNode;
         this.tempRenditionNode = tempRenditionNode;
@@ -92,6 +95,7 @@ public class RenditionNodeManager
         this.renditionDefinition = renditionDefinition;
         this.nodeService = nodeService;
         this.renditionService = renditionService;
+        this.behaviourFilter = behaviourFilter;
         
         this.oldRendition = this.getOldRenditionIfExists(sourceNode, renditionDefinition);
 
@@ -333,7 +337,16 @@ public class RenditionNodeManager
         if (parentIsSource == false)
         {
             NodeRef rendition = primaryAssoc.getChildRef();
-            ChildAssociationRef newChild = nodeService.addChild(sourceNode, rendition, renditionType, renditionName);
+            ChildAssociationRef newChild = null;
+            behaviourFilter.disableBehaviour(sourceNode, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                newChild = nodeService.addChild(sourceNode, rendition, renditionType, renditionName);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(sourceNode, ContentModel.ASPECT_AUDITABLE);
+            }
 
             if (logger.isDebugEnabled())
             {

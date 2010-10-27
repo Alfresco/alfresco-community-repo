@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -44,6 +45,7 @@ public class RenditionNodeManagerTest extends TestCase
 {
     private final NodeService nodeService = mock(NodeService.class);
     private final RenditionService renditionService = mock(RenditionService.class);
+    private final BehaviourFilter behaviourFilter = mock(BehaviourFilter.class);
     
     private final NodeRef source = new NodeRef("http://test/sourceId");
     private final NodeRef destination = new NodeRef("http://test/destinationId");
@@ -59,7 +61,7 @@ public class RenditionNodeManagerTest extends TestCase
         ChildAssociationRef parentAssoc = makeAssoc(source, destination, true);
         when(nodeService.getPrimaryParent(any(NodeRef.class))).thenReturn(parentAssoc);
         RenditionLocation location = new RenditionLocationImpl(source, destination, "destinationName");
-        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
     }
@@ -74,7 +76,7 @@ public class RenditionNodeManagerTest extends TestCase
             .thenReturn(parentAssoc);
         
         RenditionLocation location = new RenditionLocationImpl(source, null, renditionName.getLocalName());
-        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
     }
@@ -90,7 +92,7 @@ public class RenditionNodeManagerTest extends TestCase
             .thenReturn(parentAssoc);
         
         RenditionLocation location = new RenditionLocationImpl(parent, null, renditionName.getLocalName());
-        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, null, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         // Check the rendition association is created.
@@ -103,7 +105,7 @@ public class RenditionNodeManagerTest extends TestCase
     public void testHasOldRenditionMatchesSpecifiedDestinationNode()
     {
         RenditionLocation location = new RenditionLocationImpl(source, oldRendition, renditionName.getLocalName());
-        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         manager.findOrCreateRenditionNode();
         verify(nodeService).getPrimaryParent(oldRendition);
     }
@@ -118,7 +120,7 @@ public class RenditionNodeManagerTest extends TestCase
         when(nodeService.getPrimaryParent(oldRendition)).thenReturn(parentAssoc);
   
         RenditionLocation location = new RenditionLocationImpl(parent, null, null);
-        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService, times(2)).getPrimaryParent(oldRendition);
@@ -137,7 +139,7 @@ public class RenditionNodeManagerTest extends TestCase
             .thenReturn(rendName);
 
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, rendName);
-        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService, times(2)).getPrimaryParent(oldRendition);
@@ -156,7 +158,7 @@ public class RenditionNodeManagerTest extends TestCase
         when(nodeService.moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, renditionName))
             .thenReturn(parentAssoc);
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, null);
-        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService).moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, renditionName);
@@ -166,7 +168,7 @@ public class RenditionNodeManagerTest extends TestCase
         when(nodeService.moveNode(oldRendition, source, RenditionModel.ASSOC_RENDITION, renditionName))
             .thenReturn(sourceAssoc);
         location = new RenditionLocationImpl(source, null, null);
-        manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         result = manager.findOrCreateRenditionNode();
         assertEquals(sourceAssoc, result);
         verify(nodeService).moveNode(oldRendition, source, RenditionModel.ASSOC_RENDITION, renditionName);
@@ -180,7 +182,7 @@ public class RenditionNodeManagerTest extends TestCase
         when(nodeService.moveNode(oldRendition, newParent, ContentModel.ASSOC_CONTAINS, renditionName))
             .thenReturn(newParentAssoc);
         location = new RenditionLocationImpl(newParent, null, null);
-        manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         result = manager.findOrCreateRenditionNode();
         assertEquals(newParentAssoc, result);
         verify(nodeService).moveNode(oldRendition, newParent, ContentModel.ASSOC_CONTAINS, renditionName);
@@ -202,7 +204,7 @@ public class RenditionNodeManagerTest extends TestCase
         
         String newName = "newName";
         RenditionLocationImpl location = new RenditionLocationImpl(parent, null, newName);
-        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService);
+        RenditionNodeManager manager = new RenditionNodeManager(source, oldRendition, location, definition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef result = manager.findOrCreateRenditionNode();
         assertEquals(parentAssoc, result);
         verify(nodeService).moveNode(oldRendition, parent, ContentModel.ASSOC_CONTAINS, renditionName);

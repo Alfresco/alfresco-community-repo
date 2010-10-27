@@ -847,7 +847,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // doesn't already have it.
         if (!nodeService.hasAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED))
         {
-            // Ensure we do not update the 'modifier' due to thumbnail addition
+            // Ensure we do not update the 'modifier' due to rendition addition
             behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
             try
             {
@@ -938,7 +938,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         QName renditionQName = renditionDefinition.getRenditionName();
 
         RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, tempRenditionNode,
-                renditionLocation, renditionDefinition, nodeService, renditionService);
+                renditionLocation, renditionDefinition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef renditionNode = renditionNodeManager.findOrCreateRenditionNode();
 
         // Copy relevant properties from the temporary node to the new rendition
@@ -982,8 +982,17 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         if (primaryParent.equals(sourceNode))
         {
             // It should be a 'hidden' rendition.
-            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION, null);
-            nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION);
+            // Ensure we do not update the 'modifier' due to rendition addition
+            behaviourFilter.disableBehaviour(renditionNode, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                nodeService.addAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION, null);
+                nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(renditionNode, ContentModel.ASPECT_AUDITABLE);
+            }
             // We remove the other aspect to cover the potential case where a
             // rendition
             // has been updated in a different location.
@@ -991,8 +1000,16 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             // Renditions stored underneath any node other than their source are
             // 'visible'.
-            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION, null);
-            nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION);
+            behaviourFilter.disableBehaviour(renditionNode, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                nodeService.addAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION, null);
+                nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(renditionNode, ContentModel.ASPECT_AUDITABLE);
+            }
         }
     }
 

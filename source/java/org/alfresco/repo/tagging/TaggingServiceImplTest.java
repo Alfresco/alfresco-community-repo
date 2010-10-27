@@ -644,12 +644,22 @@ public class TaggingServiceImplTest extends TestCase
      */
     public void testETHREEOH_220() throws Exception
     {
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
+        // Add tag scope to a folder, then add a non-ASCII (unicode)
+        //  tag onto the folder
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+             new RetryingTransactionCallback<Void>()
+             {
+                 public Void execute() throws Throwable
+                 {
+                     taggingService.addTagScope(folder);
+                     taggingService.addTag(folder, TAG_I18N);
+                     return null;
+                 }
+             }, false, true
+        );
       
-        this.taggingService.addTagScope(this.folder);
-        this.taggingService.addTag(this.folder, TAG_I18N);
-        tx = asyncOccurs.awaitExecution(tx);
+        // Wait for the tagging service to process the tag change
+        UserTransaction tx = asyncOccurs.awaitExecution(null);
         
         // Get the tag from the node
         List<String> tags = this.taggingService.getTags(this.folder);
@@ -1336,7 +1346,8 @@ public class TaggingServiceImplTest extends TestCase
        {
           synchronized (waitForExecutionLock) {
             // Have things begin working
-            tx.commit();
+            if(tx != null)
+               tx.commit();
             
             // Always wait 25ms
             waitForExecutionLock.wait(25);

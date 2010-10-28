@@ -1741,7 +1741,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      *  renditions, both single and composite, to check that
      *  the renditions always end up as they should do.
      */
-    public void DISABLEDtestRenditionPlacements() throws Exception
+    public void testRenditionPlacements() throws Exception
     {
        QName plainQName = QName.createQName("Plain");
        RenditionDefinition rdPlain = renditionService.createRenditionDefinition(
@@ -1850,7 +1850,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        String path = "/" +
            (String) nodeService.getProperty(repositoryHelper.getCompanyHome(), ContentModel.PROP_NAME) +
            "/" +
-           (String) nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME)
+           (String) nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME) +
+           "/" + "HelloWorld.txt";
        ;
        
        rdPlain.setParameterValue(
@@ -1873,14 +1874,15 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        // Do a plain rendition, and check we acquired the one node
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertTrue(nodeService.getChildAssocs(nodeWithDocContent).get(0).isPrimary() == false);
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
        assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
        
-       // Tidy
        nodeService.deleteNode(
              renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
        );
+       
        assertNotNull(nodeWithDocContent);
        assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
@@ -1891,7 +1893,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        //  nodes created during the composite stage
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
        assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
        
@@ -1908,14 +1910,14 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        // Create one of the right type for a plain rendition
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
 
        // Run again, shouldn't change, should re-use the node
        renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
        assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
        assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
@@ -1927,14 +1929,14 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        );
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
        
        // Run again, shouldn't change, should re-use the node
        renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
+       assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
        assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
        assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
@@ -1950,24 +1952,21 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        // Run the plain rendition, the composite one should be replaced
        //  with the new one
        renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+
+
+       // Currently, there is only one scenario in which it is legal for a rendition to overwrite an existing
+       // node. That is when the rendition is an update of the source node i.e. the rendition node is already
+       // linked to its source node by a rn:rendition association of the same name as the new rendition.
+       boolean exceptionThrown = false;
+       try
+       {
+           renditionService.render(nodeWithDocContent, rdPlain);
+       } catch (RenditionServiceException expected)
+       {
+           exceptionThrown = true;
+       }
        
-       renditionService.render(nodeWithDocContent, rdPlain);
-       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertNotSame(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
-       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
-       
-       // We now have a plain one, so run the composite one and see 
-       //  it get replaced again
-       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
-       
-       renditionService.render(nodeWithDocContent, rdComposite);
-       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertNotSame(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
-       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       assertTrue("Expected RenditionServiceException not thrown", exceptionThrown);
     }
 
     
@@ -2152,10 +2151,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        
        @Override
        protected void render(RenderingContext context) {
-System.err.print("Rendering " + context.getSourceNode() + " to " + context.getDestinationNode());
-          ContentWriter contentWriter = context.makeContentWriter();
-          contentWriter.setMimetype("text/plain");
-          contentWriter.putContent( "Hello, world!" );
+           ContentWriter contentWriter = context.makeContentWriter();
+           contentWriter.setMimetype("text/plain");
+           contentWriter.putContent( "Hello, world!" );
        }
     }
 }

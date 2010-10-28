@@ -489,10 +489,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         ChildAssociationRef renditionAssoc = createRenditionNodeAssoc(sourceNode, renditionDefinition);
 
         QName targetContentProp = getRenditionContentProperty(renditionDefinition);
-        NodeRef destinationNode = renditionAssoc.getChildRef();
-        RenderingContext context = new RenderingContext(sourceNode,//
-                    destinationNode,//
-                    renditionDefinition,//
+        NodeRef temporaryRenditionNode = renditionAssoc.getChildRef();
+        RenderingContext context = new RenderingContext(sourceNode,
+                    temporaryRenditionNode,
+                    renditionDefinition,
                     targetContentProp);
         render(context);
         // This is a workaround for the fact that actions don't have return
@@ -657,7 +657,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             childAssoc = nodeService.createNode(parentNode, assocType, assocName, nodeType, nodeProps);
             if (logger.isDebugEnabled())
             {
-                logger.debug("Created node " + childAssoc);
+                logger.debug("Created node " + childAssoc + " as child of " + parentNode + " with assoc-type " + assocType);
             }
         }
         finally
@@ -847,6 +847,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // doesn't already have it.
         if (!nodeService.hasAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Applying " + RenditionModel.ASPECT_RENDITIONED + " to " + actionedUponNodeRef);
+            }
             // Ensure we do not update the 'modifier' due to rendition addition
             behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
             try
@@ -863,6 +867,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected void switchToFinalRenditionNode(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef)
     {
         ChildAssociationRef tempRendAssoc = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Switching temporary rendition: " + tempRendAssoc);
+        }
         ChildAssociationRef result = createOrUpdateRendition(actionedUponNodeRef, tempRendAssoc, renditionDef);
         renditionDef.setParameterValue(PARAM_RESULT, result);
     }
@@ -919,6 +927,14 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         NodeRef parent = temporaryParentNodeLocator.getNode(sourceNode, definition.getParameterValues());
         definition.setRenditionParent(parent);
         definition.setRenditionAssociationType(temporaryRenditionLinkType);
+        
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Temporary rendition will have parent=").append(parent)
+               .append(" and assoc-type=").append(temporaryRenditionLinkType);
+            logger.debug(msg.toString());
+        }
     }
 
     /**
@@ -935,6 +951,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     {
         NodeRef tempRenditionNode = tempRendition.getChildRef();
         RenditionLocation renditionLocation = resolveRenditionLocation(sourceNode, renditionDefinition, tempRenditionNode);
+
         QName renditionQName = renditionDefinition.getRenditionName();
 
         RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, tempRenditionNode,
@@ -952,6 +969,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
         // Delete the temporary rendition.
         nodeService.removeChildAssociation(tempRendition);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Removed temporary child-association " + tempRendition);
+        }
 
         // Handle the rendition aspects
         manageRenditionAspects(sourceNode, renditionNode);
@@ -960,7 +981,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionQName);
         if (renditionAssoc == null)
         {
-            String msg = "A rendition of type: " + renditionQName + " should have been created for source node: "
+            String msg = "A rendition of name: " + renditionQName + " should have been created for source node: "
                         + sourceNode;
             throw new RenditionServiceException(msg);
         }

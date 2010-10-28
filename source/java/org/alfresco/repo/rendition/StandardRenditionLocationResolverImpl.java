@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.TemplateNode;
@@ -44,8 +45,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.FreeMarkerUtil;
 import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
@@ -61,6 +60,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
     private final static Log log = LogFactory.getLog(StandardRenditionLocationResolverImpl.class);
 
     private ServiceRegistry serviceRegistry;
+    private Repository repositoryHelper;
     private String companyHomePath = "/app:company_home";
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
@@ -72,6 +72,11 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
     {
         this.companyHomePath = companyHomePath;
     }
+    
+    public void setRepositoryHelper(Repository repositoryHelper)
+    {
+        this.repositoryHelper = repositoryHelper;
+    }
 
     /*
      * (non-Javadoc)
@@ -81,11 +86,17 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
     {
         // If a destination NodeRef is specified then don't bother to find the location as one has already been specified.
         NodeRef destination = AbstractRenderingEngine.getCheckedParam(RenditionService.PARAM_DESTINATION_NODE, NodeRef.class, definition);
-        if(destination!=null)
+        if(destination != null)
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("No need to calculate rendition location, using " + RenditionService.PARAM_DESTINATION_NODE + "=" + destination);
+            }
+            
             RenditionLocationImpl location = createNodeLocation(destination);
             return location;
         }
+        
         // If the templated path has been specified and can be resolved then
         // find or create the templated path location and return it.
         String pathTemplate = (String) definition.getParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE);
@@ -104,19 +115,35 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         return new RenditionLocationImpl(sourceNode, null, null);
     }
 
+    /**
+     * This method creates a {@link RenditionLocation} object from the specified destination node.
+     * This is formed from the specified destination NodeRef, its cm:name and its primary parent.
+     * 
+     * @param destination
+     * @return
+     * @throws RenditionServiceException if the destination node does not exist.
+     */
     private RenditionLocationImpl createNodeLocation(NodeRef destination)
     {
         NodeService nodeService = serviceRegistry.getNodeService();
         if(nodeService.exists(destination)==false)
             throw new RenditionServiceException("The rendition destination node does not exist! NodeRef: "+destination);
+        
         NodeRef parentRef = nodeService.getPrimaryParent(destination).getParentRef();
-        String childName = (String) nodeService.getProperty(destination, ContentModel.PROP_NAME);
-        RenditionLocationImpl location  = new RenditionLocationImpl(parentRef, destination, childName);
+        String destinationCmName = (String) nodeService.getProperty(destination, ContentModel.PROP_NAME);
+        RenditionLocationImpl location  = new RenditionLocationImpl(parentRef, destination, destinationCmName);
         return location;
     }
 
     private RenditionLocationImpl findOrCreateTemplatedPath(NodeRef sourceNode, String path, NodeRef companyHome)
     {
+        if (log.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("FindOrCreateTemplatedPath for ").append(sourceNode).append(", ").append(path);
+            log.debug(msg.toString());
+        }
+        
         NodeService nodeService = serviceRegistry.getNodeService();
 
         List<String> pathElements = Arrays.asList(path.split("/"));
@@ -137,9 +164,15 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         String fileName = folderElements.removeLast();
         if (fileName == null || fileName.length() == 0)
         {
-            throw new RenditionServiceException("The path must include a valid filename! Path: " + path);
+            StringBuilder msg = new StringBuilder();
+            msg.append("The path must include a valid filename! Path: ").append(path);
+            if (log.isDebugEnabled())
+            {
+                log.debug(msg.toString());
+            }
+            throw new RenditionServiceException(msg.toString());
         }
-
+        
         FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
         NodeRef parent = companyHome;
         if (!folderElements.isEmpty())
@@ -149,7 +182,30 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
                         ContentModel.TYPE_FOLDER);
             parent = parentInfo.getNodeRef();
         }
+        
+        if (log.isDebugEnabled())
+        {
+            log.debug("folderElements: " + folderElements);
+            log.debug("parent: " + parent);
+            log.debug("   " + nodeService.getType(parent) + " " + nodeService.getPath(parent));
+            log.debug("fileName: " + fileName);
+        }
+        
         NodeRef child = fileFolderService.searchSimple(parent, fileName);
+        
+        if (log.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("RenditionLocation parent=").append(parent)
+               .append(", child=").append(child)
+               .append(", fileName=").append(fileName);
+            log.debug(msg.toString());
+            
+            if (child != null)
+            {
+                log.debug("child path = " + nodeService.getPath(child));
+            }
+        }
         return new RenditionLocationImpl(parent, child, fileName);
     }
 
@@ -250,12 +306,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
 
     private NodeRef getCompanyHomeNode(StoreRef store)
     {
-        SearchService searchService = serviceRegistry.getSearchService();
-        ResultSet result = searchService.query(store, SearchService.LANGUAGE_XPATH, companyHomePath);
-        if(result.length()==0)
-            return null;
-        else
-            return result.getNodeRef(0);
+        return this.repositoryHelper.getCompanyHome();
     }
 
     protected boolean sourceNodeIsXml(NodeRef sourceNode)

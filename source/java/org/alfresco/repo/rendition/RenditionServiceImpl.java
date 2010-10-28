@@ -21,6 +21,7 @@ package org.alfresco.repo.rendition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -179,6 +180,11 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
     {
         ChildAssociationRef result = executeRenditionAction(sourceNode, definition, false);
         
+        if (log.isDebugEnabled())
+        {
+            log.debug("Produced rendition " + result);
+        }
+        
         return result;
     }
 
@@ -279,7 +285,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public List<ChildAssociationRef> getRenditions(NodeRef node)
     {
-        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
+        List<ChildAssociationRef> result = Collections.emptyList();
 
         // Check that the node has the renditioned aspect applied
         if (nodeService.hasAspect(node, RenditionModel.ASPECT_RENDITIONED) == true)
@@ -333,7 +339,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public ChildAssociationRef getRenditionByName(NodeRef node, QName renditionName)
     {
-        List<ChildAssociationRef> renditions = new ArrayList<ChildAssociationRef>();
+        List<ChildAssociationRef> renditions = Collections.emptyList();
 
         // Check that the node has the renditioned aspect applied
         if (nodeService.hasAspect(node, RenditionModel.ASPECT_RENDITIONED) == true)
@@ -348,6 +354,10 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         }
         else
         {
+            if (renditions.size() > 1 && log.isDebugEnabled())
+            {
+                log.debug("Unexpectedly found " + renditions.size() + " renditions of name " + renditionName + " on node " + node);
+            }
             return renditions.get(0);
         }
     }

@@ -400,6 +400,10 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
                   renderingContext.getDestinationNode()
             );
             imgFolder = location.getParentRef();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Using imgFolder: " + imgFolder);
+            }
          }
       }
       

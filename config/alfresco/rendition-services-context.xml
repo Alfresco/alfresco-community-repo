@@ -62,6 +62,7 @@
 
 	<bean id="renditionLocationResolver" class="org.alfresco.repo.rendition.StandardRenditionLocationResolverImpl" >
 		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="RepositoryHelper" ref="repositoryHelper" />
 	</bean>
 
 
@@ -166,6 +167,11 @@
        <property name="dictionaryService" ref="DictionaryService"/>
        <property name="policyComponent" ref="policyComponent"/>
        <property name="renditionService" ref="RenditionService"/>
+   </bean>
+   
+   <bean id="renditionAspect" class="org.alfresco.repo.rendition.RenditionAspect" init-method="init">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="policyComponent" ref="policyComponent"/>
    </bean>
    
    <!-- JavaScript API support -->

@@ -82,14 +82,19 @@ public class CompositeRenderingEngine extends AbstractRenderingEngine
         NodeRef parent = definition.getRenditionParent();
         for (RenditionDefinition subDefinition : definition.getActions())
         {
-            ChildAssociationRef newResult = executeSubDefinition(source, subDefinition, parent, assocType);
+            ChildAssociationRef nextResult = executeSubDefinition(source, subDefinition, parent, assocType);
             if (result != null)
             {
                 // Clean up temporary renditions.
                 nodeService.removeChild(parent, result.getChildRef());
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("removeChild parentRef:" + parent + ", childRef;" + result.getChildRef());
+                }
             }
-            result = newResult;
-            source = newResult.getChildRef();
+            result = nextResult;
+            source = nextResult.getChildRef();
         }
         return result;
     }

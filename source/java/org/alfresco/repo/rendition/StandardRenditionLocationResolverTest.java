@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -49,6 +50,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
     private StandardRenditionLocationResolverImpl locationResolver;
     private RenditionService renditionService;
     private SearchService searchService;
+    private Repository repositoryHelper;
 
     /**
      * Called during the transaction setup
@@ -64,6 +66,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         this.nodeService=serviceRegistry.getNodeService();
         this.searchService = serviceRegistry.getSearchService();
         this.renditionService = (RenditionService) this.getApplicationContext().getBean("RenditionService");
+        this.repositoryHelper = (Repository) this.getApplicationContext().getBean("repositoryHelper");
         ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
                     "/app:company_home");
         if (rs.length() != 1)
@@ -73,6 +76,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         companyHome = rs.getNodeRef(0);
         locationResolver = new StandardRenditionLocationResolverImpl();
         locationResolver.setServiceRegistry(serviceRegistry);
+        locationResolver.setRepositoryHelper(repositoryHelper);
     }
 
     public void testChildAssociationFinder()

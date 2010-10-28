@@ -41,6 +41,7 @@ import org.junit.runners.Suite;
         StandardRenditionLocationResolverTest.class,
         RenditionServiceIntegrationTest.class,
         RenditionServicePermissionsTest.class,
+        RenditionNodeManagerTest.class,
         HTMLRenderingEngineTest.class
 })
 public class AllRenditionTests

@@ -422,7 +422,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
      *  
      * TODO Re-enable when we've figured out why the rendition service sulkts
      */
-    public void DISABLEDtestImagesSameFolder() throws Exception
+    public void testImagesSameFolder() throws Exception
     {
        def.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE,
@@ -441,6 +441,10 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
           String baseName = name.substring(0, name.lastIndexOf('.'));
           
           int numItemsStart = nodeService.getChildAssocs(targetFolder).size();
+          if (log.isDebugEnabled())
+          {
+              log.debug("targetFolder " + targetFolder + " has " + numItemsStart + " children at start.");
+          }
           
           ChildAssociationRef rendition = renditionService.render(sourceDoc, def);
           assertNotNull(rendition);
@@ -508,6 +512,14 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
              }
           }
           assertEquals(expectedImageCount, images);
+          
+          // Until the rendition service supports a forced overwrite of other renditions, we must
+          // delete the old rendition node & the images.
+          nodeService.deleteNode(rendition.getChildRef());
+          for (ChildAssociationRef chAssRef : nodeService.getChildAssocs(targetFolder))
+          {
+              nodeService.deleteNode(chAssRef.getChildRef());
+          }
        }
     }
 }

@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.Status;
@@ -557,13 +560,13 @@ public class RetryingTransactionHelperTest extends TestCase
         final List<Throwable> caughtExceptions = Collections.synchronizedList(new LinkedList<Throwable>());
 
         // Try submitting a request after a timeout
-        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 5000), new Pair(4, 1000));
+        runThreads(txnHelper, caughtExceptions, new Pair(0, 1000), new Pair(0, 5000), new Pair(4000, 1000));
         assertEquals("Expected 1 exception", 1, caughtExceptions.size());
         assertTrue("Excpected TooBusyException", caughtExceptions.get(0) instanceof TooBusyException);
 
         // Stay within timeout limits
         caughtExceptions.clear();
-        runThreads(txnHelper, caughtExceptions, new Pair(2, 1000), new Pair(1, 2000), new Pair(4, 1000));
+        runThreads(txnHelper, caughtExceptions, new Pair(0, 1000), new Pair(0, 2000), new Pair(0, 1000), new Pair(1000, 1000), new Pair(1000, 2000), new Pair(2000, 1000));
         if (caughtExceptions.size() > 0)
         {
             throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
@@ -592,70 +595,78 @@ public class RetryingTransactionHelperTest extends TestCase
     }
     
     private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,
-            Pair<Integer, Integer>... countDurationPairs)
+            Pair<Integer, Integer>... startDurationPairs)
     {
-        final CountDownLatch endLatch = new CountDownLatch(countDurationPairs.length);
+        ExecutorService executorService = new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<Runnable>(10));
 
-        class Callback implements RetryingTransactionCallback<Void>
-        {
-            private final int duration;
-
-            public Callback(int duration)
-            {
-                this.duration = duration;
-            }
-
-            public Void execute() throws Throwable
-            {
-                Thread.sleep(duration);
-                return null;
-            }
-        }
-        ;
         class Work implements Runnable
         {
             private final CountDownLatch startLatch;
-            private final Callback callback;
-            private final int execCount;
+            private final long endTime;
 
-            public Work(CountDownLatch startLatch, Callback callback, int execCount)
+            public Work(CountDownLatch startLatch, long endTime)
             {
                 this.startLatch = startLatch;
-                this.callback = callback;
-                this.execCount = execCount;
+                this.endTime = endTime;
             }
 
             public void run()
             {
-                // Signal that we've started
-                startLatch.countDown();
-
-                for (int i = 0; i < execCount; i++)
+                try
                 {
-                    try
+                    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
                     {
-                        txnHelper.doInTransaction(callback);
-                    }
-                    catch (Throwable e)
+
+                        public Void execute() throws Throwable
+                        {
+                            // Signal that we've started
+                            startLatch.countDown();
+
+                            long duration = endTime - System.currentTimeMillis();
+                            if (duration > 0)
+                            {
+                                Thread.sleep(duration);
+                            }
+                            return null;
+                        }
+                    });
+                }
+                catch (Throwable e)
+                {
+                    caughtExceptions.add(e);
+                    // We never got a chance to signal we had started so do it now
+                    if (startLatch.getCount() > 0)
                     {
-                        caughtExceptions.add(e);
+                        startLatch.countDown();
                     }
                 }
-                endLatch.countDown();
             }
         }
         ;
 
-        // Fire the threads
-        int j = 0;
-        for (Pair<Integer, Integer> pair : countDurationPairs)
+        // Schedule the transactions at their required start times
+        long startTime = System.currentTimeMillis();
+        long currentStart = 0;
+        for (Pair<Integer, Integer> pair : startDurationPairs)
         {
+            int start = pair.getFirst();
+            long now = System.currentTimeMillis();
+            long then = startTime + start;
+            if (then > now)
+            {
+                try
+                {
+                    Thread.sleep(then - now);
+                }
+                catch (InterruptedException e)
+                {
+                }
+                currentStart = start;
+            }
             CountDownLatch startLatch = new CountDownLatch(1);
-            Runnable work = new Work(startLatch, new Callback(pair.getSecond()), pair.getFirst());
-            Thread thread = new Thread(work);
-            thread.setName(getName() + "-" + j++);
-            thread.setDaemon(true);
-            thread.start();
+            Runnable work = new Work(startLatch, startTime + currentStart + pair.getSecond());
+            executorService.execute(work);
             try
             {
                 // Wait for the thread to get up and running. We need them starting in sequence
@@ -666,9 +677,10 @@ public class RetryingTransactionHelperTest extends TestCase
             }
         }
         // Wait for the threads to have finished
+        executorService.shutdown();
         try
         {
-            endLatch.await(60, TimeUnit.SECONDS);
+            executorService.awaitTermination(60, TimeUnit.SECONDS);
         }
         catch (InterruptedException e)
         {

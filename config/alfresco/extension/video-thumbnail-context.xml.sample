@@ -21,6 +21,9 @@
             <value>-version</value>
           </list>
         </property>
+        <property name="errorCodes">
+          <value>127</value>
+        </property>
       </bean>
     </property>
     <property name="transformCommand">
@@ -35,6 +38,13 @@
               </list>
             </entry>
             <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${ffmpeg.exe} ${opts} ${infile_opts} -i '${source}' ${outfile_opts} '${target}' 2&gt; /dev/null</value>
+              </list>
+            </entry>
+            <entry key="Mac OS X">
               <list>
                 <value>sh</value>
                 <value>-c</value>

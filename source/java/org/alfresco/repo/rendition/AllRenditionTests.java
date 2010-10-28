@@ -42,7 +42,8 @@ import org.junit.runners.Suite;
         RenditionServiceIntegrationTest.class,
         RenditionServicePermissionsTest.class,
         RenditionNodeManagerTest.class,
-        HTMLRenderingEngineTest.class
+        HTMLRenderingEngineTest.class,
+        MultiUserRenditionTest.class
 })
 public class AllRenditionTests
 {

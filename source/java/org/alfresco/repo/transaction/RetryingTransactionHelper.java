@@ -21,6 +21,8 @@ package org.alfresco.repo.transaction;
 import java.lang.reflect.Method;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -130,8 +132,8 @@ public class RetryingTransactionHelper
      */
     private long maxExecutionMs;
 
-    /** Map of transaction start times to counts. Only maintained when maxExecutionMs is set. */
-    private SortedMap <Long, Integer> txnsInProgress = new TreeMap<Long, Integer>();
+    /** Map of transaction start times to thread stack traces. Only maintained when maxExecutionMs is set. */
+    private SortedMap <Long, List<Throwable>> txnsInProgress = new TreeMap<Long, List<Throwable>>();
     
     /** The number of concurrently exeucting transactions. Only maintained when maxExecutionMs is set. */
     private int txnCount;
@@ -321,7 +323,8 @@ public class RetryingTransactionHelper
         }
 
         // If we are time limiting, set ourselves a time limit and maintain the count of concurrent transactions
-        long startTime = 0, endTime = 0, txnStartTime = 0;
+        long startTime = 0;
+		Throwable stackTrace = null;
         if (startingNew && maxExecutionMs > 0)
         {
             startTime = System.currentTimeMillis();
@@ -330,17 +333,24 @@ public class RetryingTransactionHelper
                 if (txnCount > 0)
                 {
                     // If this transaction would take us above our ceiling, reject it
-                    long oldestDuration = startTime - txnsInProgress.firstKey();
+                    long oldestStart = txnsInProgress.firstKey();
+                    long oldestDuration = startTime - oldestStart;
                     if (oldestDuration > maxExecutionMs)
                     {
-                        throw new TooBusyException("Too busy: " + txnCount + " transactions. Oldest " + oldestDuration + " milliseconds");
+                        throw new TooBusyException("Too busy: " + txnCount + " transactions. Oldest " + oldestDuration + " milliseconds", txnsInProgress.get(oldestStart).get(0));
                     }
                 }
-                Integer count = txnsInProgress.get(startTime);
-                txnsInProgress.put(startTime, count == null ? 1 : count + 1);
+				// Record the start time and stack trace of the starting thread
+                List<Throwable> traces = txnsInProgress.get(startTime);
+                if (traces == null)
+                {
+                    traces = new LinkedList<Throwable>();
+                    txnsInProgress.put(startTime, traces);
+                }
+				stackTrace = new Exception("Stack trace");
+                traces.add(stackTrace);
                 ++txnCount;
             }
-            endTime = startTime + maxExecutionMs;
         }
 
         try
@@ -355,12 +365,6 @@ public class RetryingTransactionHelper
                 {
                     if (startingNew)
                     {
-                        // Monitor duration of each retry so that we can project an end time
-                        if (maxExecutionMs > 0)
-                        {                        
-                            txnStartTime = System.currentTimeMillis();
-                        }
-
                         txn = requiresNew ? txnService.getNonPropagatingUserTransaction(readOnly) : txnService
                                 .getUserTransaction(readOnly);
                         txn.begin();
@@ -471,25 +475,6 @@ public class RetryingTransactionHelper
                         int sleepIntervalRandom = (count > 0 &&  retryWaitIncrementMs > 0)
                                                     ? random.nextInt(count * retryWaitIncrementMs)
                                                     : minRetryWaitMs;
-                        int maxRetryWaitMs;
-                        
-                        // If we are time limiting only continue if we have enough time, based on the last duration
-                        if (maxExecutionMs > 0)
-                        {
-                            long txnEndTime = System.currentTimeMillis();
-                            long projectedEndTime = txnEndTime + (txnEndTime - txnStartTime);
-                            if (projectedEndTime > endTime)
-                            {
-							    // Reject the retry
-                                throw new TooBusyException("Too busy to retry", e);                                                                
-                            }
-                            // Limit the wait duration to fit into the time we have left
-                            maxRetryWaitMs = Math.min(this.maxRetryWaitMs, (int)(endTime - projectedEndTime));                            
-                        }
-                        else
-                        {
-                            maxRetryWaitMs = this.maxRetryWaitMs;
-                        }                        
                         int sleepInterval = Math.min(maxRetryWaitMs, sleepIntervalRandom);
                         sleepInterval = Math.max(sleepInterval, minRetryWaitMs);
                         if (logger.isInfoEnabled() && !logger.isDebugEnabled())
@@ -531,16 +516,16 @@ public class RetryingTransactionHelper
                 synchronized (this)
                 {
                     txnCount--;
-                    Integer count = txnsInProgress.get(startTime);
-                    if (count != null)
+                    List<Throwable> traces = txnsInProgress.get(startTime);
+                    if (traces != null)
                     {
-                        if (count == 1)
+                        if (traces.size() == 1)
                         {
                             txnsInProgress.remove(startTime);
                         }
                         else
                         {
-                            txnsInProgress.put(startTime, count-1);
+                            traces.remove(stackTrace);
                         }
                     }
                 }

@@ -571,27 +571,6 @@ public class RetryingTransactionHelperTest extends TestCase
         {
             throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
         }
-
-        // Check retry limitation
-        long startTime = System.currentTimeMillis();
-        try
-        {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-
-                public Void execute() throws Throwable
-                {
-                    Thread.sleep(1000);
-                    throw new ConcurrencyFailureException("Fake concurrency failure");
-                }
-            });
-            fail("Expected TooBusyException");
-        }
-        catch (TooBusyException e)
-        {
-            assertNotNull("Expected cause", e.getCause());
-            assertTrue("Too long", System.currentTimeMillis() < startTime + 5000);
-        }
     }
     
     private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,

@@ -58,7 +58,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         {
             this.cmisClassDef = cmisClassDef;
             displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-            description = cmisClassDef.getDescription();
+            description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
             if (parentQName != null)
             {

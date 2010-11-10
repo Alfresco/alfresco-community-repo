@@ -220,7 +220,7 @@ public class TransferServiceImpl2 implements TransferService2
         properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, newTarget.getEndpointProtocol());
         properties.put(TransferModel.PROP_ENDPOINT_PATH, newTarget.getEndpointPath());
         properties.put(TransferModel.PROP_USERNAME, newTarget.getUsername());
-        properties.put(TransferModel.PROP_PASSWORD, encrypt(newTarget.getPassword()));
+        properties.put(TransferModel.PROP_PASSWORD, new String(encrypt(newTarget.getPassword())));
 
         // titled aspect
         properties.put(ContentModel.PROP_TITLE, newTarget.getTitle());
@@ -389,7 +389,7 @@ public class TransferServiceImpl2 implements TransferService2
         properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, update.getEndpointProtocol());
         properties.put(TransferModel.PROP_ENDPOINT_PATH, update.getEndpointPath());
         properties.put(TransferModel.PROP_USERNAME, update.getUsername());
-        properties.put(TransferModel.PROP_PASSWORD, encrypt(update.getPassword()));
+        properties.put(TransferModel.PROP_PASSWORD, new String(encrypt(update.getPassword())));
         
         // titled aspect
         properties.put(ContentModel.PROP_TITLE, update.getTitle());

@@ -89,7 +89,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
             {
                 parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
             }
-            description = cmisClassDef.getDescription();
+            description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
         }
         else
         {
@@ -97,7 +97,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
             displayName = (assocDef.getTitle() != null) ? assocDef.getTitle() : typeId.getId();
             objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
             parentTypeId = CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
-            description = assocDef.getDescription();
+            description = assocDef.getDescription() != null ? assocDef.getDescription() : displayName;
 
             CMISTypeId sourceTypeId = cmisMapping.getCmisTypeId(cmisMapping.getCmisType(assocDef.getSourceClass().getName()));
             if (sourceTypeId != null)

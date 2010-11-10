@@ -24,9 +24,11 @@ import java.util.HashMap;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -70,8 +72,12 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
             {
                 try
                 {
-                    CMISTypeId typeId = cmisService.getTypeDefinition(nodeRef).getBaseType().getTypeId();
-                    return typeId.equals(CMISDictionaryModel.DOCUMENT_TYPE_ID) || typeId.equals(CMISDictionaryModel.FOLDER_TYPE_ID);
+                    CMISTypeDefinition typeDef = cmisService.getTypeDefinition(nodeRef);
+                    if (typeDef != null)
+                    {
+                        CMISTypeId typeId = typeDef.getBaseType().getTypeId(); 
+                        return typeId.equals(CMISDictionaryModel.DOCUMENT_TYPE_ID) || typeId.equals(CMISDictionaryModel.FOLDER_TYPE_ID);
+                    }
                 }
                 catch (CMISInvalidArgumentException e)
                 {
@@ -91,6 +97,10 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     private NodeRef getNodeRef(Serializable data)
     {
         NodeRef nodeRef = null;
+        if (data instanceof ChildAssociationRef)
+        {
+            nodeRef = ((ChildAssociationRef) data).getChildRef();
+        }
         if (data instanceof FileInfo)
         {
             nodeRef = ((FileInfo) data).getNodeRef();

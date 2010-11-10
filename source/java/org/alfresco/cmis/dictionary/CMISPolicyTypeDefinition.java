@@ -71,7 +71,7 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
             objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
             parentTypeId = CMISDictionaryModel.POLICY_TYPE_ID;
         }
-        description = cmisClassDef.getDescription();
+        description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
         
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         

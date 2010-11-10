@@ -54,7 +54,7 @@
           <description>The unique object id (a node ref)</description>
           <type>cmis:id</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -65,7 +65,7 @@
           <description>Id of the object’s type</description>
           <type>cmis:id</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -76,7 +76,7 @@
           <description>Id of the base object type for the object</description>
           <type>cmis:id</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>true</tokenised>
@@ -87,7 +87,7 @@
           <description>The authority who created this object</description>
           <type>d:text</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -98,7 +98,7 @@
           <description>The object creation date</description>
           <type>d:datetime</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -109,7 +109,7 @@
           <description>The authority who last modified this object</description>
           <type>d:text</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -120,7 +120,7 @@
           <description>The date this object was last modified</description>
           <type>d:datetime</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -131,7 +131,7 @@
           <description>Change Token</description>
           <type>d:text</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
@@ -147,7 +147,7 @@
           <description>Name</description>
           <type>d:text</type>
           <protected>false</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>both</tokenised>
@@ -175,7 +175,7 @@
           <description>Is this the latest version of the document?</description>
           <type>d:boolean</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
@@ -202,7 +202,7 @@
           <description>The version label</description>
           <type>d:text</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false"/>
         </property>
@@ -211,7 +211,7 @@
           <description>The version series id</description>
           <type>cmis:id</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false"/>
         </property>
@@ -220,7 +220,7 @@
           <description>Is the version series checked out?</description>
           <type>d:boolean</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
@@ -277,7 +277,7 @@
           <title>Content Stream Filename</title>
           <description>The content stream filename</description>
           <type>d:text</type>
-          <protected>false</protected>
+          <protected>true</protected>
           <mandatory enforced="false">false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
@@ -306,7 +306,7 @@
           <description>The parent id of the folder</description>
           <type>cmis:id</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="true">
             <tokenised>false</tokenised>
@@ -317,7 +317,7 @@
           <description>The fully qualified path to this folder/description</description>
           <type>d:text</type>
           <protected>true</protected>
-          <mandatory enforced="true">true</mandatory>
+          <mandatory>false</mandatory>
           <multiple>false</multiple>
           <index enabled="false"/>
         </property>

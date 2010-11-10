@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;
@@ -76,7 +77,8 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             }
             else if (typeId.getScope() == CMISScope.FOLDER)
             {
-                objectTypeDef = new CMISFolderTypeDefinition(cmisMapping, typeId, classDef);
+                boolean isSystem = dictionaryService.isSubClass(classDef.getName(), ContentModel.TYPE_SYSTEM_FOLDER);
+                objectTypeDef = new CMISFolderTypeDefinition(cmisMapping, typeId, classDef, isSystem);
             }
             else if (typeId.getScope() == CMISScope.RELATIONSHIP)
             {

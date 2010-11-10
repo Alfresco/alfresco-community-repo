@@ -111,7 +111,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         this.typeDef = typeDef;
         queryName = cmisMapping.buildPrefixEncodedString(propertyId.getQName());
         displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getId();
-        description = propDef.getDescription();
+        description = propDef.getDescription() != null ? propDef.getDescription() : displayName;
         propertyType = cmisMapping.getDataType(propDef.getDataType());
         cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
         for (ConstraintDefinition constraintDef : propDef.getConstraints())

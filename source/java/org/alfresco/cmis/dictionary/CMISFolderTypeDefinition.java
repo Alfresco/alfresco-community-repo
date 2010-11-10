@@ -42,7 +42,7 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
      * @param typeId
      * @param cmisClassDef
      */
-    public CMISFolderTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
+    public CMISFolderTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef, boolean isSystem)
     {
         isPublic = true;
         
@@ -50,7 +50,7 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
         displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-        description = cmisClassDef.getDescription();
+        description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
         
         QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
         if (typeId == CMISDictionaryModel.FOLDER_TYPE_ID)
@@ -73,8 +73,7 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         
         // TODO: introduce abstract into core alfresco content metamodel
-        // NOTE: system folder cannot be created via FolderFileService
-        creatable = (typeId.getQName().equals(ContentModel.TYPE_SYSTEM_FOLDER) ? false : true);
+        creatable = !isSystem;
         queryable = true;
         fullTextIndexed = true;
         controllablePolicy = false;

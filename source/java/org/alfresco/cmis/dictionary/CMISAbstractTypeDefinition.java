@@ -91,7 +91,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
         //if (parentTypeId == null) throw new IllegalStateException("parentTypeId not specified; objectTypeId=" + objectTypeId);
         if (parentTypeId != null && internalParentType == null) throw new IllegalStateException("parentType not specified; objectTypeId=" + objectTypeId + ",parentTypeId=" + parentTypeId);
         if (rootType == null) throw new IllegalStateException("rootType not specified; objectTypeId=" + objectTypeId);
-        //if (description == null) throw new IllegalStateException("description not specified; objectTypeId=" + objectTypeId);
+        if (description == null) throw new IllegalStateException("description not specified; objectTypeId=" + objectTypeId);
         if (creatable == null) throw new IllegalStateException("creatable not specified; objectTypeId=" + objectTypeId);
         if (queryable == null) throw new IllegalStateException("queryable not specified; objectTypeId=" + objectTypeId);
         if (fullTextIndexed == null) throw new IllegalStateException("fullTextIndexed not specified; objectTypeId=" + objectTypeId);

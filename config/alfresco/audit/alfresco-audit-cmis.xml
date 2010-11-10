@@ -13,6 +13,7 @@
     <PathMappings>
         <PathMap source="/CMISChangeLog" target="/CMISChangeLog" />
         <PathMap source="/alfresco-api/post/FileFolderService/create" target="/CMISChangeLog/CREATED" />
+        <PathMap source="/alfresco-api/post/NodeService/createNode" target="/CMISChangeLog/CREATED" />
         <PathMap source="/alfresco-api/post/NodeService/setProperties" target="/CMISChangeLog/UPDATED" />
         <PathMap source="/alfresco-api/post/NodeService/addProperties" target="/CMISChangeLog/UPDATED" />
         <PathMap source="/alfresco-api/post/NodeService/setProperty" target="/CMISChangeLog/UPDATED" />

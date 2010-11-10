@@ -634,7 +634,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         {
             throw ExceptionUtil.createCmisException("Invalid depth '0'", EnumServiceException.INVALID_ARGUMENT);
         }
-        List<CmisTypeContainer> result = new LinkedList<CmisTypeContainer>();
         CMISTypeDefinition typeDef;
         try
         {
@@ -644,6 +643,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         {
             throw ExceptionUtil.createCmisException(e);
         }
+        List<CmisTypeContainer> result = new LinkedList<CmisTypeContainer>();
         getTypeDescendants(typeDef, result, includePropertyDefinitions != null && includePropertyDefinitions, 1, depthLong);
         return result;
     }
@@ -651,15 +651,14 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     private void getTypeDescendants(CMISTypeDefinition parent, List<CmisTypeContainer> result, boolean includePropertyDefs, long depth, long maxDepth) throws CmisException
     {
         Collection<CMISTypeDefinition> subtypes = parent == null ? cmisService.getBaseTypes() : parent.getSubTypes(false);
-        for (CMISTypeDefinition typeDef : subtypes)
+        for (CMISTypeDefinition subtype : subtypes)
         {
-            result.add(createTypeContainer(typeDef, includePropertyDefs));
-        }
-        if (maxDepth == -1 || depth + 1 <= maxDepth)
-        {
-            for (CMISTypeDefinition typeDef : subtypes)
+            CmisTypeContainer type = createTypeContainer(subtype, includePropertyDefs);
+            result.add(type);
+            if (maxDepth == -1 || depth < maxDepth)
             {
-                getTypeDescendants(typeDef, result, includePropertyDefs, depth + 1, maxDepth);
+                List<CmisTypeContainer> children = type.getChildren();
+                getTypeDescendants(subtype, children, includePropertyDefs, depth + 1, maxDepth);
             }
         }
     }

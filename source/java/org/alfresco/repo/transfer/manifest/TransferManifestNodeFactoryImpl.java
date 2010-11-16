@@ -51,6 +51,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFactory
 {
     private NodeService nodeService;
+    private NodeService mlAwareNodeService;
     private PermissionService permissionService;
     private DictionaryService dictionaryService;
     
@@ -208,7 +209,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
      */
     private Map<QName, Serializable> getNodeProperties(NodeRef nodeRef, Set<QName> excludedAspects)
     {
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        Map<QName, Serializable> properties = mlAwareNodeService.getProperties(nodeRef);
         if (excludedAspects == null || excludedAspects.size() == 0)
         {
             return properties;
@@ -231,6 +232,11 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setMlAwareNodeService(NodeService mlAwareNodeService)
+    {
+        this.mlAwareNodeService = mlAwareNodeService;
     }
 
     public void setPermissionService(PermissionService permissionService)

@@ -189,7 +189,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 QName name = QName.createQName(atts.getValue("", "name"));
                 props.put("name", name);
                 props.remove("values");
-                props.remove("mltext");
+                props.remove("mlvalues");
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_CREATED_DATE))
             {

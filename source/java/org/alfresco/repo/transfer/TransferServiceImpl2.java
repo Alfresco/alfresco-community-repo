@@ -19,13 +19,16 @@
 package org.alfresco.repo.transfer;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -915,7 +918,7 @@ public class TransferServiceImpl2 implements TransferService2
         // where to put snapshot ?
         File tempDir = TempFileProvider.getLongLifeTempDir(FILE_DIRECTORY);
         File snapshotFile = TempFileProvider.createTempFile("TRX-SNAP", FILE_SUFFIX, tempDir);
-        FileWriter snapshotWriter = new FileWriter(snapshotFile);
+        Writer snapshotWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(snapshotFile), "UTF-8"));
         
         // Write the manifest file
         TransferManifestWriter formatter = new XMLTransferManifestWriter();
@@ -1289,7 +1292,7 @@ public class TransferServiceImpl2 implements TransferService2
      */
     private static void outputFile(File file) throws IOException
     {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         String s = reader.readLine();
         while(s != null)
         {

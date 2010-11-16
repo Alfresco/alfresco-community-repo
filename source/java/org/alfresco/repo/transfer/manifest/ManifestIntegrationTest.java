@@ -20,8 +20,11 @@ package org.alfresco.repo.transfer.manifest;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,7 +122,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, CONTENT_NAME);
 
             snapshotFile = TempFileProvider.createTempFile("xxx", ".xml");
-            FileWriter snapshotWriter = new FileWriter(snapshotFile);       
+            Writer snapshotWriter = new OutputStreamWriter(new FileOutputStream(snapshotFile), "UTF-8");       
         
             Set<NodeRef> nodes = new HashSet<NodeRef>();
             
@@ -252,7 +255,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
      */
     private static void outputFile(File file) throws Exception
     {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         String s = reader.readLine();
         while(s != null)
         {

@@ -19,10 +19,14 @@
 package org.alfresco.repo.transfer.manifest;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,7 +72,7 @@ public class TransferManifestTest extends TestCase
 
         // where to put snapshot ?
         File snapshotFile = TempFileProvider.createTempFile(prefix, suffix);
-        FileWriter snapshotWriter = new FileWriter(snapshotFile);
+        Writer snapshotWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(snapshotFile), "UTF-8"));
         
         // Write the manifest file
         TransferManifestWriter formatter = new XMLTransferManifestWriter();
@@ -245,7 +249,7 @@ public class TransferManifestTest extends TestCase
         snapshotWriter.close();
         
         // 
-        BufferedReader reader = new BufferedReader(new FileReader(snapshotFile));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(snapshotFile), "UTF-8"));
         String s = reader.readLine();
         while(s != null)
         {

@@ -40,7 +40,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferService;
@@ -59,6 +61,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
     private TransferService transferService;
     private PermissionService permissionService;
     private ContentService contentService;
+    private NodeService mlAwareNodeService;
     
     /**
      * Called during the transaction setup
@@ -71,6 +74,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
         this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
+        this.mlAwareNodeService = (NodeService) this.applicationContext.getBean("mlAwareNodeService"); 
     }
     
     public void testSnapshot() throws Exception
@@ -97,6 +101,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         TransferManifestNodeFactoryImpl nodeFactory = new TransferManifestNodeFactoryImpl();
         nodeFactory.setNodeService(nodeService);
         nodeFactory.setPermissionService(permissionService);
+        nodeFactory.setMlAwareNodeService(mlAwareNodeService);
              
         /**
          * Create our transfer target
@@ -212,7 +217,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
                     assertEquals("content data wrong size", data.getSize(), CONTENT_STRING.length());
                     assertEquals("content locale wrong", data.getLocale(), CONTENT_LOCALE);
                     
-                    String childTitle = (String)readNode.getProperties().get(ContentModel.PROP_TITLE);
+                    String childTitle = ((MLText)readNode.getProperties().get(ContentModel.PROP_TITLE)).getDefaultValue();
                     assertEquals("content title wrong", childTitle, CONTENT_TITLE);
                     
                     String childName = (String)readNode.getProperties().get(ContentModel.PROP_NAME);

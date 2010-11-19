@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -51,14 +50,14 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONObject;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.apache.commons.lang.RandomStringUtils;
-import org.json.JSONObject;
-import org.springframework.core.io.ClassPathResource;
 
 /**
  * Unit Test to test Invite Web Script API
@@ -132,10 +131,11 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
         
-        // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors during unit testing 
-        // (or sending out email by accident from tests)
-        MailActionExecuter mail = (MailActionExecuter) getServer().getApplicationContext().getBean("mail");
-        mail.setTestMode(true);
+        // We're using a MailActionExecuter defined in outboundSMTP-test-context.xml which
+        // sets the testMode property to true via spring injection. This will prevent emails
+        // from being sent from within this test case.
+        // This MailExecutorAction bean is named "test-mail" but is in all other respects equivalent to the
+        // 'real' executer bean. It is automatically included during OutboundSMTP subsystem startup.
 
         // redeploy invite process definition in case it has been modified
         WorkflowDefinition inviteWfDefinition = this.workflowService.getDefinitionByName(

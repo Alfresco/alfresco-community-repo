@@ -83,7 +83,6 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( RuleServiceTest.class );
         suite.addTestSuite( RunningActionRestApiTest.class );
         suite.addTestSuite( SandboxTest.class );
-        suite.addTestSuite( SiteActivitySystemTest.class );
         suite.addTestSuite( SiteServiceTest.class );
         suite.addTestSuite( TaggingServiceTest.class );
         suite.addTestSuite( ThumbnailServiceTest.class );

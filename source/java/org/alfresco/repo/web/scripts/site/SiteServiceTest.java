@@ -88,12 +88,6 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
         
-        // We're using a MailActionExecuter defined in outboundSMTP-test-context.xml which
-        // sets the testMode property to true via spring injection. This will prevent emails
-        // from being sent from within this test case.
-        // This MailExecutorAction bean is named "test-mail" but is in all other respects equivalent to the
-        // 'real' executer bean. It is automatically included during OutboundSMTP subsystem startup.
-        
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users

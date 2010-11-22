@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -52,6 +54,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
@@ -130,6 +133,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
+        
+        configureMailExecutorForTestMode();
         
         // We're using a MailActionExecuter defined in outboundSMTP-test-context.xml which
         // sets the testMode property to true via spring injection. This will prevent emails
@@ -223,6 +228,44 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.authenticationComponent.setCurrentUser(USER_INVITER);
     }
 
+    /**
+     * This method turns off email-sending within the MailActionExecuter bean.
+     */
+    private void configureMailExecutorForTestMode()
+    {
+    	// This test class depends on a MailActionExecuter bean which sends out emails
+    	// in a live system. We want to prevent these emails from being sent during
+    	// test execution.
+    	// To do that, we need to get at the outboundSMTP-context.xml and change its
+    	// "mail" MailActionExecuter bean to test mode. setTestMode(true) on that object
+    	// will turn off email sending.
+    	// But that bean is defined within a subsystem i.e. a child application context.
+
+    	// There are a number of ways we could do this, none of them perfect.
+    	//
+    	// 1. Expose the setTestMode(boolean) method in the subsystem API.
+    	//    We could have the "mail" bean implement a "TestModeable" interface and
+    	//    expose that through the proxy.
+    	//    But that would mean that the setTestMode method would be available in the
+    	//    live system too, which is not ideal.
+    	// 2. Replace the "mail" bean in outboundSMTP-context.xml with an alternative in a
+    	//    different subsystem context file as described in
+    	//    http://wiki.alfresco.com/wiki/Alfresco_Subsystems#Debugging_Alfresco_Subsystems
+    	//    But to do that, we'd have to reproduce all the spring config for that bean
+    	//    and add a testMode property. Again not ideal.
+    	// 3. Hack into the "mail" bean by programmatically going through the known applicationContext
+    	//    and bean structure. This is not ideal either, but it has no effect on product code
+    	//    and isolates all the hacking into this test class.
+    	//
+    	// Therefore we've decided to do [3].
+    	
+    	ChildApplicationContextFactory outboundSmptSubsystem
+            = (ChildApplicationContextFactory)getServer().getApplicationContext().getBean("OutboundSMTP");
+    	ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
+    	MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
+    	mailActionExecutor.setTestMode(true);
+    }
+    
     @Override
     protected void tearDown() throws Exception
     {

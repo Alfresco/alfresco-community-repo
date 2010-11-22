@@ -30,12 +30,13 @@
    "nodeType": "${shortQName(node.type)}",
    "type": "${item.type}",
    "mimetype": "${node.mimetype!""}",
-   "isFolder": ${node.isContainer?string},
-<#if item.isLink??>
-   "isLink": ${item.isLink?string},
-   "fileName": "<#if item.isLink>${item.linkNode.name}<#else>${node.name}</#if>",
+   "isFolder": <#if item.linkedNode??>${item.linkedNode.isContainer?string}<#else>${node.isContainer?string}</#if>,
+   "isLink": ${(item.isLink!false)?string},
+<#if item.linkedNode??>
+   "linkedNodeRef": "${item.linkedNode.nodeRef?string}",
 </#if>
-   "displayName": "${node.name?replace(workingCopyLabel, "")}",
+   "fileName": "<#if item.linkedNode??>${item.linkedNode.name}<#else>${node.name}</#if>",
+   "displayName": "<#if item.linkedNode??>${item.linkedNode.name}<#else>${node.name?replace(workingCopyLabel, "")}</#if>",
    "status": "<#list item.status?keys as s><#if item.status[s]?is_boolean && item.status[s] == true>${s}<#if s_has_next>,</#if></#if></#list>",
    "title": "${node.properties.title!""}",
    "description": "${node.properties.description!""}",

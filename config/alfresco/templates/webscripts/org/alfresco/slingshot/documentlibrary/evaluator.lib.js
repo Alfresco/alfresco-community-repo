@@ -70,7 +70,7 @@ var Evaluator =
          createdBy = Common.getPerson(node.properties["cm:creator"]),
          modifiedBy = Common.getPerson(node.properties["cm:modifier"]),
          isLink = false,
-         linkNode = null,
+         linkedNode = null,
          lockedBy = null,
          lockOwnerUser = "";
 
@@ -102,19 +102,18 @@ var Evaluator =
          case "filelink":
             actionSet = "link";
             isLink = true;
-            custom["linkNodeRef"] = node.nodeRef;
             
             /**
              * NOTE: After this point, the "node" object will be changed to a link's destination node
              *       if the original node was a filelink type.
              */
-            linkNode = node;
-            node = linkNode.properties.destination;
-            if (node !== null)
+            linkedNode = node.properties.destination;
+            if (linkedNode == null)
             {
-               // Re-evaluate the nodeType based on the link's destination node
-               nodeType = Evaluator.getNodeType(node);
+               return null;
             }
+            // Re-evaluate the nodeType based on the link's destination node
+            nodeType = Evaluator.getNodeType(linkedNode);
             break;
          
          /**
@@ -284,8 +283,8 @@ var Evaluator =
          {
             node: node,
             type: nodeType,
-            linkNode: linkNode,
             isLink: isLink,
+            linkedNode: linkedNode,
             status: status,
             actionSet: actionSet,
             actionPermissions: permissions,

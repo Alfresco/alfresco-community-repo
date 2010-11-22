@@ -121,7 +121,7 @@ function getDoclist()
          // Does this collection of nodes have potentially differering paths?
          if (filterParams.variablePath || item.isLink)
          {
-            locationNode = (item.isLink && item.type == "document") ? item.linkNode : item.node;
+            locationNode = item.isLink ? item.linkedNode : item.node;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
          }
          else
@@ -157,6 +157,10 @@ function getDoclist()
          }
          
          items.push(item);
+      }
+      else
+      {
+         totalRecords -= 1;
       }
    }
 

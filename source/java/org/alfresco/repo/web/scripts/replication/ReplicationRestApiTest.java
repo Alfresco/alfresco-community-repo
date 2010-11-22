@@ -259,10 +259,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
                 
         
         // Set start times and statuses on these other two
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
         rd = replicationService.loadReplicationDefinition("Test2");
         actionTrackingService.recordActionExecuting(rd);
         actionTrackingService.recordActionComplete(rd);
         String startedAt2 = ISO8601DateFormat.format(rd.getExecutionStartDate());
+        txn.commit();
         
         
         // Try the different sorts
@@ -790,7 +793,10 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
 
         
         // These show up again when no longer running
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         actionTrackingService.recordActionComplete(rd);
+        txn.commit();
         response = sendRequest(new GetRequest(URL_DEFINITION + "Test3"), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         

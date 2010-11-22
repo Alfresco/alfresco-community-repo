@@ -216,7 +216,10 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         
         
         // Remove one, check it goes
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
         actionTrackingService.recordActionComplete(rd);
+        txn.commit();
         has1 = false;
         has2 = false;
         has3 = false;
@@ -509,7 +512,10 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        
        
        // Remove one, check it goes
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
        actionTrackingService.recordActionComplete(rd);
+       txn.commit();
        has1 = false;
        has2 = false;
        has3 = false;

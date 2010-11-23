@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.action;
 
+import java.util.List;
+
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -73,6 +75,32 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
     
     private Repository repositoryHelper;
     private NodeRef dataDictionary;
+    
+    /**
+     * When we're run from a suite, check the previous
+     *  test's work has finished before we run. If other
+     *  things end up on the work queue with us, we'll
+     *  get confused...
+     */
+    public void testEnsureAllQuiet() throws Exception
+    {
+        // Wait up to 2 seconds
+        for(int i=0; i<200; i++)
+        {
+            List<ExecutionSummary> actions = actionTrackingService.getAllExecutingActions();
+            if(actions.size() == 0)
+            {
+                // Good, nothing running
+                break;
+            }
+            else
+            {
+                // Wait for the previous test's stuff to finish
+                System.out.println("Waiting on " + actions.size() + " actions to finish, top is " + actions.get(0));
+                Thread.sleep(10);
+            }
+        }
+    }
     
     public void testRunningActionsGet() throws Exception
     {

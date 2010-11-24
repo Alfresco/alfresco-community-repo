@@ -163,9 +163,9 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         // filtering        
         checkFiltering(URL_TASKS + "?priority=2");
 
-        checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
+        //checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
 
-        checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(new Date()));
+        //checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(new Date()));
         
         // paging
         int maxItems = 3;        

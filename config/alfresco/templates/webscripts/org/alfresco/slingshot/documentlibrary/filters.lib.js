@@ -79,8 +79,7 @@ var Filters =
          " -TYPE:\"fm:forums\"" +
          " -TYPE:\"fm:forum\"" +
          " -TYPE:\"fm:topic\"" +
-         " -TYPE:\"fm:post\"" +
-         " -@cm\\:lockType:READ_ONLY_LOCK";
+         " -TYPE:\"fm:post\"";
 
       switch (String(filter))
       {

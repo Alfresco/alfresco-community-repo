@@ -294,6 +294,7 @@ var Evaluator =
             tags: node.tags,
             activeWorkflows: activeWorkflows,
             custom: jsonUtils.toJSONString(custom),
+            customObj: custom,
             actionLabels: actionLabels
          });
       }

@@ -164,6 +164,35 @@ function getDoclist()
       }
    }
 
+   // Array Remove - By John Resig (MIT Licensed)
+   var fnArrayRemove = function fnArrayRemove(array, from, to)
+   {
+     var rest = array.slice((to || from) + 1 || array.length);
+     array.length = from < 0 ? array.length + from : from;
+     return array.push.apply(array, rest);
+   };
+   
+   /**
+    * De-duplicate orignals for any existing working copies.
+    * This can't be done in evaluator.lib.js as it has no knowledge of the current filter or UI operation.
+    * Note: This may result in pages containing less than the configured amount of items (50 by default).
+   */
+   for each (item in items)
+   {
+      if (item.customObj.isWorkingCopy)
+      {
+         var workingCopyOriginal = String(item.customObj.workingCopyOriginal);
+         for (var i = 0, ii = items.length; i < ii; i++)
+         {
+            if (String(items[i].node.nodeRef) == workingCopyOriginal)
+            {
+               fnArrayRemove(items, i);
+               break;
+            }
+         }
+      }
+   }
+
    return (
    {
       luceneQuery: query,

@@ -125,7 +125,7 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
         return createObject(parent, name, type, 201);
     }
 
-    protected Entry createObject(IRI parent, String name, String type, int expectedStatus) throws Exception
+    protected <T extends Element> T createObject(IRI parent, String name, String type, int expectedStatus) throws Exception
     {
         String createObject = localTemplates.load("BaseCMISTest.createObject.atomentry.xml");
         createObject = createObject.replace("${NAME}", name);
@@ -136,7 +136,8 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
         try
         {
             String xml = res.getContentAsString();
-            return parse(new StringReader(xml));
+            T entry = parse(new StringReader(xml));
+            return entry;
         }
         catch (ParseException e)
         {

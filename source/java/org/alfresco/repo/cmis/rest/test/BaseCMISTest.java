@@ -136,7 +136,7 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
         try
         {
             String xml = res.getContentAsString();
-            return parse(new StringReader(xml));
+            return this.<T> parse(new StringReader(xml));
         }
         catch (ParseException e)
         {

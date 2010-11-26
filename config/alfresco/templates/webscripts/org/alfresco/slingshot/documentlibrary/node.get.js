@@ -15,12 +15,15 @@ function getDoclist()
    {
       return;
    }
+   
+   parsedArgs.pathNode = ParseArgs.resolveNode(parsedArgs.nodeRef);
+   parsedArgs.location = Common.getLocation(parsedArgs.pathNode, parsedArgs.libraryRoot);
 
    var filter = args.filter,
       items = [];
 
    var favourites = Common.getFavourites(),
-      node = parsedArgs.rootNode,
+      node = parsedArgs.pathNode,
       parent =
       {
          node: node.parent,

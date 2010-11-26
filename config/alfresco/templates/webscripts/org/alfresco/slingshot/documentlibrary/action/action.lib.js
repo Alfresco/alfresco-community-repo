@@ -1,3 +1,5 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
+
 /**
  * Document List Component: action
  *
@@ -225,24 +227,11 @@ function getNodeRefInputParams()
          id = url.templateArgs.id;
 
       var nodeRef = storeType + "://" + storeId + "/" + id,
-         rootNode = null;
+         rootNode = ParseArgs.resolveNode(nodeRef);
 
-      if (nodeRef == "alfresco://company/home")
+      if (rootNode === null)
       {
-         rootNode = companyhome;
-      }
-      else if (nodeRef == "alfresco://user/home")
-      {
-         rootNode = userhome;
-      }
-      else
-      {
-         rootNode = search.findNode(nodeRef);
-
-         if (rootNode === null)
-         {
-            return "'" + nodeRef  + "' is not a valid nodeRef.";
-         }
+         return "'" + nodeRef  + "' is not a valid nodeRef.";
       }
 
       // Populate the return object

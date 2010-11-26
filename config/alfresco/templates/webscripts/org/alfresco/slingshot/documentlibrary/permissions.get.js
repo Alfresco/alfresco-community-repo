@@ -14,7 +14,7 @@ function getPermissions()
       storeId = url.templateArgs.store_id,
       id = url.templateArgs.id,
       nodeRef = storeType + "://" + storeId + "/" + id,
-      node = ParseArgs.resolveVirtualNodeRef(nodeRef);
+      node = ParseArgs.resolveNode(nodeRef);
    
    if (node == null)
    {

@@ -1,17 +1,17 @@
 function tagQuery()
 {
-   var nodeRef = args.n,
+   var rootNode = args.n,
       maxResults = args.m,
       sortOrder = args.s,
       tags = [],
       countMin = Number.MAX_VALUE,
       countMax = 0;
    
-   /* nodeRef input */
+   /* rootNode input */
    var node = null;
-   if ((nodeRef !== null) && (nodeRef !== ""))
+   if ((rootNode !== null) && (rootNode !== ""))
    {
-      node = resolveVirtualNodeRef(nodeRef) || search.findNode(nodeRef);
+      node = resolveVirtualNodeRef(rootNode) || resolveXPath(rootNode) || search.findNode(rootNode);
    }
    if (node === null)
    {
@@ -140,6 +140,27 @@ function resolveVirtualNodeRef(nodeRef)
    else if (nodeRef == "alfresco://sites/home")
    {
       node = companyhome.childrenByXPath("st:sites")[0];
+   }
+   return node;
+}
+
+/**
+ * Resolve xpath location
+ *
+ * @method resolveXPath
+ * @param xpath {string} xpath expression
+ * @return {ScriptNode|null} First node corresponding to supplied xpath expression. Results null if xpath doesn't resolve.
+ */
+function resolveXPath(xpath)
+{
+   var node = null;
+   try
+   {
+      node = companyhome.childrenByXPath(xpath)[0];
+   }
+   catch(e)
+   {
+      return null;
    }
    return node;
 }

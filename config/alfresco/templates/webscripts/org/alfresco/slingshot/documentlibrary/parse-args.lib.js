@@ -274,6 +274,12 @@ var ParseArgs =
          nodeRef = null,
          path = "";
 
+      // Is this library rooted from a non-site nodeRef?
+      if (libraryRoot !== null)
+      {
+         libraryRoot = ParseArgs.resolveNode(libraryRoot);
+      }
+
       if (url.templateArgs.store_type !== null)
       {
          /**
@@ -284,15 +290,11 @@ var ParseArgs =
             id = url.templateArgs.id;
 
          nodeRef = storeType + "://" + storeId + "/" + id;
-         rootNode = ParseArgs.resolveVirtualNodeRef(nodeRef);
+         rootNode = libraryRoot || ParseArgs.resolveNode(nodeRef);
          if (rootNode == null)
          {
-            rootNode = search.findNode(nodeRef);
-            if (rootNode === null)
-            {
-               status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
-               return null;
-            }
+            status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
+            return null;
          }
          
          // Special case: make sure filter picks up correct mode
@@ -345,17 +347,11 @@ var ParseArgs =
 
       // Path input?
       path = url.templateArgs.path || "";
-      pathNode = path.length > 0 ? rootNode.childByNamePath(path) : rootNode;
+      pathNode = path.length > 0 ? rootNode.childByNamePath(path) : (pathNode || rootNode);
       if (pathNode === null)
       {
          status.setCode(status.STATUS_NOT_FOUND, "Path not found: '" + path + "'");
          return null;
-      }
-
-      // Is this library rooted from a non-site nodeRef?
-      if (libraryRoot !== null)
-      {
-         libraryRoot = ParseArgs.resolveVirtualNodeRef(libraryRoot) || search.findNode(libraryRoot);
       }
 
       var objRet =
@@ -383,23 +379,53 @@ var ParseArgs =
     * Resolve "virtual" nodeRefs into nodes
     *
     * @method resolveVirtualNodeRef
-    * @param virtualNodeRef {string} nodeRef
-    * @return {ScriptNode|null} Node corresponding to supplied virtual nodeRef. Returns null if supplied nodeRef isn't a "virtual" type
+    * @deprecated for ParseArgs.resolveNode
     */
    resolveVirtualNodeRef: function ParseArgs_resolveVirtualNodeRef(nodeRef)
    {
+      if (logger.isLoggingEnabled())
+      {
+         logger.log("WARNING: ParseArgs.resolveVirtualNodeRef is deprecated for ParseArgs.resolveNode");
+      }
+      return ParseArgs.resolveNode(nodeRef);
+   },
+
+   /**
+    * Resolve "virtual" nodeRefs, nodeRefs and xpath expressions into nodes
+    *
+    * @method resolveNode
+    * @param reference {string} "virtual" nodeRef, nodeRef or xpath expressions
+    * @return {ScriptNode|null} Node corresponding to supplied expression. Returns null if node cannot be resolved.
+    */
+   resolveNode: function ParseArgs_resolveNode(reference)
+   {
       var node = null;
-      if (nodeRef == "alfresco://company/home")
+      try
       {
-         node = companyhome;
+         if (reference == "alfresco://company/home")
+         {
+            node = companyhome;
+         }
+         else if (reference == "alfresco://user/home")
+         {
+            node = userhome;
+         }
+         else if (reference == "alfresco://sites/home")
+         {
+            node = companyhome.childrenByXPath("st:sites")[0];
+         }
+         else if (reference.indexOf("://") > 0)
+         {
+            node = search.findNode(reference);
+         }
+         else if (reference.substring(0, 1) == "/")
+         {
+            node = search.xpathSearch(reference)[0];
+         }
       }
-      else if (nodeRef == "alfresco://user/home")
+      catch (e)
       {
-         node = userhome;
-      }
-      else if (nodeRef == "alfresco://sites/home")
-      {
-         node = companyhome.childrenByXPath("st:sites")[0];
+         return null;
       }
       return node;
    },

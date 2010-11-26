@@ -112,7 +112,7 @@ var ParseArgs =
             id = url.templateArgs.id;
 
          nodeRef = storeType + "://" + storeId + "/" + id;
-         rootNode = ParseArgs.resolveVirtualNodeRef(nodeRef);
+         rootNode = ParseArgs.resolveNode(nodeRef);
          if (rootNode == null)
          {
             rootNode = search.findNode(nodeRef);
@@ -203,23 +203,53 @@ var ParseArgs =
     * Resolve "virtual" nodeRefs into nodes
     *
     * @method resolveVirtualNodeRef
-    * @param virtualNodeRef {string} nodeRef
-    * @return {ScriptNode|null} Node corresponding to supplied virtual nodeRef. Returns null if supplied nodeRef isn't a "virtual" type
+    * @deprecated for ParseArgs.resolveNode
     */
    resolveVirtualNodeRef: function ParseArgs_resolveVirtualNodeRef(nodeRef)
    {
+      if (logger.isLoggingEnabled())
+      {
+         logger.log("WARNING: ParseArgs.resolveVirtualNodeRef is deprecated for ParseArgs.resolveNode");
+      }
+      return ParseArgs.resolveNode(nodeRef);
+   },
+
+   /**
+    * Resolve "virtual" nodeRefs, nodeRefs and xpath expressions into nodes
+    *
+    * @method resolveNode
+    * @param reference {string} "virtual" nodeRef, nodeRef or xpath expressions
+    * @return {ScriptNode|null} Node corresponding to supplied expression. Returns null if node cannot be resolved.
+    */
+   resolveNode: function ParseArgs_resolveNode(reference)
+   {
       var node = null;
-      if (nodeRef == "alfresco://company/home")
+      try
       {
-         node = companyhome;
+         if (reference == "alfresco://company/home")
+         {
+            node = companyhome;
+         }
+         else if (reference == "alfresco://user/home")
+         {
+            node = userhome;
+         }
+         else if (reference == "alfresco://sites/home")
+         {
+            node = companyhome.childrenByXPath("st:sites")[0];
+         }
+         else if (reference.indexOf("://") > 0)
+         {
+            node = search.findNode(reference);
+         }
+         else if (reference.substring(0, 1) == "/")
+         {
+            node = search.xpathSearch(reference)[0];
+         }
       }
-      else if (nodeRef == "alfresco://user/home")
+      catch (e)
       {
-         node = userhome;
-      }
-      else if (nodeRef == "alfresco://sites/home")
-      {
-         node = companyhome.childrenByXPath("st:sites")[0];
+         return null;
       }
       return node;
    }

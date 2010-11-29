@@ -20,7 +20,6 @@ package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -310,8 +309,6 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
                node.getNodeRef(), true);
          if (workflows != null && workflows.size() > 0)
          {
-            SimpleDateFormat format = new SimpleDateFormat(bundle.getString("date_pattern"));
-            
             // list out all the workflows the document is part of
             if (isContent)
             {
@@ -337,7 +334,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
                {
                   out.write(bundle.getString("started_on").toLowerCase());
                   out.write("&nbsp;");
-                  out.write(format.format(wi.startDate));
+                  out.write(Utils.getDateFormat(context).format(wi.startDate));
                   out.write(" ");
                }
                if (wi.initiator != null)

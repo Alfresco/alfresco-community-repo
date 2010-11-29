@@ -19,7 +19,6 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
@@ -83,7 +82,6 @@ public class UIWorkflowSummary extends SelfRenderingComponent
       {
          ResponseWriter out = context.getResponseWriter();
          ResourceBundle bundle = Application.getBundle(context);
-         SimpleDateFormat format = new SimpleDateFormat(bundle.getString("date_pattern"));
          
          // output surrounding table and style if necessary
          out.write("<table");
@@ -135,14 +133,14 @@ public class UIWorkflowSummary extends SelfRenderingComponent
          out.write(":</td><td>");
          if (wi.startDate != null)
          {
-            out.write(format.format(wi.startDate));
+            out.write(Utils.getDateFormat(context).format(wi.startDate));
          }
          out.write("</td></tr><tr><td>");
          out.write(bundle.getString("completed_on"));
          out.write(":</td><td>");
          if (wi.endDate != null)
          {
-            out.write(format.format(wi.endDate));
+            out.write(Utils.getDateFormat(context).format(wi.endDate));
          }
          else
          {

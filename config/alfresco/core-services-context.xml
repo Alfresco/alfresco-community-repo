@@ -1055,6 +1055,14 @@
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
+        <property name="excludedOnUpdateProps">
+            <list>
+                <value>opaquelocktoken</value>
+                <value>sharedLockTokens</value>
+                <value>lockDepth</value>
+                <value>lockScope</value>
+            </list>
+        </property>
     </bean>
 
     <!--                 -->

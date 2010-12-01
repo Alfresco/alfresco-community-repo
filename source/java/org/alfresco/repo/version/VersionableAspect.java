@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -44,6 +43,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Class containing behaviour for the versionable aspect
@@ -114,10 +114,21 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * @return              Returns the current list of properties that <b>do not</b> trigger versioning
+     */
+    public List<String> getExcludedOnUpdateProps()
+    {
+        return excludedOnUpdateProps;
+    }
+
+    /**
+     * @param excludedOnUpdateProps         the list of properties that force versioning to ignore changes
+     */
     public void setExcludedOnUpdateProps(List<String> excludedOnUpdateProps)
     {
-        this.excludedOnUpdateProps = excludedOnUpdateProps;
+        this.excludedOnUpdateProps = Collections.unmodifiableList(excludedOnUpdateProps);
     }
     
     /**
@@ -276,7 +287,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      * 
      * If applicable and "cm:autoVersion" is TRUE then version the node on content update (even if no property updates)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (this.nodeService.exists(nodeRef) == true && 
@@ -315,7 +326,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      * 
      * @since 3.2
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void onUpdateProperties(
             NodeRef nodeRef,
             Map<QName, Serializable> before,

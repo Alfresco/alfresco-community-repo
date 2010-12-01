@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WebDAVModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -75,6 +76,24 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     private static final String PWD_A = "passA";
     private static final String USER_NAME_A = "userA";
     
+    private VersionableAspect versionableAspect;
+    private List<String> excludedOnUpdateProps;
+    
+    @Override
+    protected void onSetUpInTransaction() throws Exception
+    {
+        super.onSetUpInTransaction();
+        versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
+        excludedOnUpdateProps = versionableAspect.getExcludedOnUpdateProps();
+    }
+
+    @Override
+    protected void onTearDownAfterTransaction() throws Exception
+    {
+        super.onTearDownAfterTransaction();
+        versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
+    }
+
     public void testSetup()
     {
         // NOOP
@@ -1032,8 +1051,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         });
         
-        VersionableAspect versionableAspect = (VersionableAspect)applicationContext.getBean("versionableAspect");
-        
         List<String> excludedOnUpdateProps = new ArrayList<String>(1);
         excludedOnUpdateProps.add(ContentModel.PROP_AUTHOR.toPrefixString());
         versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
@@ -1097,6 +1114,78 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 return null;
             }
         
+        });
+    }
+    
+    public void testALF5618()
+    {
+        final NodeRef versionableNode = createNewVersionableNode();
+        this.dbNodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION_PROPS, true);
+        
+        setComplete();
+        endTransaction();
+        
+        final String lockToken = "opaquelocktoken:" + versionableNode.getId() + ":admin";
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                nodeService.setProperty(versionableNode, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN, lockToken);
+                nodeService.setProperty(versionableNode, WebDAVModel.PROP_SHARED_LOCK_TOKENS, lockToken);
+                nodeService.setProperty(versionableNode, WebDAVModel.PROP_LOCK_DEPTH, "0");
+                nodeService.setProperty(versionableNode, WebDAVModel.PROP_LOCK_SCOPE, "exclusive");
+                
+                return null;
+            }
+        });
+        
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                return null;
+            }
+        
+        });
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+
+                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
+                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
+                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_LOCK_DEPTH);
+                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_LOCK_SCOPE);
+
+                return null;
+            }
+        });
+
+        // Now lets have a look and make sure we have the correct number of entries in the version history
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+
+                return null;
+            }
+
         });
     }
     

@@ -483,14 +483,12 @@ public class GroupsTest extends BaseWebScriptTest
     		}
     		
     		/**
-    		 * Link the group again - this passes without problem
+    		 * Link the group again - this fails
+    		 * - duplicate groups (children with the same name) are not allowed 
     		 */
     		{
     			JSONObject newGroupJSON = new JSONObject();
-    			Response response = sendRequest(new PostRequest(URL_GROUPS + "/" + myRootGroup +"/children/" + groupLinkFullName, newGroupJSON.toString(), "application/json" ), Status.STATUS_OK);
-    			JSONObject top = new JSONObject(response.getContentAsString());
-    			logger.debug(response.getContentAsString());
-    			JSONObject data = top.getJSONObject("data");
+    			Response response = sendRequest(new PostRequest(URL_GROUPS + "/" + myRootGroup +"/children/" + groupLinkFullName, newGroupJSON.toString(), "application/json" ), Status.STATUS_INTERNAL_SERVER_ERROR);
     		}
     		
         	/**

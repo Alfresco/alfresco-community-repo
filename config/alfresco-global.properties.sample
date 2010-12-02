@@ -36,7 +36,7 @@
 # MySQL connection
 #
 #db.driver=org.gjt.mm.mysql.Driver
-#db.url=jdbc:mysql://localhost/alfresco
+#db.url=jdbc:mysql://localhost/alfresco?useUnicode=yes&characterEncoding=UTF-8
 
 #
 # Oracle connection

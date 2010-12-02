@@ -147,6 +147,11 @@
       <!-- the list of available language files -->
       <languages>
          <language locale="en_US">English</language>
+         <language locale="de_DE">German</language>
+         <language locale="es_ES">Spanish</language>
+         <language locale="fr_FR">French</language>
+         <language locale="it_IT">Italian</language>
+         <language locale="ja_JP">Japanese</language>
       </languages>
    </config>
    

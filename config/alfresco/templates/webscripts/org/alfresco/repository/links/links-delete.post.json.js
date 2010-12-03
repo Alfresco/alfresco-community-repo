@@ -71,14 +71,13 @@ function deleteLink(linkNode)
    model.message = "Node " + nodeRef + " deleted";
 
    var siteId = url.templateArgs.site;
-   var containerId = url.templateArgs.container;
    var data =
    {
-      title:linkData.title,
+      title: linkData.title,
       page: "links"
    };
 
-   activities.postActivity("org.alfresco.links.link-deleted", siteId, containerId, jsonUtils.toJSONString(data));
+   activities.postActivity("org.alfresco.links.link-deleted", siteId, "links", jsonUtils.toJSONString(data));
 }
 
 function main()

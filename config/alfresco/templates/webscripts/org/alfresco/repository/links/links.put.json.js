@@ -44,14 +44,13 @@ function updateLink(linkNode)
    linkNode.save();
    model.message = "Node " + linkNode.nodeRef + " updated";
    var siteId = url.templateArgs.site;
-   var containerId = url.templateArgs.container;
    var data =
    {
       title: json.get("title"),
       page: json.get("page") + "?linkId=" + linkNode.name
    };
 
-   activities.postActivity("org.alfresco.links.link-updated", siteId, containerId, jsonUtils.toJSONString(data));
+   activities.postActivity("org.alfresco.links.link-updated", siteId, "links", jsonUtils.toJSONString(data));
 
    return linkNode;
 }

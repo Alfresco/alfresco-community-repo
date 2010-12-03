@@ -2,7 +2,7 @@
 <entry xmlns='http://www.w3.org/2005/Atom'>
    <title>Link created: ${htmlTitle?xml}</title>
    <link rel="alternate" type="text/html" href="" />
-   <id>${id}</id>
+   <id>http://www.alfresco.org/rss/atom/${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
       <![CDATA[&quot;${htmlTitle}&quot; link created by ${userName?html}.]]>

@@ -49,16 +49,14 @@ function createLink(linkNode)
    linkNode.save();
 
    var siteId = url.templateArgs.site;
-   var containerId = url.templateArgs.container;
    var data =
    {
       title: json.get("title"),
       page: json.get("page") + "?linkId=" + nodeName
    };
 
-   var mes = linkNode.properties["name"];
-   model.message = mes;
-   activities.postActivity("org.alfresco.links.link-created", siteId, containerId, jsonUtils.toJSONString(data));
+   model.message = linkNode.properties["name"];
+   activities.postActivity("org.alfresco.links.link-created", siteId, "links", jsonUtils.toJSONString(data));
      
    return linkNode;
 }

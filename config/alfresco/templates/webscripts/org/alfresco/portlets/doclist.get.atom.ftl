@@ -62,7 +62,7 @@
          <#if isImage>&lt;img src=&quot;${absurl(url.context)}${d.url}?ticket=${session.ticket}&quot;&gt;&lt;br&gt;</#if>
          <#if d.properties.description?exists>${d.properties.description?html}</#if>
       </description>
-      <pubDate>${xmldate(d.properties.modified)}</pubDate>
+      <pubDate>${xmldate(d.properties.modified)?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
       <guid isPermaLink="false">${d.id}</guid>
    </item>
       </#if>

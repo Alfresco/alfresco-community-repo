@@ -8,10 +8,10 @@
         </#if>
     />
     <icon></icon>
-    <id>${id}</id>
+    <id>http://www.alfresco.org/rss/atom/${id}</id>
     <updated>${xmldate(date)}</updated>
     <summary>${userId!""} ${activityType!""} ${displayPath!""} <#if siteNetwork?? && siteNetwork != "">(${siteNetwork} site)</#if></summary>
     <author>
       <name>${userId!""}</name>
-    </author> 
+    </author>
   </entry>

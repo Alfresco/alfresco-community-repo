@@ -165,7 +165,7 @@ function main()
          title: json.get("what"),
          page: json.get("page") + "?date=" + fromIsoDate
       }
-      activities.postActivity("org.alfresco.calendar.event-created", params.siteid, "calendar", jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.calendar.event-updated", params.siteid, "calendar", jsonUtils.toJSONString(data));
    }
    catch(e)
    {

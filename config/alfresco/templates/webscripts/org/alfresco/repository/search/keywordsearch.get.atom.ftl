@@ -34,7 +34,7 @@
     <summary>${(row.properties.description!"")?html}</summary>
     <author> 
       <name>${row.properties.creator}</name>
-    </author> 
+    </author>
     <relevance:score>${row.score}</relevance:score>
   </entry>
 </#list>

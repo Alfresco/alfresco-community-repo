@@ -19,7 +19,7 @@
 <author><name>${author?xml}</name></author>
 <generator version="${server.version?xml}">Alfresco (${server.edition?xml})</generator>
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
-<id>${id}</id>
+<id>http://www.alfresco.org/rss/atom/${id}</id>
 [#nested]  [#-- NOTE: Custom links --]
 <title>${title?xml}</title> 
 <updated>${xmldate(date)}</updated>

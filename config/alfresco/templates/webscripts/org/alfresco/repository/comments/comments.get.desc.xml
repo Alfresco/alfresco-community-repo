@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Comments</shortname>
+  <shortname>Get all comments</shortname>
   <description>Get all comments for a node</description>
   <url>/api/node/{store_type}/{store_id}/{id}/comments</url>
   <format default="json">argument</format>

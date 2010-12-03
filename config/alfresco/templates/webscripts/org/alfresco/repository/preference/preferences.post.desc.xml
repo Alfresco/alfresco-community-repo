@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Preferences</shortname>
+  <shortname>Set preferences</shortname>
   <description>Set a users preferences</description>
   <url>/api/people/{userid}/preferences</url>
   <format default="json">argument</format>

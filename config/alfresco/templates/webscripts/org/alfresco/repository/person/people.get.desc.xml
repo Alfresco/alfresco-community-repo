@@ -1,8 +1,8 @@
 <webscript>
    <shortname>Get People</shortname>
    <description>
-      Get collection of people stored in the repository. This can optionally be
-      filtered according to some given filter query string
+      Get a collection of people stored in the repository. This can optionally be
+      filtered according to a given filter query string
    </description>
    <url>/api/people?filter={filterQuery?}</url>
    <format default="json">argument</format>

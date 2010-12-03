@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Preferences</shortname>
+  <shortname>Get preferences</shortname>
   <description>Get the preferences for a user</description>
   <url>/api/people/{userid}/preferences?pf={preferencefilter?}</url>
   <format default="json">argument</format>

@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Sites</shortname>
-  <description>Get a colleciton of the sites a person has an explicit member to.</description>
+  <shortname>Get sites</shortname>
+  <description>Get a collection of the sites of which a a person is an explicit member.</description>
   <url>/api/people/{userid}/sites?size={pagesize?}&amp;pos={position?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

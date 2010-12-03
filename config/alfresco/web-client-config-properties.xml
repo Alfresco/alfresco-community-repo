@@ -726,7 +726,7 @@
    
    <config evaluator="aspect-name" condition="taggable">
       <property-sheet>
-         <show-property name="cm:taggable" display-label="Tags" show-in-edit-mode="true" component-generator="AjaxTagPickerGenerator" />
+         <show-property name="cm:taggable" show-in-edit-mode="true" component-generator="AjaxTagPickerGenerator" />
       </property-sheet>
    </config>
 

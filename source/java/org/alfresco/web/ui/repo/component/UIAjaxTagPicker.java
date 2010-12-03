@@ -19,7 +19,6 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -43,6 +42,9 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class UIAjaxTagPicker extends BaseAjaxItemPicker
 {
    private static final String MSG_CLICK_TO_SELECT_TAG = "click_to_select_tag";
+   private static final String MSG_ADD = "add";
+   private static final String MSG_ADD_A_TAG = "add_a_tag";
+   private static final String MSG_REMOVE = "remove";
    
    @Override
    public String getFamily()
@@ -80,6 +82,7 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
       return this.label;
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
@@ -168,8 +171,8 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
       out.write("<script type='text/javascript'>");
       out.write("function init" + divId + "() {");
       out.write(" window." + objId + " = new AlfTagger('" + divId + "','" + objId + "','" + getServiceCall() +
-                "','" + formClientId + "');");
-	   out.write(" window." + objId + ".setChildNavigation(false);");
+                "','" + formClientId + "','" + msg.getString(MSG_ADD) + "','" + msg.getString(MSG_REMOVE) + "');");
+      out.write(" window." + objId + ".setChildNavigation(false);");
       if (getDefaultIcon() != null)
       {
          out.write(" window." + objId + ".setDefaultIcon('" + getDefaultIcon() + "');");
@@ -204,32 +207,32 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
          out.write((String)attrs.get("styleClass"));
       }
       out.write(">");
-		if (isDisabled())
-		{
-		   out.write("   <span>");
+      if (isDisabled())
+      {
+         out.write("   <span>");
          if (selectedNames != null)
          {
             out.write(selectedNames);
          }
          out.write("   </span>");
-		}
-		else
-		{
-      	out.write("  <span class='pickerActionButton'><a href='javascript:" + objId + ".showSelector();'>");
-      	if (selectedNames == null)
-      	{
-      	   if ("".equals(getLabel()))
-      	   {
-      	      setLabel(msg.getString(MSG_CLICK_TO_SELECT_TAG));
-      	   }
-         	out.write(getLabel());
-      	}
-			else
-			{
-				out.write(selectedNames);
-			}
+      }
+      else
+      {
+         out.write("  <span class='pickerActionButton'><a href='javascript:" + objId + ".showSelector();'>");
+         if (selectedNames == null)
+         {
+            if ("".equals(getLabel()))
+            {
+               setLabel(msg.getString(MSG_CLICK_TO_SELECT_TAG));
+            }
+            out.write(getLabel());
+         }
+         else
+         {
+            out.write(selectedNames);
+         }
          out.write("   </a></span>");
-		}
+      }
       out.write(" </div>");
       // container for item navigation
       out.write(" <div id='" + divId + "-selector' class='pickerSelector'>");
@@ -248,21 +251,31 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
       out.write("     <span class='pickerNavBreadcrumb'>");
       out.write("      <span id='" + divId + "-nav-txt' class='pickerNavBreadcrumbText'></span></a>");
       out.write("     </span>");
-		out.write("     <span class='pickerNavAddTag'>");
-		out.write("      <span class='pickerAddTagIcon'></span>");
-		out.write("      <span id='" + divId + "-addTag-linkContainer' class='pickerAddTagLinkContainer'>");
-		out.write("       <a href='#' onclick='window." + objId + ".showAddTagForm(); return false;'>Add a tag</a>");
-		out.write("      </span>");
-		out.write("      <span id='" + divId + "-addTag-formContainer' class='pickerAddTagFormContainer'>");
-		out.write("       <input id='" + divId + "-addTag-box' class='pickerAddTagBox' name='" + divId + "-addTag-box' type='text'>");
-		out.write("       <img id='" + divId + "-addTag-ok' class='pickerAddTagImage' alt='Add' src='");
+      out.write("     <span class='pickerNavAddTag'>");
+      out.write("      <span class='pickerAddTagIcon'></span>");
+      out.write("      <span id='" + divId + "-addTag-linkContainer' class='pickerAddTagLinkContainer'>");
+      out.write("       <a href='#' onclick='window." + objId + ".showAddTagForm(); return false;'>");
+      out.write(msg.getString(MSG_ADD_A_TAG));
+      out.write("</a>");
+      out.write("      </span>");
+      out.write("      <span id='" + divId + "-addTag-formContainer' class='pickerAddTagFormContainer'>");
+      out.write("       <input id='" + divId + "-addTag-box' class='pickerAddTagBox' name='" + divId + "-addTag-box' type='text'>");
+      out.write("       <img id='" + divId + "-addTag-ok' class='pickerAddTagImage' src='");
       out.write(contextPath);
-		out.write("/images/office/action_successful.gif'>");
-		out.write("       <img id='" + divId + "-addTag-cancel' class='pickerAddTagImage' alt='Cancel' src='");
+      out.write("/images/office/action_successful.gif' alt='");
+      out.write(msg.getString(MSG_ADD));
+      out.write("' title='");
+      out.write(msg.getString(MSG_ADD));
+      out.write("'>");
+      out.write("       <img id='" + divId + "-addTag-cancel' class='pickerAddTagImage' src='");
       out.write(contextPath);
-		out.write("/images/office/action_failed.gif'>");
-		out.write("      </span>");
-		out.write("     </span>");
+      out.write("/images/office/action_failed.gif' alt='");
+      out.write(msg.getString(MSG_CANCEL));
+      out.write("' title='");
+      out.write(msg.getString(MSG_CANCEL));
+      out.write("'>");
+      out.write("      </span>");
+      out.write("     </span>");
       out.write("     <span id='" + divId + "-nav-add'></span>");
       out.write("    </div>");
       out.write("   </div>");

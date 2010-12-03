@@ -64,6 +64,7 @@ public class PickerBean implements Serializable
    private static final long serialVersionUID = 8950457520023294902L;
    
    private static final String MSG_CATEGORIES = "categories";
+   private static final String MSG_TAGS = "tags";
    private static final String ID_URL = "url";
    private static final String ID_ICON = "icon";
    private static final String ID_CHILDREN = "children";
@@ -295,7 +296,7 @@ public class PickerBean implements Serializable
          if (parentRef == null)
          {
             out.writeNullValue(ID_ID);
-            out.writeValue(ID_NAME, "Tags");
+            out.writeValue(ID_NAME, Application.getMessage(fc, MSG_TAGS));
             out.writeValue(ID_ISROOT, true);
             out.writeValue(ID_SELECTABLE, false);
          }

@@ -66,13 +66,21 @@ var AlfTagger = new Class(
    
    /* allow child selection navigation */
    allowChildNavigation: true,
+   
+   /* label to use for Add icon */
+   addLabel: null,
+   
+   /* label to use for Remove icon */
+   removeLabel: null,
 
-   initialize: function(id, varName, service, formClientId) 
+   initialize: function(id, varName, service, formClientId, addLabel, removeLabel) 
    {
       this.id = id;
       this.varName = varName;
       this.service = service;
       this.formClientId = formClientId;
+      this.addLabel = addLabel;
+      this.removeLabel = removeLabel;
       this.selected = [];
       this.preselected = [];
 
@@ -241,7 +249,7 @@ var AlfTagger = new Class(
       var actionScript = "javascript:" + this.varName + ".delItem('" + item.id + "');";
       var actionLink = new Element("a", {"href": actionScript});
       var deleteIcon = new Element("img", {"src": getContextPath() + "/images/icons/minus.gif", "class": "pickerSelectedIcon",
-                                   "border": 0, "title": "Remove", "alt": "Remove"});
+                                   "border": 0, "title": this.removeLabel, "alt": this.removeLabel});
       deleteIcon.injectInside(actionLink);
       actionLink.injectInside(actionSpan);
       actionSpan.injectInside(itemDiv);
@@ -406,7 +414,7 @@ var AlfTagger = new Class(
             var actionScript = "javascript:" + tagger.varName + ".addItem(-1);";
             var actionLink = new Element("a", {"href": actionScript});
             var actionImg = new Element("img", {"id": actionId, "src": getContextPath() + "/images/icons/plus.gif", "class": "taggerActionButton",
-                                        "border": 0, "title": "Add", "alt": "Add"});
+                                        "border": 0, "title": this.addLabel, "alt": this.addLabel});
             actionImg.injectInside(actionLink);
             actionLink.injectInside($(tagger.id + "-nav-add"));
             // style modification for this Add button - it's inside a floating div unlike the others
@@ -466,7 +474,7 @@ var AlfTagger = new Class(
          var actionScript = "javascript:" + this.varName + ".addItem(" + index + ");";
          var actionLink = new Element("a", {"href": actionScript});
          var actionImg = new Element("img", {"id": actionId, "src": getContextPath() + "/images/icons/plus.gif", "class": "pickerActionButton",
-                                     "border": 0, "title": "Add", "alt": "Add"});
+                                     "border": 0, "title": this.addLabel, "alt": this.addLabel});
          actionImg.injectInside(actionLink);
          actionLink.injectInside(actionsSpan);
          

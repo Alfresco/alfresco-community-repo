@@ -471,7 +471,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                             }
                             return rootNodes.get(0);
                         };
-                    });
+                    }, true, false);
                 }
             }, AuthenticationUtil.getSystemUserName());
             

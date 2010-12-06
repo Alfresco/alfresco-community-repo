@@ -73,7 +73,8 @@ public class SimpleWorkflowActionExecuter extends ActionExecuterAbstractBase
 			Action ruleAction,
 			NodeRef actionedUponNodeRef) 
 	{
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
+		if (this.nodeService.exists(actionedUponNodeRef) == true &&
+		    this.nodeService.hasAspect(actionedUponNodeRef, ApplicationModel.ASPECT_SIMPLE_WORKFLOW) == false)
 		{
 			// Get the parameter values
 			String approveStep = (String)ruleAction.getParameterValue(PARAM_APPROVE_STEP);

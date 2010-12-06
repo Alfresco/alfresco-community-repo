@@ -1044,17 +1044,24 @@ public class RuleServiceImpl
      * @see org.alfresco.repo.rule.RuleService#executePendingRules()
      */
     public void executePendingRules() 
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("Creating the executed rules list");
-        }
+    {           
         if (AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED) == null)
         {
+        	 if (logger.isDebugEnabled() == true)
+             {
+                 logger.debug("Creating the executed rules list");
+             }
             AlfrescoTransactionSupport.bindResource(KEY_RULES_EXECUTED, new HashSet<ExecutedRuleData>());
         }
-
-        List<PendingRuleData> executeAtEndRules = new ArrayList<PendingRuleData>();
+        else
+        {
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Executed rules list already exists");
+        	}
+        }
+    	
+    	List<PendingRuleData> executeAtEndRules = new ArrayList<PendingRuleData>();
         executePendingRulesImpl(executeAtEndRules);
         for (PendingRuleData data : executeAtEndRules)
         {

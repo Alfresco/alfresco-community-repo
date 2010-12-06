@@ -21,13 +21,17 @@ package org.alfresco.repo.rule.ruletrigger;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Rule trigger abstract base 
@@ -151,9 +155,27 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
      */
     protected void triggerRules(NodeRef nodeRef, NodeRef actionedUponNodeRef)
     {
-        for (RuleType ruleType : this.ruleTypes)
-        {
-            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef, this.executeRuleImmediately);
-        }
+    	// Do not trigger rules for rule and action type nodes
+    	if (ignoreTrigger(actionedUponNodeRef) == false)
+    	{
+	        for (RuleType ruleType : this.ruleTypes)
+	        {
+	            ruleType.triggerRuleType(nodeRef, actionedUponNodeRef, this.executeRuleImmediately);
+	        }
+    	}
+    }
+    
+    private boolean ignoreTrigger(NodeRef actionedUponNodeRef)
+    {
+    	boolean result = false;    	
+    	QName typeQName = nodeService.getType(actionedUponNodeRef);
+    	if (typeQName.equals(RuleModel.TYPE_RULE) == true ||
+    		typeQName.equals(ActionModel.TYPE_ACTION) == true ||
+    		typeQName.equals(ActionModel.TYPE_COMPOSITE_ACTION) == true ||
+    		typeQName.equals(ContentModel.TYPE_THUMBNAIL) == true)
+    	{
+    		result = true;
+    	}
+    	return result;
     }
 }

@@ -2247,7 +2247,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             Long childNodeId = oldChildNodePair.getFirst();
             NodeRef childNodeRef = oldChildNodePair.getSecond();
-            if (nodeDAO.getNodeRefStatus(childNodeRef).isDeleted())
+            NodeRef.Status childNodeStatus = nodeDAO.getNodeRefStatus(childNodeRef);
+            if (childNodeStatus == null || childNodeStatus.isDeleted())
             {
                 // Node has already been deleted.
                 continue;

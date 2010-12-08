@@ -28,9 +28,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -92,6 +95,8 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
             throws IOException, ServletException
     {
+        setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);
+        
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
         HttpServletResponse res = (HttpServletResponse)sresp;
@@ -128,7 +133,17 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
             chain.doFilter(sreq, sresp);
         }
     }
-
+    
+    @Override
+    protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, NodeRef homeSpaceRef)
+    {
+        // Create a web client user object
+        User user = new User( userName, ticket, personNode);
+        user.setHomeSpaceId( homeSpaceRef.getId());
+        
+        return user;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
      */

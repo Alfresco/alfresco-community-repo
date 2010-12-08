@@ -406,6 +406,8 @@ public class TaggingServiceImpl implements TaggingService,
         }
         else if (afterNodeRefs != null && beforeNodeRefs != null)
         {
+            //Create a copy of the afterNodeRefs so we don't affect the properties we were given
+            afterNodeRefs = new ArrayList<NodeRef>(afterNodeRefs);
             for (NodeRef beforeNodeRef : beforeNodeRefs)
             {
                 if (afterNodeRefs.contains(beforeNodeRef) == true)

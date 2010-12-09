@@ -23,10 +23,6 @@ CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
 
 CREATE INDEX fk_alf_attr_acl ON alf_attributes (acl_id);
 
-CREATE INDEX fk_alf_adtf_src ON alf_audit_fact (audit_source_id);
-CREATE INDEX fk_alf_adtf_date ON alf_audit_fact (audit_date_id);
-CREATE INDEX fk_alf_adtf_conf ON alf_audit_fact (audit_conf_id);
-
 CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
 

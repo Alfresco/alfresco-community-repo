@@ -121,8 +121,10 @@
             start_time = #startTime#,
             expiry_time = #expiryTime#
         where
-            id = #id# and
-            version = (#version# -1)
+            id = #id#
+        <isGreaterThan property="version" compareValue="0">
+            and version = (#version#-1)
+        </isGreaterThan>
     </update>
     
     <!-- Update locks for a given exclusive lock -->

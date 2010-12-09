@@ -45,6 +45,9 @@
 
     <!-- ensure that the schema is bootstrapped -->
     <bean id="schemaBootstrap" class="org.alfresco.repo.domain.schema.SchemaBootstrap" >
+       <property name="dataSource">
+          <ref bean="dataSource"/>
+       </property>
        <property name="localSessionFactory">
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
        </property>
@@ -110,6 +113,7 @@
              <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />
              <ref bean="patch.db-V3.3-modify-index-permission_id" />
              <ref bean="patch.db-V3.2-AddFKIndexes" />
+             <ref bean="patch.db-V3.2-AddFKIndexes-2" />
              <ref bean="patch.db-V3.4-UsageTables" />
              <ref bean="patch.db-V3.0-ActivityTables" />
           </list>
@@ -117,7 +121,6 @@
        <property name="postUpdateScriptPatches">
           <list>
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
-             <ref bean="patch.db-V2.1-AuditPathIndex" />
              <ref bean="patch.db-V3.1-Allow-IPv6" />
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />

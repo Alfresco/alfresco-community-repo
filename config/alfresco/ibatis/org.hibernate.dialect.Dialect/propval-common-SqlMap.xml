@@ -435,8 +435,8 @@
             version = #version#
         where
             id = #id#
-        <isGreaterThan property="version" compareValue="1">
-            and version = ((#version#-1))
+        <isGreaterThan property="version" compareValue="0">
+            and version = (#version#-1)
         </isGreaterThan>
     </update>
     
@@ -510,8 +510,8 @@
             prop1_id = #propertyId#
         where
             id = #id# 
-        <isGreaterThan property="version" compareValue="1">
-            and version = ((#version#-1))
+        <isGreaterThan property="version" compareValue="0">
+            and version = (#version#-1)
         </isGreaterThan>
     </update>
 

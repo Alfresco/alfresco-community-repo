@@ -380,6 +380,56 @@
          </associations>
       </aspect>
       
+      <aspect name="test:withAssociationsExtra">
+         <title>Aspect with Associations</title>
+         <associations>
+            <child-association name="test:aspect-child-assoc-01">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="test:aspect-child-assoc-02">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <association name="test:aspect-normal-assoc-01">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:aspect-normal-assoc-02">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
       <!-- ano1 aspect - happens to be the same name as a child assoc name -->
       <aspect name="test:aspect-child-assoc">
          <title>Aspect ANO1</title>

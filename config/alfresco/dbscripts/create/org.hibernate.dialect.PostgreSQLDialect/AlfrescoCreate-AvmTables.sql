@@ -47,6 +47,7 @@
         primary key (node_id, qname_id)
     );
 
+    create sequence avm_nodes_seq start with 1 increment by 1;
     create table avm_nodes (
         id INT8 not null,
         class_type varchar(20) not null,
@@ -75,8 +76,7 @@
         primary key (id)
     );
 	
-	create sequence avm_nodes_seq start with 1 increment by 1;
-	
+    create sequence avm_store_properties_seq start with 1 increment by 1;
     create table avm_store_properties (
         id INT8 not null,
         avm_store_id INT8,
@@ -92,9 +92,8 @@
         serializable_value BYTEA,
         primary key (id)
     );
-	
-	create sequence avm_store_properties_seq start with 1 increment by 1;
-	
+		
+    create sequence avm_stores_seq start with 1 increment by 1;
     create table avm_stores (
         id INT8 not null,
         vers INT8 not null,
@@ -105,8 +104,6 @@
         primary key (id)
     );
 	
-	create sequence avm_stores_seq start with 1 increment by 1;
-	
     create table avm_version_layered_node_entry (
         version_root_id INT8 not null,
         md5sum varchar(32) not null,
@@ -114,6 +111,7 @@
         primary key (version_root_id, md5sum)
     );
 
+    create sequence avm_version_roots_seq start with 1 increment by 1;
     create table avm_version_roots (
         id INT8 not null,
         version_id INT4 not null,
@@ -126,8 +124,6 @@
         primary key (id),
         unique (version_id, avm_store_id)
     );
-	
-	create sequence avm_version_roots_seq start with 1 increment by 1;
 	
     alter table avm_aspects        
         add constraint fk_avm_nasp_n

@@ -41,6 +41,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.alfresco.util.PropertyCheck;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.TypeNames;
@@ -67,8 +68,8 @@ public class Main
     /** Should we scale down string field widths (assuming 4 bytes to one character?). */
     private boolean scaleCharacters;
 
-    /** The JDBC connection. */
-    private  Connection con;
+    /** The JDBC DataSource. */
+    private DataSource dataSource;
 
     /**
      * The main method.
@@ -92,15 +93,13 @@ public class Main
     /**
      * Creates a new instance of this tool by starting up a full context.
      */
-    @SuppressWarnings("unchecked")
     public Main(final String contextPath) throws Exception
     {
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]
         {
             "file:" + contextPath
         });
-        final DataSource datasource = (DataSource) context.getBean("dataSource");
-        this.con = datasource.getConnection();
+        this.dataSource = (DataSource) context.getBean("dataSource");
 
         // Use Java reflection to bypass accessibility rules and get hold of hibernate's type mapping!
         final Properties hibProps = (Properties) context.getBean("hibernateConfigProperties");
@@ -116,9 +115,9 @@ public class Main
      * @param connection            the database connection to use for metadata queries
      * @param dialect               the Hibernate dialect
      */
-    public Main(final Connection connection, final Dialect dialect) throws Exception
+    public Main(final DataSource dataSource, final Dialect dialect) throws Exception
     {
-        this.con = connection;
+        this.dataSource = dataSource;
         
         // Initialize
         init(dialect);
@@ -163,7 +162,19 @@ public class Main
      */
     public void execute(File outputFile) throws Exception
     {
-        final NamedElementCollection result = execute();
+        PropertyCheck.mandatory(this, "dataSource", dataSource);
+        // Get a Connection
+        Connection connection = dataSource.getConnection();
+        NamedElementCollection result = null;
+        try
+        {
+            connection.setAutoCommit(false);
+            result = execute(connection);
+        }
+        finally
+        {
+            try { connection.close(); } catch (Throwable e) {}
+        }
 
         // Set up a SAX TransformerHandler for outputting XML
         final SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -190,11 +201,11 @@ public class Main
      * 
      * @return                          Returns the named XML elements
      */
-    public NamedElementCollection execute() throws Exception
+    private NamedElementCollection execute(Connection con) throws Exception
     {
         final NamedElementCollection schemaCol = new NamedElementCollection("schema", "table");
 
-        final DatabaseMetaData dbmd = this.con.getMetaData();
+        final DatabaseMetaData dbmd = con.getMetaData();
 
         // Assume that if there are schemas, we want the one named after the connection user or the one called "dbo" (MS
         // SQL hack)
@@ -396,19 +407,6 @@ public class Main
         {
             this.collectionName = collectionName;
             this.elementName = elementName;
-        }
-
-        /**
-         * Adds an attribute.
-         * 
-         * @param name
-         *            the name
-         * @param value
-         *            the value
-         */
-        public void addAttribute(final String name, final String value)
-        {
-            this.attributes.addAttribute("", "", name, "CDATA", value);
         }
 
         /**

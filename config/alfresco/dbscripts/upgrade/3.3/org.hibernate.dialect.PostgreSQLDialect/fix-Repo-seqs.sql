@@ -32,14 +32,6 @@ CREATE SEQUENCE alf_acl_member_seq START WITH ${hibernate_seq_next_value} INCREM
 
 CREATE SEQUENCE alf_authority_alias_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
 
-CREATE SEQUENCE alf_audit_config_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
-
-CREATE SEQUENCE alf_audit_date_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
-
-CREATE SEQUENCE alf_audit_source_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
-
-CREATE SEQUENCE alf_audit_fact_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
-
 CREATE SEQUENCE alf_server_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
 
 CREATE SEQUENCE alf_transaction_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;

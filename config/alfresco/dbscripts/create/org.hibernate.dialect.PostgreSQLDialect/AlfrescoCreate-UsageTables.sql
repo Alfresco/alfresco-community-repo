@@ -7,6 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+CREATE SEQUENCE alf_usage_delta_seq START WITH 1 INCREMENT BY 1; -- (optional)
 CREATE TABLE alf_usage_delta
 (
     id INT8 NOT NULL,
@@ -17,7 +18,6 @@ CREATE TABLE alf_usage_delta
     CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES alf_node (id)
 ); -- (optional)
 CREATE INDEX fk_alf_usaged_n ON alf_usage_delta (node_id); -- (optional)
-CREATE SEQUENCE alf_usage_delta_seq START WITH 1 INCREMENT BY 1; -- (optional)
 
 --
 -- Record script finish

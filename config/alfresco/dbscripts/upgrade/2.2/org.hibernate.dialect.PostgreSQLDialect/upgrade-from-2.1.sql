@@ -932,55 +932,6 @@ DROP INDEX fk_attributes_n_acl;  -- (optional)
 DROP INDEX fk_attr_n_acl; -- (optional)
 CREATE INDEX fk_alf_attr_acl ON alf_attributes (acl_id);
 
-DROP INDEX adt_woy_idx; -- (optional)
-DROP INDEX adt_date_idx; -- (optional)
-DROP INDEX adt_y_idx; -- (optional)
-DROP INDEX adt_q_idx; -- (optional)
-DROP INDEX adt_m_idx; -- (optional)
-DROP INDEX adt_dow_idx; -- (optional)
-DROP INDEX adt_doy_idx; -- (optional)
-DROP INDEX adt_dom_idx; -- (optional)
-DROP INDEX adt_hy_idx; -- (optional)
-DROP INDEX adt_wom_idx; -- (optional)
-CREATE INDEX idx_alf_adtd_woy ON alf_audit_date (week_of_year);
-CREATE INDEX idx_alf_adtd_q ON alf_audit_date (quarter);
-CREATE INDEX idx_alf_adtd_wom ON alf_audit_date (week_of_month);
-CREATE INDEX idx_alf_adtd_dom ON alf_audit_date (day_of_month);
-CREATE INDEX idx_alf_adtd_doy ON alf_audit_date (day_of_year);
-CREATE INDEX idx_alf_adtd_dow ON alf_audit_date (day_of_week);
-CREATE INDEX idx_alf_adtd_m ON alf_audit_date (month);
-CREATE INDEX idx_alf_adtd_hy ON alf_audit_date (half_year);
-CREATE INDEX idx_alf_adtd_fy ON alf_audit_date (full_year);
-CREATE INDEX idx_alf_adtd_dat ON alf_audit_date (date_only);
-
-DROP INDEX adt_user_idx; -- (optional)
-DROP INDEX adt_store_idx; -- (optional)
-ALTER TABLE alf_audit_fact
-DROP CONSTRAINT FKEAD18174A0F9B8D9,
-DROP CONSTRAINT FKEAD1817484342E39,
-DROP CONSTRAINT FKEAD18174F524CFD7
-;
-DROP INDEX FKEAD18174A0F9B8D9;
-DROP INDEX FKEAD1817484342E39;
-DROP INDEX FKEAD18174F524CFD7;
-ALTER TABLE alf_audit_fact
-   ADD CONSTRAINT fk_alf_adtf_src FOREIGN KEY (audit_source_id) REFERENCES alf_audit_source (id),
-   ADD CONSTRAINT fk_alf_adtf_date FOREIGN KEY (audit_date_id) REFERENCES alf_audit_date (id),
-   ADD CONSTRAINT fk_alf_adtf_conf FOREIGN KEY (audit_conf_id) REFERENCES alf_audit_config (id)
-;
-CREATE INDEX idx_alf_adtf_ref ON alf_audit_fact (store_protocol, store_id, node_uuid);
-CREATE INDEX idx_alf_adtf_usr ON alf_audit_fact (user_id);
-CREATE INDEX fk_alf_adtf_src ON alf_audit_fact (audit_source_id);
-CREATE INDEX fk_alf_adtf_date ON alf_audit_fact (audit_date_id);
-CREATE INDEX fk_alf_adtf_conf ON alf_audit_fact (audit_conf_id);
-
-DROP INDEX app_source_app_idx; -- (optional)
-DROP INDEX app_source_ser_idx; -- (optional)
-DROP INDEX app_source_met_idx; -- (optional)
-CREATE INDEX idx_alf_adts_met ON alf_audit_source (method);
-CREATE INDEX idx_alf_adts_ser ON alf_audit_source (service);
-CREATE INDEX idx_alf_adts_app ON alf_audit_source (application);
-
 ALTER TABLE alf_global_attributes DROP CONSTRAINT FK64D0B9CF69B9F16A; -- (optional)
 DROP INDEX FK64D0B9CF69B9F16A; -- (optional)
 -- alf_global_attributes.attribute is declared unique.  Indexes may automatically have been created.

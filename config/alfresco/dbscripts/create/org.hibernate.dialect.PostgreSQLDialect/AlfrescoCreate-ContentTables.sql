@@ -7,6 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+CREATE SEQUENCE alf_mimetype_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_mimetype
 (
    id INT8 NOT NULL,
@@ -15,8 +16,8 @@ CREATE TABLE alf_mimetype
    PRIMARY KEY (id),
    UNIQUE (mimetype_str)
 );
-CREATE SEQUENCE alf_mimetype_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_encoding_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_encoding
 (
    id INT8 NOT NULL,
@@ -25,11 +26,11 @@ CREATE TABLE alf_encoding
    PRIMARY KEY (id),
    UNIQUE (encoding_str)
 );
-CREATE SEQUENCE alf_encoding_seq START WITH 1 INCREMENT BY 1;
 
 -- This table may exist during upgrades, but must be removed.
 -- The drop statement is therefore optional.
 DROP TABLE alf_content_url;                     --(optional)
+CREATE SEQUENCE alf_content_url_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_content_url
 (
    id INT8 NOT NULL,
@@ -42,8 +43,8 @@ CREATE TABLE alf_content_url
 );
 CREATE UNIQUE INDEX idx_alf_conturl_cr ON alf_content_url (content_url_short, content_url_crc);
 CREATE INDEX idx_alf_conturl_ot ON alf_content_url (orphan_time);
-CREATE SEQUENCE alf_content_url_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_content_data_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_content_data
 (
    id INT8 NOT NULL,
@@ -58,7 +59,10 @@ CREATE TABLE alf_content_data
    CONSTRAINT fk_alf_cont_loc FOREIGN KEY (content_locale_id) REFERENCES alf_locale (id),
    PRIMARY KEY (id)
 );
-CREATE SEQUENCE alf_content_data_seq START WITH 1 INCREMENT BY 1;
+CREATE INDEX fk_alf_cont_url ON alf_content_data (content_url_id);
+CREATE INDEX fk_alf_cont_mim ON alf_content_data (content_mimetype_id);
+CREATE INDEX fk_alf_cont_enc ON alf_content_data (content_encoding_id);
+CREATE INDEX fk_alf_cont_loc ON alf_content_data (content_locale_id);
 
 --
 -- Record script finish

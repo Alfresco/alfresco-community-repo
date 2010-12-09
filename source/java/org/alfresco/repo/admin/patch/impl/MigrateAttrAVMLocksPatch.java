@@ -92,27 +92,30 @@ public class MigrateAttrAVMLocksPatch extends AbstractPatch
             Map<String, Object> result = (Map<String, Object>)valueObject;
             
             String wpStoreId = (String)result.get("wpStoreId");
-            String relPath = (String)result.get("relPath");
+            String path = (String)result.get("relPath");
             String avmStore = (String)result.get("avmStore");
             String lockOwner = (String)result.get("owner1");
             
-            relPath = AVMLockingServiceImpl.normalizePath(relPath);
+            String relPath = AVMLockingServiceImpl.normalizePath(path);
             
             HashMap<String, String> lockData = new HashMap<String, String>(2);
             lockData.put(AVMLockingServiceImpl.KEY_LOCK_OWNER, lockOwner);
             lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, avmStore);
-            
-            attributeService.createAttribute(
-                    lockData,
-                    AVMLockingServiceImpl.KEY_AVM_LOCKS, wpStoreId, relPath);
-            
-            if (logger.isTraceEnabled())
+
+            if (!attributeService.exists(AVMLockingServiceImpl.KEY_AVM_LOCKS, wpStoreId, relPath))
             {
-                logger.trace("Set AVM Lock attr [wpStoreId="+wpStoreId+", relPath="+relPath+", lockOwner="+lockOwner+", avmStore="+avmStore+"]");
+                attributeService.createAttribute(lockData, AVMLockingServiceImpl.KEY_AVM_LOCKS, wpStoreId, relPath);
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Set AVM Lock attr [wpStoreId=" + wpStoreId + ", relPath=" + relPath + ", lockOwner=" + lockOwner + ", avmStore=" + avmStore + "]");
+                }
+                total++;
             }
-            
-            total++;
-            
+            else
+            {
+                logger.warn("'" + path + "' path has duplicates in normalized form. AVM lock unique attribute creation has been skipped");
+            }
+
             if (logger.isDebugEnabled() && (total == 0 || (total % 1000 == 0) ))
             {
                 logger.debug("   Handled " + total + " AVM Lock attributes");

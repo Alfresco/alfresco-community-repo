@@ -7,6 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+CREATE SEQUENCE alf_lock_resource_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_lock_resource
 (
    id INT8 NOT NULL,
@@ -18,8 +19,7 @@ CREATE TABLE alf_lock_resource
 );
 CREATE UNIQUE INDEX idx_alf_lockr_key ON alf_lock_resource (qname_ns_id, qname_localname);
 
-CREATE SEQUENCE alf_lock_resource_seq START WITH 1 INCREMENT BY 1;
-
+CREATE SEQUENCE alf_lock_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_lock
 (
    id INT8 NOT NULL,
@@ -34,8 +34,8 @@ CREATE TABLE alf_lock
    PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX idx_alf_lock_key ON alf_lock (shared_resource_id, excl_resource_id);
+CREATE INDEX fk_alf_lock_excl ON alf_lock (excl_resource_id);
 
-CREATE SEQUENCE alf_lock_seq START WITH 1 INCREMENT BY 1;
 --
 -- Record script finish
 --

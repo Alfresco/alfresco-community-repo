@@ -7,6 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+CREATE SEQUENCE alf_audit_model_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_audit_model
 (
    id INT8 NOT NULL,
@@ -16,9 +17,9 @@ CREATE TABLE alf_audit_model
    PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX idx_alf_aud_mod_cr ON alf_audit_model(content_crc);
+CREATE INDEX fk_alf_aud_mod_cd ON alf_audit_model(content_data_id);
 
-CREATE SEQUENCE alf_audit_model_seq START WITH 1 INCREMENT BY 1;
-
+CREATE SEQUENCE alf_audit_app_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_audit_app
 (
    id INT8 NOT NULL,
@@ -31,8 +32,10 @@ CREATE TABLE alf_audit_app
    CONSTRAINT fk_alf_aud_app_dis FOREIGN KEY (disabled_paths_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)
 );
-CREATE SEQUENCE alf_audit_app_seq START WITH 1 INCREMENT BY 1;
+CREATE INDEX fk_alf_aud_app_mod ON alf_audit_app(audit_model_id);
+CREATE INDEX fk_alf_aud_app_dis ON alf_audit_app(disabled_paths_id);
 
+CREATE SEQUENCE alf_audit_entry_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_audit_entry
 (
    id INT8 NOT NULL,
@@ -46,8 +49,9 @@ CREATE TABLE alf_audit_entry
    PRIMARY KEY (id)
 );
 CREATE INDEX idx_alf_aud_ent_tm ON alf_audit_entry(audit_time);
-
-CREATE SEQUENCE alf_audit_entry_seq START WITH 1 INCREMENT BY 1;
+CREATE INDEX fk_alf_aud_ent_app ON alf_audit_entry(audit_app_id);
+CREATE INDEX fk_alf_aud_ent_use ON alf_audit_entry(audit_user_id);
+CREATE INDEX fk_alf_aud_ent_pro ON alf_audit_entry(audit_values_id);
 
 --
 -- Record script finish

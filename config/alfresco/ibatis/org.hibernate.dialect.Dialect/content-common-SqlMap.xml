@@ -207,7 +207,7 @@
             mimetype_str = #mimetype#
         where
             id = #id#
-        <isGreaterThan property="version" compareValue="1">
+        <isGreaterThan property="version" compareValue="0">
             and version = (#version#-1)
         </isGreaterThan>
     </update>
@@ -277,7 +277,7 @@
            content_locale_id = #localeId#
         where
            id = #id#
-        <isGreaterThan property="version" compareValue="1">
+        <isGreaterThan property="version" compareValue="0">
             and version = (#version#-1)
         </isGreaterThan>
     </update>

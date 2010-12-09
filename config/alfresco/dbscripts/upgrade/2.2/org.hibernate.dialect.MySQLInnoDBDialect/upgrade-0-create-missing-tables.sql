@@ -10,11 +10,6 @@
 -- to simplify subsequent upgrade scripts.
 --
 
--- Fix alf_audit_date column names
-
-ALTER TABLE alf_audit_date CHANGE COLUMN halfYear half_year INTEGER NOT NULL;
-ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
-
 -- create other new tables
 
     create table avm_aspects (

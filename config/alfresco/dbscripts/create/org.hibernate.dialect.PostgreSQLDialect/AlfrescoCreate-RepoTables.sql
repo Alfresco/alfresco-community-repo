@@ -23,6 +23,7 @@ CREATE TABLE alf_applied_patch
     PRIMARY KEY (id)
 );
 
+CREATE SEQUENCE alf_namespace_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_namespace
 (
     id INT8 NOT NULL,
@@ -30,10 +31,9 @@ CREATE TABLE alf_namespace
     uri VARCHAR(100) NOT NULL,
     PRIMARY KEY (id)
 );
-
 CREATE UNIQUE INDEX uri ON alf_namespace (uri);
-CREATE SEQUENCE alf_namespace_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_qname_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_qname
 (
     id INT8 NOT NULL,
@@ -45,8 +45,8 @@ CREATE TABLE alf_qname
 );
 CREATE UNIQUE INDEX ns_id ON alf_qname (ns_id, local_name);
 CREATE INDEX fk_alf_qname_ns ON alf_qname (ns_id);
-CREATE SEQUENCE alf_qname_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_permission_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_permission
 (
     id INT8 NOT NULL,
@@ -58,8 +58,8 @@ CREATE TABLE alf_permission
 );
 CREATE UNIQUE INDEX type_qname_id ON alf_permission (type_qname_id, name);
 CREATE INDEX fk_alf_perm_tqn ON alf_permission (type_qname_id);
-CREATE SEQUENCE alf_permission_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_ace_context_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_ace_context
 (
     id INT8 NOT NULL,
@@ -69,8 +69,8 @@ CREATE TABLE alf_ace_context
     kvp_context VARCHAR(1024),
     PRIMARY KEY (id)
 );
-CREATE SEQUENCE alf_ace_context_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_authority_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_authority
 (
     id INT8 NOT NULL,
@@ -81,8 +81,8 @@ CREATE TABLE alf_authority
 );
 CREATE UNIQUE INDEX authority ON alf_authority (authority, crc);
 CREATE INDEX idx_alf_auth_aut ON alf_authority (authority);
-CREATE SEQUENCE alf_authority_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_access_control_entry_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_access_control_entry
 (
     id INT8 NOT NULL,
@@ -101,16 +101,16 @@ CREATE UNIQUE INDEX permission_id ON alf_access_control_entry (permission_id, au
 CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
 CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
 CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);
-CREATE SEQUENCE alf_access_control_entry_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_acl_change_set_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_acl_change_set
 (
     id INT8 NOT NULL,
     version INT8 NOT NULL,
     PRIMARY KEY (id)
 );
-CREATE SEQUENCE alf_acl_change_set_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_access_control_list_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_access_control_list
 (
     id INT8 NOT NULL,
@@ -131,8 +131,8 @@ CREATE TABLE alf_access_control_list
 CREATE UNIQUE INDEX acl_id ON alf_access_control_list (acl_id, latest, acl_version);
 CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
-CREATE SEQUENCE alf_access_control_list_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_acl_member_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_acl_member
 (
     id INT8 NOT NULL,
@@ -147,8 +147,8 @@ CREATE TABLE alf_acl_member
 CREATE UNIQUE INDEX aclm_acl_id ON alf_acl_member (acl_id, ace_id, pos);
 CREATE INDEX fk_alf_aclm_acl ON alf_acl_member (acl_id);
 CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
-CREATE SEQUENCE alf_acl_member_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_authority_alias_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_authority_alias
 (
     id INT8 NOT NULL,
@@ -162,96 +162,8 @@ CREATE TABLE alf_authority_alias
 CREATE UNIQUE INDEX auth_id ON alf_authority_alias (auth_id, alias_id);
 CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
-CREATE SEQUENCE alf_authority_alias_seq START WITH 1 INCREMENT BY 1;
 
-CREATE TABLE alf_audit_config
-(
-    id INT8 NOT NULL,
-    config_url VARCHAR(1024) NOT NULL,
-    PRIMARY KEY (id)
-);
-CREATE SEQUENCE alf_audit_config_seq START WITH 1 INCREMENT BY 1;
-
-CREATE TABLE alf_audit_date
-(
-    id INT8 NOT NULL,
-    date_only DATE NOT NULL,
-    day_of_year INT4 NOT NULL,
-    day_of_month INT4 NOT NULL,
-    day_of_week INT4 NOT NULL,
-    week_of_year INT4 NOT NULL,
-    week_of_month INT4 NOT NULL,
-    month INT4 NOT NULL,
-    quarter INT4 NOT NULL,
-    half_year INT4 NOT NULL,
-    full_year INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-CREATE INDEX idx_alf_adtd_woy ON alf_audit_date (week_of_year);
-CREATE INDEX idx_alf_adtd_fy ON alf_audit_date (full_year);
-CREATE INDEX idx_alf_adtd_q ON alf_audit_date (quarter);
-CREATE INDEX idx_alf_adtd_wom ON alf_audit_date (week_of_month);
-CREATE INDEX idx_alf_adtd_dom ON alf_audit_date (day_of_month);
-CREATE INDEX idx_alf_adtd_doy ON alf_audit_date (day_of_year);
-CREATE INDEX idx_alf_adtd_dow ON alf_audit_date (day_of_week);
-CREATE INDEX idx_alf_adtd_m ON alf_audit_date (month);
-CREATE INDEX idx_alf_adtd_hy ON alf_audit_date (half_year);
-CREATE INDEX idx_alf_adtd_dat ON alf_audit_date (date_only);
-CREATE SEQUENCE alf_audit_date_seq START WITH 1 INCREMENT BY 1;
-
-CREATE TABLE alf_audit_source
-(
-    id INT8 NOT NULL,
-    application VARCHAR(255) NOT NULL,
-    service VARCHAR(255),
-    method VARCHAR(255),
-    PRIMARY KEY (id)
-);
-CREATE INDEX idx_alf_adts_met ON alf_audit_source (method);
-CREATE INDEX idx_alf_adts_ser ON alf_audit_source (service);
-CREATE INDEX idx_alf_adts_app ON alf_audit_source (application);
-CREATE SEQUENCE alf_audit_source_seq START WITH 1 INCREMENT BY 1;
-
-CREATE TABLE alf_audit_fact
-(
-    id INT8 NOT NULL,
-    user_id VARCHAR(255) NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    transaction_id VARCHAR(56) NOT NULL,
-    session_id VARCHAR(56),
-    store_protocol VARCHAR(50),
-    store_id VARCHAR(100),
-    node_uuid VARCHAR(36),
-    path VARCHAR(1024),
-    filtered BOOL NOT NULL,
-    return_val VARCHAR(1024),
-    arg_1 VARCHAR(1024),
-    arg_2 VARCHAR(1024),
-    arg_3 VARCHAR(1024),
-    arg_4 VARCHAR(1024),
-    arg_5 VARCHAR(1024),
-    fail BOOL NOT NULL,
-    serialized_url VARCHAR(1024),
-    exception_message VARCHAR(1024),
-    host_address VARCHAR(1024),
-    client_address VARCHAR(1024),
-    message_text VARCHAR(1024),
-    audit_date_id INT8 NOT NULL,
-    audit_conf_id INT8 NOT NULL,
-    audit_source_id INT8 NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_alf_adtf_conf FOREIGN KEY (audit_conf_id) REFERENCES alf_audit_config (id),
-    CONSTRAINT fk_alf_adtf_date FOREIGN KEY (audit_date_id) REFERENCES alf_audit_date (id),
-    CONSTRAINT fk_alf_adtf_src FOREIGN KEY (audit_source_id) REFERENCES alf_audit_source (id)
-);
-CREATE INDEX idx_alf_adtf_ref ON alf_audit_fact (store_protocol, store_id, node_uuid);
-CREATE INDEX idx_alf_adtf_usr ON alf_audit_fact (user_id);
-CREATE INDEX fk_alf_adtf_src ON alf_audit_fact (audit_source_id);
-CREATE INDEX fk_alf_adtf_date ON alf_audit_fact (audit_date_id);
-CREATE INDEX fk_alf_adtf_conf ON alf_audit_fact (audit_conf_id);
-CREATE INDEX idx_alf_adtf_pth ON alf_audit_fact (path);
-CREATE SEQUENCE alf_audit_fact_seq START WITH 1 INCREMENT BY 1;
-
+CREATE SEQUENCE alf_server_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_server
 (
     id INT8 NOT NULL,
@@ -260,8 +172,8 @@ CREATE TABLE alf_server
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX ip_address ON alf_server (ip_address);
-CREATE SEQUENCE alf_server_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_transaction_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_transaction
 (
     id INT8 NOT NULL,
@@ -274,8 +186,8 @@ CREATE TABLE alf_transaction
 );
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms);
 CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
-CREATE SEQUENCE alf_transaction_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_store_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_store
 (
     id INT8 NOT NULL,
@@ -286,8 +198,8 @@ CREATE TABLE alf_store
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX protocol ON alf_store (protocol, identifier);
-CREATE SEQUENCE alf_store_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_node_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_node
 (
     id INT8 NOT NULL,
@@ -315,11 +227,11 @@ CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
 CREATE INDEX fk_alf_node_txn ON alf_node (transaction_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
 CREATE INDEX fk_alf_node_tqn ON alf_node (type_qname_id);
-CREATE SEQUENCE alf_node_seq START WITH 1 INCREMENT BY 1;
 
 CREATE INDEX fk_alf_store_root ON alf_store (root_node_id);
 ALTER TABLE alf_store ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES alf_node (id);
 
+CREATE SEQUENCE alf_child_assoc_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_child_assoc
 (
     id INT8 NOT NULL,
@@ -347,8 +259,8 @@ CREATE INDEX fk_alf_cass_tqn ON alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON alf_child_assoc (qname_ns_id);
 CREATE INDEX idx_alf_cass_qncrc ON alf_child_assoc (qname_crc, type_qname_id, parent_node_id);
 CREATE INDEX idx_alf_cass_pri ON alf_child_assoc (parent_node_id, is_primary, child_node_id);
-CREATE SEQUENCE alf_child_assoc_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_locale_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_locale
 (
     id INT8 NOT NULL,
@@ -357,8 +269,8 @@ CREATE TABLE alf_locale
     PRIMARY KEY (id)    
 );
 CREATE UNIQUE INDEX locale_str ON alf_locale (locale_str);
-CREATE SEQUENCE alf_locale_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_attributes_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_attributes
 (
     id INT8 NOT NULL,
@@ -378,7 +290,6 @@ CREATE TABLE alf_attributes
     CONSTRAINT fk_alf_attr_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id)
 );
 CREATE INDEX fk_alf_attr_acl ON alf_attributes (acl_id);
-CREATE SEQUENCE alf_attributes_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE alf_global_attributes
 (
@@ -425,6 +336,7 @@ CREATE TABLE alf_node_aspects
 CREATE INDEX fk_alf_nasp_n ON alf_node_aspects (node_id);
 CREATE INDEX fk_alf_nasp_qn ON alf_node_aspects (qname_id);
 
+CREATE SEQUENCE alf_node_assoc_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_node_assoc
 (
     id INT8 NOT NULL,
@@ -441,7 +353,6 @@ CREATE UNIQUE INDEX source_node_id ON alf_node_assoc (source_node_id, target_nod
 CREATE INDEX fk_alf_nass_snode ON alf_node_assoc (source_node_id);
 CREATE INDEX fk_alf_nass_tnode ON alf_node_assoc (target_node_id);
 CREATE INDEX fk_alf_nass_tqn ON alf_node_assoc (type_qname_id);
-CREATE SEQUENCE alf_node_assoc_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE alf_node_properties
 (

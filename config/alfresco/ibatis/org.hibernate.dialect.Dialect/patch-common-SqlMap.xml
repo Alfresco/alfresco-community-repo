@@ -12,6 +12,8 @@
     
     <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
     
+    <typeAlias alias="DuplicateEntry" type="org.alfresco.repo.admin.patch.impl.DuplicateEntry" />
+    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
@@ -70,6 +72,13 @@
         <result property="lastModified" column="lastModified" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
+    <resultMap id="result_DuplicateEntry" class="DuplicateEntry">
+        <result property="id" column="child_id" jdbcType="BIGINT" javaType="java.lang.Long" />
+        <result property="parentId" column="parent_id" jdbcType="BIGINT" javaType="java.lang.Long" />
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String" />
+        <result property="amount" column="cnt" jdbcType="BIGINT" javaType="java.lang.Long" />
+    </resultMap>
+    
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -101,6 +110,12 @@
         <parameter property="typeQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="propQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="namePattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_RenamedDuplicateEntry" class="DuplicateEntry">
+        <parameter property="name" jdbcType="VARCHAR" javaType="java.lang.String" />
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long" />
+        <parameter property="parentId" jdbcType="BIGINT" javaType="java.lang.Long" />
     </parameterMap>
     
     <!--                -->
@@ -320,6 +335,30 @@
             acl_id > ?
     </select>
     
+    <select id="select_AvmNodeDuplicates" resultMap="result_DuplicateEntry">
+        <![CDATA[
+        select
+            ce.child_id, ce.parent_id, ce.name, entities.cnt
+        from
+            avm_child_entries ce,
+            (
+               select
+                  ce2.parent_id, lower(ce2.name) as lname, count(*) as cnt
+               from
+                  avm_child_entries ce2
+               group by
+                  ce2.parent_id, lower(ce2.name)
+               having
+                  count(*) > 1
+            ) entities
+        where
+            (ce.parent_id = entities.parent_id)
+            and (lower(ce.name) = entities.lname)
+        order by
+            parent_id, lower(name), child_id
+       ]]>
+    </select>
+    
     <!--                -->
     <!-- Updates        -->
     <!--                -->
@@ -356,6 +395,16 @@
             qname_crc = ?
         where
             id = ?
+    </update>
+    
+    <update id="update_AvmNodeNameById" parameterMap="parameter_RenamedDuplicateEntry">
+        update
+            avm_child_entries
+        set
+            name = ?
+        where
+            child_id = ?
+            and parent_id = ?
     </update>
     
     <!--                -->

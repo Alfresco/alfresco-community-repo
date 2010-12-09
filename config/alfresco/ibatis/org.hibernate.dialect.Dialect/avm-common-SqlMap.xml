@@ -369,7 +369,7 @@
             vers = #vers#
         where
             id = #id#
-        <isGreaterThan property="vers" compareValue="1">
+        <isGreaterThan property="vers" compareValue="0">
             and vers = (#vers#-1)
         </isGreaterThan>
     </update>
@@ -600,7 +600,7 @@
             vers = #vers#
         where
             id = #id#
-        <isGreaterThan property="vers" compareValue="1">
+        <isGreaterThan property="vers" compareValue="0">
             and vers = (#vers#-1)
         </isGreaterThan>
     </update>
@@ -614,7 +614,7 @@
             vers = #vers#
         where
             id = #id#
-        <isGreaterThan property="vers" compareValue="1">
+        <isGreaterThan property="vers" compareValue="0">
             and vers = (#vers#-1)
         </isGreaterThan>
     </update>
@@ -631,7 +631,7 @@
             vers = #vers#
         where
             id = #id#
-        <isGreaterThan property="vers" compareValue="1">
+        <isGreaterThan property="vers" compareValue="0">
             and vers = (#vers#-1)
         </isGreaterThan>
     </update>

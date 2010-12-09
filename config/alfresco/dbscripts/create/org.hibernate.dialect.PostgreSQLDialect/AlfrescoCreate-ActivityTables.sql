@@ -7,6 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+CREATE SEQUENCE alf_activity_feed_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_activity_feed
 (
     id INT8 NOT NULL,
@@ -27,8 +28,8 @@ CREATE INDEX feed_postuserid_idx ON alf_activity_feed (post_user_id);
 CREATE INDEX feed_feeduserid_idx ON alf_activity_feed (feed_user_id);
 CREATE INDEX feed_sitenetwork_idx ON alf_activity_feed (site_network);
 CREATE INDEX feed_activityformat_idx ON alf_activity_feed (activity_format);
-CREATE SEQUENCE alf_activity_feed_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_activity_feed_control_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_activity_feed_control
 (
     id INT8 NOT NULL,
@@ -39,8 +40,8 @@ CREATE TABLE alf_activity_feed_control
     PRIMARY KEY (id)    
 );
 CREATE INDEX feedctrl_feeduserid_idx ON alf_activity_feed_control (feed_user_id);
-CREATE SEQUENCE alf_activity_feed_control_seq START WITH 1 INCREMENT BY 1;
 
+CREATE SEQUENCE alf_activity_post_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_activity_post
 (
     sequence_id INT8 NOT NULL,
@@ -57,7 +58,6 @@ CREATE TABLE alf_activity_post
 );
 CREATE INDEX post_jobtasknode_idx ON alf_activity_post (job_task_node);
 CREATE INDEX post_status_idx ON alf_activity_post (status);
-CREATE SEQUENCE alf_activity_post_seq START WITH 1 INCREMENT BY 1;
 
 
 --

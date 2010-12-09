@@ -966,56 +966,6 @@ ALTER TABLE alf_attributes
    ADD INDEX fk_alf_attr_acl (acl_id)
 ;
 
-ALTER TABLE alf_audit_date DROP INDEX adt_woy_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_date_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_y_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_q_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_m_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_dow_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_doy_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_dom_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_hy_idx;  -- (optional)
-ALTER TABLE alf_audit_date DROP INDEX adt_wom_idx;  -- (optional)
-ALTER TABLE alf_audit_date
-   ADD INDEX idx_alf_adtd_woy (week_of_year),
-   ADD INDEX idx_alf_adtd_q (quarter),
-   ADD INDEX idx_alf_adtd_wom (week_of_month),
-   ADD INDEX idx_alf_adtd_dom (day_of_month),
-   ADD INDEX idx_alf_adtd_doy (day_of_year),
-   ADD INDEX idx_alf_adtd_dow (day_of_week),
-   ADD INDEX idx_alf_adtd_m (month),
-   ADD INDEX idx_alf_adtd_hy (half_year),
-   ADD INDEX idx_alf_adtd_fy (full_year),
-   ADD INDEX idx_alf_adtd_dat (date_only)
-;
-
-ALTER TABLE alf_audit_fact DROP INDEX adt_user_idx;  -- (optional)
-ALTER TABLE alf_audit_fact DROP INDEX adt_store_idx;  -- (optional)
-ALTER TABLE alf_audit_fact
-   DROP INDEX FKEAD18174A0F9B8D9, DROP FOREIGN KEY FKEAD18174A0F9B8D9,
-   DROP INDEX FKEAD1817484342E39, DROP FOREIGN KEY FKEAD1817484342E39,
-   DROP INDEX FKEAD18174F524CFD7, DROP FOREIGN KEY FKEAD18174F524CFD7
-;
-ALTER TABLE alf_audit_fact
-   ADD INDEX idx_alf_adtf_ref (store_protocol, store_id, node_uuid),
-   ADD INDEX idx_alf_adtf_usr (user_id),
-   ADD INDEX fk_alf_adtf_src (audit_source_id),
-   ADD CONSTRAINT fk_alf_adtf_src FOREIGN KEY (audit_source_id) REFERENCES alf_audit_source (id),
-   ADD INDEX fk_alf_adtf_date (audit_date_id),
-   ADD CONSTRAINT fk_alf_adtf_date FOREIGN KEY (audit_date_id) REFERENCES alf_audit_date (id),
-   ADD INDEX fk_alf_adtf_conf (audit_conf_id),
-   ADD CONSTRAINT fk_alf_adtf_conf FOREIGN KEY (audit_conf_id) REFERENCES alf_audit_config (id)
-;
-
-ALTER TABLE alf_audit_source DROP INDEX app_source_app_idx;  -- (optional)
-ALTER TABLE alf_audit_source DROP INDEX app_source_ser_idx;  -- (optional)
-ALTER TABLE alf_audit_source DROP INDEX app_source_met_idx;  -- (optional)
-ALTER TABLE alf_audit_source
-   ADD INDEX idx_alf_adts_met (method),
-   ADD INDEX idx_alf_adts_ser (service),
-   ADD INDEX idx_alf_adts_app (application)
-;
-
 ALTER TABLE alf_global_attributes DROP FOREIGN KEY FK64D0B9CF69B9F16A; -- (optional)
 ALTER TABLE alf_global_attributes DROP INDEX FK64D0B9CF69B9F16A; -- (optional)
 -- alf_global_attributes.attribute is declared unique.  Indexes may automatically have been created.

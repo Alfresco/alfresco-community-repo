@@ -366,7 +366,7 @@
             </isEqual>
         where
             id = #id#
-        <isGreaterThan property="version" compareValue="1">
+        <isGreaterThan property="version" compareValue="0">
             and version = (#version#-1)
         </isGreaterThan>
     </update>
@@ -394,7 +394,8 @@
             parent_node_id = #parentNode.id# and
             type_qname_id = #typeQNameId# and
             qname_ns_id = #qnameNamespaceId# and
-            qname_localname = #qnameLocalName#
+            qname_localname = #qnameLocalName# and
+            child_node_id = #childNode.id#
     </update>
     
     <update id="update_ParentAssocsOfChild" parameterClass="ChildAssoc">
@@ -770,7 +771,7 @@
             parentNode.id = #parentNode.id#
             <isNotNull property="childNode">and assoc.child_node_id = #childNode.id#</isNotNull>
             <isNotNull property="typeQNameIds">
-                and type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
+                and assoc.type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
             </isNotNull>
             <isNotNull property="typeQNameId">and assoc.type_qname_id = #typeQNameId#</isNotNull>
             <isNotNull property="qnameCrc">and assoc.qname_crc = #qnameCrc#</isNotNull>

@@ -138,6 +138,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASSOC_ASPECT_CHILD_ASSOC = QName.createQName(NAMESPACE, "aspect-child-assoc");
     public static final QName ASSOC_ASPECT_NORMAL_ASSOC = QName.createQName(NAMESPACE, "aspect-normal-assoc");
     
+    public static final QName ASPECT_WITH_ASSOCIATIONS_EXTRA = QName.createQName(NAMESPACE, "withAssociationsExtra");
+    public static final QName ASSOC_ASPECT_CHILD_ASSOC_01 = QName.createQName(NAMESPACE, "aspect-child-assoc-01");
+    public static final QName ASSOC_ASPECT_CHILD_ASSOC_02 = QName.createQName(NAMESPACE, "aspect-child-assoc-02");
+    public static final QName ASSOC_ASPECT_NORMAL_ASSOC_01 = QName.createQName(NAMESPACE, "aspect-normal-assoc-01");
+    public static final QName ASSOC_ASPECT_NORMAL_ASSOC_02 = QName.createQName(NAMESPACE, "aspect-normal-assoc-02");
+
     public static final QName TYPE_QNAME_TEST_MULTIPLE_TESTER = QName.createQName(NAMESPACE, "multiple-tester");
     public static final QName PROP_QNAME_STRING_PROP_SINGLE = QName.createQName(NAMESPACE, "stringprop-single");
     public static final QName PROP_QNAME_STRING_PROP_MULTIPLE = QName.createQName(NAMESPACE, "stringprop-multiple");
@@ -790,6 +796,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 0, nodeService.getChildAssocs(sourceNodeRef).size());
         assertEquals("Expected exactly zero target",
                 0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
+
+        // Force different cleanup queries:
+        //    ALF-5308: SQL error when changing name for record / folder with dispostion schedule applied
+        nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS_EXTRA, null);
+        // Make the associations
+        nodeService.addChild(
+                sourceNodeRef,
+                targetNodeRef,
+                ASSOC_ASPECT_CHILD_ASSOC_01,
+                QName.createQName(NAMESPACE, "aspect-child-01"));
+        nodeService.addChild(
+                sourceNodeRef,
+                targetNodeRef,
+                ASSOC_ASPECT_CHILD_ASSOC_02,
+                QName.createQName(NAMESPACE, "aspect-child-02"));
+        nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC_01);
+        nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC_02);
+        nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS_EXTRA);
     }
     
     /**

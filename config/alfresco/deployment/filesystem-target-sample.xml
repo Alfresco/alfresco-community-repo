@@ -3,18 +3,10 @@
 
 <!--  Built in deployment server target -->
 
-<beans>
+<!--  Sample file -->
+<!-- Copy to <TOMCAT HOME>/shared/alfresco/extension/deployment and rename to filesystem-target.xml (remove the -sample) -->
 
-     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>
-        <property name="locations">
-            <list>
-                <value>classpath:alfresco/deployment/filesystem.properties</value>
-            </list>
-        </property>
-    </bean>
+<beans>
  
     <!--  This is the common configuration for all file system receivers -->
     <bean id="fileSystemReceiverService" class="org.alfresco.deployment.impl.fsr.FileSystemReceiverServiceImpl"

@@ -21,6 +21,7 @@ package org.alfresco.repo.copy;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -59,9 +61,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Node operations service unit tests
+ * Unit tests for copy service
  * 
  * @author Roy Wetherall
  */
@@ -715,6 +718,61 @@ public class CopyServiceImplTest extends BaseSpringTest
         copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of Copy of Copy of myDoc.txt");
         assertEquals(copyQName, this.nodeService.getPrimaryParent(copy).getQName());
     }
+    
+    
+    /**
+     * https://issues.alfresco.com/jira/browse/ALF-3119
+     * 
+     * Test copying of MLText values.
+     */
+    public void testCopyMLText()
+    {
+        // Create a folder and content node        
+        Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
+        propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
+        NodeRef folderNode = this.nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();        
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        props.put(ContentModel.PROP_NAME, "myDoc.txt");
+        
+        String FRENCH_DESCRIPTION = "french description";
+        String GERMAN_DESCRIPTION = "german description";
+        String ITALY_DESCRIPTION = "italy description";
+        String DEFAULT_DESCRIPTION = "default description";
+        MLText description = new MLText();
+        description.addValue(Locale.getDefault(), DEFAULT_DESCRIPTION);
+        description.addValue(Locale.FRANCE, FRENCH_DESCRIPTION);
+        description.addValue(Locale.GERMAN, GERMAN_DESCRIPTION);
+        description.addValue(Locale.ITALY, ITALY_DESCRIPTION);
+        props.put(ContentModel.PROP_DESCRIPTION, description);
+        
+        NodeRef contentNode = this.nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,  "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
+        
+        NodeRef copy = this.copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
+        assertEquals("Copy of myDoc.txt", this.nodeService.getProperty(copy, ContentModel.PROP_NAME));
+        QName copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of myDoc.txt");
+        assertEquals(copyQName, this.nodeService.getPrimaryParent(copy).getQName());
+
+        // Test uses DB Node Service.
+        Serializable desc = nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION);
+        if(desc instanceof MLText)
+        {
+            // Using a node service without a MLProperty interceptor
+            MLText value = (MLText)desc;
+            assertEquals("French description is wrong", FRENCH_DESCRIPTION, value.get(Locale.FRANCE));
+            assertEquals("German description is wrong", GERMAN_DESCRIPTION, value.get(Locale.GERMAN));               
+        }
+        else
+        {    
+          I18NUtil.setLocale(Locale.FRANCE);
+          assertEquals("French description is wrong", FRENCH_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));
+       
+          I18NUtil.setLocale(Locale.GERMAN);
+          assertEquals("German description is wrong", GERMAN_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));   
+        }
+   }
+    
+    
     
     /**
      * Check that the copied node contains the state we are expecting

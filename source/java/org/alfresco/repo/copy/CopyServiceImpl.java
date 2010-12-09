@@ -773,7 +773,7 @@ public class CopyServiceImpl implements CopyService
     {
         // The first call will fail permissions, so there is no point doing permission checks with
         // the other calls
-        Map<QName, Serializable> sourceNodeProperties = nodeService.getProperties(sourceNodeRef);
+        Map<QName, Serializable> sourceNodeProperties = internalNodeService.getProperties(sourceNodeRef);
         QName sourceNodeTypeQName = internalNodeService.getType(sourceNodeRef);
         Set<QName> sourceNodeAspectQNames = internalNodeService.getAspects(sourceNodeRef);
         

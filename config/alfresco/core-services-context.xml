@@ -1204,10 +1204,9 @@
             <ref bean="ADMSearchService" />
         </property>
         <property name="internalNodeService">
-            <ref bean="nodeService" />
+            <ref bean="mlAwareNodeService" />
         </property>
     </bean>
-
     <!--                           -->
     <!-- CheckOut/CheckIn Service  -->
     <!--                           -->

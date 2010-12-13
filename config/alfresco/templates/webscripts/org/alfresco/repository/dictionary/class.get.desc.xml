@@ -1,6 +1,6 @@
 <webscript>
-   <shortname>Get Class Definitions</shortname>
-   <description>Get the collection of class definitions for a given classname</description>
+   <shortname>Get class definitions for classname</shortname>
+   <description>Gets the collection of class definitions for a given classname.</description>
    <url>/api/classes/{className}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>

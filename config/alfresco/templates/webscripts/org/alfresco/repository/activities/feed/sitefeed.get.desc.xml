@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Activities Site Feed Web Script</shortname>
-  <description>Allow currently logged in user to get feed for specified site (if private site then user must be a member or an admin user)</description>
+  <shortname>Activities site feed</shortname>
+  <description>Allows the currently logged in user to get the feed for a specified site. If the site specified is private, then user must be a member or an admin user.</description>
   <url>/api/activities/feed/site/{siteId}</url>
   <url>/api/activities/feed/site/{siteId}?format=atomfeed</url>
   <url>/api/activities/feed/site/{siteId}?format=json</url>

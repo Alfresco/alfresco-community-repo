@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Activity User Feed Controls</shortname>
+  <shortname>Set activity user feed control</shortname>
   <description>Set activity feed control (opt-out) for currently logged in user.</description>
   <url>/api/activities/feed/control</url>
   <url>/api/activities/feed/control?format=json</url>

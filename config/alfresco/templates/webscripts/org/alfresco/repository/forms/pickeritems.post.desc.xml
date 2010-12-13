@@ -1,6 +1,6 @@
 <webscript>
   <shortname>PickerItems</shortname>
-  <description>Service to return metadata of multiple items to display in the object finder</description>
+  <description>Service to return metadata of multiple items to display in the object finder.</description>
   <url>/api/forms/picker/items</url>
   <format default="json"/>
   <authentication>user</authentication>

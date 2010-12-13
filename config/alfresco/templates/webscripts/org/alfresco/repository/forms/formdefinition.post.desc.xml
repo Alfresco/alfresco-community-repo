@@ -1,14 +1,16 @@
 <webscript>
   <shortname>Form Definitions</shortname>
   <description><![CDATA[
-  Returns a form definition for the requested item.<br/>
-  The body of the post should be in the form<br/>
-  {<br/>
-  &nbsp;&nbsp;&nbsp;"itemKind" : item kind,<br/>
-  &nbsp;&nbsp;&nbsp;"itemId" : item id,<br/>
-  &nbsp;&nbsp;&nbsp;"fields" : [fields],<br/>
-  &nbsp;&nbsp;&nbsp;"force" : [force]<br/>
-  }<br/>
+  Returns a form definition for the requested item.
+  The body of the post should be in the following form:-
+  <pre>
+  {
+     "itemKind" : item kind,
+     "itemId" : item id,
+     "fields" : [fields],
+     "force" : [force]
+  }
+  </pre>
   Returns the form model.
   ]]>
   </description>

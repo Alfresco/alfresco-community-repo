@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Blog</shortname>
-  <description>Updates a blog</description>
+  <shortname>Put blog</shortname>
+  <description>Updates a blog.</description>
   <url>/api/blog/site/{site}/{container}/{path}</url>
   <url>/api/blog/site/{site}/{container}</url>
   <url>/api/blog/node/{store_type}/{store_id}/{id}</url>

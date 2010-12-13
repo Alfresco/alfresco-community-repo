@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Activities User Feed Web Script</shortname>
-  <description>Allow currently logged in user to get their feed</description>
+  <shortname>Activities user feed</shortname>
+  <description>Allow the currently logged in user to get their feed.</description>
   <url>/api/activities/feed/user</url>
   <url>/api/activities/feed/user?format=atomfeed</url>
   <url>/api/activities/feed/user?format=json</url>

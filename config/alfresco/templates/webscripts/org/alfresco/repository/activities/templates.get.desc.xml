@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Activity Template Paths</shortname>
+  <shortname>Activity template paths</shortname>
   <description>Get a collection of the template paths.</description>
   <url>/api/activities/templates</url>
   <url>/api/activities/templates?format=json</url>

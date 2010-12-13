@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Activity Type Template</shortname>
+  <shortname>Activity type template</shortname>
   <description>Get the activity type template.</description>
   <url>/api/activities/template/{path}</url>
   <url>/api/activities/template/{path}?format=text</url>

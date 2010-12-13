@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Activity User Feed Controls</shortname>
-  <description>Unset activity feed control (opt-out) for currently logged in user.</description>
+  <shortname>Unset activity user feed control</shortname>
+  <description>Delete the activity feed control (opt-out) for currently logged in user.</description>
   <url>/api/activities/feed/control?s={siteId}&amp;a={appToolId}</url>
   <url>/api/activities/feed/control?s={siteId}&amp;a={appToolId}&amp;format=json</url>
   <format default="json"/>

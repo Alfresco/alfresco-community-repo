@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Forum post replies</shortname>
-  <description>Get the forum posts</description>
+  <shortname>Get forum post replies</shortname>
+  <description>Get the forum post replies.</description>
   <url>/api/forum/post/site/{site}/{container}/{path}/replies</url>
   <url>/api/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
   <format default="json">argument</format>

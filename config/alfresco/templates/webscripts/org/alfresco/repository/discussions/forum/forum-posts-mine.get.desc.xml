@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Forum my posts</shortname>
-  <description>Get the forum posts created by the current user</description>
+  <shortname>Get my forum posts</shortname>
+  <description>Gets the forum posts created by the current user.</description>
   <url>/api/forum/site/{site}/{container}/{path}/posts/myposts</url>
   <url>/api/forum/site/{site}/{container}/posts/myposts</url>
   <url>/api/forum/node/{store_type}/{store_id}/{id}/posts/myposts</url>

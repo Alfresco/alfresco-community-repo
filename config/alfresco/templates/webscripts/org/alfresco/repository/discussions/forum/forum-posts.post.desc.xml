@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Forum posts</shortname>
-  <description>Adds a post to a forum</description>
+  <shortname>Add forum post</shortname>
+  <description>Adds a post to a forum.</description>
   <url>/api/forum/site/{site}/{container}/{path}/posts</url>
   <url>/api/forum/site/{site}/{container}/posts</url>
   <url>/api/forum/node/{store_type}/{store_id}/{id}/posts</url>

@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Activity User Feed Controls</shortname>
+  <shortname>Get activity user feed controls</shortname>
   <description>Get the activity feed controls (opt-outs) for currently logged in user.</description>
   <url>/api/activities/feed/controls</url>
   <url>/api/activities/feed/controls?format=json</url>

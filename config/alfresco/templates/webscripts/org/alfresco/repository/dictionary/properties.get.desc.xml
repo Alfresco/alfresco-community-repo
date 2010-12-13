@@ -1,6 +1,6 @@
 <webscript>
-   <shortname>Get Property Definitions</shortname>
-   <description>Get the collection of property definitions</description>
+   <shortname>Get property definitions</shortname>
+   <description>Gets the collection of property definitions.</description>
    <url>/api/classes/{classname}/properties?nsp={namespacePrefix?}&amp;n={name?}</url>
    <url>/api/properties?nsp={namespacePrefix?}&amp;n={name?}</url>
    <format default="json">argument</format>

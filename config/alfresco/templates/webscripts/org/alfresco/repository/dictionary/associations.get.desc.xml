@@ -1,6 +1,6 @@
 <webscript>
-   <shortname>Get Association Definitions</shortname>
-   <description>Get the collection of association definitions for a given classname </description>
+   <shortname>Get association definitions for classname</shortname>
+   <description>Gets the collection of association definitions for a given classname.</description>
    <url>/api/classes/{classname}/associations?af={associationFilter?}&amp;nsp={namespacePrefix?}&amp;n={name?}</url>
    <format default="json">argument</format>
   <authentication>user</authentication>

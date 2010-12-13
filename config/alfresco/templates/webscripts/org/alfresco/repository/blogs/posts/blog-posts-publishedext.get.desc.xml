@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Blog posts</shortname>
-  <description>Get all posts for a blog</description>
+  <shortname>Get all externally published posts</shortname>
+  <description>Gets all externally published posts for a blog.</description>
   <url>/api/blog/site/{site}/{container}/{path}/posts/publishedext</url>
   <url>/api/blog/site/{site}/{container}/posts/publishedext</url>
   <url>/api/blog/node/{store_type}/{store_id}/{id}/posts/publishedext</url>

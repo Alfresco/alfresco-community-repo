@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Forum posts</shortname>
-  <description>Get the new forum posts</description>
+  <shortname>Get hot forum posts</shortname>
+  <description>Get the hot topics in the forum.</description>
   <url>/api/forum/site/{site}/{container}/{path}/posts/hot</url>
   <url>/api/forum/site/{site}/{container}/posts/hot</url>
   <url>/api/forum/node/{store_type}/{store_id}/{id}/posts/hot</url>

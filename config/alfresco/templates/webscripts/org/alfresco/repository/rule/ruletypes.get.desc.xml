@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Rule Type Collection</shortname>
+  <shortname>Get rule type collection</shortname>
   <description>Gets all Rule Types defined by the system.</description>
   <url>/api/ruletypes</url>
   <format default="json">argument</format>

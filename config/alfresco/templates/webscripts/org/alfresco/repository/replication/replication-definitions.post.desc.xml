@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Create a new persisted Replication Definition</shortname>
-  <description>Creates a new replication definition with the supplied details</description>
+  <shortname>Create a new persisted replication definition</shortname>
+  <description>Creates a new replication definition with the supplied details.</description>
   <url>/api/replication-definitions</url>
   <format default="json"/>
   <authentication>admin</authentication>

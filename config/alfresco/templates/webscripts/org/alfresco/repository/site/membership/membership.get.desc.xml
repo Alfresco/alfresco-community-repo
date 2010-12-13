@@ -1,9 +1,9 @@
 <webscript>
-  <shortname>Get Web Site Membership</shortname>
+  <shortname>Get Web site membership</shortname>
   <description> <![CDATA[
-  Get the membership details for a user or group
+  Get the membership details for a user or group.
   <br />
-  'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
+  'shortname' is the shortname of the Web site,  'authorityname' is the full authority name for the membership.
   <br />
   Returns a membership or Status.NOT_FOUND(404)
   

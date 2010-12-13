@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Action Constraint Resource</shortname>
-  <description>Get action constraint</description>
+  <shortname>Get action constraint</shortname>
+  <description>Gets an action constraint resource.,</description>
   <url>/api/actionConstraints/{name}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

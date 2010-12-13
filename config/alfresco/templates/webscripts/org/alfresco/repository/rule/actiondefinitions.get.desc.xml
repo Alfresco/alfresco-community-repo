@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Action Definition Collection</shortname>
+  <shortname>Get action definition collection</shortname>
   <description>Gets a collection of the available actions.</description>
   <url>/api/actiondefinitions</url>
   <format default="json">argument</format>

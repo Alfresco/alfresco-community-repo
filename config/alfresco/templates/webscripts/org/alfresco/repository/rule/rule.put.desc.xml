@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Update Rule</shortname>
+  <shortname>Update rule</shortname>
   <description>Update the details of a rule.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/ruleset/rules/{rule_id}</url>
   <format default="json">argument</format>

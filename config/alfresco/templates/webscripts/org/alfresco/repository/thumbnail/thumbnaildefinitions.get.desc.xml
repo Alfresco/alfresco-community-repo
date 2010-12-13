@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>ThumbnailsDefinitions</shortname>
-  <description>Get the thumbnails definitions for a content resource</description>
+  <shortname>Get thumbnail definitions</shortname>
+  <description>Get the thumbnail definitions for a content resource.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnaildefinitions</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnaildefinitions</url>  
   <format default="json"/>

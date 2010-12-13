@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Site</shortname>
+  <shortname>Delete site</shortname>
   <description>Delete the details of a site.</description>
   <url>/api/sites/{shortname}</url>
   <format default="json">argument</format>

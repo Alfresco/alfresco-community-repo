@@ -1,6 +1,6 @@
 <webscript>
    <shortname>Server version metadata</shortname>
-   <description>Provides information on the version and schema of the server</description>
+   <description>Provides information on the version and schema of the server.</description>
    <url>/api/server</url>
    <format default="json"/>
    <authentication>none</authentication>

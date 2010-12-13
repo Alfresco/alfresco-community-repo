@@ -1,6 +1,6 @@
 <webscript kind="org.alfresco.repository.content.stream">
-  <shortname>Thumbnails</shortname>
-  <description>Get a named thumbnail for a content resource</description>
+  <shortname>Get thumbnail</shortname>
+  <description>Gets a named thumbnail for a content resource.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
   <format default="">argument</format>

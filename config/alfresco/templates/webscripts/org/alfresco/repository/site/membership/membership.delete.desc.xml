@@ -1,9 +1,9 @@
 <webscript>
-  <shortname>Delete Web Site Membership</shortname>
+  <shortname>Delete Web site membership</shortname>
   <description> <![CDATA[
-  Delete membership from a web site.
+  Delete membership from a Web site.
   <br />
-  'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
+  'shortname' is the shortname of the Web site,  'authorityname' is the full authority name for the membership.
   ]]></description>
   <url>/api/sites/{shortname}/memberships/{authorityname}</url>
   <format default="json">argument</format>

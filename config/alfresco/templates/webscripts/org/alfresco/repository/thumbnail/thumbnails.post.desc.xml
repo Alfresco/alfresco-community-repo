@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Thumbnails</shortname>
-  <description>Create a new thumbnail for a content resource</description>
+  <shortname>Create thumbnail</shortname>
+  <description>Creates a new thumbnail for a content resource.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails?as={async?}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails?as={async?}</url>
   <format default="json"/>

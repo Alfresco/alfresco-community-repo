@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>SitesQuery</shortname>
+  <shortname>Query site collection</shortname>
   <description>Queries the collection of sites.</description>
   <url>/api/sites/query</url>
   <format default="json">argument</format>

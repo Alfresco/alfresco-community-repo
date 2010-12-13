@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Alfresco Keyword Search (OpenSearch Enabled)</shortname>
-  <description>Execute Keyword Search against Alfresco Repository (Company Home and below)</description>
+  <shortname>Alfresco keyword search (OpenSearch enabled)</shortname>
+  <description>Executes a keyword search against the Alfresco repository (Company Home and below).</description>
   <url>/api/search/keyword.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
   <url>/search/keyword.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
   <url>/api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>

@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>List Persisted Replication Definitions</shortname>
+  <shortname>List persisted replication definitions</shortname>
   <description>
   Returns a simple representation of all persisted replication definitions.
   </description>

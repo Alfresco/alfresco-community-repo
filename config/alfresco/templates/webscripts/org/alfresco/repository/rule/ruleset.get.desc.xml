@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Rule Set</shortname>
+  <shortname>Get rule set</shortname>
   <description>Gets the rule set for a node.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/ruleset?ruleType={rule_type?}</url>
   <format default="json">argument</format>

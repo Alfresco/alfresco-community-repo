@@ -1,17 +1,17 @@
 <webscript>
   <shortname>Get nodes for tag</shortname>
   <description><![CDATA[
-  Get the nodes which have a given tag
-  <BR />
+  Get the nodes which have a given tag.
+  <br />
   Return content
-  <BR />
+  <br />
   Array of
   <ul>
   <li>nodeRef</li>
   <li>url</li>
   </ul>
        
-  <BR />
+  <br />
   Return status: STATUS_OK, 200
   
   ]]></description>

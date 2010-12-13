@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Add Web Site Membership</shortname>
+  <shortname>Add Web site membership</shortname>
   <description> <![CDATA[
-  Adds a new membership to the web site
+  Adds a new membership to the Web site.
   <br />
   'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
     Required parameters,

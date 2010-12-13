@@ -1,8 +1,8 @@
 <webscript>
-  <shortname>Get Web Site</shortname>
+  <shortname>Get Web site</shortname>
   <description>
   <![CDATA[
-  Get the details of a web site.
+  Get the details of a Web site.
 
   Returns 200, STATUS_OK on success.
   ]]></description>

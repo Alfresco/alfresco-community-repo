@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Tagscope tags</shortname>
+  <shortname>Get tagscope tags</shortname>
   <description><![CDATA[
-  Get all tags of the nearest available tagscope
+  Get all tags of the nearest available tagscope.
   ]]></description>
   <url>/api/tagscopes/node/{store_type}/{store_id}/{id}/tags</url>
   <url>/api/tagscopes/site/{site}/tags</url>

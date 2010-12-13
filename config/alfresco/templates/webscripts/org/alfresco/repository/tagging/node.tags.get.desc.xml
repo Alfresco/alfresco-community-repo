@@ -1,8 +1,8 @@
 <webscript>
-  <shortname>Get Node Tags</shortname>
+  <shortname>Get node tags</shortname>
   <description><![CDATA[
-  Get all the tags for a node
-  <BR> Returns STATUS_OK (200)
+  Get all the tags for a node.
+  <br> Returns STATUS_OK (200)
   ]]>
   </description>
   <url>/api/node/{store_type}/{store_id}/{id}/tags</url>

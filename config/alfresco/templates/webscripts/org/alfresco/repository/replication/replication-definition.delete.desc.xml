@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Deletes a persisted Replication Definition</shortname>
-  <description>Deletes a previously persisted replication defintion with the supplied name</description>
+  <shortname>Delete a persisted replication definition</shortname>
+  <description>Deletes a previously persisted replication defintion with the supplied name.</description>
   <url>/api/replication-definition/{replication_definition_name}</url>
   <format default="json"/>
   <authentication>admin</authentication>

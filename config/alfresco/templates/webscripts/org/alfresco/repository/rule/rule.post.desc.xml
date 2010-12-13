@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Rule</shortname>
+  <shortname>Create rule</shortname>
   <description>Creates a new rule.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/ruleset/rules</url>
   <format default="json">argument</format>

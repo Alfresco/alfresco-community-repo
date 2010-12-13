@@ -1,9 +1,9 @@
 <webscript>
-  <shortname>File Upload</shortname>
+  <shortname>File upload</shortname>
   <description><![CDATA[
   Upload file content and meta-data into repository.
   
-  <BR />
+  <br />
   HTML form data
   <ul>
 	 <li>filedata, (mandatory) HTML type file</li>
@@ -19,13 +19,13 @@
      <li>thumbnails</li>
   </ul> 
   
-  <BR />
+  <br />
   Return content
   <ul>
   <li>nodeRef</li>
   </ul>
 
-  <BR />
+  <br />
   Return status: STATUS_OK (200)
 
   ]]>

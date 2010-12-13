@@ -1,13 +1,13 @@
 <webscript>
   <shortname>Add tag</shortname>
   <description>  <![CDATA[
-  Add one or more tags to the node
-  <BR />Input: 
-  <BR />(mandatory) array of String
+  Add one or more tags to the node.
+  <br />Input: 
+  <br />(mandatory) array of String
   
-  <BR />Returns the array of tags
+  <br />Returns the array of tags
   
-  <BR />Return STATUS_OK (200).
+  <br />Return STATUS_OK (200).
   
   ]]></description>
   <url>/api/node/{store_type}/{store_id}/{id}/tags</url>

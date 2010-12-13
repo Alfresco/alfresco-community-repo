@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Rule</shortname>
+  <shortname>Get rule</shortname>
   <description>Get the details of a rule. The details returned are fully expanded, including child actions (if composite action), conditions and compensating actions.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/ruleset/rules/{rule_id}</url>
   <format default="json">argument</format>

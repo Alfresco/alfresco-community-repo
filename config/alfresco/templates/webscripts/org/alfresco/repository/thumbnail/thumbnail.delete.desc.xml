@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Thumbnails</shortname>
-  <description>Delete a thumbnail for a content resource</description>
+  <shortname>Delete thumbnail</shortname>
+  <description>Deletes a thumbnail for a content resource.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>
   <format default="json"/>

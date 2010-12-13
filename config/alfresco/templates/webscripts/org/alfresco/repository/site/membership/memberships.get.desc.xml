@@ -1,9 +1,9 @@
 <webscript>
-  <shortname>List Web Site Memberships</shortname>
+  <shortname>List Web site memberships</shortname>
   <description> <![CDATA[
-  Get a colleciton of a Web Site memberships.
+  Get a colleciton of a Web site memberships.
    <br />
-  'shortname' is the shortname of the web site
+  'shortname' is the shortname of the Web site
   <br />
   Parameters:
   <ul>

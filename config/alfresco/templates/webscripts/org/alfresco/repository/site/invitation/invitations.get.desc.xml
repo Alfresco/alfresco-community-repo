@@ -1,19 +1,19 @@
 <webscript>
-  <shortname>List Invitations</shortname>
+  <shortname>List invitations</shortname>
   <description><![CDATA[
   Get a collecton of a site web invitations.
-  <BR />
+  <br />
   With no parameters, returns all open invitations for this web site. 
-  <BR />
+  <br />
   With inviteeUserName, returns all open invitations for this web site and invitee.
-  <BR />
+  <br />
   With invitationType, returns all open invitations of the specified type (Either NOMINATED or MODERATED).
   
-  <BR />
+  <br />
   
   Returns a JSON element 
   
-  <BR />
+  <br />
   ]]>
   </description>
   <url>/api/sites/{shortname}/invitations?inviteeUserName={inviteeUserName?}&amp;invitationType={invitationType?}</url>

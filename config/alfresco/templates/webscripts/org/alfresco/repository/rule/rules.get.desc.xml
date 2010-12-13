@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Rules Collection</shortname>
+  <shortname>Get rules collection</shortname>
   <description>Gets a list of all owned rules for a given node. The node can be specified either using a node reference or a query path.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/ruleset/rules?ruleType={rule_type?}</url>
   <format default="json">argument</format>

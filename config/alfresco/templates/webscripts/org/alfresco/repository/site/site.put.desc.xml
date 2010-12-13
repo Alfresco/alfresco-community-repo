@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Update Web Site</shortname>
+  <shortname>Update Web site</shortname>
   <description>  <![CDATA[
-  Update the details of a site.
+  Update the details of a Web site.
   
   The following properties may be updated.
   

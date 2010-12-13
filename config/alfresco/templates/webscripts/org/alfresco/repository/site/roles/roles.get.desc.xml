@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Roles</shortname>
+  <shortname>Get roles</shortname>
   <description>Get the authority roles of a site.</description>
   <url>/api/sites/{shortname}/roles</url>
   <format default="json">argument</format>

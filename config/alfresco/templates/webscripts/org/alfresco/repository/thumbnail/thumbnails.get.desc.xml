@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Thumbnails</shortname>
-  <description>Get the thumbnails for a content resource</description>
+  <shortname>Get thumbnails</shortname>
+  <description>Gets the thumbnails for a content resource.</description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails</url>  
   <format default="json"/>

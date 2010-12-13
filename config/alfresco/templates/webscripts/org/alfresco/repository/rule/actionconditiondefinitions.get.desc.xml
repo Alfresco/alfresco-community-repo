@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Action Condition Definition Collection</shortname>
+  <shortname>Get action condition definition collection</shortname>
   <description>Gets a collection of action conditions available.</description>
   <url>/api/actionconditiondefinitions</url>
   <format default="json">argument</format>

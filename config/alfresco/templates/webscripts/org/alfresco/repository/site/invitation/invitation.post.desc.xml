@@ -2,28 +2,28 @@
   <shortname>Create invitation for web site</shortname>
   <description><![CDATA[
   Create a new invitation for this web site.
-  <BR />
+  <br />
   For a Nominated Invitation, where an existing site member nominates someone else who is possibly not yet an alfresco user to become a member of this web site.
   
-  <BR>
+  <br />
   For an existing user, the invitee is identified by inviteeUserName.   
   For a user who does not have a userName a new account will be generated based upon 
   	inviteeFirstName, inviteeLastName and inviteeEmail  
-  <BR> if inviteeUserName is specified then inviteeFirstName, inviteeLastName and inviteeEmail are ignored.
+  <br /> if inviteeUserName is specified then inviteeFirstName, inviteeLastName and inviteeEmail are ignored.
   
   <dl>
    <dt>invitationType</dt><dd>mandatory - "NOMINATED"</dd>
-   <dt>inviteeFirstName</dt> <dd> optional, </dd>
-   <dt>inviteeLastName</dt> <dd> optional, </dd>
-   <dt>inviteeEmail</dt> <dd> optional,  </dd>
+   <dt>inviteeFirstName</dt> <dd> optional </dd>
+   <dt>inviteeLastName</dt> <dd> optional </dd>
+   <dt>inviteeEmail</dt> <dd> optional </dd>
    <dt>inviteeUserName</dt> <dd> optional </dd>
-   <dt>serverPath</dt>
-   <dt>acceptURL</dt>
-   <dt>rejectURL</dt>
+   <dt>serverPath</dt><dd></dd>
+   <dt>acceptURL</dt><dd></dd>
+   <dt>rejectURL</dt><dd></dd>
    <dt>inviteeRoleName</dt> <dd> mandatory what role to be given on this web site </dd>
   </dl>
 
-  <BR />
+  <br />
   For a Moderated Invitation, where an existing user wants to be made a member of a moderated web site.
   <dl> 
   <dt>invitationType</dt><dd>mandatory - "MODERATED"</dd>
@@ -31,7 +31,7 @@
   <dt>inviteeComments</dt> <dd>mandatory (but can be blank) why do they want membership to this site ? </dd>
   <dt>inviteeRoleName</dt> <dd>mandatory what role to be given on this web site </dd>
   </dl>
-  <BR /> 
+  <br /> 
   
   Returns HTTPStatus.Created (201) if an invitation is created. 
     

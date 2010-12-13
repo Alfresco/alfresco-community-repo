@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Replication Definition</shortname>
+  <shortname>Get replication definition</shortname>
   <description>Gets the details of a persisted replication definition.</description>
   <url>/api/replication-definition/{replication_definition_name}</url>
   <format default="json"/>

@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Create Web Site</shortname>
+  <shortname>Create Web site</shortname>
   <description>  <![CDATA[
-  Creates a new site based on the site preset and details provided.
+  Creates a new Web site based on the site preset and details provided.
   
   <br />
   The following properties may be set.

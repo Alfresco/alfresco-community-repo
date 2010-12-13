@@ -2,7 +2,7 @@
   <shortname>List all tags</shortname>
   <description><![CDATA[
   Get the currently available tags for the specified store.
-  <BR />
+  <br />
   <dl>
   <dt>tag_filter</dt><dd>The optional tag filter limits the returned tags to those containing the filter. </dd>
   </dl>

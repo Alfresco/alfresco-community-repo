@@ -1,10 +1,10 @@
 <webscript>
-  <shortname>Update Web Site Membership</shortname>
+  <shortname>Update Web site membership</shortname>
   <description> <![CDATA[
-  Update the membership role for a user or group
+  Update the membership role for a user or group.
   
   <br />
-  'shortname' is the shortname of the web site,  'authorityname' is the full authority name for the membership.
+  'shortname' is the shortname of the Web site,  'authorityname' is the full authority name for the membership.
   <br />
   Required parameters,
   <br />

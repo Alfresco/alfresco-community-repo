@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Sites</shortname>
-  <description>Get a colleciton of the sites in the repository.  The collection can be filtered by name and/or site preset.</description>
+  <shortname>Get sites</shortname>
+  <description>Get a collection of the sites in the repository.  The collection can be filtered by name and/or site preset.</description>
   <url>/api/sites?nf={namefilter?}&amp;spf={sitepresetfilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

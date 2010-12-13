@@ -3,9 +3,9 @@
   <description><![CDATA[
   Cancel an open invitation.
   <BR>
-  Canceling an invitation immediatly stops the invitation,  it is different to rejecting an 
-  invitation which will result in the invitation workflow continuing to a normal but rejected conclusion.   
-  In particular the approver or invitee are not notified if an invitation is canceled. 
+  Canceling an invitation immediatly stops the invitation. This is different to rejecting an 
+  invitation, which will result in the invitation workflow continuing to a normal but rejected conclusion.   
+  In particular, the approver or invitee are not notified if an invitation is canceled. 
   <BR>
   Only a site manager may cancel an nominated invitation.
   <BR>

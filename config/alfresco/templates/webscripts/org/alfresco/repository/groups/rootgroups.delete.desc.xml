@@ -1,7 +1,7 @@
 <webscript>
-   <shortname>Delete a root group.</shortname>
+   <shortname>Delete a root group</shortname>
    <description><![CDATA[
-      Delete a root group and all its dependents.
+      Deletes a root group and all its dependents.
       <br />
       You must have "administrator" privileges to delete a group.
       <br /> 

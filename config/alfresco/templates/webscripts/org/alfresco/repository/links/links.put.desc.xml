@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Link update</shortname>
-  <description>Updates a link</description>
+  <shortname>Update link</shortname>
+  <description>Updates a link.</description>
   <url>/api/links/site/{site}/{container}/{path}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

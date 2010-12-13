@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Link delete</shortname>
-  <description>Delete a link</description>
+  <shortname>Delete link</shortname>
+  <description>Deletes a link.</description>
   <url>/api/links/delete/site/{site}/{container}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

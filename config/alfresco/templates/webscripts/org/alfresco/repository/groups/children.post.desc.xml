@@ -1,12 +1,12 @@
 <webscript>
    <shortname>Add group or user to a group</shortname>
    <description><![CDATA[
-      Add a group or user to a group.    Will create a sub group if one does not already exist with the fullAuthorityName.
+      Adds a group or user to a group. The webscript will create a sub group if one does not already exist, with the fullAuthorityName.
       
       <br />You must have "administrator" privileges to modify groups.
       <br />If the authority is for a group and doe not exist then it is created.
-      <br />Returns Status_Created if a new group is created, else Status_OK.
-      If Status_Created returns the new sub group, else returns the group.  
+      <br />The webscript returns Status_Created if a new group is created, otherwise it returns Status_OK.
+      If Status_Created returns the new sub group, otherwise returns the group.  
    ]]>
    </description>
    <url>/api/groups/{shortName}/children/{fullAuthorityName}</url>

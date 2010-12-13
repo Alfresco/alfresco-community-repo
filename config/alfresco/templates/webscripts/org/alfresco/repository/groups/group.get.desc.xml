@@ -1,7 +1,7 @@
 <webscript>
    <shortname>Get the details of a group</shortname>
    <description><![CDATA[
-      Get the details of a group.
+      Gets the details of a group.
     ]]>
    </description>
    <url>/api/groups/{shortName}</url>

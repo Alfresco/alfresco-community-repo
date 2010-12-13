@@ -1,7 +1,7 @@
 <webscript>
    <shortname>IMAP Server Status</shortname>
    <description>
-      This script return status of IMAP server (enabled/diabled)
+      This script returns the status of the IMAP server (enabled/disabled)
    </description>
    <url>/imap/servstatus</url>
    <format default="html">extension</format>

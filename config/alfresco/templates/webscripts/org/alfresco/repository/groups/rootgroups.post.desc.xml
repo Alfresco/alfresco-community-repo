@@ -1,12 +1,12 @@
 <webscript>
-   <shortname>Add a rootgroup</shortname>
+   <shortname>Add a root group</shortname>
    <description><![CDATA[
-      Add a root group.
+      Adds a root group.
       <br />You must have "administrator" privileges to add a root group.
       <br />Returns STATUS_CREATED if a new group is created.
       <br />If the group already exists returns BAD_REQUEST.
       
-      The following properties may be specified for the new root group.
+      The following properties may be specified for the new root group:-
       <dl>
       <dt>displayName</dt><dd>The display name</dd>
       </dl>

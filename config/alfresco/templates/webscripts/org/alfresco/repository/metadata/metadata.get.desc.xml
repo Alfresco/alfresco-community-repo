@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Node Metadata Retrieval Service</shortname>
-  <description>Node Metadata Retrieval Service</description>
+  <shortname>Node metadata retrieval service</shortname>
+  <description>Node metadata retrieval service.</description>
   <url>/api/metadata</url>
   <format default="json" />
   <authentication>user</authentication>

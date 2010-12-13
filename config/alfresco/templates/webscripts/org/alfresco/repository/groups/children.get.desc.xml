@@ -1,9 +1,9 @@
 <webscript>
    <shortname>Get the list of child authorities for a group.</shortname>
    <description><![CDATA[
-   Get a list of the child authorities of a group.    This contains both people and groups.
-   <BR />
-   The authorityType parameter can be used to specify to return authorities of the given type.   Valid values are GROUP and USER.
+   Get a list of the child authorities of a group. The list contains both people and groups.
+   <br />
+   The authorityType parameter is used to specify return authorities of the given type. Valid values are GROUP and USER.
    ]]>
    </description>
    <url>/api/groups/{shortName}/children?authorityType={authorityType?}</url>

@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Invite</shortname>
+   <shortname>Process invite</shortname>
    <description>Processes Inviter actions ('start' or 'cancel' invite)</description>
    <url>/api/invite/start?inviteeFirstName={inviteeFirstName}&amp;inviteeLastName={inviteeLastName}&amp;inviteeEmail={inviteeEmailAddress}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName}&amp;inviteeSiteRole={inviteeSiteRole}&amp;serverPath={serverPath}&amp;acceptUrl={acceptUrl}&amp;rejectUrl={rejectUrl}</url>
    <url>/api/invite/cancel?inviteId={inviteId}</url>

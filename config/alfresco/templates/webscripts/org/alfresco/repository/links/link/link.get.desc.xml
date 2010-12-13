@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Links</shortname>
-  <description>Get all links</description>
+  <shortname>Get all links</shortname>
+  <description>Gets all links.</description>
   <url>/api/links/link/site/{site}/{container}/{path}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

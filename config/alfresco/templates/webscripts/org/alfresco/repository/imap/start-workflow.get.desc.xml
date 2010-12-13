@@ -1,7 +1,7 @@
 <webscript>
    <shortname>IMAP Workflow Handler</shortname>
    <description>
-      This webscript starts a different workflows. It have used in the IMAP email body links.
+      This webscript starts a different workflow. It is used in the IMAP email body links.
       (The optional feature is the reply email with a report.)
    </description>
    <url>/imap/start-workflow?alfTicket={ticket}&amp;nodeRefId={id}&amp;workflowType={wt}&amp;assignTo={at}&amp;workflowDueDateDay={ddd}&amp;workflowDueDateMonth={ddm}&amp;workflowDueDateYear={ddy}&amp;description={desc}</url>

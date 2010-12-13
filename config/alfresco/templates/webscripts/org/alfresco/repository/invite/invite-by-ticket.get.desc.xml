@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Invite by ticket</shortname>
+   <shortname>Get invite by ticket</shortname>
    <description>Returns invite information for a given inviteId and inviteTicket. No authentication is required</description>
    <url>/api/invite/{inviteId}/{inviteTicket}</url>
    <url>/api/invite/{inviteId}/{inviteTicket}?inviteeUserName={inviteeUserName?}</url>

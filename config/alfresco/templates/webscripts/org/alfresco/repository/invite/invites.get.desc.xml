@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Invites</shortname>
+   <shortname>Get invites</shortname>
    <description>Returns pending invites filtered by Inviter user name, Invitee user name &amp; Site short name</description>
    <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName?}</url>
    <url>/api/invites?inviteId={inviteId}</url>

@@ -1,21 +1,20 @@
 <webscript>
   <shortname>List Invitations</shortname>
   <description><![CDATA[
-  Get a collecton of invitations.
-  <BR />
+  Gets a collecton of invitations.
+  <br />
   With no parameters, returns all open invitations (which could be a large number). 
-  <BR />
+  <br />
   With inviteeUserName, returns all open invitations for this invitee.
-  <BR />
+  <br />
   With invitationType, returns invitations of the specified type (Either NOMINATED or MODERATED).
-  <BR />
-  With resourceType, returns invitations of the specified type (WEB_SITE only at the moment).
-  
-  <BR />
+  <br />
+  With resourceType, returns invitations of the specified type (WEB_SITE only at the moment).  
+  <br />
   
   Returns a JSON array of Invitations. 
   
-  <BR />
+  <br />
   ]]>
   </description>
   <url>/api/invitations?inviteeUserName={inviteeUserName?}&amp;invitationType={invitationType?}&amp;resourceType={resourceType?}</url>

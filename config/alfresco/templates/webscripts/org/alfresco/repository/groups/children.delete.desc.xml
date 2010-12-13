@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Remove an authority from a group.</shortname>
+   <shortname>Remove an authority from a group</shortname>
    <description><![CDATA[
       Remove an authority (USER or GROUP) from a group.  A user will not be deleted by this method.
       <br />

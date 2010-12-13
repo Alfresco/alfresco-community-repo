@@ -1,12 +1,12 @@
 <webscript>
    <shortname>List groups</shortname>
    <description><![CDATA[
-      Search for groups. 
+      Searches for groups. 
       <br />
-      Parameters
+      The following optional parameters are available:-
       <ul>
-      <li>If the optional shortNameFilter parameter is set then returns those groups with a partial match on shortName.  You can use the pattern matching characters * to match zero or more characters or ? to match one character.</li>
-      <li>If the optional zone parameter is set then only returns groups with are in the specified zone, else returns groups from all zones.</li>
+      <li>shortNameFilter - returns those groups with a partial match on shortName.  You can use the pattern matching characters * to match zero or more characters or ? to match one character.</li>
+      <li>zone - returns only groups that are in the specified zone, otherwise it returns groups from all zones.</li>
       </ul>
       <br />
       Returns an Array of groups in JSON format.

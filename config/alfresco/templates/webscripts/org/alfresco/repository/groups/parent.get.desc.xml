@@ -1,9 +1,9 @@
 <webscript>
-   <shortname>Get the list of child authorities for a group.</shortname>
+   <shortname>Get the list of parent authorities for a group.</shortname>
    <description><![CDATA[
-   Get a list of the parent authorities of a group.    
+   Gets a list of the parent authorities of a group.    
    <BR />
-   The optional level attribute can be "ALL" in which case all parents are returned.
+   The optional level attribute can be ALL, in which case all parents are returned.
    ]]>
    </description>
    <url>/api/groups/{shortName}/parents?level={level?}</url>

@@ -23,8 +23,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1665,11 +1667,7 @@ public class JBPMEngine extends BPMEngine
                     TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
 
                     // create properties to set on task instance
-                    Map<QName, Serializable> newProperties = properties;
-                    if (newProperties == null && (add != null || remove != null))
-                    {
-                        newProperties = new HashMap<QName, Serializable>(10); 
-                    }
+                    Map<QName, Serializable> newProperties = properties !=null ? properties : new HashMap<QName, Serializable>(10);
                     
                     if (add != null || remove != null)
                     {
@@ -1681,19 +1679,31 @@ public class JBPMEngine extends BPMEngine
                             for (Entry<QName, List<NodeRef>> toAdd : add.entrySet())
                             {
                                 // retrieve existing list of noderefs for association
-                                List<NodeRef> existingAdd = (List<NodeRef>)newProperties.get(toAdd.getKey());
-                                if (existingAdd == null)
+                                QName key = toAdd.getKey();
+                                Serializable existingValue = newProperties.get(key);
+                                  
+                                if (existingValue == null)
                                 {
-                                    existingAdd = (List<NodeRef>)existingProperties.get(toAdd.getKey());
+                                    existingValue = existingProperties.get(key);
                                 }
-    
                                 // make the additions
-                                if (existingAdd == null)
+                                if (existingValue == null)
                                 {
-                                    newProperties.put(toAdd.getKey(), (Serializable)toAdd.getValue());
+                                    newProperties.put(key, (Serializable)toAdd.getValue());
                                 }
                                 else
                                 {
+                                    List<NodeRef> existingAdd;
+                                    if (existingValue instanceof List<?>)
+                                    {
+                                        existingAdd = (List<NodeRef>) existingValue;
+                                    }
+                                    else
+                                    {
+                                        existingAdd = new LinkedList<NodeRef>();
+                                        existingAdd.add((NodeRef) existingValue);
+                                    }
+
                                     for (NodeRef nodeRef : toAdd.getValue())
                                     {
                                         if (!(existingAdd.contains(nodeRef)))
@@ -1701,6 +1711,7 @@ public class JBPMEngine extends BPMEngine
                                             existingAdd.add(nodeRef);
                                         }
                                     }
+                                    newProperties.put(key, (Serializable) existingAdd);
                                 }
                             }
                         }
@@ -1711,18 +1722,25 @@ public class JBPMEngine extends BPMEngine
                             for (Entry<QName, List<NodeRef>> toRemove: remove.entrySet())
                             {
                                 // retrieve existing list of noderefs for association
-                                List<NodeRef> existingRemove = (List<NodeRef>)newProperties.get(toRemove.getKey());
-                                if (existingRemove == null)
+                                QName key = toRemove.getKey();
+                                Serializable existingValue = newProperties.get(key);
+                                  
+                                if (existingValue == null)
                                 {
-                                    existingRemove = (List<NodeRef>)existingProperties.get(toRemove.getKey());
+                                    existingValue = existingProperties.get(key);
                                 }
-    
                                 // make the subtractions
-                                if (existingRemove != null)
+                                if (existingValue != null)
                                 {
-                                    for (NodeRef nodeRef : (List<NodeRef>)toRemove.getValue())
+                                    if(existingValue instanceof List<?>)
                                     {
-                                        existingRemove.remove(nodeRef);
+                                        List<NodeRef> existingRemove = (List<NodeRef>) existingValue;
+                                            existingRemove.removeAll(toRemove.getValue());
+                                        newProperties.put(key, (Serializable) existingRemove);
+                                    }
+                                    else if(toRemove.getValue().contains(existingValue))
+                                    {
+                                        newProperties.put(key, new LinkedList<NodeRef>());
                                     }
                                 }
                             }
@@ -1730,7 +1748,7 @@ public class JBPMEngine extends BPMEngine
                     }
                     
                     // update the task
-                    if (newProperties != null)
+                    if (newProperties.isEmpty() == false)
                     {
                         setTaskProperties(taskInstance, newProperties);
                         
@@ -2111,7 +2129,8 @@ public class JBPMEngine extends BPMEngine
             QName qname = mapNameToQName(key);
 
             // add variable, only if part of task definition or locally defined on task
-            if (taskProperties.containsKey(qname) || taskAssocs.containsKey(qname) || instance.hasVariableLocally(key))
+            boolean isAssoc = taskAssocs.containsKey(qname);
+            if (taskProperties.containsKey(qname) || isAssoc || instance.hasVariableLocally(key))
             {
 	            Serializable value = convertValue(entry.getValue());
 	            properties.put(qname, value);

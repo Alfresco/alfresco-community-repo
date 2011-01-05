@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
@@ -292,8 +293,28 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         {
             // Get all the renditions that match the given rendition name
             result = nodeService.getChildAssocs(node, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+            
+            result = removeArchivedRenditionsFrom(result);
         }
         return result;
+    }
+    
+    private List<ChildAssociationRef> removeArchivedRenditionsFrom(List<ChildAssociationRef> renditionAssocs)
+    {
+    	// This is a workaround for a bug in the NodeService (no JIRA number yet) whereby a call to
+    	// nodeService.getChildAssocs can return all children, including children in the archive store.
+    	List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
+    	
+        for (ChildAssociationRef chAssRef : renditionAssocs)
+        {
+        	// If the rendition has *not* been deleted, then it should remain in the result list.
+        	if (chAssRef.getChildRef().getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == false)
+        	{
+        		result.add(chAssRef);
+        	}
+        }
+    	
+    	return result;
     }
 
     /*
@@ -330,6 +351,8 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
 
             }
         }
+        filteredResults = removeArchivedRenditionsFrom(filteredResults);
+
         return filteredResults;
     }
 
@@ -347,6 +370,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
             // Get all the renditions that match the given rendition name -
             // there should only be 1 (or 0)
             renditions = this.nodeService.getChildAssocs(node, RenditionModel.ASSOC_RENDITION, renditionName);
+            renditions = this.removeArchivedRenditionsFrom(renditions);
         }
         if (renditions.isEmpty())
         {

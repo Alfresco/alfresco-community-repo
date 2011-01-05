@@ -169,11 +169,6 @@
        <property name="renditionService" ref="RenditionService"/>
    </bean>
    
-   <bean id="renditionAspect" class="org.alfresco.repo.rendition.RenditionAspect" init-method="init">
-       <property name="nodeService" ref="NodeService"/>
-       <property name="policyComponent" ref="policyComponent"/>
-   </bean>
-   
    <!-- JavaScript API support -->
    <bean id="renditionServiceScript" parent="baseJavaScriptExtension"
          class="org.alfresco.repo.rendition.script.ScriptRenditionService">

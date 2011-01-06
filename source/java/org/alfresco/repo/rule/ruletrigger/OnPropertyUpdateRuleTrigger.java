@@ -131,8 +131,10 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         
         Set<String> nodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NODESET);
         
-        // Only try and trigger the rules if a non protected propety has been modified
-        if (!nodeRefSet.contains(nodeRef.toString()) && havePropertiesBeenModified(nodeRef, before, after) == true)
+        // Only try and trigger the rules if a non protected property has been modified
+        if (!nodeRefSet.contains(nodeRef.toString()) &&
+        	before.size() != 0 &&  // ALF-4846: Do not trigger for newly created nodes	
+        	havePropertiesBeenModified(nodeRef, before, after) == true)
         {
             if (triggerParentRules == true)
             {            

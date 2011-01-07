@@ -180,6 +180,18 @@ function main()
                categoryResults = parent.children;
             }
             
+            if (argsSearchTerm != null)
+            {
+               var filteredResults = [];
+               for each (result in categoryResults)
+               {
+                  if (result.properties.name.indexOf(argsSearchTerm) == 0)
+                  {
+                     filteredResults.push(result);
+                  }
+               }
+               categoryResults = filteredResults.slice(0);
+            }
             categoryResults.sort(sortByName);
             
             // make each result an object and indicate it is selectable in the UI

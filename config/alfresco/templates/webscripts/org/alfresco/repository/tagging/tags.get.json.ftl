@@ -1,5 +1,7 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 [
-	<#list tags as tag>
-		${jsonUtils.encodeJSONString(tag)}<#if tag_has_next>,</#if>
-	</#list>
+<#list tags as tag>
+	"${tag}"<#if tag_has_next>,</#if>
+</#list>
 ]
+</#escape>

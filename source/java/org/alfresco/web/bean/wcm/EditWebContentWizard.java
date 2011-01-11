@@ -234,18 +234,18 @@ public class EditWebContentWizard extends CreateWebContentWizard
             if (rr.getLockOwner() != null)
             {
                 this.existingLocks.add(path);
-            }
             
-            String renditionStoreId = AVMUtil.getStoreId(path);
-            String renditionStorePath = AVMUtil.getStoreRelativePath(path);
-            String renditionStoreName = AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(path));
-            Map<String, String> renditionlockData = this.getAvmLockingService().getLockData(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
-            renditionlockData.put(WCMUtil.LOCK_KEY_STORE_NAME, renditionStoreName);
-
-            if (logger.isDebugEnabled())
-                    logger.debug("transferring lock for " + path + " back to " + renditionStoreName);
-
-            this.getAvmLockingService().modifyLock(renditionStoreId, renditionStorePath, lockOwner, renditionStoreId, renditionStorePath, renditionlockData);
+                String renditionStoreId = AVMUtil.getStoreId(path);
+                String renditionStorePath = AVMUtil.getStoreRelativePath(path);
+                String renditionStoreName = AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(path));
+                Map<String, String> renditionlockData = this.getAvmLockingService().getLockData(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+                renditionlockData.put(WCMUtil.LOCK_KEY_STORE_NAME, renditionStoreName);
+    
+                if (logger.isDebugEnabled())
+                        logger.debug("transferring lock for " + path + " back to " + renditionStoreName);
+    
+                this.getAvmLockingService().modifyLock(renditionStoreId, renditionStorePath, lockOwner, renditionStoreId, renditionStorePath, renditionlockData);
+            }
          }
       }
    }

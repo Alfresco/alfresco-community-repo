@@ -297,10 +297,13 @@ public final class FormsService
 
    public FormInstanceData getFormInstanceData(final NodeRef nodeRef) throws FormNotFoundException
    {
+      final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+      final WebProject webProject = new WebProject(avmPath);
+       
       FormInstanceData fid = null;
       try
       {
-          fid = new FormInstanceDataImpl(nodeRef, this);
+          fid = new FormInstanceDataImpl(nodeRef, this, webProject);
           return fid;
       }
       catch (IllegalArgumentException iae)

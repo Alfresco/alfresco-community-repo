@@ -45,6 +45,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.WebProject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -62,11 +63,21 @@ import org.xml.sax.SAXException;
    private static final Log logger = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
+   private final WebProject webProject;
    private transient FormsService formsService;
 
    /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
-                                      final FormsService formsService)
+               final FormsService formsService)
    {
+      this(nodeRef, formsService, null);
+   }
+   
+   /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
+                                      final FormsService formsService,
+                                      final WebProject webProject)
+   {
+      this.webProject = webProject;
+      
       if (nodeRef == null)
       {
          throw new NullPointerException();
@@ -145,6 +156,11 @@ import org.xml.sax.SAXException;
          // TODO - forms should be identified by nodeRef rather than name (which can be non-unique)
          if (getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
          {
+            if (webProject != null)
+            {
+               return webProject.getForm(parentFormName);
+            }
+            
             return this.getFormsService().getWebForm(parentFormName);
          }
          else
@@ -154,6 +170,11 @@ import org.xml.sax.SAXException;
       }
       catch (FormNotFoundException fnfe)
       {
+         if (webProject != null)
+         {
+            throw new FormNotFoundException(parentFormName, webProject, this);
+         }
+          
          throw new FormNotFoundException(parentFormName, this);
       }
    }
@@ -279,9 +300,12 @@ import org.xml.sax.SAXException;
             String storePath = AVMUtil.getStoreRelativePath(path);
             String storeName = AVMUtil.getStoreName(path);
 
-            lockOwner = avmLockService.getLockOwner(storeId, storePath);
             Map<String, String> lockData = avmLockService.getLockData(storeId, storePath);
-            currentLockStore = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
+            if (lockData != null) 
+            {
+               lockOwner = avmLockService.getLockOwner(storeId, storePath);
+               currentLockStore = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
+            }
             
             if (lockOwner != null)
             {

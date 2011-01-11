@@ -1144,6 +1144,7 @@
         <property name="mappedNames">
             <list>
                 <value>getLockOwner</value>
+                <value>getLockData</value>				
                 <value>getLockState</value>
                 <value>hasAccess</value>
             </list>

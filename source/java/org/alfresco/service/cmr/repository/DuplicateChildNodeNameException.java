@@ -38,9 +38,9 @@ public class DuplicateChildNodeNameException extends RuntimeException
     private QName assocTypeQName;
     private String name;
     
-    public DuplicateChildNodeNameException(NodeRef parentNodeRef, QName assocTypeQName, String name)
+    public DuplicateChildNodeNameException(NodeRef parentNodeRef, QName assocTypeQName, String name, Throwable e)
     {
-        super(I18NUtil.getMessage(ERR_DUPLICATE_NAME, name));
+        super(I18NUtil.getMessage(ERR_DUPLICATE_NAME, name), e);
         this.parentNodeRef = parentNodeRef;
         this.assocTypeQName = assocTypeQName;
         this.name = name;

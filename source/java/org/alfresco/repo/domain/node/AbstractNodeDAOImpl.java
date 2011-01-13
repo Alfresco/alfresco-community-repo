@@ -1069,7 +1069,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     throw new DuplicateChildNodeNameException(
                             newParentNode.getNodeRef(),
                             assocTypeQName,
-                            childNodeName);
+                            childNodeName,
+                            e);
                 }
             }
         };
@@ -2245,17 +2246,22 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             public Long execute() throws Throwable
             {
+                Savepoint savepoint = controlDAO.createSavepoint("DuplicateChildNodeNameException");
                 try
                 {
-                    return insertChildAssoc(assoc);
+                    Long id = insertChildAssoc(assoc);
+                    controlDAO.releaseSavepoint(savepoint);
+                    return id;
                 }
                 catch (Throwable e)
                 {
+                    controlDAO.rollbackToSavepoint(savepoint);
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             parentNode.getNodeRef(),
                             assocTypeQName,
-                            childNodeName);
+                            childNodeName,
+                            e);
                 }
             }
         };
@@ -2335,14 +2341,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             public Integer execute() throws Throwable
             {
+                Savepoint savepoint = controlDAO.createSavepoint("DuplicateChildNodeNameException");
                 try
                 {
-                    return updateChildAssocsUniqueName(childNodeId, childName);
+                    Integer count = updateChildAssocsUniqueName(childNodeId, childName);
+                    controlDAO.releaseSavepoint(savepoint);
+                    return count;
                 }
                 catch (Throwable e)
                 {
+                    controlDAO.rollbackToSavepoint(savepoint);
                     // We assume that this is from the child cm:name constraint violation
-                    throw new DuplicateChildNodeNameException(null, null, childName);
+                    throw new DuplicateChildNodeNameException(null, null, childName, e);
                 }
             }
         };

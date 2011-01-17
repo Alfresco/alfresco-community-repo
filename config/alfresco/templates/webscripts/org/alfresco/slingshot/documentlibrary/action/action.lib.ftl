@@ -1,10 +1,10 @@
 <#macro resultsJSON results>
    <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "totalResults": ${results?size},
+   "totalResults": ${results?size?c},
    "overallSuccess": ${overallSuccess?string},
-   "successCount": ${successCount},
-   "failureCount": ${failureCount},
+   "successCount": ${successCount?c},
+   "failureCount": ${failureCount?c},
    "results":
    [
       <#list results as r>

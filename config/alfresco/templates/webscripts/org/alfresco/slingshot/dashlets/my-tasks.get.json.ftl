@@ -77,7 +77,7 @@
          },
          "invitee":
          {
-            "fullName": "${(theUser.properties.firstName + " " + theUser.properties.lastName)?trim}",
+            "fullName": "${(theUser.properties.firstName!"" + " " + theUser.properties.lastName!"")?trim}",
          <#if theUser.assocs["cm:avatar"]??>
             "avatarRef": "${theUser.assocs["cm:avatar"][0].nodeRef?string}",
          </#if>
@@ -120,7 +120,7 @@
          },
          "inviter":
          {
-            "fullName": "${(theInviter.properties.firstName + " " + theInviter.properties.lastName)?trim}",
+            "fullName": "${(theInviter.properties.firstName!"" + " " + theInviter.properties.lastName!"")?trim}",
          <#if theInviter.assocs["cm:avatar"]??>
             "avatarRef": "${theInviter.assocs["cm:avatar"][0].nodeRef?string}",
          </#if>

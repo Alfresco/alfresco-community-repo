@@ -77,8 +77,8 @@
 {
 	"url": "${url.serviceContext + "/api/person/" + person.properties.userName}",
 	"userName": "${person.properties.userName}",
-	"firstName": "${person.properties.firstName}",
-	"lastName": "${person.properties.lastName}"
+	"firstName": "${person.properties.firstName!""}",
+	"lastName": "${person.properties.lastName!""}"
 }
 </#escape>
 </#macro>

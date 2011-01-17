@@ -7,8 +7,8 @@
       "avatarRef": "${person.assocs["cm:avatar"][0].nodeRef?string}",
    </#if>
       "username": "${person.properties["cm:userName"]}",
-      "firstName": "${person.properties["cm:firstName"]}",
-      "lastName": "${person.properties["cm:lastName"]}"
+      "firstName": "${person.properties["cm:firstName"]!""}",
+      "lastName": "${person.properties["cm:lastName"]!""}"
    },
 </#escape>
 </#macro>

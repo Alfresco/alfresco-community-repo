@@ -1,6 +1,7 @@
+<#macro dateFormat date>${xmldate(date)}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "totalPages" : ${wiki.pages?size},
+   "totalPages" : ${wiki.pages?size?c},
    "permissions":
    {
       "create": ${wiki.container.hasPermission("CreateChildren")?string}
@@ -19,9 +20,9 @@
                 "${tag}"<#if tag_has_next>,</#if>
              </#list>  
            ],
-         "createdOn": "${page.properties.created?string("MMM dd yyyy, HH:mm:ss")}",
+         "createdOn": "<@dateFormat page.properties.created />",
          <#if p.createdBy??>
-            <#assign createdBy = (p.createdBy.properties.firstName + " " + p.createdBy.properties.lastName)?trim>
+            <#assign createdBy = (p.createdBy.properties.firstName!"" + " " + p.createdBy.properties.lastName!"")?trim>
             <#assign createdByUser = p.createdBy.properties.userName>
          <#else>
             <#assign createdBy="">
@@ -29,9 +30,9 @@
          </#if>
          "createdBy": "${createdBy}",
          "createdByUser": "${createdByUser}",
-         "modifiedOn": "${page.properties.modified?string("MMM dd yyyy, HH:mm:ss")}",
+         "modifiedOn": "<@dateFormat page.properties.modified />",
          <#if p.modifiedBy??>
-            <#assign modifiedBy = (p.modifiedBy.properties.firstName + " " + p.modifiedBy.properties.lastName)?trim>
+            <#assign modifiedBy = (p.modifiedBy.properties.firstName!"" + " " + p.modifiedBy.properties.lastName!"")?trim>
             <#assign modifiedByUser = p.modifiedBy.properties.userName>
          <#else>
             <#assign modifiedBy="">

@@ -389,33 +389,14 @@ public class LockMethod extends WebDAVMethod
 
         xml.startDocument();
 
-        // Output the lock details
         String nsdec = generateNamespaceDeclarations(null);
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
 
-        if (WebDAV.AGENT_MS_6_1_7600.equals(m_userAgent))
-        {
-            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
+        // Output the lock details
+        generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
 
-            // Output the lock details
-            generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
-
-            // Close off the XML
-            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
-
-        }
-        else
-        {
-            xml.startElement(EMPTY_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_PROP + nsdec, getDAVHelper().getNullAttributes());
-
-            // Output the lock details
-            generateLockDiscoveryXML(xml, lockNode, true, scope, WebDAV.getDepthName(m_depth), lt, owner);
-
-            // Close off the XML
-            xml.endElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP);
-        }
-
-        // Send the XML back to the client
-        flushXML(xml);
+        // Close off the XML
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
     }
         
     /**
@@ -451,6 +432,4 @@ public class LockMethod extends WebDAVMethod
         
         return ns.toString();
     }
-
-    
 }

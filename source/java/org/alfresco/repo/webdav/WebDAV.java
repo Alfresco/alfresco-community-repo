@@ -123,10 +123,6 @@ public class WebDAV
     // If header keyword
     
     public static final String HEADER_KEY_NOT = "Not";
-
-    // User agents
-    
-    public static final  String AGENT_MS_6_1_7600 = "Microsoft-WebDAV-MiniRedir/6.1.7600";
     
     // General string constants
     

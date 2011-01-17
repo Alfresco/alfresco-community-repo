@@ -274,7 +274,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public List<RenditionDefinition> loadRenditionDefinitions(String renditionEngineName)
     {
-        return this.loadRenditionDefinitions(renditionEngineName);
+        return this.renditionDefinitionPersister.loadRenditionDefinitions(renditionEngineName);
     }
     
 

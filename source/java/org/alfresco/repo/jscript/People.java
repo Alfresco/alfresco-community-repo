@@ -510,7 +510,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 StringTokenizer t = new StringTokenizer(term, " ");
                 if (t.countTokens() == 1)
                 {
-                    if (term.indexOf(':') == -1)
+                    int propIndex = term.indexOf(':');
+                    if (propIndex == -1)
                     {
                         // simple search: first name, last name and username starting with term
                         query.append("firstName:\"");
@@ -523,8 +524,11 @@ public final class People extends BaseScopableProcessorExtension implements Init
                     }
                     else
                     {
-                        // fts-alfresco property search i.e. "location:maidenhead"
-                        query.append(term);
+                        // fts-alfresco property search i.e. location:"maidenhead"
+                        query.append(term.substring(0, propIndex+1))
+                             .append('"')
+                             .append(term.substring(propIndex+1))
+                             .append('"');
                     }
                 }
                 else
@@ -587,7 +591,11 @@ public final class People extends BaseScopableProcessorExtension implements Init
                         else
                         {
                             // fts-alfresco property search i.e. "location:maidenhead"
-                            query.append(term);
+                            int propIndex = term.indexOf(':');
+                            query.append(term.substring(0, propIndex+1))
+                                 .append('"')
+                                 .append(term.substring(propIndex+1))
+                                 .append('"');
                             
                             propertySearch = true;
                         }

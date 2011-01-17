@@ -174,23 +174,22 @@ function main()
          logger.log(e);
       }
    }
-   //saved data
+   // Saved data
    // {"site":"testSite","page":"calendar","from":"Tuesday, 4 November 2008","to":"Tuesday, 4 November 2008"
-   // 
    // ,"what":"big lunchie","where":"somewhere","desc":"","fromdate":"Tuesday, 4 November 2008","start":"12
-   // 
    // :00","todate":"Tuesday, 4 November 2008","end":"13:00","tags":""}
    event.save();
-   var savedData = {
-       summary : json.get('what'),
-       location : json.get('where'),
-       description : json.get('desc'),
-       dtstart : fromIsoDate+ 'T' +json.get('start'),
-       dtend : toIsoDate + 'T' +json.get('end'),
-       allday : (json.isNull("allday")) ? "" : (json.get('allday')=='on') ? true : "",
-       uri : "calendar/event/" + params.siteid + "/" + event.name + "?date=" + params.date,
-       tags : tags,
-       docfolder: event.properties["ia:docFolder"] == null ? "" : event.properties["ia:docFolder"]
+   var savedData =
+   {
+      summary: json.get('what'),
+      location: json.get('where'),
+      description: json.get('desc'),
+      dtstart: fromIsoDate+ 'T' + json.get('start'),
+      dtend: toIsoDate + 'T' + json.get('end'),
+      allday: (json.isNull("allday")) ? "" : (json.get('allday') == 'on') ? true : "",
+      uri: "calendar/event/" + params.siteid + "/" + event.name + "?date=" + params.date,
+      tags: tags,
+      docfolder: event.properties["ia:docFolder"] == null ? "" : event.properties["ia:docFolder"]
    }
 
    return savedData;

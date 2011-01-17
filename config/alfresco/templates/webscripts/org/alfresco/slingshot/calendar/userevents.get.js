@@ -5,91 +5,101 @@
  */
 model.limit = args.limit;
 
-var DAY_MS = 24*60*60*1000; 
+var DAY_MS = 24*60*60*1000,
+   days = 
+   {
+      SU: 0,
+      MO: 1,
+      TU: 2,
+      WE: 3,
+      TH: 4,
+      FR: 5,
+      SA: 6
+   },
+   username = person.properties["cm:userName"], // Get the username of the currently logged in person
+   range = {},
+   dateFilter = args.from,
+   siteId = url.templateArgs.site;
 
-var days = new Object();
-days["SU"]=0;
-days["MO"]=1;
-days["TU"]=2;
-days["WE"]=3;
-days["TH"]=4;
-days["FR"]=5;
-days["SA"]=6;
-
-// Get the username of the currently logged in person
-var username = person.properties["cm:userName"];
-
-var range = {};
-var dateFilter = args.from;
 if (dateFilter)
 {
-   range["fromdate"] = dateFilter;
+   range.fromdate = dateFilter;
 }
-var siteId = url.templateArgs.site;
 
 model.events = getUserEvents(username, siteId, range);
 
 /**
- * calculates duration based on specified start and end dates
- * 
+ * Calculates duration based on specified start and end dates
  * 
  * @method getDuration 
  * @param dtStartDate {Date} start date
  * @param dtEndDate {Date} end date
  * @return {String} Duration in ical format eg PT2H15M
  */
-function getDuration(dtStartDate,dtEndDate)
+function getDuration(dtStartDate, dtEndDate)
 {
+   var DAY = "D",
+      WEEK = "W",
+      HOUR = 'H',
+      SECOND = 'S',
+      MINUTE = 'Mn';
 
-    var DAY = "D";
-    var WEEK = "W";
-    var YEAR = "Y";
-    var MONTH = "M";
-    var HOUR = 'H';
-    var SECOND = 'S';
-    var MINUTE = 'Mn';
-    
-    var diff = dtEndDate.getTime() - dtStartDate.getTime() ;
-    var dateDiff = {};
-    var duration = 'P';
-    var diff = new Date();
-    diff.setTime(Math.abs(dtStartDate.getTime() - dtEndDate.getTime()));
-    var timediff = diff.getTime();
+   var dateDiff = {},
+      duration = 'P',
+      diff = new Date(),
+      timediff;
 
-    dateDiff[WEEK] = Math.floor(timediff / (1000 * 60 * 60 * 24 * 7));
-    timediff -= dateDiff[WEEK] * (1000 * 60 * 60 * 24 * 7);
+   diff.setTime(Math.abs(dtStartDate.getTime() - dtEndDate.getTime()));
+   timediff = diff.getTime();
 
-    dateDiff[DAY] = (Math.floor(timediff / (1000 * 60 * 60 * 24))); 
-    timediff -= dateDiff[DAY] * (1000 * 60 * 60 * 24);
+   dateDiff[WEEK] = Math.floor(timediff / (1000 * 60 * 60 * 24 * 7));
+   timediff -= dateDiff[WEEK] * (1000 * 60 * 60 * 24 * 7);
 
-    dateDiff[HOUR] = Math.floor(timediff / (1000 * 60 * 60)); 
-    timediff -= dateDiff[HOUR] * (1000 * 60 * 60);
+   dateDiff[DAY] = (Math.floor(timediff / (1000 * 60 * 60 * 24))); 
+   timediff -= dateDiff[DAY] * (1000 * 60 * 60 * 24);
 
-    dateDiff[MINUTE] = Math.floor(timediff / (1000 * 60)); 
-    timediff -= dateDiff[MINUTE] * (1000 * 60);
+   dateDiff[HOUR] = Math.floor(timediff / (1000 * 60 * 60)); 
+   timediff -= dateDiff[HOUR] * (1000 * 60 * 60);
 
-    dateDiff[SECOND] = Math.floor(timediff / 1000); 
-    timediff -= dateDiff[SECOND] * 1000;
+   dateDiff[MINUTE] = Math.floor(timediff / (1000 * 60)); 
+   timediff -= dateDiff[MINUTE] * (1000 * 60);
 
-    if (dateDiff[WEEK]>0){
-        duration+=dateDiff[WEEK]+WEEK;
-    }
-    if (dateDiff[DAY]>0){
-        duration+=dateDiff[DAY]+DAY;
-    }
-    duration+='T';
-    if (dateDiff[HOUR]>0){
-        duration+=dateDiff[HOUR]+HOUR;
-    }
-    if (dateDiff[MINUTE]>0){
-        duration+=dateDiff[MINUTE]+'M';
-    }
-    if (dateDiff[SECOND]>0){
-        duration+=dateDiff[SECOND]+SECOND;
-    }
-    return duration;
-};
+   dateDiff[SECOND] = Math.floor(timediff / 1000); 
+   timediff -= dateDiff[SECOND] * 1000;
 
+   if (dateDiff[WEEK] > 0)
+   {
+      duration += dateDiff[WEEK] + WEEK;
+   }
+   if (dateDiff[DAY] > 0)
+   {
+      duration += dateDiff[DAY] + DAY;
+   }
+   duration += 'T';
+   if (dateDiff[HOUR] > 0)
+   {
+      duration += dateDiff[HOUR] + HOUR;
+   }
+   if (dateDiff[MINUTE] > 0)
+   {
+      duration += dateDiff[MINUTE] + 'M';
+   }
+   if (dateDiff[SECOND] > 0)
+   {
+      duration += dateDiff[SECOND] + SECOND;
+   }
+   return duration;
+}
+
+/**
+ * Get events for the specified user
+ * 
+ * @method getUserEvents 
+ * @param user {String} Username
+ * @param siteId {String} SiteID (optional)
+ * @param range {Object} Open date range
+ * @return {Array} Array of event objects
+ */
 function getUserEvents(user, siteId, range)
 {
    if (!user)
@@ -97,7 +107,8 @@ function getUserEvents(user, siteId, range)
       return [];
    }
    
-   var paths = [], site, siteTitles = {}, sites = [];
+   var paths = [], site, siteTitles = {}, sites = [], results = [],
+    isSiteCalendarDashlet = (range.fromdate && range.fromdate.indexOf("-") != -1) ? true : false;
    
    if (siteId == null)
    {
@@ -111,66 +122,66 @@ function getUserEvents(user, siteId, range)
          sites.push(site);
       }
    }
-   for (var j=0; j < sites.length; j++)
+   for (var j = 0; j < sites.length; j++)
    {
       site = sites[j];
       paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
       siteTitles[site.shortName] = site.title;
    }
    
-   var results = [];
-   
-   var isSiteCalandarDashlet = (range.fromdate && range.fromdate.indexOf("-") != -1) ? true : false;
-   
    if (paths.length > 0)
    {
       var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
       if (range.fromdate)
       {
-         var dateClause = " +@ia\\:fromDate:[2008\\-1\\-1T00:00:00 TO 2099\\-1\\-1T00:00:00]";
-         luceneQuery += dateClause;
+         luceneQuery += " +@ia\\:fromDate:[2008\\-1\\-1T00:00:00 TO 2099\\-1\\-1T00:00:00]";
       }
       results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
    }
    
-   // repurpose results into custom array so as to add custom properties
+   // Repurpose results into custom array so as to add custom properties
    var events = [];
-   for (var i=0;i<results.length;i++)
+   for (var i = 0; i < results.length; i++)
    {
       var e = results[i];
-      if (!isSiteCalandarDashlet)
+      if (!isSiteCalendarDashlet)
       {
-         var d  = new Date();
-         var fromDate = range.fromdate.split("/");
+         var d  = new Date(),
+            fromDate = range.fromdate.split("/");
+
          d.setMonth(fromDate[1] - 1);
          d.setYear(fromDate[0]);
          d.setDate(fromDate[2]);
-         var d1 = cloneDate(e.properties["ia:fromDate"]);
+
+         var d1 = cloneDate(e.properties["ia:fromDate"]),
+            d2 = cloneDate(d);
+
          d1.setHours(0, 0, 0, 0);
-         var d2 = cloneDate(d);
          d2.setHours(0, 0, 0, 0);
          if (d1 < d2 && e.properties["ia:recurrenceRule"] == null)
-            continue;
+         {
+             continue;
+         }
       }
 
-      var event = {};
-      event.isoutlook = false;
-      if (e.properties["ia:isOutlook"] != null && e.properties["ia:isOutlook"])
+      var eSite = e.parent.parent.name,
+         eStart = e.properties["ia:fromDate"],
+         eEnd = e.properties["ia:toDate"],
+         event =
       {
-         event.isoutlook = true;
-      }
-
-      event.name  = e.name;
-      event.title = e.properties["ia:whatEvent"];
-      event.where = e.properties["ia:whereEvent"] == null ? "" : e.properties["ia:whereEvent"];
-      event.when = e.properties["ia:fromDate"]; 
-      event.start = e.properties["ia:fromDate"];
-      event.end = e.properties["ia:toDate"];
-      event.site = e.parent.parent.name;
-      event.siteTitle = siteTitles[event.site];    
-      event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
-      event.tags = e.tags.join(' ');
-      event.duration = getDuration(event.start,event.end);
+         isoutlook: (e.properties["ia:isOutlook"] != null && e.properties["ia:isOutlook"]),
+         name: e.name,
+         title: e.properties["ia:whatEvent"],
+         where: e.properties["ia:whereEvent"] == null ? "" : e.properties["ia:whereEvent"],
+         when: e.properties["ia:fromDate"],
+         start: eStart,
+         end: eEnd,
+         site: eSite,
+         siteTitle: siteTitles[eSite],    
+         allday: (isAllDayEvent(e)) ? 'true' : 'false',
+         tags: e.tags.join(' '),
+         duration: getDuration(eStart, eEnd)
+      };
 
       if (e.properties["ia:recurrenceRule"] != null)
       {
@@ -181,52 +192,58 @@ function getUserEvents(user, siteId, range)
          }
 
          // Expects the date in the format yyyy-mm-dd
-         var startMonth = new Date();
-         var endMonth = new Date();
-         var eventStartDates = [];
-         if (isSiteCalandarDashlet)
+         var startMonth = new Date(),
+            endMonth = new Date(),
+            eventStartDates = [],
+            fromDate;
+
+         if (isSiteCalendarDashlet)
          {
-            var fromDate = range.fromdate.split("-"); 
+            fromDate = range.fromdate.split("-"); 
             startMonth.setMonth(fromDate[1] - 1);
             startMonth.setYear(fromDate[0]);
-            startMonth.setDate(fromDate[2]*1 + 10);
+            startMonth.setDate(fromDate[2] * 1 + 10);
             startMonth.setDate(1);
 
             endMonth.setTime(startMonth.getTime());
-            endMonth.setMonth(endMonth.getMonth() +1);
+            endMonth.setMonth(endMonth.getMonth() + 1);
 
-            eventStartDates = getNextEventStartDates(event, startMonth, endMonth, e, isSiteCalandarDashlet);
-        }
-        else
-        {
-           var fromDate = range.fromdate.split("/");
-           startMonth.setMonth(fromDate[1] - 1);
-           startMonth.setYear(fromDate[0]);
-           startMonth.setDate(fromDate[2]);
-
-           eventStartDates = getNextEventStartDates(event, startMonth, endMonth, e, isSiteCalandarDashlet);
-
-           endMonth.setYear(2099);
-           endMonth.setMonth(0);
-       }
-
-         for (var j=0; j<eventStartDates.length; j++ )
+            eventStartDates = getNextEventStartDates(event, startMonth, endMonth, e, isSiteCalendarDashlet);
+         }
+         else
          {
-            var recurEvent ={};
-            recurEvent.name  = event.name;
-            recurEvent.isoutlook = event.isoutlook;
-            recurEvent.title = event.title;
-            recurEvent.where = event.where;
-            recurEvent.site = event.site;
-            recurEvent.siteTitle = event.siteTitle;
-            recurEvent.allday = event.allday;
-            recurEvent.tags = event.tags;
-            recurEvent.duration = event.duration;
+            fromDate = range.fromdate.split("/");
+            startMonth.setMonth(fromDate[1] - 1);
+            startMonth.setYear(fromDate[0]);
+            startMonth.setDate(fromDate[2]);
 
-            recurEvent.when = eventStartDates[j];
-            recurEvent.start =  eventStartDates[j];
+            eventStartDates = getNextEventStartDates(event, startMonth, endMonth, e, isSiteCalendarDashlet);
 
-            var eventEnd = new Date();
+            endMonth.setYear(2099);
+            endMonth.setMonth(0);
+         }
+
+         var recurEvent,
+            eventEnd;
+
+         for (var j = 0; j < eventStartDates.length; j++)
+         {
+            recurEvent =
+            {
+               name: event.name,
+               isoutlook: event.isoutlook,
+               title: event.title,
+               where: event.where,
+               site: event.site,
+               siteTitle: event.siteTitle,
+               allday: event.allday,
+               tags: event.tags,
+               duration: event.duration,
+               when: eventStartDates[j],
+               start:  eventStartDates[j]
+            };
+
+            eventEnd = new Date();
             eventEnd.setTime(recurEvent.start.getTime());
             eventEnd.setTime(eventEnd.getTime() + (event.end.getTime() - event.start.getTime()));
 
@@ -234,8 +251,9 @@ function getUserEvents(user, siteId, range)
 
             events.push(recurEvent);
 
-            if (!isSiteCalandarDashlet)
+            if (!isSiteCalendarDashlet)
             {
+               // TODO: Instead of this, add a bool flag to the event which Share can pick up on and annotate
                recurEvent.title = event.title + " (Recurring)";
                break;
             }
@@ -248,11 +266,15 @@ function getUserEvents(user, siteId, range)
    }
    
    return events;
-};
+}
 
 /**
-* Clone provided date objet
-*/
+ * Clone provided date object
+ *
+ * @method cloneData
+ * @param date {Date} The date to be cloned
+ * @return {Date|null} A cloned date object or null
+ */
 function cloneDate(date)
 {
 
@@ -260,131 +282,148 @@ function cloneDate(date)
    result.setTime(date.getTime());
 
    return result; // Date or null
-};
+}
         
 /**
+ * Calculate if an event is an "all day" event
  * NOTE: Another option would be to add an "all day" property to the
  * existing calendar model.
+ *
+ * @method isAllDayEvent
+ * @param event {Node} The event node to evaluate
+ * @return {Boolean}
  */
 function isAllDayEvent(event)
 {
-   var startDate = event.properties["ia:fromDate"];
-   var endDate = event.properties["ia:toDate"];
-   
-   var startTime = startDate.getHours() + ":" + startDate.getMinutes();
-   var endTime = endDate.getHours() + ":" + endDate.getMinutes();
+   var startDate = event.properties["ia:fromDate"],
+      endDate = event.properties["ia:toDate"],
+      startTime = startDate.getHours() + ":" + startDate.getMinutes(),
+      endTime = endDate.getHours() + ":" + endDate.getMinutes();
    
    if (logger.isLoggingEnabled())
+   {
       logger.log("STARTTIME: " + startTime + " " + endTime + " " + (startTime == "0:0" && (startTime == endTime)));
+   }
    
    return (startTime == "0:0" && (startTime == endTime));
-};
+}
 
 
 /**
-*	Return next occurence of provided event after currentDate.
+ *	Return next occurence of provided event after currentDate.
+ *
+ * @method getNextEventStartDates
+ * @param event {Object} Event object literal
+ * @param currentDate {Date} Current date
+ * @param endMonth {Date} Last month to evaluate
+ * @param event {Node} The event node to evaluate
+ * @param isSiteCalendarDashlet {Boolean} True when in Site Dahlet mode
 */
-function getNextEventStartDates(event, currentDate, endMonth, eventNode, isSiteCalandarDashlet)
+function getNextEventStartDates(event, currentDate, endMonth, eventNode, isSiteCalendarDashlet)
 {       
-   var rubeResult = [];
-   var result = [];
-   var recurrenceRule = event.recurrenceRule;
+   var rubeResult = [],
+      result = [],
+      recurrenceRule = event.recurrenceRule;
+
    if (recurrenceRule)
    {
       var evStart = cloneDate(event.when);
 
-      //If event starts in future, then start search from its start date
-      if (evStart >= currentDate && !isSiteCalandarDashlet)
+      // If event starts in future, then start search from its start date
+      if (evStart >= currentDate && !isSiteCalendarDashlet)
       {
          currentDate = evStart;
       }
-      var parts = recurrenceRule.split(";");
-      var eventParam = new Object();
+
+      var parts = recurrenceRule.split(";"),
+         eventParam = {},
+         part;
 
       for (var i = 0; i < parts.length; i++)
       {
-         var part = parts[i].split("=");
-         eventParam[part[0]]= part[1];
+         part = parts[i].split("=");
+         eventParam[part[0]] = part[1];
       }
 
       var endDate = new Date();
       endDate.setTime(currentDate.getTime());
       var needCycle = true;
 
-      while(needCycle)
+      while (needCycle)
       {
-         //Get all events between currentDate and currentDate + event interval.
-         //There must be at least one event.
-         if (eventParam['FREQ']=="WEEKLY")
+         // Get all events between currentDate and currentDate + event interval. There must be at least one event.
+         if (eventParam['FREQ'] == "WEEKLY")
          {
-            endDate.setTime(endDate.getTime() + eventParam['INTERVAL'] * DAY_MS * 7);
-            if (isSiteCalandarDashlet)
+            if (isSiteCalendarDashlet)
             {
                endDate = endMonth;
             }
+            else
+            {
+               endDate.setTime(endDate.getTime() + eventParam['INTERVAL'] * DAY_MS * 7);
+            }
 
-            rubeResult =  this.resolveStartDateWeekly(event, eventParam, currentDate, endDate);
+            rubeResult = this.resolveStartDateWeekly(event, eventParam, currentDate, endDate);
          }
-         else  if (eventParam['FREQ']=="DAILY")
+         else if (eventParam['FREQ'] == "DAILY")
          {
-            endDate.setTime(endDate.getTime() + eventParam['INTERVAL'] * DAY_MS);
-            if (isSiteCalandarDashlet)
+            if (isSiteCalendarDashlet)
             {
                endDate = endMonth;
             }
+            else
+            {
+               endDate.setTime(endDate.getTime() + eventParam['INTERVAL'] * DAY_MS);
+            }
 
-            rubeResult =  this.resolveStartDaily(event, eventParam, currentDate, endDate);
+            rubeResult = this.resolveStartDaily(event, eventParam, currentDate, endDate);
          }
-         else  if (eventParam['FREQ']=="MONTHLY")
+         else if (eventParam['FREQ'] == "MONTHLY")
          {
-            endDate.setMonth(endDate.getMonth() + eventParam['INTERVAL'] * 1);
-            if (isSiteCalandarDashlet)
+            if (isSiteCalendarDashlet)
             {
                endDate = endMonth;
             }
+            else
+            {
+               endDate.setMonth(endDate.getMonth() + eventParam['INTERVAL'] * 1);
+            }
 
-            rubeResult =  this.resolveStartMonthly(event, eventParam, currentDate, endDate, isSiteCalandarDashlet);
+            rubeResult = this.resolveStartMonthly(event, eventParam, currentDate, endDate, isSiteCalendarDashlet);
          }
 
          if (rubeResult.length > 0)
          {
-            //sort rubeResult
-            for (var i = 0; i < rubeResult.length -1; i++)
-            {
-               for(var j = i + 1; j < rubeResult.length; j++)
-               {
-                  if(rubeResult[i] > rubeResult[j])
-                  {
-                     var tmp = rubeResult[i];
-                     rubeResult[i] = rubeResult[j];
-                     rubeResult[j] = tmp;
-                  }
-               }
-            }
+            rubeResult.sort();
 
             var ignoreEvents = {};
             if (eventNode.children != null)
             {
-               var childrenEvents = eventNode.children; 
+               var childrenEvents = eventNode.children,
+                  fullDate,
+                  dateForCheck; 
 
-               for (var j=0; j<childrenEvents.length; j++)
+               for (var j = 0; j < childrenEvents.length; j++)
                {
-                  var fullDate = childrenEvents[j].properties["ia:date"];
-                  ignoreEvents[fullDate.getFullYear()+ " " + fullDate.getMonth()+ " " + fullDate.getDate()] = 1;
+                  fullDate = childrenEvents[j].properties["ia:date"];
+                  ignoreEvents[fullDate.getFullYear() + " " + fullDate.getMonth() + " " + fullDate.getDate()] = 1;
                }
 
-               for(var i=0; i<rubeResult.length; i++)
+               for (var i = 0; i < rubeResult.length; i++)
                {
-                  var dateForCheck = rubeResult[i];
-                  if (!ignoreEvents[dateForCheck.getFullYear()+ " " + dateForCheck.getMonth()+ " " + dateForCheck.getDate()])
+                  dateForCheck = rubeResult[i];
+                  if (!ignoreEvents[dateForCheck.getFullYear() + " " + dateForCheck.getMonth() + " " + dateForCheck.getDate()])
                   {
                      result.push(rubeResult[i]);
                   }
                }
             }
-            else {result = rubeResult;}
+            else
+            {
+               result = rubeResult;
+            }
 
-            if (result.length == 1)
+            if (result.length != 1)
             {
                needCycle = false;
             }
@@ -403,14 +442,14 @@ function getNextEventStartDates(event, currentDate, endMonth, eventNode, isSiteC
    {
       var eventDate = cloneDate(event.when);
 
-      if ((eventDate.getTime() >= startMonth.getTime()) && (eventDate.getTime() < endMonth.getTime())) 
+      if ((eventDate.getTime() >= currentDate.getTime()) && (eventDate.getTime() < endMonth.getTime()))
       {
          result.push(eventDate.getDate());
       }
    }
 
    return result;
-};
+}
 
 /**
  * Return all days between currentDate and endDate when weekly event occurs. 
@@ -426,11 +465,10 @@ function getNextEventStartDates(event, currentDate, endMonth, eventNode, isSiteC
  */
 function resolveStartDateWeekly (ev, eventParam, currentDate, endDate)
 {
-   var result = [];
-
-   var eventDays = eventParam['BYDAY'].split(",");
-   var interval = eventParam['INTERVAL'];
-   var lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
+   var result = [],
+      eventDays = eventParam['BYDAY'].split(","),
+      interval = eventParam['INTERVAL'],
+      lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
 
    if (lastEventDay == -1)
    {
@@ -439,14 +477,13 @@ function resolveStartDateWeekly (ev, eventParam, currentDate, endDate)
 
    var eventStart = cloneDate(ev.when);
 
-   //Add as much full event cycles as need
+   // Add as much full event cycles as need
    if (eventStart.getTime() < currentDate.getTime())
    {
-      var duration = Math.floor((currentDate.getTime() - eventStart.getTime())/(interval * 7 * DAY_MS));
-      var offset = duration * DAY_MS;
-      eventStart.setTime(eventStart.getTime() + offset * interval * 7);
-
+      var duration = Math.floor((currentDate.getTime() - eventStart.getTime()) / (interval * 7 * DAY_MS));
+      eventStart.setTime(eventStart.getTime() + duration * DAY_MS * interval * 7);
    }
+
    if (eventStart.getTime() > endDate.getTime())
    {
       return result;
@@ -455,11 +492,10 @@ function resolveStartDateWeekly (ev, eventParam, currentDate, endDate)
    var eventStartDay = eventStart.getDay();
    eventStart.setTime(eventStart.getTime() - eventStartDay * DAY_MS);
 
-   var eventStartDays   = [];
-   for(var i = 0; i < eventDays.length; i++)
+   var eventStartDays = [];
+   for (var i = 0; i < eventDays.length; i++)
    {
-      dayOfWeek = days[eventDays[i]];
-      eventStartDays.push(dayOfWeek);
+      eventStartDays.push(days[eventDays[i]]);
    }
 
    for (var i = 0; i < eventStartDays.length; i++)
@@ -472,47 +508,43 @@ function resolveStartDateWeekly (ev, eventParam, currentDate, endDate)
          if (eventDate.getTime() >= currentDate.getTime() && eventDate.getTime() >= cloneDate(ev.when).getTime())
          {
             var dateToAdd = new Date();
-            dateToAdd.setTime(eventDate.getTime())
+            dateToAdd.setTime(eventDate.getTime());
             result.push(dateToAdd);
          }
          eventDate.setTime(eventDate.getTime() + 7 * interval * DAY_MS);
       }
    }
    return result;
-};
+}
 
 /**
  * Return all days between currentDate and endDate when daily event occurs. 
- * 
  * 
  * @method resolveStartDaily 
  * @param ev {Object} object that represent daily event
  * @eventParam Map of event parameters taken from RRULE
  * @param currentDate {Date} first day when event may occur.
  * @param endDate {Date} last day when event may occur.
- *
  * @return {Array} Array that contains days beetwing currentDate and endDate on wich daily event occurs
  */
 function resolveStartDaily (ev, eventParam, currentDate, endDate)
 {  
-   var result = [];
-
-   var interval = eventParam['INTERVAL'];
-   var lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
+   var result = [],
+      interval = eventParam['INTERVAL'],
+      lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
 
    if (lastEventDay == -1)
    {
       return result;
    }
-//--------------------
+
    var eventStart = cloneDate(ev.when);
 
-   //Add as much full event cycles as need
+   // Add as much full event cycles as need
    if (eventStart.getTime() < currentDate.getTime())
    {
       var duration = Math.floor((currentDate.getTime() - eventStart.getTime())/(interval * DAY_MS));
-      var offset = duration * DAY_MS;
-      eventStart.setTime(eventStart.getTime() + offset * interval);
+      eventStart.setTime(eventStart.getTime() + duration * DAY_MS * interval);
       if (eventStart.getTime() < currentDate.getTime())
       {
          eventStart.setTime(eventStart.getTime() + interval * DAY_MS);
@@ -523,41 +555,39 @@ function resolveStartDaily (ev, eventParam, currentDate, endDate)
    {
       return result;
    }
-   var eventDate = eventStart;
-//-------------------
+
+   var eventDate = eventStart,
+      dateToAdd;
+
    while (eventDate.getTime() - lastEventDay.getTime() < DAY_MS)
    {
-      var dateToAdd = new Date();
-      dateToAdd.setTime(eventDate.getTime())
+      dateToAdd = new Date();
+      dateToAdd.setTime(eventDate.getTime());
       result.push(dateToAdd);
       eventDate.setTime(eventDate.getTime() + interval * DAY_MS);
    }
 
    return result;
-};
+}
 
 /**
  * Return all days between currentDate and endDate when monthly event occurs. 
- * 
  * 
  * @method resolveStartMonthly 
  * @param ev {Object} object that represent monthly event
  * @eventParam Map of event parameters taken from RRULE
  * @param currentDate {Date} first day when event may occur
  * @param endDate {Date} last day when event may occur
- * @param isSiteCalandarDashlet {boolean} if current dashlet is SiteCalendar
- *
+ * @param isSiteCalendarDashlet {boolean} if current dashlet is SiteCalendar
  * @return {Array} Array that contains days beetwing currentDate and endDate on wich monthly event occurs
  */
-function resolveStartMonthly (ev, eventParam, currentDate, endDate, isSiteCalandarDashlet)
+function resolveStartMonthly (ev, eventParam, currentDate, endDate, isSiteCalendarDashlet)
 {    
-   var result = [];
+   var result = [],
+      interval = eventParam['INTERVAL'],
+      eventStart = cloneDate(ev.when),
+      lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
 
-   var interval = eventParam['INTERVAL'];
-
-   var eventStart = cloneDate(ev.when);
-
-   var lastEventDay = this.getLastEventDay(ev, currentDate, endDate);
    if (lastEventDay == -1)
    {
       return result;
@@ -566,20 +596,20 @@ function resolveStartMonthly (ev, eventParam, currentDate, endDate, isSiteCaland
    var offset = ((currentDate.getFullYear() * 12 + currentDate.getMonth()) - (eventStart.getFullYear() * 12 + eventStart.getMonth())) % interval;
    if (offset > 0)
    {
-      if (isSiteCalandarDashlet)
+      if (isSiteCalendarDashlet)
       {
          return result();
       }
-      var monthToAdd = interval - offset;
-      currentDate.setMonth(currentDate.getMonth() + monthToAdd);
+      currentDate.setMonth(currentDate.getMonth() + interval - offset);
    }
 
    var resultDate = currentDate;
    resultDate.setDate(eventStart.getDate());
+
    if (eventParam['BYDAY'])
    {
-      var allowedDayNames = eventParam['BYDAY'].split(",");
-      var allowedDays = new Object();
+      var allowedDayNames = eventParam['BYDAY'].split(","),
+         allowedDays = new Object();
 
       for (var i = 0; i < allowedDayNames.length; i++)
       {
@@ -619,7 +649,7 @@ function resolveStartMonthly (ev, eventParam, currentDate, endDate, isSiteCaland
 
    if (resultDate.getTime() - lastEventDay.getTime() < DAY_MS)
    {
-      if (currentDate > resultDate && !isSiteCalandarDashlet)
+      if (currentDate > resultDate && !isSiteCalendarDashlet)
       {
          resultDate.setMonth(resultDate.getMonth() + interval);
       }
@@ -627,17 +657,15 @@ function resolveStartMonthly (ev, eventParam, currentDate, endDate, isSiteCaland
    }
 
    return result;
-};
+}
 
 /**
  * Return last day between currentDate and endDate when event may occur.
- * 
  * 
  * @method getLastEventDay 
  * @param ev {Object} object that represent monthly event
  * @param currentDate {Date} first day when event may occur.
  * @param endDate {Date} last day when event may occur.
- *
  * @return {Date} last day in current month whe event may occur.
  */	
 function getLastEventDay (ev, currentDate, endDate)
@@ -659,5 +687,4 @@ function getLastEventDay (ev, currentDate, endDate)
    }
 
    return lastEventDay;
-
-};
+}

@@ -71,6 +71,14 @@
             <property name="ia:isOutlook">
                <type>d:boolean</type>
             </property>
+            <property name="ia:outlookUID">
+               <title>Outlook UID</title>
+               <type>d:text</type>               
+               <mandatory>false</mandatory>               
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>			               
+            </property>
          </properties>
          <associations>
             <child-association name="ia:ignoreEventList">

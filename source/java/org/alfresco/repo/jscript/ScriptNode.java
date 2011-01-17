@@ -82,6 +82,7 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.NamespaceService;
@@ -2809,8 +2810,18 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                                = new LinkedHashMap<String, Serializable>(nodeProperties.size());
                        for (QName nextLongQName : nodeProperties.keySet())
                        {
-                           String nextShortQName = getShortQName(nextLongQName);
-                           nodePropertiesShortQNames.put(nextShortQName, nodeProperties.get(nextLongQName));
+                           try
+                           {
+                               String nextShortQName = getShortQName(nextLongQName);
+                               nodePropertiesShortQNames.put(nextShortQName, nodeProperties.get(nextLongQName));
+                           }
+                           catch (NamespaceException ne)
+                           {
+                               // ignore properties that do not have a registered namespace
+                               
+                               if (logger.isDebugEnabled())
+                                   logger.debug("Ignoring property '" + nextLongQName + "' as it's namespace is not registered");
+                           }
                        }
                        json.put("properties", nodePropertiesShortQNames);
                    }

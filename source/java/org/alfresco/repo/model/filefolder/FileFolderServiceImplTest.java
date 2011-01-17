@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
@@ -730,5 +731,17 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // Expected
         }
+    }
+    
+    public void testAlf6560MimetypeSetting() throws Exception
+    {
+        FileInfo fileInfo = fileFolderService.create(workingRootNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
+        NodeRef fileNodeRef = fileInfo.getNodeRef();
+        // Write the content but without setting the mimetype
+        ContentWriter writer = fileFolderService.getWriter(fileNodeRef);
+        writer.putContent("CONTENT");
+        
+        ContentReader reader = fileFolderService.getReader(fileNodeRef);
+        assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
     }
 }

@@ -1133,7 +1133,17 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             throw new InvalidTypeException("Unable to get a content writer for a folder: " + fileInfo);
         }
-        return contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        final ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        // Ensure that a mimetype is set based on the filename (ALF-6560)
+        // This has been removed from the create code in 3.4 to prevent insert-update behaviour
+        // of the ContentData.
+        if (writer.getMimetype() == null)
+        {
+            final String name = fileInfo.getName();
+            writer.setMimetype(mimetypeService.guessMimetype(name));
+        }
+        // Done
+        return writer;
     }
         
     private String getExtension(String name)

@@ -28,18 +28,27 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author davidc
  */
-public class AVMPathReference extends ObjectPathReference
+public class AVMPathReference extends AbstractObjectReference
 {
+    protected String path;
+    protected String[] reference;
+    
     /**
      * Construct
      * 
      * @param cmisServices
      * @param repo
-     * @param path
+     * @param path (note: AVM store relative path)
      */
     public AVMPathReference(CMISServices cmisServices, CMISRepositoryReference repo, String path)
     {
-        super(cmisServices, repo, path);
+        super(cmisServices, repo);
+        String[] splitPath = path.split("/");
+        this.reference = new String[1 + splitPath.length];
+        String avmStoreName = repo.getStoreRef().getIdentifier();
+        reference[0] = avmStoreName;
+        this.path = avmStoreName + ":/" + path;
+        System.arraycopy(splitPath, 0, reference, 1, splitPath.length);
     }
 
     /*
@@ -51,10 +60,18 @@ public class AVMPathReference extends ObjectPathReference
         return cmisServices.getNode("avmpath", reference);
     }
     
+    /**
+     * @return  AVM path (eg. avmstorename:/my/path/to/a/file)
+     */
+    public String getPath()
+    {
+        return path;
+    }
+    
     @Override
     public String toString()
     {
-        return "AVMPathReference[storeRef=" + repo.getStoreRef() + ",path=" + path + "]";
+        return "AVMPathReference[avmpath=" + path + "]";
     }
 
 }

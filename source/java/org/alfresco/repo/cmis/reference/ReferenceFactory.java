@@ -24,6 +24,7 @@ import org.alfresco.cmis.CMISObjectReference;
 import org.alfresco.cmis.CMISRelationshipReference;
 import org.alfresco.cmis.CMISRepositoryReference;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
@@ -64,7 +65,13 @@ public class ReferenceFactory
         {
             return new StoreRepositoryReference(cmisService, store);
         }
-
+        
+        String avmPath = templateArgs.get("avmpath");
+        if (avmPath != null && store_id != null)
+        {
+            return new StoreRepositoryReference(cmisService, StoreRef.PROTOCOL_AVM + ":" + store_id);
+        }
+        
         // TODO: repository id
 //      String repoId = templateArgs.get("repo");
 //        else if (repoId != null)

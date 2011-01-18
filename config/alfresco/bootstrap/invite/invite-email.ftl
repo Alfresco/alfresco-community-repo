@@ -3,9 +3,9 @@
 <#assign inviteePersonRef=args["inviteePersonRef"]/>
 <#assign inviteePerson=companyhome.nodeByReference[inviteePersonRef]/>
 
-Hello ${inviteePerson.properties["cm:firstName"]},
+Hello ${inviteePerson.properties["cm:firstName"]!""},
 
-You have been invited by ${inviterPerson.properties["cm:firstName"]} ${inviterPerson.properties["cm:lastName"]} to join the '${args["siteName"]}' site.
+You have been invited by ${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} to join the '${args["siteName"]}' site.
 
 Your role in the site will be ${args["inviteeSiteRole"]}.
 

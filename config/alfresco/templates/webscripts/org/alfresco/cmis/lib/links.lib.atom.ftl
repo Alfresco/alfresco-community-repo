@@ -166,7 +166,7 @@
 [#macro serviceuri]${absurl(url.serviceContext)}/cmis[/#macro]
 
 [#-- Helper to render Alfresco content stream uri --]
-[#macro contenturi node]${absurl(url.serviceContext)}/cmis/[@noderef node/]/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${encodeuri(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
+[#macro contenturi node]${absurl(url.serviceContext)}/cmis/[@noderef node/]/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${stringUtils.urlEncode(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
 
 [#-- Helper to render Store Ref --]
 [#macro storeref store]s/${store.protocol}:${store.identifier}[/#macro]

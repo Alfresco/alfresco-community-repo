@@ -2481,7 +2481,6 @@
         <property name="fixesFromSchema" value="0" />
         <property name="fixesToSchema" value="4112" />
         <property name="targetSchema" value="4113" />
-        <property name="force" value="true" />
         <property name="template" ref="avmSqlMapClientTemplate" />
         <property name="temporaryExtension" value="temp" />
     </bean>

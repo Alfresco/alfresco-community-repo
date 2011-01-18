@@ -399,7 +399,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
             writer.putContent(FILE);
         }
         
-        sbService.submitWebApp(sbStoreId, defaultWebApp, "some existing folders and files", null);
+        sbService.submitWebApp(sbStoreId, defaultWebApp, "some existing folders and files", "some existing folders and files");
         
         pollForSnapshotCount(stagingStoreId, 1);
         
@@ -666,11 +666,18 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         // switch to user
         AuthenticationUtil.setFullyAuthenticatedUser(user);
         
-        // submit the changes
-        sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, null);
-
-        snapCnt += (canUpdateExisting || canDeleteExisting) ? (1):(0);
-        pollForSnapshotCount(stagingStoreId, snapCnt);
+        List<AssetInfo> changedAssets = sbService.listChangedWebApp(sbStoreId, defaultWebApp, true);
+        
+        if (changedAssets.size() > 0)
+        {
+            // submit the changes
+            sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, "some updates by "+user);
+            
+            snapCnt += (canUpdateExisting || canDeleteExisting) ? (1):(0);
+            pollForSnapshotCount(stagingStoreId, snapCnt);
+            
+            assertEquals(0, sbService.listChangedWebApp(sbStoreId, defaultWebApp, true).size());
+        }
     }
     
     public void testRenameFile()

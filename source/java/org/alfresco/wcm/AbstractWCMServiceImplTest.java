@@ -164,10 +164,13 @@ public class AbstractWCMServiceImplTest extends TestCase
     
     protected void createUser(String userName)
     {
-        if (authenticationService.authenticationExists(userName) == false)
+        if (! authenticationService.authenticationExists(userName))
         {
             authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
+        }
+        
+        if (! personService.personExists(userName))
+        {
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
             ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");

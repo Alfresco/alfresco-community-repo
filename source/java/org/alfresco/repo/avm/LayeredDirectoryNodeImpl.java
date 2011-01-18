@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -798,6 +799,16 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                 return;
             }
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
+            
+            Lookup lookup = AVMRepository.GetInstance().lookup(-1, AVMUtil.extendAVMPath(lPath.getRepresentedPath(), name), true);
+            
+            if (((AVMNodeType.PLAIN_FILE == child.getType()) || 
+                 (AVMNodeType.LAYERED_DIRECTORY == child.getType()) || 
+                 (AVMNodeType.PLAIN_DIRECTORY == child.getType())) && 
+                ((lookup == null) || (lookup.getIndirectionPath() == null)) && (lookupChild(lPath, name, true) == null))
+            {
+                return;
+            }
         }
         else
         {

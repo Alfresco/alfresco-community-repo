@@ -224,7 +224,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         // try to get assets (including deleted)
         
         myFolder1Asset = assetService.getAsset(sbStoreId, -1, path+"/myFolder1", true);
-        checkAssetInfo(myFolder1Asset, "myFolder1", path+"/myFolder1", USER_ONE, false, true, true, false, null); // TODO - unlike admin (testSimple)
+        assertNull(myFolder1Asset);
         
         myFile1Asset = assetService.getAsset(sbStoreId, -1, path+"/myFile1", true);
         assertNull(myFile1Asset);
@@ -348,7 +348,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         // try to get assets (including deleted)
         
         myFolder1Asset = assetService.getAssetWebApp(sbStoreId, myWebApp1, "/myFolder1", true);
-        checkAssetInfo(myFolder1Asset, "myFolder1", path+"/myFolder1", USER_ONE, false, true, true, false, null); // TODO - unlike admin (testSimple)
+        assertNull(myFolder1Asset);
         
         myFile1Asset = assetService.getAssetWebApp(sbStoreId, myWebApp1, "/myFile1", true);
         assertNull(myFile1Asset);
@@ -668,8 +668,9 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         // submit the changes
         sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, null);
-        
-        pollForSnapshotCount(stagingStoreId, snapCnt+1);
+
+        snapCnt += (canUpdateExisting || canDeleteExisting) ? (1):(0);
+        pollForSnapshotCount(stagingStoreId, snapCnt);
     }
     
     public void testRenameFile()
@@ -1346,5 +1347,43 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
             expectedChangeCnt--;
             expectedStageCnt++;
         }
+    }
+    
+    // ALF-1948
+    public void testDeleteFile() throws Exception
+    {
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS + "-import", TEST_WEBPROJ_NAME + "-import", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION,
+                TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        SandboxInfo stagingInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
+        String stagingStoreId = stagingInfo.getSandboxId();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
+        String sbStoreId = sbInfo.getSandboxId();
+        
+        String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        assetService.createFile(sbStoreId, path, "testfile.txt", null);
+        assetService.createFolder(sbStoreId, path, "testfolder", null);
+        
+        List<AssetInfo> listAssets = assetService.listAssets(stagingStoreId, path, true);
+        assertEquals(0, listAssets.size());
+        
+        listAssets = assetService.listAssets(sbStoreId, path, true);
+        assertEquals(2, listAssets.size());
+        
+        int validAmount = listAssets.size() - 1;
+        for (AssetInfo asset : listAssets)
+        {
+            assetService.deleteAsset(asset);
+            List<AssetInfo> tempAssetsList = assetService.listAssets(sbStoreId, path, true);
+            assertNotNull(tempAssetsList);
+            assertEquals(validAmount--, tempAssetsList.size());
+        }
+        
+        List<AssetInfo> listChanged = sbService.listChanged(sbStoreId, path, true);
+        assertEquals(0, listChanged.size());
     }
 }

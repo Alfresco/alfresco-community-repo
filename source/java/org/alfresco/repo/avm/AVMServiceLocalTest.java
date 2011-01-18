@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import junit.framework.TestCase;
 
@@ -924,6 +925,115 @@ public class AVMServiceLocalTest extends TestCase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+    }
+    
+    public void testDeleteLD3() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            fService.createDirectory("mainB:/", "a");
+            fService.createSnapshot("mainB", null, null);
+            
+            SortedMap<String, AVMNodeDescriptor> directoryListing = fService.getDirectoryListing(-1, "mainB:/a");
+            assertTrue(directoryListing.isEmpty());
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            fService.createFile("mainB--layer:/a", "testfile.txt");
+            fService.createDirectory("mainB--layer:/a", "testfolder");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(2, diffs.size());
+            assertEquals("[mainB--layer:/a/testfile.txt[-1] > mainB:/a/testfile.txt[-1], mainB--layer:/a/testfolder[-1] > mainB:/a/testfolder[-1]]", diffs.toString());
+            
+            // ALF-1948
+            fService.removeNode("mainB--layer:/a", "testfile.txt");
+            fService.createSnapshot("mainB--layer", null, null);
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/testfolder[-1] > mainB:/a/testfolder[-1]]", diffs.toString());
+            
+            fService.removeNode("mainB--layer:/a", "testfolder");
+            fService.createSnapshot("mainB--layer", null, null);
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            directoryListing = fService.getDirectoryListing(-1, "mainB--layer:/a");
+            assertTrue(directoryListing.isEmpty());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testDeleteLD4() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createDirectory("main:/", "a");
+            
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            
+            logger.debug("created layered dir: layer:/a -> main:/a");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fService.createStore("layer2");
+            
+            logger.debug("created store: layer2");
+            
+            fService.createLayeredDirectory("layer:/a", "layer2:/", "a");
+            
+            logger.debug("created layered dir: layer2:/a -> layer:/a");
+            
+            OutputStream o = fService.createFile("layer2:/a", "foo");
+            PrintStream out = new PrintStream(o);
+            out.println("I am layer2:/a/foo");
+            out.close();
+            
+            diffs = fSyncService.compare(-1, "layer2:/a", -1, "layer:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer2:/a/foo[-1] > layer:/a/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer2:/a", -1, "layer:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/a/foo[-1] > main:/a/foo[-1]]", diffs.toString());
+            
+            // ALF-1948
+            fService.removeNode("layer:/a", "foo");
+            
+            logger.debug("remove file in layer: layer:/a/foo");
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            if (fService.getStore("layer2") != null) { fService.purgeStore("layer2"); }
         }
     }
     
@@ -3511,6 +3621,122 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
+    // ALF-1948
+    public void testDeleteLD5() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            fService.createDirectory("mainB:/", "a");
+            fService.createSnapshot("mainB", null, null);
+            
+            SortedMap<String, AVMNodeDescriptor> directoryListing = fService.getDirectoryListing(-1, "mainB:/a");
+            assertTrue(directoryListing.isEmpty());
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            fService.createFile("mainB--layer:/a", "testfile.txt");
+            fService.createDirectory("mainB--layer:/a", "testfolder");
+            fService.createSnapshot("mainB--layer", null, null);
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(2, diffs.size());
+            assertEquals("[mainB--layer:/a/testfile.txt[-1] > mainB:/a/testfile.txt[-1], mainB--layer:/a/testfolder[-1] > mainB:/a/testfolder[-1]]", diffs.toString());
+            
+            fService.removeNode("mainB--layer:/a", "testfile.txt");
+            fService.createSnapshot("mainB--layer", null, null);
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/testfolder[-1] > mainB:/a/testfolder[-1]]", diffs.toString());
+            
+            fService.removeNode("mainB--layer:/a", "testfolder");
+            fService.createSnapshot("mainB--layer", null, null);
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            directoryListing = fService.getDirectoryListing(-1, "mainB--layer:/a");
+            assertTrue(directoryListing.isEmpty());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    // ALF-1948
+    public void testDeleteLD6() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            fService.createDirectory("mainB:/", "a");
+            fService.createSnapshot("mainB", null, null);
+            
+            SortedMap<String, AVMNodeDescriptor> directoryListing = fService.getDirectoryListing(-1, "mainB:/a");
+            assertTrue(directoryListing.isEmpty());
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            performDeletion(100);
+            fSyncService.resetLayer("mainB--layer:/a");
+            performDeletion(500);
+            fSyncService.resetLayer("mainB--layer:/a");
+            performDeletion(500);
+            fSyncService.resetLayer("mainB--layer:/a");
+            performDeletion(1000);
+            fSyncService.resetLayer("mainB--layer:/a");
+            performDeletion(2000);
+            fSyncService.resetLayer("mainB--layer:/a");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    private void performDeletion(int objectsAmount)
+    {
+        SortedMap<String, AVMNodeDescriptor> directoryListing;
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        for (int i = 0; i < objectsAmount; i++)
+        {
+            String commonPart = "-" + timestamp + "-" + i;
+            fService.createFile("mainB--layer:/a", ("testfile" + commonPart + ".txt"));
+            fService.createDirectory("mainB--layer:/a", ("testfolder" + commonPart));
+        }
+        fService.createSnapshot("mainB--layer", null, null);
+
+        List<AVMDifference> compare = fSyncService.compare(-1, "mainB:/a", -1, "mainB--layer:/a", null);
+        assertEquals(2 * objectsAmount, compare.size());
+
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < objectsAmount; i++)
+        {
+            String commonPart = "-" + timestamp + "-" + i;
+            fService.removeNode("mainB--layer:/a", ("testfile" + commonPart + ".txt"));
+            fService.removeNode("mainB--layer:/a", ("testfolder" + commonPart));
+        }
+        fService.createSnapshot("mainB--layer", null, null);
+        logger.info("Time spent on deletion of " + compare.size() + " objects is " + (System.currentTimeMillis() - time));
+
+        directoryListing = fService.getDirectoryListing(-1, "mainB--layer:/a");
+        assertTrue(directoryListing.isEmpty());
+    }
+
     protected void recursiveContents(String path)
     {
         String contentsStr = recursiveContents(path, -1, true);

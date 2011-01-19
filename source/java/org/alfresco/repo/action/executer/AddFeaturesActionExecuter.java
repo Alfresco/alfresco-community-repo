@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Add features action executor implementation.
@@ -49,16 +51,29 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 	 */
 	private NodeService nodeService;
 	
+    /** Transaction Service, used for retrying operations */
+    private TransactionService transactionService;
+    
     /**
      * Set the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService  the node service 
      */
 	public void setNodeService(NodeService nodeService) 
 	{
 		this.nodeService = nodeService;
 	}
 	
+    /**
+     * Set the transaction service
+     * 
+     * @param transactionService    the transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
 	/**
 	 * Adhoc properties are allowed for this executor
 	 */
@@ -71,32 +86,46 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.repository.NodeRef, NodeRef)
      */
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    public void executeImpl(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-			Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-			QName aspectQName = null;
-			
-	        Map<String, Serializable> paramValues = ruleAction.getParameterValues();
-	        for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
-			{
-				if (entry.getKey().equals(PARAM_ASPECT_NAME) == true)
-				{
-					aspectQName = (QName)entry.getValue();
-				}
-				else
-				{
-					// Must be an adhoc property
-					QName propertyQName = QName.createQName(entry.getKey());
-					Serializable propertyValue = entry.getValue();
-					properties.put(propertyQName, propertyValue);
-				}
-			}
-			
-	        // Add the aspect
-	        this.nodeService.addAspect(actionedUponNodeRef, aspectQName, properties);
-		}
+        if (this.nodeService.exists(actionedUponNodeRef))
+        {
+           transactionService.getRetryingTransactionHelper().doInTransaction(
+              new RetryingTransactionCallback<Void>() {
+                 public Void execute() throws Throwable {
+                     Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                     QName aspectQName = null;
+
+                     if(! nodeService.exists(actionedUponNodeRef))
+                     {
+                         // Node has gone away, skip
+                         return null;
+                     }
+
+                     // Build the aspect details
+                     Map<String, Serializable> paramValues = ruleAction.getParameterValues();
+                     for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
+                     {
+                         if (entry.getKey().equals(PARAM_ASPECT_NAME) == true)
+                         {
+                             aspectQName = (QName)entry.getValue();
+                         }
+                         else
+                         {
+                             // Must be an adhoc property
+                             QName propertyQName = QName.createQName(entry.getKey());
+                             Serializable propertyValue = entry.getValue();
+                             properties.put(propertyQName, propertyValue);
+                         }
+                     }
+
+                     // Add the aspect
+                     nodeService.addAspect(actionedUponNodeRef, aspectQName, properties);
+                     return null;
+                 }
+              }
+           );
+        }
     }
 
     /**

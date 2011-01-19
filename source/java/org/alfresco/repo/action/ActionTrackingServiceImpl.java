@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +57,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     private static Log logger = LogFactory.getLog(ActionTrackingServiceImpl.class);
 
     private SimpleCache<String, ExecutionDetails> executingActionsCache;
+    private NodeService nodeService;
     private TransactionService transactionService;
     private RuntimeActionService runtimeActionService;
 
@@ -76,6 +78,16 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * Set the node service
+     * 
+     * @param nodeService the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     /**
@@ -139,7 +151,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         action.setExecutionFailureMessage(null);
         
         // Do we need to update the persisted details?
-        if (action.getNodeRef() != null)
+        if (action.getNodeRef() != null && nodeService.exists(action.getNodeRef()))
         {
            // Make sure we re-fetch the latest action details and save
            //  this version back into the repository
@@ -164,8 +176,15 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
                              {
                                 public Action doWork() throws Exception
                                 {
-                                   // Grab the latest version of the
-                                   // action
+                                   // Ensure the action persisted node still exists, and wasn't deleted
+                                   //  between when it loaded running and now
+                                   if( !nodeService.exists(actionNode) )
+                                   {
+                                       // Persisted node has gone, nothing to update
+                                       return null;
+                                   }
+                                    
+                                   // Grab the latest version of the action
                                    ActionImpl action = (ActionImpl) runtimeActionService
                                    .createAction(actionNode);
 

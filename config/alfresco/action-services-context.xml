@@ -114,6 +114,9 @@
         <property name="transactionService">
             <ref bean="TransactionService" />
         </property>         
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>         
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>         
@@ -329,6 +332,12 @@
     <bean id="add-features" class="org.alfresco.repo.action.executer.AddFeaturesActionExecuter" parent="action-executer">
         <property name="nodeService">
             <ref bean="NodeService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService" />
+        </property>         
+        <property name="ignoreLock">
+            <value>false</value>
         </property>
     </bean>
     

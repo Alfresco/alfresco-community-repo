@@ -444,6 +444,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             }
         }, AuthenticationUtil.getSystemUserName());
         
+        // Get the user 
+        String userName = getUserName();
+        
         ruleService.disableRules();
         try
         {
@@ -459,9 +462,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         {
             ruleService.enableRules();
         }
-
-        // Get the user 
-        String userName = getUserName();
         
         // Lock the original node
         this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);

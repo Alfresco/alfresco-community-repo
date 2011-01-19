@@ -335,9 +335,6 @@
         </property>
         <property name="transactionService">
             <ref bean="TransactionService" />
-        </property>         
-        <property name="ignoreLock">
-            <value>false</value>
         </property>
     </bean>
     

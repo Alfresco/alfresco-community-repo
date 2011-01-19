@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -128,6 +129,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * The authentication service
      */
     private AuthenticationService authenticationService;
+    
+    /** Rule service */
+    private RuleService ruleService;
     
     /**
      * The versionable aspect behaviour implementation
@@ -221,6 +225,14 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * @param ruleService   rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
     
     /**
@@ -432,16 +444,24 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             }
         }, AuthenticationUtil.getSystemUserName());
         
-        // Update the working copy name        
-        this.nodeService.setProperty(workingCopy, ContentModel.PROP_NAME, copyName);
+        ruleService.disableRules();
+        try
+        {
+            // Update the working copy name        
+            this.nodeService.setProperty(workingCopy, ContentModel.PROP_NAME, copyName);
+            
+            // Apply the working copy aspect to the working copy
+            Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
+            workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
+            this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
+        }
+        finally
+        {
+            ruleService.enableRules();
+        }
 
         // Get the user 
         String userName = getUserName();
-        
-        // Apply the working copy aspect to the working copy
-        Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
-        workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
-        this.nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
         
         // Lock the original node
         this.lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);

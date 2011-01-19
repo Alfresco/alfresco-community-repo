@@ -1218,6 +1218,9 @@
         <property name="versionService">
             <ref bean="versionService" />
         </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="lockService">
             <ref bean="LockService" />
         </property>

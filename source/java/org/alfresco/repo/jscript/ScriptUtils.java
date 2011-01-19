@@ -199,4 +199,20 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     {
         return I18NUtil.getMessage(messageId, params);
     }
+    
+    /**
+     * Disable rule execution for this thread
+     */
+    public void disableRules()
+    {
+        services.getRuleService().disableRules();
+    }
+    
+    /**
+     * Enable rule execution for this thread
+     */
+    public void enableRules()
+    {
+        services.getRuleService().enableRules();
+    }
 }

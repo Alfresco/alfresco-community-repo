@@ -45,8 +45,10 @@ function runAction(p_params)
       }
       
       // Extra property to allow the full series of actions via the Explorer client
+      utils.disableRules();
       workingCopy.properties["cm:workingCopyMode"] = "offlineEditing";
       workingCopy.save();
+      utils.enableRules();
 
       var resultId = assetNode.name,
          resultNodeRef = workingCopy.nodeRef.toString();

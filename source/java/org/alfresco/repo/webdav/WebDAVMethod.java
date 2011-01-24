@@ -742,7 +742,7 @@ public abstract class WebDAVMethod
             xml.endElement(ns, WebDAV.XML_LOCK_TYPE, emptyNamespace ? WebDAV.XML_LOCK_TYPE : WebDAV.XML_NS_LOCK_TYPE);
              
             xml.startElement(ns, WebDAV.XML_LOCK_SCOPE, emptyNamespace ? WebDAV.XML_LOCK_SCOPE : WebDAV.XML_NS_LOCK_SCOPE, nullAttr);
-            xml.write(DocumentHelper.createElement(scope));
+            xml.write(DocumentHelper.createElement(emptyNamespace ? scope : WebDAV.DAV_NS_PREFIX + scope));
             xml.endElement(ns, WebDAV.XML_LOCK_SCOPE, emptyNamespace ? WebDAV.XML_LOCK_SCOPE : WebDAV.XML_NS_LOCK_SCOPE);
              
             // NOTE: We only support one level of lock at the moment

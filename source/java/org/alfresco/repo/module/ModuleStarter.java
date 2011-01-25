@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.module;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.transaction.TransactionService;
@@ -57,7 +59,7 @@ public class ModuleStarter extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        RetryingTransactionCallback<Object> startModulesCallback = new RetryingTransactionCallback<Object>()
+        final RetryingTransactionCallback<Object> startModulesCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -65,8 +67,17 @@ public class ModuleStarter extends AbstractLifecycleBean
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(startModulesCallback,
-                transactionService.isReadOnly());
+        
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            @Override
+            public Object doWork() throws Exception 
+            {
+                transactionService.getRetryingTransactionHelper().doInTransaction(startModulesCallback, transactionService.isReadOnly());
+                return null;
+            }
+        	
+        }, AuthenticationUtil.getSystemUserName());       
     }
 
     @Override

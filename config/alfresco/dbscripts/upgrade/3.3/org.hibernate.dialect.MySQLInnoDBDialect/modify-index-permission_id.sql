@@ -36,7 +36,84 @@ INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
     GROUP BY
        ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies
 ;
-   
+
+
+CREATE TABLE alf_tmp_acl_members (
+    id BIGINT NOT NULL,
+    min BIGINT NOT NULL,
+    acl_id BIGINT NOT NULL,
+    pos BIGINT,
+    ace_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (min, acl_id, pos, ace_id)
+) ENGINE=InnoDB;
+
+
+INSERT INTO
+    alf_tmp_acl_members
+    SELECT
+        mem.id, help.min, mem.acl_id, mem.pos, mem.ace_id
+    FROM
+        alf_acl_member mem
+        JOIN
+            alf_access_control_entry ace
+        ON
+            mem.ace_id = ace.id
+        JOIN
+            alf_tmp_min_ace help
+        ON
+            help.permission_id = ace.permission_id AND
+            help.authority_id = ace.authority_id AND
+            help.allowed = ace.allowed AND
+            help.applies = ace.applies;
+
+
+CREATE TABLE alf_tmp_acl_groups (
+    min BIGINT NOT NULL,
+    acl_id BIGINT NOT NULL,
+    pos BIGINT,
+    group_min BIGINT NOT NULL,
+    UNIQUE (min, acl_id, pos)
+) ENGINE=InnoDB;
+
+
+INSERT INTO
+    alf_tmp_acl_groups
+    SELECT
+        mems.min, mems.acl_id, mems.pos, min(mems.ace_id)
+    FROM
+        alf_tmp_acl_members mems
+    GROUP BY
+        mems.min, mems.acl_id, mems.pos
+    HAVING
+        count(*) > 1;
+
+
+DELETE FROM
+    alf_acl_member
+WHERE
+    id IN (
+        SELECT
+            mems.id
+        FROM
+            alf_tmp_acl_members mems
+            JOIN
+                alf_tmp_acl_groups groups
+            ON
+                mems.min = groups.min AND
+                mems.acl_id = groups.acl_id AND
+                mems.pos = groups.pos
+        WHERE
+            mems.ace_id <> groups.group_min
+    );
+
+
+DROP TABLE
+    alf_tmp_acl_members;
+
+DROP TABLE
+    alf_tmp_acl_groups;
+
 
 -- Update members to point to the first use of an access control entry
 UPDATE alf_acl_member mem

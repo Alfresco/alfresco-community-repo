@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="review-definitions"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://activiti.org/bpmn20" 
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="activitiReviewPooled" name="Pooled Review And Approve Activiti Process">
+
+        <startEvent id="start"
+            activiti:formKey="wf:submitGroupReviewTask" />
+
+        <sequenceFlow id='flow1' 
+            sourceRef='start'
+            targetRef='reviewTask' />
+
+        <userTask id="reviewTask" name="Review Task"
+            activiti:formKey="wf:activitiReviewTask">
+           <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariable('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+               <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                       	execution.setVariable('wf_reviewOutcome', task.getVariable('wf_reviewOutcome'));
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+              
+           </extensionElements>
+           <potentialOwner>
+		      <resourceAssignmentExpression>
+		        <formalExpression>${bpm_groupAssignee.properties.authorityName}</formalExpression>
+		      </resourceAssignmentExpression>
+		   </potentialOwner>
+        </userTask>
+
+        <sequenceFlow id='flow2' 
+        sourceRef='reviewTask'
+            targetRef='reviewDecision' />
+
+        <exclusiveGateway  id="reviewDecision" name="Review Decision" /> 
+
+        <sequenceFlow id='flow3' sourceRef='reviewDecision' targetRef='approved' >
+            <conditionExpression xsi:type="tFormalExpression">${wf_reviewOutcome == 'Approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id='flow4' 
+        sourceRef='reviewDecision'
+            targetRef='rejected' />
+
+       <userTask id="approved" name="Document Approved"
+            activiti:formKey="wf:approvedTask" >
+            <documentation>
+                The document was reviewed and approved.
+            </documentation>
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+               <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        execution.setVariable('bpm_assignee', person);
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+            </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+        
+        <userTask id="rejected" name="Document Rejected"
+            activiti:formKey="wf:rejectedTask" >
+            <documentation>
+                The document was reviewed and rejected.
+            </documentation>
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+               <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        bpm_assignee = person;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+            </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+
+        <sequenceFlow id='flow5' sourceRef='approved'
+            targetRef='end' />
+
+        <sequenceFlow id='flow6' sourceRef='rejected'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+
+</definitions>

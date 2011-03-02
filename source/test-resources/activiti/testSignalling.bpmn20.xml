@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="test-adhoc-definitions" typeLanguage="http://www.w3.org/2001/XMLSchema"
+    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://activiti.org/bpmn20"
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="testSignalling" name="Process to Test Signalling">
+
+        <startEvent id="start" activiti:formKey="wf:submitAdhocTask" />
+
+        <sequenceFlow id='flow1' sourceRef='start'
+            targetRef='task1' />
+
+        <userTask id="task1" name="Task One"  />
+
+        <sequenceFlow id='flow2' sourceRef='task1'
+            targetRef='task2' />
+
+        <userTask id="task2" name="Task  Two"  />
+
+        <sequenceFlow id='flow3' sourceRef='task2'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+
+</definitions>

@@ -6,9 +6,17 @@
     <bean id="lifecycle.workflowBootstrap" parent="workflowDeployer">
 		<property name="workflowDefinitions">
 			<list>
+				<!-- JBPM version of lifecycle process -->
 				<props>
 					<prop key="engineId">jbpm</prop>
 					<prop key="location">alfresco/extension/lifecycle_processdefinition.xml</prop>
+					<prop key="mimetype">text/xml</prop>
+					<prop key="redeploy">false</prop>
+				</props>
+				<!-- Activiti version of lifecycle process -->
+				<props>
+					<prop key="engineId">activiti</prop>
+					<prop key="location">alfresco/extension/lifecycle-process.bpmn20.xml</prop>
 					<prop key="mimetype">text/xml</prop>
 					<prop key="redeploy">false</prop>
 				</props>

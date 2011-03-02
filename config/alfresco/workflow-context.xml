@@ -40,6 +40,7 @@
       <property name="permissionService" ref="permissionService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="tenantService" ref="tenantService"/>
+      <property name="messageService" ref="messageService"/>
    </bean>
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">
@@ -80,8 +81,12 @@
    <bean id="bpm_engineRegistry" class="org.alfresco.repo.workflow.BPMEngineRegistry">
    </bean>
 
-   <bean id="bpm_engine" class="org.alfresco.repo.workflow.BPMEngine" abstract="true">
+   <bean id="bpm_engine" class="org.alfresco.repo.workflow.AlfrescoBpmEngine" abstract="true">
       <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
    </bean>
 
    <!--                     -->
@@ -100,19 +105,20 @@
    <bean id="jbpm_engine" class="org.alfresco.repo.workflow.jbpm.JBPMEngine" parent="bpm_engine">
       <property name="engineId" value="jbpm"/>
       <property name="JBPMTemplate" ref="jbpm_template"/>
-      <property name="dictionaryService" ref="DictionaryService"/>
-      <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="nodeService"/>
-      <property name="tenantService" ref="tenantService"/>
-      <property name="messageService" ref="messageService"/>
       <property name="personService" ref="personService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
       <!-- Creates JBPMNodes (ScriptNodes) which require the ServiceRegsitry -->
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
-	  <property name="unprotectedSearchService" ref="searchService"/>
+	   <property name="unprotectedSearchService" ref="searchService"/>
    </bean>
+
+   <!--                     -->
+   <!-- Activiti Implementation -->
+   <!--                     -->
+    <import resource="classpath:alfresco/activiti-context.xml" />
 
    <!-- Workflow Patch Deployer -->
    <bean id="workflowPatchDeployer" parent="workflowDeployer" singleton="false"/>

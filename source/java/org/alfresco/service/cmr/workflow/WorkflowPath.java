@@ -32,16 +32,28 @@ package org.alfresco.service.cmr.workflow;
 public class WorkflowPath
 {
     /** Unique id of Workflow Path */
+    @Deprecated
     public String id;
     
     /** Workflow Instance this path is part of */
+    @Deprecated
     public WorkflowInstance instance;
     
     /** The Workflow Node the path is at */
+    @Deprecated
     public WorkflowNode node;
     
     /** Is the path still active? */
+    @Deprecated
     public boolean active;
+    
+    public WorkflowPath(String id, WorkflowInstance instance, WorkflowNode node, boolean active)
+    {
+        this.id = id;
+        this.instance = instance;
+        this.node = node;
+        this.active = active;
+    }
 
     /**
      * @return the id
@@ -75,12 +87,12 @@ public class WorkflowPath
         return active;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+    * {@inheritDoc}
      */
     @Override
     public String toString()
     {
-        return "WorkflowPath[id=" + id + ",instance=" + instance.toString() + ",active=" + active + ",node=" + node.toString()+ "]";
+        return "WorkflowPath[id=" + id + ",instance=" + instance.toString() + ",active=" + active + ",node=" + ((node != null) ? node.toString() : "null") + "]";
     }
 }

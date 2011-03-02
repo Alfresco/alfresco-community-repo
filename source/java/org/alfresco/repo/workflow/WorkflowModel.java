@@ -60,7 +60,7 @@ public interface WorkflowModel
     static final QName PROP_REASSIGNABLE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "reassignable");
     static final QName ASSOC_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
 
-    // workflow task contstants
+    // Start task contstants
     static final QName TYPE_START_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "startTask");
     static final QName PROP_WORKFLOW_DESCRIPTION = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowDescription");
     static final QName PROP_WORKFLOW_PRIORITY = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPriority");
@@ -69,6 +69,10 @@ public interface WorkflowModel
     static final QName ASSOC_ASSIGNEES = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignees");
     static final QName ASSOC_GROUP_ASSIGNEE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignee");
     static final QName ASSOC_GROUP_ASSIGNEES = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignees");
+
+    // Activiti Task Constants
+    static final QName TYPE_ACTIVTI_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "activitiOutcomeTask");
+    static final QName PROP_OUTCOME_PROPERTY_NAME= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcomePropertyName");
 
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");

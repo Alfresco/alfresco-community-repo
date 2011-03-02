@@ -29,23 +29,42 @@ package org.alfresco.service.cmr.workflow;
 public class WorkflowNode
 {
     /** Workflow Node Name */
+    @Deprecated
     public String name;
     
     /** Workflow Node Title (Localised) */
+    @Deprecated
     public String title;
     
     /** Workflow Node Description (Localised) */
+    @Deprecated
     public String description;
 
     /** Type of the Workflow Node (typically this is BPM engine specific - informational only */
+    @Deprecated
     public String type;
 
     /** Does this Workflow Node represent human interaction? */
+    @Deprecated
     public boolean isTaskNode;
     
     /** The transitions leaving this node (or null, if none) */
+    @Deprecated
     public WorkflowTransition[] transitions;
     
+    public WorkflowNode(String name,
+                String title, String description, 
+                String type, boolean isTaskNode,
+                WorkflowTransition... transitions)
+    {
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.isTaskNode = isTaskNode;
+        this.transitions = transitions;
+    }
+
     /**
      * @return the name
      */

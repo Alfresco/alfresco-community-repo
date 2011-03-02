@@ -19,10 +19,12 @@
 
 package org.alfresco.repo.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -31,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -45,6 +48,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class WorkflowPackageImpl implements WorkflowPackageComponent
 {
     private final static String PACKAGE_FOLDER = "packages";
+    private static final String ERR_PACKAGE_ALREADY_ASSOCIATED = "workflow.package.already.associated.error";
 
     // service dependencies
     private ImporterBootstrap bootstrap;
@@ -54,7 +58,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     private PermissionService permissionService;
     private NodeRef systemWorkflowContainer = null;
     private TenantService tenantService;
-
+    private MessageService messageService;
+    
     /**
      * @param bootstrap the importer bootstrap for the store to place workflow
      *            items into
@@ -100,12 +105,17 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     {
         this.tenantService = tenantService;
     }
+    
+    /**
+     * @param messageService the messageService to set
+     */
+    public void setMessageService(MessageService messageService)
+    {
+        this.messageService = messageService;
+    }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.workflow.WorkflowPackageComponent#createPackage(org
-     * .alfresco.service.cmr.repository.NodeRef)
+    /**
+    * {@inheritDoc}
      */
     public NodeRef createPackage(NodeRef container)
     {
@@ -173,11 +183,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.workflow.WorkflowPackageComponent#deletePackage(org
-     * .alfresco.service.cmr.repository.NodeRef)
+    /**
+    * {@inheritDoc}
      */
     public void deletePackage(NodeRef container)
     {
@@ -197,11 +204,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.workflow.WorkflowPackageComponent#getWorkflowIdsForContent
-     * (org.alfresco.service.cmr.repository.NodeRef, boolean)
+    /**
+    * {@inheritDoc}
      */
     public List<String> getWorkflowIdsForContent(NodeRef packageItem)
     {
@@ -270,24 +274,24 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         if (path == null) { throw new WorkflowException(
                     "Unable to locate workflow system container - path not specified"); }
         List<NodeRef> nodeRefs = searchService.selectNodes(systemContainer, path, null, namespaceService, false);
+        NodeRef result = null;
+        if (nodeRefs != null && nodeRefs.size() > 0)
+        {
+            result = nodeRefs.get(0);
+        }
 
-        if (tenantService.isEnabled())
+        if (tenantService.isEnabled() == false)
         {
-            NodeRef tenantSystemWorkflowContainer = null;
-            if (nodeRefs != null && nodeRefs.size() > 0)
+            if(result == null)
             {
-                tenantSystemWorkflowContainer = nodeRefs.get(0);
+                result = systemWorkflowContainer;
             }
-            return tenantSystemWorkflowContainer;
-        }
-        else
-        {
-            if (nodeRefs != null && nodeRefs.size() > 0)
+            else
             {
-                systemWorkflowContainer = nodeRefs.get(0);
+                systemWorkflowContainer = result;
             }
-            return systemWorkflowContainer;
         }
+        return result;
     }
 
     /**
@@ -314,16 +318,51 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     public NodeRef createSystemWorkflowContainer()
     {
         NodeRef systemContainer = findSystemContainer();
-        NodeRef systemWorkflowContainer = findSystemWorkflowContainer(systemContainer);
-        if (systemWorkflowContainer == null)
+        NodeRef systemWfContainer = findSystemWorkflowContainer(systemContainer);
+        if (systemWfContainer == null)
         {
             String name = bootstrap.getConfiguration().getProperty("system.workflow_container.childname");
             QName qname = QName.createQName(name, namespaceService);
             ChildAssociationRef childRef = nodeService.createNode(systemContainer, ContentModel.ASSOC_CHILDREN, qname,
                         ContentModel.TYPE_CONTAINER);
-            systemWorkflowContainer = childRef.getChildRef();
+            systemWfContainer = childRef.getChildRef();
         }
-        return systemWorkflowContainer;
+        return systemWfContainer;
+    }
+    
+    /**
+    * {@inheritDoc}
+     */
+    public boolean setWorkflowForPackage(WorkflowInstance instance)
+    {
+        NodeRef packageNode = instance.getWorkflowPackage();
+        if(packageNode==null)
+            return false;
+        
+        Serializable pckgInstanceId = nodeService.getProperty(packageNode, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
+        if(pckgInstanceId != null)
+        {
+            if(pckgInstanceId.equals(instance.getId()))
+            {
+                return false;
+            }
+            String msg = messageService.getMessage(ERR_PACKAGE_ALREADY_ASSOCIATED, packageNode,
+                        instance.getId(), pckgInstanceId);
+            throw new WorkflowException(msg);
+        }
+        
+        if (nodeService.hasAspect(packageNode, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)==false)
+        {
+            createPackage(packageNode);
+        }
+
+        String definitionId = instance.getDefinition().getId();
+        String definitionName = instance.getDefinition().getName();
+        String instanceId = instance.getId();
+        nodeService.setProperty(packageNode, WorkflowModel.PROP_WORKFLOW_DEFINITION_ID, definitionId);
+        nodeService.setProperty(packageNode, WorkflowModel.PROP_WORKFLOW_DEFINITION_NAME, definitionName);
+        nodeService.setProperty(packageNode, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID, instanceId);
+        return true;
     }
 
 }

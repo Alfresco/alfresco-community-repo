@@ -19,28 +19,10 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
-import static org.alfresco.repo.workflow.WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_ASSIGNEE;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE_CONTAINS;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_POOLED_ACTORS;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_DESCRIPTION;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_HIDDEN_TRANSITIONS;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_STATUS;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
+import static org.alfresco.repo.workflow.WorkflowModel.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -149,13 +131,13 @@ public class TaskFormProcessorTest extends TestCase
         Item item = new Item("task", TASK_ID);
         WorkflowTask result = processor.getTypedItem(item);
         assertNotNull(result);
-        assertEquals(TASK_ID, result.id);
+        assertEquals(TASK_ID, result.getId());
         
         // Check URI-encoded id.
         item = new Item("task", TASK_ID.replace('$', '_'));
         result = processor.getTypedItem(item);
         assertNotNull(result);
-        assertEquals(TASK_ID, result.id);
+        assertEquals(TASK_ID, result.getId());
     }
 
     public void testGenerateSetsItemAndUrl() throws Exception
@@ -251,13 +233,11 @@ public class TaskFormProcessorTest extends TestCase
         WorkflowTransition transition1 = makeTransition("id1", "title1");
         WorkflowTransition transition2 = makeTransition("id2", "title2");
         WorkflowTransition transition3 = makeTransition("id3", "title3");
-        WorkflowTransition[] transitions = new WorkflowTransition[] {transition1, transition2, transition3};
-        task.definition.node = new WorkflowNode();
-        task.definition.node.transitions = transitions;
+        task = makeTask(transition1, transition2, transition3);
         
         // Hide transition with id3.
         Serializable hiddenValue = (Serializable) Collections.singletonList("id3");
-        task.properties.put(PROP_HIDDEN_TRANSITIONS, hiddenValue );
+        task.getProperties().put(PROP_HIDDEN_TRANSITIONS, hiddenValue );
         
         form = processForm(fieldName);
         transitionValues = "id1|title1,id2|title2";
@@ -273,14 +253,14 @@ public class TaskFormProcessorTest extends TestCase
 
         // add a description to the task and check it comes back
         message = "This is some text the user may have entered";
-        this.task.properties.put(PROP_DESCRIPTION, message);
+        this.task.getProperties().put(PROP_DESCRIPTION, message);
         
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, message);
         
         // set the description to the same as the task title
         // and make sure the message comes back as null
-        this.task.properties.put(PROP_DESCRIPTION, this.task.title);
+        this.task.getProperties().put(PROP_DESCRIPTION, this.task.getTitle());
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, null);
     }
@@ -322,10 +302,8 @@ public class TaskFormProcessorTest extends TestCase
 
     private WorkflowTransition makeTransition(String id, String title)
     {
-        WorkflowTransition transition = new WorkflowTransition();
-        transition.id = id;
-        transition.title = title;
-        return transition;
+        return new WorkflowTransition(
+                    id, title, null, false);
     }
     
     public void testPersistPropertyChanged() throws Exception
@@ -610,22 +588,25 @@ public class TaskFormProcessorTest extends TestCase
         return defaultProcessor;
     }
 
-    private WorkflowTask makeTask()
+    private WorkflowTask makeTask(WorkflowTransition... transitions)
     {
-        WorkflowTask result = new WorkflowTask();
-        result.id = TASK_ID;
-        result.state = WorkflowTaskState.IN_PROGRESS;
-        result.title = "Test";
-        result.definition = makeTaskDefinition();
-        result.properties = makeTaskProperties();
+        String id = TASK_ID;
+		String title = "Test";
+		WorkflowTaskState state = WorkflowTaskState.IN_PROGRESS;
+        WorkflowTaskDefinition taskDef = makeTaskDefinition(transitions);
+        Map<QName, Serializable> properties = makeTaskProperties();
 
-        result.path = new WorkflowPath();
-        result.path.node = new WorkflowNode();
-        result.path.node.transitions = new WorkflowTransition[0];
-        result.path.instance = new WorkflowInstance();
-        result.path.instance.definition = new WorkflowDefinition("42", "Test", "1.0", "Test", "Test", null);
-        result.path.instance.workflowPackage = PCKG_NODE;
-        return result;
+        WorkflowDefinition definition = new WorkflowDefinition("42", "Test", "1.0", "Test", "Test", null);
+        NodeRef wfPackage = PCKG_NODE;
+        WorkflowInstance instance = new WorkflowInstance(null,
+                    definition, null,
+                    null, wfPackage,
+                    null, true, null, null);
+        WorkflowNode node = new WorkflowNode("", "", "", "", true, new WorkflowTransition[0]);
+        WorkflowPath path = new WorkflowPath(null, instance, node, true);
+        return new WorkflowTask(id,
+                    taskDef, null, title, null, state, path, properties);
+		
     }
 
     private HashMap<QName, Serializable> makeTaskProperties()
@@ -636,13 +617,13 @@ public class TaskFormProcessorTest extends TestCase
         return properties;
     }
 
-    private WorkflowTaskDefinition makeTaskDefinition()
+    private WorkflowTaskDefinition makeTaskDefinition(WorkflowTransition... transitions)
     {
-        WorkflowTaskDefinition definition = new WorkflowTaskDefinition();
-        definition.id = "DefinitionId";
-        definition.metadata = makeTypeDef();
-        definition.node = mock(WorkflowNode.class);
-        return definition;
+        String id = "DefinitionId";
+        TypeDefinition metadata = makeTypeDef();
+        WorkflowNode node = new WorkflowNode("", "", "", "", true, transitions);
+        return new WorkflowTaskDefinition(id,
+                    node, metadata);
     }
 
     private TypeDefinition makeTypeDef()
@@ -727,7 +708,7 @@ public class TaskFormProcessorTest extends TestCase
     private DictionaryService makeDictionaryService()
     {
         DictionaryService mock = mock(DictionaryService.class);
-        when(mock.getAnonymousType((QName) any(), (Collection<QName>) any())).thenReturn(task.definition.metadata);
+        when(mock.getAnonymousType((QName) any(), (Collection<QName>) any())).thenReturn(task.getDefinition().getMetadata());
         return mock;
     }
 
@@ -761,8 +742,7 @@ public class TaskFormProcessorTest extends TestCase
             }
         });
         
-        this.newTask = new WorkflowTask();
-        newTask.id = TASK_ID;
+        this.newTask = new WorkflowTask(TASK_ID, null, null, null, null, null, null, null);
 
         when(service.updateTask(anyString(), anyMap(), anyMap(), anyMap()))
         .thenAnswer(new Answer<WorkflowTask>()

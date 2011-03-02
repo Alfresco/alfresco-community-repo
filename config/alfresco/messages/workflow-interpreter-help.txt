@@ -37,11 +37,12 @@
         
         <definitionClassPath> class path to workflow definition file. 
     
-    ok> deploy <definitionClassPath> 
+    ok> deploy <engine> <definitionClassPath> 
     
         Deploy workflow definition to Alfresco server. 
     
         <definitionClassPath> class path to workflow definition. 
+        <engine> workflow engine name (eg. activiti)
     
     ok> redeploy
     

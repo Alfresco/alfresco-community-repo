@@ -32,13 +32,23 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 public class WorkflowTaskDefinition
 {
     /** Unique id of Workflow Task Definition */
+    @Deprecated
     public String id;
 
     /** Workflow Node this task created from */
+    @Deprecated
     public WorkflowNode node;
     
     /** Task Metadata */
+    @Deprecated
     public TypeDefinition metadata;
+
+    public WorkflowTaskDefinition(String id, WorkflowNode node, TypeDefinition metadata)
+    {
+        this.id = id;
+        this.node = node;
+        this.metadata = metadata;
+    }
 
     /**
      * @return the id
@@ -64,8 +74,9 @@ public class WorkflowTaskDefinition
         return node;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * 
+    * {@inheritDoc}
      */
     @Override
     public String toString()

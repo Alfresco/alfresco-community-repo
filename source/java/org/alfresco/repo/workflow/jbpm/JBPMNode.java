@@ -21,6 +21,7 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -36,7 +37,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author davidc
  */
-public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
+public class JBPMNode extends ScriptNode
 {
     private static final long serialVersionUID = -826970280203254365L;
 
@@ -51,8 +52,8 @@ public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
         super(nodeRef, services, null);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.jscript.Node#createValueConverter()
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected NodeValueConverter createValueConverter()
@@ -63,7 +64,7 @@ public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
     /**
      * Value converter for beanshell.
      */
-    private class JBPMNodeConverter extends org.alfresco.repo.jscript.ScriptNode.NodeValueConverter
+    private class JBPMNodeConverter extends NodeValueConverter
     {
         @Override
         public Serializable convertValueForRepo(Serializable value)
@@ -79,11 +80,11 @@ public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
         }
 
         @Override
-        public Serializable convertValueForScript(ServiceRegistry services, Scriptable scope, QName qname, Serializable value)
+        public Serializable convertValueForScript(ServiceRegistry serviceRegistry, Scriptable theScope, QName qname, Serializable value)
         {
             if (value instanceof NodeRef)
             {
-                return new JBPMNode(((NodeRef)value), services);
+                return new JBPMNode(((NodeRef)value), serviceRegistry);
             }
             else if (value instanceof Date)
             {
@@ -91,7 +92,7 @@ public class JBPMNode extends org.alfresco.repo.jscript.ScriptNode
             }
             else
             {
-                return super.convertValueForScript(services, scope, qname, value);
+                return super.convertValueForScript(serviceRegistry, theScope, qname, value);
             }
         }
     }

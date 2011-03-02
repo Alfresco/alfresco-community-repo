@@ -29,26 +29,22 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.zip.ZipInputStream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.workflow.BPMEngine;
-import org.alfresco.repo.workflow.TaskComponent;
-import org.alfresco.repo.workflow.WorkflowComponent;
+import org.alfresco.repo.workflow.AlfrescoBpmEngine;
+import org.alfresco.repo.workflow.WorkflowConstants;
+import org.alfresco.repo.workflow.WorkflowEngine;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -116,21 +112,14 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
 /**
  * JBoss JBPM based implementation of:
  * 
- * Workflow Definition Component
- * Workflow Component
- * Task Component
+ * Workflow Definition Component Workflow Component Task Component
  * 
  * @author davidc
  */
-public class JBPMEngine extends BPMEngine
-    implements WorkflowComponent, TaskComponent
+public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
 {
     // Implementation dependencies
-    protected DictionaryService dictionaryService;
-    protected NamespaceService namespaceService;
     protected NodeService nodeService;
-    private TenantService tenantService;
-    private MessageService messageService;
     protected ServiceRegistry serviceRegistry;
     protected PersonService personService;
     protected AuthorityDAO authorityDAO;
@@ -143,19 +132,13 @@ public class JBPMEngine extends BPMEngine
 
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPM 3.2 and get this implemented in jBPM
-    private final static String COMPLETED_TASKS_QUERY =     
-        "select ti " + 
-        "from org.jbpm.taskmgmt.exe.TaskInstance as ti " +
-        "where ti.actorId = :actorId " +
-        "and ti.isOpen = false " +
-        "and ti.end is not null";
+    private final static String COMPLETED_TASKS_QUERY = "select ti " + "from org.jbpm.taskmgmt.exe.TaskInstance as ti "
+                + "where ti.actorId = :actorId " + "and ti.isOpen = false " + "and ti.end is not null";
 
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPMg future and get this implemented in jBPM
-    private final static String PROCESS_TIMERS_QUERY =
-        "select timer " +
-        "from org.jbpm.job.Timer timer " +
-        "where timer.processInstance = :process ";
+    private final static String PROCESS_TIMERS_QUERY = "select timer " + "from org.jbpm.job.Timer timer "
+                + "where timer.processInstance = :process ";
     
     // Workflow Path Seperators
     private final static String WORKFLOW_PATH_SEPERATOR = "-";
@@ -199,21 +182,21 @@ public class JBPMEngine extends BPMEngine
     protected static final String ERR_END_TASK_INVALID_TRANSITION ="jbpm.engine.end.task.invalid.transition";
     private static final String ERR_END_TASK = "jbpm.engine.end.task.error";
     private static final String ERR_GET_TASK_BY_ID = "jbpm.engine.get.task.by.id.error";
+    private static final String ERR_GET_START_TASK = "jbpm.engine.get.start.task.error";
     private static final String ERR_COMPILE_PROCESS_DEF_zip = "jbpm.engine.compile.process.definition.zip.error";
     private static final String ERR_COMPILE_PROCESS_DEF_XML = "jbpm.engine.compile.process.definition.xml.error";
     private static final String ERR_COMPILE_PROCESS_DEF_UNSUPPORTED = "jbpm.engine.compile.process.definition.unsupported.error";
-    private static final String ERR_GET_TASK_DEF = "jbpm.engine.get.task.definition.error";
     private static final String ERR_GET_JBPM_ID = "jbpm.engine.get.jbpm.id.error";
     private static final String ERR_GET_WORKFLOW_TOKEN_INVALID = "jbpm.engine.get.workflow.token.invalid";
     private static final String ERR_GET_WORKFLOW_TOKEN_NULL = "jbpm.engine.get.workflow.token.is.null";
     private static final String ERR_SET_TASK_PROPS_INVALID_VALUE = "jbpm.engine.set.task.properties.invalid.value";
-    private static final String ERR_PACKAGE_ALREADY_ASSOCIATED = "jbpm.engine.package.already.associated.error";
     private static final String ERR_CONVERT_VALUE = "jbpm.engine.convert.value.error";
     private static final String ERR_GET_COMPANY_HOME_INVALID = "jbpm.engine.get.company.home.invalid";
     private static final String ERR_GET_COMPANY_HOME_MULTIPLE = "jbpm.engine.get.company.home.multiple";
     
     /**
-     * Sets the JBPM Template used for accessing JBoss JBPM in the correct context
+     * Sets the JBPM Template used for accessing JBoss JBPM in the correct
+     * context
      * 
      * @param jbpmTemplate
      */
@@ -222,26 +205,6 @@ public class JBPMEngine extends BPMEngine
         this.jbpmTemplate = jbpmTemplate;
     }
     
-    /**
-     * Sets the Dictionary Service
-     * 
-     * @param dictionaryService
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Sets the Namespace Service
-     * 
-     * @param namespaceService
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
     /**
      * Sets the Node Service
      * 
@@ -252,26 +215,6 @@ public class JBPMEngine extends BPMEngine
         this.nodeService = nodeService;
     }
     
-    /**
-     * Sets the Tenant Service
-     * 
-     * @param tenantService
-     */
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-    
-    /**
-     * Sets the Message Service
-     * 
-     * @param messageService
-     */
-    public void setMessageService(MessageService messageService)
-    {
-        this.messageService = messageService;
-    }
-
     /**
      * Sets the Person Service
      * 
@@ -323,8 +266,9 @@ public class JBPMEngine extends BPMEngine
     }
 
     /**
-     * Set the unprotected search service - so we can find the node ref for company home when folk do not have read access to company home
-     * TODO: review use with DC
+     * Set the unprotected search service - so we can find the node ref for
+     * company home when folk do not have read access to company home TODO:
+     * review use with DC
      * 
      * @param unprotectedSearchService
      */
@@ -338,8 +282,12 @@ public class JBPMEngine extends BPMEngine
     // Workflow Definition...
     //
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#deployDefinition(java.io.InputStream)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#deployDefinition
+     * (java.io.InputStream)
      */
     public WorkflowDeployment deployDefinition(final InputStream workflowDefinition, final String mimetype)
     {
@@ -368,9 +316,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-            
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#isDefinitionDeployed(java.io.InputStream, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#isDefinitionDeployed
+     * (java.io.InputStream, java.lang.String)
      */
     public boolean isDefinitionDeployed(final InputStream workflowDefinition, final String mimetype)
     {
@@ -385,7 +336,8 @@ public class JBPMEngine extends BPMEngine
                     
                     // retrieve process definition from Alfresco Repository
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessDefinition existingDefinition = graphSession.findLatestProcessDefinition(processDefinition.def.getName());
+                    ProcessDefinition existingDefinition = graphSession
+                                .findLatestProcessDefinition(processDefinition.def.getName());
                     return (existingDefinition == null) ? false : true;
                 }
             });
@@ -397,8 +349,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#undeployDefinition(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#undeployDefinition
+     * (java.lang.String)
      */
     public void undeployDefinition(final String workflowDefinitionId)
     {
@@ -414,7 +370,8 @@ public class JBPMEngine extends BPMEngine
                     
                     // undeploy
                     // NOTE: jBPM deletes all "in-flight" processes too
-                    // TODO: Determine if there's a safer undeploy we can expose via the WorkflowService contract
+                    // TODO: Determine if there's a safer undeploy we can expose
+                    // via the WorkflowService contract
                     graphSession.deleteProcessDefinition(processDefinition);
                     
                     // we're done
@@ -429,8 +386,11 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitions()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitions()
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowDefinition> getDefinitions()
@@ -454,7 +414,8 @@ public class JBPMEngine extends BPMEngine
                             }
                             catch (RuntimeException re)
                             {
-                                // deliberately skip this one - due to domain mismatch
+                                // deliberately skip this one - due to domain
+                                // mismatch
                                 continue;
                             }                           
                         }
@@ -473,8 +434,11 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitions()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitions()
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowDefinition> getAllDefinitions()
@@ -498,7 +462,8 @@ public class JBPMEngine extends BPMEngine
                             }
                             catch (RuntimeException re)
                             {
-                                // deliberately skip this one - due to domain mismatch
+                                // deliberately skip this one - due to domain
+                                // mismatch
                                 continue;
                             } 
                         }
@@ -517,8 +482,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitionById(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#getDefinitionById
+     * (java.lang.String)
      */
     public WorkflowDefinition getDefinitionById(final String workflowDefinitionId)
     {
@@ -542,8 +511,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getDefinitionByName(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getDefinitionByName(java
+     * .lang.String)
      */
     public WorkflowDefinition getDefinitionByName(final String workflowName)
     {
@@ -555,7 +528,8 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();                                                       
-                    ProcessDefinition processDef = graphSession.findLatestProcessDefinition(tenantService.getName(createLocalId(workflowName)));                                      
+                    ProcessDefinition processDef = graphSession.findLatestProcessDefinition(tenantService
+                                .getName(createLocalId(workflowName)));
                     return processDef == null ? null : createWorkflowDefinition(processDef);
                 }
             });
@@ -567,8 +541,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getAllDefinitionsByName(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getAllDefinitionsByName(
+     * java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowDefinition> getAllDefinitionsByName(final String workflowName)
@@ -581,7 +559,8 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitionVersions(tenantService.getName(createLocalId(workflowName)));
+                    List<ProcessDefinition> processDefs = graphSession.findAllProcessDefinitionVersions(tenantService
+                                .getName(createLocalId(workflowName)));
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
                     {
@@ -599,8 +578,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getDefinitionImage(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getDefinitionImage(java.
+     * lang.String)
      */
     public byte[] getDefinitionImage(final String workflowDefinitionId)
     {
@@ -625,8 +608,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getAllTaskDefinitions(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getAllTaskDefinitions(java
+     * .lang.String)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTaskDefinition> getTaskDefinitions(final String workflowDefinitionId)
@@ -650,7 +637,10 @@ public class JBPMEngine extends BPMEngine
                         String processName = processDefinition.getName();
                         if (tenantService.isEnabled())
                         {
-                            tenantService.checkDomain(processName); // throws exception if domain mismatch
+                            tenantService.checkDomain(processName); // throws
+                                                                    // exception
+                                                                    // if domain
+                                                                    // mismatch
                         }
                         
                         TaskMgmtDefinition taskMgmtDef = processDefinition.getTaskMgmtDefinition();
@@ -674,8 +664,10 @@ public class JBPMEngine extends BPMEngine
     /**
      * Gets a jBPM process definition
      * 
-     * @param graphSession  jBPM graph session
-     * @param workflowDefinitionId  workflow definition id
+     * @param graphSession
+     *            jBPM graph session
+     * @param workflowDefinitionId
+     *            workflow definition id
      * @return  process definition
      */
     protected ProcessDefinition getProcessDefinition(GraphSession graphSession, String workflowDefinitionId)
@@ -686,7 +678,11 @@ public class JBPMEngine extends BPMEngine
         {
             try
             {
-                tenantService.checkDomain(processDefinition.getName()); // throws exception if domain mismatch
+                tenantService.checkDomain(processDefinition.getName()); // throws
+                                                                        // exception
+                                                                        // if
+                                                                        // domain
+                                                                        // mismatch
             }
             catch (RuntimeException re)
             {
@@ -707,9 +703,12 @@ public class JBPMEngine extends BPMEngine
     // Workflow Instance Management...
     //
 
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#startWorkflow(java.lang.String, java.util.Map)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#startWorkflow(java.lang.
+     * String, java.util.Map)
      */
     public WorkflowPath startWorkflow(final String workflowDefinitionId, final Map<QName, Serializable> parameters)
     {
@@ -720,7 +719,8 @@ public class JBPMEngine extends BPMEngine
                 @SuppressWarnings("synthetic-access")
                 public Object doInJbpm(JbpmContext context)
                 {
-                    // initialise jBPM actor (for any processes that wish to record the initiator)
+                    // initialise jBPM actor (for any processes that wish to
+                    // record the initiator)
                     String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
                     context.setActorId(currentUserName);
 
@@ -732,20 +732,31 @@ public class JBPMEngine extends BPMEngine
                  
                     // assign initial process context
                     ContextInstance processContext = processInstance.getContextInstance();
-                    processContext.setVariable("cancelled", false);
+                    processContext.setVariable(WorkflowConstants.PROP_CANCELLED, false);
+                    if(parameters!=null) 
+                    {
+                        Serializable packageNode = parameters.get(WorkflowModel.ASSOC_PACKAGE);
+                        if (packageNode != null)
+                        {
+                            String pckgName = mapQNameToName(WorkflowModel.ASSOC_PACKAGE);
+                            processContext.setVariable(pckgName, new JBPMNode((NodeRef) packageNode, serviceRegistry));
+                        }
+                    }
                     NodeRef companyHome = getCompanyHome();
-                    processContext.setVariable("companyhome", new JBPMNode(companyHome, serviceRegistry));
+                    processContext.setVariable(WorkflowConstants.PROP_COMPANY_HOME, new JBPMNode(companyHome, serviceRegistry));
                     NodeRef initiatorPerson = mapNameToPerson(currentUserName);
                     if (initiatorPerson != null)
                     {
-                        processContext.setVariable("initiator", new JBPMNode(initiatorPerson, serviceRegistry));
-                        NodeRef initiatorHome = (NodeRef)nodeService.getProperty(initiatorPerson, ContentModel.PROP_HOMEFOLDER);
+                        processContext.setVariable(WorkflowConstants.PROP_INITIATOR, new JBPMNode(initiatorPerson, serviceRegistry));
+                        NodeRef initiatorHome = (NodeRef) nodeService.getProperty(initiatorPerson,
+                                    ContentModel.PROP_HOMEFOLDER);
                         if (initiatorHome != null)
                         {
-                            processContext.setVariable("initiatorhome", new JBPMNode(initiatorHome, serviceRegistry));
+                            processContext.setVariable(WorkflowConstants.PROP_INITIATOR_HOME, new JBPMNode(initiatorHome, serviceRegistry));
                         }
                     }
-                    processContext.setVariable("workflowinstanceid", createGlobalId(new Long(processInstance.getId()).toString()));
+                    processContext.setVariable(WorkflowConstants.PROP_WORKFLOW_INSTANCE_ID, createGlobalId(new Long(processInstance.getId())
+                                .toString()));
                     
                     // create the start task if one exists
                     Token token = processInstance.getRootToken();
@@ -779,25 +790,36 @@ public class JBPMEngine extends BPMEngine
         return new WorkflowException(msg, e);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getActiveWorkflows(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getActiveWorkflows(java.
+     * lang.String)
      */    
-    @SuppressWarnings("unchecked")
     public List<WorkflowInstance> getActiveWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, true);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getCompletedWorkflows(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getCompletedWorkflows(java
+     * .lang.String)
      */    
     public List<WorkflowInstance> getCompletedWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, false);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflows(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getWorkflows(java.lang.String
+     * )
      */
     public List<WorkflowInstance> getWorkflows(final String workflowDefinitionId)
     {
@@ -814,11 +836,13 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();
-                    List<ProcessInstance> processInstances = graphSession.findProcessInstances(getJbpmId(workflowDefinitionId));
+                    List<ProcessInstance> processInstances = graphSession
+                                .findProcessInstances(getJbpmId(workflowDefinitionId));
                     List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(processInstances.size());
                     for (ProcessInstance processInstance : processInstances)
                     {
-                        if ((active == null) || (!active && processInstance.hasEnded()) || (active && !processInstance.hasEnded()))
+                        if ((active == null) || (!active && processInstance.hasEnded())
+                                    || (active && !processInstance.hasEnded()))
                         {
                             WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                             workflowInstances.add(workflowInstance);
@@ -835,8 +859,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflowById(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getWorkflowById(java.lang
+     * .String)
      */
     public WorkflowInstance getWorkflowById(final String workflowId)
     {
@@ -849,7 +877,7 @@ public class JBPMEngine extends BPMEngine
                     // retrieve workflow
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowId);
-                    return processInstance == null ? null : createWorkflowInstance(processInstance);
+                    return createWorkflowInstance(processInstance);
                 }
             });
         }
@@ -867,7 +895,11 @@ public class JBPMEngine extends BPMEngine
         {
             try
             {
-                tenantService.checkDomain(processInstance.getProcessDefinition().getName()); // throws exception if domain mismatch
+                tenantService.checkDomain(processInstance.getProcessDefinition().getName()); // throws
+                                                                                             // exception
+                                                                                             // if
+                                                                                             // domain
+                                                                                             // mismatch
             } 
             catch (RuntimeException re)
             {
@@ -879,8 +911,11 @@ public class JBPMEngine extends BPMEngine
     
     /**
      * Gets a jBPM Process Instance
-     * @param graphSession  jBPM graph session
-     * @param workflowId  workflow id
+     * 
+     * @param graphSession
+     *            jBPM graph session
+     * @param workflowId
+     *            workflow id
      * @return  process instance
      */
     protected ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
@@ -894,8 +929,12 @@ public class JBPMEngine extends BPMEngine
         return processInstance;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflowPaths(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getWorkflowPaths(java.lang
+     * .String)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowPath> getWorkflowPaths(final String workflowId)
@@ -933,8 +972,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getPathProperties(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getPathProperties(java.lang
+     * .String)
      */
     @SuppressWarnings("unchecked")
     public Map<QName, Serializable> getPathProperties(final String pathId)
@@ -983,8 +1026,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang
+     * .String)
      */
     public WorkflowInstance cancelWorkflow(final String workflowId)
     {
@@ -999,8 +1046,10 @@ public class JBPMEngine extends BPMEngine
                     ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
                     processInstance.getContextInstance().setVariable("cancelled", true);
                     processInstance.end();
-                    // TODO: Determine if this is the most appropriate way to cancel workflow...
-                    //       It might be useful to record point at which it was cancelled etc
+                    // TODO: Determine if this is the most appropriate way to
+                    // cancel workflow...
+                    // It might be useful to record point at which it was
+                    // cancelled etc
                     WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                     
                     // delete the process instance
@@ -1016,8 +1065,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflow(java.lang
+     * .String)
      */
     public WorkflowInstance deleteWorkflow(final String workflowId)
     {
@@ -1030,12 +1083,11 @@ public class JBPMEngine extends BPMEngine
                     // retrieve and cancel process instance
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
-                    WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                     
                     // delete the process instance
                     graphSession.deleteProcessInstance(processInstance, true, true);
-                    workflowInstance.active = false;
-                    workflowInstance.endDate = new Date();
+                    Date endDate = new Date();
+                    WorkflowInstance workflowInstance = createWorkflowInstance(processInstance, endDate);
                     return workflowInstance; 
                 }
             });
@@ -1047,8 +1099,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#signal(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#signal(java.lang.String,
+     * java.lang.String)
      */
     public WorkflowPath signal(final String pathId, final String transition)
     {
@@ -1072,7 +1128,8 @@ public class JBPMEngine extends BPMEngine
                         Node node = token.getNode();
                         if (!node.hasLeavingTransition(transition))
                         {
-                            throw new WorkflowException("Transition '" + transition + "' is invalid for Workflow path '" + pathId + "'");
+                            throw new WorkflowException("Transition '" + transition
+                                        + "' is invalid for Workflow path '" + pathId + "'");
                         }
                         token.signal(transition);
                     }
@@ -1093,8 +1150,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#fireEvent(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#fireEvent(java.lang.String,
+     * java.lang.String)
      */
     public WorkflowPath fireEvent(final String pathId, final String event)
     {
@@ -1106,22 +1167,18 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     // NOTE: Do not allow jBPM built-in events to be fired
-                    if (event.equals(Event.EVENTTYPE_AFTER_SIGNAL) ||
-                        event.equals(Event.EVENTTYPE_BEFORE_SIGNAL) ||
-                        event.equals(Event.EVENTTYPE_NODE_ENTER) ||
-                        event.equals(Event.EVENTTYPE_NODE_LEAVE) ||
-                        event.equals(Event.EVENTTYPE_PROCESS_END) ||
-                        event.equals(Event.EVENTTYPE_PROCESS_START) ||
-                        event.equals(Event.EVENTTYPE_SUBPROCESS_CREATED) ||
-                        event.equals(Event.EVENTTYPE_SUBPROCESS_END) ||
-                        event.equals(Event.EVENTTYPE_SUPERSTATE_ENTER) ||
-                        event.equals(Event.EVENTTYPE_SUPERSTATE_LEAVE) ||
-                        event.equals(Event.EVENTTYPE_TASK_ASSIGN) ||
-                        event.equals(Event.EVENTTYPE_TASK_CREATE) ||
-                        event.equals(Event.EVENTTYPE_TASK_END) ||
-                        event.equals(Event.EVENTTYPE_TASK_START) ||
-                        event.equals(Event.EVENTTYPE_TIMER) ||
-                        event.equals(Event.EVENTTYPE_TRANSITION))
+                    if (event.equals(Event.EVENTTYPE_AFTER_SIGNAL) || event.equals(Event.EVENTTYPE_BEFORE_SIGNAL)
+                                || event.equals(Event.EVENTTYPE_NODE_ENTER) || event.equals(Event.EVENTTYPE_NODE_LEAVE)
+                                || event.equals(Event.EVENTTYPE_PROCESS_END)
+                                || event.equals(Event.EVENTTYPE_PROCESS_START)
+                                || event.equals(Event.EVENTTYPE_SUBPROCESS_CREATED)
+                                || event.equals(Event.EVENTTYPE_SUBPROCESS_END)
+                                || event.equals(Event.EVENTTYPE_SUPERSTATE_ENTER)
+                                || event.equals(Event.EVENTTYPE_SUPERSTATE_LEAVE)
+                                || event.equals(Event.EVENTTYPE_TASK_ASSIGN)
+                                || event.equals(Event.EVENTTYPE_TASK_CREATE) || event.equals(Event.EVENTTYPE_TASK_END)
+                                || event.equals(Event.EVENTTYPE_TASK_START) || event.equals(Event.EVENTTYPE_TIMER)
+                                || event.equals(Event.EVENTTYPE_TRANSITION))
                     {
                         String msg = messageService.getMessage(ERR_INVALID_EVENT, event);
                         throw new WorkflowException(msg);
@@ -1167,8 +1224,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getTasksForWorkflowPath(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getTasksForWorkflowPath(
+     * java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTask> getTasksForWorkflowPath(final String pathId)
@@ -1195,8 +1256,11 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getTimers(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.WorkflowComponent#getTimers(java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTimer> getTimers(final String workflowId)
@@ -1239,9 +1303,12 @@ public class JBPMEngine extends BPMEngine
     // Task Management ...
     //
     
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#getAssignedTasks(java.lang.String, org.alfresco.service.cmr.workflow.WorkflowTaskState)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#getAssignedTasks(java.lang.String
+     * , org.alfresco.service.cmr.workflow.WorkflowTaskState)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTask> getAssignedTasks(final String authority, final WorkflowTaskState state)
@@ -1271,15 +1338,18 @@ public class JBPMEngine extends BPMEngine
                 /**
                  * Gets the completed task list for the specified actor
                  * 
-                 * TODO: This method provides a query that's not in JBPM!  Look to have JBPM implement this.
+                 * TODO: This method provides a query that's not in JBPM! Look
+                 * to have JBPM implement this.
                  * 
-                 * @param jbpmContext  the jbpm context
-                 * @param actorId  the actor to retrieve tasks for
+                 * @param jbpmContext
+                 *            the jbpm context
+                 * @param actorId
+                 *            the actor to retrieve tasks for
                  * @return  the tasks
                  */
-                private List findCompletedTaskInstances(JbpmContext jbpmContext, String actorId)
+                private List<TaskInstance> findCompletedTaskInstances(JbpmContext jbpmContext, String actorId)
                 {
-                    List result = null;
+                    List<TaskInstance> result = null;
                     try
                     {
                         Session session = jbpmContext.getSession();
@@ -1303,8 +1373,11 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#getPooledTasks(java.util.List)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#getPooledTasks(java.util.List)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTask> getPooledTasks(final List<String> authorities)
@@ -1329,8 +1402,12 @@ public class JBPMEngine extends BPMEngine
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskFilter)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service
+     * .cmr.workflow.WorkflowTaskFilter)
      */
     @SuppressWarnings("unchecked")
     public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query)
@@ -1375,7 +1452,8 @@ public class JBPMEngine extends BPMEngine
                 }
                 catch (RuntimeException re)
                 {
-                    // deliberately skip this one - due to domain mismatch - eg. when querying by group authority
+                    // deliberately skip this one - due to domain mismatch - eg.
+                    // when querying by group authority
                     continue;
                 } 
             }
@@ -1456,8 +1534,10 @@ public class JBPMEngine extends BPMEngine
         // process custom properties
         if (query.getProcessCustomProps() != null)
         {
-            // TODO: Due to Hibernate bug http://opensource.atlassian.com/projects/hibernate/browse/HHH-957
-            //       it's not possible to perform a sub-select with the criteria api.  For now issue a
+            // TODO: Due to Hibernate bug
+            // http://opensource.atlassian.com/projects/hibernate/browse/HHH-957
+            // it's not possible to perform a sub-select with the criteria api.
+            // For now issue a
             //       secondary query and create an IN clause.
             Map<QName, Object> props = query.getProcessCustomProps();
             if (props.size() > 0)
@@ -1548,7 +1628,8 @@ public class JBPMEngine extends BPMEngine
         return task;
     }
 
-	private Object[] getProcessIds(List<?> processList) {
+    private Object[] getProcessIds(List<?> processList)
+    {
 		ArrayList<Object> ids = new ArrayList<Object>(processList.size());
 		if (processList.isEmpty())
 		{
@@ -1579,7 +1660,7 @@ public class JBPMEngine extends BPMEngine
         // process active?
         if (query.isActive() != null)
         {
-            process = (process == null) ? root.createCriteria("processInstance") : process;
+            process = root.createCriteria("processInstance");
             if (query.isActive())
             {
                 process.add(Restrictions.isNull("end"));
@@ -1622,8 +1703,11 @@ public class JBPMEngine extends BPMEngine
     
     /**
      * Gets a jBPM Task Instance
-     * @param taskSession  jBPM task session
-     * @param taskId  task id
+     * 
+     * @param taskSession
+     *            jBPM task session
+     * @param taskId
+     *            task id
      * @return  task instance
      */
     protected TaskInstance getTaskInstance(TaskMgmtSession taskSession, String taskId)
@@ -1634,7 +1718,8 @@ public class JBPMEngine extends BPMEngine
         {
             try
             {
-                tenantService.checkDomain(taskInstance.getTask().getProcessDefinition().getName()); // throws exception if domain mismatch
+                 // throws exception if domain mismatch
+                tenantService.checkDomain(taskInstance.getTask().getProcessDefinition().getName());
             } 
             catch (RuntimeException re)
             {
@@ -1650,10 +1735,16 @@ public class JBPMEngine extends BPMEngine
         return taskInstance;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#updateTask(java.lang.String, java.util.Map, java.util.Map, java.util.Map)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#updateTask(java.lang.String,
+     * java.util.Map, java.util.Map, java.util.Map)
      */
-    public WorkflowTask updateTask(final String taskId, final Map<QName, Serializable> properties, final Map<QName, List<NodeRef>> add, final Map<QName, List<NodeRef>> remove)
+    public WorkflowTask updateTask(final String taskId,
+            final Map<QName, Serializable> properties,
+                final Map<QName, List<NodeRef>> add, final Map<QName, List<NodeRef>> remove)
     {
         try
         {
@@ -1667,81 +1758,82 @@ public class JBPMEngine extends BPMEngine
                     TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
 
                     // create properties to set on task instance
-                    Map<QName, Serializable> newProperties = properties !=null ? properties : new HashMap<QName, Serializable>(10);
-                    
-                    if (add != null || remove != null)
+                    Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(10);
+                    if(properties!=null)
                     {
-                        Map<QName, Serializable> existingProperties = getTaskProperties(taskInstance, false);
-                        
-                        if (add != null)
+                        newProperties.putAll(properties);
+                    }
+                    Map<QName, Serializable> existingProperties = getTaskProperties(taskInstance, false);
+                    if (add != null)
+                    {
+                        // add new associations
+                        for (Entry<QName, List<NodeRef>> toAdd : add.entrySet())
                         {
-                            // add new associations
-                            for (Entry<QName, List<NodeRef>> toAdd : add.entrySet())
-                            {
-                                // retrieve existing list of noderefs for association
-                                QName key = toAdd.getKey();
-                                Serializable existingValue = newProperties.get(key);
+                            // retrieve existing list of noderefs for
+                            // association
+                            QName key = toAdd.getKey();
+                            Serializable existingValue = newProperties.get(key);
                                   
-                                if (existingValue == null)
+                            if (existingValue == null)
+                            {
+                                existingValue = existingProperties.get(key);
+                            }
+                            // make the additions
+                            if (existingValue == null)
+                            {
+                                newProperties.put(key, (Serializable)toAdd.getValue());
+                            }
+                            else
+                            {
+                                List<NodeRef> existingAdd;
+                                if (existingValue instanceof List<?>)
                                 {
-                                    existingValue = existingProperties.get(key);
-                                }
-                                // make the additions
-                                if (existingValue == null)
-                                {
-                                    newProperties.put(key, (Serializable)toAdd.getValue());
+                                    existingAdd = (List<NodeRef>) existingValue;
                                 }
                                 else
                                 {
-                                    List<NodeRef> existingAdd;
-                                    if (existingValue instanceof List<?>)
-                                    {
-                                        existingAdd = (List<NodeRef>) existingValue;
-                                    }
-                                    else
-                                    {
-                                        existingAdd = new LinkedList<NodeRef>();
-                                        existingAdd.add((NodeRef) existingValue);
-                                    }
-
-                                    for (NodeRef nodeRef : toAdd.getValue())
-                                    {
-                                        if (!(existingAdd.contains(nodeRef)))
-                                        {
-                                            existingAdd.add(nodeRef);
-                                        }
-                                    }
-                                    newProperties.put(key, (Serializable) existingAdd);
+                                    existingAdd = new LinkedList<NodeRef>();
+                                    existingAdd.add((NodeRef) existingValue);
                                 }
+
+                                for (NodeRef nodeRef : toAdd.getValue())
+                                {
+                                    if (!(existingAdd.contains(nodeRef)))
+                                    {
+                                        existingAdd.add(nodeRef);
+                                    }
+                                }
+                                newProperties.put(key, (Serializable) existingAdd);
                             }
                         }
+                    }
 
-                        if (remove != null)
+                    if (remove != null)
+                    {
+                        // add new associations
+                        for (Entry<QName, List<NodeRef>> toRemove: remove.entrySet())
                         {
-                            // add new associations
-                            for (Entry<QName, List<NodeRef>> toRemove: remove.entrySet())
-                            {
-                                // retrieve existing list of noderefs for association
-                                QName key = toRemove.getKey();
-                                Serializable existingValue = newProperties.get(key);
+                            // retrieve existing list of noderefs for
+                            // association
+                            QName key = toRemove.getKey();
+                            Serializable existingValue = newProperties.get(key);
                                   
-                                if (existingValue == null)
+                            if (existingValue == null)
+                            {
+                                existingValue = existingProperties.get(key);
+                            }
+                            // make the subtractions
+                            if (existingValue != null)
+                            {
+                                if(existingValue instanceof List<?>)
                                 {
-                                    existingValue = existingProperties.get(key);
+                                    List<NodeRef> existingRemove = (List<NodeRef>) existingValue;
+                                    existingRemove.removeAll(toRemove.getValue());
+                                    newProperties.put(key, (Serializable) existingRemove);
                                 }
-                                // make the subtractions
-                                if (existingValue != null)
+                                else if(toRemove.getValue().contains(existingValue))
                                 {
-                                    if(existingValue instanceof List<?>)
-                                    {
-                                        List<NodeRef> existingRemove = (List<NodeRef>) existingValue;
-                                            existingRemove.removeAll(toRemove.getValue());
-                                        newProperties.put(key, (Serializable) existingRemove);
-                                    }
-                                    else if(toRemove.getValue().contains(existingValue))
-                                    {
-                                        newProperties.put(key, new LinkedList<NodeRef>());
-                                    }
+                                    newProperties.put(key, new LinkedList<NodeRef>());
                                 }
                             }
                         }
@@ -1757,7 +1849,8 @@ public class JBPMEngine extends BPMEngine
                         context.save(processInstance);
                     }
                     
-                    // note: the ending of a task may not have signalled (i.e. more than one task exists at
+                    // note: the ending of a task may not have signalled (i.e.
+                    // more than one task exists at
                     //       this node)
                     return createWorkflowTask(taskInstance);
                 }
@@ -1770,7 +1863,9 @@ public class JBPMEngine extends BPMEngine
         }        
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.workflow.TaskComponent#startTask(java.lang.String)
      */
     public WorkflowTask startTask(String taskId)
@@ -1779,8 +1874,11 @@ public class JBPMEngine extends BPMEngine
         throw new UnsupportedOperationException();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#suspendTask(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#suspendTask(java.lang.String)
      */
     public WorkflowTask suspendTask(String taskId)
     {
@@ -1788,8 +1886,11 @@ public class JBPMEngine extends BPMEngine
         throw new UnsupportedOperationException();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#endTask(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.workflow.TaskComponent#endTask(java.lang.String,
+     * java.lang.String)
      */
     public WorkflowTask endTask(final String taskId, final String transition)
     {
@@ -1837,7 +1938,8 @@ public class JBPMEngine extends BPMEngine
                     ProcessInstance processInstance = taskInstance.getToken().getProcessInstance();
                     context.save(processInstance);
                     
-                    // note: the ending of a task may not have signalled (i.e. more than one task exists at
+                    // note: the ending of a task may not have signalled (i.e.
+                    // more than one task exists at
                     //       this node)
                     return createWorkflowTask(taskInstance);
                 }
@@ -1850,8 +1952,11 @@ public class JBPMEngine extends BPMEngine
         }        
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#getTaskById(java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.repo.workflow.TaskComponent#getTaskById(java.lang.String)
      */
     public WorkflowTask getTaskById(final String taskId)
     {
@@ -1864,7 +1969,7 @@ public class JBPMEngine extends BPMEngine
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
                     TaskInstance taskInstance = getTaskInstance(taskSession, taskId);
-                    return taskInstance == null ? null : createWorkflowTask(taskInstance);
+                    return createWorkflowTask(taskInstance);
                 }
             });
         }
@@ -1875,6 +1980,38 @@ public class JBPMEngine extends BPMEngine
         }        
     }
     
+    @Override
+    public WorkflowTask getStartTask(final String workflowInstanceId)
+    {
+        try
+        {
+            return (WorkflowTask) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    // retrieve process instance
+                    GraphSession graphSession = context.getGraphSession();
+                    ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowInstanceId);
+                    Task startTask = processInstance.getProcessDefinition().getTaskMgmtDefinition().getStartTask();
+                    
+                    // retrieve task
+                    Session session = context.getSession();
+                    Criteria taskCriteria = session.createCriteria(TaskInstance.class);
+                    taskCriteria.add(Restrictions.eq("name", startTask.getName()));
+                    Criteria process = taskCriteria.createCriteria("processInstance");
+                    process.add(Restrictions.eq("id", processInstance.getId()));
+                    TaskInstance taskInstance = (TaskInstance) taskCriteria.uniqueResult();
+                    return createWorkflowTask(taskInstance);
+                }
+            });
+        }
+        catch (JbpmException e)
+        {
+            String msg = messageService.getMessage(ERR_GET_START_TASK, workflowInstanceId);
+            throw new WorkflowException(msg, e);
+        }
+    }
+
     //
     // Helpers...
     //
@@ -1901,10 +2038,13 @@ public class JBPMEngine extends BPMEngine
     
 
     /**
-     * Construct a Process Definition from the provided Process Definition stream
+     * Construct a Process Definition from the provided Process Definition
+     * stream
      * 
-     * @param workflowDefinition  stream to create process definition from  
-     * @param mimetype  mimetype of stream
+     * @param workflowDefinition
+     *            stream to create process definition from
+     * @param mimetype
+     *            mimetype of stream
      * @return  process definition
      */
     @SuppressWarnings("unchecked")
@@ -1937,7 +2077,8 @@ public class JBPMEngine extends BPMEngine
                     try
                     {
                         zipInputStream.close();
-                    } catch (IOException e)
+                    }
+                    catch (IOException e)
                     {
                         // Intentionally empty!
                     }
@@ -1967,7 +2108,7 @@ public class JBPMEngine extends BPMEngine
             throw new JbpmException(msg);
         }
                
-        if ((compiledDef != null) && tenantService.isEnabled()) 
+        if (tenantService.isEnabled())
         {
             compiledDef.def.setName(tenantService.getName(compiledDef.def.getName()));
         }       
@@ -1976,67 +2117,10 @@ public class JBPMEngine extends BPMEngine
     }
 
     /**
-     * Gets the Task definition of the specified Task
-     * 
-     * @param task  the task
-     * @return  the task definition
-     */
-    private TypeDefinition getTaskDefinition(Task task)
-    {
-        // TODO: Extend jBPM task instance to include dictionary definition qname? 
-        QName typeName = QName.createQName(task.getName(), namespaceService);
-        TypeDefinition typeDef = dictionaryService.getType(typeName);
-        if (typeDef == null)
-        {
-            typeDef = dictionaryService.getType(task.getStartState() == null ? WorkflowModel.TYPE_WORKFLOW_TASK : WorkflowModel.TYPE_START_TASK);
-            if (typeDef == null)
-            {
-                String msg = messageService.getMessage(ERR_GET_TASK_DEF, WorkflowModel.TYPE_WORKFLOW_TASK);
-                throw new WorkflowException( msg);
-            }
-        }
-        return typeDef;
-    }
-    
-    /**
-     * Convert the specified Type definition to an anonymous Type definition.
-     * 
-     * This collapses all mandatory aspects into a single Type definition.
-     * 
-     * @param typeDef  the type definition
-     * @return  the anonymous type definition
-     */
-    private TypeDefinition getAnonymousTaskDefinition(TypeDefinition typeDef)
-    {
-        List<AspectDefinition> aspects = typeDef.getDefaultAspects();
-        List<QName> aspectNames = new ArrayList<QName>(aspects.size());
-        getMandatoryAspects(typeDef, aspectNames);
-        return dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
-    }
-
-    /**
-     * Gets a flattened list of all mandatory aspects for a given class
-     * 
-     * @param classDef  the class
-     * @param aspects  a list to hold the mandatory aspects
-     */
-    private void getMandatoryAspects(ClassDefinition classDef, List<QName> aspects)
-    {
-        for (AspectDefinition aspect : classDef.getDefaultAspects())
-        {
-            QName aspectName = aspect.getName();
-            if (!aspects.contains(aspectName))
-            {
-                aspects.add(aspect.getName());
-                getMandatoryAspects(aspect, aspects);
-            }
-        }
-    }
-    
-    /**
      * Get JBoss JBPM Id from Engine Global Id
      * 
-     * @param id  global id
+     * @param id
+     *            global id
      * @return  JBoss JBPM Id
      */
     protected long getJbpmId(String id)
@@ -2056,8 +2140,10 @@ public class JBPMEngine extends BPMEngine
     /**
      * Get the JBoss JBPM Token for the Workflow Path
      * 
-     * @param session   JBoss JBPM Graph Session
-     * @param pathId  workflow path id
+     * @param session
+     *            JBoss JBPM Graph Session
+     * @param pathId
+     *            workflow path id
      * @return  JBoss JBPM Token
      */
     protected Token getWorkflowToken(GraphSession session, String pathId)
@@ -2086,14 +2172,16 @@ public class JBPMEngine extends BPMEngine
     /**
      * Gets Properties of Task
      * 
-     * @param instance  task instance
-     * @param properties  properties to set
+     * @param instance
+     *            task instance
+     * @param properties
+     *            properties to set
      */
     @SuppressWarnings("unchecked")
     protected Map<QName, Serializable> getTaskProperties(TaskInstance instance, boolean localProperties)
     {
     	// retrieve type definition for task
-        TypeDefinition taskDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        TypeDefinition taskDef = getFullTaskDefinition(instance);
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
     	
@@ -2128,7 +2216,8 @@ public class JBPMEngine extends BPMEngine
             String key = entry.getKey();
             QName qname = mapNameToQName(key);
 
-            // add variable, only if part of task definition or locally defined on task
+            // add variable, only if part of task definition or locally defined
+            // on task
             boolean isAssoc = taskAssocs.containsKey(qname);
             if (taskProperties.containsKey(qname) || isAssoc || instance.hasVariableLocally(key))
             {
@@ -2156,11 +2245,11 @@ public class JBPMEngine extends BPMEngine
         }
         
         // map jBPM task instance collections to associations
-        Set pooledActors = instance.getPooledActors();
+        Set<PooledActor> pooledActors = instance.getPooledActors();
         if (pooledActors != null)
         {
             List<NodeRef> pooledNodeRefs = new ArrayList<NodeRef>(pooledActors.size());
-            for (PooledActor pooledActor : (Set<PooledActor>)pooledActors)
+            for (PooledActor pooledActor : pooledActors)
             {
                 NodeRef pooledNodeRef = null;
                 String pooledActorId = pooledActor.getActorId();
@@ -2183,11 +2272,21 @@ public class JBPMEngine extends BPMEngine
         return properties;
     }
     
+    private TypeDefinition getFullTaskDefinition(TaskInstance instance)
+    {
+        Task task = instance.getTask();
+        TypeDefinition taskType = factory.getTaskTypeDefinition(task.getName(), task.getStartState() != null);
+        TypeDefinition taskDef = dictionaryService.getAnonymousType(taskType.getName());
+        return taskDef;
+    }
+
     /**
      * Sets Properties of Task
      * 
-     * @param instance  task instance
-     * @param properties  properties to set
+     * @param instance
+     *            task instance
+     * @param properties
+     *            properties to set
      */
     protected void setTaskProperties(TaskInstance instance, Map<QName, Serializable> properties)
     {
@@ -2196,8 +2295,7 @@ public class JBPMEngine extends BPMEngine
             return;
         }
 
-        // establish task definition
-        TypeDefinition taskDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        TypeDefinition taskDef = getFullTaskDefinition(instance);
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
 
@@ -2222,7 +2320,8 @@ public class JBPMEngine extends BPMEngine
                 // convert property value
                 if (value instanceof Collection<?>)
                 {
-                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), (Collection<?>)value);
+                    value = (Serializable) DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(),
+                                (Collection<?>) value);
                 }
                 else
                 {
@@ -2346,40 +2445,6 @@ public class JBPMEngine extends BPMEngine
                         instance.setPooledActors(pooledActors);
                         continue;
                     }
-                    else if (key.equals(WorkflowModel.ASSOC_PACKAGE))
-                    {
-                        // Attach workflow definition & instance id to Workflow Package in Repository
-                        String name = mapQNameToName(key);
-                        JBPMNode existingWorkflowPackage = (JBPMNode)instance.getVariable(name);
-                        
-                        // first check if provided workflow package has already been associated with another workflow instance
-                        if (existingWorkflowPackage != null && value != null)
-                        {
-                            NodeRef newPackageNodeRef = ((JBPMNode)value).getNodeRef();
-                            ProcessInstance processInstance = instance.getToken().getProcessInstance();
-                            String packageInstanceId = (String)nodeService.getProperty(newPackageNodeRef, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
-                            if (packageInstanceId != null && packageInstanceId.length() > 0 && (processInstance.getId() == getJbpmId(packageInstanceId)))
-                            {
-                                String workflowInstanceId = createGlobalId(new Long(processInstance.getId()).toString());
-                                String msg = messageService.getMessage(ERR_PACKAGE_ALREADY_ASSOCIATED, newPackageNodeRef, workflowInstanceId, packageInstanceId);
-                                throw new WorkflowException(msg); 
-                            }
-                        }
-
-                        // initialise workflow package
-                        if (existingWorkflowPackage == null && value != null)
-                        {
-                            // initialise workflow package
-                            NodeRef newPackageNodeRef = ((JBPMNode)value).getNodeRef();
-                            ProcessInstance processInstance = instance.getToken().getProcessInstance();
-                            WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
-                            nodeService.setProperty(newPackageNodeRef, WorkflowModel.PROP_WORKFLOW_DEFINITION_ID, workflowInstance.definition.id);
-                            nodeService.setProperty(newPackageNodeRef, WorkflowModel.PROP_WORKFLOW_DEFINITION_NAME, workflowInstance.definition.name);
-                            nodeService.setProperty(newPackageNodeRef, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID, workflowInstance.id);
-                        }
-                        
-                        // NOTE: Fall-through to allow setting of Workflow Package on Task Instance
-                    }
                 }
                 
                 // untyped value, perform minimal conversion
@@ -2392,7 +2457,8 @@ public class JBPMEngine extends BPMEngine
                 }
             }
             
-            // no specific mapping to jBPM task has been established, so place into
+            // no specific mapping to jBPM task has been established, so place
+            // into
             // the generic task variable bag
             String name = mapQNameToName(key);
             instance.setVariableLocally(name, value);
@@ -2408,7 +2474,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Sets Default Properties of Task
      * 
-     * @param instance  task instance
+     * @param instance
+     *            task instance
      */
     protected void setDefaultTaskProperties(TaskInstance instance)
     {
@@ -2416,7 +2483,7 @@ public class JBPMEngine extends BPMEngine
         Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
 
         // construct an anonymous type that flattens all mandatory aspects
-        ClassDefinition classDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        ClassDefinition classDef = getFullTaskDefinition(instance);
         Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties(); 
 
         // for each property, determine if it has a default value
@@ -2436,7 +2503,8 @@ public class JBPMEngine extends BPMEngine
         String description = (String)existingValues.get(WorkflowModel.PROP_DESCRIPTION);
         if (description == null || description.length() == 0)
         {
-            description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+            description = (String) instance.getContextInstance().getVariable(
+                        mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
             if (description != null && description.length() > 0)
             {
                 defaultValues.put(WorkflowModel.PROP_DESCRIPTION, description);
@@ -2444,7 +2512,7 @@ public class JBPMEngine extends BPMEngine
             else
             {
                 WorkflowTask task = createWorkflowTask(instance);
-                defaultValues.put(WorkflowModel.PROP_DESCRIPTION, task.title);
+                defaultValues.put(WorkflowModel.PROP_DESCRIPTION, task.getTitle());
             }
         }
 
@@ -2458,14 +2526,16 @@ public class JBPMEngine extends BPMEngine
     /**
      * Sets default description for the Task
      * 
-     * @param instance  task instance
+     * @param instance
+     *            task instance
      */
     public void setDefaultStartTaskDescription(TaskInstance instance)
     {
         String description = instance.getTask().getDescription();
         if (description == null || description.length() == 0)
         {
-            description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+            description = (String) instance.getContextInstance().getVariable(
+                        mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
             if (description != null && description.length() > 0)
             {
                 Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
@@ -2478,7 +2548,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Initialise Workflow Instance properties
      * 
-     * @param startTask  start task instance
+     * @param startTask
+     *            start task instance
      */
     protected void setDefaultWorkflowProperties(TaskInstance startTask)
     {
@@ -2488,7 +2559,8 @@ public class JBPMEngine extends BPMEngine
         String workflowDescriptionName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
         if (!processContext.hasVariable(workflowDescriptionName))
         {
-            processContext.setVariable(workflowDescriptionName, taskProperties.get(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+            processContext.setVariable(workflowDescriptionName, taskProperties
+                        .get(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
         }
         String workflowDueDateName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
         if (!processContext.hasVariable(workflowDueDateName))
@@ -2504,7 +2576,8 @@ public class JBPMEngine extends BPMEngine
         if (!processContext.hasVariable(workflowPackageName))
         {
             Serializable packageNodeRef = taskProperties.get(WorkflowModel.ASSOC_PACKAGE);
-            processContext.setVariable(workflowPackageName, convertNodeRefs(packageNodeRef instanceof List<?>, packageNodeRef));
+            processContext.setVariable(workflowPackageName, convertNodeRefs(packageNodeRef instanceof List<?>,
+                        packageNodeRef));
         }
         String workflowContextName = mapQNameToName(WorkflowModel.PROP_CONTEXT);
         if (!processContext.hasVariable(workflowContextName))
@@ -2517,7 +2590,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Get missing mandatory properties on Task
      * 
-     * @param instance  task instance
+     * @param instance
+     *            task instance
      * @return array of missing property names (or null, if none)
      */
     protected QName[] getMissingMandatoryTaskProperties(TaskInstance instance)
@@ -2528,7 +2602,7 @@ public class JBPMEngine extends BPMEngine
         Map<QName, Serializable> existingValues = getTaskProperties(instance, false);
         
         // retrieve definition of task
-        ClassDefinition classDef = getAnonymousTaskDefinition(getTaskDefinition(instance.getTask()));
+        ClassDefinition classDef = getFullTaskDefinition(instance);
         Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties(); 
         Map<QName, AssociationDefinition> assocDefs = classDef.getAssociations();
 
@@ -2536,7 +2610,8 @@ public class JBPMEngine extends BPMEngine
         for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
         {
             QName name = entry.getKey();
-            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
+            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI()
+                        .equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
             {
                 boolean isMandatory = entry.getValue().isMandatory();
                 if (isMandatory)
@@ -2556,7 +2631,8 @@ public class JBPMEngine extends BPMEngine
         for (Map.Entry<QName, AssociationDefinition> entry : assocDefs.entrySet())
         {
             QName name = entry.getKey();
-            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
+            if (!(name.getNamespaceURI().equals(NamespaceService.CONTENT_MODEL_1_0_URI) || (name.getNamespaceURI()
+                        .equals(NamespaceService.SYSTEM_MODEL_1_0_URI))))
             {
                 boolean isMandatory = entry.getValue().isTargetMandatory();
                 if (isMandatory)
@@ -2580,7 +2656,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Convert a jBPM Value to an Alfresco value
      * 
-     * @param value jBPM value
+     * @param value
+     *            jBPM value
      * @return  alfresco value
      */
     private Serializable convertValue(Object value)
@@ -2620,8 +2697,10 @@ public class JBPMEngine extends BPMEngine
     /**
      * Convert a Repository association to JBPMNodeList or JBPMNode
      * 
-     * @param isMany true => force conversion to list
-     * @param value  value to convert
+     * @param isMany
+     *            true => force conversion to list
+     * @param value
+     *            value to convert
      * @return JBPMNodeList or JBPMNode
      */
     @SuppressWarnings("unchecked")
@@ -2634,7 +2713,7 @@ public class JBPMEngine extends BPMEngine
                 // convert single node ref to list of node refs
                 JBPMNodeList values = new JBPMNodeList(); 
                 values.add(new JBPMNode((NodeRef)value, serviceRegistry));
-                value = (Serializable)values;
+                value = values;
             }
             else
             {
@@ -2650,7 +2729,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     values.add(new JBPMNode(nodeRef, serviceRegistry));
                 }
-                value = (Serializable)values;
+                value = values;
             }
             else
             {
@@ -2665,7 +2744,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Convert person name to an Alfresco Person
      * 
-     * @param names  the person name to convert
+     * @param names
+     *            the person name to convert
      * @return  the Alfresco person
      */
     private NodeRef mapNameToPerson(String name)
@@ -2685,7 +2765,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Convert authority name to an Alfresco Authority
      * 
-     * @param names  the authority names to convert
+     * @param names
+     *            the authority names to convert
      * @return  the Alfresco authorities
      */
     private NodeRef mapNameToAuthority(String name)
@@ -2727,13 +2808,15 @@ public class JBPMEngine extends BPMEngine
     /**
      * Map jBPM variable name to QName
      * 
-     * @param name  jBPM variable name
+     * @param name
+     *            jBPM variable name
      * @return  qname
      */
     private QName mapNameToQName(String name)
     {
         QName qname = null;
-        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
+        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as
+        // new scheme (i.e. } -> _)
         String qnameStr = (name.indexOf('}') == -1) ? name.replaceFirst("_", ":") : name.replace("}", ":");
         try
         {
@@ -2749,12 +2832,14 @@ public class JBPMEngine extends BPMEngine
     /**
      * Map QName to jBPM variable name
      * 
-     * @param name  QName
+     * @param name
+     *            QName
      * @return  jBPM variable name
      */
     private String mapQNameToName(QName name)
     {
-        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
+        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as
+        // new scheme (i.e. } -> _)
         // NOTE: Use new scheme 
         String nameStr = name.toPrefixString(this.namespaceService);
         if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
@@ -2767,9 +2852,12 @@ public class JBPMEngine extends BPMEngine
     /**
      * Get an I18N Label for a workflow item
      * 
-     * @param displayId  message resource id lookup
-     * @param labelKey  label to lookup (title or description)
-     * @param defaultLabel  default value if not found in message resource bundle
+     * @param displayId
+     *            message resource id lookup
+     * @param labelKey
+     *            label to lookup (title or description)
+     * @param defaultLabel
+     *            default value if not found in message resource bundle
      * @return  the label
      */
     private String getLabel(String displayId, String labelKey, String defaultLabel)
@@ -2792,7 +2880,8 @@ public class JBPMEngine extends BPMEngine
         {
            try
            {
-               return tenantService.getRootNode(nodeService, serviceRegistry.getSearchService(), namespaceService, companyHomePath, nodeService.getRootNode(companyHomeStore));           
+                return tenantService.getRootNode(nodeService, serviceRegistry.getSearchService(), namespaceService,
+                            companyHomePath, nodeService.getRootNode(companyHomeStore));
            }
            catch (RuntimeException re)
            {
@@ -2802,7 +2891,8 @@ public class JBPMEngine extends BPMEngine
         }
         else
         {
-            List<NodeRef> refs = unprotectedSearchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+            List<NodeRef> refs = unprotectedSearchService.selectNodes(nodeService.getRootNode(companyHomeStore),
+                        companyHomePath, null, namespaceService, false);
             if (refs.size() != 1)
             {
                 String msg = messageService.getMessage(ERR_GET_COMPANY_HOME_MULTIPLE, companyHomePath, refs.size());
@@ -2819,250 +2909,219 @@ public class JBPMEngine extends BPMEngine
     /**
      * Creates a Workflow Path
      * 
-     * @param token  JBoss JBPM Token
+     * @param token
+     *            JBoss JBPM Token
      * @return  Workflow Path
      */
     protected WorkflowPath createWorkflowPath(Token token)
     {
-        WorkflowPath path = new WorkflowPath();
         String tokenId = token.getFullName().replace("/", WORKFLOW_TOKEN_SEPERATOR);
-        path.id = createGlobalId(token.getProcessInstance().getId() + WORKFLOW_PATH_SEPERATOR + tokenId);
-        path.instance = createWorkflowInstance(token.getProcessInstance());
-        path.node = createWorkflowNode(token.getNode());
-        path.active = !token.hasEnded();
-        return path;
+        String id = token.getProcessInstance().getId() + WORKFLOW_PATH_SEPERATOR + tokenId;
+        WorkflowInstance wfInstance = createWorkflowInstance(token.getProcessInstance());
+        WorkflowNode node = createWorkflowNode(token.getNode());
+        boolean isActive = !token.hasEnded();
+        return factory.createPath(id, wfInstance, node, isActive);
     }
     
     /**
      * Creates a Workflow Node
      * 
-     * @param node  JBoss JBPM Node
+     * @param node
+     *            JBoss JBPM Node
      * @return   Workflow Node
      */
-    @SuppressWarnings("unchecked")
     protected WorkflowNode createWorkflowNode(Node node)
     {
         String processName = node.getProcessDefinition().getName();
-
-        if (tenantService.isEnabled())
-        {
-            tenantService.checkDomain(processName); // throws exception if domain mismatch
-        }
-        
-        WorkflowNode workflowNode = new WorkflowNode();
-        workflowNode.name = node.getName();
-        workflowNode.title = getLabel(processName + ".node." + workflowNode.name, TITLE_LABEL, workflowNode.name);
-        workflowNode.description = getLabel(processName + ".node." + workflowNode.name, DESC_LABEL, workflowNode.title);
-        workflowNode.type = getRealNode(node).getClass().getSimpleName();
+        String name = node.getName();
+        String type = getRealNode(node).getClass().getSimpleName();
         // TODO: Is there a formal way of determing if task node?
-        workflowNode.isTaskNode = workflowNode.type.equals("TaskNode");
-        List transitions = node.getLeavingTransitions();
-        workflowNode.transitions = new WorkflowTransition[(transitions == null) ? 0 : transitions.size()];
+        boolean isTaskNode = type.equals("TaskNode");
+        List<Transition> transitions = node.getLeavingTransitions();
+        List<WorkflowTransition> wfTransitions;
         if (transitions != null)
         {
-            int i = 0;
-            for (Transition transition : (List<Transition>)transitions)
+            wfTransitions = new ArrayList<WorkflowTransition>(transitions.size());
+            for (Transition transition : transitions)
             {
-                workflowNode.transitions[i++] = createWorkflowTransition(transition);
+                wfTransitions.add(createWorkflowTransition(transition));
             }
+            }
+        else
+        {
+            wfTransitions = Collections.emptyList();
         }
-        return workflowNode;
+        WorkflowTransition[] transArr = wfTransitions.toArray(new WorkflowTransition[0]);
+        return factory.createNode(name, processName, name, null, type, isTaskNode, transArr);
     }
     
     /**
      * Create a Workflow Transition
      * 
-     * @param transition  JBoss JBPM Transition
+     * @param transition
+     *            JBoss JBPM Transition
      * @return  Workflow Transition
      */
     protected WorkflowTransition createWorkflowTransition(Transition transition)
     {
-        if (tenantService.isEnabled())
-        {
-            tenantService.checkDomain(transition.getProcessDefinition().getName()); // throws exception if domain mismatch
-        }
-        
-        WorkflowTransition workflowTransition = new WorkflowTransition();
-        workflowTransition.id = transition.getName();
+        String id = transition.getName();
         Node node = transition.getFrom();
-        workflowTransition.isDefault = node.getDefaultLeavingTransition().equals(transition);
-        if (workflowTransition.id == null || workflowTransition.id.length() == 0)
+        boolean isDefault = node.getDefaultLeavingTransition().equals(transition);
+        String title;
+        String description;
+        if (id == null || id.length() == 0)
         {
-            workflowTransition.title = getLabel(DEFAULT_TRANSITION_LABEL, TITLE_LABEL, workflowTransition.id);
-            workflowTransition.description = getLabel(DEFAULT_TRANSITION_LABEL, DESC_LABEL, workflowTransition.title);
+            title = getLabel(DEFAULT_TRANSITION_LABEL, TITLE_LABEL, id);
+            description = getLabel(DEFAULT_TRANSITION_LABEL, DESC_LABEL, title);
         }
         else
         {
             String nodeName = node.getName();
             String processName = node.getProcessDefinition().getName();
-            workflowTransition.title = getLabel(processName + ".node." + nodeName + ".transition." + workflowTransition.id, TITLE_LABEL, workflowTransition.id);
-            workflowTransition.description = getLabel(processName + ".node." + nodeName + ".transition." + workflowTransition.id, DESC_LABEL, workflowTransition.title);
+            title = getLabel(processName + ".node." + nodeName + ".transition." + id, TITLE_LABEL, id);
+            description = getLabel(processName + ".node." + nodeName + ".transition." + id, DESC_LABEL, title);
         }
-        return workflowTransition;
+        return new WorkflowTransition(id, title, description, isDefault);
+        }
+
+    protected WorkflowInstance createWorkflowInstance(ProcessInstance instance)
+    {
+        return createWorkflowInstance(instance, null);
     }
         
     /**
      * Creates a Workflow Instance
      * 
-     * @param instance  JBoss JBPM Process Instance
+     * @param instance
+     *            JBoss JBPM Process Instance
+     * @param endDate
      * @return  Workflow instance
      */
-    protected WorkflowInstance createWorkflowInstance(ProcessInstance instance)
+    @SuppressWarnings("unchecked")
+    protected WorkflowInstance createWorkflowInstance(ProcessInstance instance, Date endDate)
     {
-        if (tenantService.isEnabled())
-        {
-            tenantService.checkDomain(instance.getProcessDefinition().getName()); // throws exception if domain mismatch
-        }
+        if(instance == null)
+            return null;
         
-        WorkflowInstance workflowInstance = new WorkflowInstance();
-        workflowInstance.id = createGlobalId(new Long(instance.getId()).toString());
-        workflowInstance.description = (String)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
-        workflowInstance.priority = (Integer)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_PRIORITY));
-        workflowInstance.dueDate = (Date)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE));
-        workflowInstance.definition = createWorkflowDefinition(instance.getProcessDefinition());
-        workflowInstance.active = !instance.hasEnded();
-        JBPMNode initiator = (JBPMNode)instance.getContextInstance().getVariable("initiator");
-        if (initiator != null)
+        String id = Long.toString(instance.getId());
+        Map<String, Object> variables = instance.getContextInstance().getVariables();
+        WorkflowDefinition definition = createWorkflowDefinition(instance.getProcessDefinition());
+        Date startDate = instance.getStart();
+        boolean isActive = false;
+        if (endDate == null)
         {
-            workflowInstance.initiator = initiator.getNodeRef(); 
+            isActive = !instance.hasEnded();
+            endDate = instance.getEnd();
         }
-        JBPMNode context = (JBPMNode)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.PROP_CONTEXT));
-        if (context != null)
-        {
-            workflowInstance.context = context.getNodeRef(); 
-        }
-        JBPMNode workflowPackage = (JBPMNode)instance.getContextInstance().getVariable(mapQNameToName(WorkflowModel.ASSOC_PACKAGE));
-        if (workflowPackage != null)
-        {
-            workflowInstance.workflowPackage = workflowPackage.getNodeRef(); 
-        }
-        workflowInstance.startDate = instance.getStart();
-        workflowInstance.endDate = instance.getEnd();
-        return workflowInstance;
+        return factory.createInstance(id, definition, variables, isActive, startDate, endDate);
     }
 
     /**
      * Creates a Workflow Definition
      * 
-     * @param definition  JBoss Process Definition
+     * @param definition
+     *            JBoss Process Definition
      * @return  Workflow Definition
      */
     protected WorkflowDefinition createWorkflowDefinition(ProcessDefinition definition)
     {
-        if (tenantService.isEnabled())
-        {
-            tenantService.checkDomain(definition.getName()); // throws exception if domain mismatch
-        }
+        String id = Long.toString(definition.getId());
+        String name = definition.getName();
+        int version = definition.getVersion();
         
-        final Task startTask = definition.getTaskMgmtDefinition().getStartTask();
-        String name = tenantService.getBaseName(definition.getName());
-        final String title = getLabel(name + ".workflow", TITLE_LABEL, name);
-        final String description = getLabel(name + ".workflow", DESC_LABEL, title);
-        return new WorkflowDefinition(createGlobalId(new Long(definition.getId()).toString()),
-                                      createGlobalId(name),
-                                      new Integer(definition.getVersion()).toString(),
-                                      title,
-                                      description,
-                                      (startTask != null
-                                       ? createWorkflowTaskDefinition(startTask)
-                                       : null));
+        Task startTask = definition.getTaskMgmtDefinition().getStartTask();
+        WorkflowTaskDefinition startTaskDef = createWorkflowTaskDefinition(startTask);
+        return factory.createDefinition(id, name, version, name, null, startTaskDef);
     }
     
     /**
      * Creates a Workflow Task
      * 
-     * @param task  JBoss Task Instance
+     * @param task
+     *            JBoss Task Instance
      * @return  Workflow Task
      */
     protected WorkflowTask createWorkflowTask(TaskInstance task)
     {
+        if(task == null)
+            return null;
+        
         String processName = task.getTask().getProcessDefinition().getName();
         
         if (tenantService.isEnabled())
         {
-            tenantService.checkDomain(processName); // throws exception if domain mismatch
+            tenantService.checkDomain(processName); // throws exception if
+                                                    // domain mismatch
         }
         
-        WorkflowTask workflowTask = new WorkflowTask();
-        workflowTask.id = createGlobalId(new Long(task.getId()).toString());
-        workflowTask.name = task.getName();
-        workflowTask.path = createWorkflowPath(task.getToken());
-        workflowTask.state = getWorkflowTaskState(task);
-        workflowTask.definition = createWorkflowTaskDefinition(task.getTask());
-        workflowTask.properties = getTaskProperties(task, false);
-        workflowTask.title = getLabel(processName + ".task." + workflowTask.name, TITLE_LABEL, null);
-        if (workflowTask.title == null)
-        {
-            workflowTask.title = workflowTask.definition.metadata.getTitle();
-            if (workflowTask.title == null)
-            {
-                workflowTask.title = workflowTask.name;
-            }
-        }
-        workflowTask.description = getLabel(processName + ".task." + workflowTask.name, DESC_LABEL, null);
-        if (workflowTask.description == null)
-        {
-            String description = workflowTask.definition.metadata.getDescription();
-            workflowTask.description = (description == null) ? workflowTask.title : description;
-        }
-        return workflowTask;
+        String id = Long.toString(task.getId());
+        String name = task.getName();
+        WorkflowPath path = createWorkflowPath(task.getToken());
+        WorkflowTaskState state = getWorkflowTaskState(task);
+        WorkflowTaskDefinition definition = createWorkflowTaskDefinition(task.getTask());
+        Map<QName, Serializable> properties = getTaskProperties(task, false);
+        return factory.createTask(id, definition, name, null, null, state, path, properties);
     }
  
     /**
      * Creates a Workflow Task Definition
      * 
-     * @param task  JBoss JBPM Task
+     * @param task
+     *            JBoss JBPM Task
      * @return  Workflow Task Definition
      */
     protected WorkflowTaskDefinition createWorkflowTaskDefinition(Task task)
     {
-        WorkflowTaskDefinition taskDef = new WorkflowTaskDefinition();
-        taskDef.id = task.getName();
-        Node node = (task.getStartState() == null ? task.getTaskNode() : task.getStartState());
-        taskDef.node = createWorkflowNode(node);
-        taskDef.metadata = getTaskDefinition(task);
-        return taskDef;
+        if (task == null)
+            return null;
+        String id = task.getName();
+        boolean isStart = task.getStartState() != null;
+        Node node = isStart ? task.getStartState() : task.getTaskNode();
+        WorkflowNode wfNode = createWorkflowNode(node);
+        return factory.createTaskDefinition(id, wfNode, id, isStart);
     }
     
     /**
      * Creates a Workflow Deployment
      * 
-     * @param compiledDef  compiled JBPM process definition
+     * @param compiledDef
+     *            compiled JBPM process definition
      * @return  workflow deployment
      */
     protected WorkflowDeployment createWorkflowDeployment(CompiledProcessDefinition compiledDef)
     {
-        WorkflowDeployment deployment = new WorkflowDeployment();
-        deployment.definition = createWorkflowDefinition(compiledDef.def);
-        deployment.problems = compiledDef.problems;
-        return deployment;
+        WorkflowDefinition definition = createWorkflowDefinition(compiledDef.def);
+        String[] problems = compiledDef.problems;
+        return factory.createDeployment(definition, problems);
     }
     
     /**
      * Creates a Workflow Timer
-     * @param timer  jBPM Timer
+     * 
+     * @param timer
+     *            jBPM Timer
      * @return  workflow timer
      */
     protected WorkflowTimer createWorkflowTimer(Timer timer)
     {
-        WorkflowTimer workflowTimer = new WorkflowTimer();
-        workflowTimer.id = createGlobalId(new Long(timer.getId()).toString());
-        workflowTimer.name = timer.getName();
-        workflowTimer.error = timer.getException();
-        workflowTimer.dueDate = timer.getDueDate();
-        workflowTimer.path = createWorkflowPath(timer.getToken());
+        WorkflowPath path = createWorkflowPath(timer.getToken());
+        
+        WorkflowTask workflowTask = null;
         TaskInstance taskInstance = timer.getTaskInstance();
         if (taskInstance != null)
         {
-            workflowTimer.task = createWorkflowTask(taskInstance);
+        	workflowTask = createWorkflowTask(taskInstance);
         }
-        return workflowTimer;
+        
+        return factory.createWorkflowTimer(new Long(timer.getId()).toString(), timer.getName(), 
+        		timer.getException(), timer.getDueDate(), path, workflowTask);
     }
     
     /**
      * Get the Workflow Task State for the specified JBoss JBPM Task
      * 
-     * @param task  task
+     * @param task
+     *            task
      * @return  task state
      */
     protected WorkflowTaskState getWorkflowTaskState(TaskInstance task)
@@ -3080,7 +3139,8 @@ public class JBPMEngine extends BPMEngine
     /**
      * Helper to retrieve the real jBPM Node
      * 
-     * @param node  Node
+     * @param node
+     *            Node
      * @return  real Node (i.e. the one that's not a Hibernate proxy)
      */
     private Node getRealNode(Node node)

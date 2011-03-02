@@ -59,18 +59,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class JBPMEngineTest extends BaseAlfrescoSpringTest
 {
-    /**
-     * 
-     */
-    private static final String USER3 = "JbpmEngineTestJoe";
-    /**
-     * 
-     */
-    private static final String USER2 = "JbpmEngineTestJane";
-    /**
-     * 
-     */
     private static final String USER1 = "JbpmEngineTestJohn";
+    private static final String USER2 = "JbpmEngineTestJane";
+    private static final String USER3 = "JbpmEngineTestJoe";
+
     private WorkflowComponent workflowComponent;
     private TaskComponent taskComponent;
     private WorkflowPackageComponent packageComponent;
@@ -112,6 +104,11 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     }
 
+    public void todoTestGetStartTask() throws Exception
+    {
+        //TODO Implement
+    }
+    
     public void testGetWorkflowDefinitions()
     {
         List<WorkflowDefinition> workflowDefs = workflowComponent.getDefinitions();
@@ -124,10 +121,10 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     {
         ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
-        testWorkflowDef = deployment.definition; 
+        testWorkflowDef = deployment.getDefinition(); 
         assertNotNull(testWorkflowDef);
-        assertEquals("jbpm$test", testWorkflowDef.name);
-        assertEquals("2", testWorkflowDef.version);
+        assertEquals("jbpm$test", testWorkflowDef.getName());
+        assertEquals("2", testWorkflowDef.getVersion());
     }
     
     
@@ -135,7 +132,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     {
         try
         {
-            @SuppressWarnings("unused") WorkflowPath path = workflowComponent.startWorkflow("norfolknchance", null);
+            workflowComponent.startWorkflow("norfolknchance", null);
             fail("Failed to catch invalid definition id");
         }
         catch(WorkflowException e)
@@ -146,7 +143,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         // TODO: Determine why process definition is loaded, even though it doesn't exist
 //        try
 //        {
-//            @SuppressWarnings("unused") WorkflowPosition pos = workflowComponent.startProcess("1000", null);
+//            workflowComponent.startProcess("1000", null);
 //            fail("Failed to catch workflow definition id that does not exist");
 //        }
 //        catch(WorkflowException e)
@@ -154,30 +151,30 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
 //        }
 
         WorkflowDefinition workflowDef = getTestDefinition();
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), null);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(workflowDef.id, path.instance.definition.id);
+        assertTrue(path.getId().endsWith("-@"));
+        assertNotNull(path.getNode());
+        assertNotNull(path.getInstance());
+        assertEquals(workflowDef.getId(), path.getInstance().getDefinition().getId());
     }
 
     
     public void testGetWorkflowById()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), null);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(workflowDef.id, path.instance.definition.id);
-        WorkflowInstance instance = workflowComponent.getWorkflowById(path.instance.id);
+        assertTrue(path.getId().endsWith("-@"));
+        assertNotNull(path.getNode());
+        assertNotNull(path.getInstance());
+        assertEquals(workflowDef.getId(), path.getInstance().getDefinition().getId());
+        WorkflowInstance instance = workflowComponent.getWorkflowById(path.getInstance().getId());
         assertNotNull(instance);
-        assertEquals(path.instance.id, instance.id);
+        assertEquals(path.getInstance().getId(), instance.getId());
         
-        workflowComponent.cancelWorkflow(instance.id);
-    	WorkflowInstance result = workflowComponent.getWorkflowById(instance.id);
+        workflowComponent.cancelWorkflow(instance.getId());
+    	WorkflowInstance result = workflowComponent.getWorkflowById(instance.getId());
     	assertNull("The workflow isntance should be null!", result);
     }
     
@@ -196,24 +193,24 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));  // context variable outside of task definition
         params.put(ContentModel.PROP_OWNER, AuthenticationUtil.getAdminUserName());  // task assignment
         
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(workflowDef.id, path.instance.definition.id);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertTrue(path.getId().endsWith("-@"));
+        assertNotNull(path.getNode());
+        assertNotNull(path.getInstance());
+        assertEquals(workflowDef.getId(), path.getInstance().getDefinition().getId());
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
 
         WorkflowTask task = tasks1.get(0);
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_TASK_ID));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_DUE_DATE));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PRIORITY));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
-        assertTrue(task.properties.containsKey(ContentModel.PROP_OWNER));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_TASK_ID));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_DUE_DATE));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_PRIORITY));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
+        assertTrue(task.getProperties().containsKey(ContentModel.PROP_OWNER));
         
-        NodeRef initiator = path.instance.initiator;
+        NodeRef initiator = path.getInstance().getInitiator();
         String initiatorUsername = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
         assertEquals(AuthenticationUtil.getAdminUserName(), initiatorUsername);
     }
@@ -233,27 +230,27 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));  // context variable outside of task definition
         params.put(ContentModel.PROP_OWNER, AuthenticationUtil.getAdminUserName());  // task assignment
         
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
-        assertTrue(path.id.endsWith("-@"));
-        assertNotNull(path.node);
-        assertNotNull(path.instance);
-        assertEquals(workflowDef.id, path.instance.definition.id);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        assertTrue(path.getId().endsWith("-@"));
+        assertNotNull(path.getNode());
+        assertNotNull(path.getInstance());
+        assertEquals(workflowDef.getId(), path.getInstance().getDefinition().getId());
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
 
         WorkflowTask task = tasks1.get(0);
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_TASK_ID));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_DUE_DATE));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PRIORITY));
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
-        assertTrue(task.properties.containsKey(ContentModel.PROP_OWNER));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_TASK_ID));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_DUE_DATE));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_PRIORITY));
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_PERCENT_COMPLETE));
+        assertTrue(task.getProperties().containsKey(ContentModel.PROP_OWNER));
 
         // update with null parameters
         try
         {
-            WorkflowTask taskU1 = taskComponent.updateTask(task.id, null, null, null);
+            WorkflowTask taskU1 = taskComponent.updateTask(task.getId(), null, null, null);
             assertNotNull(taskU1);
         }
         catch(Throwable e)
@@ -264,8 +261,8 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         // update property value
         Map<QName, Serializable> updateProperties2 = new HashMap<QName, Serializable>();
         updateProperties2.put(WorkflowModel.PROP_PERCENT_COMPLETE, 100);
-        WorkflowTask taskU2 = taskComponent.updateTask(task.id, updateProperties2, null, null);
-        assertEquals(100, taskU2.properties.get(WorkflowModel.PROP_PERCENT_COMPLETE));
+        WorkflowTask taskU2 = taskComponent.updateTask(task.getId(), updateProperties2, null, null);
+        assertEquals(100, taskU2.getProperties().get(WorkflowModel.PROP_PERCENT_COMPLETE));
 
         // add to assocation
         QName assocName = QName.createQName("", "TestAssoc");
@@ -275,9 +272,9 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         toAdd.add(new NodeRef("workspace://1/1003"));
         Map<QName, List<NodeRef>> addAssocs = new HashMap<QName, List<NodeRef>>();
         addAssocs.put(assocName, toAdd);
-        WorkflowTask taskU3 = taskComponent.updateTask(task.id, null, addAssocs, null);
-        assertNotNull(taskU3.properties.get(assocName));
-        assertEquals(3, ((List<?>)taskU3.properties.get(assocName)).size());
+        WorkflowTask taskU3 = taskComponent.updateTask(task.getId(), null, addAssocs, null);
+        assertNotNull(taskU3.getProperties().get(assocName));
+        assertEquals(3, ((List<?>)taskU3.getProperties().get(assocName)).size());
         
         // add to assocation again
         List<NodeRef> toAddAgain = new ArrayList<NodeRef>();
@@ -285,9 +282,9 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         toAddAgain.add(new NodeRef("workspace://1/1005"));
         Map<QName, List<NodeRef>> addAssocsAgain = new HashMap<QName, List<NodeRef>>();
         addAssocsAgain.put(assocName, toAddAgain);
-        WorkflowTask taskU4 = taskComponent.updateTask(task.id, null, addAssocsAgain, null);
-        assertNotNull(taskU4.properties.get(assocName));
-        assertEquals(5, ((List<?>)taskU4.properties.get(assocName)).size());
+        WorkflowTask taskU4 = taskComponent.updateTask(task.getId(), null, addAssocsAgain, null);
+        assertNotNull(taskU4.getProperties().get(assocName));
+        assertEquals(5, ((List<?>)taskU4.getProperties().get(assocName)).size());
         
         // remove assocation
         List<NodeRef> toRemove = new ArrayList<NodeRef>();
@@ -295,23 +292,23 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         toRemove.add(new NodeRef("workspace://1/1003"));
         Map<QName, List<NodeRef>> removeAssocs = new HashMap<QName, List<NodeRef>>();
         removeAssocs.put(assocName, toRemove);
-        WorkflowTask taskU5 = taskComponent.updateTask(task.id, null, null, removeAssocs);
-        assertNotNull(taskU5.properties.get(assocName));
-        assertEquals(3, ((List<?>)taskU5.properties.get(assocName)).size());
+        WorkflowTask taskU5 = taskComponent.updateTask(task.getId(), null, null, removeAssocs);
+        assertNotNull(taskU5.getProperties().get(assocName));
+        assertEquals(3, ((List<?>)taskU5.getProperties().get(assocName)).size());
     }
     
     
     public void testGetWorkflowInstances()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
-        workflowComponent.startWorkflow(workflowDef.id, null);
-        workflowComponent.startWorkflow(workflowDef.id, null);
-        List<WorkflowInstance> instances = workflowComponent.getActiveWorkflows(workflowDef.id);
+        workflowComponent.startWorkflow(workflowDef.getId(), null);
+        workflowComponent.startWorkflow(workflowDef.getId(), null);
+        List<WorkflowInstance> instances = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances);
         assertEquals(2, instances.size());
         for (WorkflowInstance instance : instances)
         {
-            assertEquals(workflowDef.id, instance.definition.id);
+            assertEquals(workflowDef.getId(), instance.getDefinition().getId());
         }
     }
     
@@ -319,37 +316,37 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     public void testGetPositions()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
-        workflowComponent.startWorkflow(workflowDef.id, null);
-        List<WorkflowInstance> instances = workflowComponent.getActiveWorkflows(workflowDef.id);
+        workflowComponent.startWorkflow(workflowDef.getId(), null);
+        List<WorkflowInstance> instances = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances);
         assertEquals(1, instances.size());
-        List<WorkflowPath> paths = workflowComponent.getWorkflowPaths(instances.get(0).id);
+        List<WorkflowPath> paths = workflowComponent.getWorkflowPaths(instances.get(0).getId());
         assertNotNull(paths);
         assertEquals(1, paths.size());
-        assertEquals(instances.get(0).id, paths.get(0).instance.id);
-        assertTrue(paths.get(0).id.endsWith("-@"));
+        assertEquals(instances.get(0).getId(), paths.get(0).getInstance().getId());
+        assertTrue(paths.get(0).getId().endsWith("-@"));
     }
 
     
     public void testCancelWorkflowInstance() throws Exception
     {
     	WorkflowDefinition workflowDef = getTestDefinition();
-        workflowComponent.startWorkflow(workflowDef.id, null);
-        List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.id);
+        workflowComponent.startWorkflow(workflowDef.getId(), null);
+        List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances1);
         assertEquals(1, instances1.size());
         List<WorkflowTask> tasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(tasks);
         assertTrue(tasks.size() > 0);
-        WorkflowInstance cancelledInstance = workflowComponent.cancelWorkflow(instances1.get(0).id);
+        WorkflowInstance cancelledInstance = workflowComponent.cancelWorkflow(instances1.get(0).getId());
         assertNotNull(cancelledInstance);
-        assertFalse(cancelledInstance.active);
-        List<WorkflowInstance> instances2 = workflowComponent.getActiveWorkflows(workflowDef.id);
+        assertFalse(cancelledInstance.isActive());
+        List<WorkflowInstance> instances2 = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances2);
         assertEquals(0, instances2.size());
         List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(tasks1);
-        tasks1 = filterTasksByWorkflowInstance(tasks1, cancelledInstance.id);
+        tasks1 = filterTasksByWorkflowInstance(tasks1, cancelledInstance.getId());
         assertEquals(0, tasks1.size());
     }
     
@@ -383,7 +380,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         WorkflowPath path = workflowComponent.startWorkflow(parallelDef.getId(), parameters);
         WorkflowTask startTask = workflowComponent.getTasksForWorkflowPath(path.getId()).get(0);
         taskComponent.endTask(startTask.getId(), null);
-        checkInstanceExists(path.instance.getId(), parallelDef.getId(), true);
+        checkInstanceExists(path.getInstance().getId(), parallelDef.getId(), true);
         
         // Set all users to reject document.
         ParallelReject(USER1);
@@ -428,9 +425,9 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         WorkflowDefinition workflowDef = getTestDefinition();
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        WorkflowPath updatedPath = workflowComponent.signal(path.id, path.node.transitions[1].id);
+        WorkflowPath updatedPath = workflowComponent.signal(path.getId(), path.getNode().getTransitions()[1].getId());
         assertNotNull(updatedPath);
     }
     
@@ -442,22 +439,22 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
-        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0].id);
+        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).getId(), path.getNode().getTransitions()[0].getId());
         assertNotNull(updatedTask);
         List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
-        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
+        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.getInstance().getId());
         assertEquals(1, completedTasks.size());
         List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);
-        assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
+        assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.getInstance().getId());
         assertEquals(1, assignedTasks.size());
-        assertEquals("review", assignedTasks.get(0).name);
+        assertEquals("review", assignedTasks.get(0).getName());
     }
 
     
@@ -471,12 +468,12 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "assignees"), (Serializable)bpm_assignees);
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
-        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, "multi");
+        WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).getId(), "multi");
         assertNotNull(updatedTask);
     }
 
@@ -488,20 +485,20 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
-        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
+        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).getState());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).getId(), null);
         assertNotNull(updatedTask);
-        assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
+        assertEquals(WorkflowTaskState.COMPLETED, updatedTask.getState());
         List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
-        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
+        completedTasks = filterTasksByWorkflowInstance(completedTasks, path.getInstance().getId());
         assertEquals(1, completedTasks.size());
-        assertEquals(WorkflowTaskState.COMPLETED, completedTasks.get(0).state);
+        assertEquals(WorkflowTaskState.COMPLETED, completedTasks.get(0).getState());
     }
     
     
@@ -511,15 +508,15 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        WorkflowTask getTask = taskComponent.getTaskById(tasks1.get(0).id);
+        WorkflowTask getTask = taskComponent.getTaskById(tasks1.get(0).getId());
         assertNotNull(getTask);
-        assertEquals(getTask.id, tasks1.get(0).id);
+        assertEquals(getTask.getId(), tasks1.get(0).getId());
     }
 
     
@@ -530,13 +527,13 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
-        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
+        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).getState());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).getId(), null);
         assertNotNull(updatedTask);
     }        
 
@@ -550,17 +547,17 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
         assertNotNull(deployment);
         
-        WorkflowDefinition workflowDef = deployment.definition;
+        WorkflowDefinition workflowDef = deployment.getDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), rootNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), parameters);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
-        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).state);
-        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
+        assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).getState());
+        WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).getId(), null);
         assertNotNull(updatedTask);
     }        
     
@@ -611,7 +608,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         List<WorkflowTask> filteredTasks = new ArrayList<WorkflowTask>();
         for (WorkflowTask task : tasks)
         {
-            if (task.path.instance.id.equals(workflowInstanceId))
+            if (task.getPath().getInstance().getId().equals(workflowInstanceId))
             {
                 filteredTasks.add(task);
             }

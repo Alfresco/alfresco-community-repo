@@ -168,21 +168,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         return createNode(companyHome, name, ContentModel.TYPE_CONTENT);
     }
 
-    private NodeRef createNode(NodeRef companyHome, String name, QName type)
-    {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        String fullName = name + System.currentTimeMillis();
-        props.put(ContentModel.PROP_NAME, fullName);
-        QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
-        NodeRef node = nodeService.createNode(companyHome,
-                    ContentModel.ASSOC_CONTAINS,
-                    docContentQName,
-                    type,
-                    props)
-                    .getChildRef();
-        return node;
-    }
-
     private NodeRef createFreeMarkerNode(NodeRef companyHome)
     {
         NodeRef fmNode = createContentNode(companyHome, "testFreeMarkerNode");
@@ -1733,7 +1718,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void testPathBasedRenditionOverwrite() throws Exception
     {
-       
+       //TODO Implement Test
     }
     
     /**
@@ -1758,8 +1743,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        rdComposite.addAction(renditionService.createRenditionDefinition(
              QName.createQName("CompositePart2"), DummyHelloWorldRenditionEngine.ENGINE_NAME
        ));
-       
-       NodeRef renditionNode;
        
        // ============================================== //
        //   Anonymous Rendition, no existing one there   //
@@ -1852,7 +1835,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
            "/" +
            (String) nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME) +
            "/" + "HelloWorld.txt";
-       ;
        
        rdPlain.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path

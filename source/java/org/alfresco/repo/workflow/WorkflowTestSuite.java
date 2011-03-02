@@ -18,17 +18,21 @@
  */
 package org.alfresco.repo.workflow;
 
-import org.alfresco.repo.workflow.jbpm.JBPMDeleteProcessTest;
-import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
-import org.alfresco.repo.workflow.jbpm.JBPMEngineUnitTest;
-import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
-import org.alfresco.repo.workflow.jbpm.NodeListConverterTest;
-import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
-import org.alfresco.util.ApplicationContextHelper;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
+import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
+import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
+import org.alfresco.repo.workflow.jbpm.JBPMDeleteProcessTest;
+import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
+import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
+import org.alfresco.repo.workflow.jbpm.JbpmWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.jbpm.NodeListConverterTest;
+import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
+import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * Workflow test suite
@@ -47,30 +51,38 @@ public class WorkflowTestSuite extends TestSuite
         // Ensure that the default context is available
         ApplicationContextHelper.getApplicationContext();
 
-        // Add the tests to be run
+        // Add the JBPM tests to be run
         suite.addTestSuite( StartWorkflowActionExecuterTest.class );
-        suite.addTestSuite( WorkflowServiceImplTest.class );
+        suite.addTestSuite( JbpmWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ReviewAndApproveTest.class );
         suite.addTestSuite( NodeListConverterTest.class );
         suite.addTestSuite( JBPMDeleteProcessTest.class );
         suite.addTestSuite( JBPMSpringTest.class );
         suite.addTestSuite( JBPMEngineTest.class );
+        suite.addTestSuite( AlfrescoJavaScriptIntegrationTest.class );
 
-        // This should go last, as its uses a different
-        //  context to the other tests
-        suite.addTestSuite( JBPMEngineUnitTest.class );
-    
-        // This one will force the suite to shut down the context
-        //  properly, which avoids periodic wierd build failures
+        // Add the Activiti tests to be run
+        suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
+        suite.addTestSuite( ActivitiSpringTransactionTest.class );
+        suite.addTestSuite( ActivitiTimerExecutionTest.class );
+
+        // This test will force the application context properly, which avoids
+        // periodic wierd build failures
         suite.addTestSuite( WorkflowSuiteContextShutdownTest.class );
-        
+
+        // Note the following workflow tests are not included in this sutie:
+        // ActivitiTaskComponentTest
+        // ActivitiWorkflowComponentTest
+        // ActivitiWorkflowRestApiTest
+        // JbpmWorkflowRestApiTest
         return suite;
     }
     
     public static class WorkflowSuiteContextShutdownTest extends TestCase {
-       public void testDummy() {}
+       public void testDummy() { /*Do Nothing */ }
 
-       protected void tearDown() throws Exception {
+       @Override
+    protected void tearDown() throws Exception {
           System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
           ApplicationContextHelper.closeApplicationContext();
           

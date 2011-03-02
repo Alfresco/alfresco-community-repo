@@ -27,18 +27,29 @@ package org.alfresco.service.cmr.workflow;
 public class WorkflowTransition
 {
     /** Transition Id */
+    @Deprecated
     public String id;
 
     /** Transition Title (Localised) */
+    @Deprecated
     public String title;
     
     /** Transition Description (Localised) */
+    @Deprecated
     public String description;
     
     /** Is this the default transition */
+    @Deprecated
     public boolean isDefault;
-    
-    
+
+    public WorkflowTransition(String id, String title, String description, boolean isDefault)
+    {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.isDefault = isDefault;
+    }
+
     /**
      * @return the id
      */
@@ -71,8 +82,8 @@ public class WorkflowTransition
         return isDefault;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+    * {@inheritDoc}
      */
     @Override
     public String toString()

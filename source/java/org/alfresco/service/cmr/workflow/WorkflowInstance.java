@@ -36,37 +36,68 @@ public class WorkflowInstance implements Serializable
     private static final long serialVersionUID = 4221926809419223452L;
 
     /** Workflow Instance unique id */
+    @Deprecated
     public String id;
 
     /** Workflow Instance description */
+    @Deprecated
     public String description;
 
     /** Is this Workflow instance still "in-flight" or has it completed? */
+    @Deprecated
     public boolean active;
 
     /** Initiator (cm:person) - null if System initiated */
+    @Deprecated
     public NodeRef initiator;
     
     /** Workflow priority */
     public Integer priority;
     
     /** Workflow Start Date */
+    @Deprecated
     public Date startDate;
     
     /** Workflow Due Date */
     public Date dueDate;
     
     /** Workflow End Date */
+    @Deprecated
     public Date endDate;
 
     /** Workflow Package */
+    @Deprecated
     public NodeRef workflowPackage;
     
     /** Workflow Context */
+    @Deprecated
     public NodeRef context;
     
     /** Workflow Definition */
+    @Deprecated
     public WorkflowDefinition definition;
+
+    public WorkflowInstance(
+                String id,
+                WorkflowDefinition definition,
+                String description,
+                NodeRef initiator,
+                NodeRef workflowPackage,
+                NodeRef context,
+                boolean active,
+                Date startDate,
+                Date endDate)
+    {
+        this.id = id;
+        this.definition = definition;
+        this.description = description;
+        this.initiator = initiator;
+        this.workflowPackage = workflowPackage;
+        this.context = context;
+        this.active = active;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 
     /**
      * @return the serialversionuid

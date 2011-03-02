@@ -67,8 +67,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         this.updater = new TaskUpdater(item.id, workflowService, nodeService);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#addAssociation(org.alfresco.service.namespace.QName, java.util.List)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean addAssociation(QName qName, List<NodeRef> values)
@@ -77,8 +77,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#removeAssociation(org.alfresco.service.namespace.QName, java.util.List)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean removeAssociation(QName qName, List<NodeRef> values)
@@ -87,8 +87,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#updateProperty(org.alfresco.service.namespace.QName, java.io.Serializable)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean updateProperty(QName qName, Serializable value)
@@ -97,8 +97,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#addTransientAssociation(java.lang.String, java.util.List)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean addTransientAssociation(String fieldName, List<NodeRef> values)
@@ -112,8 +112,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return false;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#removeTransientAssociation(java.lang.String, java.util.List)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean removeTransientAssociation(String fieldName, List<NodeRef> values)
@@ -127,8 +127,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return false;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#addTransientProperty(java.lang.String, org.alfresco.repo.forms.FormData.FieldData)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected boolean updateTransientProperty(String fieldName, FieldData fieldData)
@@ -148,8 +148,8 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return false;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#persist()
+    /**
+    * {@inheritDoc}
      */
     @Override
     public WorkflowTask persist()

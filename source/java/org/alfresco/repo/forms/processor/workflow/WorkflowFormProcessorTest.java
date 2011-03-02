@@ -482,11 +482,11 @@ public class WorkflowFormProcessorTest extends TestCase
 
     private WorkflowTaskDefinition makeTaskDefinition()
     {
-        WorkflowTaskDefinition taskDef = new WorkflowTaskDefinition();
-        taskDef.id = "foo$startTaskDefId";
-        taskDef.metadata = makeTypeDef();
-        taskDef.node = new WorkflowNode();
-        return taskDef;
+        String id = "foo$startTaskDefId";
+        TypeDefinition metadata = makeTypeDef();
+        WorkflowNode node = new WorkflowNode("", "", "", "", false);
+        return new WorkflowTaskDefinition(id,
+                    node, metadata);
     }
 
     private TypeDefinition makeTypeDef()
@@ -587,13 +587,13 @@ public class WorkflowFormProcessorTest extends TestCase
         WorkflowService service = mock(WorkflowService.class);
         when(service.getDefinitionByName(WF_DEF_NAME)).thenReturn(definition);
         
-        newInstance = new WorkflowInstance();
-        newInstance.id = "foo$instanceId";
-        WorkflowTask startTask = new WorkflowTask();
-        startTask.id = "foo$taskId";
-        final WorkflowPath path = new WorkflowPath();
-        path.id = "foo$pathId";
-        path.instance = newInstance;
+        String instanceId = "foo$instanceId";
+        newInstance = new WorkflowInstance(instanceId,
+                    definition, null, null, null,
+                    null, true, null, null);
+        WorkflowTask startTask = new WorkflowTask("foo$taskId", null, null, null, null, null, null, null);
+        String pathId = "foo$pathId";
+        final WorkflowPath path = new WorkflowPath(pathId, newInstance, null, true);
         
         when(service.startWorkflow(eq(definition.getId()), anyMap()))
             .thenAnswer(new Answer<WorkflowPath>()

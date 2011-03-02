@@ -108,6 +108,12 @@ public interface TaskComponent
      * @return  the updated task
      */    
     public WorkflowTask endTask(String taskId, String transitionId);
-        
+    
+    /**
+     * Gets all active timers for the specified workflow
+     * 
+     * @return  the list of active timers
+     */
+    public WorkflowTask getStartTask(String workflowInstanceId);
 }
 

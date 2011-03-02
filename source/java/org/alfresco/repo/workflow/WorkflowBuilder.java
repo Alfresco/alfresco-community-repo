@@ -88,9 +88,9 @@ public class WorkflowBuilder
     {
         NodeRef packageRef = packageMgr.create(packageNode);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
-        WorkflowPath path = workflowService.startWorkflow(definition.id, params);
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
         signalStartTask(path);
-        return path.instance;
+        return path.getInstance();
     }
 
     private void signalStartTask(WorkflowPath path)
@@ -99,7 +99,7 @@ public class WorkflowBuilder
         if (tasks.size() == 1)
         {
             WorkflowTask startTask = tasks.get(0);
-            workflowService.endTask(startTask.id, null);
+            workflowService.endTask(startTask.getId(), null);
         }
         else
         {

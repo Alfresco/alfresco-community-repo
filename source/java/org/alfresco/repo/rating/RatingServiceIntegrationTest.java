@@ -19,7 +19,6 @@
 
 package org.alfresco.repo.rating;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +28,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -54,17 +51,17 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String USER_ONE = "UserOne";
     private static final String USER_TWO = "UserTwo";
-    private CopyService copyService;
+//    private CopyService copyService;
     private PersonService personService;
     private RatingService ratingService;
     private Repository repositoryHelper;
     private ScriptService scriptService;
-    private RetryingTransactionHelper transactionHelper;
+//    private RetryingTransactionHelper transactionHelper;
     private NodeRef companyHome;
     
     // These NodeRefs are used by the test methods.
     private NodeRef testFolder;
-    private NodeRef testFolderCopyDest;
+//    private NodeRef testFolderCopyDest;
     private NodeRef testDoc_Admin;
     private NodeRef testDoc_UserOne;
     private NodeRef testDoc_UserTwo;
@@ -73,15 +70,16 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     private static final String LIKES_SCHEME_NAME = "likesRatingScheme";
     private static final String FIVE_STAR_SCHEME_NAME = "fiveStarRatingScheme";
     
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
+//        this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.ratingService = (RatingService) this.applicationContext.getBean("ratingService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
-        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
+//        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
         this.scriptService = (ScriptService) this.applicationContext.getBean("scriptService");
 
         // Set the current security context as admin
@@ -90,7 +88,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         companyHome = this.repositoryHelper.getCompanyHome();
         
         testFolder = createNode(companyHome, "testFolder", ContentModel.TYPE_FOLDER);
-        testFolderCopyDest = createNode(companyHome, "testFolderCopyDest", ContentModel.TYPE_FOLDER);
+//        testFolderCopyDest = createNode(companyHome, "testFolderCopyDest", ContentModel.TYPE_FOLDER);
         testDoc_Admin = createNode(testFolder, "testDocInFolder", ContentModel.TYPE_CONTENT);
         
         createUser(USER_ONE);
@@ -113,20 +111,6 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         deleteUser(USER_ONE);
     }
     
-    private NodeRef createNode(NodeRef parentNode, String name, QName type)
-    {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        String fullName = name + System.currentTimeMillis();
-        props.put(ContentModel.PROP_NAME, fullName);
-        QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
-        NodeRef node = nodeService.createNode(parentNode,
-                    ContentModel.ASSOC_CONTAINS,
-                    docContentQName,
-                    type,
-                    props).getChildRef();
-        return node;
-    }
-
     /**
      * This method tests that the expected 'out of the box' rating schemes are available
      * and correctly initialised.

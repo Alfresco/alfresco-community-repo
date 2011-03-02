@@ -34,9 +34,12 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
+import org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -46,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -58,7 +62,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.PropertyMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -72,10 +75,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private FormService formService;
     private NamespaceService namespaceService;
     private ScriptService scriptService;
-    private PersonService personService;
     private ContentService contentService;
     private WorkflowService workflowService;
-
+    private TestPersonManager personManager;
+    
     private NodeRef document;
     private NodeRef associatedDoc;
     private NodeRef childDoc;
@@ -134,16 +137,19 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.formService = (FormService)this.applicationContext.getBean("FormService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
-        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
+        PersonService personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
         this.workflowService = (WorkflowService)this.applicationContext.getBean("WorkflowService");
         
+        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
+        this.personManager = new TestPersonManager(mutableAuthenticationService, personService, nodeService);
+
         // create users
-        createUser(USER_ONE);
-        createUser(USER_TWO);
+        personManager.createPerson(USER_ONE);
+        personManager.createPerson(USER_TWO);
         
         // Do the tests as userOne
-        authenticationComponent.setCurrentUser(USER_ONE);
+        personManager.setUser(USER_ONE);
         
         String guid = GUID.generate();
         
@@ -224,23 +230,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService.createAssociation(this.document, this.associatedDoc, ContentModel.ASSOC_REFERENCES);
     }
     
-    private void createUser(String userName)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            this.personService.createPerson(ppOne);
-        }        
-    }
-	
     @SuppressWarnings("unchecked")
 	public void testGetAllDocForm() throws Exception
     {
@@ -775,7 +764,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String updatedTitle = (String)updatedProps.get(ContentModel.PROP_TITLE);
         String updatedAuthor = (String)updatedProps.get(ContentModel.PROP_AUTHOR);
         String updatedOriginator = (String)updatedProps.get(ContentModel.PROP_ORIGINATOR);
-        List updatedAddressees = (List)updatedProps.get(ContentModel.PROP_ADDRESSEES);
+        List<String> updatedAddressees = (List<String>)updatedProps.get(ContentModel.PROP_ADDRESSEES);
         String wrong = (String)updatedProps.get(QName.createQName("cm", "wrong", this.namespaceService));
         Date sentDate = (Date)updatedProps.get(ContentModel.PROP_SENTDATE);
         
@@ -1085,7 +1074,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(expectedContent, content);
     }
     
-    @SuppressWarnings({ "deprecation", "null", "unchecked" })
+    @SuppressWarnings({ "deprecation", "null" })
     public void disabledTestFDKModel() throws Exception
     {
         // NOTE: The FDK is not loaded by default, for this test to work you must
@@ -1216,7 +1205,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(duplicateValue, values.getFieldData(duplicatePropField.getDataKeyName()).getValue());
         FieldData fieldData = values.getFieldData(duplicateAssocField.getDataKeyName());
         assertNotNull(fieldData);
-        List assocs = (List)fieldData.getValue();
+        List<?> assocs = (List<?>)fieldData.getValue();
         assertNotNull(assocs);
         assertEquals(0, assocs.size());
         
@@ -1264,10 +1253,20 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(1, assocs.size());
     }
     
-    public void testGetFormForTask() throws Exception
+    public void testGetFormForJbpmTask() throws Exception
     {
-        WorkflowTask task = getWorkflowTask();
-        Item item = new Item("task", task.id);
+        checkGetFormForTask("jbpm$wf:review");
+    }
+
+    public void testGetFormForActivitiTask() throws Exception
+    {
+        checkGetFormForTask("activiti$activitiReview");
+    }
+    
+    private void checkGetFormForTask(String defName)
+    {
+        WorkflowTask task = getWorkflowTask(defName);
+        Item item = new Item("task", task.getId());
 
         Form form = formService.getForm(item);
         assertNotNull(form);
@@ -1276,34 +1275,112 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         List<String> fieldDefNames = form.getFieldDefinitionNames();
         assertTrue(fieldDefNames.size() > 0);
 
+        // Check the correct field names are present.
         List<String> expFields = getExpectedTaskFields();
         assertTrue(fieldDefNames.containsAll(expFields));
+        
+        // Check default value for priority is correct.
+        List<FieldDefinition> definitions = form.getFieldDefinitions();
+        String priorityName = WorkflowModel.PROP_PRIORITY.toPrefixString(namespaceService);
+        for (FieldDefinition definition : definitions)
+        {
+            if(priorityName.equals(definition.getName()))
+            {
+                assertEquals("2", definition.getDefaultValue());
+                break;
+            }
+        }
     }
 
-    public void testSaveTask() throws Exception
+    public void testSaveJbpmTask() throws Exception
     {
-        WorkflowTask task = getWorkflowTask();
+        checkSaveTask("jbpm$wf:review");
+    }
+
+    public void testSaveActivitiTask() throws Exception
+    {
+        checkSaveTask("activiti$activitiReview");
+    }
+    
+    private void checkSaveTask(String defName)
+    {
+        WorkflowTask task = getWorkflowTask(defName);
         QName descName = WorkflowModel.PROP_DESCRIPTION;
-        Serializable initialDesc = task.properties.get(descName);
+        Serializable initialDesc = task.getProperties().get(descName);
         String testDesc = "Foo-Bar-Test-String";
         assertFalse(testDesc.equals(initialDesc));
 
-        Item item = new Item("task", task.id);
+        Item item = new Item("task", task.getId());
         FormData data = new FormData();
         String descFieldName = FormFieldConstants.PROP_DATA_PREFIX
                     + descName.toPrefixString(namespaceService).replace(":", "_");
         data.addFieldData(descFieldName, testDesc, true);
         formService.saveForm(item, data);
 
-        WorkflowTask newTask = workflowService.getTaskById(task.id);
-        assertEquals(testDesc, newTask.properties.get(descName));
+        WorkflowTask newTask = workflowService.getTaskById(task.getId());
+        assertEquals(testDesc, newTask.getProperties().get(descName));
+    }
+    
+    public void testTransitionJbpmTask() throws Exception
+    {
+        checkTransitionTask("jbpm$wf:review", "approve", "approve");
+    }
+    
+    public void testTransitionActivitiTask() throws Exception
+    {
+        checkTransitionTask("activiti$activitiReview", ActivitiConstants.DEFAULT_TRANSITION_NAME, "Approve");
+    }
+    
+    private void checkTransitionTask(String defName, String transitionId, String expOutcome)
+    {
+        WorkflowTask task = getWorkflowTask(defName);
+        QName descName = WorkflowModel.PROP_DESCRIPTION;
+        Serializable initialDesc = task.getProperties().get(descName);
+        String testDesc = "Foo-Bar-Test-String";
+        assertFalse(testDesc.equals(initialDesc));
+        
+        Item item = new Item("task", task.getId());
+        FormData data = new FormData();
+        String descFieldName = FormFieldConstants.PROP_DATA_PREFIX + descName.toPrefixString(namespaceService).replace(":", "_");
+        data.addFieldData(descFieldName, testDesc, true);
+        
+        String reviewOutcomeFieldName = FormFieldConstants.PROP_DATA_PREFIX + "wf_reviewOutcome";
+        data.addFieldData(reviewOutcomeFieldName, "Approve", true);
+        
+        String transitionDataKey = FormFieldConstants.PROP_DATA_PREFIX + TransitionFieldProcessor.KEY;
+        data.addFieldData(transitionDataKey, transitionId);
+        
+        formService.saveForm(item, data);
+        WorkflowTask newTask = workflowService.getTaskById(task.getId());
+        assertEquals("The description should have been updated!", testDesc, newTask.getProperties().get(descName));
+
+        // Check the task is completed
+        assertEquals("The task should have been completed!", WorkflowTaskState.COMPLETED, newTask.getState());
+
+        Serializable outcome = newTask.getProperties().get(WorkflowModel.PROP_OUTCOME);
+        assertEquals("The transition is wrong!", expOutcome, outcome);
     }
 
-    private WorkflowTask getWorkflowTask()
+    private WorkflowTask getWorkflowTask(String definitionName)
     {
-        WorkflowDefinition reviewDef = workflowService.getDefinitionByName("jbpm$wf:review");
-        WorkflowPath path = workflowService.startWorkflow(reviewDef.id, null);
-        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+        WorkflowDefinition reviewDef = workflowService.getDefinitionByName(definitionName);
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER_ONE));
+        properties.put(WorkflowModel.ASSOC_PACKAGE, folder);
+        WorkflowPath path = workflowService.startWorkflow(reviewDef.getId(), properties);
+        WorkflowTask task = getTaskForPath(path);
+        String startTaskId = reviewDef.getStartTaskDefinition().getId();
+        if (startTaskId.equals(task.getDefinition().getId()))
+        {
+            workflowService.endTask(task.getId(), null);
+            task = getTaskForPath(path);
+        }
+        return task;
+    }
+
+    private WorkflowTask getTaskForPath(WorkflowPath path)
+    {
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks);
         assertTrue(tasks.size() > 0);
         WorkflowTask task = tasks.get(0);
@@ -1321,18 +1398,32 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         return fields;
     }
     
-    public void testWorkflowForms() throws Exception
+    public void testJbpmWorkflowForm() throws Exception
+    {
+        checkWorkflowForms("jbpm_wf_adhoc", "|Task Done");
+    }
+    
+    public void testActivitiWorkflowForm() throws Exception
+    {
+        checkWorkflowForms("activiti_activitiAdhoc", "Next|Next");
+    }
+    
+    private void checkWorkflowForms(String workflowDefName, String transitionLabels) throws Exception
     {
         // generate a form for a well known workflow-definition supplying
         // a legitimate set of fields for the workflow
         List<String> fields = new ArrayList<String>(8);
-        fields.add("bpm:taskId");
-        fields.add("bpm:workflowDescription");
-        fields.add("bpm:workflowDueDate");
-        fields.add("packageItems");
+        String taskIdName = WorkflowModel.PROP_TASK_ID.toPrefixString(namespaceService);
+        String workflowDescName = WorkflowModel.PROP_WORKFLOW_DESCRIPTION.toPrefixString(namespaceService);
+        String workflowDueDateName = WorkflowModel.PROP_WORKFLOW_DUE_DATE.toPrefixString(namespaceService);
+        String packageItemsName = "packageItems";
+
+        fields.add(taskIdName);
+        fields.add(workflowDescName);
+        fields.add(workflowDueDateName);
+        fields.add(packageItemsName);
         
         // Use URL-friendly format.
-        String workflowDefName = "jbpm_wf_adhoc";
         Form form = this.formService.getForm(new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), fields);
         
         // check a form got returned
@@ -1355,10 +1446,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         // find the fields
-        PropertyFieldDefinition idField = (PropertyFieldDefinition)fieldDefMap.get("bpm:taskId");
-        PropertyFieldDefinition descriptionField = (PropertyFieldDefinition)fieldDefMap.get("bpm:workflowDescription");
-        PropertyFieldDefinition dueDateField = (PropertyFieldDefinition)fieldDefMap.get("bpm:workflowDueDate");
-        AssociationFieldDefinition packageItemsField = (AssociationFieldDefinition)fieldDefMap.get("packageItems");
+        PropertyFieldDefinition idField = (PropertyFieldDefinition)fieldDefMap.get(taskIdName);
+        PropertyFieldDefinition descriptionField = (PropertyFieldDefinition)fieldDefMap.get(workflowDescName);
+        PropertyFieldDefinition dueDateField = (PropertyFieldDefinition)fieldDefMap.get(workflowDueDateName);
+        AssociationFieldDefinition packageItemsField = (AssociationFieldDefinition)fieldDefMap.get(packageItemsName);
         
         // check fields are present
         assertNotNull("Expecting to find the bpm:taskId field", idField);
@@ -1367,45 +1458,48 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting to find the packageItems field", packageItemsField);
         
         // get the number of tasks now
-        List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(USER_ONE, 
+        List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER_ONE, 
                     WorkflowTaskState.IN_PROGRESS);
         int tasksBefore = tasks.size();
         
         // persist the form
         FormData data = new FormData();
         data.addFieldData("prop_bpm_workflowDescription", "This is a new adhoc task");
-        data.addFieldData("assoc_bpm_assignee_added", 
-                    this.personService.getPerson(USER_ONE).toString());
-        data.addFieldData("assoc_packageItems_added", this.document.toString());
+        data.addFieldData("assoc_bpm_assignee_added", personManager.get(USER_ONE).toString());
+        data.addFieldData("assoc_packageItems_added", document.toString());
+        
+//        data.addFieldData("prop_bpm_workflowDueDate", new Date());
+//        data.addFieldData("prop_bpm_workflowPriority", 1);
         
         // persist the data
-        WorkflowInstance workflow = (WorkflowInstance)this.formService.saveForm(
+        WorkflowInstance workflow = (WorkflowInstance)formService.saveForm(
                     new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), data);
         
         // verify that the workflow was started by checking the user has one 
         // more task and the details on the workflow instance
-        tasks = this.workflowService.getAssignedTasks(USER_ONE, 
-                    WorkflowTaskState.IN_PROGRESS);
+        tasks = workflowService.getAssignedTasks(USER_ONE, WorkflowTaskState.IN_PROGRESS);
         int tasksAfter = tasks.size();
         assertTrue("Expecting there to be more tasks", tasksAfter > tasksBefore);
         
         // check workflow instance details
-        assertEquals("jbpm$wf:adhoc", workflow.definition.name);
+        String actualWfName = workflow.getDefinition().getName();
+        assertEquals(workflowDefName, actualWfName.replace('$', '_').replace(':', '_'));
         
         // get the task form and verify data
         String taskId = tasks.get(0).getId();
         fields.clear();
-        fields.add("bpm:taskId");
+        fields.add(taskIdName);
         fields.add("transitions");
         fields.add("message");
         fields.add("taskOwner");
-        fields.add("packageItems");
-        form = this.formService.getForm(new Item(TASK_FORM_ITEM_KIND, taskId), fields);
+        fields.add(packageItemsName);
+        form = formService.getForm(new Item(TASK_FORM_ITEM_KIND, taskId), fields);
         
         FormData taskData = form.getFormData();
-        assertEquals(taskId, "jbpm$" + taskData.getFieldData("prop_bpm_taskId").getValue().toString());
-        assertEquals("|Task Done", taskData.getFieldData("prop_transitions").getValue());
-        assertEquals("UserOne_FormServiceImplTest|firstName|lastName", taskData.getFieldData("prop_taskOwner").getValue());
+        assertEquals(taskId.substring(taskId.indexOf('$')+1), taskData.getFieldData("prop_bpm_taskId").getValue().toString());
+        assertEquals(transitionLabels, taskData.getFieldData("prop_transitions").getValue());
+        String expOwner = USER_ONE + "|" + personManager.getFirstName(USER_ONE) + "|" + personManager.getLastName(USER_ONE);
+        assertEquals(expOwner, taskData.getFieldData("prop_taskOwner").getValue());
         assertEquals("This is a new adhoc task", taskData.getFieldData("prop_message").getValue());
         assertNotNull(taskData.getFieldData("assoc_packageItems").getValue());
         
@@ -1413,7 +1507,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String comment = "This is a comment";
         data = new FormData();
         data.addFieldData("prop_bpm_comment", comment);
-        this.formService.saveForm(new Item(TASK_FORM_ITEM_KIND, taskId), data);
+        formService.saveForm(new Item(TASK_FORM_ITEM_KIND, taskId), data);
         
         // check the comment was updated
         WorkflowTask task = workflowService.getTaskById(taskId);
@@ -1421,7 +1515,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(comment, taskComment);
         
         // make sure unauthorized user can not update the task
-        authenticationComponent.setCurrentUser(USER_TWO);
+        personManager.setUser(USER_TWO);
         
         try
         {
@@ -1483,7 +1577,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
-    @SuppressWarnings("unchecked")
     public void testFormData() throws Exception
     {
         FormData formData = new FormData();
@@ -1503,14 +1596,14 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue("Expecting 'multipleValues' to be a List object", (value instanceof List));
         
         formData.addFieldData("multipleValues", "three");
-        List list = (List)formData.getFieldData("multipleValues").getValue();
+        List<?> list = (List<?>)formData.getFieldData("multipleValues").getValue();
         assertEquals("Expecting 'multipleValues' List to have 3 items", 3, list.size());
         
         // add a List initially then add a value to it
-        formData.addFieldData("listValue", new ArrayList());
+        formData.addFieldData("listValue", new ArrayList<Object>());
         formData.addFieldData("listValue", "one");
         formData.addFieldData("listValue", "two");
-        list = (List)formData.getFieldData("listValue").getValue();
+        list = (List<?>)formData.getFieldData("listValue").getValue();
         assertEquals("Expecting 'listValue' List to have 2 items", 2, list.size());
         
         // test overwrite parameter

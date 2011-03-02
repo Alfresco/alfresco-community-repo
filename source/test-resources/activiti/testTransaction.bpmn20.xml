@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="test-transaction-definitions" typeLanguage="http://www.w3.org/2001/XMLSchema"
+    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://activiti.org/bpmn20"
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="testTask" name="Test Task Process">
+
+        <startEvent id="start2" activiti:formKey="bpm_foo" />
+
+        <sequenceFlow id='flow2' sourceRef='start2'
+            targetRef='task' />
+
+        <userTask id="task" name="Task"
+            activiti:candidateGroups="GROUP_testGroup"
+            activiti:candidateUsers="testUser"
+            activiti:formKey="bpm_foo_task">
+        
+        </userTask>
+
+        <sequenceFlow id='flow3' sourceRef='task'
+            targetRef='end2' />
+
+        <endEvent id="end2" />
+
+    </process>
+
+</definitions>

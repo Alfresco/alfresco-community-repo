@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="test-transaction-definitions" typeLanguage="http://www.w3.org/2001/XMLSchema"
+    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://activiti.org/bpmn20"
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="testTimerTransaction" name="Test Timer Job Process">
+
+        <startEvent id="start" activiti:formKey="bpm:startTask" />
+
+        <sequenceFlow id='flow2' sourceRef='start'
+            targetRef='firstTask' />
+
+        <userTask id="firstTask" name="First task"
+            activiti:formKey="bpm_foo_task" activiti:assignee="${theTaskAssignee}">
+        </userTask>
+        
+        <sequenceFlow id='flow4' sourceRef='firstTask'
+            targetRef='end' />
+            
+        <!-- Timer which will not expire for a long time -->
+        <boundaryEvent id="timer" cancelActivity="true" attachedToRef="firstTask" name="testTimer">
+		   <timerEventDefinition>
+		    <timeDuration>PT1S</timeDuration>
+		  </timerEventDefinition>
+		</boundaryEvent>
+		
+		<!-- Timer firing causes process to end -->
+		<sequenceFlow id='flow3' sourceRef='timer'
+            targetRef='waitTask'>
+             <extensionElements>
+	             <activiti:executionListener event="take" class="org.alfresco.repo.workflow.activiti.listener.ScriptExecutionListener">
+	        		<activiti:field name="script">
+	                     <activiti:string>
+	                        if(error) {
+	                           // Manipulate user home, should be rolled back
+	                           userhome.name = 'User home changed';
+	                           userhome.save();
+                               
+	                           throw 'Activiti engine rocks!';
+	                        } else {
+	                        	execution.setVariable('timerExecutedAs', person.properties.userName);
+	                        }
+	                     </activiti:string>
+	                  </activiti:field>
+	            </activiti:executionListener>
+	         </extensionElements>
+        </sequenceFlow>
+        
+        <userTask id="waitTask" name="Wait task"
+            activiti:formKey="bpm_foo_task" />
+            
+        <sequenceFlow id='flow5' sourceRef='waitTask'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+
+</definitions>

@@ -87,7 +87,8 @@ public class WorkflowInterpreter extends BaseInterpreter
      */
     private WorkflowDefinition currentWorkflowDef = null;
     private WorkflowPath currentPath = null;
-    private String currentDeploy = null;
+    private String currentDeployResource = null;
+    private String currentDeployEngine = null;
 
 
     /**
@@ -99,15 +100,16 @@ public class WorkflowInterpreter extends BaseInterpreter
 
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.getContext().ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        //NOOP
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.getContext().ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)
@@ -174,6 +176,7 @@ public class WorkflowInterpreter extends BaseInterpreter
     /**
      * @param transactionService  transactionService
      */
+    @Override
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -203,6 +206,7 @@ public class WorkflowInterpreter extends BaseInterpreter
         runMain("workflowInterpreter");
     }
 
+    @Override
     protected boolean hasAuthority(String username)
     {
         // admin can change to any user (via worklow command "user <username>")
@@ -217,6 +221,7 @@ public class WorkflowInterpreter extends BaseInterpreter
      * @param line The unparsed command
      * @return The textual output of the command.
      */
+    @Override
     protected String executeCommand(String line)
         throws IOException
     {
@@ -317,13 +322,13 @@ public class WorkflowInterpreter extends BaseInterpreter
                 }
                 for (WorkflowDefinition def : defs)
                 {
-                    out.println("id: " + def.id + " , name: " + def.name + " , title: " + def.title + " , version: " + def.version);
+                    out.println("id: " + def.getId() + " , name: " + def.getName() + " , title: " + def.getTitle() + " , version: " + def.getVersion());
                 }
             }
             
             else if (command[1].equals("workflows"))
             {
-                String id = (currentWorkflowDef != null) ? currentWorkflowDef.id : null;
+                String id = (currentWorkflowDef != null) ? currentWorkflowDef.getId() : null;
                 if (id == null && command.length == 2)
                 {
                     return "workflow definition not in use.  Enter command 'show workflows all' or 'use <workflowDefId>'.\n";
@@ -340,14 +345,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
                 
-                if (id.equals("all"))
+                if ("all".equals(id))
                 {
                     for (WorkflowDefinition def : workflowService.getAllDefinitions())
                     {
-                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.getId());
                         for (WorkflowInstance workflow : workflows)
                         {
-                            out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.name + " v" + workflow.definition.version);
+                            out.println("id: " + workflow.getId() + " , desc: " + workflow.getDescription() + " , start date: " + workflow.getStartDate() + " , def: " + workflow.getDefinition().getName() + " v" + workflow.getDefinition().getVersion());
                         }
                     }
                 }
@@ -356,14 +361,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
                     for (WorkflowInstance workflow : workflows)
                     {
-                        out.println("id: " + workflow.id + " , desc: " + workflow.description + " , start date: " + workflow.startDate + " , def: " + workflow.definition.name);
+                        out.println("id: " + workflow.getId() + " , desc: " + workflow.getDescription() + " , start date: " + workflow.getStartDate() + " , def: " + workflow.getDefinition().getName());
                     }
                 }
             }
             
             else if (command[1].equals("paths"))
             {
-                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
+                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
                 if (workflowId == null)
                 {
                     return "Syntax Error.  Workflow Id not specified.\n";
@@ -371,13 +376,13 @@ public class WorkflowInterpreter extends BaseInterpreter
                 List<WorkflowPath> paths = workflowService.getWorkflowPaths(workflowId);
                 for (WorkflowPath path : paths)
                 {
-                    out.println("path id: " + path.id + " , node: " + path.node.name);
+                    out.println("path id: " + path.getId() + " , node: " + path.getNode().getName());
                 }
             }
             
             else if (command[1].equals("tasks"))
             {
-                String pathId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.id;
+                String pathId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getId();
                 if (pathId == null)
                 {
                     return "Syntax Error.  Path Id not specified.\n";
@@ -385,13 +390,13 @@ public class WorkflowInterpreter extends BaseInterpreter
                 List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(pathId);
                 for (WorkflowTask task : tasks)
                 {
-                    out.println("task id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size());
+                    out.println("task id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size());
                 }
             }
             
             else if (command[1].equals("transitions"))
             {
-                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
+                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
                 if (workflowId == null)
                 {
                     return "Syntax Error.  Workflow Id not specified.\n";
@@ -403,22 +408,22 @@ public class WorkflowInterpreter extends BaseInterpreter
                 }
                 for (WorkflowPath path : paths)
                 {
-                    out.println("path: " + path.id + " , node: " + path.node.name + " , active: " + path.active);
-                    List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+                    out.println("path: " + path.getId() + " , node: " + path.getNode().getName() + " , active: " + path.isActive());
+                    List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
                     for (WorkflowTask task : tasks)
                     {
-                        out.println(" task id: " + task.id + " , name: " + task.name + ", title: " + task.title + " , desc: " + task.description + " , properties: " + task.properties.size());
+                        out.println(" task id: " + task.getId() + " , name: " + task.getName() + ", title: " + task.getTitle() + " , desc: " + task.getDescription() + " , properties: " + task.getProperties().size());
                     }
-                    for (WorkflowTransition transition : path.node.transitions)
+                    for (WorkflowTransition transition : path.getNode().getTransitions())
                     {
-                        out.println(" transition id: " + ((transition.id == null || transition.id.equals("")) ? "[default]" : transition.id) + " , title: " + transition.title);
+                        out.println(" transition id: " + ((transition.getId() == null || transition.getId().equals("")) ? "[default]" : transition.getId()) + " , title: " + transition.getTitle());
                     }
                 }
             }
             
             else if (command[1].equals("timers"))
             {
-                String id = (currentWorkflowDef != null) ? currentWorkflowDef.id : null;
+                String id = (currentWorkflowDef != null) ? currentWorkflowDef.getId() : null;
                 if (id == null && command.length == 2)
                 {
                     return "workflow definition not in use.  Enter command 'show timers all' or 'use <workflowDefId>'.\n";
@@ -437,14 +442,14 @@ public class WorkflowInterpreter extends BaseInterpreter
                 
                 List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
                 
-                if (id.equals("all"))
+                if ("all".equals(id))
                 {
                     for (WorkflowDefinition def : workflowService.getAllDefinitions())
                     {
-                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.getId());
                         for (WorkflowInstance workflow : workflows)
                         {
-                            timers.addAll(workflowService.getTimers(workflow.id));
+                            timers.addAll(workflowService.getTimers(workflow.getId()));
                         }
                     }
                 }
@@ -453,22 +458,22 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
                     for (WorkflowInstance workflow : workflows)
                     {
-                        timers.addAll(workflowService.getTimers(workflow.id));
+                        timers.addAll(workflowService.getTimers(workflow.getId()));
                     }
                 }
                 
                 for (WorkflowTimer timer : timers)
                 {
-                    out.print("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id);
-                    if (timer.task != null)
+                    out.print("id: " + timer.getId() + " , name: " + timer.getName() + " , due date: " + timer.getDueDate() + " , path: " + timer.getPath().getId() + " , node: " + timer.getPath().getNode().getName() + " , process: " + timer.getPath().getInstance().getId());
+                    if (timer.getTask() != null)
                     {
-                        out.print(" , task: " + timer.task.name + "(" + timer.task.id + ")");
+                        out.print(" , task: " + timer.getTask().getName() + "(" + timer.getTask().getId() + ")");
                     }
                     out.println();
-                    if (timer.error != null)
+                    if (timer.getError() != null)
                     {
-                        out.println("error executing timer id " + timer.id);
-                        out.println(timer.error);
+                        out.println("error executing timer id " + timer.getId());
+                        out.println(timer.getError());
                     }
                 }
             }
@@ -486,7 +491,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getRunAsUser(), WorkflowTaskState.IN_PROGRESS);
                     for (WorkflowTask task : tasks)
                     {
-                        out.println("id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
+                        out.println("id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size() + " , workflow: " + task.getPath().getInstance().getId() + " , path: " + task.getPath().getId());
                     }
                 }
                 
@@ -496,7 +501,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getRunAsUser(), WorkflowTaskState.COMPLETED);
                     for (WorkflowTask task : tasks)
                     {
-                        out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
+                        out.println("id: " + task.getId() + " , name " + task.getName() + " , properties: " + task.getProperties().size() + " , workflow: " + task.getPath().getInstance().getId() + " , path: " + task.getPath().getId());
                     }
                 }
                 
@@ -506,7 +511,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowTask> tasks = workflowService.getPooledTasks(AuthenticationUtil.getRunAsUser());
                     for (WorkflowTask task : tasks)
                     {
-                        out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
+                        out.println("id: " + task.getId() + " , name " + task.getName() + " , properties: " + task.getProperties().size() + " , workflow: " + task.getPath().getInstance().getId() + " , path: " + task.getPath().getId());
                     }
                 }
 
@@ -535,19 +540,19 @@ public class WorkflowInterpreter extends BaseInterpreter
                     return "Syntax Error.\n";
                 }
                 WorkflowTask task = workflowService.getTaskById(command[2]);
-                out.println("id: " + task.id);
-                out.println("name: " + task.name);
-                out.println("title: " + task.title);
-                out.println("description: " + task.description);
-                out.println("state: " + task.state);
-                out.println("path: " + task.path.id);
-                out.println("transitions: " + task.definition.node.transitions.length);
-                for (WorkflowTransition transition : task.definition.node.transitions)
+                out.println("id: " + task.getId());
+                out.println("name: " + task.getName());
+                out.println("title: " + task.getTitle());
+                out.println("description: " + task.getDescription());
+                out.println("state: " + task.getState());
+                out.println("path: " + task.getPath().getId());
+                out.println("transitions: " + task.getDefinition().getNode().getTransitions().length);
+                for (WorkflowTransition transition : task.getDefinition().getNode().getTransitions())
                 {
-                    out.println(" transition: " + ((transition.id == null || transition.id.equals("")) ? "[default]" : transition.id) + " , title: " + transition.title + " , desc: " + transition.description);
+                    out.println(" transition: " + ((transition.getId() == null || transition.getId().equals("")) ? "[default]" : transition.getId()) + " , title: " + transition.getTitle() + " , desc: " + transition.getDescription());
                 }
-                out.println("properties: " + task.properties.size());
-                for (Map.Entry<QName, Serializable> prop : task.properties.entrySet())
+                out.println("properties: " + task.getProperties().size());
+                for (Map.Entry<QName, Serializable> prop : task.getProperties().entrySet())
                 {
                     out.println(" " + prop.getKey() + " = " + prop.getValue());
                 }
@@ -560,15 +565,15 @@ public class WorkflowInterpreter extends BaseInterpreter
                     return "Syntax Error.\n";
                 }
                 WorkflowInstance workflow = workflowService.getWorkflowById(command[2]);
-                out.println("definition: " + workflow.definition.name);
-                out.println("id: " + workflow.id);
-                out.println("description: " + workflow.description);
-                out.println("active: " + workflow.active);
-                out.println("start date: " + workflow.startDate);
-                out.println("end date: " + workflow.endDate);
-                out.println("initiator: " + workflow.initiator);
-                out.println("context: " + workflow.context);
-                out.println("package: " + workflow.workflowPackage);
+                out.println("definition: " + workflow.getDefinition().getName());
+                out.println("id: " + workflow.getId());
+                out.println("description: " + workflow.getDescription());
+                out.println("active: " + workflow.isActive());
+                out.println("start date: " + workflow.getStartDate());
+                out.println("end date: " + workflow.getEndDate());
+                out.println("initiator: " + workflow.getInitiator());
+                out.println("context: " + workflow.getContext());
+                out.println("package: " + workflow.getWorkflowPackage());
             }
             
             else if (command[1].equals("path"))
@@ -704,7 +709,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 out.println("found " + tasks.size() + " tasks.");
                 for (WorkflowTask task : tasks)
                 {
-                    out.println("task id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size() + ", process id: " + task.path.instance);
+                    out.println("task id: " + task.getId() + " , name: " + task.getName() + " , properties: " + task.getProperties().size() + ", process id: " + task.getPath().getInstance());
                 }
             }
             
@@ -716,29 +721,30 @@ public class WorkflowInterpreter extends BaseInterpreter
         
         else if (command[0].equals("deploy"))
         {
-            if (command.length != 2)
+            if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-            ClassPathResource workflowDef = new ClassPathResource(command[1]);
-            WorkflowDeployment deployment = workflowService.deployDefinition("jbpm", workflowDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
-            WorkflowDefinition def = deployment.definition;
-            for (String problem : deployment.problems)
+            ClassPathResource workflowDef = new ClassPathResource(command[2]);
+            WorkflowDeployment deployment = workflowService.deployDefinition(command[1], workflowDef.getInputStream(), MimetypeMap.MIMETYPE_XML);
+            WorkflowDefinition def = deployment.getDefinition();
+            for (String problem : deployment.getProblems())
             {
                 out.println(problem);
             }
-            out.println("deployed definition id: " + def.id + " , name: " + def.name + " , title: " + def.title + " , version: " + def.version);
-            currentDeploy = command[1];
-            out.print(executeCommand("use definition " + def.id));
+            out.println("deployed definition id: " + def.getId() + " , name: " + def.getName() + " , title: " + def.getTitle() + " , version: " + def.getVersion());
+            currentDeployEngine = command[1];
+            currentDeployResource = command[2];
+            out.print(executeCommand("use definition " + def.getId()));
         }
 
         else if (command[0].equals("redeploy"))
         {
-            if (currentDeploy == null)
+            if (currentDeployResource == null)
             {
                 return "nothing to redeploy\n";
             }
-            out.print(executeCommand("deploy " + currentDeploy));
+            out.print(executeCommand("deploy " + currentDeployEngine + " " + currentDeployResource));
         }
         
         else if (command[0].equals("undeploy"))
@@ -764,8 +770,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                         List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(command[3]);
                         for (WorkflowDefinition def: defs)
                         {
-                            workflowService.undeployDefinition(def.id);
-                            out.print(" v" + def.version);
+                            workflowService.undeployDefinition(def.getId());
+                            out.print(" v" + def.getVersion());
                         }
                         out.println("");
                         currentWorkflowDef = null;
@@ -792,9 +798,9 @@ public class WorkflowInterpreter extends BaseInterpreter
         {
             if (command.length == 1)
             {
-                out.println("definition: " + ((currentWorkflowDef == null) ? "None" : currentWorkflowDef.id + " , name: " + currentWorkflowDef.title + " , version: " + currentWorkflowDef.version));
-                out.println("workflow: " + ((currentPath == null) ? "None" : currentPath.instance.id + " , active: " + currentPath.instance.active));
-                out.println("path: " + ((currentPath == null) ? "None" : currentPath.id + " , node: " + currentPath.node.title));
+                out.println("definition: " + ((currentWorkflowDef == null) ? "None" : currentWorkflowDef.getId() + " , name: " + currentWorkflowDef.getTitle() + " , version: " + currentWorkflowDef.getVersion()));
+                out.println("workflow: " + ((currentPath == null) ? "None" : currentPath.getInstance().getId() + " , active: " + currentPath.getInstance().isActive()));
+                out.println("path: " + ((currentPath == null) ? "None" : currentPath.getId() + " , node: " + currentPath.getNode().getTitle()));
             }
             else if (command.length > 1)
             {
@@ -821,8 +827,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                         return "Syntax Error.\n";
                     }
                     WorkflowInstance instance = workflowService.getWorkflowById(command[2]);
-                    currentWorkflowDef = instance.definition;
-                    currentPath = workflowService.getWorkflowPaths(instance.id).get(0);
+                    currentWorkflowDef = instance.getDefinition();
+                    currentPath = workflowService.getWorkflowPaths(instance.getId()).get(0);
                     out.print(executeCommand("use"));
                 }
                 else
@@ -873,8 +879,8 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 return "Workflow definition not selected.\n";
             }
-            WorkflowPath path = workflowService.startWorkflow(currentWorkflowDef.id, params);
-            out.println("started workflow id: " + path.instance.id + " , def: " + path.instance.definition.title);
+            WorkflowPath path = workflowService.startWorkflow(currentWorkflowDef.getId(), params);
+            out.println("started workflow id: " + path.getInstance().getId() + " , def: " + path.getInstance().getDefinition().getTitle());
             currentPath = path;
             out.print(interpretCommand("show transitions"));
         }
@@ -915,7 +921,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
                 WorkflowTask task = workflowService.updateTask(command[2], params, null, null);
-                out.println("updated task id: " + command[2] + ", properties: " + task.properties.size());
+                out.println("updated task id: " + command[2] + ", properties: " + task.getProperties().size());
             }
             else
             {
@@ -930,7 +936,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
             WorkflowPath path = workflowService.signal(command[1], (command.length == 3) ? command[2] : null);
-            out.println("signal sent - path id: " + path.id);
+            out.println("signal sent - path id: " + path.getId());
             out.print(interpretCommand("show transitions"));
         }
         
@@ -941,7 +947,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 return "Syntax Error.\n";
             }
             WorkflowPath path = workflowService.fireEvent(command[1], command[2]);
-            out.println("event " + command[2] + " fired - path id: " + path.id);
+            out.println("event " + command[2] + " fired - path id: " + path.getId());
             out.print(interpretCommand("show transitions"));
         }
 
@@ -954,12 +960,12 @@ public class WorkflowInterpreter extends BaseInterpreter
             if (command[1].equals("task"))
             {
                 WorkflowTask task = workflowService.endTask(command[2], (command.length == 4) ? command[3] : null);
-                out.println("signal sent - path id: " + task.path.id);
+                out.println("signal sent - path id: " + task.getPath().getId());
                 out.print(interpretCommand("show transitions"));
             }
             else if (command[1].equals("workflow"))
             {
-                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
+                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
                 if (workflowId == null)
                 {
                     return "Syntax Error.  Workflow Id not specified.\n";
@@ -981,7 +987,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             }
             if (command[1].equals("workflow"))
             {
-                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.instance.id;
+                String workflowId = (command.length == 3) ? command[2] : (currentPath == null) ? null : currentPath.getInstance().getId();
                 if (workflowId == null)
                 {
                     return "Syntax Error.  Workflow Id not specified.\n";
@@ -1005,11 +1011,11 @@ public class WorkflowInterpreter extends BaseInterpreter
                     {
                         for (WorkflowDefinition def : workflowService.getAllDefinitions())
                         {
-                            List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
+                            List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.getId());
                             for (WorkflowInstance workflow : workflows)
                             {
-                                workflowService.deleteWorkflow(workflow.id);
-                                out.println("workflow " + workflow.id + " deleted.");
+                                workflowService.deleteWorkflow(workflow.getId());
+                                out.println("workflow " + workflow.getId() + " deleted.");
                             }
                         }
                     }

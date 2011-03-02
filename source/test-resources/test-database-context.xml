@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <import resource="classpath:alfresco/extension/dev-context.xml" />
+
+   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+      destroy-method="close">
+      <property name="driverClassName">
+         <value>${db.driver}</value>
+      </property>
+      <property name="url">
+         <value>${db.url}</value>
+      </property>
+      <property name="username">
+         <value>${db.username}</value>
+      </property>
+      <property name="password">
+         <value>${db.password}</value>
+      </property>
+      <property name="initialSize">
+         <value>${db.pool.initial}</value>
+      </property>
+      <property name="maxActive">
+         <value>${db.pool.max}</value>
+      </property>
+      <property name="minIdle">
+         <value>${db.pool.min}</value>
+      </property>
+      <property name="maxIdle">
+         <value>${db.pool.idle}</value>
+      </property>
+      <property name="defaultAutoCommit">
+         <value>false</value>
+      </property>
+      <property name="defaultTransactionIsolation">
+         <value>${db.txn.isolation}</value>
+      </property>
+      <property name="maxWait">
+         <value>${db.pool.wait.max}</value>
+      </property>
+      <property name="validationQuery">
+         <value>${db.pool.validate.query}</value>
+      </property>
+      <property name="timeBetweenEvictionRunsMillis">
+         <value>${db.pool.evict.interval}</value>
+      </property>
+      <property name="minEvictableIdleTimeMillis">
+         <value>${db.pool.evict.idle.min}</value>
+      </property>
+      <property name="testOnBorrow">
+         <value>${db.pool.validate.borrow}</value>
+      </property>
+      <property name="testOnReturn">
+         <value>${db.pool.validate.return}</value>
+      </property>
+      <property name="testWhileIdle">
+         <value>${db.pool.evict.validate}</value>
+      </property>
+      <property name="removeAbandoned">
+         <value>${db.pool.abandoned.detect}</value>
+      </property>
+      <property name="removeAbandonedTimeout">
+         <value>${db.pool.abandoned.time}</value>
+      </property>
+      <property name="poolPreparedStatements">
+         <value>${db.pool.statements.enable}</value>
+      </property>
+      <property name="maxOpenPreparedStatements">
+         <value>${db.pool.statements.max}</value>
+      </property>
+   </bean>
+
+   <bean id="transactionManager"
+      class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+      <property name="transactionSynchronizationName" value="SYNCHRONIZATION_ALWAYS" />
+      <property name="dataSource" ref="dataSource" />
+   </bean>
+    
+</beans>

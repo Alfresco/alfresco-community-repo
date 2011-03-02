@@ -194,7 +194,7 @@ public interface WorkflowService
     public WorkflowPath startWorkflowFromTemplate(NodeRef templateDefinition);
     
     /**
-     * Gets all "in-flight" active workflow instances of the specified Workflow Definition
+     * Gets all active workflow instances of the specified Workflow Definition
      * 
      * @param workflowDefinitionId  the workflow definition id
      * @return  the list of "in-flight" workflow instances
@@ -203,7 +203,7 @@ public interface WorkflowService
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
 
     /**
-     * Gets all "in-flight" completed workflow instances of the specified Workflow Definition
+     * Gets all completed workflow instances of the specified Workflow Definition
      * 
      * @param workflowDefinitionId  the workflow definition id
      * @return  the list of "in-flight" workflow instances
@@ -213,7 +213,7 @@ public interface WorkflowService
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId);
     
     /**
-     * Gets all "in-flight" workflow instances (both active and completed) of the specified Workflow Definition
+     * Gets all workflow instances (both active and completed) of the specified Workflow Definition
      * 
      * @param workflowDefinitionId  the workflow definition id     
      * @return  the list of "in-flight" workflow instances
@@ -298,6 +298,15 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"pathId"})
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId);
+    
+    /**
+     * Gets the start task instance for the given workflow instance.
+     * 
+     * @param workflowInstanceId
+     * @return
+     */
+    @Auditable(parameters = {"pathId"})
+    public WorkflowTask getStartTask(String workflowInstanceId);
 
     
     //

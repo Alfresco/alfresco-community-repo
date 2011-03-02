@@ -18,13 +18,21 @@
  */
 package org.alfresco.util;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -62,6 +70,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
     /**
      * On setup in transaction override
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
@@ -82,16 +91,28 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
-
-      
-
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
         authenticationService.clearCurrentSecurityContext();
         super.onTearDownInTransaction();
+    }
+
+    protected NodeRef createNode(NodeRef parentNode, String name, QName type)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        String fullName = name + System.currentTimeMillis();
+        props.put(ContentModel.PROP_NAME, fullName);
+        QName childName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
+        ChildAssociationRef childAssoc = nodeService.createNode(parentNode,
+                    ContentModel.ASSOC_CONTAINS,
+                    childName,
+                    type,
+                    props);
+        return childAssoc.getChildRef();
     }
 
 }

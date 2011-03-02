@@ -136,7 +136,7 @@ public class TaskUpdater
     public WorkflowTask update()
     {
         WorkflowTask task = workflowService.getTaskById(taskId);
-        NodeRef packageNode = task.path.instance.workflowPackage;
+        NodeRef packageNode = task.getPath().getInstance().getWorkflowPackage();
         packageMgr.update(packageNode);
         
         WorkflowTask result = workflowService.updateTask(taskId, properties, add, remove);

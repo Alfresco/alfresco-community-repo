@@ -26,12 +26,12 @@ import org.springframework.beans.factory.InitializingBean;
  * Base functionality for a plug-in BPM Engine
  * 
  * @author davidc
+ * @author Nick Smith
  */
 public class BPMEngine implements InitializingBean
 {
     private BPMEngineRegistry registry;
     private String engineId;
-
  
     /**
      * Sets the BPM Engine Registry
@@ -53,9 +53,16 @@ public class BPMEngine implements InitializingBean
         this.engineId = engineId;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+    /**
+     * @return the engineId
+     */
+    protected String getEngineId()
+    {
+        return engineId;
+    }
+    
+    /**
+    * {@inheritDoc}
      */
     public void afterPropertiesSet() throws Exception
     {
@@ -63,7 +70,6 @@ public class BPMEngine implements InitializingBean
         {
             throw new WorkflowException("Engine Id not specified");
         }
-        
         if (this instanceof WorkflowComponent)
         {
             registry.registerWorkflowComponent(engineId, (WorkflowComponent)this);
@@ -80,7 +86,7 @@ public class BPMEngine implements InitializingBean
      * @param localId  the local engine id
      * @return  the global id
      */
-    protected String createGlobalId(String localId)
+    public String createGlobalId(String localId)
     {
         return BPMEngineRegistry.createGlobalId(engineId, localId);
     }
@@ -91,8 +97,9 @@ public class BPMEngine implements InitializingBean
      * @param globalId  the global id
      * @return  the local id
      */
-    protected String createLocalId(String globalId)
+    public String createLocalId(String globalId)
     {
         return BPMEngineRegistry.getLocalId(globalId);
     }
+    
 }

@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="ServiceRegistry" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.ServiceRegistry" />
+    </bean>
+
+    <bean id="messageService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.i18n.MessageService" />
+    </bean>
+
+    <bean id="tenantService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value=" org.alfresco.repo.tenant.TenantService" />
+    </bean>
+
+    <bean id="NamespaceService" class="org.alfresco.service.namespace.NamespaceServiceMemoryImpl" />
+
+    <bean id="DictionaryService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value=" org.alfresco.service.cmr.dictionary.DictionaryService" />
+    </bean>
+
+    <bean id="NodeService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value=" org.alfresco.service.cmr.repository.NodeService" />
+    </bean>
+
+    <bean id="searchService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="  org.alfresco.service.cmr.search.SearchService" />
+    </bean>
+
+    <bean id="permissionService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="  org.alfresco.service.cmr.security.PermissionService" />
+    </bean>
+
+    <bean id="PersonService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="  org.alfresco.service.cmr.security.PersonService" />
+    </bean>
+
+    <bean id="authorityDAO" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="   org.alfresco.repo.security.authority.AuthorityDAO" />
+    </bean>
+
+    <bean id="bpm_engineRegistry" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.workflow.BPMEngineRegistry" />
+    </bean>
+
+    <!-- Authentication Util initialization -->
+    <bean id="authenticationUtil"
+        class="org.alfresco.repo.security.authentication.AuthenticationUtil">
+        <property name="defaultAdminUserName">
+            <value>admin</value>
+        </property>
+        <property name="defaultGuestUserName">
+            <value>guest</value>
+        </property>
+    </bean>
+</beans>

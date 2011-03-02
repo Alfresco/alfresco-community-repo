@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="test-adhoc-definitions" typeLanguage="http://www.w3.org/2001/XMLSchema"
+    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://activiti.org/bpmn20"
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="testReview" name="Test Review Process">
+
+        <startEvent id="start"
+            activiti:formKey="wf:submitReviewTask" />
+
+        <sequenceFlow id='flow1' 
+            sourceRef='start'
+            targetRef='reviewTask' />
+
+        <userTask id="reviewTask" name="Review Task"
+            activiti:formKey="wf:activitiReviewTask">
+            <extensionElements>
+            	 <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                       	execution.setVariable('wf_reviewOutcome', task.getVariable('wf_reviewOutcome'));
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id='flow2' 
+        sourceRef='reviewTask'
+            targetRef='reviewDecision' />
+
+        <exclusiveGateway  id="reviewDecision" name="Review Decision" /> 
+
+        <sequenceFlow id='flow3' sourceRef='reviewDecision' targetRef='approved' >
+            <conditionExpression xsi:type="tFormalExpression">${wf_reviewOutcome == 'Approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id='flow4' 
+        sourceRef='reviewDecision'
+            targetRef='rejected' />
+
+       <userTask id="approved" name="Document Approved"
+            activiti:formKey="wf:approvedTask" >
+            <documentation>
+                The document was reviewed and approved.
+            </documentation>
+        </userTask>
+        
+        <userTask id="rejected" name="Document Rejected"
+            activiti:formKey="wf:rejectedTask" >
+            <documentation>
+                The document was reviewed and rejected.
+            </documentation>
+        </userTask>
+
+        <sequenceFlow id='flow5' sourceRef='approved'
+            targetRef='end' />
+
+        <sequenceFlow id='flow6' sourceRef='rejected'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+
+</definitions>

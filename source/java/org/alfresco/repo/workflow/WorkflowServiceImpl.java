@@ -169,11 +169,11 @@ public class WorkflowServiceImpl implements WorkflowService
         WorkflowComponent component = getWorkflowComponent(engineId);
         WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype);
 
-        if (logger.isDebugEnabled() && deployment.problems.length > 0)
+        if (logger.isDebugEnabled() && deployment.getProblems().length > 0)
         {
-            for (String problem : deployment.problems)
+            for (String problem : deployment.getProblems())
             {
-                logger.debug("Workflow definition '" + deployment.definition.title + "' problem: " + problem);
+                logger.debug("Workflow definition '" + deployment.getDefinition().getTitle() + "' problem: " + problem);
             }
         }
 
@@ -354,7 +354,13 @@ public class WorkflowServiceImpl implements WorkflowService
     {
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
         WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.startWorkflow(workflowDefinitionId, parameters);
+        WorkflowPath path = component.startWorkflow(workflowDefinitionId, parameters);
+        if(parameters!=null && parameters.containsKey(WorkflowModel.ASSOC_PACKAGE))
+        {
+            WorkflowInstance instance = path.getInstance();
+            workflowPackageComponent.setWorkflowForPackage(instance);
+        }
+        return path;
     }
 
     /*
@@ -461,7 +467,7 @@ public class WorkflowServiceImpl implements WorkflowService
         // NOTE: Delete workflow package after cancelling workflow, so it's
         // still available
         // in process-end events of workflow definition
-        workflowPackageComponent.deletePackage(instance.workflowPackage);
+        workflowPackageComponent.deletePackage(instance.getWorkflowPackage());
         return instance;
     }
 
@@ -479,7 +485,7 @@ public class WorkflowServiceImpl implements WorkflowService
         // NOTE: Delete workflow package after deleting workflow, so it's still
         // available
         // in process-end events of workflow definition
-        workflowPackageComponent.deletePackage(instance.workflowPackage);
+        workflowPackageComponent.deletePackage(instance.getWorkflowPackage());
         return instance;
     }
 
@@ -535,6 +541,18 @@ public class WorkflowServiceImpl implements WorkflowService
         return component.getTasksForWorkflowPath(pathId);
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    
+    @Override
+    public WorkflowTask getStartTask(String workflowInstanceId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceId);
+        TaskComponent component = getTaskComponent(engineId);
+        return component.getStartTask(workflowInstanceId);
+    }
+    
     /*
      * (non-Javadoc)
      * @see
@@ -632,7 +650,13 @@ public class WorkflowServiceImpl implements WorkflowService
     {
         String engineId = BPMEngineRegistry.getEngineId(taskId);
         TaskComponent component = getTaskComponent(engineId);
-        return component.updateTask(taskId, properties, add, remove);
+        WorkflowTask task = component.updateTask(taskId, properties, add, remove);
+        if(add!=null && add.containsKey(WorkflowModel.ASSOC_PACKAGE))
+        {
+            WorkflowInstance instance = task.getPath().getInstance();
+            workflowPackageComponent.setWorkflowForPackage(instance);
+        }
+        return task;
     }
 
     /*
@@ -817,7 +841,7 @@ public class WorkflowServiceImpl implements WorkflowService
             String engineId = BPMEngineRegistry.getEngineId(workflowId);
             WorkflowComponent component = getWorkflowComponent(engineId);
             WorkflowInstance instance = component.getWorkflowById(workflowId);
-            if (instance != null && instance.active == active)
+            if (instance != null && instance.isActive() == active)
             {
                 workflowInstances.add(instance);
             }
@@ -881,7 +905,7 @@ public class WorkflowServiceImpl implements WorkflowService
     private NodeRef getWorkflowPackageIfExists(String taskId)
     {
         WorkflowTask workflowTask = getTaskById(taskId);
-        if (workflowTask != null) { return (NodeRef) workflowTask.properties.get(WorkflowModel.ASSOC_PACKAGE); }
+        if (workflowTask != null) { return (NodeRef) workflowTask.getProperties().get(WorkflowModel.ASSOC_PACKAGE); }
         return null;
     }
 

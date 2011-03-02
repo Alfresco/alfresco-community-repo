@@ -1,7 +1,11 @@
-# For Lifecycle Workflow Example
+# For JBPM Lifecycle Workflow Example
 wfl_lifecycleapproval.workflow.title=Lifecycle Review & Approve
 wfl_lifecycleapproval.workflow.description=Lifecycle Review & Approval workflow (Auto updates document status)
 wfl_lifecycleapproval.node.review.transition.reject.title=Reject
 wfl_lifecycleapproval.node.review.transition.reject.description=Reject
 wfl_lifecycleapproval.node.review.transition.approve.title=Approve
 wfl_lifecycleapproval.node.review.transition.approve.description=Approve
+
+# For Activiti Lifecycle Workflow Example
+activitiLifecycleApproval=Lifecycle Review & Approve
+activitiLifecycleApproval=Lifecycle Review & Approval workflow Activiti (Auto updates document status)

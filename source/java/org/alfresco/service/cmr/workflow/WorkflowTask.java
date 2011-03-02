@@ -34,29 +34,54 @@ import org.alfresco.service.namespace.QName;
 public class WorkflowTask
 {
     /** Unique id of Task */
+    @Deprecated
     public String id;
     
     /** Task Name */
+    @Deprecated
     public String name;
     
     /** Task Title (Localised) */
+    @Deprecated
     public String title;
 
     /** Task Description (Localised) */
+    @Deprecated
     public String description;
     
     /** Task State */
+    @Deprecated
     public WorkflowTaskState state;
     
     /** Workflow path this Task is associated with */
+    @Deprecated
     public WorkflowPath path;
     
     /** Task Definition */
+    @Deprecated
     public WorkflowTaskDefinition definition;
     
     /** Task Properties as described by Task Definition */
+    @Deprecated
     public Map<QName, Serializable> properties;
     
+    
+    public WorkflowTask(String id,
+                WorkflowTaskDefinition definition, 
+                String name, String title, String description,
+                WorkflowTaskState state, WorkflowPath path,
+                Map<QName, Serializable> properties)
+    {
+        this.id = id;
+        this.definition = definition;
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.state = state;
+        this.path = path;
+        this.properties = properties;
+    }
+
     /**
      * @return the id
      */

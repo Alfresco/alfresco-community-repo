@@ -21,6 +21,7 @@ package org.alfresco.repo.workflow;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 
 
 /**
@@ -61,5 +62,17 @@ public interface WorkflowPackageComponent
      * @return  list of workflows which act upon the specified content
      */
     public List<String> getWorkflowIdsForContent(NodeRef packageItem);
-    
+
+    /**
+     * Initialises the workflow package node on the {@link WorkflowInstance},
+     * adding the appropriate aspect and setting the appropriate properties to
+     * mark it as a package for the given {@link WorkflowInstance}.
+     * 
+     * @param instance
+     *            the workflow instance to which the package belongs.
+     * 
+     * @return <code>true</code> if the package node was modified.
+     */
+    public boolean setWorkflowForPackage(WorkflowInstance instance);
+
 }

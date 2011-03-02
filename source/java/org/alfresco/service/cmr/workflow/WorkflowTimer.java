@@ -23,24 +23,43 @@ import java.util.Date;
 public class WorkflowTimer
 {
     /** Timer Id */
+	@Deprecated
     public String id;
 
     /** Transition Name */
+	@Deprecated
     public String name;
 
     /** Associated Workflow Path */
+	@Deprecated
     public WorkflowPath path;
     
     /** Associated Workflow Task (if any) */
+	@Deprecated
     public WorkflowTask task;
     
     /** Due Date */
+	@Deprecated
     public Date dueDate;
 
     /** Error */
+	@Deprecated
     public String error;
     
-    /**
+    
+    
+    public WorkflowTimer(String id, String name, WorkflowPath path,
+			WorkflowTask task, Date dueDate, String error) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.path = path;
+		this.task = task;
+		this.dueDate = dueDate;
+		this.error = error;
+	}
+
+	/**
      * @return the id
      */
     public String getId()

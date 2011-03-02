@@ -51,6 +51,7 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
     /**
      * Called at the begining of all tests
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {

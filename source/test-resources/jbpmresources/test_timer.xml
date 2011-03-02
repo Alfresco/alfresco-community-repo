@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:testtimers">
+
+    <swimlane name="initiator" />
+
+    <start-state name="start">
+        <task name="bpm:startTask" swimlane="initiator" />
+        <transition name="" to="launchpending">
+          <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+            <script>
+               <expression>
+                  new Date(new Date().getTime() + 3600);  // launch date = now + 1 minute
+               </expression>
+               <variable name="launchDate" access="write"/>
+            </script>
+          </action>
+        </transition>
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <actor>#{bpm_assignee}</actor>
+        </assignment>
+    </swimlane>
+
+    <task-node name="launchpending" end-tasks="true">
+        <task swimlane="assignee">
+           <timer duedate="#{launchDate}" transition="launched" name="testTimer">
+             <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+               <script>
+                 logger.log("Launched at " + launchDate + " by " + person.properties.userName);
+               </script>
+             </action>
+           </timer>
+        </task>
+        <transition name="cancel" to="end" />   <!-- signalling this transition will cancel timer -->
+        <transition name="launched" to="doit" />  <!-- signalling this transition will cancel timer -->
+    </task-node>
+
+    <node name="doit">
+        <event type="node-enter">
+            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                <script>
+                    companyhome.name = companyhome.name + "b";
+                    logger.log("Company Home: " + companyhome.name);
+                </script>
+            </action>
+        </event>
+        <transition name="" to="end" />
+    </node>
+
+    <end-state name="end" />
+
+</process-definition>

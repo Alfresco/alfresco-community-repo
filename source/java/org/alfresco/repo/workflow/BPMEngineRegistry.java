@@ -49,7 +49,6 @@ public class BPMEngineRegistry
     private Map<String, WorkflowComponent> workflowComponents;
     private Map<String, TaskComponent> taskComponents;
 
-
     /**
      * Construct
      */
@@ -190,6 +189,19 @@ public class BPMEngineRegistry
     public static String getLocalId(String globalId)
     {
         return getGlobalIdParts(globalId)[1];
-    }    
-    
+    }
+
+    /**
+     * Returns <code>true</code> if the globalId parameter is a valid global Id
+     * for the given engineId.
+     * 
+     * @param globalId
+     * @param engineId
+     * @return
+     */
+    public static boolean isGlobalId(String globalId, String engineId)
+    {
+        return globalId.startsWith(engineId+ID_SEPERATOR);
+    }
+
 }

@@ -298,8 +298,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         else
                         {
                             WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
-                            if (logger.isInfoEnabled())
-                                logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + location + "' with " + deployment.problems.length + " problems");
+                            logDeployment(location, deployment);
                         }
                     }
                 }
@@ -326,7 +325,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         catch(Throwable e)
         {
             // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
+            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) { /* NOOP */ }
             throw new AlfrescoRuntimeException("Workflow deployment failed", e);
         }
         finally
@@ -357,13 +356,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                  {
                 	 // deploy / re-deploy
                      WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
-                     if (logger.isInfoEnabled())
-                     {
-                         logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + nodeRef + "' with " + deployment.problems.length + " problems");
-                     }
+                     logDeployment(nodeRef, deployment);
 	                 if (deployment != null)
 	                 {
-	                	 WorkflowDefinition def = deployment.definition;
+	                	 WorkflowDefinition def = deployment.getDefinition();
 	                    
 	                	 // Update the meta data for the model
 	                	 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
@@ -371,9 +367,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
 	                	 props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
 						
 	                	 // TODO - ability to return and handle deployment problems / warnings
-	                	 if (deployment.problems.length > 0)
+	                	 if (deployment.getProblems().length > 0)
 	                	 {
-	                		 for (String problem : deployment.problems)
+	                		 for (String problem : deployment.getProblems())
 	                		 {
 	                			 logger.warn(problem);
 	                		 }
@@ -391,6 +387,17 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             	logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
             }
         }
+    }
+
+    private void logDeployment(Object location, WorkflowDeployment deployment)
+    {
+        if (logger.isInfoEnabled())
+         {
+            String title = deployment.getDefinition().getTitle();
+            String version = deployment.getDefinition().getVersion();
+            int problemLength = deployment.getProblems().length;
+            logger.info("Workflow deployer: Deployed process definition '" + title + "' (version " + version + ") from '" + location + "' with " + problemLength + " problems");
+         }
     }
     
     public void undeploy(NodeRef nodeRef)

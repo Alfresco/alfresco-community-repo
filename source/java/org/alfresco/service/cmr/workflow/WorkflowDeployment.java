@@ -27,11 +27,24 @@ package org.alfresco.service.cmr.workflow;
 public class WorkflowDeployment
 {
     /** Workflow Definition */
+    @Deprecated
     public WorkflowDefinition definition;
 
     /** Workflow Status */
+    @Deprecated
     public String[] problems;
+
+    public WorkflowDeployment()
+    {
+        // Default Constructor.
+    }
     
+    public WorkflowDeployment(WorkflowDefinition definition, String... problems)
+    {
+        this.definition = definition;
+        this.problems = problems;
+    }
+
     /**
      * @return the definition
      */

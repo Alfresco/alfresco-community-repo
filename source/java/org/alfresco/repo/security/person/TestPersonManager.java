@@ -135,5 +135,4 @@ public class TestPersonManager
         NodeRef person = get(userName);
         return (String) nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
     }
-    
 }

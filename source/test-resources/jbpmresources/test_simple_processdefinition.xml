@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test">
+   <swimlane name="initiator"></swimlane>
+
+   <start-state name="start">
+     <task name="submit" swimlane="initiator" />
+      <transition name="" to="review" />
+   </start-state>
+   
+   <task-node name="review">
+      <task name="review"  swimlane="initiator" />
+      <transition name="" to="end" />
+   </task-node>
+   
+   <end-state name="end"></end-state>
+   
+</process-definition>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="test-transaction-definitions" typeLanguage="http://www.w3.org/2001/XMLSchema"
+    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://activiti.org/bpmn20"
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="testJob" name="Test Timer Job Process">
+
+        <startEvent id="start" activiti:formKey="bpm_foo" />
+
+        <sequenceFlow id='flow2' sourceRef='start'
+            targetRef='firstTask' />
+
+        <userTask id="firstTask" name="First task"
+            activiti:formKey="bpm_foo_task">
+        </userTask>
+        
+        <!-- Timer which will not expire for a long time -->
+        <boundaryEvent id="veryLongTimer" cancelActivity="true" attachedToRef="firstTask">
+		   <timerEventDefinition>
+		    <timeDuration>PT12H</timeDuration>
+		  </timerEventDefinition>
+		</boundaryEvent>   
+		
+		<!-- Timer firing causes process to end -->
+		<sequenceFlow id='flow3' sourceRef='veryLongTimer'
+            targetRef='end' />
+            
+        <sequenceFlow id='flow4' sourceRef='firstTask'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+
+</definitions>

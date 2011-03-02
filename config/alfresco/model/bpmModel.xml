@@ -184,7 +184,7 @@
                         <many>false</many>
                     </source>
                     <target>
-                        <!-- For now, this may consists of cm:person or usr:authorityContainer -->
+                        <!-- For now, this may consist of cm:person or usr:authorityContainer -->
                         <class>sys:base</class>
                         <mandatory>false</mandatory>
                         <many>true</many>
@@ -271,6 +271,19 @@
 
         </type>
 
+        <!--                                     -->
+        <!--  Activiti Outcome Task -->
+        <!--                                     -->
+        
+        <type name="bpm:activitiOutcomeTask">
+            <parent>bpm:workflowTask</parent>
+            <properties>
+                <!--  Specifies the property used to store the task outcome -->
+                <property name="bpm:outcomePropertyName">
+                    <type>d:qname</type>  
+                </property>
+            </properties>
+        </type>
 
         <!--                     -->
         <!--  Default Start Task -->

@@ -174,11 +174,11 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
     	private String fullUser;
     	private JBPMNode person = null;
     	
-		public void storeUsers(JBPMNode person)
+		public void storeUsers(JBPMNode thePerson)
     	{
     		fullUser = AuthenticationUtil.getFullyAuthenticatedUser();
     		runAsUser = AuthenticationUtil.getRunAsUser();
-    		this.person = person;
+    		this.person = thePerson;
     	}
     }
 }

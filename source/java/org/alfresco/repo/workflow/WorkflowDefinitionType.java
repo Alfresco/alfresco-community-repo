@@ -113,8 +113,8 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
         Boolean beforeValue = (Boolean)before.get(WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
         Boolean afterValue = (Boolean)after.get(WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
         
-        if (afterValue != null && 
-            (beforeValue == null || (beforeValue != null && afterValue != null && beforeValue.equals(afterValue) == false)))
+        // If the afterValue exists and is different from the beforeValue...
+        if (afterValue != null && (afterValue.equals(beforeValue) == false))
         {
             if (afterValue.booleanValue() == true)
             {

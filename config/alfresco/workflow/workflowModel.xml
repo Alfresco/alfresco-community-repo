@@ -66,6 +66,36 @@
          </overrides>
       </type>
 
+        <type name="wf:activitiReviewTask">
+            <parent>bpm:activitiOutcomeTask</parent>
+            <properties>
+                <property name="wf:reviewOutcome">
+                    <type>d:text</type>
+                    <default>Reject</default>
+                    <constraints>
+                        <constraint type="LIST">
+                            <parameter name="allowedValues">
+                                <!-- TODO: Determine if priority values can 
+                                    be mapped to human-readable strings -->
+                                <list>
+                                    <value>Approve</value>
+                                    <value>Reject</value>
+                                </list>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <overrides>
+                <property name="bpm:packageItemActionGroup">
+                    <default>edit_package_item_actions</default>
+                </property>
+                <property name="bpm:outcomePropertyName">
+                    <default>{http://www.alfresco.org/model/workflow/1.0}reviewOutcome</default>
+                </property>
+            </overrides>
+        </type>
+
       <type name="wf:approvedTask">
          <parent>bpm:workflowTask</parent>
          <mandatory-aspects>

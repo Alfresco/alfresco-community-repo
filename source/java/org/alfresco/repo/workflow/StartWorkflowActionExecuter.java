@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -144,7 +143,7 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         }
 
         // start the workflow
-        WorkflowPath path = workflowService.startWorkflow(def.id, workflowParameters);
+        WorkflowPath path = workflowService.startWorkflow(def.getId(), workflowParameters);
 
         // determine whether to auto-end the start task
         Boolean endStartTask = (Boolean)ruleAction.getParameterValue(PARAM_END_START_TASK);
@@ -154,10 +153,10 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         // auto-end the start task with the provided transition (if one)
         if (endStartTask)
         {
-            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
             for (WorkflowTask task : tasks)
             {
-                workflowService.endTask(task.id, startTaskTransition);
+                workflowService.endTask(task.getId(), startTaskTransition);
             }
         }
 	}

@@ -29,11 +29,20 @@ import java.io.Serializable;
 public class WorkflowDefinition implements Serializable
 {
    private static final long serialVersionUID = -4320345925926816927L;
-//XXarielb these should most likely all be private
+   
+   @Deprecated
    public final String id;
+   
+   @Deprecated
    public final String name;
+   
+   @Deprecated
    public final String version;
+   
+   @Deprecated
    public final String title;
+   
+   @Deprecated
    public final String description;
    
    transient private final WorkflowTaskDefinition startTaskDefinition;

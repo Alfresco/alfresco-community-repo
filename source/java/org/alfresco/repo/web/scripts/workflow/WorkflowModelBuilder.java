@@ -278,7 +278,7 @@ public class WorkflowModelBuilder
         }
         else
         {
-            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
+            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)));
         }
 
         return model;
@@ -295,14 +295,14 @@ public class WorkflowModelBuilder
         Map<String, Object> model = buildSimple(workflowInstance);
 
         Serializable startTaskId = null;
-        WorkflowTask startTask = getStartTaskForWorkflow(workflowInstance);
+        WorkflowTask startTask = workflowService.getStartTask(workflowInstance.getId());
         if (startTask != null)
         {
-            startTaskId = startTask.id;
+            startTaskId = startTask.getId();
         }
         
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
-        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.definition));
+        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.getDefinition()));
 
         if (includeTasks)
         {
@@ -310,7 +310,7 @@ public class WorkflowModelBuilder
             WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();
             tasksQuery.setTaskState(null);
             tasksQuery.setActive(null);
-            tasksQuery.setProcessId(workflowInstance.id);
+            tasksQuery.setProcessId(workflowInstance.getId());
             List<WorkflowTask> tasks = workflowService.queryTasks(tasksQuery);
 
             ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>(tasks.size());
@@ -362,7 +362,7 @@ public class WorkflowModelBuilder
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (WorkflowTaskDefinition taskDefinition : workflowService.getTaskDefinitions(workflowDefinition.getId()))
         {
-            if (taskDefinition.id.equals(workflowDefinition.getStartTaskDefinition().getId()))
+            if (taskDefinition.getId().equals(workflowDefinition.getStartTaskDefinition().getId()))
             {
                 continue;
             }
@@ -510,10 +510,10 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        model.put(TASK_DEFINITION_ID, workflowTaskDefinition.id);
+        model.put(TASK_DEFINITION_ID, workflowTaskDefinition.getId());
         model.put(TASK_DEFINITION_URL, getUrl(workflowTaskDefinition));
-        model.put(TASK_DEFINITION_TYPE, buildTypeDefinition(workflowTaskDefinition.metadata));
-        model.put(TASK_DEFINITION_NODE, buildWorkflowNode(workflowTaskDefinition.node, workflowTask));
+        model.put(TASK_DEFINITION_TYPE, buildTypeDefinition(workflowTaskDefinition.getMetadata()));
+        model.put(TASK_DEFINITION_NODE, buildWorkflowNode(workflowTaskDefinition.getNode(), workflowTask));
 
         return model;
     }
@@ -589,26 +589,6 @@ public class WorkflowModelBuilder
         return hiddenTransitions.contains(transitionId);
     }
 
-    protected WorkflowTask getStartTaskForWorkflow(WorkflowInstance workflowInstance)
-    {
-        WorkflowTaskQuery startTaskQuery = new WorkflowTaskQuery();
-        startTaskQuery.setTaskState(null);
-        startTaskQuery.setActive(null);
-        startTaskQuery.setTaskName(workflowInstance.definition.getStartTaskDefinition().metadata.getName());
-        startTaskQuery.setProcessId(workflowInstance.id);
-        
-        List<WorkflowTask> startTasks = workflowService.queryTasks(startTaskQuery);
-        
-        if (!startTasks.isEmpty())
-        {
-            return startTasks.get(0);
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
     private String getOutcome(WorkflowTask task)
     {
         String outcomeLabel = null;
@@ -628,6 +608,11 @@ public class WorkflowModelBuilder
                         outcomeLabel = transition.getTitle();
                         break;
                     }
+                }
+                if(outcomeLabel == null)
+                {
+                	// TODO: is this okay -> no real transitions exist for activiti
+                	outcomeLabel = outcomeId;
                 }
             }
         }

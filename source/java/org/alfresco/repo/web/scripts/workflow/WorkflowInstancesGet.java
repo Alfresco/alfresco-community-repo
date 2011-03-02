@@ -330,8 +330,8 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         @Override
         public int compare(WorkflowInstance o1, WorkflowInstance o2)
         {
-            Date date1 = (Date)o1.dueDate;
-            Date date2 = (Date)o2.dueDate;
+            Date date1 = o1.getDueDate();
+            Date date2 = o2.getDueDate();
             
             long time1 = date1 == null ? Long.MAX_VALUE : date1.getTime();
             long time2 = date2 == null ? Long.MAX_VALUE : date2.getTime();

@@ -18,8 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -81,7 +80,7 @@ public class WorkflowModelBuilderTest extends TestCase
         
         Map<String, Object> model = builder.buildSimple(task, null);
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
-        assertEquals(task.id, id);
+        assertEquals(task.getId(), id);
         Object url = model.get(WorkflowModelBuilder.TASK_URL);
         assertEquals("api/task-instances/" + task.getId(), url);
         assertEquals(task.getName(), model.get(WorkflowModelBuilder.TASK_NAME));
@@ -149,7 +148,7 @@ public class WorkflowModelBuilderTest extends TestCase
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
         assertEquals(workflowTask.getId(), id);
         Object url = model.get(WorkflowModelBuilder.TASK_URL);
-        assertEquals("api/task-instances/" + workflowTask.id, url);
+        assertEquals("api/task-instances/" + workflowTask.getId(), url);
         assertEquals(workflowTask.getName(), model.get(WorkflowModelBuilder.TASK_NAME));
         assertEquals(workflowTask.getTitle(), model.get(WorkflowModelBuilder.TASK_TITLE));
         assertEquals(workflowTask.getDescription(), model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
@@ -212,7 +211,7 @@ public class WorkflowModelBuilderTest extends TestCase
     
     public void testBuildWorkflowDefinition() throws Exception
     {
-        WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
+        WorkflowTaskDefinition workflowTaskDefinition = makeTaskDefinition();
         WorkflowDefinition workflowDefinition = new WorkflowDefinition("The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
         
         Map<String, Object> model = builder.buildSimple(workflowDefinition);
@@ -254,8 +253,7 @@ public class WorkflowModelBuilderTest extends TestCase
     @SuppressWarnings("unchecked")
     public void testBuildWorkflowInstanceDetailed() throws Exception
     {
-        WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
-        workflowTaskDefinition.metadata = mock(TypeDefinition.class);
+        WorkflowTaskDefinition workflowTaskDefinition = makeTaskDefinition();
         when(workflowTaskDefinition.getMetadata().getName()).thenReturn(QName.createQName("The Type Name"));
         when(workflowTaskDefinition.getMetadata().getTitle()).thenReturn("The Type Title");
         when(workflowTaskDefinition.getMetadata().getDescription()).thenReturn("The Type Description");
@@ -302,34 +300,30 @@ public class WorkflowModelBuilderTest extends TestCase
 
     private WorkflowNode makeNode()
     {
-        WorkflowNode node = new WorkflowNode();
-        node.name = "The Node Name";
-        node.title = "The Node Title";
-        node.description = "The Node Description";
-        node.isTaskNode = true;
-        
+        String name = "The Node Name";
+        String title = "The Node Title";
+        String description = "The Node Description";
+        String type= "The Node Type";
+        boolean isTaskNode = true;
         WorkflowTransition workflowTransition = makeTransition();
-        node.transitions = new WorkflowTransition[] { workflowTransition };
-        return node;
+        return new WorkflowNode(name, title, description, type, isTaskNode, workflowTransition);
     }
 
     private WorkflowTransition makeTransition()
     {
-        WorkflowTransition workflowTransition = new WorkflowTransition();
-        workflowTransition.id = "The Transition Id";
-        workflowTransition.title = "The Transition Title";
-        workflowTransition.description = "The Transition Description";
-        workflowTransition.isDefault = true;
-        return workflowTransition;
+        String id = "The Transition Id";
+        String title = "The Transition Title";
+        String description = "The Transition Description";
+        boolean isDefault = true;
+        return new WorkflowTransition(id, title, description, isDefault);
     }
 
     private WorkflowTaskDefinition makeTaskDefinition()
     {
-        WorkflowTaskDefinition definition = new WorkflowTaskDefinition();
-        definition.id = "The Definition Id";
-        definition.metadata = makeTypeDefinition();
-        definition.node = makeNode();
-        return definition;
+        String id = "The Definition Id";
+        TypeDefinition metadata = makeTypeDefinition();
+        WorkflowNode node = makeNode();
+        return new WorkflowTaskDefinition(id, node, metadata);
     }
 
     private TypeDefinition makeTypeDefinition()
@@ -343,45 +337,42 @@ public class WorkflowModelBuilderTest extends TestCase
 
     private WorkflowPath makePath()
     {
-        WorkflowPath path = new WorkflowPath();
-        path.id = "pathId$1";
-        path.instance = new WorkflowInstance();
-        path.instance.id = "";
-        path.instance.active = true;
-        path.instance.startDate = new Date();
-        path.instance.workflowPackage = workflowPackage;
-        path.instance.definition = new WorkflowDefinition(
+        String id = "pathId$1";
+        Date startDate = new Date();
+        WorkflowDefinition definition = new WorkflowDefinition(
                 "The Id", "The Name", "1", "The Title", "The Description", null);
-        return path;
+        WorkflowInstance instance = new WorkflowInstance("",
+                    definition, null, null, null,
+                    workflowPackage, true, startDate, null);
+        return new WorkflowPath(id, instance, null, true);
     }
     
     private WorkflowTask makeTask(Date date)
     {
-        WorkflowTask task = new WorkflowTask();
-        task.description = "Task Desc";
-        task.id = "testId$1";
-        task.name = "Task Name";
-        task.state = WorkflowTaskState.IN_PROGRESS;
-        task.title = "Task Title";
-        task.path = makePath();
-        task.definition = makeTaskDefinition();
-        task.properties = makeTaskProperties(date);
-        return task;
+        String description = "Task Desc";
+        String id = "testId$1";
+        String name = "Task Name";
+        WorkflowTaskState state = WorkflowTaskState.IN_PROGRESS;
+        String title = "Task Title";
+        WorkflowPath path = makePath();
+        WorkflowTaskDefinition definition = makeTaskDefinition();
+        HashMap<QName, Serializable> properties = makeTaskProperties(date);
+        return new WorkflowTask(id,
+                    definition, name, title, description, state, path, properties);
     }
     
     private WorkflowInstance makeWorkflowInstance(WorkflowTaskDefinition taskDefinition)
     {
-        WorkflowInstance workflowInstance = new WorkflowInstance();
-        workflowInstance.id = "The id";
-        workflowInstance.active = true;
-        workflowInstance.startDate = new Date();
-        workflowInstance.endDate = new Date();
-        workflowInstance.initiator = person;
-        workflowInstance.definition = new WorkflowDefinition(
+        String id = "The id";
+        boolean active = true;
+        Date startDate = new Date();
+        Date endDate = new Date();
+        NodeRef initiator = person;
+        WorkflowDefinition definition = new WorkflowDefinition(
                     "The Id", "The Name", "The Version", "The Title", "The Description", taskDefinition);
-        workflowInstance.workflowPackage = workflowPackage;
-        workflowInstance.context = workflowPackage;
-        return workflowInstance;
+        return new WorkflowInstance(id,
+                    definition, "", initiator, workflowPackage,
+                    workflowPackage, active, startDate, endDate);
     }
 
     private HashMap<QName, Serializable> makeTaskProperties(Date date)

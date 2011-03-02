@@ -20,13 +20,16 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.person.TestGroupManager;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -36,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -61,35 +65,53 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import com.ibm.icu.util.Calendar;
+
 /**
  * @author Nick Smith
+ * @author Frederik Heremans
  *
  */
-public class WorkflowRestApiTest extends BaseWebScriptTest
+public abstract class WorkflowRestApiTest extends BaseWebScriptTest
 {
-    private final static String USER1 = "Bob" + GUID.generate();
-    private final static String USER2 = "Jane" + GUID.generate();
-    private final static String USER3 = "Nick" + GUID.generate();
-    private static final String URL_TASKS = "api/task-instances";
-    private static final String URL_USER_TASKS = "api/task-instances?authority={0}";
-    private static final String URL_WORKFLOW_TASKS = "api/workflow-instances/{0}/task-instances";
-    private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
-    private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
-    private static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
-    private static final String URL_WORKFLOW_INSTANCES_FOR_NODE = "api/node/{0}/{1}/{2}/workflow-instances";
+    protected final static String USER1 = "Bob" + GUID.generate();
+    protected final static String USER2 = "Jane" + GUID.generate();
+    protected final static String USER3 = "Nick" + GUID.generate();
+    protected final static String GROUP ="Group" + GUID.generate();
+    protected static final String URL_TASKS = "api/task-instances";
+    protected static final String URL_USER_TASKS = "api/task-instances?authority={0}";
+    protected static final String URL_USER_TASKS_PROPERTIES = "api/task-instances?authority={0}&properties={1}";
+    protected static final String URL_TASKS_DUE_BEFORE = "api/task-instances?dueBefore={0}";
+    protected static final String URL_TASKS_DUE_AFTER = "api/task-instances?dueAfter={0}";
+    protected static final String URL_WORKFLOW_TASKS = "api/workflow-instances/{0}/task-instances";
+    protected static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
+    protected static final String URL_WORKFLOW_DEFINITION = "api/workflow-definitions/{0}";
+    protected static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
+    protected static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
+    protected static final String URL_WORKFLOW_INSTANCES_FOR_NODE = "api/node/{0}/{1}/{2}/workflow-instances";
 
-    private static final String COMPANY_HOME = "/app:company_home";
-    private static final String TEST_CONTENT = "TestContent";
+    protected static final String COMPANY_HOME = "/app:company_home";
+    protected static final String TEST_CONTENT = "TestContent";
+	protected static final String ADHOC_START_TASK_TYPE = "wf:submitAdhocTask";
+	protected static final String ADHOC_TASK_TYPE = "wf:adhocTask";
+	protected static final String ADHOC_TASK_COMPLETED_TYPE = "wf:completedAdhocTask";
+
 
     private TestPersonManager personManager;
-    private WorkflowService workflowService;
+    private TestGroupManager groupManager;
+    
+    protected WorkflowService workflowService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private NodeRef packageRef;
     private NodeRef contentNodeRef;
+	private AuthenticationComponent authenticationComponent;
 
     public void testTaskInstancesGet() throws Exception
     {
+    	String startedWorkflowId = null;
+    	try
+    	{
         // Check USER2 starts with no tasks.
         personManager.setUser(USER2);
         Response response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
@@ -102,17 +124,20 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         // Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
-        Date dueDate = new Date();
+        Calendar dueDateCal = Calendar.getInstance();
+        Date dueDate = dueDateCal.getTime();
+        
         params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
-        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
-        workflowService.endTask(startTask.id, null);
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        workflowService.endTask(startTask.getId(), null);
 
         // Check USER2 now has one task.
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
@@ -124,7 +149,6 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         personManager.setUser(USER2);
         response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
-        assertEquals(Status.STATUS_OK, response.getStatus());
         jsonStr = response.getContentAsString();
         json = new JSONObject(jsonStr);
         results = json.getJSONArray("data");
@@ -134,12 +158,12 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         
         int totalItems = results.length();
 
-        String expUrl = "api/task-instances/" + task.id;
+        String expUrl = "api/task-instances/" + task.getId();
         assertEquals(expUrl, result.getString("url"));
-        assertEquals(task.name, result.getString("name"));
-        assertEquals(task.title, result.getString("title"));
-        assertEquals(task.description, result.getString("description"));
-        assertEquals(task.state.name(), result.getString("state"));
+        assertEquals(task.getName(), result.getString("name"));
+        assertEquals(task.getTitle(), result.getString("title"));
+        assertEquals(task.getDescription(), result.getString("description"));
+        assertEquals(task.getState().name(), result.getString("state"));
         assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         assertFalse(result.getBoolean("isPooled"));
         assertTrue(result.getBoolean("isEditable"));
@@ -158,16 +182,50 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject instance = result.getJSONObject("workflowInstance");
         assertNotNull(instance);
 
-        // TODO: Add more tests to check property filtering and pooled actors.
+        // Check state filtering
+        checkTasksState(URL_TASKS + "?state=completed", WorkflowTaskState.COMPLETED);
+        checkTasksState(URL_TASKS + "?state=in_progress", WorkflowTaskState.IN_PROGRESS);
 
-        // filtering        
-        checkFiltering(URL_TASKS + "?priority=2");
+        // TODO: Add more tests to check pooled actors.
+
+        // Check for priority filtering    
+        checkPriorityFiltering(URL_TASKS + "?priority=2");
+        
+        // Due after yesterday, started task should be in it
+        dueDateCal.add(Calendar.DAY_OF_MONTH, -1);
+        checkTasksPresent(MessageFormat.format(URL_TASKS_DUE_AFTER, ISO8601DateFormat.format(dueDateCal.getTime())),
+        		true,
+        		task.getId());
+        
+        // Due before yesterday, started task shouldn't be in it
+        checkTasksPresent(MessageFormat.format(URL_TASKS_DUE_BEFORE, ISO8601DateFormat.format(dueDateCal.getTime())),
+        		false,
+        		task.getId());
+
+        // Due before tomorrow, started task should be in it
+        dueDateCal.add(Calendar.DAY_OF_MONTH, 2);
+        checkTasksPresent(MessageFormat.format(URL_TASKS_DUE_BEFORE, ISO8601DateFormat.format(dueDateCal.getTime())),
+        		true,
+        		task.getId());
+
+        // Due after tomorrow, started task shouldn't be in it
+        checkTasksPresent(MessageFormat.format(URL_TASKS_DUE_AFTER, ISO8601DateFormat.format(dueDateCal.getTime())),
+        		false,
+        		task.getId());
 
         //checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
 
         //checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(new Date()));
         
-        // paging
+		// Check property filtering on the task assigned to USER2
+        String customProperties = "bpm_description,bpm_priority";
+        checkTaskPropertyFiltering(customProperties, Arrays.asList("bpm_description", "bpm_priority"));
+        
+        // Properties that aren't explicitally present on task should be returned as wel
+        customProperties = "bpm_unexistingProperty,bpm_description,bpm_priority";
+        checkTaskPropertyFiltering(customProperties, Arrays.asList("bpm_description", "bpm_priority", "bpm_unexistingProperty"));
+        
+        // Check paging
         int maxItems = 3;        
         for (int skipCount = 0; skipCount < totalItems; skipCount += maxItems)
         {
@@ -201,74 +259,291 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         }
         
         assertFalse("Found wf:submitAdhocTask when they were supposed to be excluded", adhocTasksPresent);
+    }
+    	finally
+    	{
+    		if(startedWorkflowId != null)
+    		{
+    			try {
+    				// Cleanup
+    				workflowService.cancelWorkflow(startedWorkflowId);
+    			} 
+    			catch(Throwable t)
+    			{
+    				// Ignore exception while cleaning up
+    			}
+    		}
+    	}
+    }
+    
+    public void testTaskInstancesForWorkflowGet() throws Exception
+    {
+        String startedWorkflowId = null;
+        try
+        {
+            // Check starts with no workflow.
+            personManager.setUser(USER2);
+            sendRequest(new GetRequest(MessageFormat.format(URL_WORKFLOW_TASKS, "Foo")), Status.STATUS_INTERNAL_SERVER_ERROR);
         
-        // retrieve tasks using the workflow instance
-        String workflowInstanceId = adhocPath.getInstance().getId();
-        response = sendRequest(new GetRequest(MessageFormat.format(URL_WORKFLOW_TASKS, workflowInstanceId)), 200);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-        jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
-        results = json.getJSONArray("data");
-        assertNotNull(results);
-        assertTrue(results.length() > 0);
+            // Start workflow as USER1 and assign task to USER2.
+            personManager.setUser(USER1);
+            WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+            Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+            params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+            Calendar dueDateCal = Calendar.getInstance();
+            Date dueDate = dueDateCal.getTime();
+            
+            params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+            params.put(WorkflowModel.PROP_PRIORITY, 1);
+            params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+            
+            WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+            startedWorkflowId = adhocPath.getInstance().getId();
+            
+            // End start task.
+            WorkflowTask startTask = workflowService.getStartTask(startedWorkflowId);
+            String startTaskId = startTask.getId();
+            workflowService.endTask(startTaskId, null);
+            
+            // Check USER2 now has one task.
+            List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
+            assertEquals(1, tasks.size());
+            WorkflowTask task = tasks.get(0);
+            
+            // Retrieve tasks using the workflow instance
+            String baseUrl = MessageFormat.format(URL_WORKFLOW_TASKS, startedWorkflowId);
+
+            // Check returns the completed start task and the current task.
+            String adhocTaskId = task.getId();
+            checkTasksMatch(baseUrl, startTaskId, adhocTaskId);
+            
+            String completedUrl = baseUrl + "?state="+WorkflowTaskState.COMPLETED;
+            checkTasksMatch(completedUrl, startTaskId);
+
+            String inProgressUrl = baseUrl + "?state="+WorkflowTaskState.IN_PROGRESS;
+            checkTasksMatch(inProgressUrl, adhocTaskId);
+            
+            String user1Url = baseUrl + "?authority="+USER1;
+            checkTasksMatch(user1Url, startTaskId);
+
+            String user2Url = baseUrl + "?authority="+USER2;
+            checkTasksMatch(user2Url, adhocTaskId);
+            
+            String user1CompletedURL = user1Url + "&state=" + WorkflowTaskState.COMPLETED; 
+            checkTasksMatch(user1CompletedURL, startTaskId);
+            
+            String user1InProgressURL = user1Url + "&state=" + WorkflowTaskState.IN_PROGRESS; 
+            checkTasksMatch(user1InProgressURL);
+            
+            String user2CompletedURL = user2Url + "&state=" + WorkflowTaskState.COMPLETED; 
+            checkTasksMatch(user2CompletedURL);
+            
+            String user2InProgressURL = user2Url + "&state=" + WorkflowTaskState.IN_PROGRESS; 
+            checkTasksMatch(user2InProgressURL, adhocTaskId);
+        }
+        finally
+        {
+            if(startedWorkflowId != null)
+            {
+                try {
+                    // Cleanup
+                    workflowService.cancelWorkflow(startedWorkflowId);
+                } 
+                catch(Throwable t)
+                {
+                    // Ignore exception while cleaning up
+                }
+            }
+        }
     }
 
     public void testTaskInstanceGet() throws Exception
     {
+		String startedWorkflowId = null;
+		
+		try {
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
-        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
 
-        Response response = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.id), 200);
-        assertEquals(Status.STATUS_OK, response.getStatus());
+        // Get the start-task
+        Response response = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.getId()), Status.STATUS_OK);
         String jsonStr = response.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
         JSONObject result = json.getJSONObject("data");
         assertNotNull(result);
 
-        assertEquals(startTask.id, result.getString("id"));
-        assertEquals(URL_TASKS + "/" + startTask.id, result.getString("url"));
-        assertEquals(startTask.name, result.getString("name"));
-        assertEquals(startTask.title, result.getString("title"));
-        assertEquals(startTask.description, result.getString("description"));
-        assertEquals(startTask.state.name(), result.getString("state"));
+        assertEquals(startTask.getId(), result.getString("id"));
+        assertEquals(URL_TASKS + "/" + startTask.getId(), result.getString("url"));
+        assertEquals(startTask.getName(), result.getString("name"));
+        assertEquals(startTask.getTitle(), result.getString("title"));
+        assertEquals(startTask.getDescription(), result.getString("description"));
+
+        // Task should be in progress
+        assertEquals(startTask.getState().name(), result.getString("state"));
+        assertEquals(WorkflowTaskState.IN_PROGRESS.toString(), result.getString("state"));
         assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
-        assertFalse(result.getBoolean("isPooled"));
-        assertTrue(result.getBoolean("isEditable"));
-        assertTrue(result.getBoolean("isReassignable"));
-        assertFalse(result.getBoolean("isClaimable"));
-        assertFalse(result.getBoolean("isReleasable"));
+        
+        checkWorkflowTaskEditable(result);
+        checkWorkflowTaskOwner(result, USER1);
+        checkWorkflowTaskPropertiesPresent(result);
+        
+        checkWorkflowInstance(startTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
+        checkWorkflowTaskDefinition(startTask.getDefinition(), result.getJSONObject("definition"));
+        
+        // Finish the start-task, and fetch it again
+        workflowService.endTask(startTask.getId(), null);
+        startTask = workflowService.getTaskById(startTask.getId()); 
+        	
+        response = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.getId()), Status.STATUS_OK);
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        assertEquals(startTask.getId(), result.getString("id"));
+        assertEquals(URL_TASKS + "/" + startTask.getId(), result.getString("url"));
+        assertEquals(startTask.getName(), result.getString("name"));
+        assertEquals(startTask.getTitle(), result.getString("title"));
+        assertEquals(startTask.getDescription(), result.getString("description"));
+        
+        // Start task should be completed
+        assertEquals(startTask.getState().name(), result.getString("state"));
+        assertEquals(WorkflowTaskState.COMPLETED.toString(), result.getString("state"));
+        assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
 
-        JSONObject owner = result.getJSONObject("owner");
-        assertEquals(USER1, owner.getString("userName"));
-        assertEquals(personManager.getFirstName(USER1), owner.getString("firstName"));
-        assertEquals(personManager.getLastName(USER1), owner.getString("lastName"));
+        checkWorkflowTaskReadOnly(result);
+        checkWorkflowTaskOwner(result, USER1);
+        checkWorkflowTaskPropertiesPresent(result);
+        
+        checkWorkflowInstance(startTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
+        checkWorkflowTaskDefinition(startTask.getDefinition(), result.getJSONObject("definition"));
+        
+        // Get the next active task
+        WorkflowTask firstTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        
+        response = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        assertEquals(firstTask.getId(), result.getString("id"));
+        assertEquals(URL_TASKS + "/" + firstTask.getId(), result.getString("url"));
+        assertEquals(firstTask.getName(), result.getString("name"));
+        assertEquals(firstTask.getTitle(), result.getString("title"));
+        assertEquals(firstTask.getDescription(), result.getString("description"));
+       
+        // Task should be in progress
+        assertEquals(firstTask.getState().name(), result.getString("state"));
+        assertEquals(WorkflowTaskState.IN_PROGRESS.toString(), result.getString("state"));
+        assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
+        
+        checkWorkflowTaskEditable(result);
+        checkWorkflowTaskOwner(result, USER2);
+        checkWorkflowTaskPropertiesPresent(result);
+        
+        checkWorkflowInstance(firstTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
+        checkWorkflowTaskDefinition(firstTask.getDefinition(), result.getJSONObject("definition"));
+        
+        // Finish the task, and fetch it again
+        workflowService.endTask(firstTask.getId(), null);
+        firstTask = workflowService.getTaskById(firstTask.getId()); 
+        
+        response = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        assertEquals(firstTask.getId(), result.getString("id"));
+        assertEquals(URL_TASKS + "/" + firstTask.getId(), result.getString("url"));
+        assertEquals(firstTask.getName(), result.getString("name"));
+        assertEquals(firstTask.getTitle(), result.getString("title"));
+        assertEquals(firstTask.getDescription(), result.getString("description"));
+        
+        // The task should be completed
+        assertEquals(firstTask.getState().name(), result.getString("state"));
+        assertEquals(WorkflowTaskState.COMPLETED.toString(), result.getString("state"));
+        assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
 
-        JSONObject properties = result.getJSONObject("properties");
+        checkWorkflowTaskReadOnly(result);
+        checkWorkflowTaskOwner(result, USER2);
+        checkWorkflowTaskPropertiesPresent(result);
+        
+        checkWorkflowInstance(firstTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
+        checkWorkflowTaskDefinition(firstTask.getDefinition(), result.getJSONObject("definition"));
+        
+    }
+		finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
+    }
+
+	private void checkWorkflowTaskPropertiesPresent(JSONObject taskJson) throws Exception
+	{
+		 JSONObject properties = taskJson.getJSONObject("properties");
         assertNotNull(properties);
         assertTrue(properties.has("bpm_priority"));
         assertTrue(properties.has("bpm_description"));
         assertTrue(properties.has("bpm_reassignable"));
+	}
+	private void checkWorkflowTaskReadOnly(JSONObject taskJson) throws Exception
+	{
+		 // Task shouldn't be editable and reassignable, since it's completed
+        assertFalse(taskJson.getBoolean("isPooled"));
+        assertFalse(taskJson.getBoolean("isEditable"));
+        assertFalse(taskJson.getBoolean("isReassignable"));
+        assertFalse(taskJson.getBoolean("isClaimable"));
+        assertFalse(taskJson.getBoolean("isReleasable"));
+	}
 
-        JSONObject instance = result.getJSONObject("workflowInstance");
-        WorkflowInstance startInstance = startTask.path.instance;
+	private void checkWorkflowTaskOwner(JSONObject taskJson, String user) throws Exception
+	{
+	    JSONObject owner = taskJson.getJSONObject("owner");
+        assertEquals(user, owner.getString("userName"));
+        assertEquals(personManager.getFirstName(user), owner.getString("firstName"));
+        assertEquals(personManager.getLastName(user), owner.getString("lastName"));
+	}
 
+	private void checkWorkflowTaskEditable(JSONObject taskJson) throws Exception
+	{
+		assertFalse(taskJson.getBoolean("isPooled"));
+        assertTrue(taskJson.getBoolean("isEditable"));
+        assertTrue(taskJson.getBoolean("isReassignable"));
+        assertFalse(taskJson.getBoolean("isClaimable"));
+        assertFalse(taskJson.getBoolean("isReleasable"));
+	}
+
+	private void checkWorkflowInstance(WorkflowInstance wfInstance, JSONObject instance) throws Exception
+	{
         assertNotNull(instance);
-
-        assertEquals(startInstance.id, instance.getString("id"));
+        assertEquals(wfInstance.getId(), instance.getString("id"));
         assertTrue(instance.has("url"));
-        assertEquals(startInstance.definition.name, instance.getString("name"));
-        assertEquals(startInstance.definition.title, instance.getString("title"));
-        assertEquals(startInstance.definition.description, instance.getString("description"));
-        assertEquals(startInstance.active, instance.getBoolean("isActive"));
+        assertEquals(wfInstance.getDefinition().getName(), instance.getString("name"));
+        assertEquals(wfInstance.getDefinition().getTitle(), instance.getString("title"));
+        assertEquals(wfInstance.getDefinition().getDescription(), instance.getString("description"));
+        assertEquals(wfInstance.isActive(), instance.getBoolean("isActive"));
         assertTrue(instance.has("startDate"));
 
         JSONObject initiator = instance.getJSONObject("initiator");
@@ -276,17 +551,17 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(USER1, initiator.getString("userName"));
         assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
         assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
+	}
 
-        JSONObject definition = result.getJSONObject("definition");
-        WorkflowTaskDefinition startDefinitiont = startTask.definition;
-
+	private void checkWorkflowTaskDefinition(WorkflowTaskDefinition wfDefinition, JSONObject definition) throws Exception
+	{
         assertNotNull(definition);
 
-        assertEquals(startDefinitiont.id, definition.getString("id"));
+	        assertEquals(wfDefinition.getId(), definition.getString("id"));
         assertTrue(definition.has("url"));
 
         JSONObject type = definition.getJSONObject("type");
-        TypeDefinition startType = startDefinitiont.metadata;
+	        TypeDefinition startType = (wfDefinition).getMetadata();
 
         assertNotNull(type);
 
@@ -296,17 +571,17 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(type.has("url"));
 
         JSONObject node = definition.getJSONObject("node");
-        WorkflowNode startNode = startDefinitiont.node;
+	        WorkflowNode startNode = wfDefinition.getNode();
 
         assertNotNull(node);
 
-        assertEquals(startNode.name, node.getString("name"));
-        assertEquals(startNode.title, node.getString("title"));
-        assertEquals(startNode.description, node.getString("description"));
-        assertEquals(startNode.isTaskNode, node.getBoolean("isTaskNode"));
+        assertEquals(startNode.getName(), node.getString("name"));
+        assertEquals(startNode.getTitle(), node.getString("title"));
+        assertEquals(startNode.getDescription(), node.getString("description"));
+        assertEquals(startNode.isTaskNode(), node.getBoolean("isTaskNode"));
 
         JSONArray transitions = node.getJSONArray("transitions");
-        WorkflowTransition[] startTransitions = startNode.transitions;
+        WorkflowTransition[] startTransitions = startNode.getTransitions();
 
         assertNotNull(transitions);
 
@@ -319,10 +594,10 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
             assertNotNull(transition);
 
-            assertEquals(startTransition.id, transition.getString("id"));
-            assertEquals(startTransition.title, transition.getString("title"));
-            assertEquals(startTransition.description, transition.getString("description"));
-            assertEquals(startTransition.isDefault, transition.getBoolean("isDefault"));
+            assertEquals(startTransition.getId(), transition.getString("id"));
+            assertEquals(startTransition.getTitle(), transition.getString("title"));
+            assertEquals(startTransition.getDescription(), transition.getString("description"));
+            assertEquals(startTransition.isDefault(), transition.getBoolean("isDefault"));
             assertTrue(transition.has("isHidden"));
         }
 
@@ -330,37 +605,53 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
     public void testTaskInstancePut() throws Exception
     {
+    	String startedWorkflowId = null;
+    	
+        try
+        {
         // Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
-        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getStartTask(adhocPath.getInstance().getId());
+        
+        // Finish the start-task
+        workflowService.endTask(startTask.getId(), null);
+        
+        WorkflowTask firstTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
 
-        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.id), 200);
+        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
 
         JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
 
-        // make some changes        
+        // make some changes in existing properties
         jsonProperties.remove(qnameToString(WorkflowModel.ASSOC_PACKAGE));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_COMMENT), "Edited comment");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DUE_DATE), ISO8601DateFormat.format(new Date()));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_PRIORITY), 1);
 
+        // Add some custom properties, which are not defined in typeDef
+        jsonProperties.put("customIntegerProperty", 1234);
+        jsonProperties.put("customBooleanProperty", Boolean.TRUE);
+        jsonProperties.put("customStringProperty", "Property value");
+
         // test USER3 can not update the task
         personManager.setUser(USER3);
-        Response unauthResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 401);
+        Response unauthResponse = sendRequest(new PutRequest(URL_TASKS + "/" + firstTask.getId(), jsonProperties.toString(), "application/json"), 401);
         assertEquals(Status.STATUS_UNAUTHORIZED, unauthResponse.getStatus());
 
-        // test USER1 (the task owner) can update the task
-        personManager.setUser(USER1);
-        Response putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 200);
+
+        // test USER2 (the task owner) can update the task
+        personManager.setUser(USER2);
+        Response putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + firstTask.getId(), jsonProperties.toString(), "application/json"), 200);
 
         assertEquals(Status.STATUS_OK, putResponse.getStatus());
         String jsonStr = putResponse.getContentAsString();
@@ -369,16 +660,105 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
 
         JSONObject editedJsonProperties = result.getJSONObject("properties");
+        compareProperties(jsonProperties, editedJsonProperties);
+        
+        // test USER1 (the task workflow initiator) can update the task
+        personManager.setUser(USER1);
+        putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + firstTask.getId(), jsonProperties.toString(), "application/json"), 200);
 
+        assertEquals(Status.STATUS_OK, putResponse.getStatus());
+        jsonStr = putResponse.getContentAsString();
+        json = new JSONObject(jsonStr);
+        result = json.getJSONObject("data");
+        assertNotNull(result);
+
+        editedJsonProperties = result.getJSONObject("properties");
         compareProperties(jsonProperties, editedJsonProperties);
 
-        // get the next task where USER2 is the owner
-        workflowService.endTask(startTask.id, null);
-        List<WorkflowPath> paths = workflowService.getWorkflowPaths(adhocPath.getInstance().getId());
-        WorkflowTask nextTask = workflowService.getTasksForWorkflowPath(paths.get(0).getId()).get(0);
+        // Reassign the task to USER3 using taskInstance PUT
+        jsonProperties = new JSONObject();
+        jsonProperties.put(qnameToString(ContentModel.PROP_OWNER), USER3);
+        putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + firstTask.getId(), jsonProperties.toString(), "application/json"), 200);
+        assertEquals(Status.STATUS_OK, putResponse.getStatus());
+        
+        // test USER3 (now the task owner) can update the task
+        personManager.setUser(USER3);
+        
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_COMMENT), "Edited comment by USER3");
+        putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + firstTask.getId(), jsonProperties.toString(), "application/json"), 200);
+        
+        assertEquals(Status.STATUS_OK, putResponse.getStatus());
+        
+        jsonStr = putResponse.getContentAsString();
+        json = new JSONObject(jsonStr);
+        result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        editedJsonProperties = result.getJSONObject("properties");
+        compareProperties(jsonProperties, editedJsonProperties);
+    }
+		finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
+    }
 
-        // make sure USER1 (the workflow initiator) can update
-        putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + nextTask.id, jsonProperties.toString(), "application/json"), 200);
+    public void testTaskInstancePutCompletedTask() throws Exception
+    {
+    	String startedWorkflowId = null;
+    	try
+    	{
+    	// Start workflow as USER1 and assign to self
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER1));
+        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        
+        // Finish the start-task
+        workflowService.endTask(startTask.getId(), null);
+        
+        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.getId()), 200);
+
+        JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
+
+        // Make a change
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
+
+        // Update task. An error is expected, since the task is completed (and not editable)
+       sendRequest(new PutRequest(URL_TASKS + "/" + startTask.getId(), jsonProperties.toString(), "application/json"), 
+        		Status.STATUS_UNAUTHORIZED);
+    }
+		finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
     }
 
     public void testWorkflowDefinitionsGet() throws Exception
@@ -390,6 +770,8 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(results);
         assertTrue(results.length() > 0);
 
+        boolean adhocWorkflowPresent = false;
+        
         for (int i = 0; i < results.length(); i++)
         {
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
@@ -410,17 +792,24 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
             assertTrue(workflowDefinitionJSON.has("description"));
             assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
+            
+            if(getAdhocWorkflowDefinitionName().equals(workflowDefinitionJSON.getString("name"))) 
+            {
+            	adhocWorkflowPresent = true;
+        }
         }
         
+        assertTrue("Adhoc workflow definition was returned", adhocWorkflowPresent);
+        
         // filter the workflow definitions and check they are not returned
-        String exclude = "jbpm$wf:adhoc";
+        String exclude = getAdhocWorkflowDefinitionName();
         response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         json = new JSONObject(response.getContentAsString());
         results = json.getJSONArray("data");
         assertNotNull(results);
         
-        boolean adhocWorkflowPresent = false;
+        adhocWorkflowPresent = false;
         for (int i = 0; i < results.length(); i++)
         {
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
@@ -436,7 +825,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
         
         // filter with a wildcard and ensure they all get filtered out
-        exclude = "jbpm$wf:adhoc, jbpm$wcmwf:*";
+        exclude = getAdhocWorkflowDefinitionName() + ", jbpm$wcmwf:*";
         response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         json = new JSONObject(response.getContentAsString());
@@ -450,7 +839,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
             
             String name = workflowDefinitionJSON.getString("name");
-            if (name.equals("jbpm$wf:adhoc"))
+            if (name.equals(getAdhocWorkflowDefinitionName()))
             {
                 adhocWorkflowPresent = true;
             }
@@ -464,75 +853,89 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertFalse("Found a WCM workflow when they were supposed to be excluded", wcmWorkflowsPresent);
     }
 
-    public void testWorkflowInstanceGet() throws Exception
+    public void testWorkflowDefinitionGet() throws Exception
     {
-        //Start workflow as USER1 and assign task to USER2.
-        personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
-        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
-        Date dueDate = new Date();
-        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
-        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
-        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
-        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+    	
+    	// Get the latest definition for the adhoc-workflow
+    	WorkflowDefinition wDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+    	
+    	String responseUrl = MessageFormat.format(
+    			URL_WORKFLOW_DEFINITION, wDef.getId());
+    	
+        Response response = sendRequest(new GetRequest(responseUrl), Status.STATUS_OK);
+        JSONObject json = new JSONObject(response.getContentAsString());
+        JSONObject workflowDefinitionJSON = json.getJSONObject("data");
+        assertNotNull(workflowDefinitionJSON);
+        
+        // Check fields
+        assertTrue(workflowDefinitionJSON.has("id"));
+        assertTrue(workflowDefinitionJSON.getString("id").length() > 0);
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
-        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
-        startTask = workflowService.endTask(startTask.id, null);
+        assertTrue(workflowDefinitionJSON.has("url"));
+        String url = workflowDefinitionJSON.getString("url");
+        assertTrue(url.length() > 0);
+        assertTrue(url.startsWith("api/workflow-definitions/"));
 
-        WorkflowInstance adhocInstance = startTask.path.instance;
+        assertTrue(workflowDefinitionJSON.has("name"));
+        assertTrue(workflowDefinitionJSON.getString("name").length() > 0);
+        assertEquals(getAdhocWorkflowDefinitionName(), workflowDefinitionJSON.getString("name"));
 
-        Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.id + "?includeTasks=true"), 200);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-        String jsonStr = response.getContentAsString();
-        JSONObject json = new JSONObject(jsonStr);
-        JSONObject result = json.getJSONObject("data");
-        assertNotNull(result);
+        assertTrue(workflowDefinitionJSON.has("title"));
+        assertTrue(workflowDefinitionJSON.getString("title").length() > 0);
 
-        assertEquals(adhocInstance.id, result.getString("id"));
-        assertTrue(result.opt("message").equals(JSONObject.NULL));
-        assertEquals(adhocInstance.definition.name, result.getString("name"));
-        assertEquals(adhocInstance.definition.title, result.getString("title"));
-        assertEquals(adhocInstance.definition.description, result.getString("description"));
-        assertEquals(adhocInstance.active, result.getBoolean("isActive"));
-        assertEquals(ISO8601DateFormat.format(adhocInstance.startDate), result.getString("startDate"));
-        assertNotNull(result.getString("dueDate"));
-        assertNotNull(result.getString("endDate"));
-        assertEquals(1, result.getInt("priority"));
-        JSONObject initiator = result.getJSONObject("initiator");
-
-        assertEquals(USER1, initiator.getString("userName"));
-        assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
-        assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
-
-        assertEquals(adhocInstance.context.toString(), result.getString("context"));
-        assertEquals(adhocInstance.workflowPackage.toString(), result.getString("package"));
-        assertNotNull(result.getString("startTaskInstanceId"));
-
-        JSONObject jsonDefinition = result.getJSONObject("definition");
-        WorkflowDefinition adhocDefinition = adhocInstance.definition;
-
-        assertNotNull(jsonDefinition);
-
-        assertEquals(adhocDefinition.id, jsonDefinition.getString("id"));
-        assertEquals(adhocDefinition.name, jsonDefinition.getString("name"));
-        assertEquals(adhocDefinition.title, jsonDefinition.getString("title"));
-        assertEquals(adhocDefinition.description, jsonDefinition.getString("description"));
-        assertEquals(adhocDefinition.version, jsonDefinition.getString("version"));
-        assertEquals(adhocDefinition.getStartTaskDefinition().metadata.getName().toPrefixString(namespaceService), jsonDefinition.getString("startTaskDefinitionType"));
-        assertTrue(jsonDefinition.has("taskDefinitions"));
-
-        JSONArray tasks = result.getJSONArray("tasks");
-        assertTrue(tasks.length() > 1);
+        assertTrue(workflowDefinitionJSON.has("description"));
+        assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
+        
+        assertTrue(workflowDefinitionJSON.has("startTaskDefinitionUrl"));
+        String startTaskDefUrl = workflowDefinitionJSON.getString("startTaskDefinitionUrl");
+        assertEquals(startTaskDefUrl, "api/classes/" 
+        		+ getSafeDefinitionName(ADHOC_START_TASK_TYPE));
+        
+        assertTrue(workflowDefinitionJSON.has("startTaskDefinitionType"));
+        assertEquals(ADHOC_START_TASK_TYPE, workflowDefinitionJSON.getString("startTaskDefinitionType"));
+        
+        // Check task-definitions
+        JSONArray taskDefinitions = workflowDefinitionJSON.getJSONArray("taskDefinitions");
+        assertNotNull(taskDefinitions);
+        
+        // Two task definitions should be returned. Start-task is not included
+        assertEquals(2, taskDefinitions.length());
+        
+        // Should be adhoc-task
+        JSONObject firstTaskDefinition  = (JSONObject) taskDefinitions.get(0);
+        checkTaskDefinitionTypeAndUrl(ADHOC_TASK_TYPE, firstTaskDefinition);
+                
+        // Should be adhoc completed task
+        JSONObject secondTaskDefinition  = (JSONObject) taskDefinitions.get(1);
+        checkTaskDefinitionTypeAndUrl(ADHOC_TASK_COMPLETED_TYPE, secondTaskDefinition);
+    }
+    
+    private void checkTaskDefinitionTypeAndUrl(String expectedTaskType, JSONObject taskDefinition) throws Exception
+    {
+    	// Check type
+        assertTrue(taskDefinition.has("type"));
+        assertEquals(expectedTaskType, taskDefinition.getString("type"));
+        
+        // Check URL
+        assertTrue(taskDefinition.has("url"));
+        assertEquals("api/classes/" 
+        		+ getSafeDefinitionName(expectedTaskType), taskDefinition.getString("url"));
     }
 
-    @SuppressWarnings("deprecation")
-    public void testWorkflowInstancesGet() throws Exception
+    private String getSafeDefinitionName(String definitionName) {
+		return definitionName.replace(":", "_");
+	}
+
+
+    public void testWorkflowInstanceGet() throws Exception
     {
+		String startedWorkflowId = null;
+		
+		try
+		{
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         Date dueDate = new Date();
@@ -542,6 +945,89 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         params.put(WorkflowModel.PROP_CONTEXT, packageRef);
 
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        startTask = workflowService.endTask(startTask.getId(), null);
+
+        WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+
+        Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId() + "?includeTasks=true"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONObject result = json.getJSONObject("data");
+        assertNotNull(result);
+
+        assertEquals(adhocInstance.getId(), result.getString("id"));
+        assertTrue(result.opt("message").equals(JSONObject.NULL));
+        assertEquals(adhocInstance.getDefinition().getName(), result.getString("name"));
+        assertEquals(adhocInstance.getDefinition().getTitle(), result.getString("title"));
+        assertEquals(adhocInstance.getDefinition().getDescription(), result.getString("description"));
+        assertEquals(adhocInstance.isActive(), result.getBoolean("isActive"));
+        assertEquals(ISO8601DateFormat.format(adhocInstance.getStartDate()), result.getString("startDate"));
+        assertNotNull(result.getString("dueDate"));
+        assertNotNull(result.getString("endDate"));
+        assertEquals(1, result.getInt("priority"));
+        JSONObject initiator = result.getJSONObject("initiator");
+
+        assertEquals(USER1, initiator.getString("userName"));
+        assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
+        assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
+
+        assertEquals(adhocInstance.getContext().toString(), result.getString("context"));
+        assertEquals(adhocInstance.getWorkflowPackage().toString(), result.getString("package"));
+        assertNotNull(result.getString("startTaskInstanceId"));
+
+        JSONObject jsonDefinition = result.getJSONObject("definition");
+        WorkflowDefinition adhocDefinition = adhocInstance.getDefinition();
+
+        assertNotNull(jsonDefinition);
+
+        assertEquals(adhocDefinition.getId(), jsonDefinition.getString("id"));
+        assertEquals(adhocDefinition.getName(), jsonDefinition.getString("name"));
+        assertEquals(adhocDefinition.getTitle(), jsonDefinition.getString("title"));
+        assertEquals(adhocDefinition.getDescription(), jsonDefinition.getString("description"));
+        assertEquals(adhocDefinition.getVersion(), jsonDefinition.getString("version"));
+        assertEquals(adhocDefinition.getStartTaskDefinition().getMetadata().getName().toPrefixString(namespaceService), jsonDefinition.getString("startTaskDefinitionType"));
+        assertTrue(jsonDefinition.has("taskDefinitions"));
+
+        JSONArray tasks = result.getJSONArray("tasks");
+        assertTrue(tasks.length() > 1);
+    }
+        finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
+    }
+
+    public void testWorkflowInstancesGet() throws Exception
+    {
+    	String startedWorkflowId = null;
+    	try
+    	{
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+	        startedWorkflowId = adhocPath.getInstance().getId();
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
         WorkflowInstance adhocInstance = startTask.getPath().getInstance();
         workflowService.endTask(startTask.getId(), null);
@@ -573,8 +1059,15 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         }
         
         // create a date an hour ago to test filtering
-        Date anHourAgo = new Date(dueDate.getTime());
-        anHourAgo.setHours(anHourAgo.getHours()-1);
+        Calendar hourAgoCal = Calendar.getInstance();
+        hourAgoCal.setTime(dueDate);
+        hourAgoCal.add(Calendar.HOUR_OF_DAY, -1);
+        Date anHourAgo = hourAgoCal.getTime();
+        
+        Calendar hourLater = Calendar.getInstance();
+        hourLater.setTime(dueDate);
+        hourLater.add(Calendar.HOUR_OF_DAY, 1);
+        Date anHourLater = hourLater.getTime();
 
         // filter by initiator
         checkFiltering(URL_WORKFLOW_INSTANCES + "?initiator=" + USER1);
@@ -583,13 +1076,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         checkFiltering(URL_WORKFLOW_INSTANCES + "?startedAfter=" + ISO8601DateFormat.format(anHourAgo));
 
         // filter by startedBefore
-        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedBefore=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
+	        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedBefore=" + ISO8601DateFormat.format(anHourLater));
 
         // filter by dueAfter
         checkFiltering(URL_WORKFLOW_INSTANCES + "?dueAfter=" + ISO8601DateFormat.format(anHourAgo));
 
         // filter by dueBefore
-        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueBefore=" + ISO8601DateFormat.format(dueDate));
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueBefore=" + ISO8601DateFormat.format(anHourLater));
 
         if (adhocInstance.getEndDate() != null)
         {
@@ -607,7 +1100,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         checkFiltering(URL_WORKFLOW_INSTANCES + "?state=active");
         
         // filter by definition name
-        checkFiltering(URL_WORKFLOW_INSTANCES + "?definitionName=jbpm$wf:adhoc");
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?definitionName=" + getAdhocWorkflowDefinitionName());
         
         // paging
         int maxItems = 3;        
@@ -617,7 +1110,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         }
         
         // check the exclude filtering
-        String exclude = "jbpm$wf:adhoc";
+        String exclude = getAdhocWorkflowDefinitionName();
         response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         jsonStr = response.getContentAsString();
@@ -637,15 +1130,30 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
                 break;
             }
         }
+	        assertFalse("Found adhoc workflows when they were supposed to be excluded", adhocWorkflowPresent);
         
-        assertFalse("Found adhoc workflows when they were supposed to be excluded", adhocWorkflowPresent);
+    }
+	    finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
     }
 
     public void testWorkflowInstancesForNodeGet() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
@@ -657,7 +1165,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
                 QName.createValidLocalName((String)nodeService.getProperty(
                         contentNodeRef, ContentModel.PROP_NAME))));
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
 
         String url = MessageFormat.format(URL_WORKFLOW_INSTANCES_FOR_NODE, contentNodeRef.getStoreRef().getProtocol(), contentNodeRef.getStoreRef().getIdentifier(), contentNodeRef.getId());
         Response response = sendRequest(new GetRequest(url), 200);
@@ -687,7 +1195,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     {
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
-        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         Date dueDate = new Date();
@@ -704,20 +1212,268 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         
         // attempt to delete workflow as a user that is not the initiator
         personManager.setUser(USER3);
-        Response unauthResponse = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 403);
-        assertEquals(Status.STATUS_FORBIDDEN, unauthResponse.getStatus());
+        String instanceId = adhocInstance.getId();
+        sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + instanceId), Status.STATUS_FORBIDDEN);
         
         // make sure workflow instance is still present
-        assertNotNull(workflowService.getWorkflowById(adhocInstance.getId()));
+        assertNotNull(workflowService.getWorkflowById(instanceId));
 
         // now delete as initiator of workflow
         personManager.setUser(USER1);
-        Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 200);
-        assertEquals(Status.STATUS_OK, response.getStatus());
+        sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + instanceId), Status.STATUS_OK);
 
-        assertNull(workflowService.getWorkflowById(adhocInstance.getId()));
+        WorkflowInstance instance = workflowService.getWorkflowById(instanceId);
+        if(instance!=null)
+        {
+            assertFalse("The deleted workflow is still active!", instance.isActive());
+        }
+        
+        List<WorkflowInstance> instances = workflowService.getActiveWorkflows(adhocInstance.getDefinition().getId());
+        for (WorkflowInstance activeInstance : instances)
+        {
+            assertFalse(instanceId.equals(activeInstance.getId()));
+        }
+        
+        // Try deleting an non-existent workflow instance, should result in 404
+        sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + instanceId), Status.STATUS_NOT_FOUND);
     }
 
+    public void testReviewProcessFlow() throws Exception 
+    {
+    	// Approve path
+    	runReviewFlow(true);
+    	
+    	// Create package again, since WF is deleteds
+    	packageRef = workflowService.createPackage(null);
+    	
+    	// Reject path
+    	runReviewFlow(false);
+    }
+    
+    public void testReviewPooledProcessFlow() throws Exception 
+    {
+    	// Approve path
+    	runReviewPooledFlow(true);
+    	
+    	// Create package again, since WF is deleteds
+    	packageRef = workflowService.createPackage(null);
+    	
+    	// Reject path
+    	runReviewPooledFlow(false);
+    }
+    
+    protected void runReviewFlow(boolean approve) throws Exception
+    {
+    	String startedWorkflowId = null;
+    	try
+    	{
+	    	// Start workflow as USER1
+	        personManager.setUser(USER1);
+	        WorkflowDefinition reviewDef = workflowService.getDefinitionByName(getReviewWorkflowDefinitionName());
+	        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+	        // Reviewer is USER2
+	        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+	        Date dueDate = new Date();
+	        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+	        params.put(WorkflowModel.PROP_PRIORITY, 1);
+	        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+	        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+	
+	        WorkflowPath reviewPath = workflowService.startWorkflow(reviewDef.getId(), params);
+	        startedWorkflowId = reviewPath.getInstance().getId();
+	        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(reviewPath.getId()).get(0);
+	        
+	        // End start task
+	        startTask = workflowService.endTask(startTask.getId(), null);
+	        
+	        // Check of task is available in list of reviewer, USER2
+	        personManager.setUser(USER2);
+	        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
+	        assertEquals(Status.STATUS_OK, response.getStatus());
+	        String jsonStr = response.getContentAsString();
+	        JSONObject json = new JSONObject(jsonStr);
+	        JSONArray results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(1, results.length());
+	
+	        String taskId = results.getJSONObject(0).getString("id");
+	
+	        // Delegate approval/rejection to implementing engine-test
+	        if(approve)
+	        {
+	        	approveTask(taskId);
+	        }
+	        else
+	        {
+	        	rejectTask(taskId);
+	        }
+	        
+	        // 'Approved'/'Rejected' task should be available for initiator
+	        personManager.setUser(USER1);
+	        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER1)), 200);
+	        assertEquals(Status.STATUS_OK, response.getStatus());
+	        jsonStr = response.getContentAsString();
+	        json = new JSONObject(jsonStr);
+	        results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(1, results.length());
+	        
+	        // Correct task type check
+	        String taskType = results.getJSONObject(0).getString("name");
+	        if(approve)
+	        {
+	        	assertEquals("wf:approvedTask", taskType);
+	        }
+	        else
+	        {
+	        	assertEquals("wf:rejectedTask", taskType);
+	        } 
+    	}
+	    finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
+    }
+    
+    protected void runReviewPooledFlow(boolean approve) throws Exception
+    {
+    	String startedWorkflowId = null;
+    	try
+    	{
+	    	// Start workflow as USER1
+	        personManager.setUser(USER1);
+	        WorkflowDefinition reviewDef = workflowService.getDefinitionByName(getReviewPooledWorkflowDefinitionName());
+	        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+	        
+	        // Reviewer is group GROUP
+	        params.put(WorkflowModel.ASSOC_GROUP_ASSIGNEE, groupManager.get(GROUP));
+	        Date dueDate = new Date();
+	        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+	        params.put(WorkflowModel.PROP_PRIORITY, 1);
+	        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+	        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+	
+	        WorkflowPath reviewPath = workflowService.startWorkflow(reviewDef.getId(), params);
+	        startedWorkflowId = reviewPath.getInstance().getId();
+	        
+	        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(reviewPath.getId()).get(0);
+	        
+	        // End start task
+	        startTask = workflowService.endTask(startTask.getId(), null);
+	        
+	        // Check if task is NOT available in list USER3, not a member of the group
+	        personManager.setUser(USER3);
+	        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER3)), 200);
+	        assertEquals(Status.STATUS_OK, response.getStatus());
+	        String jsonStr = response.getContentAsString();
+	        JSONObject json = new JSONObject(jsonStr);
+	        JSONArray results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(0, results.length());
+	        
+	        // Check if task is available in list of reviewer, member of GROUP: USER2
+	        personManager.setUser(USER2);
+	        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
+	        assertEquals(Status.STATUS_OK, response.getStatus());
+	        jsonStr = response.getContentAsString();
+	        json = new JSONObject(jsonStr);
+	        results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(1, results.length());
+	
+	        // Check if task is claimable and pooled
+	        JSONObject taskJson = results.getJSONObject(0);
+	        String taskId = taskJson.getString("id");
+	        assertTrue(taskJson.getBoolean("isClaimable"));
+	        assertTrue(taskJson.getBoolean("isPooled"));
+	        
+	        // Claim task, using PUT, updating the owner
+	        JSONObject properties = new JSONObject();
+	        properties.put(qnameToString(ContentModel.PROP_OWNER), USER2);
+	        sendRequest(new PutRequest(URL_TASKS + "/" + taskId, properties.toString(), "application/json"), 200);
+	        
+	        // Check if task insn't claimable anymore
+	        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
+	        assertEquals(Status.STATUS_OK, response.getStatus());
+	        jsonStr = response.getContentAsString();
+	        json = new JSONObject(jsonStr);
+	        results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(1, results.length());
+	        
+	        taskJson = results.getJSONObject(0);
+	        assertFalse(taskJson.getBoolean("isClaimable"));
+	        assertTrue(taskJson.getBoolean("isPooled"));
+	        
+	
+	        // Delegate approval/rejection to implementing engine-test
+	        if(approve)
+	        {
+	        	approveTask(taskId);
+	        }
+	        else
+	        {
+	        	rejectTask(taskId);
+	        }
+	        
+	        // 'Approved'/'Rejected' task should be available for initiator
+	        personManager.setUser(USER1);
+	        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER1)), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+	        jsonStr = response.getContentAsString();
+	        json = new JSONObject(jsonStr);
+	        results = json.getJSONArray("data");
+	        assertNotNull(results);
+	        assertEquals(1, results.length());
+	        
+	        // Correct task type check
+	        String taskType = results.getJSONObject(0).getString("name");
+	        if(approve)
+	        {
+	        	assertEquals("wf:approvedTask", taskType);
+	        }
+	        else
+	        {
+	        	assertEquals("wf:rejectedTask", taskType);
+	        } 
+    	}
+        finally
+		{
+			if(startedWorkflowId != null)
+			{
+				try {
+					// Cleanup
+					workflowService.deleteWorkflow(startedWorkflowId);
+				} 
+				catch(Throwable t)
+				{
+					// Ignore exception while cleaning up
+				}
+			}
+		}
+
+    }
+
+    protected abstract void approveTask(String taskId) throws Exception;
+
+    protected abstract void rejectTask(String taskId) throws Exception;
+
+    protected abstract String getAdhocWorkflowDefinitionName();
+    
+    protected abstract String getReviewWorkflowDefinitionName();
+    
+    protected abstract String getReviewPooledWorkflowDefinitionName();
+    
     @Override
     protected void setUp() throws Exception
     {
@@ -731,21 +1487,28 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         SearchService searchService = (SearchService) appContext.getBean("SearchService");
         FileFolderService fileFolderService = (FileFolderService) appContext.getBean("FileFolderService");
         nodeService = (NodeService) appContext.getBean("NodeService");
+        
+        AuthorityService authorityService = (AuthorityService) appContext.getBean("AuthorityService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);
+        groupManager = new TestGroupManager(authorityService, searchService);
+
+        authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
 
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);
         personManager.createPerson(USER3);
 
-        packageRef = workflowService.createPackage(null);
+        authenticationComponent.setSystemUserAsCurrentUser();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        groupManager.addUserToGroup(GROUP, USER2);
+
+        packageRef = workflowService.createPackage(null);
 
         NodeRef companyHome = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), COMPANY_HOME, null, namespaceService, false).get(0);
 
         contentNodeRef = fileFolderService.create(companyHome, TEST_CONTENT + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
 
-        AuthenticationUtil.clearCurrentSecurityContext();
+        authenticationComponent.clearCurrentSecurityContext();
     }
 
     /* (non-Javadoc)
@@ -755,7 +1518,10 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
+        authenticationComponent.setSystemUserAsCurrentUser();
+        groupManager.clearGroups();
         personManager.clearPeople();
+        authenticationComponent.clearCurrentSecurityContext();
     }
 
     private String qnameToString(QName qName)
@@ -823,13 +1589,115 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(json.getString("definitionUrl").startsWith(URL_WORKFLOW_DEFINITIONS));
     }
 
-    private void checkFiltering(String url) throws Exception
+    private void checkPriorityFiltering(String url) throws Exception 
     {
-        Response response = sendRequest(new GetRequest(url), 200);
+    	 JSONObject json = getDataFromRequest(url);
+         JSONArray result = json.getJSONArray("data");
+         assertNotNull(result);
+         assertTrue(result.length() > 0);
+         
+         for(int i=0; i<result.length(); i++)
+         {
+        	 JSONObject taskObject = result.getJSONObject(i);
+        	 assertEquals("2", taskObject.getJSONObject("properties").getString("bpm_priority"));
+         }
+    }
+    
+    
+    private void checkTasksPresent(String url, boolean mustBePresent, String... ids) throws Exception 
+    {
+        List<String> taskIds = Arrays.asList(ids);
+    	 JSONObject json = getDataFromRequest(url);
+         JSONArray result = json.getJSONArray("data");
+         assertNotNull(result);
+         
+         ArrayList<String> resultIds = new ArrayList<String>(result.length());
+         for(int i=0; i<result.length(); i++)
+         {
+        	 JSONObject taskObject = result.getJSONObject(i);
+        	 String taskId = taskObject.getString("id");
+        	 resultIds.add(taskId);
+        	 if(mustBePresent==false && taskIds.contains(taskId))
+        	 {
+        	     fail("The results should not contain id: "+taskId);
+        	 }
+         }
+         if(mustBePresent && resultIds.containsAll(taskIds)==false)
+         {
+        	fail("Not all task Ids were present!\nExpected: "+taskIds +"\nActual: "+resultIds); 
+         }
+	}
+    
+    private void checkTasksMatch(String url, String... ids) throws Exception 
+    {
+        List<String> taskIds = Arrays.asList(ids);
+        JSONObject json = getDataFromRequest(url);
+        JSONArray result = json.getJSONArray("data");
+        assertNotNull(result);
+        
+        ArrayList<String> resultIds = new ArrayList<String>(result.length());
+        for(int i=0; i<result.length(); i++)
+        {
+            JSONObject taskObject = result.getJSONObject(i);
+            String taskId = taskObject.getString("id");
+            resultIds.add(taskId);
+        }
+        assertTrue("Expected: "+taskIds +"\nActual: "+resultIds, resultIds.containsAll(taskIds));
+        assertTrue("Expected: "+taskIds +"\nActual: "+resultIds, taskIds.containsAll(resultIds));
+    }
+    
+    private void checkTasksState(String url, WorkflowTaskState expectedState) throws Exception 
+    {
+    	 JSONObject json = getDataFromRequest(url);
+         JSONArray result = json.getJSONArray("data");
+         assertNotNull(result);
+         
+         for(int i=0; i<result.length(); i++)
+    {
+        	 JSONObject taskObject = result.getJSONObject(i);
+        	 String state = taskObject.getString("state");
+        	 assertEquals(expectedState.toString(), state);
+         }
+	}
 
-        assertEquals(Status.STATUS_OK, response.getStatus());
+    private JSONObject getDataFromRequest(String url) throws Exception
+    {
+    	Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
         String jsonStr = response.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
+        return json;
+    }
+    
+    private void checkTaskPropertyFiltering(String propertiesParamValue, List<String> expectedProperties) throws Exception
+    {
+    	 JSONObject data = getDataFromRequest(MessageFormat.format(URL_USER_TASKS_PROPERTIES, USER2, propertiesParamValue));
+         JSONArray taskArray = data.getJSONArray("data");
+         assertEquals(1, taskArray.length());
+         
+         JSONObject taskProperties = taskArray.getJSONObject(0).getJSONObject("properties");
+         assertNotNull(taskProperties);
+         
+         int expectedNumberOfProperties = 0;
+         if(expectedProperties != null)
+         {
+        	 expectedNumberOfProperties = expectedProperties.size();
+         }
+         // Check right number of properties
+         assertEquals(expectedNumberOfProperties, taskProperties.length());
+
+         // Check if all properties are present
+         if(expectedProperties != null)
+         {
+        	 for(String prop : expectedProperties)
+        	 {
+        		 assertTrue(taskProperties.has(prop));        		 
+        	 }
+         }
+    }
+    
+    private void checkFiltering(String url) throws Exception
+    {
+        JSONObject json = getDataFromRequest(url);
         JSONArray result = json.getJSONArray("data");
         assertNotNull(result);
 

@@ -93,7 +93,8 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
     
     /**
      * Determines if the current user can cancel or delete the
-     * workflow instance with the given id.
+     * workflow instance with the given id. Throws a WebscriptException
+     * with status-code 404 if workflow-instance to delete wasn't found.
      * 
      * @param instanceId The id of the workflow instance to check
      * @return true if the user can end the workflow, false otherwise
@@ -103,7 +104,14 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
         boolean canEnd = false;
         
         // get the initiator
-        WorkflowInstance wi = workflowService.getWorkflowById(instanceId);        
+        WorkflowInstance wi = workflowService.getWorkflowById(instanceId);  
+        
+        if(wi == null)
+        {
+        	 throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, 
+        			 "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
+        }
+        
         NodeRef initiator = wi.getInitiator();
         if (initiator != null)
         {

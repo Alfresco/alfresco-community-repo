@@ -305,14 +305,14 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
             {
                 if (dateBeforeFilter)
                 {
-                    if (((Date)date).getTime() >= ((Date)filterValue).getTime())
+                    if (date.getTime() >= ((Date)filterValue).getTime())
                     {
                         match = false;
                     }
                 }
                 else
                 {
-                    if (((Date)date).getTime() <= ((Date)filterValue).getTime())
+                    if (date.getTime() <= ((Date)filterValue).getTime())
                     {
                         match = false;
                     }

@@ -28,8 +28,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -70,7 +70,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                 json = new JSONObject(new JSONTokener(req.getContent().getContent()));
                 
                 // update task properties
-                workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json), null, null);
+                workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json, workflowTask), null, null);
                 
                 // task was not found -> return 404
                 if (workflowTask == null)
@@ -100,7 +100,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
     }
     
     @SuppressWarnings("unchecked")
-    private Map<QName, Serializable> parseTaskProperties(JSONObject json) throws JSONException
+    private Map<QName, Serializable> parseTaskProperties(JSONObject json, WorkflowTask workflowTask) throws JSONException
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         
@@ -131,11 +131,11 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                     if (prop != null)
                     {
                         // convert property using its data type specified in model
-                        value = (Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(), json.get(name));
+                        value = (Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(), jsonValue);
                     }
                     else
                     {
-                        // property definition was not founded in dictionary
+                        // property definition was not found in dictionary
                         if (jsonValue instanceof JSONArray)
                         {
                             value = new ArrayList<String>();
@@ -147,7 +147,35 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                         }
                         else
                         {
-                            value = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, jsonValue.toString().replaceAll("\\\\", ""));
+                        	// If the JSON returns an Object which is not a String, we use that type.
+                        	// Otherwise, we try to convert the string
+                        	if(jsonValue instanceof String)
+                        	{
+                        		// Check if the task already has the property, use that type.
+                            	Serializable existingValue = workflowTask.getProperties().get(key);
+                            	if(existingValue != null)
+                            	{
+                            		try
+                            		{
+                            			value = DefaultTypeConverter.INSTANCE.convert(existingValue.getClass(), jsonValue);
+                            		}
+                            		catch(TypeConversionException tce)
+                            		{
+                            			// TODO: is this the right approach, ignoring exception?
+                            			// Ignore the exception, revert to using String-value
+                            		}
+                            	}
+                            	else
+                            	{
+                            		// Revert to using string-value
+                            		value = (String) jsonValue;
+                            	}
+                        	}
+                        	else
+                        	{
+                        		// Use the value provided by JSON
+                        		value = (Serializable) jsonValue;
+                        	}
                         }
                     }
                 }

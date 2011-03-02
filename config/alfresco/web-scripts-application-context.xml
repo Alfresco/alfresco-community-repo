@@ -839,6 +839,11 @@
     <bean id="webscript.org.alfresco.repository.workflow.workflow-definitions.get"
           class="org.alfresco.repo.web.scripts.workflow.WorkflowDefinitionsGet"
           parent="abstractWorkflowWebScript"></bean>
+          
+    <!-- Retrieves a specific workflow definition -->
+    <bean id="webscript.org.alfresco.repository.workflow.workflow-definition.get"
+          class="org.alfresco.repo.web.scripts.workflow.WorkflowDefinitionGet"
+          parent="abstractWorkflowWebScript"></bean>
 
     <!-- Retrieves a specific workflow instance, optionally with all the tasks. -->
     <bean id="webscript.org.alfresco.repository.workflow.workflow-instance.get"

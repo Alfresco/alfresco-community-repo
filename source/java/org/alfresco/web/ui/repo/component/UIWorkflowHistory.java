@@ -19,6 +19,7 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -162,7 +163,17 @@ public class UIWorkflowHistory extends SelfRenderingComponent
             // output a row for each previous completed task
             for (WorkflowTask task : tasks)
             {
-               Long id = (Long)task.properties.get(WorkflowModel.PROP_TASK_ID);
+               String id = null;
+               Serializable idObject = task.properties.get(WorkflowModel.PROP_TASK_ID);
+               if (idObject instanceof Long)
+               {
+                   id = ((Long)idObject).toString();
+               }
+               else
+               {
+                   id = idObject.toString();
+               }
+               
                String desc = (String)task.properties.get(WorkflowModel.PROP_DESCRIPTION);
                Date createdDate = (Date)task.properties.get(ContentModel.PROP_CREATED);
                String owner = (String)task.properties.get(ContentModel.PROP_OWNER);
@@ -183,12 +194,19 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                   }
                }
                
+               if ((outcome == null || outcome.equals("")) && transition != null)
+               {
+                  // it's possible in Activiti to have tasks without an outcome set,
+                  // in this case default to the transition, if there is one.
+               	  outcome = transition;
+               }
+               
                out.write("<tr><td>");
                out.write(desc == null ? "" : Utils.encode(desc));
                out.write("</td><td>");
                out.write(Utils.encode(task.title));
                out.write("</td><td>");
-               out.write(id.toString());
+               out.write(id);
                out.write("</td><td>");
                out.write(Utils.getDateTimeFormat(context).format(createdDate));
                out.write("</td><td>");

@@ -391,6 +391,19 @@
          <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
       </property-sheet>
    </config>
+   
+   <config evaluator="node-type" condition="wf:activitiReviewTask" replace="true">
+      <property-sheet>
+         <separator name="sep1" display-label-id="general" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="bpm:taskId" />
+         <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
+         <show-property name="bpm:dueDate" read-only="true" />
+         <show-property name="bpm:priority" read-only="true" />
+         <show-property name="bpm:status" />
+         <show-property name="wf:reviewOutcome" />
+         <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
+      </property-sheet>
+   </config>
 
    <config evaluator="node-type" condition="wf:rejectedTask" replace="true">
       <property-sheet>

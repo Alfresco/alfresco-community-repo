@@ -399,6 +399,11 @@ public class WorkflowBean implements Serializable
                }
             }
             
+            if(outcome == null)
+            {
+            	// TODO: is this okay -> no real transitions exist for activiti
+            	outcome = transition;
+            }
             if (outcome != null)
             {
                node.getProperties().put("outcome", outcome);

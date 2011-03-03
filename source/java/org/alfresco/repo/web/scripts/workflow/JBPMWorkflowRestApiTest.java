@@ -6,7 +6,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-public class JBPMWorkflowRestApiTest extends WorkflowRestApiTest 
+public class JBPMWorkflowRestApiTest extends AbstractWorkflowRestApiTest 
 {
 	private static final String ADHOC_WORKFLOW_DEFINITION_NAME = "jbpm$wf:adhoc";
 	private static final String REVIEW_WORKFLOW_DEFINITION_NAME = "jbpm$wf:review";

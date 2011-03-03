@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-public class ActivitiWorkflowRestApiTest extends WorkflowRestApiTest 
+public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest 
 {
 
 	private static final String ADHOC_WORKFLOW_DEFINITION_NAME = "activiti$activitiAdhoc";

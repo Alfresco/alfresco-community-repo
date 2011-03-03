@@ -47,8 +47,10 @@ import org.alfresco.repo.web.scripts.wcm.WebProjectTest;
 import org.alfresco.repo.web.scripts.wcm.membership.WebProjectMembershipTest;
 import org.alfresco.repo.web.scripts.wcm.sandbox.AssetTest;
 import org.alfresco.repo.web.scripts.wcm.sandbox.SandboxTest;
+import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
+import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
-import org.alfresco.repo.web.scripts.workflow.WorkflowRestApiTest;
+import org.alfresco.repo.web.scripts.workflow.AbstractWorkflowRestApiTest;
 
 /**
  * Web Scripts test suite
@@ -90,7 +92,8 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( WebProjectMembershipTest.class );
         suite.addTestSuite( WebProjectTest.class );
         suite.addTestSuite( WorkflowModelBuilderTest.class );
-        suite.addTestSuite( WorkflowRestApiTest.class );
+        suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
+        suite.addTestSuite( JBPMWorkflowRestApiTest.class );
 
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

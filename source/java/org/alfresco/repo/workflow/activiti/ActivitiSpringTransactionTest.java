@@ -233,7 +233,7 @@ public class ActivitiSpringTransactionTest extends TestCase
     protected void tearDown() throws Exception
     {
         try{
-            repo.deleteDeployment(deployment.getId());
+            repo.deleteDeployment(deployment.getId(), true);
             authenticationComponent.clearCurrentSecurityContext();
         }
         catch (Exception e) 

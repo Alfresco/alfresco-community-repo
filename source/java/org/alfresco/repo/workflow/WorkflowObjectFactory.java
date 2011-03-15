@@ -120,7 +120,7 @@ public class WorkflowObjectFactory
         String actualVersion = Integer.toString(version);
         
         String baseName= tenantService.getBaseName(defName);
-        String displayId = baseName + ".workflow.";
+        String displayId = baseName + ".workflow";
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, title);
         return new WorkflowDefinition(

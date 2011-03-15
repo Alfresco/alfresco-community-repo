@@ -334,9 +334,15 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
         WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        
+        Calendar dueDateCal = Calendar.getInstance();
+        dueDateCal.clear(Calendar.MILLISECOND);
+        Date dueDate = dueDateCal.getTime();
+        
+        NodeRef assignee = personManager.get(USER2);
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
-        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
 
@@ -359,14 +365,19 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.getTitle(), result.getString("title"));
         assertEquals(startTask.getDescription(), result.getString("description"));
 
-        // Task should be in progress
         assertEquals(startTask.getState().name(), result.getString("state"));
-        assertEquals(WorkflowTaskState.IN_PROGRESS.toString(), result.getString("state"));
         assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         
         checkWorkflowTaskEditable(result);
         checkWorkflowTaskOwner(result, USER1);
         checkWorkflowTaskPropertiesPresent(result);
+
+        JSONObject properties = result.getJSONObject("properties");
+        assertEquals(1, properties.getInt("bpm_priority"));
+        String dueDateStr = ISO8601DateFormat.format(dueDate);
+        assertEquals(dueDateStr, properties.getString("bpm_dueDate"));
+        assertEquals(assignee.toString(), properties.getString("bpm_assignee"));
+        assertEquals(packageRef.toString(), properties.getString("bpm_package"));
         
         checkWorkflowInstance(startTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
         checkWorkflowTaskDefinition(startTask.getDefinition(), result.getJSONObject("definition"));
@@ -387,15 +398,13 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.getTitle(), result.getString("title"));
         assertEquals(startTask.getDescription(), result.getString("description"));
         
-        // Start task should be completed
         assertEquals(startTask.getState().name(), result.getString("state"));
-        assertEquals(WorkflowTaskState.COMPLETED.toString(), result.getString("state"));
         assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
 
         checkWorkflowTaskReadOnly(result);
         checkWorkflowTaskOwner(result, USER1);
         checkWorkflowTaskPropertiesPresent(result);
-        
+
         checkWorkflowInstance(startTask.getPath().getInstance(), result.getJSONObject("workflowInstance"));
         checkWorkflowTaskDefinition(startTask.getDefinition(), result.getJSONObject("definition"));
         
@@ -463,6 +472,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(properties.has("bpm_description"));
         assertTrue(properties.has("bpm_reassignable"));
 	}
+	
 	private void checkWorkflowTaskReadOnly(JSONObject taskJson) throws Exception
 	{
 		 // Task shouldn't be editable and reassignable, since it's completed
@@ -566,7 +576,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
-        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.PROP_PRIORITY, 2);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
 
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
@@ -580,9 +590,9 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         
         WorkflowTask firstTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
 
-        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
+        Response response = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
 
-        JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
+        JSONObject jsonProperties = new JSONObject(response.getContentAsString()).getJSONObject("data").getJSONObject("properties");
 
         // make some changes in existing properties
         jsonProperties.remove(qnameToString(WorkflowModel.ASSOC_PACKAGE));

@@ -61,8 +61,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
     WorkflowDefinition testWorkflowDef;
     NodeRef testNodeRef;
     
-
-        
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
@@ -74,7 +73,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         // deploy latest review and approve process definition
         ClassPathResource processDef = new ClassPathResource("alfresco/workflow/review_processdefinition.xml");
         WorkflowDeployment deployment = workflowComponent.deployDefinition(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML); 
-        testWorkflowDef = deployment.definition; 
+        testWorkflowDef = deployment.getDefinition(); 
         assertNotNull(testWorkflowDef);
 
         // run as system
@@ -105,27 +104,27 @@ public class ReviewAndApproveTest extends BaseSpringTest
         params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test review");
         
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
 
         WorkflowTask task = tasks1.get(0);
-        assertTrue(task.properties.containsKey(WorkflowModel.ASSOC_PACKAGE));
-        WorkflowTask endedTask = taskComponent.endTask(task.id, null);
+        assertTrue(task.getProperties().containsKey(WorkflowModel.ASSOC_PACKAGE));
+        WorkflowTask endedTask = taskComponent.endTask(task.getId(), null);
         assertNotNull(endedTask);
-        assertTrue(endedTask.properties.containsKey(WorkflowModel.PROP_OUTCOME));
-        assertEquals("", endedTask.properties.get(WorkflowModel.PROP_OUTCOME));
-        assertEquals("Test review", endedTask.properties.get(WorkflowModel.PROP_DESCRIPTION));
-        assertEquals("Test review", endedTask.path.instance.description);
+        assertTrue(endedTask.getProperties().containsKey(WorkflowModel.PROP_OUTCOME));
+        assertEquals("", endedTask.getProperties().get(WorkflowModel.PROP_OUTCOME));
+        assertEquals("Test review", endedTask.getProperties().get(WorkflowModel.PROP_DESCRIPTION));
+        assertEquals("Test review", endedTask.getPath().getInstance().getDescription());
         
         List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);
-        assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
+        assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.getInstance().getId());
         
-        assertEquals(testNodeRef, assignedTasks.get(0).properties.get(WorkflowModel.ASSOC_PACKAGE));
-        assertEquals(reviewDueDate, assignedTasks.get(0).properties.get(WorkflowModel.PROP_DUE_DATE));
+        assertEquals(testNodeRef, assignedTasks.get(0).getProperties().get(WorkflowModel.ASSOC_PACKAGE));
+        assertEquals(reviewDueDate, assignedTasks.get(0).getProperties().get(WorkflowModel.PROP_DUE_DATE));
     }
 
     public void testCompletedItems()
@@ -144,15 +143,15 @@ public class ReviewAndApproveTest extends BaseSpringTest
         NodeRef reviewer = personService.getPerson(AuthenticationUtil.getAdminUserName());
         params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         
-        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
+        WorkflowPath path = workflowComponent.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
-        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks1 = workflowComponent.getTasksForWorkflowPath(path.getId());
         assertNotNull(tasks1);
         assertEquals(1, tasks1.size());
 
         WorkflowTask task = tasks1.get(0);
-        assertTrue(task.properties.containsKey(WorkflowModel.PROP_COMPLETED_ITEMS));
-        assertEquals(2, ((List)task.properties.get(WorkflowModel.PROP_COMPLETED_ITEMS)).size());
+        assertTrue(task.getProperties().containsKey(WorkflowModel.PROP_COMPLETED_ITEMS));
+        assertEquals(2, ((List<?>)task.getProperties().get(WorkflowModel.PROP_COMPLETED_ITEMS)).size());
     }
     
     
@@ -168,7 +167,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         List<WorkflowTask> filteredTasks = new ArrayList<WorkflowTask>();
         for (WorkflowTask task : tasks)
         {
-            if (task.path.instance.id.equals(workflowInstanceId))
+            if (task.getPath().getInstance().getId().equals(workflowInstanceId))
             {
                 filteredTasks.add(task);
             }

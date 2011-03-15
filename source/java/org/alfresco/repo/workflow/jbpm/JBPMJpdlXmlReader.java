@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -32,6 +31,7 @@ import org.jbpm.graph.def.Event;
 import org.jbpm.graph.def.Node;
 import org.jbpm.instantiation.Delegation;
 import org.jbpm.jpdl.xml.JpdlXmlReader;
+import org.jbpm.jpdl.xml.Problem;
 import org.jbpm.jpdl.xml.ProblemListener;
 import org.jbpm.scheduler.def.CancelTimerAction;
 import org.jbpm.scheduler.def.CreateTimerAction;
@@ -81,9 +81,10 @@ public class JBPMJpdlXmlReader extends JpdlXmlReader
         super(reader);
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.jpdl.xml.JpdlXmlReader#readNodeTimer(org.dom4j.Element, org.jbpm.graph.def.Node)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     protected void readNodeTimer(Element timerElement, Node node)
     {
         // NOTE: This method implementation is a copy from the JpdlXmlReader class
@@ -103,9 +104,10 @@ public class JBPMJpdlXmlReader extends JpdlXmlReader
         addAction(node, Event.EVENTTYPE_NODE_LEAVE, cancelTimerAction);
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.jpdl.xml.JpdlXmlReader#readTaskTimer(org.dom4j.Element, org.jbpm.taskmgmt.def.Task)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     protected void readTaskTimer(Element timerElement, Task task)
     {
         // NOTE: This method implementation is a copy from the JpdlXmlReader class
@@ -133,7 +135,7 @@ public class JBPMJpdlXmlReader extends JpdlXmlReader
         addAction(task, Event.EVENTTYPE_TASK_CREATE, createTimerAction);
 
         // read the cancel-event types
-        Collection cancelEventTypes = new ArrayList();
+        Collection<String> cancelEventTypes = new ArrayList<String>();
 
         String cancelEventTypeText = timerElement.attributeValue("cancel-event");
         if (cancelEventTypeText != null)
@@ -150,11 +152,8 @@ public class JBPMJpdlXmlReader extends JpdlXmlReader
             // set the default
             cancelEventTypes.add(Event.EVENTTYPE_TASK_END);
         }
-
-        Iterator iter = cancelEventTypes.iterator();
-        while (iter.hasNext())
+        for (String cancelEventType : cancelEventTypes)
         {
-            String cancelEventType = (String) iter.next();
             CancelTimerAction cancelTimerAction = new CancelTimerAction();
             cancelTimerAction.setTimerName(name);
             addAction(task, cancelEventType, cancelTimerAction);
@@ -166,7 +165,8 @@ public class JBPMJpdlXmlReader extends JpdlXmlReader
      * 
      * @return  problems
      */
-    public List getProblems()
+    @SuppressWarnings("unchecked")
+    public List<Problem> getProblems()
     {
         return problems;
     }

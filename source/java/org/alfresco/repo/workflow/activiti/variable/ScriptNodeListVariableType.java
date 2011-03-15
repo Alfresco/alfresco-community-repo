@@ -38,14 +38,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class ScriptNodeListVariableType extends SerializableType
 {
-    public static final String TYPE_NAME = "alfrescoScriptNodeList";
+    public static final String TYPE = "alfrescoScriptNodeList";
     
     private ServiceRegistry serviceRegistry;
 
     @Override
     public String getTypeName()
     {
-        return TYPE_NAME;
+        return TYPE;
     }
 
     @Override

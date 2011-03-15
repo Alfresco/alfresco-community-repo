@@ -35,6 +35,7 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
  */
 public abstract class JBPMSpringActionHandler implements ActionHandler
 {
+    private static final long serialVersionUID = 6848343645482681529L;
 
     /**
      * Construct

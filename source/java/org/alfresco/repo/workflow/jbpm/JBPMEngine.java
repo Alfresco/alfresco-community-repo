@@ -2094,7 +2094,8 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             {
                 JBPMJpdlXmlReader jpdlReader = new JBPMJpdlXmlReader(definitionStream); 
                 ProcessDefinition def = jpdlReader.readProcessDefinition();
-                compiledDef = new CompiledProcessDefinition(def, jpdlReader.getProblems());
+                List<Problem> problems = jpdlReader.getProblems();
+                compiledDef = new CompiledProcessDefinition(def, problems);
             }
             catch(Exception e)
             {

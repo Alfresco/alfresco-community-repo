@@ -93,20 +93,20 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                         throw new WorkflowException("actor expression '" + actorValStr + "' evaluates to null");
                     }
 
-                    String actor = null;
+                    String theActor = null;
                     if (eval instanceof String)
                     {
-                        actor = (String)eval;
+                        theActor = (String)eval;
                     }
                     else if (eval instanceof JBPMNode)
                     {
-                        actor = mapAuthorityToName((JBPMNode)eval, false);
+                        theActor = mapAuthorityToName((JBPMNode)eval, false);
                     }
-                    if (actor == null)
+                    if (theActor == null)
                     {
                         throw new WorkflowException("actor expression must evaluate to a person");
                     }
-                    assignedActor = actor;
+                    assignedActor = theActor;
                 }
                 else
                 {
@@ -140,30 +140,30 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                         assignedPooledActors = new String[nodes.length];
                         
                         int i = 0;
-                        for (ScriptNode node : (ScriptNode[])nodes)
+                        for (ScriptNode node : nodes)
                         {
-                            String actor = mapAuthorityToName(node, true);
-                            if (actor == null)
+                            String theActor = mapAuthorityToName(node, true);
+                            if (theActor == null)
                             {
                                 throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                             }
-                            assignedPooledActors[i++] = actor;
+                            assignedPooledActors[i++] = theActor;
                         }
                     }
                     if (eval instanceof Collection)
                     {
                         List<String> actors = new ArrayList<String>();
-                        Collection<Object> nodes = (Collection<Object>)eval;
+                        Collection<?> nodes = (Collection<?>)eval;
                         for (Object node : nodes)
                         {
                             if (node instanceof ScriptNode)
                             {
-                                String actor = mapAuthorityToName((ScriptNode)node, true);
-                                if (actor == null)
+                                String theActor = mapAuthorityToName((ScriptNode)node, true);
+                                if (theActor == null)
                                 {
                                     throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                                 }
-                                actors.add(actor);
+                                actors.add(theActor);
                             }
                         }
                         assignedPooledActors = new String[actors.size()];
@@ -172,12 +172,12 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                     else if (eval instanceof ScriptNode)
                     {
                         ScriptNode node = (ScriptNode)eval;
-                        String actor = mapAuthorityToName(node, true);
-                        if (actor == null)
+                        String theActor = mapAuthorityToName(node, true);
+                        if (theActor == null)
                         {
                             throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
                         }
-                        assignedPooledActors = new String[] {actor};
+                        assignedPooledActors = new String[] {theActor};
                     }
                     else if (eval instanceof String)
                     {

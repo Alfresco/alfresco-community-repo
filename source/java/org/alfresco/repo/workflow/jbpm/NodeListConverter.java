@@ -41,9 +41,10 @@ public class NodeListConverter extends SerializableToByteArrayConverter
     private static BeanFactoryLocator jbpmFactoryLocator = new JbpmFactoryLocator();
 
     
-    /* (non-Javadoc)
-     * @see org.jbpm.context.exe.Converter#supports(java.lang.Object)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     public boolean supports(Object value)
     {
         if (value == null)
@@ -53,9 +54,10 @@ public class NodeListConverter extends SerializableToByteArrayConverter
         return (value.getClass() == JBPMNodeList.class);
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.context.exe.Converter#convert(java.lang.Object)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     public Object convert(Object o)
     {
         Object converted = null;
@@ -72,9 +74,10 @@ public class NodeListConverter extends SerializableToByteArrayConverter
         return converted;
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.context.exe.Converter#revert(java.lang.Object)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     @SuppressWarnings("unchecked")
     public Object revert(Object o)
     {

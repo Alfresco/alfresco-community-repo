@@ -26,11 +26,9 @@ import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
-import org.alfresco.repo.workflow.jbpm.JBPMDeleteProcessTest;
 import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
 import org.alfresco.repo.workflow.jbpm.JbpmWorkflowServiceIntegrationTest;
-import org.alfresco.repo.workflow.jbpm.NodeListConverterTest;
 import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
 import org.alfresco.util.ApplicationContextHelper;
 
@@ -55,8 +53,6 @@ public class WorkflowTestSuite extends TestSuite
         suite.addTestSuite( StartWorkflowActionExecuterTest.class );
         suite.addTestSuite( JbpmWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ReviewAndApproveTest.class );
-        suite.addTestSuite( NodeListConverterTest.class );
-        suite.addTestSuite( JBPMDeleteProcessTest.class );
         suite.addTestSuite( JBPMSpringTest.class );
         suite.addTestSuite( JBPMEngineTest.class );
         suite.addTestSuite( AlfrescoJavaScriptIntegrationTest.class );

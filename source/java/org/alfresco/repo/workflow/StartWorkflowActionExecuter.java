@@ -50,7 +50,6 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_END_START_TASK = "endStartTask";
     public static final String PARAM_START_TASK_TRANSITION = "startTaskTransition";
     
-	
 	// action dependencies
     private NamespaceService namespaceService;
     private WorkflowService workflowService;

@@ -75,9 +75,9 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
     
 
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    /**
+     * {@inheritDoc}
+      */
     @SuppressWarnings("synthetic-access")
     @Override
     public void afterPropertiesSet() throws Exception
@@ -93,9 +93,9 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
 
     
-    /* (non-Javadoc)
-     * @see org.springmodules.workflow.jbpm31.JbpmTemplate#getContext()
-     */
+    /**
+     * {@inheritDoc}
+      */
     @Override
     protected JbpmContext getContext()
     {
@@ -120,9 +120,9 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
 
 
-    /* (non-Javadoc)
-     * @see org.springmodules.workflow.jbpm31.JbpmTemplate#releaseContext(org.jbpm.JbpmContext)
-     */
+    /**
+     * {@inheritDoc}
+      */
     @Override
     protected void releaseContext(JbpmContext jbpmContext)
     {
@@ -137,33 +137,36 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
 
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#flush()
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void flush()
     {
+        //NOOP
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void beforeCommit(boolean readOnly)
     {
+        //NOOP
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
+    /**
+    * {@inheritDoc}
      */
     public void beforeCompletion()
     {
+        //NOOP
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void afterCommit()
     {
         JbpmContext context = (JbpmContext)AlfrescoTransactionSupport.getResource(JBPM_CONTEXT_KEY);
@@ -177,9 +180,9 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void afterRollback()
     {
         JbpmContext context = (JbpmContext)AlfrescoTransactionSupport.getResource(JBPM_CONTEXT_KEY);
@@ -194,8 +197,8 @@ public class JBPMTransactionTemplate extends JbpmTemplate
 
     
     /**
-     * @see java.lang.Object#hashCode()
-     */
+     * {@inheritDoc}
+      */
     @Override
     public int hashCode()
     {
@@ -203,8 +206,8 @@ public class JBPMTransactionTemplate extends JbpmTemplate
     }
     
     /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+     * {@inheritDoc}
+      */
     @Override
     public boolean equals(Object obj)
     {

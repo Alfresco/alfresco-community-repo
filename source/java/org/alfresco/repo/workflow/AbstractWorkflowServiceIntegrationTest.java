@@ -696,6 +696,11 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkWorkflows(defId, instance1, instance2);
     }
 	
+	
+	public void testDeleteWorkflow() throws Exception
+    {
+        //TODO Implement this test!
+    }
 	public void checkWorkflows(String defId, String... expectedIds)
 	{
 	    List<WorkflowInstance> workflows = workflowService.getWorkflows(defId);

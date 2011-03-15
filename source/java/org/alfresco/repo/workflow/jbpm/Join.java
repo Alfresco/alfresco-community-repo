@@ -40,6 +40,7 @@ public class Join extends org.jbpm.graph.node.Join
      */
     public Join()
     {
+        super();
     }
 
     /**
@@ -50,16 +51,17 @@ public class Join extends org.jbpm.graph.node.Join
         super(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.jpdl.xml.Parsable#read(org.dom4j.Element, org.jbpm.jpdl.xml.JpdlXmlReader)
-     */
+    /**
+     * {@inheritDoc}
+      */
+    @Override
     public void read(Element element, JpdlXmlReader jpdlReader)
     {
         // Add "on node leave" event handler which ends child tokens / tasks
         Delegation delegation = new Delegation(JoinEndForkedTokens.class.getName());
-        Action action = new Action(delegation);
+        Action theAction = new Action(delegation);
         Event event = new Event(Event.EVENTTYPE_NODE_LEAVE);
-        event.addAction(action);
+        event.addAction(theAction);
         addEvent(event);
     }
 

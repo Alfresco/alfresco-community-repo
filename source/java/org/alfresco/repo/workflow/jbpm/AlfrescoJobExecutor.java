@@ -101,10 +101,11 @@ public class AlfrescoJobExecutor extends JobExecutor
     }
     
     
-    /* (non-Javadoc)
-     * @see org.jbpm.job.executor.JobExecutor#startThread()
-     */
+    /**
+     * {@inheritDoc}
+      */
     @SuppressWarnings("unchecked")
+    @Override
     protected synchronized void startThread()
     {
         String threadName = getNextThreadName();

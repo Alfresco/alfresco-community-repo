@@ -82,7 +82,7 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
         this.jbpmConfiguration = jbpmConfiguration;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Collection acquireJobs()
     {
@@ -291,17 +291,17 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
     
     private String getExecutorLock()
     {
-        String jobLockToken = null;
+        String lockToken = null;
         
         if (alfrescoJobExecutor.getJobExecutorLockEnabled())
         {
             try
             {
-                jobLockToken = alfrescoJobExecutor.getJobLockService().getLock(LOCK_QNAME, jobLockTTL, 3000, 10);
+                lockToken = alfrescoJobExecutor.getJobLockService().getLock(LOCK_QNAME, jobLockTTL, 3000, 10);
                 
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace(Thread.currentThread().getName()+" got lock token: "+jobLockToken);
+                    logger.trace(Thread.currentThread().getName()+" got lock token: "+lockToken);
                 }
             }
             catch (LockAcquisitionException e)
@@ -314,51 +314,51 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
             }
         }
         
-        return jobLockToken;
+        return lockToken;
     }
     
-    private void refreshExecutorLock(String jobLockToken)
+    private void refreshExecutorLock(String lockToken)
     {
-        if (jobLockToken != null)
+        if (lockToken != null)
         {
             try
             {
-                alfrescoJobExecutor.getJobLockService().refreshLock(jobLockToken, LOCK_QNAME, jobLockTTL);
+                alfrescoJobExecutor.getJobLockService().refreshLock(lockToken, LOCK_QNAME, jobLockTTL);
                 
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace(Thread.currentThread().getName()+" refreshed lock token: "+jobLockToken);
+                    logger.trace(Thread.currentThread().getName()+" refreshed lock token: "+lockToken);
                 }
             }
             catch (LockAcquisitionException e)
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("Failed to refresh Alfresco Job Executor lock  - may no longer exist ("+jobLockToken+")");
+                    logger.trace("Failed to refresh Alfresco Job Executor lock  - may no longer exist ("+lockToken+")");
                 }
                 throw e;
             }
         }
     }
     
-    private void releaseExecutorLock(String jobLockToken)
+    private void releaseExecutorLock(String lockToken)
     {
-        if (jobLockToken != null)
+        if (lockToken != null)
         {
             try
             {
-                alfrescoJobExecutor.getJobLockService().releaseLock(jobLockToken, LOCK_QNAME);
+                alfrescoJobExecutor.getJobLockService().releaseLock(lockToken, LOCK_QNAME);
                 
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace(Thread.currentThread().getName()+" released lock token: "+jobLockToken);
+                    logger.trace(Thread.currentThread().getName()+" released lock token: "+lockToken);
                 }
             }
             catch (LockAcquisitionException e)
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("Failed to release Alfresco Job Executor lock - may no longer exist ("+jobLockToken+")");
+                    logger.trace("Failed to release Alfresco Job Executor lock - may no longer exist ("+lockToken+")");
                 }
                 throw e;
             }

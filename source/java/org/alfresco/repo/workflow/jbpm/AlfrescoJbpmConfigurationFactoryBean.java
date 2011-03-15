@@ -41,7 +41,7 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
  * @author Costin Leau
  * @author davidc
  */
-public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean,
+public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean<JbpmConfiguration>,
             BeanFactoryAware, BeanNameAware, DisposableBean
 {
     private JbpmConfiguration jbpmConfiguration;
@@ -74,21 +74,16 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
         this.factoryLocator.setBeanFactory(beanFactory);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang
-     * .String)
+    /**
+    * {@inheritDoc}
      */
     public void setBeanName(final String name)
     {
         this.factoryLocator.setBeanName(name);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+    /**
+    * {@inheritDoc}
      */
     public void afterPropertiesSet() throws Exception
     {
@@ -115,28 +110,25 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObject()
-     */
-    public Object getObject() throws Exception
+    /**
+     * {@inheritDoc}
+      */
+    public JbpmConfiguration getObject() throws Exception
     {
         return this.jbpmConfiguration;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-     */
-    public Class getObjectType()
+    /**
+     * {@inheritDoc}
+      */
+    public Class<JbpmConfiguration> getObjectType()
     {
         return JbpmConfiguration.class;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-     */
+    /**
+     * {@inheritDoc}
+      */
     public boolean isSingleton()
     {
         return true;
@@ -206,10 +198,9 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
         this.sessionFactory = sessionFactory;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.DisposableBean#destroy()
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void destroy() throws Exception
     {
         this.factoryLocator.destroy();

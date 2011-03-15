@@ -43,59 +43,21 @@ public class JBPMSpringTest extends BaseSpringTest
 
         
     //@Override
+    @SuppressWarnings("deprecation")
+    @Override
     protected void onSetUpInTransaction() throws Exception
     {
         jbpmTemplate = (JbpmTemplate)applicationContext.getBean("jbpm_template");
         descriptorService = (DescriptorService)applicationContext.getBean("DescriptorService");
     }
     
-    public void testDummy()
-    {
-    }
-        
     public void testHelloWorld()
         throws Exception
     {
-        // Between the 3 method calls below, all data is passed via the 
-        // database.  Here, in this unit test, these 3 methods are executed
-        // right after each other because we want to test a complete process
-        // scenario.  But in reality, these methods represent different 
-        // requests to a server.
-        
-        // Since we start with a clean, empty in-memory database, we have to 
-        // deploy the process first.  In reality, this is done once by the 
-        // process developer.
         deployProcessDefinition();
-
-        // Suppose we want to start a process instance (=process execution)
-        // when a user submits a form in a web application...
         processInstanceIsCreatedWhenUserSubmitsWebappForm();
-
-        // Then, later, upon the arrival of an asynchronous message the 
-        // execution must continue.
-        theProcessInstanceContinuesWhenAnAsyncMessageIsReceived();
-    }
-
-    public void testStep0()
-        throws Exception
-    {
-        deployProcessDefinition();
-        setComplete();
-    }
-
-    public void testStep1()
-        throws Exception
-    {
-        processInstanceIsCreatedWhenUserSubmitsWebappForm();
-        setComplete();
-    }
-    
-    public void testStep2()
-        throws Exception
-    {
         theProcessInstanceContinuesWhenAnAsyncMessageIsReceived();
         undeployProcessDefinition();
-        setComplete();
     }
     
     private void deployProcessDefinition()
@@ -192,7 +154,7 @@ public class JBPMSpringTest extends BaseSpringTest
               ProcessDefinition processDefinition = graphSession.findLatestProcessDefinition("hello world");
 
               // Now, we search for all process instances of this process definition.
-              List processInstances = graphSession.findProcessInstances(processDefinition.getId());
+              List<?> processInstances = graphSession.findProcessInstances(processDefinition.getId());
               
               // Because we know that in the context of this unit test, there is 
               // only one execution.  In real life, the processInstanceId can be 

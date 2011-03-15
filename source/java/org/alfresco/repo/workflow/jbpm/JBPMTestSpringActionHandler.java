@@ -59,7 +59,7 @@ public class JBPMTestSpringActionHandler extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
-        descriptorService = (DescriptorService)factory.getBean("DescriptorService", DescriptorService.class);
+        descriptorService = factory.getBean("DescriptorService", DescriptorService.class);
     }
 
 }

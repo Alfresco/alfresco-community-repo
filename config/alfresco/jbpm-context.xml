@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="jbpm_configuration"
+        class="org.alfresco.repo.workflow.jbpm.AlfrescoJbpmConfigurationFactoryBean">
+        <property name="sessionFactory" ref="sessionFactory" />
+        <property name="configuration" value="classpath:org/alfresco/repo/workflow/jbpm/jbpm.cfg.xml" />
+    </bean>
+
+    <bean id="jbpm_template"
+        class="org.alfresco.repo.workflow.jbpm.JBPMTransactionTemplate">
+        <constructor-arg index="0" ref="jbpm_configuration" />
+    </bean>
+
+    <bean id="jbpm_engine" class="org.alfresco.repo.workflow.jbpm.JBPMEngine" parent="bpm_engine">
+        <property name="engineId" value="jbpm" />
+        <property name="JBPMTemplate" ref="jbpm_template" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="personService" ref="personService" />
+        <property name="authorityDAO" ref="authorityDAO" />
+        <!-- Creates JBPMNodes (ScriptNodes) which require the ServiceRegsitry -->
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="companyHomeStore" value="${spaces.store}" />
+        <property name="companyHomePath" value="/${spaces.company_home.childname}" />
+        <property name="unprotectedSearchService" ref="searchService" />
+    </bean>
+   
+</beans>

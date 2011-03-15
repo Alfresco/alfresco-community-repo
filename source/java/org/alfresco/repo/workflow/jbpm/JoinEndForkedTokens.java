@@ -41,15 +41,16 @@ public class JoinEndForkedTokens implements ActionHandler
      */
     public JoinEndForkedTokens()
     {
+        super();
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
-     */
+    /**
+     * {@inheritDoc}
+      */
     public void execute(ExecutionContext executionContext)
     {
         Token token = executionContext.getToken();
-        Map childTokens = token.getActiveChildren();
+        Map<?, ?> childTokens = token.getActiveChildren();
         for (Object childToken : childTokens.values())
         {
             cancelToken(executionContext, (Token)childToken);
@@ -65,7 +66,7 @@ public class JoinEndForkedTokens implements ActionHandler
     protected void cancelToken(ExecutionContext executionContext, Token token)
     {
         // visit child tokens
-        Map childTokens = token.getActiveChildren();
+        Map<?, ?> childTokens = token.getActiveChildren();
         for (Object childToken : childTokens.values())
         {
             cancelToken(executionContext, (Token)childToken);
@@ -90,7 +91,7 @@ public class JoinEndForkedTokens implements ActionHandler
     protected void cancelTokenTasks(ExecutionContext executionContext, Token token)
     {
         TaskMgmtInstance tms = executionContext.getTaskMgmtInstance();
-        Collection tasks = tms.getUnfinishedTasks(token);
+        Collection<TaskInstance> tasks = tms.getUnfinishedTasks(token);
         for (Object task : tasks)
         {
             TaskInstance taskInstance = (TaskInstance)task;

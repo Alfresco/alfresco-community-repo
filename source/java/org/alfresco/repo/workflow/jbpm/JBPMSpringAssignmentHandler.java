@@ -33,6 +33,7 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
  */
 public abstract class JBPMSpringAssignmentHandler implements AssignmentHandler
 {
+    private static final long serialVersionUID = -2233750219905283562L;
 
     /**
      * Construct

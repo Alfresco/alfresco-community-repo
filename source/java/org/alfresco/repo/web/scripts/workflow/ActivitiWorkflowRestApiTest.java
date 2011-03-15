@@ -10,6 +10,8 @@ public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest
 {
 
 	private static final String ADHOC_WORKFLOW_DEFINITION_NAME = "activiti$activitiAdhoc";
+	private static final String ADHOC_WORKFLOW_DEFINITION_TITLE = "Adhoc Workflow (Activiti)";
+	private static final String ADHOC_WORKFLOW_DEFINITION_DESCRIPTION = "Assign arbitrary task to colleague using Activiti workflow engine.";
 	private static final String REVIEW_WORKFLOW_DEFINITION_NAME = "activiti$activitiReview";
 	private static final String REVIEW_POOLED_WORKFLOW_DEFINITION_NAME = "activiti$activitiReviewPooled";
 	
@@ -19,6 +21,18 @@ public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest
 		return ADHOC_WORKFLOW_DEFINITION_NAME;
 	}
 
+	@Override
+	protected String getAdhocWorkflowDefinitionTitle() 
+	{
+	    return ADHOC_WORKFLOW_DEFINITION_TITLE;
+	}
+	
+	@Override
+	protected String getAdhocWorkflowDefinitionDescription() 
+	{
+	    return ADHOC_WORKFLOW_DEFINITION_DESCRIPTION;
+	}
+	
 	@Override
 	protected String getReviewWorkflowDefinitionName() {
 		return REVIEW_WORKFLOW_DEFINITION_NAME;

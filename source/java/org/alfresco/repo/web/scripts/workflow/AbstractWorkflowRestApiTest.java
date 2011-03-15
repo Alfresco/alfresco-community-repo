@@ -719,18 +719,22 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
             assertTrue(workflowDefinitionJSON.getString("name").length() > 0);
 
             assertTrue(workflowDefinitionJSON.has("title"));
-            assertTrue(workflowDefinitionJSON.getString("title").length() > 0);
+            String title = workflowDefinitionJSON.getString("title");
+            assertTrue(title.length() > 0);
 
             assertTrue(workflowDefinitionJSON.has("description"));
-            assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
+            String description = workflowDefinitionJSON.getString("description");
+            assertTrue(description.length() > 0);
             
             if(getAdhocWorkflowDefinitionName().equals(workflowDefinitionJSON.getString("name"))) 
             {
+                assertEquals(getAdhocWorkflowDefinitionTitle(), title);
+                assertEquals(getAdhocWorkflowDefinitionDescription(), description);
             	adhocWorkflowPresent = true;
-        }
+            }
         }
         
-        assertTrue("Adhoc workflow definition was returned", adhocWorkflowPresent);
+        assertTrue("Adhoc workflow definition was not present!", adhocWorkflowPresent);
         
         // filter the workflow definitions and check they are not returned
         String exclude = getAdhocWorkflowDefinitionName();
@@ -1336,6 +1340,10 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
     protected abstract void rejectTask(String taskId) throws Exception;
 
     protected abstract String getAdhocWorkflowDefinitionName();
+    
+    protected abstract String getAdhocWorkflowDefinitionTitle();
+    
+    protected abstract String getAdhocWorkflowDefinitionDescription();
     
     protected abstract String getReviewWorkflowDefinitionName();
     

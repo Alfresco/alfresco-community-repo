@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -62,7 +62,7 @@ import org.junit.Test;
  * Spring-configured JUnit 4 test case.
  * Uses Spring to load up a test context and runs each test case in a transaction which gets rolled back.
  * Loads up the activiti-context.xml and test-database-context.xml.
- * @since 3.5
+ * @since 3.4.e
  * @author Nick Smith
  *
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,7 +20,7 @@
 package org.alfresco.repo.workflow;
 
 /**
- * @since 4.0
+ * @since 3.4.e
  * @author Nick Smith
  *
  */

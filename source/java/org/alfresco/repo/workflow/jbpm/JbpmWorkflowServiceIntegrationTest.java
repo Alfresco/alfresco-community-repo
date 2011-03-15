@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,12 +22,11 @@ import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-
-
 /**
- * Workflow Service Implementation Tests
+ * JBPM Workflow Service Implementation Tests
  * 
- * @author davidc
+ * @author Nick Smith
+ * @since 3.4.e
  */
 public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
@@ -63,7 +62,8 @@ public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceI
 	}
 
 	@Override
-	protected QName getAdhocProcessName() {
+	protected QName getAdhocProcessName() 
+	{
 		return QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhoc");
 	}
 }

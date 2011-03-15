@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import org.mozilla.javascript.Scriptable;
  * Scriptable Node suitable for Activti Beanshell access
  *
  * @author Frederik Heremans
+ * @since 3.4.e
  */
 public class ActivitiScriptNode extends ScriptNode
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,7 +26,7 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @since 4.0
+ * @since 3.4.e
  * @author Nick Smith
  */
 public interface WorkflowNodeConverter

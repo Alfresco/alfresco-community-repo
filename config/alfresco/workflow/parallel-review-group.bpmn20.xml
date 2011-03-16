@@ -37,8 +37,9 @@
 	                        var members = people.getMembers(bpm_groupAssignee);
 	                        var memberNames = new java.util.ArrayList();
 	                        
-	                        for(var i in members) {
-	                        	memberNames.add(members[i].properties.userName);
+	                        for(var i in members) 
+                           {
+	                            memberNames.add(members[i].properties.userName);
 	                        }
 	                       	execution.setVariable('wf_groupMembers', memberNames);
 	                        execution.setVariable('wf_reviewerCount', memberNames.size());

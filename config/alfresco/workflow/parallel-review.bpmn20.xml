@@ -59,14 +59,14 @@
            
            <humanPerformer>
                 <resourceAssignmentExpression>
-                    <formalExpression>${review_assignee.properties.userName}</formalExpression>
+                    <formalExpression>${reviewAssignee.properties.userName}</formalExpression>
                 </resourceAssignmentExpression>
            </humanPerformer>
            
            <!-- For each assignee, task is created -->
            <multiInstanceLoopCharacteristics isSequential="false">
            	  <loopDataInputRef>bpm_assignees</loopDataInputRef>
-           	  <inputDataItem name="review_assignee" />
+           	  <inputDataItem name="reviewAssignee" />
            	  <completionCondition>${wf_actualPercent >= wf_requiredApprovePercent}</completionCondition>
            </multiInstanceLoopCharacteristics>
         </userTask>

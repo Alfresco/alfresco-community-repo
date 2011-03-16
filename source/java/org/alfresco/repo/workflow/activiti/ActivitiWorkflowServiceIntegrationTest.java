@@ -107,6 +107,12 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     {
         return "alfresco/workflow/review-pooled.bpmn20.xml";
     }
+    
+    @Override
+    protected String getParallelReviewDefinitionPath()
+    {
+        return "alfresco/workflow/parallel-review.bpmn20.xml";
+    }
 
 	@Override
 	protected String getTestTimerDefinitionPath() 

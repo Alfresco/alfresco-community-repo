@@ -55,6 +55,12 @@ public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceI
         return "alfresco/workflow/review_pooled_processdefinition.xml";
     }
 
+    @Override
+    protected String getParallelReviewDefinitionPath()
+    {
+        return "alfresco/workflow/parallelreview_processdefinition.xml";
+    }
+    
 	@Override
 	protected String getTestTimerDefinitionPath() 
 	{

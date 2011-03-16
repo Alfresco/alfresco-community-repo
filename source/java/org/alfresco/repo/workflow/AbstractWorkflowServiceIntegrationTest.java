@@ -707,6 +707,43 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 	    checkWorkflows(workflows, expectedIds);
 	}
 	
+	public void testParallelReview() throws Exception
+    {
+        // start pooled review and approve workflow
+        WorkflowDefinition workflowDef = deployDefinition(getParallelReviewDefinitionPath());
+        assertNotNull(workflowDef);
+        
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        NodeRef group = groupManager.get(GROUP);
+        assertNotNull(group);
+        
+        List<NodeRef> assignees = Arrays.asList(personManager.get(USER2), personManager.get(USER3));
+        params.put(WorkflowModel.ASSOC_ASSIGNEES, (Serializable) assignees);
+        
+        // Start a workflow instance
+        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
+        assertNotNull(path);
+        assertTrue(path.isActive());
+        String instnaceId = path.getInstance().getId();
+        
+        WorkflowTask startTask = workflowService.getStartTask(instnaceId);
+        workflowService.endTask(startTask.getId(), null);
+        
+        personManager.setUser(USER2);
+        List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
+        assertEquals(1, tasks.size());
+        
+        personManager.setUser(USER3);
+        tasks = workflowService.getAssignedTasks(USER3, WorkflowTaskState.IN_PROGRESS);
+        assertEquals(1, tasks.size());
+    }
+	
 	public void checkCompletedWorkflows(String defId, String... expectedIds)
 	{
 	    List<WorkflowInstance> workflows = workflowService.getCompletedWorkflows(defId);
@@ -922,7 +959,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertEquals(expDef.getVersion(), actualDef.getVersion());
     }
 
-
     @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
@@ -979,5 +1015,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 
     protected abstract String getPooledReviewDefinitionPath();
     
+    protected abstract String getParallelReviewDefinitionPath();
+
     protected abstract String getTestTimerDefinitionPath();
 }

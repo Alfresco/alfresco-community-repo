@@ -30,7 +30,7 @@ public class JBPMWorkflowRestApiTest extends AbstractWorkflowRestApiTest
 	private static final String ADHOC_WORKFLOW_DEFINITION_TITLE = "Adhoc Workflow (JBPM)";
 	private static final String ADHOC_WORKFLOW_DEFINITION_DESCRIPTION = "Assign arbitrary task to colleague using JBPM workflow engine.";
 	private static final String REVIEW_WORKFLOW_DEFINITION_NAME = "jbpm$wf:review";
-	private static final String REVIEW_POOLED_WORKFLOW_DEFINITION_NAME = "jbpm$wf:reviewPooled";
+	private static final String REVIEW_POOLED_WORKFLOW_DEFINITION_NAME = "jbpm$wf:reviewpooled";
 
 	@Override
 	protected String getAdhocWorkflowDefinitionName() 

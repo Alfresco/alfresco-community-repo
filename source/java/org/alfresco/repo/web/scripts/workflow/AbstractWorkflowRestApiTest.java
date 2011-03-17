@@ -703,6 +703,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
         boolean adhocWorkflowPresent = false;
         
+        String adhocDefName = getAdhocWorkflowDefinitionName();
         for (int i = 0; i < results.length(); i++)
         {
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
@@ -725,8 +726,8 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
             assertTrue(workflowDefinitionJSON.has("description"));
             String description = workflowDefinitionJSON.getString("description");
             assertTrue(description.length() > 0);
-            
-            if(getAdhocWorkflowDefinitionName().equals(workflowDefinitionJSON.getString("name"))) 
+
+            if(adhocDefName.equals(workflowDefinitionJSON.getString("name"))) 
             {
                 assertEquals(getAdhocWorkflowDefinitionTitle(), title);
                 assertEquals(getAdhocWorkflowDefinitionDescription(), description);
@@ -737,7 +738,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertTrue("Adhoc workflow definition was not present!", adhocWorkflowPresent);
         
         // filter the workflow definitions and check they are not returned
-        String exclude = getAdhocWorkflowDefinitionName();
+        String exclude = adhocDefName;
         response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         json = new JSONObject(response.getContentAsString());
@@ -760,7 +761,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
         
         // filter with a wildcard and ensure they all get filtered out
-        exclude = getAdhocWorkflowDefinitionName() + ", jbpm$wcmwf:*";
+        exclude = adhocDefName + ", jbpm$wcmwf:*";
         response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         json = new JSONObject(response.getContentAsString());
@@ -774,7 +775,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
             
             String name = workflowDefinitionJSON.getString("name");
-            if (name.equals(getAdhocWorkflowDefinitionName()))
+            if (name.equals(adhocDefName))
             {
                 adhocWorkflowPresent = true;
             }

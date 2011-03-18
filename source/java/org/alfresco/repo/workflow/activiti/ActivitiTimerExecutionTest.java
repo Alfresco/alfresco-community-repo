@@ -28,6 +28,7 @@ import java.util.Map;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.impl.runtime.TimerEntity;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.Job;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -46,7 +47,6 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
@@ -73,13 +73,8 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest {
 
 	private TestPersonManager personManager;
 
-	public void testNothing()
-	{
-	    // dummy test so that something gets executed
-	}
-	
 	@SuppressWarnings("deprecation")
-	public void offTestTimerExecutionAuthentication() throws Exception
+	public void testTimerExecutionAuthentication() throws Exception
     {
     	this.setComplete();
         this.endTransaction();
@@ -168,7 +163,7 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest {
     }
     
     @SuppressWarnings("deprecation")
-	public void offTestTimerExecutionTransactionRollback() throws Exception
+	public void testTimerExecutionTransactionRollback() throws Exception
     {
     	this.setComplete();
         this.endTransaction();
@@ -293,8 +288,12 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest {
     
     private void waitForTimersToBeExecuted(String workflowInstanceId) throws Exception 
     {
+    	String processInstanceId = BPMEngineRegistry.getLocalId(workflowInstanceId);
     	// Job-executor should finish the job, no timers should be available for WF
-		List<WorkflowTimer> timers = workflowService.getTimers(workflowInstanceId);
+		List<Job> timers = activitiProcessEngine.getManagementService().createJobQuery()
+			.timers()
+			.processInstanceId(processInstanceId)
+			.list();
 		
 		int numberOfRetries = 5;
 		for(int i=0; i< numberOfRetries; i++)
@@ -304,7 +303,10 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest {
 				break;
 			}
 			Thread.sleep(1000);
-			timers = workflowService.getTimers(workflowInstanceId);
+			timers = activitiProcessEngine.getManagementService().createJobQuery()
+			   .timers()
+			   .processInstanceId(processInstanceId)
+			   .list();
 		}
     }
     

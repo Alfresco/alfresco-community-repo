@@ -19,10 +19,12 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 
@@ -263,7 +265,10 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         sreq.getRemoteAddr() + ":" + sreq.getRemotePort() + ") SID:" + sreq.getSession().getId());
             
             // Send back a request for NTLM authentication
-            restartLoginChallenge(context, sreq, sresp);
+            sresp.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
+            sresp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            writeLoginPageLink(sreq, sresp);
+            sresp.flushBuffer();
             return false;
         }
         else
@@ -985,18 +990,48 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      */
     public void restartLoginChallenge(ServletContext context, HttpServletRequest req, HttpServletResponse res) throws IOException
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("restartLoginChallenge...");
+        
         // Remove any existing session and NTLM details from the session
         HttpSession session = req.getSession(false);
         if (session != null)
         {
-            session.invalidate();
+            clearSession(session);
         }
         
-        // Force the logon to start again
-        res.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        writeLoginPageLink(req, res);
+        String userAgent = req.getHeader("user-agent");
+        if (userAgent != null && userAgent.indexOf("Safari") != -1)
+        {
+            final PrintWriter out = res.getWriter();
+            out.println("<html><head></head>");
+            out.println("<body><p>Login authentication failed. Please close and re-open Safari to try again.</p>");
+            out.println("</body></html>");
+            out.close();
+        }
+        else
+        {
+            // Force the logon to start again
+            res.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            writeLoginPageLink(req, res);
+        }
         res.flushBuffer();
+    }
+    
+    /**
+     * Removes all attributes stored in session
+     * 
+     * @param session Session
+     */
+    @SuppressWarnings("unchecked")
+    private void clearSession(HttpSession session)
+    {
+        Enumeration<String> names = (Enumeration<String>) session.getAttributeNames();
+        while (names.hasMoreElements())
+        {
+            session.removeAttribute(names.nextElement());
+        }
     }
     
     

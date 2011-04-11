@@ -24,11 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.TestModeable;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
@@ -62,6 +64,7 @@ public class InvitationTest extends BaseWebScriptTest
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private NodeService nodeService;
+    private TransactionService transactionService;
 
     private String userOne = "InvitationTestOne" + GUID.generate();
     private String userTwo = "InvitationTestTwo" + GUID.generate();
@@ -72,7 +75,6 @@ public class InvitationTest extends BaseWebScriptTest
 
     private List<String> createdSites = new ArrayList<String>(5);
     private List<Tracker> createdInvitations = new ArrayList<Tracker>(10);
-    private TestModeable mailActionExecutor;
 
     private final Map<String, Map<String, String>> userProperties = new HashMap<String, Map<String,String>>(3);
 
@@ -99,13 +101,12 @@ public class InvitationTest extends BaseWebScriptTest
                     "authenticationComponent");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+        this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
 
-        // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
-        // during unit testing
+        // turn off email sending to prevent errors during unit testing 
         // (or sending out email by accident from tests)
-        mailActionExecutor = (TestModeable) getServer().getApplicationContext().getBean("mail");
-        mailActionExecutor.setTestMode(true);
-
+        InviteServiceTest.configureMailExecutorForTestMode(this.getServer());
+        
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // Create users
@@ -162,11 +163,18 @@ public class InvitationTest extends BaseWebScriptTest
         // Clear the list
         this.createdInvitations.clear();
 
-        // Switch the MailActionExecutor back to normal mode.
-        mailActionExecutor.setTestMode(false);
-        personService.deletePerson(userOne);
-        personService.deletePerson(userTwo);
-        personService.deletePerson(userThree);
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                personService.deletePerson(userOne);
+                personService.deletePerson(userTwo);
+                personService.deletePerson(userThree);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
     }
 
     private JSONObject createSite(String sitePreset, String shortName, String title, String description,

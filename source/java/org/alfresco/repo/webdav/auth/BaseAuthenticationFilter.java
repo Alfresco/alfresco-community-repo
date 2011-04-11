@@ -273,7 +273,7 @@ public abstract class BaseAuthenticationFilter
         {
             public T doWork() throws Exception
             {
-                return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+                return transactionService.getRetryingTransactionHelper().doInTransaction(callback, transactionService.isReadOnly());
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
     }
@@ -375,7 +375,7 @@ public abstract class BaseAuthenticationFilter
                         authenticationComponent.setCurrentUser(userName);
                         return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(), true);
                     }
-                });
+                }, transactionService.isReadOnly());
     }
 
     /**

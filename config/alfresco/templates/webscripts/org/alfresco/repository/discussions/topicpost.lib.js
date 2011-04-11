@@ -72,6 +72,7 @@ function getTopicPostDataFromTopicAndPosts(topicNode, posts)
    item.isTopicPost = true;
    item.topic = topicNode;
    item.post = posts[0];
+   item.canEdit = canUserEditPost(item.post);
    item.author = people.getPerson(item.post.properties["cm:creator"]);
    item.totalReplyCount = posts.length - 1;
    // in case of replies, find the last reply
@@ -102,6 +103,40 @@ function getReplyPostData(post)
    var item = {};
    item.isTopicPost = false;
    item.post = post;
+   item.canEdit = canUserEditPost(item.post);
    item.author = people.getPerson(item.post.properties["cm:creator"]);
    return item;
+}
+
+/**
+ * Returns true if the current user can edit the post.
+ * 
+ * Site managers can edit any post, everyone else should only
+ * be able to edit their own posts.
+ */
+function canUserEditPost(post)
+{
+   // see if user has write permission first of all
+   var canEdit = post.hasPermission("Write");
+   
+   // if current user is not the same user as the author check
+   // that they are a site manager otherwise they can't edit the post
+   if (canEdit)
+   {
+      // get the site id
+      var siteId = url.templateArgs.site;
+      
+      if (siteId !== null)
+      {
+         var username = person.properties["cm:userName"];
+         var postAuthor = post.properties["cm:creator"];
+   
+         if (username != postAuthor)
+         {
+            canEdit = siteService.isSiteManager(siteId);
+         }
+      }
+   }
+   
+   return canEdit;
 }

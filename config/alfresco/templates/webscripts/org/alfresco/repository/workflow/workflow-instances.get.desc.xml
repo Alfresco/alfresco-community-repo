@@ -1,9 +1,115 @@
 <webscript>
    <shortname>Get Workflow Instance Collection</shortname>
-   <description>Retrieves all workflow instances, the returned list can be optionally filtered by the state of the workflow instance and by the authority that initiated the workflow instance.</description>
+   <description>Retrieves all workflow instances, the returned list can also be optionally filtered.</description>
    <url>/api/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;definitionId={definitionId?}&amp;definitionName={definitionName?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
    <url>/api/workflow-definitions/{workflow_definition_id}/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>state</shortname>
+         <description>Filters the returned workflow instances by state, ACTIVE or COMPLETED (lower case is also acceptable). If this argument is omitted only active workflow instances are returned.</description>
+      </arg>
+      <arg>
+         <shortname>initiator</shortname>
+         <description>Filter the list of workflow instances by the authority that initiated the workflow instance.</description>
+      </arg>
+      <arg>
+         <shortname>priority</shortname>
+         <description>Filters the returned workflow instances by priority, a numerical value is expected, either 1, 2 or 3.</description>
+      </arg>
+      <arg>
+         <shortname>dueBefore</shortname>
+         <description>Restricts the returned workflow instances to only those that are due before the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>dueAfter</shortname>
+         <description>Restricts the returned workflow instances to only those that are due after the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>startedBefore</shortname>
+         <description>Restricts the returned workflow instances to only those that were started before the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>startedAfter</shortname>
+         <description>Restricts the returned workflow instances to only those that were started after the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>completedBefore</shortname>
+         <description>Restricts the returned workflow instances to only those that were completed before the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>completedAfter</shortname>
+         <description>Restricts the returned workflow instances to only those that were completed after the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>definitionId</shortname>
+         <description>Restricts the list of workflow instances returned to those started by the given workflow definition id.</description>
+      </arg>
+      <arg>
+         <shortname>workflow_definition_id</shortname>
+         <description>Restricts the list of workflow instances returned to those started by the given workflow definition id.</description>
+      </arg>
+      <arg>
+         <shortname>definitionName</shortname>
+         <description>Restricts the list of workflow instances returned to those started by the given workflow definition name i.e. any deployed version of that definition.</description>
+      </arg>
+      <arg>
+         <shortname>maxItems</shortname>
+         <description>Specifies the maximum number of results to return.</description>
+      </arg>
+      <arg>
+         <shortname>skipCount</shortname>
+         <description>Specifies the position in the results to start, used for paging results.</description>
+      </arg>
+      <arg>
+         <shortname>exclude</shortname>
+         <description>Comma separated list of workflow definitions to exclude from the the results.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data":
+               [
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "isActive": boolean,
+                     "startDate": string,
+                     "endDate": string,
+                     "dueDate": string,
+                     "priority": number,
+                     "message": string,
+                     "context": string,
+                     "package": string,
+                     "initiator":
+                     {
+                        "userName": string,
+                        "firstName": string,
+                        "lastName": string
+                     },
+                     "definitionUrl": string
+                  },
+                  ...
+               ],
+               "paging": 
+               {
+                  "totalItems": number,
+                  "maxItems": number,
+                  "skipCount": number
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

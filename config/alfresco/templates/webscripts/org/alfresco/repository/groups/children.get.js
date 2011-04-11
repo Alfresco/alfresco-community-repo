@@ -8,7 +8,17 @@ function main()
    var shortName = urlElements[0];
    
    var authorityType = args["authorityType"];
-   
+   var maxItems = args["maxItems"];
+   var skipCount= args["skipCount"];
+
+   if(maxItems == null)
+   {
+      maxItems = -1;
+   }
+   if(skipCount == null)
+   {
+      skipCount = -1;
+   }
    var group = groups.getGroup(shortName);
    if (group == null)
    {
@@ -28,7 +38,7 @@ function main()
       }
       if (authorityType == "GROUP")
       {
-         model.children = group.getChildGroups();
+         model.children = group.getChildGroups(maxItems, skipCount);
       }
       if (authorityType == "USER")
       {

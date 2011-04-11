@@ -56,14 +56,26 @@
       <property name="store"><value>workspace://SpacesStore</value></property>
       <property name="path"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:webscripts</value></property>
    </bean>
+   
+   <bean id="webscripts.repoclasspathstore" class="org.alfresco.repo.web.scripts.RepoClassPathStore" abstract="true" />
 
-   <bean id="webscripts.store.client.extension" parent="webscripts.classpathstore">
-      <property name="classPath"><value>alfresco/extension/templates/webscripts</value></property>
+   <bean id="webscripts.store" parent="webscripts.repoclasspathstore">
+      <property name="mustExist"><value>false</value></property>
+      <property name="classPath"><value>webscripts</value></property>
+   </bean>
+   
+   <bean id="webscripts.store.alfresco" parent="webscripts.repoclasspathstore">
+      <property name="mustExist"><value>false</value></property>
+      <property name="classPath"><value>alfresco/webscripts</value></property>
    </bean>
 
-   <bean id="webscripts.store.client" parent="webscripts.classpathstore">
+   <bean id="webscripts.store.client" parent="webscripts.repoclasspathstore">
       <property name="mustExist"><value>true</value></property>
       <property name="classPath"><value>alfresco/templates/webscripts</value></property>
+   </bean>
+   
+   <bean id="webscripts.store.client.extension" parent="webscripts.classpathstore">
+      <property name="classPath"><value>alfresco/extension/templates/webscripts</value></property>
    </bean>
    
    <bean id="webscripts.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
@@ -641,7 +653,8 @@
         <property name="extensionName">
             <value>commentService</value>
         </property>
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean>
     
 

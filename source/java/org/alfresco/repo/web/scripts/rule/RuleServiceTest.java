@@ -24,6 +24,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -35,7 +36,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.digester.Rules;
+import org.alfresco.service.transaction.TransactionService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,6 +73,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     private static final String TEST_FOLDER = "test_folder-" + System.currentTimeMillis();
     private static final String TEST_FOLDER_2 = "test_folder-2-" + System.currentTimeMillis();
 
+    private TransactionService transactionService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private AuthenticationComponent authenticationComponent;
@@ -86,6 +88,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     protected void setUp() throws Exception
     {
         super.setUp();
+        this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         this.fileFolderService = (FileFolderService) getServer().getApplicationContext().getBean("FileFolderService");
         this.ruleService = (RuleService) getServer().getApplicationContext().getBean("RuleService");
@@ -154,9 +157,18 @@ public class RuleServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        nodeService.deleteNode(testNodeRef2);
-        nodeService.deleteNode(testNodeRef);
-        nodeService.deleteNode(testWorkNodeRef);
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.deleteNode(testNodeRef2);
+                nodeService.deleteNode(testNodeRef);
+                nodeService.deleteNode(testWorkNodeRef);
+                return null;
+            }
+        };
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
         this.authenticationComponent.clearCurrentSecurityContext();
     }
 
@@ -677,6 +689,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertEquals(0, ruleService.getRules(testNodeRef).size());
     }
     
+    @SuppressWarnings("unused")
     public void testRuleReorder() throws Exception
     {
         assertEquals(0, ruleService.getRules(testNodeRef).size());
@@ -754,11 +767,6 @@ public class RuleServiceTest extends BaseWebScriptTest
         return result;
     }
 
-    private JSONObject buildTestRule() throws JSONException
-    {
-        return buildTestRule("test_rule");
-    }
-    
     private JSONObject buildTestRule(String title) throws JSONException
     {
         JSONObject result = new JSONObject();

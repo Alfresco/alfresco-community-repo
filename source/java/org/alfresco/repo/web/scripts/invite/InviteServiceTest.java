@@ -58,6 +58,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -134,7 +135,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
         
-        configureMailExecutorForTestMode();
+        configureMailExecutorForTestMode(this.getServer());
         
         // We're using a MailActionExecuter defined in outboundSMTP-test-context.xml which
         // sets the testMode property to true via spring injection. This will prevent emails
@@ -231,7 +232,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     /**
      * This method turns off email-sending within the MailActionExecuter bean.
      */
-    private void configureMailExecutorForTestMode()
+    public static void configureMailExecutorForTestMode(TestWebScriptServer server)
     {
     	// This test class depends on a MailActionExecuter bean which sends out emails
     	// in a live system. We want to prevent these emails from being sent during
@@ -259,8 +260,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     	//
     	// Therefore we've decided to do [3].
     	
-    	ChildApplicationContextFactory outboundSmptSubsystem
-            = (ChildApplicationContextFactory)getServer().getApplicationContext().getBean("OutboundSMTP");
+		ChildApplicationContextFactory outboundSmptSubsystem
+            = (ChildApplicationContextFactory)server.getApplicationContext().getBean("OutboundSMTP");
     	ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
     	MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
     	mailActionExecutor.setTestMode(true);

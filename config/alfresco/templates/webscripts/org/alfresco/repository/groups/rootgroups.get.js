@@ -7,30 +7,27 @@ function main ()
    // Get the args
    var shortNameFilter = args["shortNameFilter"];
    var zone = args["zone"];
+   var maxItems= args["maxItems"];
+   var skipCount= args["skipCount"];
      
-   if(zone == null)
+     if(maxItems == null)
+     {
+         maxItems = -1;
+     }
+     
+     if(skipCount == null)
+     {
+         skipCount = -1;
+     }
+     
+   if(shortNameFilter == null)
    {
-       if(shortNameFilter == null)
-       {
-           model.groups = groups.getAllRootGroups();
-       }
-       else
-       {
-           // Do the search
-           model.groups = groups.searchRootGroups(shortNameFilter);
-       }
+      model.groups = groups.getAllRootGroupsInZone(zone, maxItems, skipCount);
    }
    else
    {
-       if(shortNameFilter == null)
-       {
-           model.groups = groups.getAllRootGroupsInZone(zone);
-       }
-       else
-       {
-           // Do the search
-           model.groups = groups.searchRootGroupsInZone(shortNameFilter, zone);
-       }
+      // Do the search
+      model.groups = groups.searchRootGroupsInZone(shortNameFilter, zone, maxItems, skipCount);
    }
 }
 

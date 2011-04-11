@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -124,6 +125,10 @@ public class WebDAV
     
     public static final String HEADER_KEY_NOT = "Not";
     
+    // User agents
+    
+    public static final  String AGENT_MS_6_1_7600 = "Microsoft-WebDAV-MiniRedir/6.1.7600";
+
     // General string constants
     
     public static final String ASTERISK = "*";
@@ -243,7 +248,7 @@ public class WebDAV
     
     // WebDAV creation date/time formatter
     
-    private static SimpleDateFormat _creationDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    private static String CREATION_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     
     //  HTTP header date/time formatter
     //  NOTE: According to RFC2616 dates should always be in English and in
@@ -281,7 +286,7 @@ public class WebDAV
      */
     public static String formatCreationDate(Date date)
     {
-        return _creationDateFormatter.format(date);
+        return DateFormatUtils.formatUTC(date, CREATION_DATE_FORMAT);
     }
 
     /**
@@ -292,7 +297,7 @@ public class WebDAV
      */
     public static String formatCreationDate(long ldate)
     {
-        return _creationDateFormatter.format(new Date(ldate));
+        return DateFormatUtils.formatUTC(ldate, CREATION_DATE_FORMAT);
     }
 
     /**

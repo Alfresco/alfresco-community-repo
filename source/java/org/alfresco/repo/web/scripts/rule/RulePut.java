@@ -352,11 +352,11 @@ public class RulePut extends RulePost
     private ActionCondition getCondition(List<ActionCondition> conditions, String id)
     {
         ActionCondition result = null;
-        for (ActionCondition сondition : conditions)
+        for (ActionCondition condition : conditions)
         {
-            if (сondition.getId().equalsIgnoreCase(id))
+            if (condition.getId().equalsIgnoreCase(id))
             {
-                result = сondition;
+                result = condition;
                 break;
             }
         }

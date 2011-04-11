@@ -1,19 +1,18 @@
 <webscript>
    <shortname>List all root groups</shortname>
    <description><![CDATA[
-      Lists all root groups. The following optional parameters are available :-
-      <ul>
-      <li>zone - If set to 'true', returns root groups from the specified zone.   
-      If not specified, returns groups from all zones.
-      </li>
-      <li>
-      shortNameFilter - Returns those root groups with a partial match on shortName.    
+      List all root groups.
+      <br />
+      If the optional zone parameter is set to 'true' then returns root groups from the specified zone.   
+      If not specified will return groups from all zones.
+      <br />
+      If the optional shortNameFilter parameter is set then returns those root groups with a partial match on shortName.    
       The shortname filter can contain the wild card characters * and ? but these must be url encoded for this script.
-      </li>
-      </ul>
+      The optional maxItems parameter sets the maximum number of items to be returned. If no value is set then all items are returned.
+      The optional skipCount parameter determines how many items to skip before returning the first result. If no skipCount value is set then no items are skipped.
    ]]>
    </description>
-   <url>/api/rootgroups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}</url>
+   <url>/api/rootgroups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

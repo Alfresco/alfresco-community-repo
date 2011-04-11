@@ -144,15 +144,12 @@ var ParseArgs =
          rootNode = siteNode.getContainer(containerId);
          if (rootNode === null)
          {
-            rootNode = siteNode.createContainer(containerId, containerType || "cm:folder");
+            rootNode = siteNode.createAndSaveContainer(containerId, containerType || "cm:folder", "Data Lists");
             if (rootNode === null)
             {
                status.setCode(status.STATUS_NOT_FOUND, "Data Lists container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
                return null;
             }
-            
-            rootNode.properties["cm:description"] = "Data Lists";
-            rootNode.save();
          }
          listNode = rootNode;
          

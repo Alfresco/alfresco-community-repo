@@ -104,14 +104,15 @@
    </div>
 <#assign spacesFound = 0>
 <#list thisSpace.children?sort_by('name') as child>
-   <#if child.isContainer>
+   <#if child.isContainer || (child.typeShort = "app:folderlink")>
       <#assign spacesFound = spacesFound + 1>
+      <#assign destId><#if child.isContainer>${child.id}<#else>${child.properties.destination.id}</#if></#assign>
       <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
          <span style="float: left; width: 36px;">
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${destId}"><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
          </span>
          <span>
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="${message("office.action.open", child.name?html)}">
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${destId}" title="${message("office.action.open", child.name?html)}">
                <span class="bold">${child.name?html}</span>
             </a>
       <#if child.properties.description??>
@@ -134,30 +135,33 @@
 <div id="documentList" class="containerMedium togglePanel">
 <#assign documentsFound = 0>
 <#list thisSpace.children?sort_by('name') as child>
-   <#if child.isDocument>
-      <#assign isVersionable = child.hasAspect("cm:versionable")>
+   <#if child.isDocument || (child.typeShort = "app:filelink")>
+      <#if child.isDocument><#assign doc = child><#else><#assign doc = child.properties.destination></#if>
+      <#assign isVersionable = doc.hasAspect("cm:versionable")>
       <#assign documentsFound = documentsFound + 1>
-      <#assign relativePath = child.displayPath?substring(chLen + 1) + '/' + child.name />
+      <#assign relativePath = doc.displayPath?substring(chLen + 1) + '/' + doc.name>
       <#assign isSupportedExtn = false>
       <#list extList as ext>
-         <#if child.name?ends_with(ext)>
+         <#if doc.name?ends_with(ext)>
             <#assign isSupportedExtn = true>
             <#break>
          </#if>
       </#list>
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
-      <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+      <#assign icon = child.icon32>
+      <#if child.typeShort = "app:filelink"><#assign icon = "/images/filetypes32/url.gif"></#if>
+      <#if doc.name?ends_with(extn) || doc.name?ends_with(extnx) || isSupportedExtn>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')"><img src="${url.context}${icon}" alt="Open ${doc.name?html}" /></a>
       <#else>
-            <a href="${url.context}${child.url}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+            <a href="${url.context}${doc.url}" rel="_blank"><img src="${url.context}${icon}" alt="Open ${doc.name?html}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
-      <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')" title="${child.name?html}"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
+      <#if doc.name?ends_with(extn) || doc.name?ends_with(extnx) || isSupportedExtn>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')" title="${doc.name?html}"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
-            <a href="${url.context}${child.url}" rel="_blank" title="${child.name?html}"><span class="bold">${child.name?html}</span></a>
+            <a href="${url.context}${doc.url}" rel="_blank" title="${doc.name?html}"><span class="bold">${child.name?html}</span></a>
       </#if>
             <br />
       <#if child.properties.description??>
@@ -166,17 +170,19 @@
          </#if>
       </#if>
             ${message("office.property.modified")}: ${child.properties.modified?datetime}, ${message("office.property.size")}: ${(child.size / 1024)?int}${message("office.unit.kb")}<br />
-      <#if child.isLocked >
+      <#if child.isDocument>
+         <#if child.isLocked >
             <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
-      <#elseif child.hasAspect("cm:workingcopy")>
+         <#elseif child.hasAspect("cm:workingcopy")>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkin")}" title="${message("office.action.checkin")}" /></a>
-      <#else>
+         <#else>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
-      </#if>
+         </#if>
             <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.start_workflow")}..." title="${message("office.action.start_workflow")}..." /></a>
             <a href="#" onclick="ExternalComponent.insertDocument('${relativePath?js_string}', '${child.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
-      <#if !child.name?ends_with(".pdf")>
+         <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
+         </#if>
       </#if>
       <#if !child.isLocked>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', '${message("office.message.confirm_delete")}');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.delete")}..." title="${message("office.action.delete")}..." /></a>

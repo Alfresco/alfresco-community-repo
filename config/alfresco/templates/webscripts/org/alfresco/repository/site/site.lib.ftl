@@ -29,7 +29,7 @@
 	</#if>
 	"siteManagers" : 
 	[			
-		<#assign managers = site.listMembers(null, "SiteManager", 0)?keys />
+		<#assign managers = site.listMembers(null, "SiteManager", 0, true)?keys />
       <#list managers as manager>              
          "${manager}"  
          <#if manager_has_next>,</#if>

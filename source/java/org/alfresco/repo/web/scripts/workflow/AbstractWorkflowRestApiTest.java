@@ -559,7 +559,14 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
             assertNotNull(transition);
 
-            assertEquals(startTransition.getId(), transition.getString("id"));
+            if(startTransition.getId() == null)
+            {
+                assertEquals("", transition.getString("id"));
+            }
+            else
+            {
+                assertEquals(startTransition.getId(), transition.getString("id"));
+            }
             assertEquals(startTransition.getTitle(), transition.getString("title"));
             assertEquals(startTransition.getDescription(), transition.getString("description"));
             assertEquals(startTransition.isDefault(), transition.getBoolean("isDefault"));

@@ -5,4 +5,115 @@
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>task_instance_id</shortname>
+         <description>The id of the task to update details for.</description>
+      </arg>
+   </args>
+   <requests>
+      <request>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "key": string, boolean, number, array or map,
+               ...
+            }
+            ]]>
+         </type>
+      </request>
+   </requests>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "id": string,
+                  "url": string,
+                  "name": string,
+                  "title": string,
+                  "description": string,
+                  "state": string (IN_PROGRESS|COMPLETE),
+                  "path": string,
+                  "isPooled": boolean,
+                  "isEditable": boolean,
+                  "isReassignable": boolean,
+                  "isClaimable": boolean,
+                  "isReleasable": boolean,
+                  "outcome": string,
+                  "owner":
+                  {
+                     "userName": string,
+                     "firstName": string,
+                     "lastName": string
+                  },
+                  "properties":
+                  {
+                     "key": string, boolean, number, array or map,
+                     ...
+                  },
+                  "workflowInstance":
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "isActive": boolean,
+                     "startDate": string,
+                     "priority": number,
+                     "message": string,
+                     "endDate": string,
+                     "dueDate": string,
+                     "context": string,
+                     "package": string,
+                     "initiator":
+                     {
+                        "userName": string,
+                        "firstName": string,
+                        "lastName": string
+                     },
+                     "definitionUrl": string
+                  }
+                  "definition":
+                  {
+                     "id": string,
+                     "url": string,
+                     "type":
+                     {
+                        "name": string,
+                        "title": string,
+                        "description": string,
+                        "url": string
+                     },
+                     "node":
+                     {
+                        "name": string,
+                        "title": string,
+                        "description": string,
+                        "isTaskNode": boolean,
+                        "transitions":
+                        [
+                           {
+                              "id": string,
+                              "title": string,
+                              "description": string,
+                              "isDefault": boolean,
+                              "isHidden": boolean
+                           },
+                           ...
+                        ]
+                     }
+                  }
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

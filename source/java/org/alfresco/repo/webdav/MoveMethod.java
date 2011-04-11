@@ -44,6 +44,7 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
     protected void moveOrCopy(
             FileFolderService fileFolderService,
             NodeRef sourceNodeRef,
+            NodeRef sourceParentNodeRef,
             NodeRef destParentNodeRef,
             String name) throws Exception
     {
@@ -68,15 +69,7 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
 
         checkNode(fileInfo);
 
-        if (getNodeService().getPrimaryParent(sourceNodeRef).getParentRef().equals(destParentNodeRef))
-        {
-            // It is renaming operation
-            fileFolderService.rename(sourceNodeRef, name);
-        }
-        else
-        {
-            // It is move operation
-            fileFolderService.move(sourceNodeRef, destParentNodeRef, name);
-        }
+        // It is move operation
+        fileFolderService.move(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);        
     }
 }

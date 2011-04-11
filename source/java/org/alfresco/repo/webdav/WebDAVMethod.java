@@ -312,7 +312,7 @@ public abstract class WebDAVMethod
         catch (AccessDeniedException e)
         {
             // Return a forbidden status
-            throw new WebDAVServerException(HttpServletResponse.SC_UNAUTHORIZED, e);
+            throw new WebDAVServerException(HttpServletResponse.SC_FORBIDDEN, e);
         }
         catch (Throwable e)
         {

@@ -4,5 +4,5 @@
   <url>/api/forms/picker/items</url>
   <format default="json"/>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

@@ -12,7 +12,7 @@
       Returns an Array of groups in JSON format.
    ]]>
    </description>
-   <url>/api/groups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}</url>
+   <url>/api/groups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

@@ -17,6 +17,7 @@ function runAction(p_params)
    var results = [],
       destNode = p_params.destNode,
       files = p_params.files,
+      parent = null,
       file, fileNode, result, nodeRef;
 
    // Must have array of files
@@ -47,10 +48,14 @@ function runAction(p_params)
          }
          else
          {
+	    if (p_params.parent !== null)
+	    {
+                parent = search.findNode(p_params.parent);
+            }
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
             // move the node
-            result.success = fileNode.move(destNode);
+            result.success = fileNode.move(parent, destNode);
          }
       }
       catch (e)

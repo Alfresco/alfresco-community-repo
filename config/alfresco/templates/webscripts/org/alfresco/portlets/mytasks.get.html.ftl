@@ -250,7 +250,6 @@
    font-size: 12px;
    margin: 0px;
    padding: 0px;
-   display: none;
    overflow: hidden;
 }
 

@@ -5,4 +5,5 @@
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

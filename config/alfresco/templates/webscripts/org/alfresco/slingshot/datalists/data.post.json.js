@@ -46,7 +46,7 @@ function getData()
       
       for (count = 0; count < numFields; count++)
       {
-         fields.push(jsonFields.get(count).replace("_", ":"));
+         fields.push(jsonFields.get(count).replaceFirst("_", ":"));
       }
    }
 

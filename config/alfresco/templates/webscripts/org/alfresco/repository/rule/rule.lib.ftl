@@ -145,14 +145,18 @@
 		"name" : "${actionConstraint.name}",		
 		"values" : 
 		[
-		<#if actionConstraint.allowableValues?? && actionConstraint.allowableValues?size &gt; 0>
-			<#list actionConstraint.allowableValues?keys as allowableValue>	
-			<#assign val = actionConstraint.allowableValues[allowableValue]>				
+		<#if actionConstraint.allowableValues??>
+		   <#assign allowableValues = actionConstraint.allowableValues>
+		   
+		   <#if allowableValues?size &gt; 0>
+			<#list allowableValues?keys as allowableValue>	
+			<#assign val = allowableValues[allowableValue]>				
 			{
 				"value" : "${allowableValue}",
 				"displayLabel" : "${val}"
 			}<#if allowableValue_has_next>,</#if>				
 			</#list>
+			</#if>
 		</#if>
 		]
 	}

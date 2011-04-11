@@ -51,6 +51,7 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
     protected abstract void moveOrCopy(
             FileFolderService fileFolderService,
             NodeRef sourceNodeRef,
+            NodeRef sourceParentNodeRef,
             NodeRef destParentNodeRef,
             String name) throws Exception;
 
@@ -83,6 +84,8 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         {
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
+
+        FileInfo sourceParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, sourcePath, servletPath);
 
         // the destination parent must exist
         String destPath = getDestinationPath();
@@ -137,11 +140,12 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         }
 
         NodeRef sourceNodeRef = sourceInfo.getNodeRef();
+        NodeRef sourceParentNodeRef = sourceParentInfo.getNodeRef();
         NodeRef destParentNodeRef = destParentInfo.getNodeRef();
         
         String name = getDAVHelper().splitPath(destPath)[1];
 
-        moveOrCopy(fileFolderService, sourceNodeRef, destParentNodeRef, name);
+        moveOrCopy(fileFolderService, sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);
 
         // Set the response status
         if (destInfo == null)
@@ -152,5 +156,6 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         {
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         }
-    }
+    }       
+   
 }

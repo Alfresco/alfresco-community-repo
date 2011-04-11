@@ -672,16 +672,16 @@ public class PropertyUtil
             CmisPropertyDecimal property = new CmisPropertyDecimal();
             property.setPropertyDefinitionId(pdid);
 
-            if (value instanceof Collection)
+            if (value instanceof Collection) 
             {
-                for (BigDecimal propertyValue : (Collection<BigDecimal>) value)
+                for (Serializable propertyValue : (Collection<Serializable>) value)
                 {
-                    property.getValue().add(propertyValue);
+                    property.getValue().add(decimalValue(propertyValue));
                 }
             }
             else
             {
-                property.getValue().add(BigDecimal.valueOf((Double) value));
+                property.getValue().add(decimalValue(value));
             }
 
             return property;
@@ -712,6 +712,15 @@ public class PropertyUtil
         }
     }
 
+    private BigDecimal decimalValue(Serializable value) 
+    { 
+        if ((value instanceof Float) || (value instanceof Double)) 
+        { 
+            return BigDecimal.valueOf(((Number) value).doubleValue()); 
+        } 
+        return null; 
+    } 
+    
     /**
      * Converts Date object to XMLGregorianCalendar object
      * 

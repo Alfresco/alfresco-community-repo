@@ -26,19 +26,19 @@ import java.util.List;
 import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.webscripts.SearchPath;
-import org.springframework.extensions.webscripts.Store;
-import org.springframework.extensions.webscripts.TemplateProcessor;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.webscripts.SearchPath;
+import org.springframework.extensions.webscripts.Store;
+import org.springframework.extensions.webscripts.TemplateProcessor;
+import org.springframework.extensions.webscripts.WebScriptException;
 
-import freemarker.cache.MruCacheStorage;
 import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.StrongCacheStorage;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -59,7 +59,6 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     protected Configuration templateConfig;
     protected FreeMarkerProcessor freeMarkerProcessor;
     private int updateDelay = 1;
-    private int cacheSize = 512;
 
 
     /* (non-Javadoc)
@@ -90,12 +89,9 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     /**
      * @param cacheSize the size of the MRU template cache, default is 256
      */
+    @Deprecated
     public void setCacheSize(int cacheSize)
     {
-        if (cacheSize >= 0)
-        {
-            this.cacheSize = cacheSize;
-        }
     }
 
     /**
@@ -167,7 +163,7 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
         Configuration config = new Configuration();
         
         // setup template cache
-        config.setCacheStorage(new MruCacheStorage(this.cacheSize, this.cacheSize << 1));
+        config.setCacheStorage(new StrongCacheStorage());
         config.setTemplateUpdateDelay(updateDelay);
         
         // setup template loaders

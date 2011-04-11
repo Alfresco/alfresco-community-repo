@@ -81,7 +81,7 @@
 	"replyCount": <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
 	"permissions":
 	{
-		"edit": ${post.hasPermission("Write")?string},
+		"edit": ${postData.canEdit?string},
 		"reply": ${post.parent.hasPermission("CreateChildren")?string},
 		"delete": ${post.hasPermission("Delete")?string}
 	}

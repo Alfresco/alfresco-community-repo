@@ -44,7 +44,13 @@ function getDoclist()
       path: parsedArgs.location.path,
       file: node.name
    };
-   
+
+   item.location.parent = {};
+   if (node.parent != null && node.parent.hasPermission("Read"))
+   {
+      item.location.parent.nodeRef = String(node.parent.nodeRef.toString());  
+   }
+
    // Special case for container and libraryRoot nodes
    if ((parsedArgs.location.containerNode && String(parsedArgs.location.containerNode.nodeRef) == String(node.nodeRef)) ||
       (parsedArgs.libraryRoot && String(parsedArgs.libraryRoot.nodeRef) == String(node.nodeRef)))

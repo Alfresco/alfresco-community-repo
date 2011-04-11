@@ -5,4 +5,5 @@
   <authentication>user</authentication>
   <transaction>required</transaction>
   <url>/slingshot/profile/userprofile</url>
+  <lifecycle>internal</lifecycle>
 </webscript>

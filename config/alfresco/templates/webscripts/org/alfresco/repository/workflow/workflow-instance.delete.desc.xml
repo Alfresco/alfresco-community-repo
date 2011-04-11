@@ -1,8 +1,19 @@
 <webscript>
-   <shortname>Delete Workflow Instance</shortname>
-   <description>Either cancels or deletes the specified workflow instance.</description>
+   <shortname>Delete or Cancel Workflow Instance</shortname>
+   <description>Either cancels or deletes the specified workflow instance. To cancel call with no arguments, to delete set the forced argument to true.</description>
    <url>/api/workflow-instances/{workflow_instance_id}?forced={forced?}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>workflow_instance_id</shortname>
+         <description>The id of workflow process instance to delete or cancel.</description>
+      </arg>
+      <arg>
+         <shortname>forced</shortname>
+         <description>Setting this argument to true will delete the workflow instance, if it is false or omitted the workflow instance will be cancelled.</description>
+      </arg>
+   </args>
 </webscript>

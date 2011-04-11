@@ -21,41 +21,47 @@
 <#else>
    <#assign totalResults = results?size>
    <#list results?sort_by(["properties","cm:modified"])?reverse as child>
+      <#assign dest = child>
+      <#if child.typeShort = "app:filelink" || child.typeShort = "app:folderlink"><#assign dest = child.properties.destination></#if>
       <#assign resCount=resCount + 1>
       <#assign isSupportedExtn = false>
-      <#list extList as ext>
-         <#if child.name?ends_with(ext)>
-            <#assign isSupportedExtn = true>
-            <#break>
-         </#if>
-      </#list>
-      <#if child.isDocument>
-         <#assign relativePath = child.displayPath?substring(chLen + 1) + '/' + child.name />
-         <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
+      <#if child.isDocument || (child.typeShort = "app:filelink")>
+         <#assign relativePath = dest.displayPath?substring(chLen + 1) + '/' + dest.name />
+         <#list extList as ext>
+            <#if dest.name?ends_with(ext)>
+               <#assign isSupportedExtn = true>
+               <#break>
+            </#if>
+         </#list>
+         <#if dest.name?ends_with(extn) || dest.name?ends_with(extnx) || isSupportedExtn>
             <#assign openURL = "#">
             <#assign hrefExtra = " onClick=\"ExternalComponent.openDocument('${relativePath?js_string}')\"">
          <#else>
-            <#assign openURL = "${url.context}${child.url}">
+            <#assign openURL = "${url.context}${dest.url}">
             <#assign hrefExtra = " target=\"_blank\"">
          </#if>
       <#else>
-         <#assign openURL = "${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
+         <#assign openURL = "${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${dest.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
          <#assign hrefExtra = "">
       </#if>
 <div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}">
    <span class="documentItemIcon">
-      <a class="toolTip" href="${openURL}" ${hrefExtra} title="${child.displayPath?html}&#13;${child.name?html}"><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
+      <#assign icon = child.icon32>
+      <#if child.typeShort = "app:filelink"><#assign icon = "/images/filetypes32/url.gif"></#if>
+      <a class="toolTip" href="${openURL}" ${hrefExtra} title="${dest.displayPath?html}&#13;${dest.name?html}"><img src="${url.context}${icon}" alt="${message("office.action.open", dest.name?html)}" /></a>
    </span>
    <span class="documentItemDetails">
-      <a class="bold toolTip" href="${openURL}" ${hrefExtra} title="${child.displayPath?html}&#13;${child.name?html}">${child.name?html}</a>
+      <a class="bold toolTip" href="${openURL}" ${hrefExtra} title="${dest.displayPath?html}&#13;${dest.name?html}">${child.name?html}</a>
       <br />
       <#if child.properties.description??>
          <#if (child.properties.description?length > 0)>
             ${child.properties.description?html}<br />
          </#if>
       </#if>
-      <#if child.isDocument>
+      <#if child.isDocument || (child.typeShort = "app:filelink")>
          ${message("office.property.modified")}: ${child.properties.modified?datetime} (${(child.size / 1024)?int}${message("office.unit.kb")})<br />
+      </#if>
+      <#if child.isDocument>
          <#if child.isLocked >
          <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.status.locked")}" />
          <#elseif child.hasAspect("cm:workingcopy")>
@@ -68,6 +74,8 @@
          <#if !child.name?ends_with(".pdf")>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>
+      </#if>
+      <#if child.isDocument || (child.typeShort = "app:filelink")>
          <#if !child.isLocked>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', '${message("office.message.confirm_delete")}');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.delete")}..." title="${message("office.action.delete")}..." /></a>
          </#if>

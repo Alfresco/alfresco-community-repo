@@ -22,6 +22,7 @@ package org.alfresco.repo.web.scripts.transfer;
 import java.io.StringWriter;
 
 import org.alfresco.repo.transfer.RepoTransferReceiverImpl;
+import org.alfresco.repo.transfer.TransferCommons;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.logging.Log;
@@ -57,8 +58,26 @@ public class BeginTransferCommandProcessor implements CommandProcessor
         String transferId = null;
         try
         {
-            // attempt to take the transfer lock
-            transferId = receiver.start();
+            String [] fromRepositoryIdValues = req.getParameterValues(TransferCommons.PARAM_FROM_REPOSITORYID);
+            String [] transferToSelfValues = req.getParameterValues(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF);
+            
+            String fromRepositoryId = null;
+            if(fromRepositoryIdValues.length > 0)
+            {
+                fromRepositoryId = fromRepositoryIdValues[0];
+            }
+            
+            boolean transferToSelf = false;
+            if(transferToSelfValues.length > 0)
+            {
+                if(transferToSelfValues[0].equalsIgnoreCase("true"))
+                {
+                    transferToSelf = true;
+                }
+            }
+            
+            // attempt to start the transfer
+            transferId = receiver.start(fromRepositoryId, transferToSelf);
 
             // Create a temporary folder into which we can place transferred files
             receiver.getStagingFolder(transferId);
@@ -82,7 +101,8 @@ public class BeginTransferCommandProcessor implements CommandProcessor
             
             return Status.STATUS_OK;
 
-        } catch (Exception ex)
+        } 
+        catch (Exception ex)
         {
             logger.debug("exception caught", ex);
             if(transferId != null)

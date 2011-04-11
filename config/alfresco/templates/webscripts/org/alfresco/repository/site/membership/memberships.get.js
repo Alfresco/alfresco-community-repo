@@ -13,6 +13,7 @@ function main()
    var roleFilter = args["rf"];
    var authorityType = args["authorityType"];
    var sizeString = args["size"];
+   var collapseGroups = false;
    
    if (authorityType != null)
    {
@@ -21,11 +22,21 @@ function main()
          status.setCode(status.STATUS_BAD_REQUEST, "The 'authorityType' argument must be either USER or GROUP.");
          return;
       }
+      if (authorityType == "USER")
+      {
+         collapseGroups = true;
+      }
+   }
+   
+   var sizeSearch = 0;
+   if(sizeString != null)
+   {
+      sizeSearch = parseInt(sizeString);
    }
    
    // Get the filtered memberships
    // Comes back as a Map<String, String> containing the full authority name and role
-   var memberships = site.listMembers(nameFilter, roleFilter, sizeString != null ? parseInt(sizeString) : 0);
+   var memberships = site.listMembers(nameFilter, roleFilter, sizeSearch, collapseGroups);
    
    // Get a list of all the users resolved to person nodes
    var authorities = Array(memberships.length);

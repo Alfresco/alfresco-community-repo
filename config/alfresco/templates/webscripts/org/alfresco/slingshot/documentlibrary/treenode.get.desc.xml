@@ -8,4 +8,5 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readwrite" buffersize="0">required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

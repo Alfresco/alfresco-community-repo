@@ -344,6 +344,7 @@ public class LockMethod extends WebDAVMethod
         // Store lock scope (shared/exclusive)
         getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE, this.createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED);
 
+        logger.debug("Properties of the " + lockNode + " was changed");
     }
 
     /**
@@ -389,27 +390,48 @@ public class LockMethod extends WebDAVMethod
 
         xml.startDocument();
 
-        String nsdec = generateNamespaceDeclarations(null);
-        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
-
         // Output the lock details
-        generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
+        String nsdec = "";
 
-        // Close off the XML
-        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
+        if (WebDAV.AGENT_MS_6_1_7600.equals(m_userAgent))
+        {
+            nsdec = generateNamespaceDeclarations(null, true);
+            xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
+
+            // Output the lock details
+            generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
+
+            // Close off the XML
+            xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
+
+        }
+        else
+        {
+            nsdec = generateNamespaceDeclarations(null, false);
+            xml.startElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP + nsdec, getDAVHelper().getNullAttributes());
+
+            // Output the lock details
+            generateLockDiscoveryXML(xml, lockNode, true, scope, WebDAV.getDepthName(m_depth), lt, owner);
+
+            // Close off the XML
+            xml.endElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP);
+        }
     }
         
     /**
      * Generates a list of namespace declarations for the response
      */
-    protected String generateNamespaceDeclarations(HashMap<String,String> nameSpaces)
+    protected String generateNamespaceDeclarations(HashMap<String,String> nameSpaces, boolean withPrefix)
     {
         StringBuilder ns = new StringBuilder();
 
         ns.append(" ");
         ns.append(WebDAV.XML_NS);
-        ns.append(":");
-        ns.append(WebDAV.DAV_NS);
+        if (withPrefix)
+        {
+            ns.append(":");
+            ns.append(WebDAV.DAV_NS);
+        }
         ns.append("=\"");
         ns.append(WebDAV.DEFAULT_NAMESPACE_URI);
         ns.append("\"");

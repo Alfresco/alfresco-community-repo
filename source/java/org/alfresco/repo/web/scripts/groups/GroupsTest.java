@@ -19,6 +19,8 @@
 package org.alfresco.repo.web.scripts.groups;
 
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,16 +33,17 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Unit test of Groups REST APIs. 
@@ -67,6 +70,8 @@ public class GroupsTest extends BaseWebScriptTest
     private String TEST_GROUPC = "TesTC";
     private String TEST_GROUPD = "TESTD";
     private String TEST_GROUPE = "TestE";
+    private String TEST_GROUPF = "TestF";
+    private String TEST_GROUPG = "TestG";
     private String TEST_LINK = "TESTLINK";
     private String TEST_ROOTGROUP_DISPLAY_NAME = "GROUPS_TESTROOTDisplayName";
     
@@ -89,6 +94,10 @@ public class GroupsTest extends BaseWebScriptTest
      *		USER_THREE
      *	GROUPC
      *		USER_TWO
+     *	GROUPF
+     *		GROUPD
+     *	GROUPG
+     *		GROUPD
      */	
     private synchronized String createTestTree()
     {
@@ -102,7 +111,7 @@ public class GroupsTest extends BaseWebScriptTest
     	
         if(!authorityService.authorityExists(rootGroupName))
         {
-            this.authenticationComponent.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         	 
         	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, TEST_ROOTGROUP, TEST_ROOTGROUP_DISPLAY_NAME, authorityService.getDefaultZones());
         	String groupA = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPA, TEST_GROUPA, authorityService.getDefaultZones());
@@ -115,7 +124,13 @@ public class GroupsTest extends BaseWebScriptTest
             authorityService.addAuthority(groupB, groupE);
         	authorityService.addAuthority(groupB, USER_TWO);
         	authorityService.addAuthority(groupB, USER_THREE);
-        
+            String groupF = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPF, TEST_GROUPF, authorityService.getDefaultZones());
+            authorityService.addAuthority(rootGroupName, groupF);
+            authorityService.addAuthority(groupF, groupD);
+            String groupG = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPG, TEST_GROUPG, authorityService.getDefaultZones());
+            authorityService.addAuthority(rootGroupName, groupG);
+            authorityService.addAuthority(groupG, groupD);
+            
         	String groupC = authorityService.createAuthority(AuthorityType.GROUP, TEST_GROUPC, TEST_GROUPC,authorityService.getDefaultZones());
         	authorityService.addAuthority(rootGroupName, groupC);
         	authorityService.addAuthority(groupC, USER_TWO);
@@ -429,7 +444,6 @@ public class GroupsTest extends BaseWebScriptTest
      */
     public void testLinkChild() throws Exception
     {
-    	
     	String myRootGroup = "GT_LGROOT";
     	
     	try 
@@ -799,12 +813,11 @@ public class GroupsTest extends BaseWebScriptTest
 		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_SHARE), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
-		    System.out.println(response.getContentAsString());
+//		    System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("Can't find Group E in Share zone", 1, data.length());
  			JSONObject authority = data.getJSONObject(0);
 			assertEquals("", TEST_GROUPE, authority.getString("shortName"));
-
     	}
     	
     	// Negative test Search for a group in a wrong zone
@@ -812,7 +825,7 @@ public class GroupsTest extends BaseWebScriptTest
 		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_WCM), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
-		    System.out.println(response.getContentAsString());
+//		    System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("length not 0", 0, data.length());
     	}
@@ -820,6 +833,180 @@ public class GroupsTest extends BaseWebScriptTest
     
     }
     
+    public void testSearchGroupsPaging() throws Exception
+    {
+        createTestTree();
+
+        JSONArray data = getDataArray(URL_GROUPS + "?shortNameFilter=*");
+        int defaultSize = data.length();
+        String firstGroup = data.get(0).toString();
+
+        assertTrue("There should be at least 6 groups in default zone!", defaultSize > 5);
+
+        // Test maxItems works
+        data = getDataArray(URL_GROUPS + "?shortNameFilter=*" +"&maxItems=3");
+        assertEquals("There should only be 3 groups!", 3, data.length());
+        assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
+        
+        // Test skipCount works
+        data = getDataArray(URL_GROUPS + "?shortNameFilter=*" + "&skipCount=2");
+        assertEquals("The number of groups returned is wrong!", defaultSize-2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount
+        data = getDataArray(URL_GROUPS + "?shortNameFilter=*" +"&skipCount=2&maxItems=3");
+        assertEquals("The number of groups returned is wrong!", 3, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount when maxItems is too big.
+        // Shoudl return last 2 items.
+        int skipCount = defaultSize-2;
+        data = getDataArray(URL_GROUPS + "?shortNameFilter=*" + "&skipCount="+skipCount+"&maxItems=5");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+    }
+    
+    public void testGetRootGroupsPaging() throws Exception
+    {
+        createTestTree();
+        
+        JSONArray data = getDataArray(URL_ROOTGROUPS);
+        int defaultSize = data.length();
+        String firstGroup = data.get(0).toString();
+        
+        assertTrue("There should be at least 3 groups in default zone!", defaultSize > 2);
+        
+        // Test maxItems works
+        data = getDataArray(URL_ROOTGROUPS + "?maxItems=2");
+        assertEquals("There should only be 2 groups!", 2, data.length());
+        assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
+        
+        // Test skipCount works
+        data = getDataArray(URL_ROOTGROUPS + "?skipCount=1");
+        assertEquals("The number of groups returned is wrong!", defaultSize-1, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount
+        data = getDataArray(URL_ROOTGROUPS + "?skipCount=1&maxItems=2");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount when maxItems is too big.
+        // Shoudl return last 2 items.
+        int skipCount = defaultSize-1;
+        data = getDataArray(URL_ROOTGROUPS + "?skipCount="+skipCount+"&maxItems=5");
+        assertEquals("The number of groups returned is wrong!", 1, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+    }
+    
+    public void testGetParentsPaging() throws Exception
+    {
+        createTestTree();
+
+        // Test for immediate parents
+        String baseUrl = URL_GROUPS + "/" + TEST_GROUPD + "/parents";
+        
+        JSONArray data = getDataArray(baseUrl);
+        int defaultSize = data.length();
+        String firstGroup = data.get(0).toString();
+
+        assertEquals("There should be at least 3 groups in default zone!", 3, defaultSize);
+
+        // Test maxItems works
+        data = getDataArray(baseUrl +"?maxItems=2");
+        assertEquals("There should only be 2 groups!", 2, data.length());
+        assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
+        
+        // Test skipCount works
+        data = getDataArray(baseUrl + "?skipCount=1");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount
+        data = getDataArray(baseUrl + "?skipCount=1&maxItems=1");
+        assertEquals("The number of groups returned is wrong!", 1, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount when maxItems is too big.
+        // Shoudl return last 2 items.
+        data = getDataArray(baseUrl + "?skipCount=1&maxItems=5");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+
+        //Test for ALL parents
+        baseUrl = URL_GROUPS + "/" + TEST_GROUPD + "/parents?level=ALL";
+        
+        data = getDataArray(baseUrl);
+        defaultSize = data.length();
+        firstGroup = data.get(0).toString();
+        
+        assertTrue("There should be at least 3 groups in default zone!", defaultSize > 2);
+        
+        // Test maxItems works
+        data = getDataArray(baseUrl +"&maxItems=2");
+        assertEquals("There should only be 3 groups!", 2, data.length());
+        assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
+        
+        // Test skipCount works
+        data = getDataArray(baseUrl + "&skipCount=1");
+        assertEquals("The number of groups returned is wrong!", defaultSize-1, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount
+        data = getDataArray(baseUrl + "&skipCount=1&maxItems=2");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount when maxItems is too big.
+        // Shoudl return last 2 items.
+        int skipCount = defaultSize-2;
+        data = getDataArray(baseUrl + "&skipCount="+skipCount+"&maxItems=5");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+    }
+
+    public void testGetChildGroupsPaging() throws Exception
+    {
+        createTestTree();
+        
+        // Test for immediate parents
+        String baseUrl = URL_GROUPS + "/" + TEST_ROOTGROUP + "/children?authorityType=GROUP";
+        
+        JSONArray data = getDataArray(baseUrl);
+        int defaultSize = data.length();
+        String firstGroup = data.get(0).toString();
+        
+        assertEquals("There should be 6 groups in default zone!", 6, defaultSize);
+        
+        // Test maxItems works
+        data = getDataArray(baseUrl +"&maxItems=2");
+        assertEquals("There should only be 3 groups!", 2, data.length());
+        assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
+        
+        // Test skipCount works
+        data = getDataArray(baseUrl + "&skipCount=2");
+        assertEquals("The number of groups returned is wrong!", 4, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount
+        data = getDataArray(baseUrl + "&skipCount=2&maxItems=2");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+        
+        // Test maxItems and skipCount when maxItems is too big.
+        // Shoudl return last 2 items.
+        data = getDataArray(baseUrl + "&skipCount=4&maxItems=5");
+        assertEquals("The number of groups returned is wrong!", 2, data.length());
+        assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
+    }
+
+    private JSONArray getDataArray(String url) throws IOException, JSONException, UnsupportedEncodingException
+    {
+        Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONArray data = top.getJSONArray("data");
+        return data;
+    }
     /**
      * Detailed test of get Parents
      */

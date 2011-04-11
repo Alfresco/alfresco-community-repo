@@ -39,6 +39,7 @@ public class CopyMethod extends AbstractMoveOrCopyMethod
     protected void moveOrCopy(
             FileFolderService fileFolderService,
             NodeRef sourceNodeRef,
+            NodeRef sourceParentNodeRef,
             NodeRef destParentNodeRef,
             String name) throws Exception
     {

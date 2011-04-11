@@ -18,7 +18,8 @@
  */
 const DEFAULT_MAX_RESULTS = 250;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
-const COMMENT_QNAMEPATH = "/fm:discussion/cm:Comments/";
+const DISCUSSION_QNAMEPATH = "/fm:discussion";
+const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments/";
 const QUERY_TEMPLATES = [
    {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
 
@@ -114,7 +115,8 @@ function getRepositoryItem(folderPath, node)
    
    // check whether this is a valid folder or a file
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
+       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
    {
       if (node.isContainer || node.isDocument)
       {
@@ -168,7 +170,8 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    
    // check whether this is a valid folder or a file
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
+       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
    {
       if (node.isContainer || node.isDocument)
       {
@@ -408,7 +411,8 @@ function getLinkItem(siteId, containerId, pathParts, node)
    addToProcessed(cat, refkey);
    
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1)
+   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
+       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
    {
       item =
       {

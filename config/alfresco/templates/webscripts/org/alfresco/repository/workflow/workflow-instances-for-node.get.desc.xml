@@ -5,4 +5,56 @@
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_type</shortname>
+         <description>The store type of the node</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The store id of the node</description>
+      </arg>
+      <arg>
+         <shortname>id</shortname>
+         <description>The id of the node</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data":
+               [
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "isActive": boolean,
+                     "startDate": string,
+                     "endDate": string,
+                     "dueDate": string,
+                     "priority": number,
+                     "message": string,
+                     "context": string,
+                     "package": string,
+                     "initiator":
+                     {
+                        "userName": string,
+                        "firstName": string,
+                        "lastName": string
+                     },
+                     "definitionUrl": string
+                  },
+                  ...
+               ]
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

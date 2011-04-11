@@ -11,7 +11,6 @@ function createPersonResult(node)
    {
       typeShort: node.typeShort,
       isContainer: false,
-      children: [],
       properties: {},
       displayPath: node.displayPath,
       nodeRef: "" + node.nodeRef
@@ -40,7 +39,6 @@ function createGroupResult(node)
    {
       typeShort: node.typeShort,
       isContainer: false,
-      children: [],
       properties: {},
       displayPath: node.displayPath,
       nodeRef: "" + node.nodeRef

@@ -5,4 +5,5 @@
   <authentication>user</authentication>
   <transaction>required</transaction>
   <url>/slingshot/profile/uploadavatar</url>
+  <lifecycle>internal</lifecycle>
 </webscript>

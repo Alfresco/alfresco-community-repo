@@ -1,12 +1,129 @@
 <webscript>
-  <shortname>List Workflow Tasks</shortname>
-  <description>
-  Lists all Workflow Task Instances associated with an authority and of a given State.
-  The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.
-  </description>
-  <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
-  <url>/api/workflow-instances/{workflow_instance_id}/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;dueBefore={isoDate?}&amp;dueAfter={isoDate?}&amp;properties={prop1, prop2, prop3...?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
-  <format default="json"/>
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
+   <shortname>List Workflow Tasks</shortname>
+   <description>
+      Lists all Workflow Task Instances associated with an authority and of a given State.
+      The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.
+   </description>
+   <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+   <url>/api/workflow-instances/{workflow_instance_id}/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;dueBefore={isoDate?}&amp;dueAfter={isoDate?}&amp;properties={prop1, prop2, prop3...?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>authority</shortname>
+         <description>The username of the authority to retrieve the tasks for. If this argument is omitted the tasks for the current user are returned.</description>
+      </arg>
+      <arg>
+         <shortname>state</shortname>
+         <description>Filters the returned tasks by state, IN_PROGRESS or COMPLETED (lower case is also acceptable). If this argument is omitted tasks in progress are returned.</description>
+      </arg>
+      <arg>
+         <shortname>priority</shortname>
+         <description>Filters the returned tasks by priority, a numerical value is expected, either 1, 2 or 3.</description>
+      </arg>
+      <arg>
+         <shortname>pooledTasks</shortname>
+         <description>Determines whether pooled tasks for the user are included in the results. To omit pooled tasks set this argument to false.</description>
+      </arg>
+      <arg>
+         <shortname>dueBefore</shortname>
+         <description>Restricts the returned tasks to only those that are due before the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>dueAfter</shortname>
+         <description>Restricts the returned tasks to only those that are due after the provided date (the date must be in ISO8601 format)</description>
+      </arg>
+      <arg>
+         <shortname>properties</shortname>
+         <description>Comma separated list of property names to include in the results. If this argument is omitted all properties are returned.</description>
+      </arg>
+      <arg>
+         <shortname>maxItems</shortname>
+         <description>Specifies the maximum number of results to return.</description>
+      </arg>
+      <arg>
+         <shortname>skipCount</shortname>
+         <description>Specifies the position in the results to start, used for paging results.</description>
+      </arg>
+      <arg>
+         <shortname>exclude</shortname>
+         <description>Comma separated list of task types to exclude from the the results.</description>
+      </arg>
+      <arg>
+         <shortname>workflow_instance_id</shortname>
+         <description>Restricts the returned tasks to those that belong to the given workflow process instance id.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data":
+               [
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "state": string (IN_PROGRESS|COMPLETE),
+                     "path": string,
+                     "isPooled": boolean,
+                     "isEditable": boolean,
+                     "isReassignable": boolean,
+                     "isClaimable": boolean,
+                     "isReleasable": boolean,
+                     "outcome": string,
+                     "owner":
+                     {
+                        "userName": string,
+                        "firstName": string,
+                        "lastName": string
+                     },
+                     "properties":
+                     {
+                        "key": string, boolean, number, array or map,
+                        ...
+                     },
+                     "workflowInstance":
+                     {
+                        "id": string,
+                        "url": string,
+                        "name": string,
+                        "title": string,
+                        "description": string,
+                        "isActive": boolean,
+                        "startDate": string,
+                        "priority": number,
+                        "message": string,
+                        "endDate": string,
+                        "dueDate": string,
+                        "context": string,
+                        "package": string,
+                        "initiator":
+                        {
+                           "userName": string,
+                           "firstName": string,
+                           "lastName": string
+                        },
+                        "definitionUrl": string
+                     }
+                  },
+                  ...
+               ],
+               "paging": 
+               {
+                  "totalItems": number,
+                  "maxItems": number,
+                  "skipCount": number
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

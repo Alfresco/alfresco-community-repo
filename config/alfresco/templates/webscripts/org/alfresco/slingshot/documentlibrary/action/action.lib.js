@@ -38,6 +38,13 @@ function main()
       return;
    }
 
+   // Resolve parent if available
+   var parent = getInputParam("parentId"); 
+   if (parent !== null)
+   {
+      params.parent = parent;
+   }
+
    // Resolve path if available
    var path = url.templateArgs.path || "";
    // Fix-up parent path to have no leading or trailing slashes
@@ -286,6 +293,28 @@ function getMultipleInputValues(param)
    return (error !== null ? error : values);
 }
 
+function getInputParam(param)
+{
+   var value = null;
+   
+   try
+   {
+      if (typeof json == "object")
+      {
+         if (!json.isNull(param))
+         {
+            var value = json.get(param);            
+         }
+      }
+   }
+   catch(e)
+   {
+   }
+   
+   // Return the values array, or the error string if it was set
+   return value;
+}
+
 
 /**
  * Obtain the asset node for the given rootNode and filepath
@@ -302,6 +331,9 @@ function getAssetNode(p_rootNode, p_assetPath)
 
    try
    {
+      // make sure asset path is a string
+      p_assetPath = String(p_assetPath);
+      
       if (p_assetPath && (p_assetPath.length > 0))
       {
          assetNode = assetNode.childByNamePath(p_assetPath);

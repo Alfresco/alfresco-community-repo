@@ -5,4 +5,5 @@
   <url>/api/workflow/task/end/{taskId}</url>
   <format default="json"/>
   <authentication>user</authentication>
+  <lifecycle>internal</lifecycle>
 </webscript>

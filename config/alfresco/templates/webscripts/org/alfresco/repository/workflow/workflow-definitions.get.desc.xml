@@ -1,10 +1,40 @@
 <webscript>
-  <shortname>List Deployed Workflow Definitions</shortname>
-  <description>
-  Returns a simple representation of all deployed workflow definitions.
-  </description>
-  <url>/api/workflow-definitions?exclude={exclude?}</url>
-  <format default="json"/>
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
+   <shortname>List Deployed Workflow Definitions</shortname>
+   <description>
+      Returns a simple representation of all deployed workflow definitions.
+   </description>
+   <url>/api/workflow-definitions?exclude={exclude?}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>exclude</shortname>
+         <description>Comma separated list of workflow definitions to exclude from the the results.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data":
+               [
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "version": string
+                  },
+                  ...
+               ]
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

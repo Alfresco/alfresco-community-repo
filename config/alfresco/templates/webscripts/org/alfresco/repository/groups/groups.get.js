@@ -7,23 +7,26 @@ function main ()
 	// Get the args
 	var shortNameFilter = args["shortNameFilter"];
 	var zone = args["zone"];
+	var maxItems = args["maxItems"];
+	var skipCount = args["skipCount"];
 	
 	if(shortNameFilter == null)
 	{
 		shortNameFilter = "";
 	}
 	
-	if(zone == null)
+	if(maxItems== null)
 	{
-	    // Do the search
-	    model.groups = groups.searchGroups(shortNameFilter);
-	   
+		maxItems = -1;
 	}
-	else
+	
+	if(skipCount== null)
 	{
-	    // Do the search
-	    model.groups = groups.searchGroupsInZone(shortNameFilter, zone);
+		skipCount = -1;
 	}
+	
+	// Do the search
+	model.groups = groups.searchGroupsInZone(shortNameFilter, zone, maxItems, skipCount);
 }
 
 main();

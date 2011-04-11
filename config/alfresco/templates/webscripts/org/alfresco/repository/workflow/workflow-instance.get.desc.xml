@@ -5,4 +5,122 @@
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>workflow_instance_id</shortname>
+         <description>The id of workflow process instance to retrieve.</description>
+      </arg>
+      <arg>
+         <shortname>includeTasks</shortname>
+         <description>Determines whether the response contains all the tasks that belong to the workflow instance. If this argument is omitted no tasks will be returned.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "id": string,
+                  "url": string,
+                  "name": string,
+                  "title": string,
+                  "description": string,
+                  "isActive": boolean,
+                  "startDate": string,
+                  "endDate": string,
+                  "dueDate": string,
+                  "priority": number,
+                  "message": string,
+                  "context": string,
+                  "package": string,
+                  "initiator":
+                  {
+                     "userName": string,
+                     "firstName": string,
+                     "lastName": string
+                  },
+                  "definitionUrl": string,
+                  "startTaskInstanceId": string,
+                  "definition":
+                  {
+                     "id": string,
+                     "url": string,
+                     "name": string,
+                     "title": string,
+                     "description": string,
+                     "version": string
+                     "startTaskDefinitionUrl": string,
+                     "startTaskDefinitionType": string,
+                     "taskDefinitions":
+                     [
+                        {
+                           "url": string,
+                           "type": string
+                        },
+                        ...
+                     ]
+                  },
+                  "tasks":
+                  [
+                     {
+                        "id": string,
+                        "url": string,
+                        "name": string,
+                        "title": string,
+                        "description": string,
+                        "state": string (IN_PROGRESS|COMPLETE),
+                        "path": string,
+                        "isPooled": boolean,
+                        "isEditable": boolean,
+                        "isReassignable": boolean,
+                        "isClaimable": boolean,
+                        "isReleasable": boolean,
+                        "outcome": string,
+                        "owner":
+                        {
+                           "userName": string,
+                           "firstName": string,
+                           "lastName": string
+                        },
+                        "properties":
+                        {
+                           "key": string, boolean, number, array or map,
+                           ...
+                        },
+                        "workflowInstance":
+                        {
+                           "id": string,
+                           "url": string,
+                           "name": string,
+                           "title": string,
+                           "description": string,
+                           "isActive": boolean,
+                           "startDate": string,
+                           "priority": number,
+                           "message": string,
+                           "endDate": string,
+                           "dueDate": string,
+                           "context": string,
+                           "package": string,
+                           "initiator":
+                           {
+                              "userName": string,
+                              "firstName": string,
+                              "lastName": string
+                           },
+                           "definitionUrl": string
+                        }
+                     },
+                     ...
+                  ]
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

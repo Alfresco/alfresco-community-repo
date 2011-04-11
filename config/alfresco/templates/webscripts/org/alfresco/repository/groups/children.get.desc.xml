@@ -4,9 +4,11 @@
    Get a list of the child authorities of a group. The list contains both people and groups.
    <br />
    The authorityType parameter is used to specify return authorities of the given type. Valid values are GROUP and USER.
+   The optional maxItems parameter sets the maximum number of items to be returned. If no value is set then all items are returned.
+   The optional skipCount parameter determines how many items to skip before returning the first result. If no skipCount value is set then no items are skipped.
    ]]>
    </description>
-   <url>/api/groups/{shortName}/children?authorityType={authorityType?}</url>
+   <url>/api/groups/{shortName}/children?authorityType={authorityType?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

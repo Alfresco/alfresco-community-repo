@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.Scopeable;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,11 +50,17 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
     
     private ServiceRegistry serviceRegistry;
     private NodeService nodeService;
+    private BehaviourFilter behaviourFilter;
     
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
         this.nodeService = serviceRegistry.getNodeService();
+    }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     public ScriptNode createCommentsFolder(ScriptNode node)
@@ -65,21 +72,34 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
             public NodeRef doWork() throws Exception
             {
                 NodeRef commentsFolder = null;
-                nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable"), null);
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), RegexQNamePattern.MATCH_ALL);
-                if (assocs.size() != 0)
+                
+                // ALF-5240: turn off auditing round the discussion node creation to prevent
+                // the source document from being modified by the first user leaving a comment
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                
+                try
                 {
-                    NodeRef forumFolder = assocs.get(0).getChildRef();
-                    
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-                    props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
-                    commentsFolder = nodeService.createNode(
-                            forumFolder,
-                            ContentModel.ASSOC_CONTAINS, 
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMMENTS_TOPIC_NAME), 
-                            QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "topic"),
-                            props).getChildRef();
+                    nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable"), null);
+                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), RegexQNamePattern.MATCH_ALL);
+                    if (assocs.size() != 0)
+                    {
+                        NodeRef forumFolder = assocs.get(0).getChildRef();
+                        
+                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                        props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
+                        commentsFolder = nodeService.createNode(
+                                forumFolder,
+                                ContentModel.ASSOC_CONTAINS, 
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMMENTS_TOPIC_NAME), 
+                                QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "topic"),
+                                props).getChildRef();
+                    }
                 }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                }
+                
                 return commentsFolder;
             }
     

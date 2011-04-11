@@ -87,7 +87,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
-        
+        // sets the testMode property to true via spring injection. This will prevent emails
+        // from being sent from within this test case.
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users

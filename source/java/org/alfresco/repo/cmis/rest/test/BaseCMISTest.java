@@ -140,8 +140,8 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
         }
         catch (ParseException e)
         {
-            return null;
         }
+        return null;
     }
 
     protected void assertContains(Set<String> actual, String... expected)

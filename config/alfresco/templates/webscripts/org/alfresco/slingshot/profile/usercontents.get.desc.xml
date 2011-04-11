@@ -5,4 +5,5 @@
   <authentication>guest</authentication>
   <url>/slingshot/profile/usercontents</url>
   <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

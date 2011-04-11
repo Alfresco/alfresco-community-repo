@@ -315,7 +315,9 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     protected void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res)
     	throws IOException
     {
-    	if ( hasLoginPage())
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("redirectToLoginPage...");
+    	if (hasLoginPage())
     		res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
     }
     

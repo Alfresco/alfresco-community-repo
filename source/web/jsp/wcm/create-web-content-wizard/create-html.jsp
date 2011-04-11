@@ -43,6 +43,8 @@
 
     alfresco.constants.WEBAPP_CONTEXT = "${pageContext.request.contextPath}";
     alfresco.constants.AVM_WEBAPP_URL = "${WizardManager.bean.previewSandboxUrl}";
+    alfresco.constants.AVM_WEBAPP_PREFIX = "${WizardManager.bean.avmWebappPrefix}";
+    alfresco.constants.AVM_WEBAPP_CONTEXT = "${WizardManager.bean.avmWebappName}";	
 
     alfresco.resources = 
     {
@@ -57,10 +59,13 @@
       select: "${msg.select}",
       upload: "${msg.upload}"
     };
+    
+    var lang = "${UserPreferencesBean.language}";
+    lang = lang.substring(0,lang.indexOf("_"));
 
     tinyMCE.init({
       theme : "advanced",
-      language : "${pageContext.request.locale.language}",
+      language : lang,
       mode : "exact",
       elements : "editor",
       save_callback : "saveContent",
@@ -78,6 +83,14 @@
     
     function saveContent(id, content)
     {
+      if (alfresco.constants.AVM_WEBAPP_CONTEXT == "ROOT")
+      {
+        content = content.replace(new RegExp(alfresco.constants.AVM_WEBAPP_URL, "g"), "");
+      }
+      else
+      {
+        content = content.replace(new RegExp(alfresco.constants.AVM_WEBAPP_PREFIX, "g"), "");
+      }	
       document.getElementById("wizard:wizard-body:editor-output").value = content;
       return content;
     }

@@ -155,7 +155,7 @@
       <r:contentSelector id="content-picker" value="#{DialogManager.bean.itemsToAdd}" styleClass="" />
       <h:panelGrid columns="2">
          <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{DialogManager.bean.addPackageItems}" />
-         <h:commandButton value="#{msg.cancel}" actionListener="#{DialogManager.bean.cancelAddPackageItems}" />
+         <h:commandButton id="cancel-button" value="#{msg.cancel}" actionListener="#{DialogManager.bean.cancelAddPackageItems}" />
       </h:panelGrid>
    </h:panelGrid>
 

@@ -131,12 +131,12 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" styleClass="wizardButton"/>
+                                       <h:commandButton id="finish-button" value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" styleClass="wizardButton"/>
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddCondition}" 
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddCondition}" 
                                                         styleClass="wizardButton" />
                                     </td>
                                  </tr>

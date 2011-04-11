@@ -231,8 +231,10 @@ public class AddUsersDialog extends BaseDialogBean
                       {
                          String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                          String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-    
-                         SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+                         
+                         // build a sensible label for display
+                         String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");
+                         SelectItem item = new SortableSelectItem(username, name + " [" + username + "]", lastName != null ? lastName : username);
                          itemList.add(item);
                       }
                    }
@@ -309,12 +311,11 @@ public class AddUsersDialog extends BaseDialogBean
                   NodeRef ref = this.getPersonService().getPerson(authority);
                   String firstName = (String)getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
                   String lastName = (String)getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
-
+                  
                   // build a sensible label for display
-                  label.append(firstName).append(' ').append(lastName);
-
-                  // add a wrapper object with the details to the results list
-                  // for display
+                  label.append(firstName != null ? firstName : "").append(' ').append(lastName != null ? lastName : "");
+                  
+                  // add a wrapper object with the details to the results list for display
                   UserAuthorityDetails userDetails = new UserAuthorityDetails(label.toString(), authority);
                   this.usersForGroup.add(userDetails);
                }

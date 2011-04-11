@@ -186,7 +186,7 @@ function checkButtonState()
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddCondition}" 
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddCondition}" 
                                                         styleClass="wizardButton" />
                                     </td>
                                  </tr>

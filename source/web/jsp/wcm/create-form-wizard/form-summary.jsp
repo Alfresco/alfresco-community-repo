@@ -24,7 +24,8 @@
 <%@ page isELIgnored="false" %>
 
 <script type="text/javascript">
-  window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
+  addEventToElement(window, 'load', pageLoaded, false);
+  function pageLoaded() { document.getElementById("wizard:finish-button").focus(); }
 </script>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"

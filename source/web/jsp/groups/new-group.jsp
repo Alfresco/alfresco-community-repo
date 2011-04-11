@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
---%><%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
+--%>
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
@@ -26,15 +27,13 @@
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <f:verbatim>
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 <script type="text/javascript">
    var finishButtonPressed = false;
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:name").focus();
-      document.getElementById("dialog").onsubmit = validate;
       document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true;}
       checkButtonState();
    }

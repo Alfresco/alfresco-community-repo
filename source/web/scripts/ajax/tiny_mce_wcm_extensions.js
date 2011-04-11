@@ -40,7 +40,7 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
   
   if (href)
   {
-    if (href.startsWith(alfresco.constants.AVM_WEBAPP_URL))
+    if (href.startsWith(alfresco.constants.AVM_WEBAPP_PREFIX))
     {
       //do nothin. AVM_WEBAPP_URL will be removed during saving image in _tinyMCE_blurHandler
       result = href;
@@ -80,6 +80,10 @@ function alfresco_TinyMCE_file_browser_callback(field_name, url, type, win)
   if (url.startsWith(alfresco.constants.AVM_WEBAPP_URL))
   {
     url = url.replace(alfresco.constants.AVM_WEBAPP_URL, ""); 
+  }
+  else
+  {
+    url = url.replace(alfresco.constants.AVM_WEBAPP_CONTEXT, ""); 
   }
   
   //tinyMCE.loadCSS doesn't seem to work with plugins so add css manually

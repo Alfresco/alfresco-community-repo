@@ -28,7 +28,7 @@
 
 var finishButtonPressed = false;
 
-window.onload = pageLoaded;
+addEventToElement(window, 'load', pageLoaded, false);
 
 function pageLoaded()
 {
@@ -36,7 +36,6 @@ function pageLoaded()
 		document.getElementById("wizard:wizard-body:userName").disabled == false)
 	{
 		document.getElementById("wizard:wizard-body:userName").focus();
-      document.getElementById("wizard").onsubmit = validate;
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true;}
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true;}      
 	}

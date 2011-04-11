@@ -27,6 +27,14 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
+<%
+if (Application.getWizardManager().getState() == null)
+{
+   response.sendRedirect(request.getContextPath() + "/faces/jsp/dashboards/container.jsp");
+   return;
+}
+%>
+
 <r:page title="<%=Application.getWizardManager().getTitle() %>"
         doctypeRootElement="html"
         doctypePublic="-//W3C//DTD HTML 4.01 Transitional//EN"

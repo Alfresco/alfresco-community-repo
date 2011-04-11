@@ -127,12 +127,24 @@ public class GroupsDialog extends BaseDialogBean
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
+   
+   
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       return null;
    }
    
+   @Override
+   public String cancel()
+   {
+      // reset UI back to group search on leaving the groups dialog
+      this.location = null;
+      setCurrentGroup(null, null);
+      
+      return super.cancel();
+   }
+
    @Override
    public String getContainerSubTitle()
    {

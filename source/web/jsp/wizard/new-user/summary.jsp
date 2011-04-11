@@ -135,18 +135,18 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.finish_button}" action="#{NewUserWizard.finish}" styleClass="wizardButton" />
+                                       <h:commandButton id="finish-button" value="#{msg.finish_button}" action="#{NewUserWizard.finish}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.back_button}" action="#{NewUserWizard.back}" styleClass="wizardButton" />
+                                       <h:commandButton id="back-button" value="#{msg.back_button}" action="#{NewUserWizard.back}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

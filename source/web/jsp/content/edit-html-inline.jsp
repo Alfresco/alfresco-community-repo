@@ -28,10 +28,13 @@
 <f:verbatim>
 <script language="javascript" type="text/javascript" src="<%=request.getContextPath()%>/scripts/tiny_mce/tiny_mce.js"></script>
 <script language="javascript" type="text/javascript">
+var lang = "${UserPreferencesBean.language}";
+lang = lang.substring(0,lang.indexOf("_"));
+   
 <%-- Init the Tiny MCE in-line HTML editor --%>
 tinyMCE.init({
    theme : "advanced",
-   language : "${pageContext.request.locale.language}",
+   language : lang,
    mode : "exact",
    relative_urls: false,
    elements : "editor",

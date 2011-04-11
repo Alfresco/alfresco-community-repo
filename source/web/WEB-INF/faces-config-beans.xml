@@ -4316,6 +4316,19 @@
 
    <managed-bean>
       <description>
+         The bean that backs up the Revert Snapshot Dialog
+      </description>
+      <managed-bean-name>RevertSnapshotDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.RevertSnapshotDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          The bean that backs up the Deploy Website Dialog
       </description>
       <managed-bean-name>DeployWebsiteDialog</managed-bean-name>
@@ -5537,31 +5550,6 @@
       <managed-bean-name>TrashcanRecoverItemDialog</managed-bean-name>
       <managed-bean-class>
          org.alfresco.web.bean.trashcan.TrashcanRecoverItemDialog
-      </managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>nodeService</property-name>
-         <value>#{NodeService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>searchService</property-name>
-         <value>#{SearchService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>dictionaryService</property-name>
-         <value>#{DictionaryService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>property</property-name>
-         <value>#{TrashcanDialogProperty}</value>
-      </managed-property>
-   </managed-bean>
-
-   <managed-bean>
-      <description>The bean for the Recover All Items Screen.</description>
-      <managed-bean-name>TrashcanRecoverAllItemsDialog</managed-bean-name>
-      <managed-bean-class>
-         org.alfresco.web.bean.trashcan.TrashcanRecoverAllItemsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>

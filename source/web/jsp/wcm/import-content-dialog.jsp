@@ -32,7 +32,7 @@
 
 <f:verbatim>
 <script type="text/javascript">
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function finishButton_click()
    {

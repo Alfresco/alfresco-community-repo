@@ -26,11 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -98,96 +99,99 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       if (logger.isDebugEnabled())
          logger.debug("Transitioning change request task: " + this.getWorkflowTask().id);
       
-      FacesContext context = FacesContext.getCurrentInstance();
-      UserTransaction tx = null;
-  
+      final FacesContext context = FacesContext.getCurrentInstance();
+      
       try
       {
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-        
-         // get the current username and place in list
-         String username = Application.getCurrentUser(context).getUserName();
-         List<String> newLockOwners = new ArrayList<String>(1);
-         newLockOwners.add(username);
-         
-         // prepare the edited parameters for saving
-         Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
-         
-         // update the task with the updated parameters and resources
-         this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
-         
-         // get the list of nodes that have expired (comparing workflow store to
-         // the users main store)
-         List<String> submitPaths = new ArrayList<String>();
-         List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>();
-         Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage);
-         AVMNodeDescriptor pkgDesc = this.getAvmService().lookup(pkgPath.getFirst(), pkgPath.getSecond());
-         String targetPath = pkgDesc.getIndirection();
-         List<AVMDifference> diffs = this.getAvmSyncService().compare(pkgPath.getFirst(), 
-                  pkgPath.getSecond(), -1, targetPath, null);
-         
-         // update the users main store with the changes from the workflow store
-         this.getAvmSyncService().update(diffs, null, false, false, true, true, null, null);
-         
-         // move locks
-         for (AVMDifference diff : diffs)
+         RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(FacesContext.getCurrentInstance());
+         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
          {
-            // move the lock for this path from the user workflow sandbox to the users main store
-            // we need to do this because the workflow endTask will trigger deletion of the (user)
-            // workflow store which will in turn recursively remove all the locks.
-            String diffSourcePath = diff.getSourcePath();
-            String diffSourceAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffSourcePath);
-            String sourceWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
-            String diffTargetPath = diff.getDestinationPath();
-            String diffTargetAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffTargetPath);
-            String targetWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
-            if (!sourceWebProject.equals(targetWebProject))
+            public Object execute() throws Throwable
             {
-               throw new AlfrescoRuntimeException(
-                     "The source web project does not match the target web project: \n" +
-                     "   Source: " + diffSourcePath + "\n" +
-                     "   Target: " + diffTargetPath);
+                // get the current username and place in list
+                String username = Application.getCurrentUser(context).getUserName();
+                List<String> newLockOwners = new ArrayList<String>(1);
+                newLockOwners.add(username);
+                
+                // prepare the edited parameters for saving
+                Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(taskNode);
+                
+                // update the task with the updated parameters and resources
+                getWorkflowService().updateTask(getWorkflowTask().id, params, null, null);
+                
+                // get the list of nodes that have expired (comparing workflow store to
+                // the users main store)
+                List<String> submitPaths = new ArrayList<String>();
+                List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>();
+                Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage);
+                AVMNodeDescriptor pkgDesc = getAvmService().lookup(pkgPath.getFirst(), pkgPath.getSecond());
+                String targetPath = pkgDesc.getIndirection();
+                List<AVMDifference> diffs = getAvmSyncService().compare(pkgPath.getFirst(), 
+                         pkgPath.getSecond(), -1, targetPath, null);
+                
+                // update the users main store with the changes from the workflow store
+                getAvmSyncService().update(diffs, null, false, false, true, true, null, null);
+                
+                // move locks
+                for (AVMDifference diff : diffs)
+                {
+                   // move the lock for this path from the user workflow sandbox to the users main store
+                   // we need to do this because the workflow endTask will trigger deletion of the (user)
+                   // workflow store which will in turn recursively remove all the locks.
+                   String diffSourcePath = diff.getSourcePath();
+                   String diffSourceAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffSourcePath);
+                   String sourceWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
+                   String diffTargetPath = diff.getDestinationPath();
+                   String diffTargetAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffTargetPath);
+                   String targetWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
+                   if (!sourceWebProject.equals(targetWebProject))
+                   {
+                      throw new AlfrescoRuntimeException(
+                            "The source web project does not match the target web project: \n" +
+                            "   Source: " + diffSourcePath + "\n" +
+                            "   Target: " + diffTargetPath);
+                   }
+                   
+                   Map<String, String> lockAttributes = Collections.singletonMap(
+                           WCMUtil.LOCK_KEY_STORE_NAME, diffTargetAvmStore);
+                   boolean modified = getAvmLockingService().modifyLock(
+                           sourceWebProject, AVMUtil.getStoreRelativePath(diffSourcePath), username,
+                           sourceWebProject, AVMUtil.getStoreRelativePath(diffTargetPath), lockAttributes);
+                   if (modified && logger.isDebugEnabled())
+                   {
+                      logger.debug(
+                            "Moved lock: " + AVMUtil.getStoreId(diffSourcePath) + "-" +
+                            AVMUtil.getStoreRelativePath(diffSourcePath) +
+                            " to user: " + username);
+                   }
+                }
+                
+                // re-submit all the items now if requested
+                if (doResubmitNow)
+                {
+                   for (AVMDifference diff : diffs)
+                   {
+                      String destPath = diff.getDestinationPath();
+                      
+                      AVMNodeDescriptor node = getAvmService().lookup(diff.getDestinationVersion(), 
+                               destPath, true);
+                      if (node != null)
+                      {
+                         submitNodes.add(node);
+                         submitPaths.add(destPath);
+                      }
+                   }
+                   
+                   setupSubmitDialog(context, submitPaths, submitNodes);
+                }
+                
+                // signal the default transition to the workflow task
+                getWorkflowService().endTask(getWorkflowTask().id, null);
+                
+                return null;
             }
-
-            Map<String, String> lockAttributes = Collections.singletonMap(
-                    WCMUtil.LOCK_KEY_STORE_NAME, diffTargetAvmStore);
-            boolean modified = this.getAvmLockingService().modifyLock(
-                    sourceWebProject, AVMUtil.getStoreRelativePath(diffSourcePath), username,
-                    sourceWebProject, AVMUtil.getStoreRelativePath(diffTargetPath), lockAttributes);
-            if (modified && logger.isDebugEnabled())
-            {
-               logger.debug(
-                     "Moved lock: " + AVMUtil.getStoreId(diffSourcePath) + "-" +
-                     AVMUtil.getStoreRelativePath(diffSourcePath) +
-                     " to user: " + username);
-            }
-         }
-         
-         // re-submit all the items now if requested
-         if (this.doResubmitNow)
-         {
-            for (AVMDifference diff : diffs)
-            {
-               String destPath = diff.getDestinationPath();
-               
-               AVMNodeDescriptor node = this.getAvmService().lookup(diff.getDestinationVersion(), 
-                        destPath, true);
-               if (node != null)
-               {
-                  submitNodes.add(node);
-                  submitPaths.add(destPath);
-               }
-            }
-            
-            setupSubmitDialog(context, submitPaths, submitNodes);
-         }
-         
-         // signal the default transition to the workflow task
-         this.getWorkflowService().endTask(this.getWorkflowTask().id, null);
-         
-         // commit the changes
-         tx.commit();
+         };
+         txnHelper.doInTransaction(callback);
          
          // if we get this far close the task dialog
          if (this.doResubmitNow)
@@ -200,8 +204,6 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       }
       catch (Throwable e)
       {
-         // rollback the transaction
-         try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(formatErrorMessage(e), e);
          outcome = this.getErrorOutcome(e);
       }

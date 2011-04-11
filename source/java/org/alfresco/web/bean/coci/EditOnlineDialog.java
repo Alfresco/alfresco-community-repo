@@ -27,6 +27,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -163,20 +164,28 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
          {
             tx = Repository.getUserTransaction(context, false);
             tx.begin();
-            
+                        
             // if current content is already working copy then we don't checkout
             if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)
             {
                // if checkout is successful, then checkoutFile sets property workingDocument
                checkoutFile(FacesContext.getCurrentInstance(), null);
-   
+               
                Node workingCopyNode = property.getWorkingDocument();
    
                if (workingCopyNode != null)
                {
-                  // set working copy node as document for editing
-                  property.setDocument(workingCopyNode);
-                  getNodeService().setProperty(workingCopyNode.getNodeRef(), ContentModel.PROP_WORKING_COPY_MODE, ONLINE_EDITING);
+                   getRuleService().disableRules();
+                   try
+                   {
+                       // set working copy node as document for editing
+                       property.setDocument(workingCopyNode);
+                       getNodeService().setProperty(workingCopyNode.getNodeRef(), ContentModel.PROP_WORKING_COPY_MODE, ONLINE_EDITING);
+                   }
+                   finally
+                   {
+                       getRuleService().enableRules();
+                   }
                }
             }
             

@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -72,7 +73,22 @@ public class AVMClipboardItem extends AbstractClipboardItem
     */
    public boolean canCopyToViewId(String viewId)
    {
-      return (AVM_PASTE_VIEW_ID.equals(viewId) || WORKSPACE_PASTE_VIEW_ID.equals(viewId));
+      if (AVM_PASTE_VIEW_ID.equals(viewId)) 
+      { 
+         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), AVMBrowseBean.BEAN_NAME); 
+         String destPath = avmBrowseBean.getCurrentPath(); 
+
+         if (WCMUtil.isStagingStore(WCMUtil.getStoreName(destPath))) 
+         { 
+            return false; 
+         } 
+
+         return true; 
+      } 
+      else 
+      { 
+         return WORKSPACE_PASTE_VIEW_ID.equals(viewId); 
+      } 
    }
 
    /**

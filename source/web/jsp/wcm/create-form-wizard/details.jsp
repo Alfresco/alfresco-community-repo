@@ -35,15 +35,12 @@
 
   <f:verbatim>
     <script type="text/javascript" 
-	    src="${pageContext.request.contextPath}/scripts/validation.js">&#160;
-    </script>
-    <script type="text/javascript" 
 	    src="${pageContext.request.contextPath}/scripts/upload_helper.js">&#160;
     </script>
     
     <script type="text/javascript">
     var finishButtonPressed = false;
-    window.onload = pageLoaded;
+    addEventToElement(window, 'load', pageLoaded, false);
     
     function pageLoaded()
     {
@@ -51,7 +48,6 @@
          document.getElementById("wizard:wizard-body:file-input").focus()
        else
          document.getElementById("wizard:wizard-body:form-name").focus();
-       document.getElementById("wizard").onsubmit = validate;
        document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
        document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
     }

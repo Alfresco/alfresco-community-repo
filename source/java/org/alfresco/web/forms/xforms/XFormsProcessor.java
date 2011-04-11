@@ -222,6 +222,19 @@ public class XFormsProcessor implements FormProcessor
                       AVMUtil.buildStoreWebappPath(storeName, avmWebApp).replace(":","")));
          }
       }
+	  
+      js.append("';\n");
+
+      js.append("alfresco.constants.AVM_WEBAPP_PREFIX = '");
+      if (avmWebApp != null)
+      {
+         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
+         if (storeName != null)
+         {
+            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
+                      AVMUtil.buildSandboxRootPath(storeName).replace(":","")));
+         }
+      }
          
       js.append("';\n");
       js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").

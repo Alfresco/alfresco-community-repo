@@ -356,3 +356,105 @@ function validateOutputPathPattern(disabledElement, outputPathInput, additionalC
       disabledElement.disabled = (null != value) ? (("" == value.trim()) || !pattern.test(value)) : (false);
    }
 }
+
+/**
+ *  Function executes after page load.
+ *  It checks an existence of buttons with specified ids in all forms of the page.
+ *  If a button exists the script will cache it.
+ */
+function getDisableButtons()
+{
+   // 'test-button' and 'submit-button' are examples.
+   var buttonIds = ['finish-button', 'ok-button' ,'test-button', 'submit-button', 'cancel-button'];
+   // create button cache
+   window.buttonsToDisable = new Array();
+   for (var i=0; i<document.forms.length; i++)
+   {
+      var form = document.forms.item(i);
+      var formId = form.attributes.getNamedItem('id');
+      // form without id being ignored
+      if (formId != undefined)
+      {
+         // assign a submit handler (instead of addEvent) to handle function return value.
+         // it is necessary to handle validate function result.
+         form.onsubmit = formSubmit;
+         for (var j=0; j<buttonIds.length; j++)
+         {
+            // construct a possible button id
+            var buttonId = new String(formId.nodeValue + ':' + buttonIds[j]);
+            // check button if exists
+            if (document.getElementById(buttonId) != undefined)
+            {
+               // cache its name
+               window.buttonsToDisable[window.buttonsToDisable.length] = buttonId;
+            }
+         }
+       }
+    }
+ }
+ 
+ /**
+ *  General onsubmit handler. It disables all buttons that have been cached in pageLoaded.
+ * 
+ */
+function formSubmit()
+{
+   // this function will be delayed to enable return from the function
+   var disable = function()
+   {
+      for(var i=0; i<window.buttonsToDisable.length; i++)
+      {
+         var element = document.getElementById(window.buttonsToDisable[i]);
+         // just paranoid
+         if (element != undefined)
+         {
+            element.disabled = true;
+         }
+      }
+   }
+
+   // call a validate function if one exists.
+   // if not 'validate' function provided it returns true and disables buttons
+
+   if (typeof validate == 'function')
+   {
+      if (validate() == true)
+      {
+         disable.delay(5, this);
+         return true;
+      }
+      else
+      {
+         return false; 
+      }
+   }
+   else
+   {
+      disable.delay(5, this);
+      return true;
+   }
+}
+
+/**
+ *  Helper function to attache an event to element instead of element.onload = func.
+ *  It helps to resolve several window.onload attaches.
+ */
+function addEventToElement(element, type, func, useCapture)
+{
+   if (element.addEventListener)
+   {
+      element.addEventListener(type, func, useCapture);
+      return true;
+   }
+   else if (element.attachEvent)
+   {
+      var result = element.attachEvent('on' + type, func);
+      return result;
+   }
+   
+   return false;
+}
+
+// add an onload event instead of window.onload attach...
+// because a last onload attach disables all previous...
+addEventToElement(window, 'load', getDisableButtons, false);

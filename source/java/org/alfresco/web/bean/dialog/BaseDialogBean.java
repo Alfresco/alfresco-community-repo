@@ -32,6 +32,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -65,6 +66,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
    transient private SearchService searchService;
    transient private DictionaryService dictionaryService;
    transient private NamespaceService namespaceService;
+   transient private RuleService ruleService;
    
    public void init(Map<String, String> parameters)
    {
@@ -268,6 +270,19 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
          this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
       }
       return this.nodeService;
+   }
+   
+   /**
+    * Get the rule service
+    * @return	RuleService	rule service
+    */
+   protected RuleService getRuleService()
+   {
+	   if (ruleService == null)
+	   {
+		   ruleService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRuleService();
+	   }
+	   return ruleService;
    }
    
    /**

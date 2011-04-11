@@ -20,6 +20,7 @@ package org.alfresco.web.bean.clipboard;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -75,6 +76,15 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    public WorkspaceClipboardItem(NodeRef ref, ClipboardStatus mode)
    {
       super(ref, mode);
+   }
+   
+   /**
+    * @param ref
+    * @param mode
+    */
+   public WorkspaceClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode)
+   {
+      super(ref, parent, mode);
    }
 
    /**
@@ -136,14 +146,33 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
          FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
          CopyService copyService = getServiceRegistry().getCopyService();
          MultilingualContentService multilingualContentService = getServiceRegistry().getMultilingualContentService();
+        
+         boolean isPrimaryParent = true;
 
-         // TODO: Should we be using primary parent here?
-         //       We are assuming that the item exists in only a single parent and that the source for
-         //       the clipboard operation (e.g. the source folder) is specifically that parent node.
-         //       So does not allow for more than one possible parent node - or for linked objects!
-         //       This code should be refactored to use a parent ID when appropriate.
-         ChildAssociationRef assocRef = nodeService.getPrimaryParent(getNodeRef());
+         ChildAssociationRef assocRef = null;
 
+         if (getParent() == null)
+         {
+             assocRef = nodeService.getPrimaryParent(getNodeRef());
+         }
+         else
+         {
+             NodeRef parentNodeRef = getParent();
+             List<ChildAssociationRef> assocList = nodeService.getParentAssocs(getNodeRef());
+             if (assocList != null)
+             {
+                 for (ChildAssociationRef assocListEntry : assocList)
+                 {
+                     if (parentNodeRef.equals(assocListEntry.getParentRef()))
+                     {
+                         assocRef = assocListEntry;
+                         break;
+                     }
+                 }
+             }
+             isPrimaryParent = parentNodeRef.equals(nodeService.getPrimaryParent(getNodeRef()).getParentRef());
+         }
+  
          // initial name to attempt the copy of the item with
          String name = getName();
          String translationPrefix = "";
@@ -162,7 +191,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
             try
             {
                // attempt each copy/paste in its own transaction
-               tx = Repository.getUserTransaction(fc);
+               tx = Repository.getUserTransaction(fc, false);
                tx.begin();
                if (getMode() == ClipboardStatus.COPY)
                {
@@ -274,10 +303,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                       dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
                   {
                      // move the file/folder
-                     fileFolderService.move(
-                           getNodeRef(),
-                           destRef,
-                           name);
+                     fileFolderService.move(getNodeRef(), getParent(), destRef, name);
                   }
                   else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
                   {
@@ -286,12 +312,16 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
                   }
                   else
                   {
-                     // move the node
-                     nodeService.moveNode(
-                           getNodeRef(),
-                           destRef,
-                           ContentModel.ASSOC_CONTAINS,
-                           assocRef.getQName());
+                      if (isPrimaryParent)
+                      {
+                          // move the node
+                          nodeService.moveNode(getNodeRef(), destRef, ContentModel.ASSOC_CONTAINS, assocRef.getQName());
+                      }
+                      else
+                      {
+                          nodeService.removeChild(getParent(), getNodeRef());
+                          nodeService.addChild(destRef, getNodeRef(), assocRef.getTypeQName(), assocRef.getQName());
+                      }
                   }
 
                   // if we get here without an exception, the clipboard move operation was successful
@@ -349,7 +379,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
             try
             {
                // attempt each copy/paste in its own transaction
-               tx = Repository.getUserTransaction(fc);
+               tx = Repository.getUserTransaction(fc, false);
                tx.begin();
                if (getMode() == ClipboardStatus.COPY)
                {

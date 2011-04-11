@@ -25,7 +25,7 @@
 <f:verbatim>
 <script>
 
-window.onload = pageLoaded;
+addEventToElement(window, 'load', pageLoaded, false);
 
 function pageLoaded()
 {

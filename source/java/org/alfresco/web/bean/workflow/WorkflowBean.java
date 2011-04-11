@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.config.ClientConfigElement;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.NavigationBean;
@@ -248,8 +249,14 @@ public class WorkflowBean implements Serializable
             tx.begin();
             
             // get the current in progress tasks for the current user
-            List<WorkflowTask> tasks = this.getWorkflowService().getAssignedTasks(
-                  userName, WorkflowTaskState.COMPLETED);
+            ClientConfigElement clientConfig = (ClientConfigElement)Application.getConfigService(context).getGlobalConfig().getConfigElement(
+            ClientConfigElement.CONFIG_ELEMENT_ID);
+            WorkflowTaskQuery query = new WorkflowTaskQuery();
+            query.setActive(null);
+            query.setActorId(userName);
+            query.setTaskState(WorkflowTaskState.COMPLETED);
+            query.setLimit(clientConfig.getTasksCompletedMaxResults());
+            List<WorkflowTask> tasks = this.getWorkflowService().queryTasks(query);
             
             // create a list of transient nodes to represent
             this.completedTasks = new ArrayList<Node>(tasks.size());

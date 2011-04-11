@@ -196,10 +196,10 @@
                                        <%-- Name and icon columns --%>
                                        <a:column id="col21" primary="true" width="300" style="text-align:left">
                                           <f:facet name="small-icon">
-                                             <h:graphicImage url="/images/filetypes/_default.gif" width="16" height="16"/>
+                                             <h:graphicImage id="gfx0" url="/images/filetypes/_default.gif" width="16" height="16"/>
                                           </f:facet>
                                           <f:facet name="header">
-                                             <a:sortLink label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header"/>
+                                             <a:sortLink id="sort0" label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header"/>
                                           </f:facet>
                                           <a:actionLink id="view-name" value="#{r.name}" href="#{r.url}" target="new" />
                                        </a:column>
@@ -207,7 +207,7 @@
                                        <%-- Language columns --%>
                                        <a:column id="col22" width="50" style="text-align:left">
                                           <f:facet name="header">
-                                             <a:sortLink label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header"/>
+                                             <a:sortLink id="sort1" label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header"/>
                                           </f:facet>
                                           <h:outputText id="view-language" value="#{r.language}"/>
                                        </a:column>
@@ -215,12 +215,12 @@
                                        <%-- view actions --%>
                                        <a:column id="col25" style="text-align: left">
                                           <f:facet name="header">
-                                             <h:outputText value="#{msg.actions}"/>
+                                             <h:outputText id="txt1" value="#{msg.actions}"/>
                                           </f:facet>
-                                          <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
+                                          <a:actionLink id="view-link1" value="#{msg.view}" href="#{r.url}" target="new" />
                                        </a:column>
 
-                                       <a:dataPager styleClass="pager" />
+                                       <a:dataPager id="pager0" styleClass="pager" />
                                     </a:richList>
                                  </a:panel>
                               </a:panel>
@@ -239,7 +239,7 @@
                                     <%-- Primary column for details view mode --%>
                                     <a:column id="col1" primary="true" width="100" style="padding:2px;text-align:left">
                                        <f:facet name="header">
-                                          <a:sortLink label="#{msg.version}" value="versionLabel" mode="case-insensitive" styleClass="header"/>
+                                          <a:sortLink id="sort2" label="#{msg.version}" value="versionLabel" mode="case-insensitive" styleClass="header"/>
                                        </f:facet>
                                        <a:actionLink id="label-link" value="#{r.versionLabel}" href="#{r.url}" target="new" rendered="#{r.url != null}"/>
                                        <a:actionLink id="label-no-link" value="#{r.versionLabel}"  rendered="#{r.url == null}"/>
@@ -248,7 +248,7 @@
                                     <%-- Version notes columns --%>
                                     <a:column id="col2" width="170" style="text-align:left">
                                        <f:facet name="header">
-                                          <a:sortLink label="#{msg.notes}" value="notes" styleClass="header"/>
+                                          <a:sortLink id="sort3" label="#{msg.notes}" value="notes" styleClass="header"/>
                                        </f:facet>
                                        <h:outputText id="notes" value="#{r.notes}" />
                                     </a:column>
@@ -256,7 +256,7 @@
                                     <%-- Description columns --%>
                                     <a:column id="col3" style="text-align:left">
                                        <f:facet name="header">
-                                          <a:sortLink label="#{msg.author}" value="author" styleClass="header"/>
+                                          <a:sortLink id="sort4" label="#{msg.author}" value="author" styleClass="header"/>
                                        </f:facet>
                                        <h:outputText id="author" value="#{r.author}" />
                                     </a:column>
@@ -264,7 +264,7 @@
                                     <%-- Created Date column for details view mode --%>
                                     <a:column id="col4" style="text-align:left; white-space:nowrap">
                                        <f:facet name="header">
-                                          <a:sortLink label="#{msg.date}" value="versionDate" styleClass="header"/>
+                                          <a:sortLink id="sort5" label="#{msg.date}" value="versionDate" styleClass="header"/>
                                        </f:facet>
                                        <h:outputText id="date" value="#{r.versionDate}">
                                           <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
@@ -274,19 +274,20 @@
                                     <%-- view the contents of the specific version --%>
                                     <a:column id="col5" style="text-align: left">
                                        <f:facet name="header">
-                                          <h:outputText value="#{msg.actions}"/>
+                                          <h:outputText id="txt2" value="#{msg.actions}"/>
                                        </f:facet>
                                        <a:actionLink id="view-version-props" value="#{msg.properties}" actionListener="#{VersionedDocumentDetailsDialog.nextItem}" action="showVersionedDetails">
                                            <f:param id="view-version-props-versionLabel" name="versionLabel" value="#{r.versionLabel}" />
                                        </a:actionLink>
 
                                        <h:outputText id="space" value=" " />
-                                       <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}"/>
+                                       <a:actionLink id="view-link2" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}"/>
 
                                     </a:column>
 
-                                    <a:dataPager id="dataPager-1" styleClass="pager" />
-                                 </a:richList>                              </a:panel>
+                                    <a:dataPager id="pager1" styleClass="pager" />
+                                 </a:richList>
+                              </a:panel>
                            </td>
 
                            <td valign="top">
@@ -295,8 +296,8 @@
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="close-btn-mlc-details" value="#{msg.close}" action="dialog:showMLContainerDetails" styleClass="wizardButton"  rendered="#{VersionedDocumentDetailsDialog.fromPreviousEditon == true}" />
-                                       <h:commandButton id="close-btn-doc-details" value="#{msg.close}" action="dialog:showDocDetails" styleClass="wizardButton"  rendered="#{VersionedDocumentDetailsDialog.fromPreviousEditon == false}" />
+                                       <h:commandButton id="close-btn-mlc-details" value="#{msg.close}" action="dialog:close:dialog:showMLContainerDetails" styleClass="wizardButton"  rendered="#{VersionedDocumentDetailsDialog.fromPreviousEditon == true}" />
+                                       <h:commandButton id="close-btn-doc-details" value="#{msg.close}" action="dialog:close:dialog:showDocDetails" styleClass="wizardButton"  rendered="#{VersionedDocumentDetailsDialog.fromPreviousEditon == false}" />
                                     </td>
                                  </tr>
                               </table>

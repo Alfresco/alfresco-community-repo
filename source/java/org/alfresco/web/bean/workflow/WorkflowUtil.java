@@ -185,6 +185,7 @@ public class WorkflowUtil
     * @param node The node to package up for persistence
     * @return The map of data representing the node
     */
+   @SuppressWarnings("unchecked")
    public static Map<QName, Serializable> prepareTaskParams(Node node)
    {
       Map<QName, Serializable> params = new HashMap<QName, Serializable>();
@@ -209,17 +210,57 @@ public class WorkflowUtil
          
          // get the associations added and create list of targets
          Map<String, AssociationRef> addedAssocs = assocs.get(assocName);
+         List<AssociationRef> originalAssocRefs = (List<AssociationRef>) node.getAssociations().get(assocName);
          List<NodeRef> targets = new ArrayList<NodeRef>(addedAssocs.size());
+         
+         if (originalAssocRefs != null)
+         {
+             for (AssociationRef assoc : originalAssocRefs)
+             {
+                targets.add(assoc.getTargetRef());
+             }
+         }
+         
          for (AssociationRef assoc : addedAssocs.values())
          {
             targets.add(assoc.getTargetRef());
          }
          
-         // add the targets for this particular association
-         if (targets.size() > 0)
+         params.put(assocQName, (Serializable)targets);
+      }
+      
+      // go through the removed associations and either setup or adjust the 
+      // parameters map accordingly
+      assocs = node.getRemovedAssociations();
+      
+      for (String assocName : assocs.keySet())
+      {
+         QName assocQName = Repository.resolveToQName(assocName);
+         
+         // get the associations removed and create list of targets
+         Map<String, AssociationRef> removedAssocs = assocs.get(assocName);         
+         List<NodeRef> targets = (List<NodeRef>)params.get(assocQName);
+         
+         if (targets == null)
          {
-             params.put(assocQName, (Serializable)targets);
+             // if there weren't any assocs of this type added get the current
+             // set of assocs from the node
+             List<AssociationRef> originalAssocRefs = (List<AssociationRef>)node.getAssociations().get(assocName);
+             targets = new ArrayList<NodeRef>(originalAssocRefs.size());
+             
+             for (AssociationRef assoc : originalAssocRefs)
+             {
+                targets.add(assoc.getTargetRef());
+             }
          }
+         
+         // remove the assocs the user deleted
+         for (AssociationRef assoc : removedAssocs.values())
+         {
+            targets.remove(assoc.getTargetRef());
+         }
+         
+         params.put(assocQName, (Serializable)targets);
       }
       
       // TODO: Deal with child associations if and when we need to support

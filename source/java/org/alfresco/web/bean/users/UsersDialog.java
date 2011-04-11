@@ -333,7 +333,9 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
                // this will also force initialisation of the props now during the UserTransaction
                // it is much better for performance to do this now rather than during page bind
                Map<String, Object> props = node.getProperties(); 
-               props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
+               String firstName = (String)props.get("firstName");
+               String lastName = (String)props.get("lastName");
+               props.put("fullName", (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : ""));
                NodeRef homeFolderNodeRef = (NodeRef)props.get("homeFolder");
                if (homeFolderNodeRef != null)
                {

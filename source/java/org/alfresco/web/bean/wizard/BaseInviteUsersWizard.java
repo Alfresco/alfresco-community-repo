@@ -486,12 +486,14 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             for (int index=0; index<nodes.size(); index++)
             {
                NodeRef personRef = nodes.get(index);
+               
                String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
                String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
                if (username != null)
                {
-                  SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+                  String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");
+                  SelectItem item = new SortableSelectItem(username, name + " [" + username + "]", lastName != null ? lastName : username);
                   results.add(item);
                }
             }
@@ -772,7 +774,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
       
       StringBuilder buf = new StringBuilder(100);
-      buf.append(firstName)
+      buf.append(firstName != null ? firstName : "")
          .append(" ")
          .append(lastName != null ? lastName : "")
          .append(" (")

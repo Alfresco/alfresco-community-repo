@@ -278,7 +278,8 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         Map<String, String> params = new HashMap<String, String>(2, 1.0f);
                         params.put("sandbox", sandbox);
                         params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
-                        action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, "/images/icons/revert.gif", "#{AVMBrowseBean.revertSnapshot}", null, null, params);
+                        action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, "/images/icons/revert.gif", "#{DialogManager.setupParameters}", "dialog:revertSnapshot",
+                                null, params);
                     }
 
                     requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersion()));

@@ -60,6 +60,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int searchMaxResults = -1;
    private int selectorsSearchMaxResults = 500;
    private int inviteUsersMaxResults = 500;
+   private int tasksCompletedMaxResults = 100;
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
@@ -226,7 +227,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       {
          combinedElement.setInviteUsersMaxResults(newElement.getInviteUsersMaxResults());
       }
-      
+
+      if (newElement.getTasksCompletedMaxResults() != combinedElement.getTasksCompletedMaxResults())
+      {
+         combinedElement.setTasksCompletedMaxResults(newElement.getTasksCompletedMaxResults());
+      }
+
       if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
       {
          combinedElement.setShelfVisible(newElement.isShelfVisible());
@@ -566,6 +572,28 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setInviteUsersMaxResults(int inviteUsersMaxResults)
    {
        this.inviteUsersMaxResults = inviteUsersMaxResults;
+   }
+
+   /**
+    * If positive, this will limit the size of the result set of the
+    * completed tasks.
+    *
+    * @return The maximum number of completed tasks to display
+    */
+   public int getTasksCompletedMaxResults()
+   {
+       return tasksCompletedMaxResults;
+   }
+
+   /**
+    * Set if the the number of completed tasks displayed shall be limited.
+    * If negative it is unlimited, by default, this is set to 100.
+    *
+    * @param tasksCompletedMaxResults
+    */
+   /*package*/ void setTasksCompletedMaxResults(int tasksCompletedMaxResults)
+   {
+       this.tasksCompletedMaxResults = tasksCompletedMaxResults;
    }
 
    /**

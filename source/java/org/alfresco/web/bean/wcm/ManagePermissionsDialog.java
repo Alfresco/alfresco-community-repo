@@ -294,11 +294,13 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
         if (perms == null || perms.size() == 0)
             return;
         Map<String, Object> props = (Map<String, Object>) ((QNameNodeMap) node.getProperties()).clone();
-        props.put("fullName", ((String) node.get("firstName")) + ' ' + ((String) node.get("lastName")));
+        String firstName = (String)node.get("firstName");
+        String lastName = (String)node.get("lastName");
+        props.put("fullName", (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : ""));
         props.put("perms", UserMembersBean.roleListToString(context, perms));
         props.put("icon", WebResources.IMAGE_PERSON);
         props.put("inherited", inherited);
-
+        
         personNodes.add(props);
     }
 

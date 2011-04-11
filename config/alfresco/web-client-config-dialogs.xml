@@ -296,6 +296,10 @@
                  icon="/images/icons/revert_all_large.gif" title-id="revert_all_title" 
                  description-id="revert_all_desc" />
                  
+         <dialog name="revertSnapshot" page="/jsp/wcm/revert.jsp" managed-bean="RevertSnapshotDialog"
+                 icon="/images/icons/revert_large.gif" title-id="revert_snapshot_title" 
+                 description-id="revert_snapshot_desc" />
+                 
          <dialog name="deployWebsite" page="/jsp/wcm/deploy.jsp" managed-bean="DeployWebsiteDialog"
                  icon="/images/icons/deploy_large.gif" />
                  
@@ -528,10 +532,6 @@
          <dialog name="recoverItem" page="/jsp/trashcan/recover-item.jsp" managed-bean="TrashcanRecoverItemDialog"
                  icon="/images/icons/recover_large.gif" title-id="recover_item"
                  description-id="recover_item_info"  />                 
-         
-         <dialog name="recoverAllItems" page="/jsp/trashcan/recover-all.jsp" managed-bean="TrashcanRecoverAllItemsDialog"
-                 icon="/images/icons/recover_all_large.gif" title-id="recover_all_items"
-                 description-id="recover_all_items_info"  />
          
          <dialog name="recoverListedItems" page="/jsp/trashcan/recover-listed.jsp" managed-bean="TrashcanRecoverListedItemsDialog"
                  icon="/images/icons/recover_all_large.gif" title-id="recover_listed_items"

@@ -27,9 +27,8 @@
 
 <f:verbatim>
 
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js">&#160;</script>
 <script type="text/javascript">
-   window.addEvent('load',pageLoaded);
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {

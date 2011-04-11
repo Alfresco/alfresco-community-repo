@@ -27,12 +27,11 @@
 
 <script type="text/javascript">
    var finishButtonPressed = false;
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
       document.getElementById("dialog:dialog-body:name").focus();
-      document.getElementById("dialog").onsubmit = validateDialog;
       document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
       checkButtonState();
    }

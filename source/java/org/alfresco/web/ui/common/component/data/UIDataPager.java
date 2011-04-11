@@ -132,7 +132,7 @@ public class UIDataPager extends UICommand
          else
          {
              inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
-             inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript(pageInputId, formClientId, hiddenFieldName)).append("\" ");
+             inputPageNumber.append("onkeypress=\"").append(generateInputOnkeyPressScript(pageInputId, formClientId, hiddenFieldName)).append("\" ");
              inputPageNumber.append("onkeydown=\"").append(generateInputOnkeydownScript()).append("\" ");
              inputPageNumber.append("id=\"").append(pageInputId).append("\" />");
          }
@@ -570,12 +570,12 @@ public class UIDataPager extends UICommand
    }
    
    /**
-    * Output the JavaScript event script to handle onkeyup event in the Page Number input.
+    * Output the JavaScript event script to handle onkeypress event in the Page Number input.
     * It validates and sends appropriate page number on 'Enter'.
     * 
     * @return JavaScript code
     */
-   private String generateInputOnkeyupScript(String pageInputId, String formClientId, String hiddenFieldName)
+   private String generateInputOnkeyPressScript(String pageInputId, String formClientId, String hiddenFieldName)
    {
        final StringBuilder script = new StringBuilder(128);
        script.append("return validateAndSubmit(event,'")

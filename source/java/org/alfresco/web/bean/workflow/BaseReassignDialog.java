@@ -43,7 +43,6 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.lucene.queryParser.QueryParser;
 
 /**
  * Base dialog bean for workflow user reassignment.
@@ -167,9 +166,10 @@ public abstract class BaseReassignDialog extends BaseDialogBean
             String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
             if (AuthenticationUtil.getGuestUserName().equals(username) == false)
             {
-               String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-               String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+               String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+               String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+               String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");
+               SelectItem item = new SortableSelectItem(username, name + " [" + username + "]", lastName != null ? lastName : username);
                itemList.add(item);
             }
          }

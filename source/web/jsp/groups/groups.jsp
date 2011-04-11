@@ -26,12 +26,15 @@
 <f:verbatim>
 <script type="text/javascript">
 
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
-      document.getElementById("dialog:dialog-body:search-groups-text").focus();
-      updateGroupsButtonState();
+      if (document.getElementById("dialog:dialog-body:search-groups-text"))
+      {
+         document.getElementById("dialog:dialog-body:search-groups-text").focus();
+         updateGroupsButtonState();
+      }
    }
    
    function updateGroupsButtonState()
@@ -76,7 +79,7 @@
          %>
       </f:verbatim>
       <h:outputText value="</div><div style='padding: 8px;'>" escape="false" />
-      <h:inputText id="search-groups-text" value="#{DialogManager.bean.groupsSearchCriteria}" size="35" maxlength="1024" onkeyup="updateGroupsButtonState();" onchange="updateButtonState();" />&nbsp;
+      <h:inputText id="search-groups-text" value="#{DialogManager.bean.groupsSearchCriteria}" size="35" maxlength="1024" onkeyup="updateGroupsButtonState();" onchange="updateGroupsButtonState();" />&nbsp;
          <h:commandButton id="search-groups-btn" value="#{msg.search}" action="#{DialogManager.bean.searchGroups}" disabled="true" />&nbsp;
          <h:commandButton value="#{msg.show_all}" action="#{DialogManager.bean.showAllGroups}" />
       <h:outputText value="</div><div style='padding: 4px;'>" escape="false" />

@@ -27,6 +27,14 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
+<%
+if (Application.getDialogManager().getState() == null)
+{
+   response.sendRedirect(request.getContextPath() + "/faces/jsp/dashboards/container.jsp");
+   return;
+}
+%>
+
 <r:page title="<%=Application.getDialogManager().getTitle() %>">
 
 <f:view>

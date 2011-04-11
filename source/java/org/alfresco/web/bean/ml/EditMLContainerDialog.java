@@ -82,7 +82,8 @@ public class EditMLContainerDialog extends  BaseDialogBean
       {
          QName qname = QName.createQName(entry.getKey());
          
-         if(! qname.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI) )
+         if (!qname.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI) ||
+            qname.equals(ContentModel.PROP_LOCALE))
          {
             // Update the property on the real node
             getNodeService().setProperty(container, qname, (Serializable) entry.getValue());

@@ -22,16 +22,14 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
 
 <script type="text/javascript">
    var finishButtonPressed = false;
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
       document.getElementById("wizard:wizard-body:name").focus();
-      document.getElementById("wizard").onsubmit = validateWizard;
       document.getElementById("wizard:next-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
       document.getElementById("wizard:finish-button").onclick = function() {finishButtonPressed = true; clear_wizard();}
    }

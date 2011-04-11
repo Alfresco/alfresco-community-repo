@@ -55,6 +55,7 @@ abstract class AbstractClipboardItem implements ClipboardItem
    transient private ServiceRegistry services = null;
    
    protected NodeRef ref;
+   protected NodeRef parent;
    protected ClipboardStatus mode;
    
    // cached values
@@ -89,6 +90,20 @@ abstract class AbstractClipboardItem implements ClipboardItem
    {
       this.ref = ref;
       this.mode = mode;
+   }
+   
+   /**
+     * Constructor
+     * 
+     * @param ref The ref of the item on the clipboard
+     * @param parent The parent of the item on the clipboard
+     * @param mode The ClipboardStatus enum value
+     */
+   public AbstractClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode)
+   {
+       this.ref = ref;
+       this.mode = mode;
+       this.parent = parent;
    }
    
    public ClipboardStatus getMode()
@@ -128,6 +143,11 @@ abstract class AbstractClipboardItem implements ClipboardItem
    public NodeRef getNodeRef()
    {
       return this.ref;
+   }
+   
+   public NodeRef getParent()
+   {
+      return this.parent;
    }
    
    /**

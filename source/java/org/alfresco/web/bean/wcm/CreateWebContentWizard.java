@@ -810,11 +810,28 @@ public class CreateWebContentWizard extends CreateContentWizard
    }
 
    /**
-    * Provides the url to the preview sandbox containing the asset currently being edited.
+    * Provides path to current WCM webApp folder.
     */
    public String getPreviewSandboxUrl()
    {
       return AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), this.avmBrowseBean.getWebapp());
+   }
+
+   /**
+    * Provides name of current WCM webApp folder.
+    */
+   
+   public String getAvmWebappPrefix()
+   {
+       return AVMUtil.getPreviewURI(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()));
+   }
+
+   /**
+    * Provides the url to the preview sandbox containing the asset currently being edited.
+    */
+   public String getAvmWebappName()
+   {
+      return this.avmBrowseBean.getWebapp();
    }
 
    public String getSummary()

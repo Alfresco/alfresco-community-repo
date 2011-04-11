@@ -28,9 +28,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
@@ -50,12 +47,16 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.UICharsetSelector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Base class for the content related wizards and dialogs
  * 
  * @author gavinc
  */
+@SuppressWarnings("serial")
 public abstract class BaseContentWizard extends BaseWizardBean
 {
    protected String fileName;
@@ -73,6 +74,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected NodeRef createdNode;
    protected List<SelectItem> objectTypes;
    transient private ContentService contentService;
+   
+   protected static final String MSG_NODE_LOCKED = "node_locked_dialog_closed";
    
    protected static Log logger = LogFactory.getLog(BaseContentWizard.class);
    
@@ -100,8 +103,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
    public boolean getFinishButtonDisabled()
    {
        return (this.fileName == null || 
-	       this.fileName.length() == 0 ||
-	       this.mimeType == null);
+          this.fileName.length() == 0 ||
+          this.mimeType == null);
    }
 
    
@@ -294,7 +297,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
     */
    public List<SelectItem> getObjectTypes()
    {
-	  if ((this.objectTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      if ((this.objectTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          FacesContext context = FacesContext.getCurrentInstance();
          
@@ -481,17 +484,17 @@ public abstract class BaseContentWizard extends BaseWizardBean
       
       // apply the titled aspect - title and description
       editProps.put(ContentModel.PROP_TITLE, this.title);
-      editProps.put(ContentModel.PROP_DESCRIPTION, this.description);      
+      editProps.put(ContentModel.PROP_DESCRIPTION, this.description);    
       if (logger.isDebugEnabled())
          logger.debug("Added titled aspect with properties: " + this.title + ", " + this.description);
       
       // create the node
       NodeRef fileNodeRef = this.getNodeService().createNode(
-              containerNodeRef, 
-              ContentModel.ASSOC_CONTAINS, 
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.fileName), 
+              containerNodeRef,
+              ContentModel.ASSOC_CONTAINS,
+              QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, this.fileName),
               Repository.resolveToQName(this.objectType),
-              editProps).getChildRef();     
+              editProps).getChildRef();
       
       if (logger.isDebugEnabled())
           logger.debug("Created file node for file: " + this.fileName);

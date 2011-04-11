@@ -23,8 +23,30 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-  
+
 <f:verbatim>
+   <script type="text/javascript">
+      window.addEvent('load', pageLoaded);
+      
+      function pageLoaded()
+      {
+         spaceSelectorDisable();
+      }
+      
+      function spaceSelectorDisable()
+      {
+         var checked0 = document.forms['dialog']['dialog:dialog-body:radio-space'][0].checked;
+         if (checked0)
+         {
+            document.getElementById("spaceSelector").style.visibility="hidden";
+         }
+         else
+         {
+            document.getElementById("spaceSelector").style.visibility="visible";
+         }
+      }
+   </script>
+   
    <table cellspacing="0" cellpadding="3" border="0" width="100%">
       <tr>
          <td width="100%" valign="top">
@@ -53,7 +75,7 @@
                </tr>
                <tr>
                   <td>
-                     </f:verbatim><h:selectOneRadio value="#{CCProperties.copyLocation}" layout="pageDirection">
+                     </f:verbatim><h:selectOneRadio id="radio-space" value="#{CCProperties.copyLocation}" layout="pageDirection" onclick="spaceSelectorDisable();">
                      <f:selectItem itemValue="current" itemLabel="#{msg.store_space_current}" />
                      <f:selectItem itemValue="other" itemLabel="#{msg.store_space_selected}:" />
                      </h:selectOneRadio><f:verbatim>

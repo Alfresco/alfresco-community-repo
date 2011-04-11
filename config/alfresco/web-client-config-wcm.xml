@@ -57,7 +57,7 @@
            <widget xforms-type="xf:textarea"
                    appearance="custom"
                    javascript-class-name="alfresco.xforms.RichTextEditor">
-             <param name="theme_advanced_buttons1">bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect</param>
+             <param name="theme_advanced_buttons1">bold,italic,underline,strikethrough,separator,fontselect,fontsizeselect,separator,code</param>
              <param name="theme_advanced_buttons2">link,unlink,image,separator,justifyleft,justifycenter,justifyright,justifyfull,separator,bullist,numlist,separator,undo,redo,separator,forecolor,backcolor</param>
              <param name="height">600</param>
              <param name="mode">exact</param>

@@ -128,7 +128,7 @@
       <r:contentSelector id="content-picker" value="#{WizardManager.bean.itemsToAdd}" styleClass="" />
       <h:panelGrid columns="2">
          <h:commandButton value="#{msg.add_to_list_button}" actionListener="#{WizardManager.bean.addPackageItems}" />
-         <h:commandButton value="#{msg.cancel}" actionListener="#{WizardManager.bean.cancelAddPackageItems}" />
+         <h:commandButton id="cancel-button" value="#{msg.cancel}" actionListener="#{WizardManager.bean.cancelAddPackageItems}" />
       </h:panelGrid>
    </h:panelGrid>
 

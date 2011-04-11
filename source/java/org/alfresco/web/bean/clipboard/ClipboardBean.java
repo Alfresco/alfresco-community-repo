@@ -110,7 +110,7 @@ public class ClipboardBean implements Serializable
       String ref = params.get("ref");
       if (ref != null && ref.length() != 0)
       {
-         addClipboardNode(new NodeRef(ref), ClipboardStatus.COPY);
+         addClipboardNode(new NodeRef(ref), null, ClipboardStatus.COPY);
       }
    }
    
@@ -122,9 +122,15 @@ public class ClipboardBean implements Serializable
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String ref = params.get("ref");
+      String parent = params.get("parent");
       if (ref != null && ref.length() != 0)
       {
-         addClipboardNode(new NodeRef(ref), ClipboardStatus.CUT);
+          NodeRef parentNodeRef = null;
+          if (parent != null)
+          {
+              parentNodeRef = new NodeRef(Repository.getStoreRef(), parent);
+          }
+          addClipboardNode(new NodeRef(ref), parentNodeRef, ClipboardStatus.CUT);
       }
    }
    
@@ -276,15 +282,16 @@ public class ClipboardBean implements Serializable
     * Add a clipboard node to the clipboard ready for a cut/copy operation
     * 
     * @param ref     NodeRef of the item for the operation
+    * @param parent  Parent of the item for the operation
     * @param mode    ClipboardStatus for the operation
     */
-   private void addClipboardNode(NodeRef ref, ClipboardStatus mode)
+   private void addClipboardNode(NodeRef ref, NodeRef parent, ClipboardStatus mode)
    {
       // construct item based on store protocol
       ClipboardItem item = null;
       if (StoreRef.PROTOCOL_WORKSPACE.equals(ref.getStoreRef().getProtocol()))
       {
-         item = new WorkspaceClipboardItem(ref, mode);
+         item = new WorkspaceClipboardItem(ref, parent, mode);
       }
       else if (StoreRef.PROTOCOL_AVM.equals(ref.getStoreRef().getProtocol()))
       {

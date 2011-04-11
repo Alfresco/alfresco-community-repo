@@ -48,12 +48,15 @@
           
          <!-- Limit search results. -1 for unlimited. -->
          <search-max-results>500</search-max-results>
-         
+
          <!-- Limit search results within selectors, -1 for unlimited. -->
          <selectors-search-max-results>500</selectors-search-max-results>
          
          <!-- Limit search results within invite users wizard, -1 for unlimited. -->
          <invite-users-max-results>500</invite-users-max-results>
+
+         <!-- Limit number of completed tasks displayed -->
+         <tasks-completed-max-results>100</tasks-completed-max-results>
          
          <!-- The path to starting point when creating/finding home folders for new users in the UI -->
          <default-home-space-path>/app:company_home/app:user_homes</default-home-space-path>
@@ -441,6 +444,7 @@
          <handler name="compare-mime-type" class="org.alfresco.web.bean.rules.handlers.CompareMimeTypeHandler" />
          <handler name="compare-property-value" class="org.alfresco.web.bean.rules.handlers.PropertyValueHandler" />
          <handler name="has-aspect" class="org.alfresco.web.bean.rules.handlers.HasAspectHandler" />
+         <handler name="has-tag" class="org.alfresco.web.bean.rules.handlers.HasTagHandler" />
          <handler name="in-category" class="org.alfresco.web.bean.rules.handlers.InCategoryHandler" />
          <handler name="is-subtype" class="org.alfresco.web.bean.rules.handlers.IsSubTypeHandler" />
          <handler name="composite-condition" class="org.alfresco.web.bean.rules.handlers.CompositeConditionHandler" />

@@ -97,6 +97,7 @@ public class FilePickerBean implements Serializable
    private static final String PARAM_SELECTABLE_TYPES = "selectableTypes";
    private static final String PARAM_FILTER_MIME_TYPES = "filterMimetypes";
    private static final String PARAM_CURRENT_PATH = "currentPath";
+   private static final String EXTERNAL_PROTOCOL_REGEXP = "^.*:.*";
 
    private final Set<NodeRef> uploads = new HashSet<NodeRef>();
 
@@ -362,11 +363,26 @@ public class FilePickerBean implements Serializable
       String currentPathReqParam = (String) externalContext
             .getRequestParameterMap().get(PARAM_CURRENT_PATH);
 
+      // create file picker data XML document to return
+      // and append file picker data element to it
+      final org.w3c.dom.Document filePickerDataDoc = XMLUtil.newDocument();
+      final org.w3c.dom.Element filePickerDataElement = filePickerDataDoc
+            .createElement("file-picker-data");
+      filePickerDataDoc.appendChild(filePickerDataElement);
+
       // if current path request parameter null then set current path to the
       // current AVM path
-      if ((currentPathReqParam == null))
+      if (currentPathReqParam == null)
       {
          currentPath = this.getCurrentAVMPath();
+      }
+      
+      // Fix for ALF-3764. We cannot select an external protocol link (i.e. http://example.net by filepicker.
+      // Such links should be typed manually in the text box.
+      if (currentPathReqParam.matches(EXTERNAL_PROTOCOL_REGEXP))
+      {
+          currentPath = this.getCurrentAVMPath();
+          filePickerDataElement.setAttribute("error", Application.getMessage(facesContext, "error_external_protocol_support"));
       }
       // else set current path to current path request parameter converted to
       // AVM preview
@@ -398,13 +414,6 @@ public class FilePickerBean implements Serializable
                + "], filterMimetypes = ["
                + StringUtils.join(filterMimetypes, ",") + "])");
       }
-
-      // create file picker data XML document to return
-      // and append file picker data element to it
-      final org.w3c.dom.Document filePickerDataDoc = XMLUtil.newDocument();
-      final org.w3c.dom.Element filePickerDataElement = filePickerDataDoc
-            .createElement("file-picker-data");
-      filePickerDataDoc.appendChild(filePickerDataElement);
 
       // make sure that there is a node associated with current path
       // if not, set an applicable error message as an attribute on

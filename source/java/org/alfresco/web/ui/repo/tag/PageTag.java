@@ -73,7 +73,9 @@ public class PageTag extends TagSupport
       "/scripts/ajax/summary-info.js",
       // ajax pickers
       "/scripts/ajax/picker.js",
-      "/scripts/ajax/tagger.js"
+      "/scripts/ajax/tagger.js",
+       // validation handling
+       "/scripts/validation.js"
    };
    
    private final static String[] CSS = 

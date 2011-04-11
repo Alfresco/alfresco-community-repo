@@ -30,7 +30,7 @@
 
 <script type="text/javascript">
 
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
@@ -203,7 +203,7 @@
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" immediate="true" />
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" immediate="true" />
                                     </td>
                                  </tr>
                               </table>

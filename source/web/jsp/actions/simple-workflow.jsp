@@ -30,7 +30,7 @@
 
 <script type="text/javascript">
    
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    
    function pageLoaded()
    {
@@ -263,7 +263,7 @@
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddAction}" 
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddAction}" 
                                                         styleClass="wizardButton" />
                                     </td>
                                  </tr>

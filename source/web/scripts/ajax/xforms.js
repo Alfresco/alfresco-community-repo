@@ -997,7 +997,13 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
             if (href && href.match("^/"))
             {
-              img.setAttribute("src", alfresco.constants.AVM_WEBAPP_URL + href);
+              var urlToReplace = alfresco.constants.AVM_WEBAPP_PREFIX;
+              if (alfresco.constants.AVM_WEBAPP_CONTEXT == "ROOT")
+              {
+                urlToReplace = alfresco.constants.AVM_WEBAPP_URL;
+              }
+			  
+              img.setAttribute("src", urlToReplace + href);			
             }
           });
           
@@ -1037,7 +1043,14 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     var result = (alfresco.xforms.RichTextEditor.currentInstance == this 
                   ? 	tinyMCE.get(this.widget.id).getContent() 
                   : this.widget.innerHTML);
-    result = result.replace(new RegExp(alfresco.constants.AVM_WEBAPP_URL, "g"), "");
+				  
+    var urlToReplace = alfresco.constants.AVM_WEBAPP_PREFIX;
+    if (alfresco.constants.AVM_WEBAPP_CONTEXT == "ROOT")
+    {
+      urlToReplace = alfresco.constants.AVM_WEBAPP_URL;
+    }				  
+    result = result.replace(new RegExp(urlToReplace, "g"), "");
+				  
     if (result.length == 0) 
     {
       result = null;

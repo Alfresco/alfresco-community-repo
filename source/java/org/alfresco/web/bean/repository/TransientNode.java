@@ -272,11 +272,11 @@ public class TransientNode extends Node
          throw new AlfrescoRuntimeException("Failed to find type definition: " + this.type);
       }
       
-      this.aspects = new HashSet<QName>();
-      for (AspectDefinition aspectDef : typeDef.getDefaultAspects())
-      {
-         this.aspects.add(aspectDef.getName());
-      }
+      // get flat list of all aspects for the type
+      List<QName> defaultAspects = new ArrayList<QName>(16);
+      getMandatoryAspects(typeDef, defaultAspects);
+      
+      this.aspects = new HashSet<QName>(defaultAspects);
       
       // setup remaining variables
       this.path = null;

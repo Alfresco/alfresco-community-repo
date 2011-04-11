@@ -425,8 +425,9 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                   // this will also force initialisation of the props now during the UserTransaction
                   // it is much better for performance to do this now rather than during page bind
                   Map<String, Object> props = node.getProperties();
+                  String firstName = (String)props.get("firstName");
                   String lastName = (String)props.get("lastName");
-                  props.put("fullName", ((String)props.get("firstName")) + ' ' + (lastName != null ? lastName : ""));
+                  props.put("fullName", (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : ""));
                   props.put("userNameLabel", props.get("userName"));
                   props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);
@@ -642,8 +643,9 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                Node node = new Node(ref);
                
                // setup convience function for current user full name
-               setPersonName((String)node.getProperties().get(ContentModel.PROP_FIRSTNAME) + ' ' +
-                             (String)node.getProperties().get(ContentModel.PROP_LASTNAME));
+               String firstName = (String)node.getProperties().get(ContentModel.PROP_FIRSTNAME);
+               String lastName = (String)node.getProperties().get(ContentModel.PROP_LASTNAME);
+               setPersonName((firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : ""));
             }
             else
             {

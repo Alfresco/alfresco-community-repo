@@ -1690,10 +1690,8 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Revert a sandbox to a specific snapshot version ID
     */
-   public void revertSnapshot(ActionEvent event)
+   public void revertSnapshot(Map<String, String> params)
    {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
       String sandbox = params.get("sandbox");
       String strVersion = params.get("version");
       if (sandbox != null && strVersion != null && strVersion.length() != 0)

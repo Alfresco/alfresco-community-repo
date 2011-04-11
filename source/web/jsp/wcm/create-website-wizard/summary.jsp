@@ -24,7 +24,8 @@
 <%@ page isELIgnored="false" %>
 
    <script type="text/javascript">
-      window.onload = function() { document.getElementById("wizard:finish-button").focus(); }
+      addEventToElement(window, 'load', pageLoaded, false);
+      function pageLoaded() { document.getElementById("wizard:finish-button").focus(); }
    </script>
 
    <!-- General properties -->

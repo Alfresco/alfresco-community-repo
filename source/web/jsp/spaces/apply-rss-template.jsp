@@ -31,7 +31,7 @@
 <f:verbatim>
 <script type="text/javascript">
 	var finishButtonPressed = false;
-	window.onload = pageLoaded;
+	addEventToElement(window, 'load', pageLoaded, false);
 	
 	function pageLoaded()
 	{

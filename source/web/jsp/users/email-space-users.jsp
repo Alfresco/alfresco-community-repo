@@ -25,7 +25,7 @@
 <f:verbatim>
 <script type="text/javascript">
    
-   window.onload = pageLoaded;
+   addEventToElement(window, 'load', pageLoaded, false);
    var okEnabled;
    
    function pageLoaded()
@@ -79,7 +79,7 @@
    <h:panelGrid columns="4" cellspacing="1" cellpadding="1" border="0">
       <h:outputText value="#{msg.action_mail_template}:" />
       <h:selectOneMenu value="#{DialogManager.bean.mailHelper.template}">
-         <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
+         <f:selectItems value="#{TemplateSupportBean.notifyEmailTemplates}" />
       </h:selectOneMenu>
       <h:commandButton value="#{msg.insert_template}" actionListener="#{DialogManager.bean.mailHelper.insertTemplate}" styleClass="wizardButton" />
       <h:commandButton value="#{msg.discard_template}" actionListener="#{DialogManager.bean.mailHelper.discardTemplate}" styleClass="wizardButton" disabled="#{DialogManager.bean.mailHelper.usingTemplate == null}" />

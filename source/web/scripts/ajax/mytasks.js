@@ -1,6 +1,5 @@
 var MyTasks = {
    ANIM_LENGTH: 300,
-   DETAIL_PANEL_HEIGHT: 137,
    Filter: null,
    ServiceContext: null,
    
@@ -89,10 +88,11 @@ var MyTasks = {
          task.isOpen = false;
          task.loadingResources = false;
          item.defBColor = (item.getStyle('background-color') == 'transparent') ? '' : item.getStyle('background-color');
-         detail.defHeight = 1;
+         detail.defHeight = detail.offsetHeight + 3; // Add some extra spacing for the button
          detail.setStyle('opacity', 0);
          detail.setStyle('display', 'block');
-         detail.setStyle('height', detail.defHeight);
+         detail.setStyle('height', 1);
+
          info.setStyle('opacity', 0);
 
          // register 'mouseenter' event for each task
@@ -172,7 +172,6 @@ var MyTasks = {
          {
             var animInfo = {},
                animDetail = {},
-               detailHeight = detail.getStyle('height').toInt(),
                infoOpacity = info.getStyle('opacity');
             
             if (!task.isOpen)
@@ -208,7 +207,7 @@ var MyTasks = {
 
                // slide and fade in the details panel
                animDetail[i] = {
-                  'height': [detailHeight, detail.defHeight + MyTasks.DETAIL_PANEL_HEIGHT],
+                  'height': [1, detail.defHeight],
                   'opacity': [detail.getStyle('opacity'), 1]};
 
                // close other open tasks and toggle this one if it's already open
@@ -227,11 +226,11 @@ var MyTasks = {
                      otherTask.removeClass("taskItemSelectedOpen");
 
                      // does this task detail panel need resetting back to it's default height?
-                     var otherHeight = otherDetail.getStyle('height').toInt();
-                     if (otherHeight != otherDetail.defHeight)
+                     var otherHeight = otherDetail.offsetHeight;
+                     if (otherHeight != 1)
                      {
                         animDetail[j] = {
-                           'height': [otherHeight, otherDetail.defHeight],
+                           'height': [otherHeight, 1],
                            'opacity': [otherDetail.getStyle('opacity'), 0]};
                      }
                      // does the info button need fading out?
@@ -257,7 +256,7 @@ var MyTasks = {
 
                // reset task back to it's default height
                animDetail[i] = {
-                  'height': [detailHeight, detail.defHeight],
+                  'height': [detail.defHeight, 1],
                   'opacity': [detail.getStyle('opacity'), 0]};
                
                $E('.taskResources', detail).setStyle('overflow', 'hidden');

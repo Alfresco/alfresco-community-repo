@@ -29,7 +29,7 @@
             <action-listener>#{ClipboardBean.cutNode}</action-listener>
             <params>
                <param name="ref">#{actionContext.nodeRef}</param>
-               <!--<param name="parent">#{NavigationBean.currentNodeId}</param>-->
+               <param name="parent">#{NavigationBean.currentNodeId}</param>
             </params>
          </action>
          

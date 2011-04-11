@@ -32,7 +32,11 @@
 
 <f:verbatim>
 <script type="text/javascript">
-   document.getElementById("dialog:dialog-body:user-picker_results").onchange = checkButtonState;
+   addEventToElement(window, 'load', pageLoaded, false);
+   function pageLoaded()
+   {
+      document.getElementById("dialog:dialog-body:user-picker_results").onchange = checkButtonState;
+   }
    
    function checkButtonState()
    {

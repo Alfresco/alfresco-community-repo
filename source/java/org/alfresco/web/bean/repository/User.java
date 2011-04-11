@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -107,9 +108,9 @@ public final class User implements SessionUser
    {
       if (this.fullName == null)
       {
+         String firstName = (String)service.getProperty(this.person, ContentModel.PROP_FIRSTNAME);
          String lastName = (String)service.getProperty(this.person, ContentModel.PROP_LASTNAME);
-         this.fullName = service.getProperty(this.person, ContentModel.PROP_FIRSTNAME) +
-                         (lastName != null ? (" " + lastName) : "");
+         this.fullName = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");
       }
       
       return this.fullName;
@@ -208,11 +209,12 @@ public final class User implements SessionUser
     * Utilises the 'configurable' aspect on the Person linked to this user.
     */
    synchronized NodeRef getUserPreferencesRef(WebApplicationContext context)
-    {
+   {
         final ServiceRegistry registry = (ServiceRegistry) context.getBean("ServiceRegistry");
         final NodeService nodeService = registry.getNodeService();
         final SearchService searchService = registry.getSearchService();
         final NamespaceService namespaceService = registry.getNamespaceService();
+        final TransactionService txService = registry.getTransactionService();
         final ConfigurableService configurableService = (ConfigurableService) context.getBean("ConfigurableService");
         RetryingTransactionHelper txnHelper = registry.getRetryingTransactionHelper();
         return txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
@@ -224,8 +226,16 @@ public final class User implements SessionUser
                 NodeRef person = getPerson();
                 if (nodeService.hasAspect(person, ApplicationModel.ASPECT_CONFIGURABLE) == false)
                 {
-                    // create the configuration folder for this Person node
-                    configurableService.makeConfigurable(person);
+                    // if the repository is in read-only mode just return null
+                    if (txService.isReadOnly())
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        // create the configuration folder for this Person node
+                        configurableService.makeConfigurable(person);
+                    }
                 }
 
                 // target of the assoc is the configurations folder ref
@@ -245,13 +255,16 @@ public final class User implements SessionUser
                 }
                 else
                 {
-                    // create the preferences Node for this user
-                    ChildAssociationRef childRef = nodeService
-                            .createNode(configRef, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                                    NamespaceService.APP_MODEL_1_0_URI, "preferences"), ContentModel.TYPE_CMOBJECT);
+                    // create the preferences Node for this user (if repo is not read-only)
+                    if (txService.isReadOnly() == false)
+                    {
+                        ChildAssociationRef childRef = nodeService.createNode(configRef,
+                                    ContentModel.ASSOC_CONTAINS, QName.createQName(
+                                    NamespaceService.APP_MODEL_1_0_URI, "preferences"), 
+                                    ContentModel.TYPE_CMOBJECT);
 
-                    prefRef = childRef.getChildRef();
-
+                       prefRef = childRef.getChildRef();
+                    }
                 }
                 return prefRef;
             }

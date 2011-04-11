@@ -34,6 +34,7 @@ import javax.faces.model.SelectItem;
 import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigService;
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -199,12 +200,23 @@ public class CreateContentWizard extends BaseContentWizard
       // to otherwise just return
       if (this.showOtherProperties)
       {
-         // we are going to immediately edit the properties so we need
-         // to setup the BrowseBean context appropriately
-         this.browseBean.setDocument(new Node(this.createdNode));
+         // check whether the created node is checked out, if a 'check out'
+         // rule is present in the space the new node will be and an
+         // attempt to modify the properties will cause an error (ALF-438)
+         if (getNodeService().hasAspect(this.createdNode, ContentModel.ASPECT_LOCKABLE))
+         {
+            Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), MSG_NODE_LOCKED));
+            return outcome;
+         }
+         else
+         {
+            // we are going to immediately edit the properties so we need
+            // to setup the BrowseBean context appropriately
+            this.browseBean.setDocument(new Node(this.createdNode));
       
-         return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-                "dialog:setContentProperties";
+            return getDefaultFinishOutcome() + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+                   "dialog:setContentProperties";
+         }
       }
       else
       {

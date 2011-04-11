@@ -93,17 +93,18 @@ public class MP3MetadataExtracterTest extends AbstractMetadataExtracterTest
     * Tests for various MP3 specific bits of metadata 
     */
     public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {
-       QName songTitle = QName.createQName("music","songTitle");
-       assertEquals(
-             "Property " + songTitle + " not found for mimetype " + mimetype,
-             QUICK_TITLE,
-             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(songTitle)));
-      
-       QName songArtist = QName.createQName("music","artist");
-       assertEquals(
-             "Property " + songArtist + " not found for mimetype " + mimetype,
-             ARTIST,
-             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(songArtist)));
+        // Pending ALF-6170 for proper music namespace
+//       QName songTitle = QName.createQName("music","songTitle");
+//       assertEquals(
+//             "Property " + songTitle + " not found for mimetype " + mimetype,
+//             QUICK_TITLE,
+//             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(songTitle)));
+//      
+//       QName songArtist = QName.createQName("music","artist");
+//       assertEquals(
+//             "Property " + songArtist + " not found for mimetype " + mimetype,
+//             ARTIST,
+//             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(songArtist)));
        
        // Description is a composite - check the artist part
        assertContains(

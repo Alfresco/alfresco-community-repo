@@ -37,6 +37,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -233,8 +234,16 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         props.put(WCMAppModel.PROP_AVMSTORE, wpStoreId); // reference to the root AVM store
         props.put(WCMAppModel.PROP_PREVIEW_PROVIDER, previewProviderName);
         
+        NodeRef webProjectsRoot = getWebProjectsRoot();
+
+        // ALF-906: ensure that DM rules are not inherited by web projects
+    	if(!nodeService.hasAspect(webProjectsRoot, RuleModel.ASPECT_IGNORE_INHERITED_RULES))
+    	{
+    		nodeService.addAspect(webProjectsRoot, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+    	}
+
         ChildAssociationRef childAssocRef = nodeService.createNode(
-              getWebProjectsRoot(),
+       	      webProjectsRoot,
               ContentModel.ASSOC_CONTAINS,
               QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
               WCMAppModel.TYPE_AVMWEBFOLDER,
@@ -470,7 +479,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         return hasRoot;
     }
-    
+
     /**
      * Get the node reference that is the web projects root
      * 

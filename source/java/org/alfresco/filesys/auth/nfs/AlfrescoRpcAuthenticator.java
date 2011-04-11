@@ -39,6 +39,8 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -303,7 +305,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
                 
                 getAuthenticationComponent().setCurrentUser( client.getUserName());
                 alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
-                
+
                 // DEBUG
                 
                 if ( logger.isDebugEnabled())
@@ -335,8 +337,8 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
       }
       catch ( Exception ex)
       {
-        if ( logger.isDebugEnabled())
-          logger.debug( ex);
+        if ( logger.isErrorEnabled())
+          logger.error( "Error in RPC authenticator setting current user", ex);
       }
       finally
       {
@@ -366,6 +368,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
             }
         }
       }
+
     }
     
     /**

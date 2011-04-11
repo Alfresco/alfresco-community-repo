@@ -82,9 +82,6 @@
 
    <bean id="baseRenderingAction" abstract="true" parent="action-executer"
       class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
-      <property name="publicAction">
-         <value>false</value>
-      </property>
       <property name="defaultRenditionContentProp"
          value="{http://www.alfresco.org/model/content/1.0}content" />
       <property name="defaultRenditionNodeType"

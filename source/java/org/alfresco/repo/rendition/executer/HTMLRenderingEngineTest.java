@@ -233,7 +233,7 @@ public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest
              htmlNode, ContentModel.PROP_CONTENT
        );
        html = reader.getContentString();
-       assertEquals("<?xml", html.substring(0, 5));
+       assertFalse("Body wrong:\n"+html, html.contains("<?xml"));
        assertFalse("Body wrong:\n"+html, html.contains("<html"));
        assertFalse("Body wrong:\n"+html, html.contains("<head>"));
        assertFalse("Body wrong:\n"+html, html.contains("<body>"));

@@ -18,13 +18,15 @@
  */
 package org.alfresco.repo.security.authority.script;
 
-import java.util.LinkedHashSet;
+import static org.alfresco.repo.security.authority.script.ScriptGroup.makeScriptGroups;
+
+import java.util.Collections;
 import java.util.Set;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-
 /**
  * Script object representing the authority service.
  * 
@@ -53,15 +55,26 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone)
     {
-        Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
-        Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, true, displayNamePattern,
-                zone);
-        for (String authority : authorities)
-        {
-            ScriptGroup group = new ScriptGroup(authority, authorityService);
-            groups.add(group);
+	    return searchRootGroupsInZone(displayNamePattern, zone, -1, -1);
+    }
+	    
+    /**
+     * Search the root groups, those without a parent group.
+     * 
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, int maxItems, int skipCount)
+    {
+        Set<String> authorities;
+        try {
+         authorities = authorityService.findAuthorities(AuthorityType.GROUP,
+                    null, true, displayNamePattern, zone);
         }
-        return groups.toArray(new ScriptGroup[groups.size()]);
+        catch(UnknownAuthorityException e)
+        {
+            authorities = Collections.emptySet();
+        }
+        return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
     }
 	
 	/**
@@ -70,48 +83,62 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchRootGroups(String displayNamePattern)
     {
-        Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-        Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, true, displayNamePattern,
-                null);
-        for (String authority : authorities)
-        {
-            ScriptGroup group = new ScriptGroup(authority, authorityService);
-            groups.add(group);
-        }
-        return groups.toArray(new ScriptGroup[groups.size()]);
+	    return searchRootGroupsInZone(displayNamePattern, null);
+    }
+    
+    /**
+     * Search the root groups, those without a parent group.   Searches in all zones.
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] getAllRootGroups()
+    {
+        return getAllRootGroups(-1, -1);
     }
 	
 	/**
 	 * Search the root groups, those without a parent group.   Searches in all zones.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] getAllRootGroups()
+	public ScriptGroup[] getAllRootGroups(int maxItems, int skipCount)
 	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
-		for (String authority : authorities)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
+		Set<String> authorities;
+		try{
+		    authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
 		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+        catch(UnknownAuthorityException e)
+        {
+            authorities = Collections.emptySet();
+        }
+		return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
 	}
-	
+    /**
+     * Get the root groups, those without a parent group.
+     * @param zone zone to search in.
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] getAllRootGroupsInZone(String zone)
+    {
+        return getAllRootGroupsInZone(zone, -1, -1);
+    }
+        
 	/**
 	 * Get the root groups, those without a parent group.
 	 * @param zone zone to search in.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] getAllRootGroupsInZone(String zone)
+	public ScriptGroup[] getAllRootGroupsInZone(String zone, int maxItems, int skipCount)
 	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.getAllRootAuthoritiesInZone(zone, AuthorityType.GROUP);
-		for (String authority : authorities)
+		Set<String> authorities;
+		try
 		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+		    authorities= authorityService.getAllRootAuthoritiesInZone(zone, AuthorityType.GROUP);
+        }
+        catch(UnknownAuthorityException e)
+        {
+            authorities = Collections.emptySet();
+        }
+
+		return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
 	}
     
 	/**
@@ -167,24 +194,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchGroups(String shortNameFilter)
 	{
-		String filter = shortNameFilter;
-		
-		/**
-		 * Modify shortNameFilter to be "shortName*"
-		 */
-		if (shortNameFilter.length() != 0)
-		{
-			filter = filter.replace("\"", "") + "*";
-		}
-		
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, null);
-		for(String authority : authorities)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+		return searchGroupsInZone(shortNameFilter, null);
 	}
 	
 	/**
@@ -196,23 +206,42 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone)
 	{
-		String filter = shortNameFilter;
-		
-		/**
-		 * Modify shortNameFilter to be "shortName*"
-		 */
-		if (shortNameFilter.length() != 0)
-		{
-			filter = filter.replace("\"", "") + "*";
-		}
-		
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, zone);
-		for(String authority : authorities)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+		return searchGroupsInZone(shortNameFilter, zone, -1, -1);
 	}
+	
+    /**
+     * Search for groups in a specific zone
+     * Includes paging parameters to limit size of results returned.
+     * 
+     * @param shortNameFilter partial match on shortName (* and ?) work.  If empty then matches everything.
+     * @param zone zone to search in.
+     * @param maxItems Maximum number of items returned.
+     * @param skipCount number of items to skip.
+     * @return the groups matching the query
+     */
+    public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, int maxItems, int skipCount)
+    {
+        String filter = shortNameFilter;
+        
+        /**
+         * Modify shortNameFilter to be "shortName*"
+         */
+        if (shortNameFilter.length() != 0)
+        {
+            filter = filter.replace("\"", "") + "*";
+        }
+        
+        Set<String> authorities;
+        try {
+            authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, zone);
+        }
+        catch(UnknownAuthorityException e)
+        {
+            // Return an empty set if unrecognised authority.
+            authorities = Collections.emptySet();
+        }
+        return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
+    }
+
+	
 }

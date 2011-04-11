@@ -45,13 +45,15 @@ public interface TransferReceiver
      * @return
      */
     NodeRef getTempFolder(String transferId);
-
+    
     /**
      * Asks the receiver to setup a new transfer.
+     * @param fromRepositoryId the repositoryId of the sending system
+     * @param allowTransferToSelf are transfers to the same repository allowed?
      * @return The identifier of the new transfer
      * @throws TransferException if an error occurred while setting up the transfer
      */
-    String start() throws TransferException;
+    String start(String fromRepositoryId, boolean allowTransferToSelf) throws TransferException;
 
     /**
      * Asks the receiver to end (and clean up) the specified transfer

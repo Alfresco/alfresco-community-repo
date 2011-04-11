@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.contentdata.ibatis;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +30,14 @@ import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
 import org.alfresco.repo.domain.contentdata.ContentDataEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
+import org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery;
 import org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * iBatis-specific implementation of the ContentData DAO.
@@ -66,12 +67,12 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         this.template = sqlMapClientTemplate;
     }
 
-    public Pair<Long, String> createContentUrlOrphaned(String contentUrl)
+    public Pair<Long, String> createContentUrlOrphaned(String contentUrl, Date orphanTime)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
         contentUrlEntity.setSize(0L);
-        contentUrlEntity.setOrphanTime(System.currentTimeMillis());
+        contentUrlEntity.setOrphanTime(orphanTime == null ? System.currentTimeMillis() : orphanTime.getTime());
         Long id = (Long) template.insert(INSERT_CONTENT_URL, contentUrlEntity);
         // Done
         return new Pair<Long, String>(id, contentUrl);
@@ -115,32 +116,19 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         return contentUrlEntity;
     }
 
-    public void getContentUrlsOrphaned(final ContentUrlHandler contentUrlHandler, long maxOrphanTime)
-    {
-        RowHandler rowHandler = new RowHandler()
-        {
-            public void handleRow(Object valueObject)
-            {
-                ContentUrlEntity contentUrlEntity = (ContentUrlEntity) valueObject;
-                contentUrlHandler.handle(
-                        contentUrlEntity.getId(),
-                        contentUrlEntity.getContentUrl(),
-                        contentUrlEntity.getOrphanTime());
-            }
-        };
-        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        contentUrlEntity.setOrphanTime(maxOrphanTime);
-        template.queryWithRowHandler(SELECT_CONTENT_URLS_ORPHANED, contentUrlEntity, rowHandler);
-    }
-    
     @SuppressWarnings("unchecked")
-    public void getContentUrlsOrphaned(final ContentUrlHandler contentUrlHandler, long maxOrphanTime, int maxResults)
+    public void getContentUrlsOrphaned(
+            final ContentUrlHandler contentUrlHandler,
+            final Long maxOrphanTimeExclusive,
+            final int maxResults)
     {
-        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        contentUrlEntity.setOrphanTime(maxOrphanTime);
+        ParameterCheck.mandatory("maxOrphanTimeExclusive", maxOrphanTimeExclusive);
+        
+        ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
+        query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
         List<ContentUrlEntity> results = template.queryForList(
                 SELECT_CONTENT_URLS_ORPHANED,
-                contentUrlEntity, 0, maxResults);
+                query, 0, maxResults);
         // Pass the result to the callback
         for (ContentUrlEntity result : results)
         {

@@ -354,6 +354,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        //  that will otherwise clutter up the document
        boolean bodyOnly = context.getParamWithDefault(PARAM_BODY_CONTENTS_ONLY, false);
        if(bodyOnly) {
+          html = html.replaceAll("<\\?xml.*?\\?>", "");
           html = html.replaceAll("<p xmlns=\"http://www.w3.org/1999/xhtml\"","<p");
           html = html.replaceAll("<h(\\d) xmlns=\"http://www.w3.org/1999/xhtml\"","<h\\1");
           html = html.replaceAll("<div xmlns=\"http://www.w3.org/1999/xhtml\"","<div");

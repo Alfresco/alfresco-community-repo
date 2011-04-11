@@ -54,15 +54,15 @@ public class DeletedContentBackupCleanerListener implements ContentStoreCleanerL
 
     public void beforeDelete(ContentStore sourceStore, String contentUrl) throws ContentIOException
     {
-        ContentContext context = new ContentContext(null, contentUrl);
-        ContentReader reader = sourceStore.getReader(contentUrl);
-        if (!reader.exists())
-        {
-            // Nothing to copy over
-            return;
-        }
         if (store.isContentUrlSupported(contentUrl))
         {
+            ContentContext context = new ContentContext(null, contentUrl);
+            ContentReader reader = sourceStore.getReader(contentUrl);
+            if (!reader.exists())
+            {
+                // Nothing to copy over
+                return;
+            }
             // write the content into the target store
             ContentWriter writer = store.getWriter(context);
             // copy across

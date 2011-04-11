@@ -34,6 +34,7 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -53,9 +54,11 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -117,6 +120,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      */
     private FileFolderService fileFolderService;
     
+    /** Ownable service */
+    private OwnableService ownableService;
+    
     /**
      * The search service
      */
@@ -139,6 +145,16 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     @SuppressWarnings("unused")
     private VersionableAspect versionableAspect;
     
+    private BehaviourFilter behaviourFilter;
+    
+    /**
+     * @param behaviourFilter the behaviourFilter to set
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+    
     /**
      * Set the node service
      * 
@@ -158,6 +174,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     {
         this.versionService = versionService;
     }
+    
+    /**
+     * Set the ownable service
+     * @param ownableService	ownable service
+     */
+    public void setOwnableService(OwnableService ownableService) 
+    {
+		this.ownableService = ownableService;
+	}
     
     /**
      * Sets the lock service
@@ -416,6 +441,28 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             throw new CheckOutCheckInServiceException(MSG_ERR_ALREADY_WORKING_COPY);
         }
         
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        behaviourFilter.disableBehaviour(destinationParentNodeRef, ContentModel.ASPECT_AUDITABLE);
+        try {
+            return doCheckout(nodeRef, destinationParentNodeRef, destinationAssocTypeQName, destinationAssocQName);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(destinationParentNodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+    }
+
+    /**
+     * @param nodeRef
+     * @param destinationParentNodeRef
+     * @param destinationAssocTypeQName
+     * @param destinationAssocQName
+     * @return
+     */
+    private NodeRef doCheckout(final NodeRef nodeRef, final NodeRef destinationParentNodeRef,
+                final QName destinationAssocTypeQName, QName destinationAssocQName)
+    {
         // Apply the lock aspect if required
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false)
         {
@@ -427,29 +474,35 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // Rename the working copy
         String copyName = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        copyName = createWorkingCopyName(copyName);
+        copyName = createWorkingCopyName(copyName);        
 
-        // Make the working copy
-        final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
-        NodeRef workingCopy = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork() throws Exception
-            {
-                NodeRef workingCopy = copyService.copy(
-                            nodeRef,
-                            destinationParentNodeRef,
-                            destinationAssocTypeQName,
-                            copyQName);
-                return workingCopy;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-        
         // Get the user 
-        String userName = getUserName();
+        final String userName = getUserName();
         
-        ruleService.disableRules();
+        NodeRef workingCopy = null;
+        ruleService.disableRuleType(RuleType.UPDATE);
         try
-        {
+        {            
+            // Make the working copy
+            final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
+            workingCopy = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef copy = copyService.copy(
+                                nodeRef,
+                                destinationParentNodeRef,
+                                destinationAssocTypeQName,
+                                copyQName);
+    
+                    // Set the owner of the working copy to be the current user
+                    ownableService.setOwner(copy, userName);
+                    return copy;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        
+        
+        
             // Update the working copy name        
             this.nodeService.setProperty(workingCopy, ContentModel.PROP_NAME, copyName);
             
@@ -460,7 +513,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
         finally
         {
-            ruleService.enableRules();
+            ruleService.enableRuleType(RuleType.UPDATE);
         }
         
         // Lock the original node
@@ -468,8 +521,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // Invoke on check out policy
         invokeOnCheckOut(workingCopy);
-        
-        // Return the working copy
         return workingCopy;
     }
     
@@ -690,15 +741,22 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 // Error since the original node can not be found
                 throw new CheckOutCheckInServiceException(MSG_ERR_BAD_COPY);
             }            
-            
-            // Release the lock on the original node
-            this.lockService.unlock(nodeRef);
-            
-            // Delete the working copy
-            this.nodeService.deleteNode(workingCopyNodeRef);
-            
-            // Invoke policy
-            invokeOnCancelCheckOut(nodeRef);
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            try{
+                
+                // Release the lock on the original node
+                this.lockService.unlock(nodeRef);
+
+                // Delete the working copy
+                this.nodeService.deleteNode(workingCopyNodeRef);
+
+                // Invoke policy
+                invokeOnCancelCheckOut(nodeRef);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
         }
         else
         {

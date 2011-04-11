@@ -88,6 +88,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         RenditionDefinition renditionDef = renditionService.createRenditionDefinition(renditionKind,
                     "brians_test_engine");
 
+        // Test default behaviour, no destination path or NodeRef specified.
         RenditionLocation location = 
             locationResolver.getRenditionLocation(sourceNode,renditionDef, tempRenditionNode);
 
@@ -95,6 +96,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         assertNull(location.getChildName());
         assertNull(location.getChildRef());
         
+        // Test fully specified path.
         NodeRef targetFolder = makeNode(companyHome, ContentModel.TYPE_FOLDER);
         String companyHomeName = (String) nodeService.getProperty(companyHome, ContentModel.PROP_NAME);
         String targetFolderName = (String) nodeService.getProperty(targetFolder, ContentModel.PROP_NAME);
@@ -106,6 +108,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         assertEquals("brian.xml", location.getChildName());
         assertNull(location.getChildRef());
 
+        // Test path with name substitution.
         template=targetFolderName+"/test-${sourceContentType}.xml";
         renditionDef.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, template);
         location = locationResolver.getRenditionLocation(sourceNode, renditionDef, tempRenditionNode);
@@ -126,7 +129,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         assertEquals(destinationName, location.getChildName());
         assertEquals(destinationNode, location.getChildRef());
    
-        // Test that the 'destination node' param takes precedence over them 'template path' param.
+        // Test that the 'destination node' param takes precedence over the 'template path' param.
         template = "/" + targetFolderName + "/brian.xml";
         renditionDef.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, template);
         renditionDef.setParameterValue(RenditionService.PARAM_DESTINATION_NODE, destinationNode);

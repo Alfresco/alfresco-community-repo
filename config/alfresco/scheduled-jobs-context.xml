@@ -498,6 +498,9 @@
                 <entry key="actionService">
                     <ref bean="ActionService" />
                 </entry>
+                <entry key="transactionService">
+                    <ref bean="transactionService" />
+                </entry>
             </map>
         </property>
     </bean>

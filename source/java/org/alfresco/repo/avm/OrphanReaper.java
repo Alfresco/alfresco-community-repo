@@ -18,17 +18,20 @@
 
 package org.alfresco.repo.avm;
 
+import java.sql.Savepoint;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * This is the background thread for reaping no longer referenced nodes in the AVM repository. These orphans arise from
@@ -108,6 +111,8 @@ public class OrphanReaper
      * The Transaction Service
      */
     private TransactionService fTransactionService;
+    
+    private ControlDAO controlDAO;
 
     /**
      * Active base sleep interval.
@@ -193,6 +198,11 @@ public class OrphanReaper
     public void setMaxQueueLength(int queueLength)
     {
         fQueueLength = queueLength;
+    }
+    
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
     }
 
     /**
@@ -407,12 +417,30 @@ public class OrphanReaper
                             AVMDAOs.Instance().contentDataDAO.deleteContentData(contentDataId);
                         }
                     }
-                    // Finally, delete it
-                    AVMDAOs.Instance().fAVMNodeDAO.delete(node);
                     
-                    if (fgLogger.isTraceEnabled())
+                    Savepoint savepoint = controlDAO.createSavepoint("OrphanReaper");
+                    
+                    try
                     {
-                        fgLogger.trace("Deleted Node ["+node.getId()+"]");
+                        // Finally, delete it
+                        AVMDAOs.Instance().fAVMNodeDAO.delete(node);
+                        controlDAO.releaseSavepoint(savepoint);
+                        
+                        if (fgLogger.isTraceEnabled())
+                        {
+                            fgLogger.trace("Deleted Node ["+node.getId()+"]");
+                        }
+                    }
+                    catch (ConcurrencyFailureException e)
+                    {
+                        // Since we are deleting the row, it doesn't matter
+                        // if it is deleted here or not.
+                        controlDAO.rollbackToSavepoint(savepoint);
+                        
+                        if (fgLogger.isTraceEnabled())
+                        {
+                            fgLogger.trace("Node already deleted ["+node.getId()+"]");
+                        }
                     }
                     
                     reapCnt++;

@@ -225,7 +225,7 @@ public class ItemTest extends BaseJCRTest
         }
     }
     
-    public void test_JAWS_191() throws RepositoryException
+    public void test_JAWS_191() throws Throwable
     {
         SimpleCredentials user = new SimpleCredentials(getAdminUserName(), "admin".toCharArray());
         
@@ -296,10 +296,9 @@ public class ItemTest extends BaseJCRTest
             content.setProperty("cm:title", name);
             content.setProperty("cm:description", name);
             
-            //
-            // write some content to new node
-            //
-            content.setProperty("cm:content", QUICK_TXT);
+            // Write some content to new node, forcing it to be UTF-8
+            // The source files are UTF-8, so these characters should be easily detected
+            content.setProperty("cm:content", "äöå");
             
             // save changes
             session.save();

@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -254,8 +255,15 @@ public class LuceneCategoryServiceImpl implements CategoryService
         {
             for (ResultSetRow row : resultSet)
             {
-                ChildAssociationRef car = nodeService.getPrimaryParent(row.getNodeRef());
-                collection.add(car);
+                try
+                {
+                    ChildAssociationRef car = nodeService.getPrimaryParent(row.getNodeRef());
+                    collection.add(car);
+                }
+                catch(InvalidNodeRefException inre)
+                {
+                    // keep going the node has gone beneath us just skip it
+                }
             }
         }
         return collection;

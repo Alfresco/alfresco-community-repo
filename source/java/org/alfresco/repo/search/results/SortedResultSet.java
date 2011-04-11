@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -209,10 +210,27 @@ public class SortedResultSet implements ResultSet
         @SuppressWarnings("unchecked")
         public int compare(NodeRefAndScore n1, NodeRefAndScore n2)
         {
+            // Treat missing nodes as null for comparison
             for (AttributeOrder attributeOrder : order)
             {
-                Serializable o1 = nodeService.getProperty(n1.nodeRef, attributeOrder.attribute);
-                Serializable o2 = nodeService.getProperty(n2.nodeRef, attributeOrder.attribute);
+                Serializable o1;
+                try
+                {
+                    o1 = nodeService.getProperty(n1.nodeRef, attributeOrder.attribute);
+                }
+                catch(InvalidNodeRefException inre)
+                {
+                    o1 = null;
+                }
+                Serializable o2;
+                try
+                { 
+                    o2 = nodeService.getProperty(n2.nodeRef, attributeOrder.attribute);
+                }
+                catch(InvalidNodeRefException inre)
+                {
+                    o2 = null;
+                }
 
                 if (o1 == null)
                 {

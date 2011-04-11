@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -53,6 +51,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
@@ -141,6 +141,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     protected void onSetUp() throws Exception
     {
+        // Catch transactions left dangling by inadequate transaction handling during test failures
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            fail("Dangling transaction at start of test.");
+        }
+        
         super.onSetUp();
         
         // Get the required services
@@ -1233,281 +1239,264 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     {
         setDefaultRollback(false);
         
-        String CONTENT_TITLE = "ContentTitle";
-        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        String CONTENT_NAME = "Demo Node 1";
-        Locale CONTENT_LOCALE = Locale.GERMAN; 
-        String CONTENT_STRING = "The quick brown fox";
-        Set<NodeRef>nodes = new HashSet<NodeRef>();
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        final String CONTENT_TITLE = "ContentTitle";
+        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        final String CONTENT_NAME = "Demo Node 1";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_STRING = "The quick brown fox";
+        final Set<NodeRef>nodes = new HashSet<NodeRef>();
 
-        String targetName = "testManyNodes";
+        final String targetName = "testManyNodes";
         
-        NodeRef nodeA;
-        NodeRef nodeB;
-        NodeRef nodeAA;
-        NodeRef nodeAB;
-        NodeRef nodeABA;
-        NodeRef nodeABB;
-        NodeRef nodeABC;
-        
-        ChildAssociationRef child;
+        class TestContext
+        {
+            TransferTarget transferMe;
+            NodeRef nodeA = null;
+            NodeRef nodeB = null;
+            NodeRef nodeAA = null;
+            NodeRef nodeAB = null;
+            NodeRef nodeABA = null;
+            NodeRef nodeABB = null;
+            NodeRef nodeABC = null;
+        };
         
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * Unit test kludge to transfer from guest home to company home
          */
-        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
-        transferServiceImpl.setTransmitter(transmitter);
-        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
-        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
-        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
-        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
         
         TransferTarget transferMe;
         
-        startNewTransaction();
-        try
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
         {
-            /**
-              * Get guest home
-              */
-            String guestHomeQuery = "/app:company_home/app:guest_home";
-            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-            assertEquals("", 1, guestHomeResult.length());
-            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-    
-            /**
-             * Create a test node that we will read and write
-             */
-            String guid = GUID.generate();
-            
-            /**
-             * Create a tree
-             * ManyNodesRoot
-             * AC (Content Node)
-             * A (Folder)
-             * --AA
-             * --AB (Folder)
-             * ----ABA (Folder)
-             * -------- 100+ nodes
-             * ----ABB
-             * ----ABC   
-             * B
-             */
-            
-             child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
-             NodeRef testRootNode = child.getChildRef();
-             nodeService.setProperty(testRootNode , ContentModel.PROP_TITLE, guid);   
-             nodeService.setProperty(testRootNode , ContentModel.PROP_NAME, guid);
-             nodes.add(testRootNode);
-         
-             child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeAC"), ContentModel.TYPE_CONTENT);
-             NodeRef nodeAC = child.getChildRef();
-             nodeService.setProperty(nodeAC , ContentModel.PROP_TITLE, CONTENT_TITLE + "AC");   
-             nodeService.setProperty(nodeAC , ContentModel.PROP_NAME, "DemoNodeAC");
-         
-             {
-                 ContentWriter writer = contentService.getWriter(nodeAC , ContentModel.PROP_CONTENT, true);
-                 writer.setLocale(CONTENT_LOCALE);
-                 writer.putContent(CONTENT_STRING);
-                 nodes.add(nodeAC);
-             }
-         
-             child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeA"), ContentModel.TYPE_FOLDER);
-             nodeA = child.getChildRef();
-             nodeService.setProperty(nodeA , ContentModel.PROP_TITLE, "TestNodeA");   
-             nodeService.setProperty(nodeA , ContentModel.PROP_NAME, "TestNodeA");
-             nodes.add(nodeA);
-         
-             child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeB"), ContentModel.TYPE_FOLDER);
-             nodeB = child.getChildRef();
-             nodeService.setProperty(nodeB , ContentModel.PROP_TITLE, "TestNodeB");   
-             nodeService.setProperty(nodeB , ContentModel.PROP_NAME, "TestNodeB");
-             nodes.add(nodeB);
-         
-             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeAA"), ContentModel.TYPE_FOLDER);
-             nodeAA = child.getChildRef();
-             nodeService.setProperty(nodeAA , ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(nodeAA , ContentModel.PROP_NAME, "DemoNodeAA" );
-             nodes.add(nodeAA);
-         
-             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeAB"), ContentModel.TYPE_FOLDER);
-             nodeAB = child.getChildRef();
-             nodeService.setProperty(nodeAB , ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(nodeAB , ContentModel.PROP_NAME, "DemoNodeAB" );
-             nodes.add(nodeAB);
-         
-             child = nodeService.createNode(nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABA"), ContentModel.TYPE_FOLDER);
-             nodeABA = child.getChildRef();
-             nodeService.setProperty(nodeABA , ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(nodeABA , ContentModel.PROP_NAME, "DemoNodeABA" );
-             nodes.add(nodeABA);
-         
-             child = nodeService.createNode(nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABB"), ContentModel.TYPE_FOLDER);
-             nodeABB = child.getChildRef();
-             nodeService.setProperty(nodeABB , ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(nodeABB , ContentModel.PROP_NAME, "DemoNodeABB" );
-             nodes.add(nodeABB);
-         
-             child = nodeService.createNode(nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABC"), ContentModel.TYPE_FOLDER);
-             nodeABC = child.getChildRef();
-             nodeService.setProperty(nodeABC , ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(nodeABC , ContentModel.PROP_NAME, "DemoNodeABC" );
-             nodes.add(nodeABC);
-             
-             /**
-              * Now go ahead and create our first transfer target
-              */
-             if(!transferService.targetExists(targetName))
-             {
-                 transferMe = createTransferTarget(targetName);
-             }
-             else
-             {
-                 transferMe = transferService.getTransferTarget(targetName);
-             }       
-        }
-        finally
-        {
-            endTransaction();
-        }
-        
-        startNewTransaction();
-        try 
-        {
-           /**
-             * Transfer our transfer target nodes 
-             */
+            @Override
+            public TestContext execute() throws Throwable
             {
-                    TransferDefinition definition = new TransferDefinition();
-                    definition.setNodes(nodes);
-                    transferService.transfer(targetName, definition);
-            }  
-        }
-        finally
-        {
-            endTransaction();
-        }
+                TestContext ctx = new TestContext();
+                
+                /**
+                 * Get guest home
+                 */
+               String guestHomeQuery = "/app:company_home/app:guest_home";
+               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+               assertEquals("", 1, guestHomeResult.length());
+               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+       
+               /**
+                * Create a test node that we will read and write
+                */
+               String guid = GUID.generate();
+               
+               /**
+                * Create a tree
+                * ManyNodesRoot
+                * AC (Content Node)
+                * A (Folder)
+                * --AA
+                * --AB (Folder)
+                * ----ABA (Folder)
+                * -------- 100+ nodes
+                * ----ABB
+                * ----ABC   
+                * B
+                */
+               ChildAssociationRef child;
+               
+               child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
+               NodeRef testRootNode = child.getChildRef();
+               nodeService.setProperty(testRootNode , ContentModel.PROP_TITLE, guid);   
+               nodeService.setProperty(testRootNode , ContentModel.PROP_NAME, guid);
+               nodes.add(testRootNode);
             
-        NodeRef destNodeA;
-        NodeRef destNodeB;
-        NodeRef destNodeAA;
-        NodeRef destNodeAB;
-        NodeRef destNodeABA;
-        NodeRef destNodeABB;
-        NodeRef destNodeABC;
+               child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeAC"), ContentModel.TYPE_CONTENT);
+               NodeRef nodeAC = child.getChildRef();
+               nodeService.setProperty(nodeAC , ContentModel.PROP_TITLE, CONTENT_TITLE + "AC");   
+                nodeService.setProperty(nodeAC , ContentModel.PROP_NAME, "DemoNodeAC");
+            
+                {
+                    ContentWriter writer = contentService.getWriter(nodeAC , ContentModel.PROP_CONTENT, true);
+                    writer.setLocale(CONTENT_LOCALE);
+                    writer.putContent(CONTENT_STRING);
+                    nodes.add(nodeAC);
+                }
+            
+                child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeA"), ContentModel.TYPE_FOLDER);
+                ctx.nodeA = child.getChildRef();
+                nodeService.setProperty(ctx.nodeA , ContentModel.PROP_TITLE, "TestNodeA");   
+                nodeService.setProperty(ctx.nodeA , ContentModel.PROP_NAME, "TestNodeA");
+                nodes.add(ctx.nodeA);
+            
+                child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeB"), ContentModel.TYPE_FOLDER);
+                ctx.nodeB = child.getChildRef();
+                nodeService.setProperty(ctx.nodeB , ContentModel.PROP_TITLE, "TestNodeB");   
+                nodeService.setProperty(ctx.nodeB , ContentModel.PROP_NAME, "TestNodeB");
+                nodes.add(ctx.nodeB);
+            
+                child = nodeService.createNode(ctx.nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeAA"), ContentModel.TYPE_FOLDER);
+                ctx.nodeAA = child.getChildRef();
+                nodeService.setProperty(ctx.nodeAA , ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.nodeAA , ContentModel.PROP_NAME, "DemoNodeAA" );
+                nodes.add(ctx.nodeAA);
+            
+                child = nodeService.createNode(ctx.nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeAB"), ContentModel.TYPE_FOLDER);
+                ctx.nodeAB = child.getChildRef();
+                nodeService.setProperty(ctx.nodeAB , ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.nodeAB , ContentModel.PROP_NAME, "DemoNodeAB" );
+                nodes.add(ctx.nodeAB);
+            
+                child = nodeService.createNode(ctx.nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABA"), ContentModel.TYPE_FOLDER);
+                ctx.nodeABA = child.getChildRef();
+                nodeService.setProperty(ctx.nodeABA , ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.nodeABA , ContentModel.PROP_NAME, "DemoNodeABA" );
+                nodes.add(ctx.nodeABA);
+            
+                child = nodeService.createNode(ctx.nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABB"), ContentModel.TYPE_FOLDER);
+                ctx.nodeABB = child.getChildRef();
+                nodeService.setProperty(ctx.nodeABB , ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.nodeABB , ContentModel.PROP_NAME, "DemoNodeABB" );
+                nodes.add(ctx.nodeABB);
+            
+                child = nodeService.createNode(ctx.nodeAB, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeABC"), ContentModel.TYPE_FOLDER);
+                ctx.nodeABC = child.getChildRef();
+                nodeService.setProperty(ctx.nodeABC , ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.nodeABC , ContentModel.PROP_NAME, "DemoNodeABC" );
+                nodes.add(ctx.nodeABC);
+                
+                /**
+                 * Now go ahead and create our first transfer target
+                 */
+                if(!transferService.targetExists(targetName))
+                {
+                    ctx.transferMe = createTransferTarget(targetName);
+                }
+                else
+                {
+                    ctx.transferMe = transferService.getTransferTarget(targetName);
+                }       
+                
+                return ctx;
+            } 
+        };
         
-        startNewTransaction();
-        try
-        {
-            // Now validate that the target node exists and has similar properties to the source
-            destNodeA = testNodeFactory.getMappedNodeRef(nodeA);
-            assertFalse("unit test stuffed up - comparing with self", destNodeA.equals(transferMe.getNodeRef()));
-            assertTrue("dest node ref A does not exist", nodeService.exists(destNodeA));
-            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeA, ContentModel.PROP_TITLE), "TestNodeA"); 
-            assertEquals("type is wrong", nodeService.getType(nodeA), nodeService.getType(destNodeA));
-            
-            destNodeB = testNodeFactory.getMappedNodeRef(nodeB);
-            assertTrue("dest node B does not exist", nodeService.exists(destNodeB));
-            
-            destNodeAA = testNodeFactory.getMappedNodeRef(nodeAA);
-            assertTrue("dest node AA ref does not exist", nodeService.exists(destNodeAA));
-            
-            destNodeAB = testNodeFactory.getMappedNodeRef(nodeAB);
-            assertTrue("dest node AB ref does not exist", nodeService.exists(destNodeAB));
-            
-            destNodeABA = testNodeFactory.getMappedNodeRef(nodeABA);
-            assertTrue("dest node ABA ref does not exist", nodeService.exists(destNodeABA));
-            
-            destNodeABB = testNodeFactory.getMappedNodeRef(nodeABB);
-            assertTrue("dest node ABB ref does not exist", nodeService.exists(destNodeABB));
-            
-            destNodeABC = testNodeFactory.getMappedNodeRef(nodeABC);
-            assertTrue("dest node ABC ref does not exist", nodeService.exists(destNodeABC));
-        }
-        finally
-        {
-            endTransaction();
-        }
+        final TestContext testContext = tran.doInTransaction(setupCB); 
         
-        startNewTransaction();
-        try
-        {
-            /**
-             * Update a single node (NodeAB) from the middle of the tree
-             */
+        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
             {
-                nodeService.setProperty(nodeAB , ContentModel.PROP_TITLE, CONTENT_TITLE_UPDATED);   
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+              
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(transferCB); 
+        
+        RetryingTransactionCallback<Void> checkTransferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef destNodeA;
+                NodeRef destNodeB;
+                NodeRef destNodeAA;
+                NodeRef destNodeAB;
+                NodeRef destNodeABA;
+                NodeRef destNodeABB;
+                NodeRef destNodeABC;
+
+                // Now validate that the target node exists and has similar properties to the source
+                destNodeA = testNodeFactory.getMappedNodeRef(testContext.nodeA);
+                assertFalse("unit test stuffed up - comparing with self", destNodeA.equals(testContext.transferMe.getNodeRef()));
+                assertTrue("dest node ref A does not exist", nodeService.exists(destNodeA));
+                assertEquals("title is wrong", (String)nodeService.getProperty(destNodeA, ContentModel.PROP_TITLE), "TestNodeA"); 
+                assertEquals("type is wrong", nodeService.getType(testContext.nodeA), nodeService.getType(destNodeA));
+                
+                destNodeB = testNodeFactory.getMappedNodeRef(testContext.nodeB);
+                assertTrue("dest node B does not exist", nodeService.exists(destNodeB));
+                
+                destNodeAA = testNodeFactory.getMappedNodeRef(testContext.nodeAA);
+                assertTrue("dest node AA ref does not exist", nodeService.exists(destNodeAA));
+                
+                destNodeAB = testNodeFactory.getMappedNodeRef(testContext.nodeAB);
+                assertTrue("dest node AB ref does not exist", nodeService.exists(destNodeAB));
+                
+                destNodeABA = testNodeFactory.getMappedNodeRef(testContext.nodeABA);
+                assertTrue("dest node ABA ref does not exist", nodeService.exists(destNodeABA));
+                
+                destNodeABB = testNodeFactory.getMappedNodeRef(testContext.nodeABB);
+                assertTrue("dest node ABB ref does not exist", nodeService.exists(destNodeABB));
+                
+                destNodeABC = testNodeFactory.getMappedNodeRef(testContext.nodeABC);
+                assertTrue("dest node ABC ref does not exist", nodeService.exists(destNodeABC));
+              
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(checkTransferCB); 
+        
+        /**
+         * Update a single node (NodeAB) from the middle of the tree
+         */
+        RetryingTransactionCallback<Void> updateSingleNodeCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.setProperty(testContext.nodeAB , ContentModel.PROP_TITLE, CONTENT_TITLE_UPDATED);   
                 
                 TransferDefinition definition = new TransferDefinition();
                 Set<NodeRef>toUpdate = new HashSet<NodeRef>();
-                toUpdate.add(nodeAB);
+                toUpdate.add(testContext.nodeAB);
                 definition.setNodes(toUpdate);
                 transferService.transfer(targetName, definition);
-                
-//                assertEquals("title is wrong", (String)nodeService.getProperty(destNodeAB, ContentModel.PROP_TITLE), CONTENT_TITLE_UPDATED);        
-            }  
-        }
-        finally
-        {
-            endTransaction();
-        }
-        
-        
-        startNewTransaction();
-        try 
-        {
-            
-            /**
-             * Now generate a large number of nodes
-             */
-            
-            for(int i = 0; i < 100; i++)
-            {
-                child = nodeService.createNode(nodeABA, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate() + i), ContentModel.TYPE_CONTENT);
-            
-                NodeRef nodeX = child.getChildRef();
-                nodeService.setProperty(nodeX , ContentModel.PROP_TITLE, CONTENT_TITLE + i);   
-                nodeService.setProperty(nodeX , ContentModel.PROP_NAME, CONTENT_NAME +i);
-                nodes.add(nodeX);
-                
-                ContentWriter writer = contentService.getWriter(nodeX, ContentModel.PROP_CONTENT, true);
-                writer.setLocale(CONTENT_LOCALE);
-                writer.putContent(CONTENT_STRING + i);
+                         
+               return null;
             }
+        };
+          
+        tran.doInTransaction(updateSingleNodeCB); 
             
-        }
-        finally
-        {
-            endTransaction();
-        }
-        
-        startNewTransaction();
-        try
-        {
-            /**
-             * Transfer our transfer target nodes 
-             */
+        /**
+         * Now generate a large number of nodes
+         */
+        RetryingTransactionCallback<Void> generateLotsOfNodesCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
             {
-                    TransferDefinition definition = new TransferDefinition();
-                    definition.setNodes(nodes);
-                    transferService.transfer(targetName, definition);
-            } 
-            
-
-        }
-        finally     
-        {
-            transferService.deleteTransferTarget(targetName);
-            endTransaction();
-        }
+                for(int i = 0; i < 100; i++)
+                {
+                    ChildAssociationRef child = nodeService.createNode(testContext.nodeABA, ContentModel.ASSOC_CONTAINS, QName.createQName(GUID.generate() + i), ContentModel.TYPE_CONTENT);
+                
+                    NodeRef nodeX = child.getChildRef();
+                    nodeService.setProperty(nodeX , ContentModel.PROP_TITLE, CONTENT_TITLE + i);   
+                    nodeService.setProperty(nodeX , ContentModel.PROP_NAME, CONTENT_NAME +i);
+                    nodes.add(nodeX);
+                    
+                    ContentWriter writer = contentService.getWriter(nodeX, ContentModel.PROP_CONTENT, true);
+                    writer.setLocale(CONTENT_LOCALE);
+                    writer.putContent(CONTENT_STRING + i);
+                }
+      
+               return null;
+            }
+        };
+          
+        tran.doInTransaction(generateLotsOfNodesCB); 
+        
+        /**
+         * Transfer our transfer target nodes 
+         */
+        tran.doInTransaction(transferCB); 
+      
     } // end many nodes
-
     
     /**
      * Test the path based update.
@@ -7243,7 +7232,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertEquals("test error destinationNodeRef not correct", savedDestinationNodeRef, destinationNodeRef);
             ContentReader reader = contentService.getReader(destinationNodeRef, ContentModel.PROP_CONTENT);
             assertNotNull("content reader is null", reader);
-            assertEquals("content encoding is wrong", reader.getEncoding(), CONTENT_ENCODING);
+            assertTrue("content encoding is wrong", reader.getEncoding().equalsIgnoreCase(CONTENT_ENCODING));
             assertEquals("content locale is wrong", reader.getLocale(), CONTENT_LOCALE);
             assertTrue("content does not exist", reader.exists());
             String contentStr = reader.getContentString();
@@ -7432,7 +7421,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
            
                 ContentReader reader = contentService.getReader(destNodeRef, ContentModel.PROP_CONTENT);
                 assertNotNull("content reader is null", reader);
-                assertEquals("content encoding is wrong", reader.getEncoding(), CONTENT_ENCODING);
+                assertTrue("content encoding is wrong", reader.getEncoding().equalsIgnoreCase(CONTENT_ENCODING));
                 assertEquals("content locale is wrong", reader.getLocale(), CONTENT_LOCALE);
                 assertTrue("content does not exist", reader.exists());
                 String contentStr = reader.getContentString();
@@ -7632,206 +7621,207 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          
     } // test replace node
 
-    /**
-     * Test the transfer method with regard to obscure paths.
-     * 
-     * This is a unit test so it does some shenanigans to send to he same instance of alfresco.
-     */
-    public void testHorriblePaths() throws Exception
-    {
-        setDefaultRollback(false);
-    
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final String CONTENT_NAME = "Demo Node 1";
-        final Locale CONTENT_LOCALE = Locale.GERMAN; 
-        final String CONTENT_STRING = "The quick brown fox";
-        final Set<NodeRef>nodes = new HashSet<NodeRef>();
+//    /**
+//     * Test the transfer method with regard to obscure paths.
+//     * 
+//     * This is a unit test so it does some shenanigans to send to he same instance of alfresco.
+//     */
+//    public void testHorriblePaths() throws Exception
+//    {
+//        setDefaultRollback(false);
+//        
+//        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+//        
+//        final String CONTENT_TITLE = "ContentTitle";
+//        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+//        final String CONTENT_NAME = "Demo Node 1";
+//        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+//        final String CONTENT_STRING = "The quick brown fox";
+//        final Set<NodeRef>nodes = new HashSet<NodeRef>();
+//
 
-        final String targetName = "testManyNodes";
-        
-        class TestContext
-        {
-            TransferTarget transferMe;
-            NodeRef nodeA = null;
-            NodeRef childNode = null;
-        };
-        
-        /**
-         * Unit test kludge to transfer from guest home to company home
-         */
-        final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
-        
-        TransferTarget transferMe;
-        
-        final QName[] difficult = { QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeB"),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"with.dot"),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"8332"),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"&#~@"),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"_-+ )"),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"with space"),
-                // A, e with accent
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "\u0041\u00E9"), 
-                // Greek Alpha, Omega
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "\u0391\u03A9")
-        };
-        
-        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
-        {
-            @Override
-            public TestContext execute() throws Throwable
-            {
-                TestContext ctx = new TestContext();
-                
-                /**
-                 * Get guest home
-                 */
-               String guestHomeQuery = "/app:company_home/app:guest_home";
-               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-               assertEquals("", 1, guestHomeResult.length());
-               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-       
-               /**
-                * Create a test node that we will read and write
-                */
-               String guid = GUID.generate();
-               
-               /**
-                * Create a tree with "difficult" characters in the path
-                * ManyNodesRoot
-                * A (Folder)
-                * ... childNode
-                */
-               ChildAssociationRef child;
-               
-               child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
-               NodeRef testRootNode = child.getChildRef();
-               nodeService.setProperty(testRootNode , ContentModel.PROP_TITLE, guid);   
-               nodeService.setProperty(testRootNode , ContentModel.PROP_NAME, guid);
-               nodes.add(testRootNode);
-            
-               child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeA"), ContentModel.TYPE_FOLDER);
-               ctx.nodeA = child.getChildRef();
-               nodeService.setProperty(ctx.nodeA , ContentModel.PROP_TITLE, "TestNodeA");   
-               nodeService.setProperty(ctx.nodeA , ContentModel.PROP_NAME, "TestNodeA");
-               nodes.add(ctx.nodeA);
-                
-               NodeRef current = ctx.nodeA;
-                
-               for(QName name : difficult)
-               {
-                   child = nodeService.createNode(current, ContentModel.ASSOC_CONTAINS, name, ContentModel.TYPE_FOLDER);
-                   current = child.getChildRef();
-                   nodeService.setProperty(current , ContentModel.PROP_TITLE, name);   
-                   nodeService.setProperty(current , ContentModel.PROP_NAME, "testName");
-                   nodes.add(current);
-               }
-               
-               child = nodeService.createNode(current, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeAC"), ContentModel.TYPE_CONTENT);
-               ctx.childNode = child.getChildRef();
-               nodeService.setProperty(  ctx.childNode , ContentModel.PROP_TITLE, CONTENT_TITLE + "AC");   
-               nodeService.setProperty(  ctx.childNode , ContentModel.PROP_NAME, "DemoNodeAC");
-             
-                 {
-                     ContentWriter writer = contentService.getWriter(  ctx.childNode , ContentModel.PROP_CONTENT, true);
-                     writer.setLocale(CONTENT_LOCALE);
-                     writer.putContent(CONTENT_STRING);
-                     nodes.add(  ctx.childNode);
-                 }
-         
-                
-                /**
-                 * Now go ahead and create our first transfer target
-                 */
-                if(!transferService.targetExists(targetName))
-                {
-                    ctx.transferMe = createTransferTarget(targetName);
-                }
-                else
-                {
-                    ctx.transferMe = transferService.getTransferTarget(targetName);
-                }       
-                
-                return ctx;
-            } 
-        };
-        
-        final TestContext testContext = tran.doInTransaction(setupCB); 
-        
-        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                TransferDefinition definition = new TransferDefinition();
-                definition.setNodes(nodes);
-                transferService.transfer(targetName, definition);
-              
-               return null;
-            }
-        };
-        
-        tran.doInTransaction(transferCB); 
-        
-        RetryingTransactionCallback<Void> check1CB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                NodeRef destChildNode = testNodeFactory.getMappedNodeRef(testContext.childNode);
-                assertTrue("dest node does not exist", nodeService.exists(destChildNode));
-                
-                /**
-                 * Step through source and dest trees on nodes comparing the path as we go.
-                 */
-                Path srcPath = nodeService.getPath(testContext.childNode);
-                Path destPath = nodeService.getPath(destChildNode);
-                
-                int srcSize = srcPath.size();
-                int destSize = destPath.size();
-                
-                Path dest = destPath.subPath(2, destSize-1);
-                Path src = srcPath.subPath(3, srcSize-1);
-                
-//                System.out.println("src=" + src);
-//                System.out.println("dest=" + dest);
-                assertEquals("paths are different", src.toString(), dest.toString());
-                             
-                return null;
-            }
-        };
-        
-        tran.doInTransaction(check1CB); 
-        
-        RetryingTransactionCallback<Void> updateCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-              
-               return null;
-            }
-        };
-        
-        tran.doInTransaction(updateCB);
-        
-        tran.doInTransaction(transferCB); 
-        
-        RetryingTransactionCallback<Void> check2CB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                assertTrue("dest node does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(testContext.childNode)));
-                
-               return null;
-            }
-        };
-        tran.doInTransaction(check2CB); 
-             
-    } // horrible paths
+//        final String targetName = "testManyNodes";
+//        
+//        class TestContext
+//        {
+//            TransferTarget transferMe;
+//            NodeRef nodeA = null;
+//            NodeRef childNode = null;
+//        };
+//        
+//        /**
+//         * Unit test kludge to transfer from guest home to company home
+//         */
+//        final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
+//        
+//        TransferTarget transferMe;
+//        
+//        final QName[] difficult = { QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeB"),
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"with.dot"),
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"8332"),
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"&#~@"),
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"_-+ )"),
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"with space"),
+//                // A, e with accent
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "\u0041\u00E9"), 
+//                // Greek Alpha, Omega
+//                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "\u0391\u03A9")
+//        };
+//        
+//        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+//        {
+//            @Override
+//            public TestContext execute() throws Throwable
+//            {
+//                TestContext ctx = new TestContext();
+//                
+//                /**
+//                 * Get guest home
+//                 */
+//               String guestHomeQuery = "/app:company_home/app:guest_home";
+//               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+//               assertEquals("", 1, guestHomeResult.length());
+//               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+//       
+//               /**
+//                * Create a test node that we will read and write
+//                */
+//               String guid = GUID.generate();
+//               
+//               /**
+//                * Create a tree with "difficult" characters in the path
+//                * ManyNodesRoot
+//                * A (Folder)
+//                * ... childNode
+//                */
+//               ChildAssociationRef child;
+//               
+//               child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
+//               NodeRef testRootNode = child.getChildRef();
+//               nodeService.setProperty(testRootNode , ContentModel.PROP_TITLE, guid);   
+//               nodeService.setProperty(testRootNode , ContentModel.PROP_NAME, guid);
+//               nodes.add(testRootNode);
+//            
+//               child = nodeService.createNode(testRootNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeA"), ContentModel.TYPE_FOLDER);
+//               ctx.nodeA = child.getChildRef();
+//               nodeService.setProperty(ctx.nodeA , ContentModel.PROP_TITLE, "TestNodeA");   
+//               nodeService.setProperty(ctx.nodeA , ContentModel.PROP_NAME, "TestNodeA");
+//               nodes.add(ctx.nodeA);
+//                
+//               NodeRef current = ctx.nodeA;
+//                
+//               for(QName name : difficult)
+//               {
+//                   child = nodeService.createNode(current, ContentModel.ASSOC_CONTAINS, name, ContentModel.TYPE_FOLDER);
+//                   current = child.getChildRef();
+//                   nodeService.setProperty(current , ContentModel.PROP_TITLE, name);   
+//                   nodeService.setProperty(current , ContentModel.PROP_NAME, "testName");
+//                   nodes.add(current);
+//               }
+//               
+//               child = nodeService.createNode(current, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeAC"), ContentModel.TYPE_CONTENT);
+//               ctx.childNode = child.getChildRef();
+//               nodeService.setProperty(  ctx.childNode , ContentModel.PROP_TITLE, CONTENT_TITLE + "AC");   
+//               nodeService.setProperty(  ctx.childNode , ContentModel.PROP_NAME, "DemoNodeAC");
+//             
+//                 {
+//                     ContentWriter writer = contentService.getWriter(  ctx.childNode , ContentModel.PROP_CONTENT, true);
+//                     writer.setLocale(CONTENT_LOCALE);
+//                     writer.putContent(CONTENT_STRING);
+//                     nodes.add(  ctx.childNode);
+//                 }
+//         
+//                
+//                /**
+//                 * Now go ahead and create our first transfer target
+//                 */
+//                if(!transferService.targetExists(targetName))
+//                {
+//                    ctx.transferMe = createTransferTarget(targetName);
+//                }
+//                else
+//                {
+//                    ctx.transferMe = transferService.getTransferTarget(targetName);
+//                }       
+//                
+//                return ctx;
+//            } 
+//        };
+//        
+//        final TestContext testContext = tran.doInTransaction(setupCB); 
+//        
+//        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                TransferDefinition definition = new TransferDefinition();
+//                definition.setNodes(nodes);
+//                transferService.transfer(targetName, definition);
+//              
+//               return null;
+//            }
+//        };
+//        
+//        tran.doInTransaction(transferCB); 
+//        
+//        RetryingTransactionCallback<Void> check1CB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                NodeRef destChildNode = testNodeFactory.getMappedNodeRef(testContext.childNode);
+//                assertTrue("dest node does not exist", nodeService.exists(destChildNode));
+//                
+//                /**
+//                 * Step through source and dest trees on nodes comparing the path as we go.
+//                 */
+//                Path srcPath = nodeService.getPath(testContext.childNode);
+//                Path destPath = nodeService.getPath(destChildNode);
+//                
+//                int srcSize = srcPath.size();
+//                int destSize = destPath.size();
+//                
+//                Path dest = destPath.subPath(2, destSize-1);
+//                Path src = srcPath.subPath(3, srcSize-1);
+//                
+////                System.out.println("src=" + src);
+////                System.out.println("dest=" + dest);
+//                assertEquals("paths are different", src.toString(), dest.toString());
+//                             
+//                return null;
+//            }
+//        };
+//        
+//        tran.doInTransaction(check1CB); 
+//        
+//        RetryingTransactionCallback<Void> updateCB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//              
+//               return null;
+//            }
+//        };
+//        
+//        tran.doInTransaction(updateCB);
+//        
+//        tran.doInTransaction(transferCB); 
+//        
+//        RetryingTransactionCallback<Void> check2CB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                assertTrue("dest node does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(testContext.childNode)));
+//                
+//               return null;
+//            }
+//        };
+//        tran.doInTransaction(check2CB); 
+//             
+//    } // horrible paths
     
     private void createUser(String userName, String password)
     {

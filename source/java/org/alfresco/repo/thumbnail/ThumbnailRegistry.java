@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -186,10 +187,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             
             for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
             {
-                if (this.contentService.getTransformer(
-                        mimetype, 
-                        thumbnailDefinition.getMimetype(), 
-                        thumbnailDefinition.getTransformationOptions()) != null)
+                if (isThumbnailDefinitionAvailable(mimetype, thumbnailDefinition))
                 {
                     result.add(thumbnailDefinition);
                     foundAtLeastOneTransformer = true;
@@ -225,6 +223,23 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     public List<ThumbnailDefinition> getThumnailDefintions(String mimetype)
     {
         return this.getThumbnailDefinitions(mimetype);
+    }
+    
+    /**
+     * Checks to see if at this moment in time, the specified {@link ThumbnailDefinition}
+     *  is able to thumbnail the source mimetype. Typically used with Thumbnail Definitions
+     *  retrieved by name, and/or when dealing with transient {@link ContentTransformer}s.
+     * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
+     * @param sourceMimeType The source mimetype
+     */
+    public boolean isThumbnailDefinitionAvailable(String sourceMimeType, ThumbnailDefinition thumbnailDefinition)
+    {
+        return this.contentService.getTransformer(
+                   sourceMimeType, 
+                   thumbnailDefinition.getMimetype(), 
+                   thumbnailDefinition.getTransformationOptions()
+             ) != null
+        ;
     }
     
     /**

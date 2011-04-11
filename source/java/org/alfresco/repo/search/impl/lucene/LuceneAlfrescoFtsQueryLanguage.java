@@ -66,7 +66,7 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         this.queryEngine = queryEngine;
     }
 
-    public ResultSet executQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
         String ftsExpression = searchParameters.getQuery();
         QueryModelFactory factory = queryEngine.getQueryModelFactory();

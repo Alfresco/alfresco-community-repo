@@ -72,6 +72,7 @@ public class PatchTest extends TestCase
         // get the patches to play with
         patchService.registerPatch((Patch)ctx.getBean("patch.sample.02"));
         patchService.registerPatch((Patch)ctx.getBean("patch.sample.01"));
+        patchService.registerPatch((Patch)ctx.getBean("patch.sample.03"));
     }
     
     public void testSetup() throws Exception
@@ -92,6 +93,19 @@ public class PatchTest extends TestCase
         // done
         return patch;
     }
+
+//    private SimplePatch constructSimplePatch(boolean requiresTransaction)
+//    {
+//    	SimplePatch patch = new SimplePatch(transactionService, requiresTransaction);
+//        patch.setNamespaceService(namespaceService);
+//        patch.setNodeService(nodeService);
+//        patch.setSearchService(searchService);
+//        patch.setAuthenticationContext(authenticationContext);
+//        patch.setTenantAdminService(tenantAdminService);
+//        patch.setApplicationEventPublisher(ctx);
+//        // done
+//        return patch;
+//    }
     
     public void testSimplePatchSuccess() throws Exception
     {
@@ -150,6 +164,7 @@ public class PatchTest extends TestCase
         // check that the patch application was recorded
         boolean found01 = false;
         boolean found02 = false;
+        boolean found03 = false;
         for (AppliedPatch appliedPatch : appliedPatches)
         {
             if (appliedPatch.getId().equals("Sample01"))
@@ -161,10 +176,16 @@ public class PatchTest extends TestCase
             {
                 found02 = true;
                 assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
-            } 
+            }
+            else if (appliedPatch.getId().equals("Sample03"))
+            {
+                found03 = true;
+                assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
+            }
         }
         assertTrue("Sample 01 not in list of applied patches", found01);
         assertTrue("Sample 02 not in list of applied patches", found02);
+        assertTrue("Sample 03 not in list of applied patches", found03);
     }
     
     public void testGetPatchesByDate() throws Exception

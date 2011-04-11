@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
    <meta name="Generator" content="Alfresco Repository">
-
+   <meta name="layoutengine" content="MSHTML">
    <style type="text/css">
       body {
          background-color:#FFFFFF;
          color:#000000;
+         font-family:Verdana,Arial,sans-serif;
+         font-size:11px;
       }
       * {
          font-family:Verdana,Arial,sans-serif;
@@ -21,47 +23,26 @@
       h2 {
          text-align:left;
          font-size:13px;
+		 margin: 17px;
+		 text-decoration:underline;
       }
-      fieldset {
-         border:1px dotted #555555;
-         margin:15px 5px 15px 5px;
-      }
-      fieldset legend {
-         font-weight:bold;
-         border:1px dotted #555555;
-         background-color: #FFFFFF;
-         padding:7px;
-      }
-      .links {
-         border:0;
-         border-collapse:collapse;
-         width:99%;
-      }
-      .links td {
-         border:0;
+      table.links td, table.description td {
+         border-bottom:1px dotted #555555;
          padding:5px;
       }
-      .description {
+      table.description, table.links {
          border:0;
          border-collapse:collapse;
-         width:99%;
-      }
-      .description td {
-         /*border:1px dotted #555555;*/
-         padding:5px;
-      }
-      #start_workflow input, #start_workflow select, #start_workflow textarea
-      {
-         border:1px solid #555555;
+		 width:auto;
+ 		 margin:7px 20px 7px 20px;
       }
    </style>
 </head>
 <body>
-<hr/>
+<hr>
 <h1> Document (name):   ${document.name} </h1>
-<hr/>
-<fieldset>
-<legend> Metadata </legend>
+<hr>
+<h2> Metadata </h2>
 <table class="description">
    <#if document.properties.title?exists>
                      <tr><td valign="top">Title:</td><td>${document.properties.title}</td></tr>
@@ -79,9 +60,8 @@
                      <tr><td>Modified:</td><td>${document.properties.modified?datetime}</td></tr>
                      <tr><td>Size:</td><td>${document.size / 1024} Kb</td></tr>
 </table>
-</fieldset>
-<fieldset>
-<legend> Content links </legend>
+<br>
+<h2> Content links </h2>
 <table class="links">
    <tr>
    <td>Content folder:</td><td><a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a></td>
@@ -96,6 +76,5 @@
    <td>WebDAV URL:</td><td><a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
    </tr>
 </table>
-</fieldset>
 </body>
 </html>

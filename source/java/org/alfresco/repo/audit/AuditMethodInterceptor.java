@@ -126,9 +126,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        if(!auditComponent.areAuditValuesRequired())
+        if(!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
         {
-            // No auditing
+            // No auditing or server is read-only
             return mi.proceed();
         }
         else

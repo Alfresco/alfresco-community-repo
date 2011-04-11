@@ -31,6 +31,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
@@ -68,18 +69,18 @@ public class AbstractRenderingEngineTest extends TestCase
         engine.setBehaviourFilter(mock(BehaviourFilter.class));
     }
 
-    @SuppressWarnings("unchecked")
-    public void off_testCreateRenditionNodeAssoc() throws Exception
+    @SuppressWarnings({"unchecked" , "rawtypes"})
+    public void testCreateRenditionNodeAssoc() throws Exception
     {
+        QName assocType = RenditionModel.ASSOC_RENDITION;
         when(nodeService.exists(source)).thenReturn(true);
         QName nodeType = ContentModel.TYPE_CONTENT;
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
         RenditionDefinition definition = makeRenditionDefinition(renditionAssoc);
 
-        QName assocType = renditionAssoc.getTypeQName();
         // Stub the createNode() method to return renditionAssoc.
         when(nodeService.createNode(eq(source), eq(assocType), any(QName.class), any(QName.class), anyMap()))
-        .thenReturn(renditionAssoc);
+            .thenReturn(renditionAssoc);
         engine.execute(definition, source);
 
         // Check the createNode method was called with the correct parameters.
@@ -137,7 +138,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
     
     @SuppressWarnings("unchecked")
-    public void off_testRenderingContext()
+    public void testRenderingContext()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
@@ -154,7 +155,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
 
     @SuppressWarnings("unchecked")
-    public void off_testGetParameterWithDefault()
+    public void testGetParameterWithDefault()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
@@ -201,7 +202,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
     
     @SuppressWarnings("unchecked")
-    public void off_testGetCheckedParameter()
+    public void testGetCheckedParameter()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
@@ -265,8 +266,7 @@ public class AbstractRenderingEngineTest extends TestCase
      */
     private ChildAssociationRef makeRenditionAssoc()
     {
-
-        QName assocType = ContentModel.ASSOC_CONTAINS;
+        QName assocType = RenditionModel.ASSOC_RENDITION;
         QName assocName = QName.createQName("url", "renditionName");
         NodeRef destination = new NodeRef("http://test/destinationId");
         return new ChildAssociationRef(assocType, source, assocName, destination);
@@ -287,6 +287,12 @@ public class AbstractRenderingEngineTest extends TestCase
         public RenderingContext getContext()
         {
             return context;
+        }
+        
+        @Override
+        protected void switchToFinalRenditionNode(RenditionDefinition renditionDef, NodeRef actionedUponNodeRef)
+        {
+            // Do nothing!
         }
     }
 }

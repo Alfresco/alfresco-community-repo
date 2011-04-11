@@ -264,7 +264,7 @@ public class ContentDataDAOTest extends TestCase
                 }
             }
         };
-        contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE);
+        contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE, Integer.MAX_VALUE);
         assertTrue("Newly-orphaned content URL not found", found[0]);
     }
     

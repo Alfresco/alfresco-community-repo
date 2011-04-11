@@ -208,41 +208,10 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
                 count++;
             }
         }
-        // Delete
+        // Delete, including calling listeners
         for (String contentUrl : urlsToDelete)
         {
-            for (ContentStore store : stores)
-            {
-                for (ContentStoreCleanerListener listener : listeners)
-                {
-                    try
-                    {
-                        // Since we are in post-commit, we do best-effort
-                        listener.beforeDelete(store, contentUrl);
-                    }
-                    catch (Throwable e)
-                    {
-                        logger.error(
-                                "Content deletion listener failed: \n" +
-                                "   URL:    " + contentUrl + "\n" +
-                                "   Source: " + store,
-                                e);
-                    }
-                }
-                try
-                {
-                    // Since we are in post-commit, we do best-effort
-                    store.delete(contentUrl);
-                }
-                catch (Throwable e)
-                {
-                    logger.error(
-                            "Content deletion failed: \n" +
-                            "   URL:    " + contentUrl + "\n" +
-                            "   Source: " + store,
-                            e);
-                }
-            }
+            deleteFromStores(contentUrl, false);
         }
     }
 
@@ -271,10 +240,90 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
         // Delete, but don't call the listeners - these URLs never did get metadata
         for (String contentUrl : urlsToDelete)
         {
-            for (ContentStore store : stores)
+            deleteFromStores(contentUrl, false);
+        }
+    }
+    
+    /**
+     * Delete the content URL from all stores
+     * 
+     * @param contentUrl                the URL to delete
+     * @return                          Returns <tt>true</tt> if all deletes were successful
+     */
+    public boolean deleteFromStores(String contentUrl)
+    {
+        return deleteFromStores(contentUrl, true);
+    }
+    
+    private boolean deleteFromStores(String contentUrl, boolean callListeners)
+    {
+        int deleted = 0;
+        for (ContentStore store : stores)
+        {
+            // Bypass if the store is read-only or doesn't support the URL
+            if (!store.isWriteSupported() || !store.isContentUrlSupported(contentUrl))
             {
-                store.delete(contentUrl);
+                continue;
             }
+            if (callListeners)
+            {
+                // Call listeners
+                for (ContentStoreCleanerListener listener : listeners)
+                {
+                    try
+                    {
+                        // Since we are in post-commit, we do best-effort
+                        listener.beforeDelete(store, contentUrl);
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error(
+                                "Content deletion listener failed: \n" +
+                                "   URL:    " + contentUrl + "\n" +
+                                "   Source: " + store,
+                                e);
+                    }
+                }
+            }
+            // Delete
+            if (deleteFromStore(contentUrl, store))
+            {
+                deleted++;
+            }
+        }
+        // Did we delete from all stores (non-existence is a delete, too)
+        return deleted == stores.size();
+    }
+    
+    /**
+     * Attempts to delete the URL from the store, catching and reporing errors.
+     */
+    private boolean deleteFromStore(String contentUrl, ContentStore store)
+    {
+        try
+        {
+            // Since we are in post-commit, we do best-effort
+            if (!store.delete(contentUrl))
+            {
+                logger.error(
+                        "Content deletion failed (no exception): \n" +
+                        "   URL:    " + contentUrl + "\n" +
+                        "   Source: " + store);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        catch (Throwable e)
+        {
+            logger.error(
+                    "Content deletion failed: \n" +
+                    "   URL:    " + contentUrl + "\n" +
+                    "   Source: " + store,
+                    e);
+            return false;
         }
     }
 }

@@ -46,10 +46,11 @@ public interface TransferTransmitter
      * calls to the transfer service.
      * 
      * @param target definition of where to transfer to.
+     * @param fromRepositoryId the repositoryID of the sending system
      * @return the transfer object or null if the target cannot be locked.
      * @throws TransferException
      */
-    Transfer begin(TransferTarget target) throws TransferException;
+    Transfer begin(TransferTarget target, String fromRepositoryId) throws TransferException;
     
     /**
      * @param manifest, the transfer manifest file

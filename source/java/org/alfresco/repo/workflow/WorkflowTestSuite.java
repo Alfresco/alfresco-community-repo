@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.lang.reflect.Field;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -30,6 +32,7 @@ import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
 import org.alfresco.repo.workflow.jbpm.JbpmWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
+import org.alfresco.repo.workflow.jbpm.WorkflowTaskInstance;
 import org.alfresco.util.ApplicationContextHelper;
 
 /**
@@ -56,7 +59,6 @@ public class WorkflowTestSuite extends TestSuite
         suite.addTestSuite( JBPMSpringTest.class );
         suite.addTestSuite( JBPMEngineTest.class );
         suite.addTestSuite( AlfrescoJavaScriptIntegrationTest.class );
-
         // Add the Activiti tests to be run
         suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ActivitiSpringTransactionTest.class );
@@ -81,6 +83,11 @@ public class WorkflowTestSuite extends TestSuite
     protected void tearDown() throws Exception {
           System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
           ApplicationContextHelper.closeApplicationContext();
+          
+          // Null out the static Workflow engine field
+          Field engineField = WorkflowTaskInstance.class.getDeclaredField("jbpmEngine");
+          engineField.setAccessible(true);
+          engineField.set(null, null);
           
           Thread.yield();
           Thread.sleep(25);

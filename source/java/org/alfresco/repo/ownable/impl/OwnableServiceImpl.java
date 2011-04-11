@@ -24,9 +24,15 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -118,6 +124,11 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean, Nod
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this,
                 "onRemoveAspect"));
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onDeleteNode"));
+        
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ContentModel.ASPECT_OWNABLE, 
+                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ContentModel.ASPECT_AUDITABLE, 
+                new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
     }
 
     // OwnableService implmentation
@@ -197,11 +208,70 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean, Nod
         pb = before.get(ContentModel.PROP_CREATOR);
         pa = after.get(ContentModel.PROP_CREATOR);
 
-        if (!EqualsHelper.nullSafeEquals(pb, pa))
+        if (pb != null && !EqualsHelper.nullSafeEquals(pb, pa))
         {
+            // A 'null' creator means this is a new node
             nodeOwnerCache.remove(nodeRef);
             return;
         }
-
+    }
+    
+    /**
+     * When an owned or audited node is copied, control which properties
+     *  go over, and which are re-created
+     */
+    public CopyBehaviourCallback onCopyNode(QName classRef, CopyDetails copyDetails)
+    {
+        return AuditableOwnableAspectCopyBehaviourCallback.INSTANCE;   
+    }
+    
+    /**
+     * Extends the default copy behaviour to prevent copying of some ownable and
+     *  auditable properties, but lets the aspects themselves go through.
+     * 
+     * @author Nick Burch
+     * @since 3.4
+     */
+    private static class AuditableOwnableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new AuditableOwnableAspectCopyBehaviourCallback();
+        
+        /**
+         * Don't copy certain auditable p
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            if(classQName.equals(ContentModel.ASPECT_OWNABLE))
+            {
+                // The owner should become the user doing the copying
+                if(properties.containsKey(ContentModel.PROP_OWNER))
+                {
+                    properties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
+                }
+            }
+            else if(classQName.equals(ContentModel.ASPECT_AUDITABLE))
+            {
+                // Have the key properties reset by the aspect
+                properties.remove(ContentModel.PROP_CREATED);
+                properties.remove(ContentModel.PROP_CREATOR);
+                properties.remove(ContentModel.PROP_MODIFIED);
+                properties.remove(ContentModel.PROP_MODIFIER);
+            }
+            
+            return properties;
+        }
+        
+        /**
+         * Do copy the aspects
+         * 
+         * @return          Returns <tt>true</tt> always
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            return true;
+        }
     }
 }

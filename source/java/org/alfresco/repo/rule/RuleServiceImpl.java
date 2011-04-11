@@ -117,6 +117,9 @@ public class RuleServiceImpl
      * not fired.
      */
     private Set<Rule> disabledRules = new HashSet<Rule>(5);
+    
+    /** List of disables rule types */
+    private Set<String> disabledRuleTypes = new HashSet<String>(3);
 
     /**
      * All the rule type currently registered
@@ -416,6 +419,35 @@ public class RuleServiceImpl
     public void enableRule(Rule rule)
     {
         this.disabledRules.remove(rule);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#disableRuleType(org.alfresco.service.cmr.rule.RuleType)
+     */
+    public void disableRuleType(String ruleType)
+    {
+    	disabledRuleTypes.add(ruleType);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#enableRuleType(org.alfresco.service.cmr.rule.RuleType)
+     */
+    public void enableRuleType(String ruleType)
+    {
+    	disabledRuleTypes.remove(ruleType);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#isRuleTypeEnabled(org.alfresco.service.cmr.rule.RuleType)
+     */
+    public boolean isRuleTypeEnabled(String ruleType)
+    {
+    	boolean result = true;
+    	if (disabledRuleTypes.contains(ruleType) == true)
+    	{
+    		result = false;    		
+    	}
+    	return result;
     }
     
     /**

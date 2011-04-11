@@ -27,6 +27,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -61,6 +62,13 @@ public class UpdateTagScopesQuartzJob implements Job {
                 "UpdateTagScopesQuartzJob data must contain a valid 'actionService' reference");
        }
        
+       Object transactionServiceO = jobData.get("transactionService");
+       if(transactionServiceO == null || !(transactionServiceO instanceof TransactionService))
+       {
+          throw new AlfrescoRuntimeException(
+                "UpdateTagScopesQuartzJob data must contain a valid 'transactionService' reference");
+       }
+       
        Object updateTagsActionO = jobData.get("updateTagsAction");
        if(updateTagsActionO == null || !(updateTagsActionO instanceof UpdateTagScopesActionExecuter))
        {
@@ -69,7 +77,16 @@ public class UpdateTagScopesQuartzJob implements Job {
        }
        
        ActionService actionService = (ActionService)actionServiceO;
+       TransactionService transactionService = (TransactionService)transactionServiceO;
        UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter)updateTagsActionO;
+       
+       // We need to write to the database to perform updates.
+       // If the system is in read only mode, bail out
+       if(transactionService.isReadOnly())
+       {
+    	   logger.info("Skipping Tag Scopes scheduled update as the system is Read Only");
+    	   return;
+       }
        
        // Do the work
        execute(actionService, updateTagsAction);

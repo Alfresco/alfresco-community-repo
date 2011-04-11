@@ -132,7 +132,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
     /**
      * @param blockedSenders    a list of senders that are not allowed to email in
      */
-    public void setBlockedSenders(List<String> blockedSenders)
+    public void setBlockedSendersList(List<String> blockedSenders)
     {
         this.blockedSenders.addAll(blockedSenders);
     }
@@ -161,7 +161,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
     /**
      * @param allowedSenders    a list of senders that are allowed to email in
      */
-    public void setAllowedSenders(List<String> allowedSenders)
+    public void setAllowedSendersList(List<String> allowedSenders)
     {
         this.allowedSenders.addAll(allowedSenders);
     }

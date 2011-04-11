@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.email.EmailMessagePart;
 /**
  * Implementation EmailMessagePart interface. 
  * 
+ * @deprecated class not used.
  * @author maxim
  * @since 2.2
  */

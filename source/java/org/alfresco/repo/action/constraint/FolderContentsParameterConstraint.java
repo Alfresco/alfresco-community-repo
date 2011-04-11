@@ -104,7 +104,7 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
             if (dictionaryService.isSubClass(className, ContentModel.TYPE_CONTENT) == true)
             {
                 String title = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
-                if (title != null)
+                if (title != null && title.length() > 0)
                 {
                     result.put(nodeRef.toString(), title);
                 }

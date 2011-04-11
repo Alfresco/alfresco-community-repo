@@ -73,6 +73,9 @@
 		<property name="transactionService">
 			<ref bean="transactionService"/>
 		</property>
+        <property name="controlDAO">
+            <ref bean="controlDAO" />
+        </property>
 	</bean>
 
 	<bean id="createStoreTxnListener" class="org.alfresco.repo.avm.CreateStoreTxnListener"/>

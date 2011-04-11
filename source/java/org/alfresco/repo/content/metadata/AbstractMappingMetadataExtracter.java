@@ -655,6 +655,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
             // Convert the properties according to the dictionary types
             systemProperties = convertSystemPropertyValues(systemProperties);
+            // Last chance to filter the system properties map before applying them            
+            filterSystemProperties(systemProperties, destination);            
             // Now use the proper overwrite policy
             changedProperties = overwritePolicy.applyProperties(systemProperties, destination);
         }
@@ -738,7 +740,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Set<QName> systemQNames = mapping.get(documentKey);
             for (QName systemQName : systemQNames)
             {
-                systemProperties.put(systemQName, documentValue);
+                systemProperties.put(systemQName, documentValue);                
             }
         }
         // Done
@@ -750,6 +752,18 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     "   System Properties: " + systemProperties);
         }
         return systemProperties;
+    }
+    
+    /**
+     * Filters the system properties that are going to be applied.  Gives the metadata extracter an 
+     * opportunity to remove properties that may not be appropriate in a given context.
+     * 
+     * @param systemProperties  map of system properties to be applied
+     * @param targetProperties  map of target properties, may be used to provide to the context requried
+     */
+    protected void filterSystemProperties(Map<QName, Serializable> systemProperties, Map<QName, Serializable> targetProperties)
+    {
+        // Default implementation does nothing
     }
     
     /**

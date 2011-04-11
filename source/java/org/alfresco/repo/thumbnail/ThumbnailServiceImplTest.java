@@ -50,6 +50,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Thumbnail service implementation unit test
@@ -340,7 +341,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
     private void outputThumbnailTempContentLocation(NodeRef thumbnail, String ext, String message) throws IOException
     {
-        File tempFile = File.createTempFile("thumbnailServiceImpTest", "." + ext);
+    	File tempFile = TempFileProvider.createTempFile("thumbnailServiceImplTest", "." + ext);
         ContentReader reader = this.contentService.getReader(thumbnail, ContentModel.PROP_CONTENT);
         reader.getContent(tempFile);
         System.out.println(message + ": " + tempFile.getPath());

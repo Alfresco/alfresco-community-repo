@@ -66,7 +66,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * 
  * @author andyh
  */
-public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
+public class PermissionModel implements ModelDAO
 {
     // IOC
 
@@ -179,17 +179,9 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
     /**
      * Adds the {@link #setModel(String) model}.
      */
-    protected void onBootstrap(ApplicationEvent event)
+    public void init()
     {
         addPermissionModel(this.model);
-    }
-
-    /**
-     * No-op
-     */
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
     }
 
     /**

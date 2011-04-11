@@ -167,6 +167,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private static final String MSG_ERROR_WHILE_GENERATING_REQUISITE = "transfer_service.receiver.error_generating_requisite";
     private static final String MSG_LOCK_TIMED_OUT = "transfer_service.receiver.lock_timed_out";
     private static final String MSG_LOCK_NOT_FOUND = "transfer_service.receiver.lock_not_found";
+    private static final String MSG_TRANSFER_TO_SELF = "transfer_service.receiver.error.transfer_to_self";
     
     private static final String SNAPSHOT_FILE_NAME = "snapshot.xml";
 
@@ -398,9 +399,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
      * 
      * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#start()
      */
-    public String start()
+    public String start(String fromRepositoryId, boolean transferToSelf)
     {
         log.debug("Start transfer");
+        
+        /**
+         * Check that transfer is allowed to this repository
+         */
+        checkTransfer(fromRepositoryId, transferToSelf);
         
         /**
          * First get the transfer lock for this domain
@@ -412,6 +418,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         
         try
         {
+            TransferServicePolicies.BeforeStartInboundTransferPolicy beforeStartPolicy = 
+                beforeStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
+            beforeStartPolicy.beforeStartInboundTransfer();
+            
             lock.makeLock();
             
             /**
@@ -431,10 +441,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                         {
                             public String execute() throws Throwable
                         {
-                            TransferServicePolicies.BeforeStartInboundTransferPolicy beforeStartPolicy = 
-                                beforeStartInboundTransferDelegate.get(TransferModel.TYPE_TRANSFER_RECORD);
-                            beforeStartPolicy.beforeStartInboundTransfer();
-                            
                             final NodeRef relatedTransferRecord = createTransferRecord();
                             String transferId = relatedTransferRecord.toString();
                             getTempFolder(transferId);
@@ -1604,6 +1610,35 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 }
                 
                 active = false;
+            }
+        }
+    }
+
+    /**
+     * Check Whether transfer is allowed from the specified repository.
+     * Called prior to "begin".
+     */
+
+    private void checkTransfer(String fromRepository, boolean transferToSelf)
+    {
+        if(log.isDebugEnabled())
+        {
+            log.debug("checkTransfer fromRepository:" + fromRepository + ", transferToSelf:" + transferToSelf );
+        }
+        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+        
+        if(!transferToSelf)
+        {
+            if(fromRepository != null)
+            {
+                if(fromRepository.equalsIgnoreCase(localRepositoryId))
+                {
+                    throw new TransferException(MSG_TRANSFER_TO_SELF);
+                }
+            }
+            else
+            {
+                throw new TransferException("from repository id is missing");
             }
         }
     }    

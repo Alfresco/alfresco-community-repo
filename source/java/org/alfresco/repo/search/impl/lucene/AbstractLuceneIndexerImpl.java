@@ -616,36 +616,45 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
             deletions.addAll(temp);
             break;
         case DELETE:
-            // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
-            // Most will skip any indexing as they will really have gone.
-            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
-            closeDeltaReader();
-            deletions.addAll(temp);
-            refs.addAll(temp);
-            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
-            deletions.addAll(temp);
-            refs.addAll(temp);
-            
-            leafrefs.clear();
-            leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
-            closeDeltaReader();
-            leafrefs.addAll(deletePrimary(deletions, mainReader, false));
-            // May not have to delete references
-            leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
-            closeDeltaReader();
-            leafrefs.addAll(deleteReference(deletions, mainReader, false));
-            refs.addAll(leafrefs);
-            deletions.addAll(leafrefs);
-            
-            // make sure leaves are also removed from the delta before reindexing
-            
-            deltaReader = getDeltaReader();
-            for(String id : leafrefs)
+            // if already deleted don't do it again ...
+            if(deletions.contains(nodeRef))
             {
-                deltaReader.deleteDocuments(new Term("ID", id));
+                // nothing to do
+                break;
             }
-            closeDeltaReader();
-            break;
+            else
+            {
+                // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
+                // Most will skip any indexing as they will really have gone.
+                temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+                closeDeltaReader();
+                deletions.addAll(temp);
+                refs.addAll(temp);
+                temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+                deletions.addAll(temp);
+                refs.addAll(temp);
+
+                leafrefs.clear();
+                leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+                closeDeltaReader();
+                leafrefs.addAll(deletePrimary(deletions, mainReader, false));
+                // May not have to delete references
+                leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+                closeDeltaReader();
+                leafrefs.addAll(deleteReference(deletions, mainReader, false));
+                refs.addAll(leafrefs);
+                deletions.addAll(leafrefs);
+
+                // make sure leaves are also removed from the delta before reindexing
+
+                deltaReader = getDeltaReader();
+                for(String id : leafrefs)
+                {
+                    deltaReader.deleteDocuments(new Term("ID", id));
+                }
+                closeDeltaReader();
+                break;
+            }
         }
 
         return refs;

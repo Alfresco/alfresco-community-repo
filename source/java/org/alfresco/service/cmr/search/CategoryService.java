@@ -114,6 +114,7 @@ public interface CategoryService
      *            the category name
      * @return the category child association reference
      */
+    @Auditable(parameters = {"storeRef", "aspectName", "name"})
     public ChildAssociationRef getCategory(NodeRef parent, QName aspectName, String name);
     
     /**
@@ -130,6 +131,7 @@ public interface CategoryService
      *            should a category node be created if one does not exist?
      * @return the root categories
      */
+    @Auditable(parameters = {"storeRef", "aspectName", "name", "create"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String name,
             boolean create);
 
@@ -199,5 +201,6 @@ public interface CategoryService
     * @param count
     * @return
     */
+    @Auditable(parameters = {"storeRef", "aspectName", "count"})
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
 }

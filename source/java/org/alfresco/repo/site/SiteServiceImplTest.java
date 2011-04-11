@@ -91,7 +91,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Called during the transaction setup
      */
-    protected void onSetUpInTransaction() throws Exception
+    @SuppressWarnings("deprecation")
+	protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
         
@@ -107,10 +108,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
         
         // Create the test users
-        createUser(USER_ONE);
-        createUser(USER_TWO);
-        createUser(USER_THREE);
-        createUser(USER_FOUR);
+        createUser(USER_ONE, "UserOne");
+        createUser(USER_TWO, "UserTwo");
+        createUser(USER_THREE, "UsRthree");
+        createUser(USER_FOUR, "UsRFoUr");
      
         // Create the test groups
         this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_ONE);
@@ -133,7 +134,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
     
-    private void createUser(String userName)
+    private void createUser(String userName, String nameSuffix)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
         {
@@ -141,9 +142,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName"+nameSuffix);
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName"+nameSuffix);
+            ppOne.put(ContentModel.PROP_EMAIL, "email"+nameSuffix+"@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
             
             this.personService.createPerson(ppOne);
@@ -404,6 +405,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         sites = this.siteService.listSites("description", null);
         assertNotNull(sites);
         assertEquals(5, sites.size());
+        
+        // Get sites by matching sitePreset - see ALF-5620
+        sites = this.siteService.listSites(null, TEST_SITE_PRESET);
+        assertNotNull(sites);
+        assertEquals(2, sites.size());
+        
+        sites = this.siteService.listSites(null, TEST_SITE_PRESET_2);
+        assertNotNull(sites);
+        assertEquals(3, sites.size());
 
         // Do detailed check of the site info objects
         for (SiteInfo site : sites)
@@ -657,12 +667,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testIsPublic()
     {
+        // Check for no pre-existing sites before we start the test proper
+        List<SiteInfo> sites = this.siteService.listSites(null, null);
+        assertNotNull("sites already exist prior to starting test", sites);
+        assertTrue("sites already exist prior to starting test", sites.isEmpty());
+       
         // Create a couple of sites as user one
         this.siteService.createSite(TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         this.siteService.createSite(TEST_SITE_PRESET, "isPublicFalse", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
         
         // Get the sites as user one
-        List<SiteInfo> sites = this.siteService.listSites(null, null);
+        sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
         assertEquals(2, sites.size());
         
@@ -1039,6 +1054,60 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_THREE));
         assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
         
+        /** 
+         * Check we can filter this list by name and role correctly 
+         */
+        
+        //   - filter by authority
+        members = this.siteService.listMembers("testMembership", null, SiteModel.SITE_MANAGER, 0, true);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        
+        members = this.siteService.listMembers("testMembership", null, SiteModel.SITE_CONSUMER, 0, true);
+        assertNotNull(members);
+        assertEquals(2, members.size());
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
+        
+        //    - filter by name - person name
+        members = this.siteService.listMembers("testMembership", "UserOne", null, 0, true);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        
+        //    - filter by name - person name as part of group
+        members = this.siteService.listMembers("testMembership", "UserTwo", null, 0, true);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        
+        //    - filter by name - person name without group expansion
+        // (won't match as the group name doesn't contain the user's name) 
+        members = this.siteService.listMembers("testMembership", "UserTwo", null, 0, false);
+        assertNotNull(members);
+        assertEquals(0, members.size());
+        
+        
+        //    - filter by name - group name
+        members = this.siteService.listMembers("testMembership", GROUP_TWO, null, 0, false);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(this.groupTwo));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));
+
+        //     - filter by name - group name with expansion
+        // (won't match anyone as the group name won't hit people too)
+        members = this.siteService.listMembers("testMembership", GROUP_TWO, null, 0, true);
+        assertNotNull(members);
+        assertEquals(0, members.size());
+        
+        
         /**
          *  Add a group member (USER_THREE) as an explicit member
          */
@@ -1399,9 +1468,72 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
     }
 
+    /**
+     * ALF-3200
+     * You shouldn't be able to rename a Site using the normal node service
+     *  type operations, because the relationship between a site and its
+     *  authorities is based on a pattern that uses the site name.
+     * However, you are free to change a site's display name. 
+     */
+    public void testALF_3200() throws Exception
+    {
+       // Create the site
+       String siteName = "testALF_3200";
+       SiteInfo siteInfo = this.siteService.createSite(
+             TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+       
+       // Grab the details
+       NodeRef siteNodeRef = siteInfo.getNodeRef();
+       
+       // Try to rename it
+       try 
+       {
+          fileFolderService.rename(siteNodeRef, "RenamedName");
+          fail("Shouldn't be able to rename a site but did");
+       } 
+       catch(SiteServiceException e) 
+       {
+           // expected
+       }
+       
+       // Now just try to change the display name (title) via the node service
+       assertEquals(TEST_TITLE, nodeService.getProperty(siteNodeRef, ContentModel.PROP_TITLE));
+       
+       String newName = "ChangedTitleName";
+       String newName2 = "Changed2Title2Name";
+       nodeService.setProperty(siteNodeRef, ContentModel.PROP_TITLE, newName);
+       assertEquals(newName, nodeService.getProperty(siteNodeRef, ContentModel.PROP_TITLE));
+       
+       // And also via the site info
+       siteInfo = this.siteService.getSite(siteNodeRef);
+       assertEquals(newName, siteInfo.getTitle());
+       siteInfo.setTitle(newName2);
+       siteService.updateSite(siteInfo);
+       
+       assertEquals(newName2, siteInfo.getTitle());
+       assertEquals(newName2, nodeService.getProperty(siteNodeRef, ContentModel.PROP_TITLE));
+    }
     
-    
-    
+    public void testALF_5556() throws Exception
+    {
+        String siteName = "testALF_5556";
+        SiteInfo siteInfo = this.siteService.createSite(
+              TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+        
+        // create a container for the site
+        NodeRef container = this.siteService.createContainer(siteInfo.getShortName(), "folder.component", null, null);
+        
+        // Try to rename the container
+        try 
+        {
+           fileFolderService.rename(container, "RenamedContainer");
+           fail("Shouldn't be able to rename a container but was able to");
+        } 
+        catch (SiteServiceException e) 
+        {
+            // expected
+        }
+    }
     
     // == Test the JavaScript API ==
     

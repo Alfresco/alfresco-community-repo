@@ -33,6 +33,16 @@ public class TransferCommons
     public final static String PART_NAME_MANIFEST = "manifest";
     
     /**
+     * The Query String for the begin method.
+     */
+    public final static String PARAM_FROM_REPOSITORYID = "fromRepositoryId";
+    
+    /**
+     * The Query String for the begin method.
+     */
+    public final static String PARAM_ALLOW_TRANSFER_TO_SELF = "allowTransferToSelf";
+    
+    /**
      * Mapping between contentUrl and part name.
      * 
      * @param URL

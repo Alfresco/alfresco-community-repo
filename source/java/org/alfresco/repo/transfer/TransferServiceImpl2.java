@@ -551,6 +551,8 @@ public class TransferServiceImpl2 implements TransferService2
         int pollRetries = 0;
         int pollPosition = -1;
         boolean cancelled = false;
+        
+        final String localRepositoryId = getDescriptorService().getCurrentRepositoryDescriptor().getId();
 
         // Wire in the transferReport - so any callbacks are stored in transferReport
         TransferCallback reportCallback = new TransferCallback()
@@ -579,7 +581,7 @@ public class TransferServiceImpl2 implements TransferService2
                         logger.debug("transfer begin");
                         target = getTransferTarget(targetName);
                         checkTargetEnabled(target);
-                        transfer = transmitter.begin(target);
+                        transfer = transmitter.begin(target, localRepositoryId);
                         String transferId = transfer.getTransferId();
                         TransferStatus status = new TransferStatus();
                         transferMonitoring.put(transferId, status);

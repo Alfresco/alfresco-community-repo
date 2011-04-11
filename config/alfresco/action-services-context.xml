@@ -189,33 +189,35 @@
    </bean>
    
    <bean id="ac-mimetypes" class="org.alfresco.repo.action.constraint.MimetypeParameterConstraint" parent="action-constraint">      
-    	<property name="mimetypeMap" ref="mimetypeService"/>
+      <property name="mimetypeMap" ref="mimetypeService"/>
    </bean>
    
    <bean id="ac-types" class="org.alfresco.repo.action.constraint.TypeParameterConstraint" parent="action-constraint">      
-    	<property name="dictionaryService" ref="dictionaryService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
    </bean>
    
    <bean id="ac-aspects" class="org.alfresco.repo.action.constraint.AspectParameterConstraint" parent="action-constraint">      
-    	<property name="dictionaryService" ref="dictionaryService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
    </bean>
    
    <bean id="ac-properties" class="org.alfresco.repo.action.constraint.PropertyParameterConstraint" parent="action-constraint">      
-    	<property name="dictionaryService" ref="dictionaryService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
    </bean>
    
    <bean id="ac-email-templates" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
-    	<property name="dictionaryService" ref="dictionaryService"/>
-    	<property name="searchService" ref="searchService"/>
-    	<property name="nodeService" ref="nodeService"/>
-    	<property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
+      <property name="cacheAllowableValues" value="false" />
    </bean>
    
    <bean id="ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
-    	<property name="dictionaryService" ref="dictionaryService"/>
-    	<property name="searchService" ref="searchService"/>
-    	<property name="nodeService" ref="nodeService"/>
-    	<property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
+      <property name="cacheAllowableValues" value="false" />
    </bean>	
    
     <!-- Action Conditions -->
@@ -306,6 +308,9 @@
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>
+        <property name="lockService">
+        	<ref bean="LockService"/>
+        </property>
     </bean>
     
     <bean id="composite-action" class="org.alfresco.repo.action.executer.CompositeActionExecuter" parent="action-executer">
@@ -336,11 +341,17 @@
         <property name="transactionService">
             <ref bean="TransactionService" />
         </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
     </bean>
     
     <bean id="remove-features" class="org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter" parent="action-executer">
         <property name="nodeService">
             <ref bean="NodeService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
         </property>
     </bean>
     
@@ -351,6 +362,9 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="ignoreLock">
+            <value>false</value>
+        </property>
     </bean>
 
     <bean id="link-category" class="org.alfresco.repo.action.executer.LinkCategoryActionExecuter" parent="action-executer">
@@ -359,6 +373,9 @@
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
         </property>
     </bean>
 
@@ -419,6 +436,9 @@
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
         <property name="nodeService">
             <ref bean="NodeService" />
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
         </property>
     </bean>
 
@@ -481,6 +501,9 @@
         </property>
         <property name="nodeService">
             <ref bean="NodeService"></ref>
+        </property>
+        <property name="ignoreLock">
+            <value>false</value>
         </property>
     </bean>
     

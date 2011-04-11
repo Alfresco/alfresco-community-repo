@@ -170,10 +170,25 @@ public interface FileFolderService
     @Auditable(parameters = {"sourceNodeRef", "targetParentRef", "newName"})
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName)
             throws FileExistsException, FileNotFoundException;
+    
+    /**
+     * Move a file or folder to a new name and/or location.
+     * <p>
+     * If both the parent folder and name remain the same, then nothing is done.
+     * 
+     * @param sourceNodeRef the file or folder to move
+     * @param sourceParentRef the source parent of node - null means move from primary parent
+     * @param targetParentRef the new parent node to move the node to - null means rename in situ
+     * @param newName the name to change the file or folder to - null to keep the existing name
+     * @return Returns the new file info
+     * @throws FileExistsException
+     * @throws FileNotFoundException
+     */
+    @Auditable(parameters = { "sourceNodeRef", "sourceParentRef", "targetParentRef", "newName" })
+    public FileInfo move(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException;
 
     /**
-     * Copy a source file or folder.  The source can be optionally renamed and optionally
-     * moved into another folder.
+     * Copy a source file or folder. The source can be optionally renamed and optionally moved into another folder.
      * <p>
      * If both the parent folder and name remain the same, then nothing is done.
      * 

@@ -20,6 +20,7 @@ package org.alfresco.repo.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
-import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -44,7 +44,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -53,7 +52,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -623,52 +621,42 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         List<SiteInfo> result;
         
-        // TODO: take into consideration the sitePresetFilter
-        
         NodeRef siteRoot = getSiteRoot();
         if (siteRoot == null)
         {
-            result = new ArrayList<SiteInfo>(0);
+            result = Collections.emptyList();
         }
         else
         {
-            if (nameFilter != null && nameFilter.length() != 0)
+            if (nameFilter != null && nameFilter.length() != 0 || sitePresetFilter != null && sitePresetFilter.length() > 0)
             {
-                String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
-                // Perform a Lucene search under the Site parent node using *name*, title and description search query
-                final QueryParameterDefinition[] params = new QueryParameterDefinition[3];
-                params[0] = new QueryParameterDefImpl(
-                        ContentModel.PROP_NAME,
-                        dictionaryService.getDataType(
-                                DataTypeDefinition.TEXT),
-                                true,
-                                escNameFilter);
-                
-                params[1] = new QueryParameterDefImpl(
-                        ContentModel.PROP_TITLE,
-                        dictionaryService.getDataType(
-                                DataTypeDefinition.TEXT),
-                                true,
-                                escNameFilter);
-                
-                params[2] = new QueryParameterDefImpl(
-                        ContentModel.PROP_DESCRIPTION,
-                        dictionaryService.getDataType(
-                                DataTypeDefinition.TEXT),
-                                true,
-                                escNameFilter);
-                
                 // get the sites that match the specified names
                 StringBuilder query = new StringBuilder(128);
                 query.append("+PARENT:\"").append(siteRoot.toString())
-                     .append("\" +(@cm\\:name:\"*${cm:name}*\"")
-                     .append(" @cm\\:title:\"${cm:title}\"")
-                     .append(" @cm\\:description:\"${cm:description}\")");
+                     .append("\" +(");
+                
+                if (nameFilter != null && nameFilter.length() > 0)
+                {
+                    String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
+                
+                    query.append(" @cm\\:name:\"*" + escNameFilter + "*\"")
+                    .append(" @cm\\:title:\"" + escNameFilter + "\"")
+                    .append(" @cm\\:description:\"" + escNameFilter + "\"");
+                }
+
+                if (sitePresetFilter != null && sitePresetFilter.length() > 0)
+                {
+                    String escPresetFilter = LuceneQueryParser.escape(sitePresetFilter.replace('"', ' '));
+                    query.append(" @st\\:sitePreset:\"" + escPresetFilter + "\"");
+                }
+                
+                query.append(")");
+                
                 ResultSet results = this.searchService.query(
                         siteRoot.getStoreRef(),
                         SearchService.LANGUAGE_LUCENE,
                         query.toString(),
-                        params);                        
+                        null);                        
                 try
                 {
                     result = new ArrayList<SiteInfo>(results.length());
@@ -1070,7 +1058,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }
             
             // Update the site node reference with the updated visibility value
-            properties.put(SiteModel.PROP_SITE_VISIBILITY, siteInfo.getVisibility());
+            properties.put(SiteModel.PROP_SITE_VISIBILITY, siteInfo.getVisibility().toString());
         }
         
         // Set the updated properties back onto the site node reference
@@ -1669,9 +1657,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */    
     private void setModeratedPermissions(String shortName, NodeRef containerNodeRef)   
     {
-
-        this.permissionService.setInheritParentPermissions(containerNodeRef, false);
-    
         Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
@@ -1682,6 +1667,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         permissionService.setPermission(containerNodeRef,
             PermissionService.ALL_AUTHORITIES,
             PermissionService.READ_PERMISSIONS, true);
+        
+        this.permissionService.setInheritParentPermissions(containerNodeRef, false);
     }
 
 

@@ -32,6 +32,7 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -40,10 +41,8 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -67,7 +66,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
     
     private NodeService nodeService;
-    private SearchService searchService;
+    private PermissionService permissionService;
     private TransactionService transactionService;
     private JobLockService jobLockService;
 
@@ -76,14 +75,14 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         this.nodeService = nodeService;
     }
 
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-    }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
 
     public NodeRef getStoreArchiveNode(StoreRef originalStoreRef)
@@ -111,29 +110,41 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
      * Get all the nodes that were archived <b>from</b> the given store.
      * 
      * @param originalStoreRef      the original store to process
-     * @param skipCount             the number of results to skip (used for paging)
-     * @param limit                 the number of items to retrieve or -1 to get the all    
-     * 
-     * @deprecated          To be replaced with a limiting search against the database
      */
-    private ResultSet getArchivedNodes(StoreRef originalStoreRef, int skipCount, int limit)
+    private List<NodeRef> getArchivedNodes(StoreRef originalStoreRef)
     {
         // Get the archive location
-        NodeRef archiveParentNodeRef = nodeService.getStoreArchiveNode(originalStoreRef);
-        StoreRef archiveStoreRef = archiveParentNodeRef.getStoreRef();
-        // build the query
-        String query = String.format("PARENT:\"%s\" AND ASPECT:\"%s\"", archiveParentNodeRef, ContentModel.ASPECT_ARCHIVED);
-        // search parameters
-        SearchParameters params = new SearchParameters();
-        params.addStore(archiveStoreRef);
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
-        params.setQuery(query);
-        params.setSkipCount(skipCount);
-        params.setMaxItems(limit);
-        // get all archived children using a search
-        ResultSet rs = searchService.query(params);
-        // done
-        return rs;
+        final NodeRef archiveParentNodeRef = nodeService.getStoreArchiveNode(originalStoreRef);
+        RunAsWork<List<ChildAssociationRef>> runAsWork = new RunAsWork<List<ChildAssociationRef>>()
+        {
+            @Override
+            public List<ChildAssociationRef> doWork() throws Exception
+            {
+                String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                if (currentUser == null)
+                {
+                    throw new AccessDeniedException("No authenticated user; cannot get archived nodes.");
+                }
+                return nodeService.getChildAssocs(
+                        archiveParentNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        NodeArchiveService.QNAME_ARCHIVED_ITEM);
+            }
+        };
+        // Fetch all children as 'system' user to bypass permission checks
+        List<ChildAssociationRef> archivedAssocs = AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
+        // Iterate and pull out NodeRefs with a permission check
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(archivedAssocs.size());
+        for (ChildAssociationRef childAssociationRef : archivedAssocs)
+        {
+            NodeRef nodeRef = childAssociationRef.getChildRef();
+            // Eliminate if the current user doesn't have permission to delete
+            if (permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED)
+            {
+                nodeRefs.add(nodeRef);
+            }
+        }
+        return nodeRefs;
     }
     
     /**
@@ -146,29 +157,22 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         return new BatchProcessWorkProvider<NodeRef>()
         {
             private VmShutdownListener vmShutdownLister = new VmShutdownListener("getArchivedNodesWorkProvider");
-            private Integer workSize;
-            private int skipResults = 0;
+            private List<NodeRef> nodeRefs;
+            private boolean done;
+            private synchronized List<NodeRef> getNodeRefs()
+            {
+                if (nodeRefs == null)
+                {
+                    nodeRefs = getArchivedNodes(originalStoreRef);
+                }
+                return nodeRefs;
+            }
+            /**
+             * @return              Returns 0, always
+             */
             public synchronized int getTotalEstimatedWorkSize()
             {
-                if (workSize == null)
-                {
-                    workSize = Integer.valueOf(0);
-                    ResultSet rs = null;
-                    try
-                    {
-                        rs = getArchivedNodes(originalStoreRef, 0, -1);
-                        workSize = rs.length();
-                    }
-                    catch (Throwable e)
-                    {
-                        logger.error("Failed to get archive size", e);
-                    }
-                    finally
-                    {
-                        if (rs != null) { rs.close(); }
-                    }
-                }
-                return workSize;
+                return 0;
             }
             public synchronized Collection<NodeRef> getNextWork()
             {
@@ -188,22 +192,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                     return Collections.emptyList();
                 }
                 
-                Collection<NodeRef> results = new ArrayList<NodeRef>(100);
-                ResultSet rs = null;
-                try
+                if (done)
                 {
-                    rs = getArchivedNodes(originalStoreRef, skipResults, 100);
-                    for (ResultSetRow row : rs)
-                    {
-                        results.add(row.getNodeRef());
-                    }
-                    skipResults += results.size();
+                    return Collections.emptyList();
                 }
-                finally
+                else
                 {
-                    if (rs != null) { rs.close(); }
+                    done = true;
+                    return getNodeRefs();
                 }
-                return results;
             }
         };
     }
@@ -328,6 +325,8 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 
     /**
      * Uses batch processing and job locking to purge all archived nodes
+     * 
+     * @deprecated              In 3.4: to be removed
      */
     public List<RestoreNodeReport> restoreAllArchivedNodes(StoreRef originalStoreRef)
     {
@@ -339,27 +338,29 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         
         final List<RestoreNodeReport> results = Collections.synchronizedList(new ArrayList<RestoreNodeReport>(1000));
         /**
-         * Worker that purges each node
+         * Worker that restores each node
          */
         BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
         {
-            public void process(NodeRef entry) throws Throwable
+            @Override
+            public void beforeProcess() throws Throwable
             {
                 AuthenticationUtil.pushAuthentication();
-                try
+            }
+            public void process(NodeRef entry) throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                if (nodeService.exists(entry))
                 {
-                    AuthenticationUtil.setFullyAuthenticatedUser(user);
-                    if (nodeService.exists(entry))
-                    {
-                        RestoreNodeReport report = restoreArchivedNode(entry);
-                        // Append the results (it is synchronized)
-                        results.add(report);
-                    }
+                    RestoreNodeReport report = restoreArchivedNode(entry);
+                    // Append the results (it is synchronized)
+                    results.add(report);
                 }
-                finally
-                {
-                    AuthenticationUtil.popAuthentication();
-                }
+            }
+            @Override
+            public void afterProcess() throws Throwable
+            {
+                AuthenticationUtil.popAuthentication();
             }
         };
         doBulkOperation(user, originalStoreRef, worker);
@@ -372,36 +373,50 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
      * 
      * @see NodeService#getStoreArchiveNode(StoreRef)
      * @see #restoreArchivedNode(NodeRef, NodeRef, QName, QName)
+     * 
+     * @deprecated              In 3.4: to be removed
      */
     public List<RestoreNodeReport> restoreAllArchivedNodes(
-            StoreRef originalStoreRef,
-            NodeRef destinationNodeRef,
-            QName assocTypeQName,
-            QName assocQName)
+            final StoreRef originalStoreRef,
+            final NodeRef destinationNodeRef,
+            final QName assocTypeQName,
+            final QName assocQName)
     {
-        // get all archived children using a search
-        ResultSet rs = getArchivedNodes(originalStoreRef, 0, -1);
-        try
+        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (user == null)
         {
-            // loop through the resultset and attempt to restore all the nodes
-            List<RestoreNodeReport> results = new ArrayList<RestoreNodeReport>(1000);
-            for (ResultSetRow row : rs)
-            {
-                NodeRef archivedNodeRef = row.getNodeRef();
-                RestoreNodeReport result = restoreArchivedNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
-                results.add(result);
-            }
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Restored " + results.size() + " nodes into store " + originalStoreRef);
-            }
-            return results;
+            throw new IllegalStateException("Cannot restore as there is no authenticated user.");
         }
-        finally
+        
+        final List<RestoreNodeReport> results = Collections.synchronizedList(new ArrayList<RestoreNodeReport>(1000));
+        /**
+         * Worker that restores each node
+         */
+        BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
         {
-            rs.close();
-        }
+            @Override
+            public void beforeProcess() throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+            }
+            public void process(NodeRef nodeRef) throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                if (nodeService.exists(nodeRef))
+                {
+                    RestoreNodeReport report = restoreArchivedNode(nodeRef, destinationNodeRef, assocTypeQName, assocQName);
+                    // Append the results (it is synchronized)
+                    results.add(report);
+                }
+            }
+            @Override
+            public void afterProcess() throws Throwable
+            {
+                AuthenticationUtil.popAuthentication();
+            }
+        };
+        doBulkOperation(user, originalStoreRef, worker);
+        return results;
     }
 
     /**
@@ -457,21 +472,23 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
          */
         BatchProcessWorker<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>()
         {
-            public void process(NodeRef entry) throws Throwable
+            @Override
+            public void beforeProcess() throws Throwable
             {
                 AuthenticationUtil.pushAuthentication();
-                try
+            }
+            public void process(NodeRef nodeRef) throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                if (nodeService.exists(nodeRef))
                 {
-                    AuthenticationUtil.setFullyAuthenticatedUser(user);
-                    if (nodeService.exists(entry))
-                    {
-                        nodeService.deleteNode(entry);
-                    }
+                    nodeService.deleteNode(nodeRef);
                 }
-                finally
-                {
-                    AuthenticationUtil.popAuthentication();
-                }
+            }
+            @Override
+            public void afterProcess() throws Throwable
+            {
+                AuthenticationUtil.popAuthentication();
             }
         };
         doBulkOperation(user, originalStoreRef, worker);

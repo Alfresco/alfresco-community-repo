@@ -26,16 +26,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.UserTransaction;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.PlatformTransactionManager;
 
 
 /**
@@ -176,6 +182,7 @@ public class PatchServiceImpl implements PatchService
         catch (Throwable exception)
         {
             exception.printStackTrace();
+            success = false;
         }
         
         // done
@@ -219,14 +226,9 @@ public class PatchServiceImpl implements PatchService
             }
         }
         // all the dependencies were successful
-        RetryingTransactionCallback<AppliedPatch> callback = new RetryingTransactionCallback<AppliedPatch>()
-        {
-            public AppliedPatch execute() throws Throwable
-            {
-                return applyPatch(patch);
-            }
-        };
-        appliedPatch = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        
+        appliedPatch = applyPatch(patch);
+
         if (!appliedPatch.getSucceeded())
         {
             // this was a failure
@@ -242,165 +244,15 @@ public class PatchServiceImpl implements PatchService
     
     private AppliedPatch applyPatch(Patch patch)
     {
-        boolean forcePatch = patch.isForce();
-        if (forcePatch)
-        {
-            logger.warn(
-                    "Patch will be forcefully executed: \n" +
-                    "   Patch: " + patch);
-        }
-        // get the patch from the DAO
-        AppliedPatch appliedPatch = appliedPatchDAO.getAppliedPatch(patch.getId());
-        // We bypass the patch if it was executed successfully
-        if (appliedPatch != null && !forcePatch)
-        {
-            if (appliedPatch.getSucceeded())
-            {
-                // It has already been successfully applied
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(
-                            "Patch was already successfully applied: \n" +
-                            "   Patch: " + appliedPatch);
-                }
-                return appliedPatch;
-            }
-        }
-        // the execution report
-        String report = null;
-        boolean success = false;
-        // first check whether the patch is relevant to the repo
-        Descriptor repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
-        String preceededByAlternative = forcePatch ? null : preceededByAlternative(patch);
-        boolean applies = forcePatch || applies(repoDescriptor, patch);
-        if (!applies)
-        {
-            // create a dummy report
-            report = I18NUtil.getMessage(MSG_NOT_RELEVANT, repoDescriptor.getSchema());
-            success = true;             // this succeeded because it didn't need to be applied
-        }
-        else if (preceededByAlternative != null)
-        {
-            report = I18NUtil.getMessage(MSG_PRECEEDED_BY_ALTERNATIVE, preceededByAlternative);
-            success = true;             // this succeeded because it didn't need to be applied
-        }
-        else
-        {
-            // perform actual execution
-            try
-            {
-                String msg = I18NUtil.getMessage(
-                        MSG_APPLYING_PATCH,
-                        patch.getId(),
-                        I18NUtil.getMessage(patch.getDescription()));
-                logger.info(msg);
-                report = patch.apply();
-                success = true;
-            }
-            catch (PatchException e)
-            {
-                // failed
-                report = e.getMessage();
-                success = false;
-                // dump the report to log
-                logger.error(report);
-            }
-        }
+    	PatchWork work = new PatchWork(patch);
+        work.setAppliedPatchDAO(appliedPatchDAO);
+        work.setTransactionService(transactionService);
+        work.setAppliedPatchDAO(appliedPatchDAO);
+        work.setDescriptorService(descriptorService);
+        work.setLogger(logger);
+    	work.execute();
 
-        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
-        String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
-        
-        // create or update the record of execution
-        boolean create = true;
-        if (appliedPatch == null)
-        {
-            appliedPatch = new AppliedPatch();
-            appliedPatch.setId(patch.getId());
-            create = true;
-        }
-        else
-        {
-            // Update it
-            create = false;
-        }
-        // fill in the record's details
-        String patchDescription = I18NUtil.getMessage(patch.getDescription());
-        if (patchDescription == null)
-        {
-            logger.warn("Patch description is not available: " + patch);
-            patchDescription = "No patch description available";
-        }
-        appliedPatch.setDescription(patchDescription);
-        appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
-        appliedPatch.setFixesToSchema(patch.getFixesToSchema());
-        appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting
-        appliedPatch.setAppliedToSchema(repoDescriptor.getSchema()); // the old schema of the repo
-        appliedPatch.setAppliedToServer(server);                     // the current version and label of the server
-        appliedPatch.setAppliedOnDate(new Date());                   // the date applied
-        appliedPatch.setSucceeded(success);                          // whether or not the patch succeeded
-        appliedPatch.setWasExecuted(applies);                        // whether or not the patch was executed
-        appliedPatch.setReport(report);                              // additional, human-readable, status
-        // Update or create the entry
-        if (create)
-        {
-            appliedPatchDAO.createAppliedPatch(appliedPatch);
-        }
-        else
-        {
-            appliedPatchDAO.updateAppliedPatch(appliedPatch);
-        }
-
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Applied patch: \n" + appliedPatch);
-        }
-        return appliedPatch;
-    }
-    
-    /**
-     * Identifies if one of the alternative patches has already been executed.
-     * 
-     * @param patch             the patch to check
-     * @return                  Returns the ID of any successfully executed alternative patch
-     */
-    private String preceededByAlternative(Patch patch)
-    {
-        // If any alternatives were executed, then bypass this one
-        List<Patch> alternatives = patch.getAlternatives();
-        for (Patch alternative : alternatives)
-        {
-            // If the patch was executed, then this one was effectively executed
-            AppliedPatch appliedAlternative = appliedPatchDAO.getAppliedPatch(alternative.getId());
-            if (appliedAlternative != null && appliedAlternative.getSucceeded())
-            {
-                return alternative.getId();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Check whether the patch is applicable to the particular version of the repository. 
-     * 
-     * @param repoDescriptor contains the version details of the repository
-     * @param patch the patch whos version must be checked
-     * @return Returns true if the patch should be applied to the repository
-     */
-    private boolean applies(Descriptor repoDescriptor, Patch patch)
-    {
-        int repoSchema = repoDescriptor.getSchema();
-        // does the patch apply?
-        boolean apply = patch.applies(repoSchema);
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Patch schema version number check against repo version: \n" +
-                    "   repo schema version: " + repoDescriptor.getVersion() + "\n" +
-                    "   patch: " + patch);
-        }
-        return apply;
+    	return work.getAppliedPatch();
     }
 
     @SuppressWarnings("unchecked")
@@ -419,6 +271,297 @@ public class PatchServiceImpl implements PatchService
         return (List<AppliedPatch>) appliedPatches;
     }
 
+    /**
+     * Executes a patch, ensuring that pre-conditions are met and patch information is saved.
+     * Introduced with fix for ALF-5621. 
+     * 
+     * This has been split out from applyPatch because it's easier to perform
+     * the transaction wrapping required when requiresTransaction == false
+     */
+    private static class PatchWork
+    {
+        private enum STATE
+        {
+        	START, PRECEEDED, ALREADY_APPLIED, DOES_NOT_APPLY, APPLYING, NOT_APPLIED, APPLIED, FAILED;
+        };
+        
+    	private Log logger;
+    	private AppliedPatchDAO appliedPatchDAO;
+    	private DescriptorService descriptorService;
+    	private TransactionService transactionService;
+
+    	private STATE state = STATE.START;
+    	
+    	private Patch patch;
+
+    	private AppliedPatch appliedPatch;
+    	private Descriptor repoDescriptor;
+    	private String preceededByAlternative;
+    	private boolean applies = false;
+    	private String report = null;
+    	
+    	public PatchWork(Patch patch) {
+    		super();
+    		this.patch = patch;
+    	}
+    	
+    	public void setLogger(Log logger)
+    	{
+    		this.logger = logger;
+    	}
+    	
+    	public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
+    	{
+    		this.appliedPatchDAO = appliedPatchDAO;
+    	}
+    	
+    	public void setDescriptorService(DescriptorService descriptorService)
+    	{
+    		this.descriptorService = descriptorService;
+    	}
+
+    	public void setTransactionService(TransactionService transactionService)
+    	{
+    		this.transactionService = transactionService;
+    	}
+    	
+        /**
+         * Identifies if one of the alternative patches has already been executed.
+         * 
+         * @param patch             the patch to check
+         * @return                  Returns the ID of any successfully executed alternative patch
+         */
+        private String preceededByAlternative(Patch patch)
+        {
+            // If any alternatives were executed, then bypass this one
+            List<Patch> alternatives = patch.getAlternatives();
+            for (Patch alternative : alternatives)
+            {
+                // If the patch was executed, then this one was effectively executed
+                AppliedPatch appliedAlternative = appliedPatchDAO.getAppliedPatch(alternative.getId());
+                if (appliedAlternative != null && appliedAlternative.getSucceeded())
+                {
+                    return alternative.getId();
+                }
+            }
+            return null;
+        }
+        
+        /**
+         * Check whether the patch is applicable to the particular version of the repository. 
+         * 
+         * @param repoDescriptor contains the version details of the repository
+         * @param patch the patch whos version must be checked
+         * @return Returns true if the patch should be applied to the repository
+         */
+        private boolean applies(Descriptor repoDescriptor, Patch patch)
+        {
+            int repoSchema = repoDescriptor.getSchema();
+            // does the patch apply?
+            boolean apply = patch.applies(repoSchema);
+            
+            // done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Patch schema version number check against repo version: \n" +
+                        "   repo schema version: " + repoDescriptor.getVersion() + "\n" +
+                        "   patch: " + patch);
+            }
+            return apply;
+        }
+
+    	private boolean patchSucceeded()
+    	{
+    		return state == STATE.ALREADY_APPLIED || state == STATE.DOES_NOT_APPLY || state == STATE.APPLIED || state == STATE.PRECEEDED;
+    	}
+    	
+    	private boolean savePatch()
+    	{
+    		return state == STATE.DOES_NOT_APPLY || state == STATE.APPLIED || state == STATE.PRECEEDED || state == STATE.FAILED;
+    	}
+
+        public void execute()
+        {
+        	if(state != STATE.START)
+        	{
+        		throw new IllegalStateException("Patch is already being applied");
+        	}
+
+        	if(!patch.requiresTransaction() && AlfrescoTransactionSupport.isActualTransactionActive())
+        	{
+        		throw new AlfrescoRuntimeException("Patch " +
+        				patch.getId() +
+        				" has been configured with requiresTransaction set to false but is being called in a transaction");
+        	}
+
+        	setup();
+        	applyPatch();
+        	save();
+        }
+        
+        /**
+         * Perform some setup before applying the patch e.g. check whether the patch needs
+         * to be applied.
+         * 
+         * @return true: continue, false: do not apply patch
+         */
+    	private void setup() {
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
+    			@Override
+    			public Object execute() throws Throwable {
+    	            final boolean forcePatch = patch.isForce();
+    	            if (forcePatch)
+    	            {
+    	                logger.warn(
+    	                        "Patch will be forcefully executed: \n" +
+    	                        "   Patch: " + patch);
+    	            }
+    				
+    				// Check whether patch has been applied already
+    				// get the patch from the DAO
+    		        appliedPatch = appliedPatchDAO.getAppliedPatch(patch.getId());
+
+    		        // We bypass the patch if it was executed successfully
+    		        if (appliedPatch != null && !forcePatch)
+    		        {
+    		            if (appliedPatch.getSucceeded())
+    		            {
+    		                // It has already been successfully applied
+    		                if (logger.isDebugEnabled())
+    		                {
+    		                    logger.debug(
+    		                            "Patch was already successfully applied: \n" +
+    		                            "   Patch: " + appliedPatch);
+    		                }
+    		                state = STATE.ALREADY_APPLIED;
+    		                return null;
+    		            }
+    		        }
+    		        
+    		        // first check whether the patch is relevant to the repo
+    		        repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
+    		        applies = forcePatch || applies(repoDescriptor, patch);
+    		        preceededByAlternative = forcePatch ? null : preceededByAlternative(patch);
+    		        if (preceededByAlternative != null)
+    		        {
+    		            report = I18NUtil.getMessage(MSG_PRECEEDED_BY_ALTERNATIVE, preceededByAlternative);
+    		            state = STATE.PRECEEDED;
+    		        }
+    		        else
+    		        {
+    		        	if(applies)
+    	        		{
+    			        	state = STATE.APPLYING;
+    	        		}
+    		        	else
+    		        	{
+    			            report = I18NUtil.getMessage(MSG_NOT_RELEVANT, repoDescriptor.getSchema());
+    		        		state = STATE.DOES_NOT_APPLY;
+    		        	}
+    		        }
+
+    		        return null;
+    			}
+    		}, false, true);
+    	}
+
+    	private void applyPatch()
+    	{
+            if (state != STATE.APPLYING)
+            {
+            	// nothing to do
+            	return;
+            }
+
+            // perform actual execution
+            try
+            {
+                String msg = I18NUtil.getMessage(
+                        MSG_APPLYING_PATCH,
+                        patch.getId(),
+                        I18NUtil.getMessage(patch.getDescription()));
+                logger.info(msg);
+                report = patch.apply();
+                state = STATE.APPLIED;
+            }
+            catch (PatchException e)
+            {
+                // failed
+                report = e.getMessage();
+                state = STATE.FAILED;
+                // dump the report to log
+                logger.error(report);
+            }
+    	}
+    	
+    	private void save() {
+            if(!savePatch())
+            {
+            	return;
+            }
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
+    			@Override
+    			public Object execute() throws Throwable {
+    		        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+    		        String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
+
+    		        // create or update the record of execution
+    		        boolean create = true;
+    		        if (appliedPatch == null)
+    		        {
+    		            appliedPatch = new AppliedPatch();
+    		            appliedPatch.setId(patch.getId());
+    		            create = true;
+    		        }
+    		        else
+    		        {
+    		            // Update it
+    		            create = false;
+    		        }
+    		        // fill in the record's details
+    		        String patchDescription = I18NUtil.getMessage(patch.getDescription());
+    		        if (patchDescription == null)
+    		        {
+    		            logger.warn("Patch description is not available: " + patch);
+    		            patchDescription = "No patch description available";
+    		        }
+    		        appliedPatch.setDescription(patchDescription);
+    		        appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
+    		        appliedPatch.setFixesToSchema(patch.getFixesToSchema());
+    		        appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting
+    		        appliedPatch.setAppliedToSchema(repoDescriptor.getSchema()); // the old schema of the repo
+    		        appliedPatch.setAppliedToServer(server);                     // the current version and label of the server
+    		        appliedPatch.setAppliedOnDate(new Date());                   // the date applied
+    		        appliedPatch.setSucceeded(patchSucceeded());                 // whether or not the patch succeeded
+    		        appliedPatch.setWasExecuted(applies);                        // whether or not the patch was executed
+    		        appliedPatch.setReport(report);                              // additional, human-readable, status
+    		        // Update or create the entry
+    		        if (create)
+    		        {
+    		            appliedPatchDAO.createAppliedPatch(appliedPatch);
+    		        }
+    		        else
+    		        {
+    		            appliedPatchDAO.updateAppliedPatch(appliedPatch);
+    		        }
+
+    	            // done
+    	            if (logger.isDebugEnabled())
+    	            {
+    	                logger.debug("Applied patch: \n" + appliedPatch);
+    	            }
+
+    				return null;
+    			}
+    		}, false, true);
+    	}
+    	
+    	public AppliedPatch getAppliedPatch() {
+    		return appliedPatch;
+    	}
+    }
+    
     /**
      * Compares patch target schemas.
      * 

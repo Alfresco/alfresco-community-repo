@@ -380,6 +380,59 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         }
     }
     
+    // note: active or inactive
+    public List<NodeRef> getModelRefs()
+    {
+        List<NodeRef> modelRefs = new ArrayList<NodeRef>();
+        
+        for (RepositoryLocation repositoryLocation : this.repositoryModelsLocations)
+        {
+            StoreRef storeRef = repositoryLocation.getStoreRef();
+            
+            if (! nodeService.exists(storeRef))
+            {
+                logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                continue; // skip this location
+            }
+            
+            if (repositoryLocation.getQueryLanguage().equals(RepositoryLocation.LANGUAGE_PATH))
+            {
+                List<NodeRef> nodeRefs = getNodes(storeRef, repositoryLocation, ContentModel.TYPE_DICTIONARY_MODEL);
+                
+                if (nodeRefs.size() > 0)
+                {
+                    for (NodeRef dictionaryModel : nodeRefs)
+                    {
+                        try
+                        {
+                            // Ignore if the node is a working copy or archived
+                            if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
+                            {
+                                modelRefs.add(dictionaryModel);
+                            }
+                        }
+                        catch (InvalidNodeRefException inre)
+                        {
+                            // ignore - model no longer exists
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("getModelRefs: "+inre+" (assume concurrently deleted)");
+                            }
+                            
+                            continue;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                logger.error("Unsupported query language for models location: " + repositoryLocation.getQueryLanguage());
+            }
+        }
+        
+        return modelRefs;
+    }
+    
     protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
     {
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
@@ -390,7 +443,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         NodeRef folderNodeRef = rootNodeRef;
         if (pathElements.length > 0)
         {
-            folderNodeRef = resolveQNameFolderPath(rootNodeRef, pathElements);
+            folderNodeRef = resolveQNamePath(rootNodeRef, pathElements);
         }
         
         if (folderNodeRef != null)
@@ -562,14 +615,15 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             tenantAdminService.unregister(messageService);
         }
     }
-    
-    protected NodeRef resolveQNameFolderPath(NodeRef rootNodeRef, String[] pathPrefixQNameStrings)
+
+    // TODO refactor (see also MessageServiceImpl)
+    protected NodeRef resolveQNamePath(NodeRef rootNodeRef, String[] pathPrefixQNameStrings)
     {
         if (pathPrefixQNameStrings.length == 0)
         {
             throw new IllegalArgumentException("Path array is empty");
         }
-        // walk the folder tree
+        // walk the path
         NodeRef parentNodeRef = rootNodeRef;
         for (int i = 0; i < pathPrefixQNameStrings.length; i++)
         {

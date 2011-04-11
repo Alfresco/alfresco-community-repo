@@ -86,7 +86,7 @@ public class RetryingTransactionHelper
     /**
      * Exceptions that trigger retries.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     public static final Class[] RETRY_EXCEPTIONS;
     static
     {

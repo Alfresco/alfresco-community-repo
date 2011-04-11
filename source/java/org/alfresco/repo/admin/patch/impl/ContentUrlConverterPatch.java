@@ -631,7 +631,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 Savepoint savepoint = controlDAO.createSavepoint(savepointName);
                 try
                 {
-                    contentDataDAO.createContentUrlOrphaned(contentUrl);
+                    contentDataDAO.createContentUrlOrphaned(contentUrl, null);
                     controlDAO.releaseSavepoint(savepoint);
                     count.setValue(count.intValue()+1);
                 }

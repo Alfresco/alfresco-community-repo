@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="testwf:testTaskVarScriptAssign">
+
+   <swimlane name="initiator"/>
+
+    <start-state name="start">
+        <task name="testwf:startTaskVarScriptAssign" swimlane="initiator" />
+        <transition name="" to="doit" />
+    </start-state>
+
+    <task-node name="doit">
+        <task name="testwf:assignVarTask" swimlane="initiator" >
+			<event type="task-create" >
+				<action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript" >
+					<script>
+						<expression>
+							var simpleText=executionContext.getVariable("testwf_simpleText");
+							taskInstance.setVariableLocally("testwf:simpleText", simpleText);
+							
+							var listConstrainedText=executionContext.getVariable("testwf_listConstrainedText");
+                            taskInstance.setVariableLocally("testwf:listConstrainedText", listConstrainedText);
+						</expression>
+					</script>
+				</action>
+			</event>
+		</task>
+	   <transition name="Done" to="end" />
+    </task-node>
+
+    <end-state name="end" />
+
+</process-definition>

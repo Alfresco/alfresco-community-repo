@@ -43,7 +43,7 @@ public interface LuceneQueryLanguageSPI
      * @param admLuceneSearcher 
      * @return - the query results
      */
-    public ResultSet executQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher);
+    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher);
     
     /**
      * Register

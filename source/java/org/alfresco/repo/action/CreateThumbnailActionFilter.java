@@ -35,6 +35,18 @@ public class CreateThumbnailActionFilter extends AbstractAsynchronousActionFilte
 	{
 		NodeRef n1 = nodeAction1.getNodeRef();
 		NodeRef n2 = nodeAction2.getNodeRef();
+		
+		// Handle n1 potentially being null without triggering a NPE
+		if (n1 == null && n2 == null)
+		{
+		    return 0;
+		}
+		else if(n1 == null && n2 != null)
+		{
+		    return 1;
+		}
+		
+		// We can now do a regular compare without worrying about null nodes
 		if (n1.equals(n2) == false)
 		{
 			return -1;

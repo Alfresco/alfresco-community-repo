@@ -26,26 +26,26 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.Properties;
 
+import org.alfresco.util.EqualsHelper;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This <i><b>Spring</b> depended</i> class allows to control the binding of a RMI Registry to some port and concrete local host, e.g.: <code>localhost</code>,
- * <code>192.168.0.1</code> etc. Host may be configured with the <code>-Djava.rmi.server.hostname</code> system property<br />
+ * This <i><b>Spring</b> depended</i> class allows to control the binding of a RMI Registry to some port and concrete
+ * local host, e.g.: <code>localhost</code>, <code>192.168.0.1</code> etc. <s>Host may be configured with the
+ * <code>-Djava.rmi.server.hostname</code> system property</s><br />
  * <br />
- * <i><b>NOTE:</b> The system property configuration has the highest priority</i>
+ * <i><b>NOTE:</b> Please look at <a href="http://issues.alfresco.com/jira/browse/ALF-4357">ALF-4357</a> for more
+ * information</i>
  * 
  * @author Dmitry Velichkevich
  * @see InitializingBean <b>Spring</b> dependence
  * @see RMIServerSocketFactory
  * @see RMIClientSocketFactory
  */
-public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RMIClientSocketFactory, InitializingBean, Serializable
+public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RMIClientSocketFactory, Serializable
 {
-    private static final long serialVersionUID = 4115227360496369889L;
-
-    private static final String SERVER_HOSTNAME_PROPERTY = "java.rmi.server.hostname";
+    private static final long serialVersionUID = 1L;
 
     private InetAddress host;
 
@@ -53,7 +53,11 @@ public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RM
     {
         try
         {
-            this.host = InetAddress.getByName(host);
+            InetAddress hostAddress = InetAddress.getByName(host);
+            if (!hostAddress.isAnyLocalAddress())
+            {
+                this.host = hostAddress;
+            }
         }
         catch (UnknownHostException e)
         {
@@ -61,42 +65,34 @@ public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RM
         }
     }
 
-    public void setHost(InetAddress host)
-    {
-        this.host = host;
-    }
-
-    /**
-     * @return {@link String} value which represents either a <i>Host Name</i> or a <i>Host (IP) Address</i> if <i>Host Name</i> is not reachable
-     */
-    public String getHost()
-    {
-        if (null != host.getHostName())
-        {
-            return host.getHostName();
-        }
-        return host.getHostAddress();
-    }
-
     public Socket createSocket(String host, int port) throws IOException
     {
-        return new Socket(this.host, port);
+        return new Socket(host, port);
     }
 
     public ServerSocket createServerSocket(int port) throws IOException
     {
-        return new ServerSocket(port, 0, host);
+        return new ServerSocket(port, 50, this.host);
     }
 
-    /**
-     * Checks whether the -Djava.rmi.server.hostname system property presented and sets a host from this property if it is true
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
      */
-    public void afterPropertiesSet() throws Exception
+    @Override
+    public boolean equals(Object obj)
     {
-        Properties properties = System.getProperties();
-        if (properties.containsKey(SERVER_HOSTNAME_PROPERTY))
-        {
-            setHost(properties.getProperty(SERVER_HOSTNAME_PROPERTY));
-        }
+        return (obj instanceof HostConfigurableSocketFactory)
+                && EqualsHelper.nullSafeEquals(this.host, ((HostConfigurableSocketFactory) obj).host);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return this.host == null ? 0 : this.host.hashCode();
     }
 }

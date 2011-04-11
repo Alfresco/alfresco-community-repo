@@ -19,18 +19,27 @@
 package org.alfresco.repo.node;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tagging.TaggingServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -42,41 +51,37 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @author Andy Hind
+ * @author Nick Burch
+ * @author Derek Hulley
  */
 @SuppressWarnings("unused")
 public class ConcurrentNodeServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";
-
     public static final String TEST_PREFIX = "test";
-
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
-
     public static final QName ASPECT_QNAME_TEST_TITLED = QName.createQName(NAMESPACE, "titled");
-
     public static final QName PROP_QNAME_TEST_TITLE = QName.createQName(NAMESPACE, "title");
-
     public static final QName PROP_QNAME_TEST_MIMETYPE = QName.createQName(NAMESPACE, "mimetype");
 
     public static final int COUNT = 10;
-
     public static final int REPEATS = 20;
+
+    private static Log logger = LogFactory.getLog(ConcurrentNodeServiceTest.class);
 
     static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
-
     private TransactionService transactionService;
     private RetryingTransactionHelper retryingTransactionHelper;
-
     private NodeRef rootNodeRef;
-
     private FullTextSearchIndexer luceneFTS;
-
     private AuthenticationComponent authenticationComponent;
 
     public ConcurrentNodeServiceTest()
@@ -334,7 +339,158 @@ public class ConcurrentNodeServiceTest extends TestCase
                 }
             }
         }
+    }
+    
+    /**
+     * Tests that when multiple threads try to edit different
+     *  properties on a node, that transactions + retries always
+     *  mean that every change always ends up on the node. 
+     *  
+     * @since 3.4 
+     */
+    public void testMultiThreadedNodePropertiesWrites() throws Exception
+    {
+        final List<Thread> threads = new ArrayList<Thread>();
+        final int loops = 200;
+        luceneFTS.pause();
 
+        // Have 5 threads, each trying to edit their own properties on the same node
+        // Loop repeatedly
+        final QName[] properties = new QName[] {
+                QName.createQName("test1", "MadeUp1"),
+                QName.createQName("test2", "MadeUp2"),
+                QName.createQName("test3", "MadeUp3"),
+                QName.createQName("test4", "MadeUp4"),
+                QName.createQName("test5", "MadeUp5")
+        };
+        for(QName prop : properties)
+        {
+            final QName property = prop;
+
+            // Zap the property if it is there
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        nodeService.removeProperty(rootNodeRef, property);
+                        return null;
+                    }
+                }
+            );
+
+            // Prep the thread
+            Thread t = new Thread(new Runnable()
+            {
+                @Override
+                public synchronized void run()
+                {
+                    // Let everything catch up
+                    try
+                    {
+                        wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                    }
+                    logger.info("About to start updating property " + property);
+
+                    // Loop, incrementing each time
+                    // If we miss an update, then at the end it'll be obvious
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    for (int i = 0; i < loops; i++)
+                    {
+                        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
+                        {
+                            @Override
+                            public Integer execute() throws Throwable
+                            {
+                                // Grab the current value
+                                int current = 0;
+                                Object obj = (Object) nodeService.getProperty(rootNodeRef, property);
+                                if (obj != null && obj instanceof Integer)
+                                {
+                                    current = ((Integer) obj).intValue();
+                                }
+                                // Increment by one. Really should be this!
+                                current++;
+                                // Save the new value
+                                nodeService.setProperty(rootNodeRef, property, Integer.valueOf(current));
+                                return current;
+                            }
+                        };
+                        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                        txnHelper.setMaxRetries(loops);
+                        txnHelper.doInTransaction(callback, false, true);
+                    }
+
+                    // Report us as finished
+                    logger.info("Finished updating property " + property);
+                }
+            }, "Thread-" + property);
+            threads.add(t);
+            t.start();
+        }
+
+        // Release the threads
+        logger.info("Releasing the property update threads");
+        for (Thread t : threads)
+        {
+            t.interrupt();
+        }
+
+        // Wait for the threads to finish
+        for (Thread t : threads)
+        {
+            t.join();
+        }
+
+        // Check each property in turn
+        RetryingTransactionCallback<Void> checkCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                HashMap<QName, Integer> values = new HashMap<QName, Integer>();
+                for(QName prop : properties)
+                {
+                    Object val = nodeService.getProperty(rootNodeRef, prop);
+                    Integer value = -1;
+                    if(val instanceof MLText)
+                    {
+                        value = Integer.valueOf( ((MLText)val).getValues().iterator().next() );
+                    }
+                    else
+                    {
+                        value = (Integer)val;
+                    }
+                    
+                    values.put(prop,value);
+                }
+                
+                List<String> errors = new ArrayList<String>();
+                for(QName prop : properties)
+                {
+                    Integer value = values.get(prop);
+                    if (value == null || !value.equals(new Integer(loops)))
+                    {
+                        errors.add("\n   Prop " + prop + " : " + value);
+                    }
+                    if (errors.size() > 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Incorrect counts recieved for " + loops + " loops.");
+                        for (String error : errors)
+                        {
+                            sb.append(error);
+                        }
+                        fail(sb.toString());
+                    }
+                }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(checkCallback, true);
     }
 
     private NamespacePrefixResolver getNamespacePrefixReolsver(String defaultURI)

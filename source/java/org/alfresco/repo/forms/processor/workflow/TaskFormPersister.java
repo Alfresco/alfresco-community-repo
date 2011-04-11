@@ -161,9 +161,6 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         }
         else
         {
-            // update the task first
-            updater.update();
-            
             if (transitionId.length() == 0)
             {
                 // transition with the default transition

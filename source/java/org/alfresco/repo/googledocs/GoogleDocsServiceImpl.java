@@ -374,11 +374,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
      * @param permissionContext		permission context
      */
     private void setGoogleResourcePermissions(NodeRef nodeRef, DocumentListEntry resource, GoogleDocsPermissionContext permissionContext)
-    {
-        // Set the owner of the document
-        String owner = ownableService.getOwner(nodeRef);
-        setGoogleResourcePermission(resource, AuthorityType.USER, owner, "owner");
-        
+    { 
         if (GoogleDocsPermissionContext.PRIVATE.equals(permissionContext) == false)
         {
             Set<AccessPermission> accessPermissions = permissionService.getAllSetPermissions(nodeRef);

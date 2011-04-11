@@ -39,7 +39,7 @@ public class PathHelper
         
         // pattern for QName e.g. /{stuff}stuff
         
-        Pattern pattern = Pattern.compile("/\\{[a-zA-Z:./0-9]*\\}[A-Z0-9a-z_ -]*");
+        Pattern pattern = Pattern.compile("/\\{[a-zA-Z:./0-9]*\\}[^/]*");
         Matcher matcher = pattern.matcher(value);
         
         // This is the root node

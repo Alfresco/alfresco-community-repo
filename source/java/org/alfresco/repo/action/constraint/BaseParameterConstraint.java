@@ -40,6 +40,9 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
     /** Runtime action service */
     protected RuntimeActionService actionService;
     
+    /** Flag to determine whether the allowable values should be cached */
+    protected boolean cache = true;
+    
     /** Map of allowable values */
     protected Map<String, String> allowableValues;
     
@@ -59,6 +62,16 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
     public void setActionService(RuntimeActionService actionService)
     {
         this.actionService = actionService;
+    }
+    
+    /**
+     * Determines whether the allowable values should be cached, default is true.
+     * 
+     * @param cache
+     */
+    public void setCacheAllowableValues(boolean cache)
+    {
+        this.cache = cache;
     }
     
     /**
@@ -82,12 +95,19 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
      */
     public Map<String, String> getAllowableValues()
     {
-        if (this.allowableValues == null)
-        {            
-            this.allowableValues = getAllowableValuesImpl();
+        if (this.cache)
+        {
+            if (this.allowableValues == null)
+            {            
+                this.allowableValues = getAllowableValuesImpl();
+            }
+            
+            return this.allowableValues;
         }
-        
-        return this.allowableValues;
+        else
+        {
+            return getAllowableValuesImpl();
+        }
     }
     
     /**

@@ -134,9 +134,8 @@ DELETE FROM alf_access_control_entry ace USING tmp_to_delete t WHERE ace.id = t.
 DROP TABLE tmp_to_delete;
 
 -- Add constraint for duplicate acls (this no longer includes the context)
-
-
-ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_permission_id_key;
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_permission_id_key;                        -- (optional)
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_permission_id_authority_id_allowed_key;   -- (optional)
 ALTER TABLE alf_access_control_entry
    ADD UNIQUE (permission_id, authority_id, allowed, applies);
 

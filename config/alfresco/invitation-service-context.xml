@@ -13,6 +13,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="userNameGenerator" ref="userNameGenerator"/>
         <property name="passwordGenerator" ref="passwordGenerator"/> 
+        <property name="sendEmails" value="${notification.email.siteinvite}"/> 
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>

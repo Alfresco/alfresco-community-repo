@@ -1625,6 +1625,12 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             }
         }
         
+        // limit results
+        if (query.getLimit() != -1)
+        {
+            task.setMaxResults(query.getLimit());
+        }
+        
         return task;
     }
 

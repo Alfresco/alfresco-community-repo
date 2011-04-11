@@ -229,11 +229,35 @@ public class AuditComponentImpl implements AuditComponent
      */
     public boolean areAuditValuesRequired()
     {
-        return
-            (loggerInbound.isDebugEnabled()) ||
-            (isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty());
+        if (transactionService.isReadOnly())
+        {
+            return false;
+        }
+        else
+        {
+            return
+                (loggerInbound.isDebugEnabled()) ||
+                (isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty());
+        }
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public boolean areAuditValuesRequired(String path)
+    {
+        if (loggerInbound.isDebugEnabled())
+        {
+            return !transactionService.isReadOnly();
+        }
+        PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
+        Set<String> mappedPaths = pathMapper.getMappedPathsWithPartialMatch(path);
+        // for performance, fall through if no mapped paths so isReadyOnly is never called
+        return (mappedPaths.size() > 0 && !transactionService.isReadOnly());
+    }
+
     /**
      * {@inheritDoc}
      * @since 3.2

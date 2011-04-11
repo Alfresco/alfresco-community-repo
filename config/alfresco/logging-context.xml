@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Logging related bean definitions -->
+<beans>
+    <!--
+         http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module#log4j.properties
+    -->
+    <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" init-method="init">
+        <property name="extraLog4jUrls">
+            <list>
+                <!-- NOTE: value entries are listed from lowest precedence to highest.  -->
+
+                <!--  Installed  AMP modules  -->
+                <value>classpath*:alfresco/module/*/log4j.properties</value>
+
+                <!--  Enterprise extensions  -->
+                <value>classpath*:alfresco/enterprise/*-log4j.properties</value>
+
+                <!--  Other installed extensions  -->
+                <value>classpath*:alfresco/extension/*-log4j.properties</value>
+
+                <!--  private developer overrides -->
+                <value>classpath*:alfresco/extension/dev-log4j.properties</value>
+            </list>
+        </property>
+    </bean>
+</beans>

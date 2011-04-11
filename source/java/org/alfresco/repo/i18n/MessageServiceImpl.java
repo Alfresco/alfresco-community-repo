@@ -41,16 +41,19 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -76,7 +79,6 @@ public class MessageServiceImpl implements MessageService
 
     // dependencies
     private TenantService tenantService;
-    private SearchService searchService;
     private ContentService contentService;
     private NamespaceService namespaceService;
     private NodeService nodeService;        
@@ -104,15 +106,11 @@ public class MessageServiceImpl implements MessageService
         this.namespaceService = namespaceService;
     }
     
-    public void setSearchService(SearchService searchService) {
-        this.searchService = searchService;
-    }
-
     public void setNodeService(NodeService nodeService) 
     {
         this.nodeService = nodeService;
     }
-
+    
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -530,28 +528,21 @@ public class MessageServiceImpl implements MessageService
                 NodeRef rootNode = nodeService.getRootNode(storeRef);
 
                 // first attempt - with locale        
-                List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
+                NodeRef nodeRef = getNode(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX);
                 
-                if ((nodeRefs == null) || (nodeRefs.size() == 0))
+                if (nodeRef == null)
                 {
                     // second attempt - basename 
-                    nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
-                   
-                    if ((nodeRefs == null) || (nodeRefs.size() == 0))
-                    {
-                        logger.debug("Could not find message resource bundle " + storeRef + "/" + path);
-                        return null;
-                    }
+                    nodeRef = getNode(rootNode, path+PROPERTIES_FILE_SUFFIX);
                 }
                 
-                if (nodeRefs.size() > 1)
+                if (nodeRef == null)
                 {
-                    throw new RuntimeException("Found more than one message resource bundle " + storeRef + path);
+                    logger.debug("Could not find message resource bundle " + storeRef + "/" + path);
+                    return null;
                 }
                 
-                NodeRef messageResourceNodeRef = nodeRefs.get(0);
-        
-                ContentReader cr = contentService.getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
+                ContentReader cr = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
                 ResourceBundle resBundle = new MessagePropertyResourceBundle(
                         new InputStreamReader(cr.getContentInputStream(), cr.getEncoding()));
                 return resBundle;
@@ -910,5 +901,66 @@ public class MessageServiceImpl implements MessageService
         }
         
         return bundleBaseName;
+    }
+    
+    protected NodeRef getNode(NodeRef rootNodeRef, String path)
+    {
+        RepositoryLocation repositoryLocation = new RepositoryLocation(rootNodeRef.getStoreRef(), path, RepositoryLocation.LANGUAGE_PATH);
+        String[] pathElements = repositoryLocation.getPathElements();
+        
+        NodeRef nodeRef = rootNodeRef;
+        if (pathElements.length > 0)
+        {
+            nodeRef = resolveQNamePath(rootNodeRef, pathElements);
+        }
+        
+        return nodeRef;
+    }
+    
+    // TODO refactor (see also DictionaryRepositoryBootstrap)
+    protected NodeRef resolveQNamePath(NodeRef rootNodeRef, String[] pathPrefixQNameStrings)
+    {
+        if (pathPrefixQNameStrings.length == 0)
+        {
+            throw new IllegalArgumentException("Path array is empty");
+        }
+        // walk the path
+        NodeRef parentNodeRef = rootNodeRef;
+        for (int i = 0; i < pathPrefixQNameStrings.length; i++)
+        {
+            String pathPrefixQNameString = pathPrefixQNameStrings[i];
+            
+            QName pathQName = null;
+            if (AuthenticationUtil.isMtEnabled())
+            {
+                String[] parts = QName.splitPrefixedQName(pathPrefixQNameString);
+                if ((parts.length == 2) && (parts[0].equals(NamespaceService.APP_MODEL_PREFIX)))
+                {
+                    String pathUriQNameString = new StringBuilder(64).
+                        append(QName.NAMESPACE_BEGIN).
+                        append(NamespaceService.APP_MODEL_1_0_URI).
+                        append(QName.NAMESPACE_END).
+                        append(parts[1]).toString();
+                    
+                    pathQName = QName.createQName(pathUriQNameString);
+                }
+                else
+                {
+                    pathQName = QName.createQName(pathPrefixQNameString, namespaceService);
+                }
+            }
+            else
+            {
+                pathQName = QName.createQName(pathPrefixQNameString, namespaceService);
+            }
+            
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(parentNodeRef, RegexQNamePattern.MATCH_ALL, pathQName);
+            if (childAssocRefs.size() != 1)
+            {
+                return null;
+            }
+            parentNodeRef = childAssocRefs.get(0).getChildRef();
+        }
+        return parentNodeRef;
     }
 }

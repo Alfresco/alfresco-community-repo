@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -57,12 +58,11 @@ import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -269,6 +269,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
         ParameterCheck.mandatory("assocQName", assocQName);
         ParameterCheck.mandatory("nodeTypeQName", nodeTypeQName);
+        if(assocQName.getLocalName().length() > QName.MAX_LENGTH)
+        {
+            throw new IllegalArgumentException("Localname is too long");
+        }
         
         // Get the parent node
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
@@ -2025,7 +2029,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 nodeRef,
                 archiveStoreRootNodePair.getSecond(),
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedItem"));
+                NodeArchiveService.QNAME_ARCHIVED_ITEM);
     }
     
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)

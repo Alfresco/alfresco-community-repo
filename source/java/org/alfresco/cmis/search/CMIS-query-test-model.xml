@@ -273,7 +273,7 @@
                     <multiple>false</multiple>
                    <index enabled="true">
                         <atomic>true</atomic>
-                        <tokenised>true</tokenised>
+                        <tokenised>both</tokenised>
                     </index>
                 </property>
                 <property name="test:multipleDatetime">
@@ -282,7 +282,7 @@
                     <multiple>true</multiple>
                     <index enabled="true">
                         <atomic>true</atomic>
-                        <tokenised>true</tokenised>
+                        <tokenised>both</tokenised>
                     </index>
                 </property>
             </properties>

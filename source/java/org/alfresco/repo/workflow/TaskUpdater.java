@@ -130,6 +130,7 @@ public class TaskUpdater
     
     public WorkflowTask transition(String transitionId)
     {
+        update();
         return workflowService.endTask(taskId, transitionId);
     }
     

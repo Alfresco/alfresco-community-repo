@@ -18,19 +18,17 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
@@ -40,6 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -49,6 +48,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Migrates authority information previously stored in the user store to the spaces store, using the new structure used
@@ -285,9 +286,15 @@ public class AuthorityMigrationPatch extends AbstractPatch
                     }
                     catch (UnknownAuthorityException e)
                     {
-                        // Let's force a transaction retry if a parent doesn't exist. It may be because we are waiting
-                        // for another worker thread to create it
-                        throw new BatchUpdateException().initCause(e);
+                        // Let's force a transaction retry if a parent doesn't exist. It may be because we are
+                        // waiting for another worker thread to create it
+                        throw new ConcurrencyFailureException("Forcing batch retry for unknown authority", e);
+                    }
+                    catch (InvalidNodeRefException e)
+                    {
+                        // Another thread may have written the node, but it is not visible to this transaction
+                        // See: ALF-5471: 'authorityMigration' patch can report 'Node does not exist'
+                        throw new ConcurrencyFailureException("Forcing batch retry for invalid node", e);
                     }
                 }
             }

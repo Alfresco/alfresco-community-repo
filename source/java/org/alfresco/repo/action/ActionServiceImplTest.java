@@ -39,6 +39,7 @@ import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
@@ -52,14 +53,19 @@ import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -1135,6 +1141,61 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                     
                 });
         
+    }
+    
+    private void createUser(String userName)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            PersonService personService = (PersonService)applicationContext.getBean("personService");
+            personService.createPerson(ppOne);
+        }        
+    }
+    
+    /**
+     * http://issues.alfresco.com/jira/browse/ALF-5027
+     */
+    public void testALF5027() throws Exception
+    {
+    	String userName = "bob" + GUID.generate();
+    	createUser(userName);
+    	PermissionService permissionService = (PermissionService)applicationContext.getBean("PermissionService");
+    	permissionService.setPermission(rootNodeRef, userName, PermissionService.COORDINATOR, true);
+    	
+    	AuthenticationUtil.setRunAsUser(userName);
+    	
+    	NodeRef myNodeRef = nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}myTestNode" + GUID.generate()),
+                ContentModel.TYPE_CONTENT).getChildRef();
+    	
+    	CheckOutCheckInService coci = (CheckOutCheckInService)applicationContext.getBean("CheckoutCheckinService");
+    	NodeRef workingcopy = coci.checkout(myNodeRef);
+    	assertNotNull(workingcopy);
+    	
+    	assertFalse(nodeService.hasAspect(myNodeRef, ContentModel.ASPECT_DUBLINCORE));
+    	
+    	Action action1 = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action1.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_DUBLINCORE);        
+        actionService.executeAction(action1, myNodeRef);
+        
+        // The action should have been ignored since the node is locked
+        assertFalse(nodeService.hasAspect(myNodeRef, ContentModel.ASPECT_DUBLINCORE));
+        
+        coci.checkin(workingcopy, null);
+        actionService.executeAction(action1, myNodeRef);
+        
+        assertTrue(nodeService.hasAspect(myNodeRef, ContentModel.ASPECT_DUBLINCORE));
     }
     
     /**

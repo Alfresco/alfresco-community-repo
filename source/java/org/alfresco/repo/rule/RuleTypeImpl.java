@@ -119,11 +119,12 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
 	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
 	{
-		if (this.ruleService.isEnabled() == true && 
-        	this.nodeService.exists(actionedUponNodeRef) == true && 
-        	this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false)
+		if (ruleService.isEnabled() == true && 
+        	nodeService.exists(actionedUponNodeRef) == true && 
+        	nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
+        	ruleService.isRuleTypeEnabled(this.getName()) == true)
         {
-			List<Rule> rules = this.ruleService.getRules(
+			List<Rule> rules = ruleService.getRules(
             		nodeRef, 
                     true,
                     this.name);
@@ -147,12 +148,12 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                         if (executeRuleImmediately == false)
                         {
                             // Queue the rule to be executed at the end of the transaction (but still in the transaction)
-                            ((RuntimeRuleService)this.ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
+                            ((RuntimeRuleService)ruleService).addRulePendingExecution(nodeRef, actionedUponNodeRef, rule);
                         }
                         else
                         {
                             // Execute the rule now
-                            ((RuntimeRuleService)this.ruleService).executeRule(rule, actionedUponNodeRef, null);
+                            ((RuntimeRuleService)ruleService).executeRule(rule, actionedUponNodeRef, null);
                         }
                     }
                 }
@@ -165,13 +166,5 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                 }
             }
         }
-	}
-	
-	/**
-	 * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-	 */
-	public void setBeanName(String name)
-	{
-		this.name = name;	
 	}
 }

@@ -165,6 +165,11 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     	}
     }
     
+    /**
+     * Indicate whether the trigger should be ignored or not
+     * @param actionedUponNodeRef	actioned upon node reference
+     * @return boolean				true if the trigger should be ignored, false otherwise
+     */
     private boolean ignoreTrigger(NodeRef actionedUponNodeRef)
     {
     	boolean result = false;    	

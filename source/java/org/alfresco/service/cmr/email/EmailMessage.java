@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.email;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Interface to process email messages. 
@@ -38,6 +39,11 @@ public interface EmailMessage extends Serializable
      * @return TO address.
      */
     public String getTo();
+    
+    /**
+     * @return CC addresses.
+     */
+    public List<String> getCC();
 
     /**
      * @return sent date.

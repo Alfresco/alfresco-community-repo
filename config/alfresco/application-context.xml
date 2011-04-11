@@ -25,6 +25,11 @@
     <import resource="classpath*:alfresco/extension/mt/*-context.xml"/>
     
     <!--
+         Import Enterprise-Only Extensions
+    -->
+    <import resource="classpath*:alfresco/enterprise/*-context.xml"/>
+
+    <!--
          Import all modules and related components.
          Extensions are explicitly imported after this so that the default
          mechanism can still be used to override module-specific beans.
@@ -36,11 +41,6 @@
 
     <!--  Import client beans -->
     <import resource="classpath*:alfresco/web-client-application-context.xml" />
-
-    <!--
-         Import Enterprise-Only Extensions
-    -->
-    <import resource="classpath*:alfresco/enterprise/*-context.xml"/>
 
     <!--
          Import of general extensions and bean overrides.

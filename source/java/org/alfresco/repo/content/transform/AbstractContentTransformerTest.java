@@ -19,8 +19,11 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -157,6 +160,26 @@ public abstract class AbstractContentTransformerTest extends TestCase
        return new String[] {
              "quick." + sourceExtension
        };
+    }
+    
+    /**
+     * Writes the supplied text out to a temporary file, and opens
+     *  a content reader onto it. 
+     */
+    protected static ContentReader buildContentReader(String text, Charset encoding)
+        throws IOException
+    {
+        File tmpFile = TempFileProvider.createTempFile("AlfrescoTest_", ".txt");
+        FileOutputStream out = new FileOutputStream(tmpFile);
+        OutputStreamWriter wout = new OutputStreamWriter(out, encoding);
+        wout.write(text);
+        wout.close();
+        out.close();
+        
+        ContentReader reader = new FileContentReader(tmpFile);
+        reader.setEncoding(encoding.displayName());
+        reader.setMimetype("text/plain");
+        return reader;
     }
 
     /**

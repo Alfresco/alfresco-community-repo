@@ -30,6 +30,8 @@ import java.util.zip.CRC32;
 
 import junit.framework.TestCase;
 
+import org.alfresco.util.TempFileProvider;
+
 /**
  * Some tests to check out the </code>java.lang.nio</code> functionality
  * 
@@ -48,7 +50,7 @@ public class FileIOTest extends TestCase
     
     public void setUp() throws Exception
     {
-        file = File.createTempFile(getName(), ".txt");
+        file = TempFileProvider.createTempFile(getName(), ".txt");
         OutputStream os = new FileOutputStream(file);
         os.write(TEST_CONTENT.getBytes());
         os.flush();

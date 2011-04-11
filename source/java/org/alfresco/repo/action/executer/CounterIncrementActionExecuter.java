@@ -38,6 +38,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class CounterIncrementActionExecuter extends ActionExecuterAbstractBase
 {
+    public static final String NAME = "counter";
+	
     /** Runtime NodeService with no permissions protection */
     private NodeService nodeService;
     

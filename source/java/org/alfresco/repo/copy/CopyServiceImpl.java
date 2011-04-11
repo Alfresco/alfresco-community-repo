@@ -308,8 +308,6 @@ public class CopyServiceImpl implements CopyService
             throw new CopyServiceException("The source and destination node must be the same type.");
         }
         
-        Map<QName, Serializable> sourceNodeProperties = nodeService.getProperties(sourceNodeRef);
-        
         // Get the destinations node's details
         ChildAssociationRef destinationPrimaryAssocRef = nodeService.getPrimaryParent(targetNodeRef);
         NodeRef destinationParentNodeRef = destinationPrimaryAssocRef.getParentRef();
@@ -323,9 +321,6 @@ public class CopyServiceImpl implements CopyService
         
         // Get callbacks
         Map<QName, CopyBehaviourCallback> callbacks = getCallbacks(copyDetails);
-        
-        // Remove the name property from the source properties to avoid having it copied
-        sourceNodeProperties.remove(ContentModel.PROP_NAME);
         
         // invoke the before copy policy
         invokeBeforeCopy(sourceNodeRef, targetNodeRef);
@@ -620,9 +615,10 @@ public class CopyServiceImpl implements CopyService
                 scratchProperties.put(propertyQName, value);
             }
             // What does the behaviour do with properties?
-            scratchProperties = callback.getCopyProperties(classQName, copyDetails, scratchProperties);
+            Map<QName, Serializable> propsToCopy = callback.getCopyProperties(classQName, copyDetails, scratchProperties);
+            
             // Add to the final properties
-            copyProperties.putAll(scratchProperties);
+            copyProperties.putAll(propsToCopy);
         }
         // Done
         return copyProperties;
@@ -773,8 +769,10 @@ public class CopyServiceImpl implements CopyService
     {
         // The first call will fail permissions, so there is no point doing permission checks with
         // the other calls
+        QName sourceNodeTypeQName = nodeService.getType(sourceNodeRef);
+        // ALF-730: MLText is not fully carried during cut-paste or copy-paste
+        //          Use the internalNodeService to fetch the properties.  It should be mlAwareNodeService.
         Map<QName, Serializable> sourceNodeProperties = internalNodeService.getProperties(sourceNodeRef);
-        QName sourceNodeTypeQName = internalNodeService.getType(sourceNodeRef);
         Set<QName> sourceNodeAspectQNames = internalNodeService.getAspects(sourceNodeRef);
         
         // Create a target node, if necessary

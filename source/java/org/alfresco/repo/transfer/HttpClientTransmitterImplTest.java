@@ -255,7 +255,7 @@ public class HttpClientTransmitterImplTest extends TestCase
         
         try
         {
-            transmitter.begin(target);
+            transmitter.begin(target, "1234");
             fail();
         }
         catch(TransferException ex)

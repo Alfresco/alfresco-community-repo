@@ -48,6 +48,8 @@ public class WorkflowTaskQuery
     // order by
     private OrderBy[] orderBy;
     
+    // result set size
+    private int limit = -1;
     
     /**
      * Order By Columns
@@ -229,4 +231,13 @@ public class WorkflowTaskQuery
         this.processCustomProps = processCustomProps;
     }
 
+    public int getLimit()
+    {
+        return this.limit;
+    }
+
+    public void setLimit(int limit)
+    {
+        this.limit = limit;
+    }
 }

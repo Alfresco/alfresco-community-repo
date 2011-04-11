@@ -21,13 +21,13 @@ package org.alfresco.repo.policy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-
 
 /**
  * Factory for creating transaction-aware behaviour invocation handlers.
@@ -40,7 +40,6 @@ public class TransactionInvocationHandlerFactory
     /** Transaction behaviour Queue */
     private TransactionBehaviourQueue queue;
     
-
     /**
      * Construct
      * 
@@ -112,21 +111,22 @@ public class TransactionInvocationHandlerFactory
             Object result = null;
             if (behaviour.getNotificationFrequency().equals(NotificationFrequency.FIRST_EVENT))
             {
-                Map<Integer, Object> executedBehaviours = (Map<Integer, Object>)AlfrescoTransactionSupport.getResource(EXECUTED_KEY);
+                Map<ExecutionInstanceKey, Object> executedBehaviours = (Map<ExecutionInstanceKey, Object>)AlfrescoTransactionSupport.getResource(EXECUTED_KEY);
                 if (executedBehaviours == null)
                 {
-                    executedBehaviours = new HashMap<Integer, Object>();
+                    executedBehaviours = new HashMap<ExecutionInstanceKey, Object>();
                     AlfrescoTransactionSupport.bindResource(EXECUTED_KEY, executedBehaviours);
                 }
+                                
+                ExecutionInstanceKey key = new  ExecutionInstanceKey(behaviour, definition.getArguments(), args);
                 
-                Integer behaviourKey = createInstanceKey(behaviour, definition.getArguments(), args);
-                if (executedBehaviours.containsKey(behaviourKey) == false)
+                if (executedBehaviours.containsKey(key) == false)
                 {
                     // Invoke behavior for first time and mark as executed
                     try
                     {
                         result = method.invoke(policyInterface, args);
-                        executedBehaviours.put(behaviourKey, result);
+                        executedBehaviours.put(key, result);
                     }
                     catch (InvocationTargetException e)
                     {
@@ -136,7 +136,7 @@ public class TransactionInvocationHandlerFactory
                 else
                 {
                     // Return result of previous execution
-                    result = executedBehaviours.get(behaviourKey);
+                    result = executedBehaviours.get(key);
                 }
             }
             else if (behaviour.getNotificationFrequency().equals(NotificationFrequency.TRANSACTION_COMMIT))
@@ -151,29 +151,83 @@ public class TransactionInvocationHandlerFactory
             }
             
             return result;
-        }
-
-                
-        /**
-         * Create an instance key for the behaviour based on the "key" arguments passed in
-         * 
-         * @param argDefs  definitions of behaviour arguments
-         * @param args  the argument values
-         * @return  the key
-         */
-        private Integer createInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
+        }        
+    }
+    
+    /**
+     * Execution Instance Key - to uniquely identify an ExecutionContext
+     * 
+     * @param <P>
+     */
+    private class ExecutionInstanceKey
+    {
+        public ExecutionInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
         {
-            int key = behaviour.hashCode();
+            this.behaviour = behaviour;
+            
             for (int i = 0; i < argDefs.length; i++)
             {
                 if (argDefs[i].equals(Arg.KEY))
                 {
-                    key = (37 * key) + args[i].hashCode();
+                    keys.add(args[i]);
                 }
             }
-            return new Integer(key);
         }
         
-    }
+        Behaviour behaviour;
+        ArrayList<Object> keys = new ArrayList<Object>();
+        
+        /**
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode()
+        {   
+            int key = behaviour.hashCode();
+            for (int i = 0; i < keys.size(); i++)
+            {
+                key = (37 * key) + keys.get(i).hashCode();
+            }
+            return key;
+        }
+        
+        /**
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj instanceof ExecutionInstanceKey)
+            {
+                ExecutionInstanceKey that = (ExecutionInstanceKey) obj;
+                if(this.behaviour.equals(that.behaviour))
+                {
+                    if(keys.size() != that.keys.size())
+                    {
+                        // different number of keys
+                        return false;
+                    }
+                    if(keys.containsAll(that.keys))
+                    {
+                        // yes keys are equal
+                        return true;
+                    }
+                }
+
+                // behavior is different
+                return false;
+            }
+            else
+            {
+                // Object is wrong type
+                return false;
+            }
+        } // equals
+    } // ExecutionInstanceKey
+
 
 }

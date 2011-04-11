@@ -19,15 +19,16 @@
 package org.alfresco.repo.content.cleanup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -74,6 +75,30 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ContentStoreCleaner
 {
+    /**
+     * Enumeration of actions to take in the even that an orphaned binary fails to get deleted.
+     * Most stores are able to delete orphaned content, but it is possible that stores have
+     * protection against binary deletion that is outside of the Alfresco server's control.
+     * 
+     * @author Derek Hulley
+     * @since 3.3.5
+     */
+    public enum DeleteFailureAction
+    {
+        /**
+         * Failure to clean up a binary is logged, but the URL is discarded for good i.e.
+         * there will be no further attempt to clean up the binary or any remaining record
+         * of its existence.
+         */
+        IGNORE,
+        /**
+         * Failure to clean up the binary is logged and then a URL record is created with a
+         * orphan time of 0; there will be no further attempts to delete the URL binary, but
+         * the record will also not be destroyed.
+         */
+        KEEP_URL;
+    }
+    
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentStoreCleaner"); 
     private static final long LOCK_TTL = 30000L;
     private static ThreadLocal<Pair<Long, String>> lockThreadLocal = new ThreadLocal<Pair<Long, String>>();
@@ -91,10 +116,12 @@ public class ContentStoreCleaner
     private AVMNodeDAO avmNodeDAO;
     private TransactionService transactionService;
     private int protectDays;
+    private DeleteFailureAction deletionFailureAction;
     
     public ContentStoreCleaner()
     {
         this.protectDays = 7;
+        this.deletionFailureAction = DeleteFailureAction.IGNORE;
     }
 
     /**
@@ -163,7 +190,18 @@ public class ContentStoreCleaner
     {
         this.protectDays = protectDays;
     }
-    
+
+    /**
+     * Set the action to take in the event that an orphaned binary failed to get deleted.
+     * The default is {@link DeleteFailureAction#IGNORE}.
+     * 
+     * @param deletionFailureAction     the action to take when deletes fail
+     */
+    public void setDeletionFailureAction(DeleteFailureAction deletionFailureAction)
+    {
+        this.deletionFailureAction = deletionFailureAction;
+    }
+
     /**
      * Initializes the cleaner based on the {@link #setEagerOrphanCleanup(boolean) eagerCleanup} flag.
      */
@@ -271,6 +309,14 @@ public class ContentStoreCleaner
                 logger.debug("   Content store cleanup completed.");
             }
         }
+        catch (LockAcquisitionException e)
+        {
+            // Job being done by another process
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   Content store cleanup already underway.");
+            }
+        }
         catch (VmShutdownException e)
         {
             // Aborted
@@ -287,23 +333,24 @@ public class ContentStoreCleaner
     
     private void executeInternal()
     {
+        final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000);
         // execute in READ-WRITE txn
-        RetryingTransactionCallback<Integer> getAndDeleteWork = new RetryingTransactionCallback<Integer>()
+        RetryingTransactionCallback<Long> getAndDeleteWork = new RetryingTransactionCallback<Long>()
         {
-            public Integer execute() throws Exception
+            public Long execute() throws Exception
             {
-                return cleanBatch(1000);
+                return cleanBatch(maxOrphanTime, 1000);
             };
         };
         while (true)
         {
             refreshLock();
-            Integer deleted = transactionService.getRetryingTransactionHelper().doInTransaction(getAndDeleteWork);
+            Long lastProcessedOrphanId = transactionService.getRetryingTransactionHelper().doInTransaction(getAndDeleteWork);
             if (vmShutdownListener.isVmShuttingDown())
             {
                 throw new VmShutdownException();
             }
-            if (deleted.intValue() == 0)
+            if (lastProcessedOrphanId == null)
             {
                 // There is no more to process
                 break;
@@ -311,43 +358,68 @@ public class ContentStoreCleaner
             // There is still more to delete, so continue
             if (logger.isDebugEnabled())
             {
-                logger.debug("   Removed " + deleted.intValue() + " orphaned content URLs.");
+                logger.debug("   Removed orphaned content URLs up orphan time " + new Date(lastProcessedOrphanId));
             }
         }
         // Done
     }
     
-    private int cleanBatch(final int batchSize)
+    /**
+     * 
+     * @param minIdInclusive        the min content URL ID (inclusive)
+     * @param maxTimeExclusive      the max orphan time (exclusive)
+     * @param batchSize             the maximum number of orphans to process
+     * @return                      Returns the last processed orphan ID or <tt>null</tt> if nothing was processed
+     */
+    private Long cleanBatch(final long maxTimeExclusive, final int batchSize)
     {
         // Get a bunch of cleanable URLs
-        final Map<Long, String> urlsById = new HashMap<Long, String>(batchSize * 2);
+        final TreeMap<Long, String> urlsById = new TreeMap<Long, String>();
         ContentUrlHandler contentUrlHandler = new ContentUrlHandler()
         {
+            @Override
             public void handle(Long id, String contentUrl, Long orphanTime)
             {
                 urlsById.put(id, contentUrl);
             }
         };
-        final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000);
-        contentDataDAO.getContentUrlsOrphaned(contentUrlHandler, maxOrphanTime, batchSize);
+        // Get a bunch of cleanable URLs
+        contentDataDAO.getContentUrlsOrphaned(contentUrlHandler, maxTimeExclusive, batchSize);
         
         // Shortcut, if necessary
         if (urlsById.size() == 0)
         {
-            return 0;
+            return null;
         }
-        // We have the IDs of the URLs to delete.  Let's do it!
-        List<Long> idsToDelete = new ArrayList<Long>(urlsById.keySet());
-        contentDataDAO.deleteContentUrls(idsToDelete);
         
+        // Compile list of IDs and do a mass delete, recording the IDs to find the largest
+        Long lastId = urlsById.lastKey();
+        List<Long> ids = new ArrayList<Long>(urlsById.keySet());
+        contentDataDAO.deleteContentUrls(ids);
         // No problems, so far (ALF-1998: contentStoreCleanerJob leads to foreign key exception)
-        // Schedule the URLs for deletion in the post-commit phase
-        for (String contentUrlToDelete : urlsById.values())
+
+        // Now attempt to physically delete the URLs
+        for (Long id : ids)
         {
-            // NOTE: We are forcing eager cleanup so ignore the return value.
-            eagerContentStoreCleaner.registerOrphanedContentUrl(contentUrlToDelete, true);
+            String contentUrl = urlsById.get(id);
+            // Handle failures
+            boolean deleted = eagerContentStoreCleaner.deleteFromStores(contentUrl);
+            if (!deleted)
+            {
+                switch (deletionFailureAction)
+                {
+                    case KEEP_URL:
+                        // Keep the URL, but with an orphan time of 0 so that it is recorded
+                        contentDataDAO.createContentUrlOrphaned(contentUrl, new Date(0L));
+                    case IGNORE:
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknown deletion failure action: " + deletionFailureAction);
+                }
+            }
         }
+        
         // Done
-        return urlsById.size();
+        return lastId;
     }
 }

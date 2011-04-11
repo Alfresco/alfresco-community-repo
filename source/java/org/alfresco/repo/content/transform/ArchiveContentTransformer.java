@@ -59,13 +59,7 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
        this.includeContents = false;
        if(includeContents != null && includeContents.length() > 0)
        {
-          if(includeContents.equalsIgnoreCase("true") ||
-             includeContents.equalsIgnoreCase("t") ||
-             includeContents.equalsIgnoreCase("yes") ||
-             includeContents.equalsIgnoreCase("y"))
-          {
-             this.includeContents = true;
-          }
+          this.includeContents = TransformationOptions.relaxedBooleanTypeConverter.convert(includeContents).booleanValue();
        }
     }
     
@@ -102,7 +96,6 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
       {
          recurse = options.getIncludeEmbedded();
       }
-System.err.println(includeContents + " " + recurse + " " + options.getIncludeEmbedded());      
       if(recurse)
       {
          context.set(Parser.class, new AutoDetectParser());

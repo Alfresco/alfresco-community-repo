@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.invitation.script.ScriptInvitation;
 import org.alfresco.repo.invitation.script.ScriptInvitationFactory;
@@ -296,17 +297,21 @@ public class Site implements Serializable
      * Gets a map of members of the site with their role within the site.  This list can
      * be filtered by name and/or role.
      * <p>
-     * If no name or role filter is specified all members of the site are listed. 
+     * If no name or role filter is specified all members of the site are listed.
+     * <p>
+     * This list includes both users and groups if collapseGroups is set to false, otherwise all
+     * groups that are members are collapsed into their component users and listed.
      * 
-     * @param nameFilter                            user name filter
-     * @param roleFilter                            user role filter
-     * @param size                                  max results size crop if >0
+     * @param nameFilter               user name filter
+     * @param roleFilter               user role filter
+     * @param size                     max results size crop if >0
+     * @param collapseGroups           true if collapse member groups into user list, false otherwise
      * 
      * @return ScriptableHashMap<String, String>    list of members of site with their roles
      */
-    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size)
+    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
-        Map<String, String> members =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter, size);
+        Map<String, String> members =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter, size, collapseGroups);
         
         ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
         result.putAll(members);
@@ -476,6 +481,52 @@ public class Site implements Serializable
             return null;
         }          
     
+    }
+
+    /**
+     * This method creates a container of the specified id and type, sets the cm:description
+     * on that container node to the specified value and saves the container node updates to the repository.
+     * All of this is run as system.
+     * 
+     * @param containerId an id for the container node.
+     * @param containerType the type for the container node.
+     * @param description a value for the cm:description property on the container node.
+     * 
+     * @return the newly created and saved container {@link ScriptNode}.
+     * @since 3.4
+     */
+    public ScriptNode createAndSaveContainer(String containerId, String containerType, final String description)
+    {
+    	// Implementation node. See ALF-4282 for details.
+    	//
+    	// The container for the "data lists" page within a Share site is lazily created the first time
+    	// that a user navigates to that page. However if the first Share user to look at the data lists
+    	// page for a site is not a site manager then they will not have the necessary permissions to
+    	// create the container node.
+    	// For this reason we need to create the node, set its cm:description and save those changes
+    	// as system.
+    	
+    	// The container creation is already run as system, so we don't need to double-wrap this first call
+    	// in a RunAs class.
+    	final ScriptNode result = this.createContainer(containerId, containerType);
+    	
+    	if (result == null)
+    	{
+    		return null;
+    	}
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                	serviceRegistry.getNodeService().setProperty(result.getNodeRef(),
+                			                                     ContentModel.PROP_DESCRIPTION, description);
+                	result.save();
+                	return null;
+                }
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
+        
+        return result;
     }
     
     /**

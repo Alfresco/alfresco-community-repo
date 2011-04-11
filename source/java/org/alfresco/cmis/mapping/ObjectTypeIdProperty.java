@@ -82,7 +82,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
 
     public String getLuceneFieldName()
     {
-        return "TYPE";
+        return "EXACTTYPE";
     }
 
     private String getValueAsString(Serializable value)

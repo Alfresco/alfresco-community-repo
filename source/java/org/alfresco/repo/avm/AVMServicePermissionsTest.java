@@ -210,10 +210,7 @@ public class AVMServicePermissionsTest extends TestCase
 
         authenticationComponent.clearCurrentSecurityContext();
         
-        if (avmService.getStore("main") != null)
-        {
-            avmService.purgeStore("main");
-        }
+        removeStore("main");
     }
 
     @Override
@@ -487,16 +484,16 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
-
-            System.out.println(avmService.getStores());
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
+            
+            //System.out.println(avmService.getStores());
         }
 
     }
@@ -566,14 +563,14 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -647,14 +644,14 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -761,14 +758,14 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -929,14 +926,14 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -1089,14 +1086,14 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-layer-base");
-            avmService.purgeStore(storeName + "-layer-a");
-            avmService.purgeStore(storeName + "-layer-b");
-            avmService.purgeStore(storeName + "-layer-c");
-            avmService.purgeStore(storeName + "-layer-d");
-            avmService.purgeStore(storeName + "-layer-layer-base");
-            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+            removeStore(storeName);
+            removeStore(storeName + "-layer-base");
+            removeStore(storeName + "-layer-a");
+            removeStore(storeName + "-layer-b");
+            removeStore(storeName + "-layer-c");
+            removeStore(storeName + "-layer-d");
+            removeStore(storeName + "-layer-layer-base");
+            removeStore(storeName + "-layer-layer-layer-base");
         }
 
     }
@@ -1202,8 +1199,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
 
@@ -1295,8 +1292,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -1397,8 +1394,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -1495,8 +1492,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -1642,8 +1639,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -1821,8 +1818,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -1977,8 +1974,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
     
@@ -2144,8 +2141,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(baseStore);
-            avmService.purgeStore(layeredStore);
+            removeStore(baseStore);
+            removeStore(layeredStore);
         }
     }
 
@@ -2540,7 +2537,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -2657,7 +2654,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -2774,7 +2771,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -2866,8 +2863,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(branchName);
+            removeStore(storeName);
+            removeStore(branchName);
         }
     }
 
@@ -3105,8 +3102,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-a-");
+            removeStore(storeName);
+            removeStore(storeName + "-a-");
 
         }
     }
@@ -3339,7 +3336,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -3474,8 +3471,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-a-");
+            removeStore(storeName);
+            removeStore(storeName + "-a-");
         }
     }
 
@@ -3596,7 +3593,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -3716,7 +3713,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
+            removeStore(storeName);
         }
     }
 
@@ -3793,8 +3790,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-a-");
+            removeStore(storeName);
+            removeStore(storeName + "-a-");
         }
     }
 
@@ -3871,8 +3868,8 @@ public class AVMServicePermissionsTest extends TestCase
         }
         finally
         {
-            avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName + "-a-");
+            removeStore(storeName);
+            removeStore(storeName + "-a-");
         }
     }
     
@@ -3940,14 +3937,11 @@ public class AVMServicePermissionsTest extends TestCase
 
     private void createStagingWithSnapshots(String storeName) throws IOException
     {
-        if (avmService.getStore(storeName) != null)
-        {
-            avmService.purgeStore(storeName);
-        }
-
+        removeStore(storeName);
+        
         avmService.createStore(storeName);
         assertNotNull(avmService.getStore(storeName));
-
+        
         avmService.createDirectory(storeName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
         avmService.createSnapshot(storeName, "first", "first");
         assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW));

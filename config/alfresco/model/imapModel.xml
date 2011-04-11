@@ -15,22 +15,7 @@
    </namespaces>
 
    <types>
-      <type name="imap:imapFolder">
-         <title>IMAP Folder</title>
-         <parent>cm:folder</parent>
-         <properties>
-            <property name="imap:nonSubscribed">
-               <type>d:boolean</type>
-            </property>
-            <property name="imap:selectable">
-               <type>d:boolean</type>
-               <mandatory>true</mandatory>
-               <default>true</default>
-            </property>
-         </properties>
-      </type>
-
-      <type name="imap:imapAttach">
+            <type name="imap:imapAttach">
          <title>Attachment to the IMAP message</title>
          <parent>cm:content</parent>
          <properties>
@@ -46,6 +31,7 @@
       </type>
    </types>
    
+   <!--  The IMAP content aspect is applied to content items of type message/RFC822 -->
    <aspects>
       <aspect name="imap:imapContent">
          <title>IMAP File</title>
@@ -131,8 +117,18 @@
             </property>          
           </properties>
        </aspect>
+             <aspect name="imap:imapFolder">
+         <properties>
+            <property name="imap:uidValidity">
+               <title>UIDVALIDITY</title>
+               <type>d:long</type>
+               <!-- <protected>true</protected>  -->
+            </property>            
+         </properties>
+       </aspect>
+       
       <aspect name="imap:nonSubscribed"/>
-       <aspect name="imap:nonselectable"/>
+       <aspect name="imap:nonSelectable"/>
     </aspects>
 
 </model>

@@ -68,6 +68,8 @@ public interface AuditComponent
      * this method might return <tt>false</tt> are: auditing is disabled; no audit applications
      * have been registered.  Sometimes, depending on the log level, this method may always
      * return <tt>true</tt>.
+     * <p/>
+     * <tt>false</tt> will always be returned if the server is read-only.
      * 
      * 
      * @return                  Returns <code>true</code> if the calling code (data producers)
@@ -77,6 +79,19 @@ public interface AuditComponent
      * @since 3.3
      */
     public boolean areAuditValuesRequired();
+    
+    /**
+     * Determine whether there are any audit applications registered to record data for the given
+     * path.  This helper method gives data producers a shortcut in the event that nothing would
+     * be recorded in any event.
+     * 
+     * @param path              the audit path
+     * @return                  Returns <tt>true</tt> if there is at least one audit application
+     *                          registered to handle the given path.
+     * 
+     * @since 3.4                         
+     */
+    public boolean areAuditValuesRequired(String path);
     
     /**
      * Delete audit entries for the given application and time range

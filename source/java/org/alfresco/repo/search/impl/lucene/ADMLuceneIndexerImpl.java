@@ -900,9 +900,13 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
                 doc.add(new Field(attributeName + ".locale", locale.toString().toLowerCase(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
 
-                ContentReader reader = contentService.getReader(nodeRef, propertyName);
+                // Avoid handling (or even getting) a reader if (maxAtomicTransformationTime <= 0)
+                // ALF-5677: Extremely long launch of the Alfresco server with connector V1.2
+                boolean avoidReader = maxAtomicTransformationTime <= 0 && indexAtomicPropertiesOnly;
+                ContentReader reader = avoidReader ? null : contentService.getReader(nodeRef, propertyName);
                 if (reader != null && reader.exists())
                 {
+                    // We have a reader, so use it
                     boolean readerReady = true;
                     // transform if necessary (it is not a UTF-8 text document)
                     if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
@@ -984,6 +988,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         Reader multiReader = new MultiReader(prefix, isr);
                         doc.add(new Field(attributeName, multiReader, Field.TermVector.NO));
                     }
+                }
+                else if (avoidReader)
+                {
+                    // Reader was deliberately not used; process in the background
+                    wereAllAtomic = false;
                 }
                 else
                 // URL not present (null reader) or no content at the URL (file missing)

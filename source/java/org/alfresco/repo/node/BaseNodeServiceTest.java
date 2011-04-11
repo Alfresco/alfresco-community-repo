@@ -528,6 +528,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         QName checkType = nodeService.getType(childRef);
         assertEquals("Child node type incorrect", ContentModel.TYPE_CONTAINER, checkType);
     }
+
+    public void testCreateWithTooLongPathLocalname() throws Exception
+    {
+        try
+        {
+            ChildAssociationRef assocRef = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                    QName.createQName("Recognize that VSEPR theory states that nonbonded electrons (lone "
+                            + "pairs) exert strong electrostatic repulsive forces against the bonded pairs "
+                            + "of electrons and, as a result, the electron pairs arrange themselves as far "
+                            + "apart as possible in order to minimize the repulsive forces"),
+                    ContentModel.TYPE_CONTAINER);
+            fail("Expected too-long QName localname to have been kicked out as illegal argument.");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+    }
     
     /**
      * Tests node creation with a pre-determined {@link ContentModel#PROP_NODE_UUID uuid}.
@@ -1500,7 +1518,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
         catch (IllegalArgumentException e)
         {
-			fail("Null property values are allowed");
+            fail("Null property values are allowed");
         }
         // try setting null value as part of complete set
         try
@@ -2889,34 +2907,34 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static boolean behaviourExecuted = false;
     
     public void testAR1303() throws Exception
-    {	
-    	Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-    	props.put(ContentModel.PROP_NAME, "test.txt");
-    	
-    	NodeRef nodeRef = this.nodeService.createNode(
-    			this.rootNodeRef, 
-    			ContentModel.ASSOC_CHILDREN, 
-    			ContentModel.ASSOC_CHILDREN, 
-    			ContentModel.TYPE_CONTENT, 
-    			props).getChildRef();
-    	
-    	nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-    	
-    	nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
-    	nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
-    	
-    	JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");    	
-    	PolicyComponent policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-    	policyComponent.bindClassBehaviour(
-    			QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-    			ContentModel.ASPECT_TITLED, 
-    			behaviour);    	
-    	
-    	behaviourExecuted = false;
-    	
-    	// Update the title property and check that the behaviour has been fired
-    	nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
-    	assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        props.put(ContentModel.PROP_NAME, "test.txt");
+        
+        NodeRef nodeRef = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.ASSOC_CHILDREN, 
+                ContentModel.TYPE_CONTENT, 
+                props).getChildRef();
+        
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+        
+        nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
+        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
+        
+        JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");        
+        PolicyComponent policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+                ContentModel.ASPECT_TITLED, 
+                behaviour);        
+        
+        behaviourExecuted = false;
+        
+        // Update the title property and check that the behaviour has been fired
+        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
+        assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
     }
     
     public void onUpdateProperties(

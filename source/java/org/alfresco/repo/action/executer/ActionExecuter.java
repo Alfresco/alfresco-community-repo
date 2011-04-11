@@ -33,11 +33,27 @@ public interface ActionExecuter
 	public static String PARAM_RESULT = "result";
 	
 	/**
+	 * Get the queueName that will execute this action
+	 */
+	String getQueueName();
+	
+	/**
+	 * Indicates whether a lock on the actioned upon node reference should be ignored or 
+	 * not.  If true any lock is ignored and execution continues reguardless, otherwise the
+	 * lock is checked and the action is not executed (ignored) if the actioned upon node reference
+	 * is locked in any way.  By default locks will be ignored.
+	 * 
+	 * @since 3.3.4
+	 * @return	boolean	true if ignore lock, false otherwise.
+	 */
+	boolean getIgnoreLock();
+	
+	/**
 	 * Get the action definition for the action
 	 * 
 	 * @return  the action definition
 	 */
-	public ActionDefinition getActionDefinition();
+	ActionDefinition getActionDefinition();
 	
     /**
      * Execute the action executer
@@ -45,13 +61,7 @@ public interface ActionExecuter
      * @param action				the action
      * @param actionedUponNodeRef	the actioned upon node reference
      */
-    public void execute(
-			Action action,
-            NodeRef actionedUponNodeRef);
-    
-	/**
-	 * Get the queueName that will execute this action
-	 */
-	String getQueueName();
+    void execute(Action action,
+                 NodeRef actionedUponNodeRef);
 
 }

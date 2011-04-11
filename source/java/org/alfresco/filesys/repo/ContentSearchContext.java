@@ -28,8 +28,10 @@ import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -219,12 +221,13 @@ public class ContentSearchContext extends SearchContext
         	// Loop until we get a valid node, might have been deleted since the initial folder search
 
         	ContentFileInfo nextInfo = null;
+        	NodeRef nextNodeRef = null;
         	
         	while ( nextInfo == null && index < results.size())
         	{
         		//	Get the next node from the search
         	
-        		NodeRef nextNodeRef = results.get(index);
+        		nextNodeRef = results.get(index);
             
         		try {
 
@@ -257,7 +260,10 @@ public class ContentSearchContext extends SearchContext
         	StringBuilder pathStr = new StringBuilder( m_relPath);
         	pathStr.append ( info.getFileName());
         	
-        	info.setFileId( pathStr.toString().hashCode());
+            // Set the file id
+        	  
+            long id = DefaultTypeConverter.INSTANCE.convert(Long.class, cifsHelper.getNodeService().getProperty(nextNodeRef, ContentModel.PROP_NODE_DBID));
+            info.setFileId((int) (id & 0xFFFFFFFFL));
 
         	// Check if this is a link node
         	

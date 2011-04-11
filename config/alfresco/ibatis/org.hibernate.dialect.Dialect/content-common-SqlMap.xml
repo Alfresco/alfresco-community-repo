@@ -15,7 +15,7 @@
     <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
     <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
     <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
-    <typeAlias alias="ContentClean" type="org.alfresco.repo.domain.contentclean.ContentCleanEntity"/>
+    <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
     <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
 
     <!--                -->
@@ -186,7 +186,7 @@
     </select>
     
     <!-- Get content URL entities that were orphaned before a give time -->
-    <select id="select_ContentUrlsOrphaned" parameterClass="ContentUrl" resultMap="result_ContentUrl">
+    <select id="select_ContentUrlsOrphaned" parameterClass="ContentUrlOrphanQuery" resultMap="result_ContentUrl">
         <![CDATA[
         select
             cu.*
@@ -195,7 +195,9 @@
             left outer join alf_content_data cd on (cd.content_url_id = cu.id)
         where
             cd.id is null and
-            cu.orphan_time <= #orphanTime# and cu.orphan_time is not null
+            cu.orphan_time > 0 and
+            cu.orphan_time < #maxOrphanTimeExclusive# and
+            cu.orphan_time is not null
         ]]>
     </select>
     

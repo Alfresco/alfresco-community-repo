@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -32,6 +33,9 @@ import org.alfresco.service.namespace.QName;
  */
 public interface NodeArchiveService
 {
+    /** Static 'sys:archivedItem' path for all archived nodes. */
+    public static final QName QNAME_ARCHIVED_ITEM = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "archivedItem");
+    
     /**
      * Get the parent node that holds all nodes archived from the given store.
      * 
@@ -124,6 +128,8 @@ public interface NodeArchiveService
      * 
      * @param originalStoreRef the store that the items originally came from
      * @return Returns the results of the each attempted restore operation
+     * 
+     * @deprecated              In 3.4: no longer supported as it seldom works due to missing parents
      */
     public List<RestoreNodeReport> restoreAllArchivedNodes(StoreRef originalStoreRef);
     
@@ -141,6 +147,8 @@ public interface NodeArchiveService
      * @param assocQName the name of the primary associations to be created,
      *      or <tt>null</tt> to use the original association names
      * @return Returns the results of the each attempted restore operation
+     * 
+     * @deprecated              In 3.4: no longer supported as it seldom works due to missing parents
      */
     public List<RestoreNodeReport> restoreAllArchivedNodes(
             StoreRef originalStoreRef,

@@ -19,7 +19,6 @@
 package org.alfresco.repo.security.sync;
 
 import java.io.Serializable;
-import java.sql.BatchUpdateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,10 +49,11 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -70,6 +70,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
@@ -1063,7 +1064,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 }
             }
 
-            private void maintainAssociations(String authorityName) throws BatchUpdateException
+            private void maintainAssociations(String authorityName)
             {
                 boolean isPerson = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER;
                 Set<String> parents = isPerson ? this.personParentAssocsToCreate.get(authorityName)
@@ -1089,9 +1090,13 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     {
                         // Let's force a transaction retry if a parent doesn't exist. It may be because we are
                         // waiting for another worker thread to create it
-                        BatchUpdateException e1 = new BatchUpdateException();
-                        e1.initCause(e);
-                        throw e1;
+                        throw new ConcurrencyFailureException("Forcing batch retry for unknown authority", e);
+                    }
+                    catch (InvalidNodeRefException e)
+                    {
+                        // Another thread may have written the node, but it is not visible to this transaction
+                        // See: ALF-5471: 'authorityMigration' patch can report 'Node does not exist'
+                        throw new ConcurrencyFailureException("Forcing batch retry for invalid node", e);
                     }
                 }
                 Set<String> parentsToDelete = isPerson ? this.personParentAssocsToDelete.get(authorityName)

@@ -19,6 +19,7 @@
 package org.alfresco.repo.version;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -586,5 +588,100 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     public void testGetPaths()
     {
         List<Path> paths = this.versionStoreNodeService.getPaths(this.dummyNodeRef, false);
+    }
+    
+    /**
+     * Tests that we can store and retrieve unicode properties
+     *  and association names.
+     * If there's something wrong with how we're setting up the
+     *  database or database connection WRT unicode, this is a
+     *  test that'll hopefully break in testing and alert us!
+     */
+    public void testUnicodeNamesAndProperties()
+    {
+        // Get our cache objects
+        List<TransactionalCache> cachesToClear = new ArrayList<TransactionalCache>(); 
+        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("propertyValueCache") );
+        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("node.nodesCache") );
+        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("node.propertiesCache") );
+        
+        
+        // First up, try with a simple English name+properties
+        String engProp = "This is a property in English";
+        QName engQName = QName.createQName("NameSpace", "In English");
+        NodeRef engNode = nodeService.createNode(
+                this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                engQName, ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.setProperty(engNode, ContentModel.PROP_NAME, engProp);
+        
+        // Check they exist and are correct
+        assertEquals(engProp, nodeService.getProperty(engNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, engQName).size());
+        assertEquals(engNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, engProp));
+        
+        
+        // Now French
+        String frProp = "C'est une propri\u00e9t\u00e9 en fran\u00e7ais"; // C'est une propriété en français
+        QName frQName = QName.createQName("NameSpace", "En Fran\u00e7ais"); // En Français
+        NodeRef frNode = nodeService.createNode(
+                this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                frQName, ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.setProperty(frNode, ContentModel.PROP_NAME, frProp);
+        
+        assertEquals(frProp, nodeService.getProperty(frNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, frQName).size());
+        assertEquals(frNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, frProp));
+        
+        
+        // Zap the cache and re-check
+        // (If the DB is broken but the cache works, then the above
+        //  tests could pass even in the face of a problem)
+        for(TransactionalCache tc : cachesToClear) tc.clear();
+        assertEquals(frProp, nodeService.getProperty(frNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, frQName).size());
+        assertEquals(frNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, frProp));
+        
+        
+        // Next Spanish
+        String esProp = "Esta es una propiedad en Espa\u00f1ol"; // Esta es una propiedad en Español
+        QName esQName = QName.createQName("NameSpace", "En Espa\u00f1ol"); // En Español
+        NodeRef esNode = nodeService.createNode(
+                this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                esQName, ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.setProperty(esNode, ContentModel.PROP_NAME, esProp);
+        
+        assertEquals(esProp, nodeService.getProperty(esNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, esQName).size());
+        assertEquals(esNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, esProp));
+        
+        
+        // Zap cache and re-test the Spanish
+        for(TransactionalCache tc : cachesToClear) tc.clear();
+        assertEquals(esProp, nodeService.getProperty(esNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, esQName).size());
+        assertEquals(esNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, esProp));
+
+        
+        // Finally Japanese
+        String jpProp = "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f\u3060\u3055\u3044\u3002"; //  をクリックしてください。
+        QName jpQName = QName.createQName("NameSpace", "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f"); //  をクリックしてく
+        NodeRef jpNode = nodeService.createNode(
+                this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                jpQName, ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.setProperty(jpNode, ContentModel.PROP_NAME, jpProp);
+        
+        assertEquals(jpProp, nodeService.getProperty(jpNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, jpQName).size());
+        assertEquals(jpNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, jpProp));
+        
+        // Zap the cache and check the Japanese
+        for(TransactionalCache tc : cachesToClear) tc.clear();
+        assertEquals(jpProp, nodeService.getProperty(jpNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, jpQName).size());
+        assertEquals(jpNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, jpProp));
     }
 }

@@ -136,6 +136,16 @@ public class AuditComponentTest extends TestCase
         // Just here to fail if the basic startup fails
     }
     
+    public void testAreAuditValuesRequired()
+    {
+        boolean auditRequiredAtAll = auditComponent.areAuditValuesRequired();
+        assertTrue("Auditing should be enabled for this test", auditRequiredAtAll);
+        boolean auditRequiredForBogus = auditComponent.areAuditValuesRequired("bogus");
+        assertFalse("Path 'bogus' should not have any audit associated with it.", auditRequiredForBogus);
+        boolean auditRequiredForTest = auditComponent.areAuditValuesRequired("/test");
+        assertTrue("'test' is recording audit values", auditRequiredForTest);
+    }
+    
     public void testAuditWithBadPath() throws Exception
     {
         // Should start an appropriate txn

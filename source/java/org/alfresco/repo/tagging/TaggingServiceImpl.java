@@ -43,6 +43,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
@@ -884,23 +886,44 @@ public class TaggingServiceImpl implements TaggingService,
      * @param tagScopes    list of tag scopes
      * @param firstOnly    true => only return first tag scope that is found
      */
-    private void getTagScopes(NodeRef nodeRef, List<NodeRef> tagScopes, boolean firstOnly)
+    private void getTagScopes(final NodeRef nodeRef, List<NodeRef> tagScopes, boolean firstOnly)
     {
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
+    	Boolean hasAspect = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+    	{
+			@Override
+			public Boolean doWork() throws Exception 
+			{
+				return new Boolean(nodeService.hasAspect(nodeRef,  ContentModel.ASPECT_TAGSCOPE));
+			}
+		}, AuthenticationUtil.getSystemUserName());
+    	
+        if (Boolean.TRUE.equals(hasAspect) == true)
         {
             tagScopes.add(nodeRef);
             if (firstOnly)
+            {
                 return;
+            }
         }
         
-        ChildAssociationRef assoc = this.nodeService.getPrimaryParent(nodeRef);
-        if (assoc != null)
+        NodeRef parent = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+    	{
+			@Override
+			public NodeRef doWork() throws Exception 
+			{
+				NodeRef result = null;
+				ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+		        if (assoc != null)
+		        {
+		            result = assoc.getParentRef();                          
+		        }
+		        return result;
+			}
+		}, AuthenticationUtil.getSystemUserName());
+        
+        if (parent != null)
         {
-            NodeRef parent = assoc.getParentRef();
-            if (parent != null)
-            {
-                getTagScopes(parent, tagScopes, firstOnly);
-            }
+        	getTagScopes(parent, tagScopes, firstOnly);            
         }
     }
 

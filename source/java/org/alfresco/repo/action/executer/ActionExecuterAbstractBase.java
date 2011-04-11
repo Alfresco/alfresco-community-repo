@@ -22,11 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.action.ActionDefinitionImpl;
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Rule action executor abstract base.
@@ -35,25 +40,26 @@ import org.alfresco.service.namespace.QName;
  */
 public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstractBase implements ActionExecuter
 {
-	/**
-	 * Action definition
-	 */
+	/** Action definition */
 	protected ActionDefinition actionDefinition;
 	
-	/**
-	 * Indicated whether the action is public or internal
-	 */
+	/** Lock service */
+	private LockService lockService;
+	
+	/** Indicated whether the action is public or internal */
 	protected boolean publicAction = true;
     
     /** List of types and aspects for which this action is applicable */
     protected List<QName> applicableTypes = new ArrayList<QName>();
     
-    /**
-     * 
-     */
+    /**  Default queue name */
     private String queueName = "";
     
-
+    /** Indicates whether the action should be ignored if the actioned upon node is locked */
+    private boolean ignoreLock = true;
+    
+    /** Logger */
+    private static Log logger = LogFactory.getLog(ActionExecuterAbstractBase.class);
 	
 	/**
 	 * Init method	 
@@ -64,6 +70,16 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 		{
 			this.runtimeActionService.registerActionExecuter(this);
 		}
+	}
+	
+	/**
+	 * Sets the lock service 
+	 * 
+	 * @param lockService	lock service
+	 */
+	public void setLockService(LockService lockService) 
+	{
+		this.lockService = lockService;
 	}
 	
 	/**
@@ -87,6 +103,23 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         {
             this.applicableTypes.add(QName.createQName(type));
         }
+    }
+    
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuter#getIgnoreLock()
+     */
+    public boolean getIgnoreLock()
+    {
+    	return this.ignoreLock;
+    }
+    
+    /**
+     * Set the ignore lock value.
+     * @param ignoreLock	true if lock should be ignored on actioned upon node, false otherwise
+     */
+    public void setIgnoreLock(boolean ignoreLock)
+    {
+    	this.ignoreLock = ignoreLock;
     }
 	
 	/**
@@ -129,8 +162,34 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         // Check the mandatory properties
         checkMandatoryProperties(action, getActionDefinition());
         
-        // Execute the implementation
-        executeImpl(action, actionedUponNodeRef);        
+        // Only execute the action if this action is read only or the actioned upon node reference doesn't
+        // have a lock applied for this user.
+        if (ignoreLock == true ||
+        	hasLock(actionedUponNodeRef) == false)
+        {        
+        	// Execute the implementation
+        	executeImpl(action, actionedUponNodeRef);
+        }
+        else
+        {
+        	if (logger.isWarnEnabled() == true)
+        	{
+        		logger.warn("Action (" + action.getActionDefinitionName() + 
+        				     ") ignored because actioned upon node (" + actionedUponNodeRef.toString() + 
+        				     ") is locked.");
+        	}
+        }
+    }
+    
+    /**
+     * Indicates whether a node has a lock.
+     * 
+     * @param nodeRef	node reference
+     * @return boolean	true if node has lock, false otherwise
+     */
+    private boolean hasLock(NodeRef nodeRef)
+    {
+    	return (lockService.getLockStatus(nodeRef) != LockStatus.NO_LOCK);
     }
 	
     /**

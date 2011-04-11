@@ -51,7 +51,7 @@ public class LuceneAlfrescoSqlQueryLanguage implements LuceneQueryLanguageSPI
         this.cmisQueryService = cmisQueryService;
     }
 
-    public ResultSet executQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
         String sql = searchParameters.getQuery();
 

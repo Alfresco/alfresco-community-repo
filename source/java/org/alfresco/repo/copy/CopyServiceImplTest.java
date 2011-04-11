@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
@@ -38,6 +39,8 @@ import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -56,6 +59,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -74,12 +81,16 @@ public class CopyServiceImplTest extends BaseSpringTest
      * Services used by the tests
      */
     private NodeService nodeService;
+    private NodeService publicNodeService;
     private CopyService copyService;
     private DictionaryDAO dictionaryDAO;
     private ContentService contentService;
     private RuleService ruleService;
     private ActionService actionService;
+    private PermissionService permissionService;
+    private PersonService personService;
     private AuthenticationComponent authenticationComponent;
+    private MutableAuthenticationService authenticationService;
     
     /**
      * Data used by the tests
@@ -125,6 +136,9 @@ public class CopyServiceImplTest extends BaseSpringTest
     
     private static final ContentData CONTENT_DATA_TEXT = new ContentData(null, "text/plain", 0L, "UTF-8");
     
+    private static final String USER_1 = "User1";
+    private static final String USER_2 = "User2";
+    
     /**
      * Test content
      */
@@ -149,11 +163,15 @@ public class CopyServiceImplTest extends BaseSpringTest
     {
         // Set the services
         this.nodeService = (NodeService)this.applicationContext.getBean("dbNodeService");
+        this.publicNodeService = (NodeService)this.applicationContext.getBean("NodeService");
         this.copyService = (CopyService)this.applicationContext.getBean("copyService");
         this.contentService = (ContentService)this.applicationContext.getBean("contentService");
         this.ruleService = (RuleService)this.applicationContext.getBean("ruleService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
+        this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
+        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -232,6 +250,29 @@ public class CopyServiceImplTest extends BaseSpringTest
                 TEST_TYPE_QNAME,
                 destinationProps);
         this.destinationNodeRef = temp5.getChildRef();
+        
+        // Create two users, for use as part of
+        //  the permission related tests
+        authenticationService.createAuthentication(USER_1, "PWD".toCharArray());
+        authenticationService.createAuthentication(USER_2, "PWD".toCharArray());
+        
+        PropertyMap personProperties = new PropertyMap();
+        personProperties.put(ContentModel.PROP_USERNAME, USER_1);
+        personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_1);
+        personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
+        personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
+        personProperties.put(ContentModel.PROP_EMAIL, USER_1+"@example.com");
+        personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+        personService.createPerson(personProperties);
+        
+        personProperties = new PropertyMap();
+        personProperties.put(ContentModel.PROP_USERNAME, USER_2);
+        personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_2);
+        personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
+        personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
+        personProperties.put(ContentModel.PROP_EMAIL, USER_2+"@example.com");
+        personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+        personService.createPerson(personProperties);
     }
     
     @Override
@@ -772,8 +813,135 @@ public class CopyServiceImplTest extends BaseSpringTest
         }
    }
     
-    
-    
+   /**
+    * Creates some content as one user, then as another checks:
+    *  * If you don't have read permissions to the source you can't copy
+    *  * If you don't have write permissions to the target you can't copy
+    *  * If you do, you can copy just fine
+    */
+   public void testCopyUserPermissions() throws Exception
+   {
+       String nodeTitle = "Test Title String";
+       
+       // Create a node under the source
+       permissionService.setPermission(sourceNodeRef, USER_1, PermissionService.EDITOR, true);
+       permissionService.setPermission(targetNodeRef, USER_1, PermissionService.CONTRIBUTOR, true);
+       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
+       NodeRef toCopy = nodeService.createNode(
+               sourceNodeRef, ContentModel.ASSOC_CONTAINS, 
+               QName.createQName("content"), ContentModel.TYPE_CONTENT).getChildRef();
+       nodeService.setProperty(toCopy, ContentModel.PROP_TITLE, nodeTitle);
+       
+       // Check we can't copy it
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+       try {
+           copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+       } catch(AccessDeniedException e) {}
+       
+       // Allow the read, but the destination won't accept it
+       this.authenticationComponent.setSystemUserAsCurrentUser();
+       permissionService.setPermission(sourceNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, false);
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+       
+       try {
+           copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+       } catch(AccessDeniedException e) {}
+       
+       
+       // Now allow on the destination, should go through
+       this.authenticationComponent.setSystemUserAsCurrentUser();
+       permissionService.setPermission(targetNodeRef, USER_2, PermissionService.CONTRIBUTOR, true);
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+       
+       NodeRef copied = copyService.copy(toCopy, targetNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("NewCopy"));
+       
+       // Check it got there
+       assertEquals(true, nodeService.exists(copied));
+       assertEquals(
+               nodeTitle, 
+               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue()
+       );
+       
+       
+       // Check the owners
+       // (The new node should be owned by the person who did the copy)
+       assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_CREATOR));
+       assertEquals(USER_1, nodeService.getProperty(toCopy, ContentModel.PROP_MODIFIER));
+       assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_CREATOR));
+       assertEquals(USER_2, nodeService.getProperty(copied, ContentModel.PROP_MODIFIER));
+       
+       
+       // Check the permissions on the source and target
+       
+       // On the source, 1 is editor, 2 is contributor
+       Set<AccessPermission> perms = permissionService.getAllSetPermissions(toCopy);
+       boolean done1 = false;
+       boolean done2 = false;
+       for(AccessPermission perm : perms)
+       {
+           if(perm.getAuthority().equals(USER_1))
+           {
+               done1 = true;
+               assertEquals(PermissionService.EDITOR, perm.getPermission());
+           }
+           if(perm.getAuthority().equals(USER_2))
+           {
+               done2 = true;
+               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+           }
+       }
+       assertEquals(true, done1);
+       assertEquals(true, done2);
+       
+       // On the target, will have inherited from the folder, so both are contributors
+       perms = permissionService.getAllSetPermissions(copied);
+       done1 = false;
+       done2 = false;
+       for(AccessPermission perm : perms)
+       {
+           if(perm.getAuthority().equals(USER_1))
+           {
+               done1 = true;
+               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+           }
+           if(perm.getAuthority().equals(USER_2))
+           {
+               done2 = true;
+               assertEquals(PermissionService.CONTRIBUTOR, perm.getPermission());
+           }
+       }       
+       assertEquals(true, done1);
+       assertEquals(true, done2);
+
+       
+       // User 2 should be able to edit the new node
+       // User 1 should be able to edit the old node
+       // They shouldn't be allowed to edit each others
+       String titleToFailToSet = "Set Title";
+       String description = "Set Description";
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_1);
+       try {
+           publicNodeService.setProperty(copied, ContentModel.PROP_TITLE, titleToFailToSet);
+           fail("User 1 should no longer have write permissions");
+       } catch(AccessDeniedException e) {}
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_2);
+       publicNodeService.setProperty(copied, ContentModel.PROP_DESCRIPTION, description);
+       
+       assertEquals(
+               nodeTitle, 
+               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_TITLE)).getDefaultValue()
+       );
+       assertEquals(
+               description, 
+               ((MLText)nodeService.getProperty(copied, ContentModel.PROP_DESCRIPTION)).getDefaultValue()
+       );
+   }
+   
     /**
      * Check that the copied node contains the state we are expecting
      * 

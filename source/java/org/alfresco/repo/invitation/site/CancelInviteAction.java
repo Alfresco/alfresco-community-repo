@@ -57,15 +57,14 @@ public class CancelInviteAction extends JBPMSpringActionHandler
     {
         ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
         mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
-        personService = (PersonService) services.getPersonService();
-        workflowService = (WorkflowService) services.getWorkflowService();
-        siteService = (SiteService) services.getSiteService();
+        personService = services.getPersonService();
+        workflowService = services.getWorkflowService();
+        siteService = services.getSiteService();
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
+    /**
+     * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         // get the invitee user name and site short name variables off the execution context

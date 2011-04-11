@@ -152,6 +152,11 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
     {
         AVMNodeEntity rootNodeEntity = AVMDAOs.Instance().newAVMNodeDAO.getNode(rootNodeId);
         
+        if (rootNodeEntity == null)
+        {
+            return null;
+        }
+        
         AVMNode rootNode = null;
         if (rootNodeEntity.getStoreNewId() != null)
         {

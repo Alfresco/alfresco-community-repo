@@ -84,6 +84,9 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     int percentComplete = 0;
     /** start time * */
     long startTime;
+    
+    // Does the patch require an enclosing transaction?
+    private boolean requiresTransaction = true;
 
     /** the service to register ourselves with */
     private PatchService patchService;
@@ -203,6 +206,16 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         return fixesFromSchema;
     }
 
+    public void setRequiresTransaction(boolean requiresTransaction)
+    {
+    	this.requiresTransaction = requiresTransaction;
+    }
+    
+    public boolean requiresTransaction()
+    {
+    	return requiresTransaction;
+    }
+    
     /**
      * Set the smallest schema number that this patch may be applied to.
      * 
@@ -380,6 +393,37 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         }
     }
 
+    private String applyImpl() throws Exception
+    {
+        // downgrade integrity checking
+        IntegrityChecker.setWarnInTransaction();
+
+        String report = applyInternal();
+        
+    	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
+        {
+        	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
+            for (Tenant tenant : tenants)
+            {          
+            	String tenantDomain = tenant.getTenantDomain();
+            	String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
+                {
+            		public String doWork() throws Exception
+                    {
+            			return applyInternal();
+                    }
+                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            	
+            	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
+            }
+            
+            return report;
+        }
+
+        // done?
+    	return report;
+    }
+
     /**
      * Sets up the transaction and ensures thread-safety.
      * 
@@ -394,55 +438,38 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         }
         // check properties
         checkProperties();
-        // execute in a transaction
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("\n" + "Patch will be applied: \n" + "   patch: " + this);
+        }
+
         try
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("\n" + "Patch will be applied: \n" + "   patch: " + this);
-            }
-            AuthenticationUtil.RunAsWork<String> authorisedPathWork = new AuthenticationUtil.RunAsWork<String>()
+            AuthenticationUtil.RunAsWork<String> applyPatchWork = new AuthenticationUtil.RunAsWork<String>()
             {
                 public String doWork() throws Exception
                 {
-                    RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
-                    {
-                        public String execute() throws Exception
-                        {
-                            // downgrade integrity checking
-                            IntegrityChecker.setWarnInTransaction();
-
-                            String report = applyInternal();
-                            
-                        	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
-                            {
-                            	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
-                                for (Tenant tenant : tenants)
-                                {          
-                                	String tenantDomain = tenant.getTenantDomain();
-                                	String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
-                                    {
-                                		public String doWork() throws Exception
-                                        {
-                                			return applyInternal();
-                                        }
-                                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
-                                	
-                                	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
-                                }
-                                
-                                return report;
-                            }
-
-	                        // done
-	                        return report;
-                        }
-                    };
-                    return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork);
+                	if(requiresTransaction())
+                	{
+                        // execute in a transaction
+                		RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
+	                    {
+	                        public String execute() throws Exception
+	                        {
+	                        	return applyImpl();
+	                        }
+	                    };
+	                    return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
+                	}
+                	else
+                	{
+                		return applyImpl();
+                	}
                 }
             };
             startTime = System.currentTimeMillis();
-            String report = AuthenticationUtil.runAs(authorisedPathWork, AuthenticationUtil.getSystemUserName());
+            String report = AuthenticationUtil.runAs(applyPatchWork, AuthenticationUtil.getSystemUserName());
             // the patch was successfully applied
             applied = true;
             // done

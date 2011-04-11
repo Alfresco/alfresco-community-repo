@@ -367,7 +367,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             return null;
         }
 
-        if(isUnfitered(returnedObject))
+        if(isUnfiltered(returnedObject))
         {
             return returnedObject;
         }
@@ -402,8 +402,15 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    private boolean isUnfitered(NodeRef returnedObject)
+    private boolean isUnfiltered(NodeRef returnedObject)
     {
+        if (returnedObject == null || !nodeService.exists(returnedObject))
+        {
+            // Standard practice for non-existent NodeRef is to pass it as unfiltered.
+            // See PermissionServiceImpl.hasPermission
+            // See ALF-5559: Permission interceptors can fail if Lucene returns invalid NodeRefs
+            return true;
+        }
         if(unfilteredForClassQNames.size() > 0)
         {
             QName typeQName = nodeService.getType(returnedObject);
@@ -489,7 +496,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 testNodeRef = ((ChildAssociationRef) returnedObject).getParentRef();
             }
 
-            if(isUnfitered(testNodeRef))
+            if(isUnfiltered(testNodeRef))
             {
                 continue;
             }
@@ -748,7 +755,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
                 }
 
-                if(isUnfitered(testNodeRef))
+                if(isUnfiltered(testNodeRef))
                 {
                     continue;
                 }
@@ -906,7 +913,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                 }
 
-                if(isUnfitered(testNodeRef))
+                if(isUnfiltered(testNodeRef))
                 {
                     continue;
                 }
@@ -1014,7 +1021,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + current.getClass().getName());
                 }
 
-                if(isUnfitered(testNodeRef))
+                if(isUnfiltered(testNodeRef))
                 {
                     continue;
                 }

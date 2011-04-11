@@ -76,7 +76,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     private int workQueueSize;
     private RejectedExecutionHandler rejectedExecutionHandler;
     /** the instance that will be given out by the factory */
-    private ThreadPoolExecutor instance;
+    private DynamicallySizedThreadPoolExecutor instance;
     
     /**
      * Constructor setting default properties:
@@ -184,16 +184,20 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         	threadFactory.setNamePrefix(poolName);
         }
         
+        BlockingQueue<Runnable> workQueue;
         if (workQueueSize < 0)
         {
-            // Setting workQueueSize to MAX_VALUE prevents the pool growing and shrinking. See JavaDoc
-            // workQueueSize = Integer.MAX_VALUE;
-            workQueueSize = 1000;
+            // We can have an unlimited queue, as we have a sensible thread pool!
+            workQueue = new LinkedBlockingQueue<Runnable>();
         }
-        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(workQueueSize);
+        else
+        {
+            // Use an array one for consistent performance on a small queue size
+            workQueue = new ArrayBlockingQueue<Runnable>(workQueueSize);
+        }
         
         // construct the instance
-        instance = new ThreadPoolExecutor(
+        instance = new DynamicallySizedThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
@@ -228,7 +232,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
      */
     public Class getObjectType()
     {
-        return ThreadPoolExecutor.class;
+        return DynamicallySizedThreadPoolExecutor.class;
     }
     
     public String getPoolName() 

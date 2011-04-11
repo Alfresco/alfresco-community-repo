@@ -37,6 +37,7 @@ import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -309,7 +310,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         switch (sd.getSortType())
                         {
                         case FIELD:
-                            Locale sortLocale = null;
+                            Locale sortLocale = getLocale(searchParameters);
                             String field = sd.getField();
                             if (field.startsWith("@"))
                             {
@@ -345,64 +346,37 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                     {
                                         throw new SearcherException("Order on content properties is not curently supported");
                                     }
-                                    else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-                                            || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+                                    
+                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
                                     {
-                                        List<Locale> locales = searchParameters.getLocales();
-                                        if (((locales == null) || (locales.size() == 0)))
+                                        if(propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
                                         {
-                                            locales = Collections.singletonList(I18NUtil.getLocale());
+                                            // use field as is
                                         }
-
-                                        if (locales.size() > 1)
+                                        else
                                         {
-                                            throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
-                                        }
 
-                                        sortLocale = locales.get(0);
-                                        // find best field match
-
-                                        MLAnalysisMode analysisMode = getLuceneConfig().getDefaultMLSearchAnalysisMode();
-                                        HashSet<String> allowableLocales = new HashSet<String>();
-                                        for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
-                                        {
-                                            allowableLocales.add(l.toString());
-                                        }
-
-                                        String sortField = field;
-
-                                        for (Object current : searcher.getReader().getFieldNames(FieldOption.INDEXED))
-                                        {
-                                            String currentString = (String) current;
-                                            if (currentString.startsWith(field) && currentString.endsWith(".sort"))
+                                            String noLocalField = field+".no_locale";
+                                            for (Object current : searcher.getIndexReader().getFieldNames(FieldOption.INDEXED))
                                             {
-                                                String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
-                                                if (allowableLocales.contains(fieldLocale))
+                                                String currentString = (String) current;
+                                                if (currentString.equals(noLocalField))
                                                 {
-                                                    if (fieldLocale.equals(sortLocale.toString()))
-                                                    {
-                                                        sortField = currentString;
-                                                        break;
-                                                    }
-                                                    else if (sortLocale.toString().startsWith(fieldLocale))
-                                                    {
-                                                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
-                                                        {
-                                                            sortField = currentString;
-                                                        }
-                                                    }
-                                                    else if (fieldLocale.startsWith(sortLocale.toString()))
-                                                    {
-                                                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
-                                                        {
-                                                            sortField = currentString;
-                                                        }
-                                                    }
+                                                    field = noLocalField;
                                                 }
                                             }
+                                            
+                                            if(!field.endsWith(".no_locale"))
+                                            {
+                                                field = findSortField(searchParameters, searcher, field, sortLocale);
+                                            }
                                         }
-
-                                        field = sortField;
+                                    }
+                                    
+                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                                    {
+                                      
+                                        field = findSortField(searchParameters, searcher, field, sortLocale);
 
                                     }
                                     else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
@@ -508,7 +482,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
             if (language != null)
             {
-                return language.executQuery(searchParameters, this);
+                return language.executeQuery(searchParameters, this);
             }
             else
             {
@@ -518,6 +492,69 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     }
 
 
+    private Locale getLocale(SearchParameters searchParameters)
+    {
+        List<Locale> locales = searchParameters.getLocales();
+        if (((locales == null) || (locales.size() == 0)))
+        {
+            locales = Collections.singletonList(I18NUtil.getLocale());
+        }
+
+        if (locales.size() > 1)
+        {
+            throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
+        }
+
+        Locale sortLocale = locales.get(0);
+        return sortLocale;
+    }
+    
+    private String findSortField(SearchParameters searchParameters, ClosingIndexSearcher searcher, String field, Locale sortLocale)
+    {
+        // find best field match
+
+        MLAnalysisMode analysisMode = getLuceneConfig().getDefaultMLSearchAnalysisMode();
+        HashSet<String> allowableLocales = new HashSet<String>();
+        for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
+        {
+            allowableLocales.add(l.toString());
+        }
+
+        String sortField = field;
+
+        for (Object current : searcher.getReader().getFieldNames(FieldOption.INDEXED))
+        {
+            String currentString = (String) current;
+            if (currentString.startsWith(field) && currentString.endsWith(".sort"))
+            {
+                String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
+                if (allowableLocales.contains(fieldLocale))
+                {
+                    if (fieldLocale.equals(sortLocale.toString()))
+                    {
+                        sortField = currentString;
+                        break;
+                    }
+                    else if (sortLocale.toString().startsWith(fieldLocale))
+                    {
+                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                        {
+                            sortField = currentString;
+                        }
+                    }
+                    else if (fieldLocale.startsWith(sortLocale.toString()))
+                    {
+                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                        {
+                            sortField = currentString;
+                        }
+                    }
+                }
+            }
+        }
+        return sortField;
+
+    }
 
     public ResultSet query(StoreRef store, String language, String query)
     {

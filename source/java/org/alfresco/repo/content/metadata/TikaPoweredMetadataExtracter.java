@@ -35,6 +35,7 @@ import java.util.TimeZone;
 
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.io.TikaInputStream;
@@ -206,7 +207,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
           if(reader instanceof FileContentReader) {
              return TikaInputStream.get( ((FileContentReader)reader).getFile() );
           } else {
-             File tmpFile = File.createTempFile("tika", "tmp");
+             File tmpFile = TempFileProvider.createTempFile("tika", "tmp");
              reader.getContent(tmpFile);
              return TikaInputStream.get(tmpFile);
           }

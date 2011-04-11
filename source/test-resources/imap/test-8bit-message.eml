@@ -1,0 +1,11 @@
+Message-ID: <4CD197B5.700001@example.foo>
+Date: Wed, 03 Nov 2010 17:11:17 +0000
+From: Test Sender <test.sender@example.foo>
+MIME-Version: 1.0
+X-Alfresco-Unique: test8bit
+To: test.recipient@example.foo
+Subject: Clara cet =?ISO-8859-1?Q?=E9t=E9_l=E0_3?=
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Clara cet été là 3

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -590,5 +591,44 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
+    }
+    
+    public void testalfrescoCheckoutDoesntModifyNode()
+    {
+        String adminUser = AuthenticationUtil.getAdminUserName();
+        AuthenticationUtil.setFullyAuthenticatedUser(adminUser);
+        
+        Serializable initModifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        Serializable initModifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertFalse("The initial modifier should not be Admin!", adminUser.equals(initModifieer));
+        
+        NodeRef copy = cociService.checkout(
+                nodeRef, 
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+
+        Serializable modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("Checkout should not cause the modifier to change!", initModifieer, modifieer);
+        Serializable modifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertEquals("Checkout should not cause the modified date to change!", initModifieed, modifieed);
+
+        cociService.cancelCheckout(copy);
+        modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("Checkout should not cause the modifier to change!", initModifieer, modifieer);
+        modifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertEquals("Checkout should not cause the modified date to change!", initModifieed, modifieed);
+        
+        copy = cociService.checkout(
+                nodeRef, 
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");      
+        cociService.checkin(copy, versionProperties);
+        
+        modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("The modifier should change to Admin after checkin!", adminUser, modifieer);
     }
 }

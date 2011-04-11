@@ -114,9 +114,27 @@ function testALF3733()
 //	renditionDef.execute(testSourceNode);
 }
 
+function testALF4465()
+{
+    var renditionDefName = "cm:testPdfRendition";
+    var renderingEngineName = "reformat";
+            
+    var renditionDef = renditionService.createRenditionDefinition(renditionDefName, renderingEngineName);
+                    
+    renditionDef.parameters['mime-type'] = 'application/pdf'; 
+    
+    // Read them back to check
+    test.assertNotNull(renditionDef.parameters, "renditionDef.parameters was null");
+    test.assertEquals('application/pdf', renditionDef.parameters['mime-type']);
+
+    var rendition = renditionService.render(testDocNode, renditionDef);
+    test.assertNotNull(rendition, "rendition was null");
+//  renditionDef.execute(testSourceNode);
+}
 
 // Execute tests
 testRenderNodeUsingRenditionDefinitionNames();
 testGetRenditions();
 testCreateRenditionDefinitionAndRender();
 testALF3733();
+testALF4465();

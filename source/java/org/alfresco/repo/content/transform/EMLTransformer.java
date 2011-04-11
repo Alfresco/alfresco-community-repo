@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
@@ -61,30 +62,7 @@ public class EMLTransformer extends AbstractContentTransformer2
             Object content = mimeMessage.getContent();
             if (content instanceof Multipart)
             {
-                Multipart multipart = (Multipart) content;
-                Part part = multipart.getBodyPart(0);
-
-                if (part.getContent() instanceof Multipart)
-                {
-                    multipart = (Multipart) part.getContent();
-                    for (int i = 0, n = multipart.getCount(); i < n; i++)
-                    {
-                        part = multipart.getBodyPart(i);
-                        if (part.getContentType().contains("text"))
-                        {
-                            sb.append(part.getContent().toString()).append("\n");
-
-                        }
-
-                    }
-
-                }
-                else if (part.getContentType().contains("text"))
-                {
-                    sb.append(part.getContent().toString());
-
-                }
-
+                sb.append(processMultiPart((Multipart) content));
             }
             else
             {
@@ -107,6 +85,36 @@ public class EMLTransformer extends AbstractContentTransformer2
                 }
             }
         }
+    }
+
+    /**
+     * Find "text" parts of message recursively
+     * 
+     * @param multipart Multipart to process
+     * @return "text" parts of message
+     * @throws MessagingException
+     * @throws IOException
+     */
+    private StringBuilder processMultiPart(Multipart multipart) throws MessagingException, IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, n = multipart.getCount(); i < n; i++)
+        {
+            Part part = multipart.getBodyPart(i);
+            if (part.getContent() instanceof Multipart)
+            {
+                sb.append(processMultiPart((Multipart) part.getContent()));
+
+            }
+            else if (part.getContentType().contains("text"))
+            {
+                sb.append(part.getContent().toString()).append("\n");
+
+            }
+
+        }
+
+        return sb;
     }
 
 }

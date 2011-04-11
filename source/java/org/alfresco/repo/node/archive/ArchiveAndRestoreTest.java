@@ -19,6 +19,7 @@
 package org.alfresco.repo.node.archive;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -557,8 +558,12 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(a);
         nodeService.deleteNode(b);
         commitAndBeginNewTransaction();
+        
+        List<NodeRef> nodesToRestore = new ArrayList<NodeRef>();
+        nodesToRestore.add(a_);
+        nodesToRestore.add(b_);
 
-        List<RestoreNodeReport> reports = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
+        List<RestoreNodeReport> reports = nodeArchiveService.restoreArchivedNodes(nodesToRestore);
         // check that both a and b were restored
         assertEquals("Incorrect number of node reports", 2, reports.size());
         commitAndBeginNewTransaction();
@@ -623,9 +628,28 @@ public class ArchiveAndRestoreTest extends TestCase
         nodeService.deleteNode(b);
 
         commitAndBeginNewTransaction();
+
+        List<NodeRef> nodesToRestore = new ArrayList<NodeRef>();
+        nodesToRestore.add(a_);
+        nodesToRestore.add(b_);
+
         // user B can't see archived 'a'
-        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreAllArchivedNodes(workStoreRef);
-        assertEquals("User B should be able to see only B's delete", 1, restoredByB.size());
+        List<RestoreNodeReport> restoredByB = nodeArchiveService.restoreArchivedNodes(nodesToRestore);
+        for (RestoreNodeReport restoreNodeReport : restoredByB)
+        {
+            if (restoreNodeReport.getArchivedNodeRef().equals(a_))
+            {
+                assertEquals(
+                        "A user's node should not be restorable by B",
+                        RestoreStatus.FAILURE_PERMISSION, restoreNodeReport.getStatus());
+            }
+            else if (restoreNodeReport.getArchivedNodeRef().equals(b_))
+            {
+                assertEquals(
+                        "B user's node should have been restored by B",
+                        RestoreStatus.SUCCESS, restoreNodeReport.getStatus());
+            }
+        }
     }
     
     /**

@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
+import java.net.URL;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -97,6 +98,33 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         }
         File htmlSourceFile = loadQuickTestFile("html");
         File pdfTargetFile = TempFileProvider.createTempFile(getName() + "-target-", ".pdf");
+        ContentReader reader = new FileContentReader(htmlSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_HTML);
+        ContentWriter writer = new FileContentWriter(pdfTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        
+        transformer.transform(reader, writer);
+    }
+    
+    /**
+     * ALF-219. Transforamtion from .html to .pdf for empty file.
+     * @throws Exception
+     */
+    public void testEmptyHtmlToEmptyPdf() throws Exception
+    {
+        if (!worker.isAvailable())
+        {
+            // no connection
+            return;
+        }
+        URL url = this.getClass().getClassLoader().getResource("misc/empty.html");
+        assertNotNull("URL was unexpectedly null", url);
+
+        File htmlSourceFile = new File(url.getFile());
+        assertTrue("Test file does not exist.", htmlSourceFile.exists());
+        
+        File pdfTargetFile = TempFileProvider.createTempFile(getName() + "-target-", ".pdf");
+        
         ContentReader reader = new FileContentReader(htmlSourceFile);
         reader.setMimetype(MimetypeMap.MIMETYPE_HTML);
         ContentWriter writer = new FileContentWriter(pdfTargetFile);

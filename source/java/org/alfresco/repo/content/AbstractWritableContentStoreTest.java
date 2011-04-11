@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -556,7 +557,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     {
         ContentWriter writer = getWriter();
         
-        File sourceFile = File.createTempFile(getName(), ".txt");
+        File sourceFile = TempFileProvider.createTempFile(getName(), ".txt");
         sourceFile.deleteOnExit();
         // dump some content into the temp file
         String content = "ABC";
@@ -570,7 +571,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("Stream close not detected", writer.isClosed());
         
         // create a sink temp file
-        File sinkFile = File.createTempFile(getName(), ".txt");
+        File sinkFile = TempFileProvider.createTempFile(getName(), ".txt");
         sinkFile.deleteOnExit();
         
         // get the content into our temp file

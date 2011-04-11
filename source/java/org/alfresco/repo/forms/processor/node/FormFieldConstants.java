@@ -48,6 +48,10 @@ public interface FormFieldConstants
 
     public static final String REMOVED = "removed";
     
+    public static final String DOT_CHARACTER = ".";
+
+    public static final String DOT_CHARACTER_REPLACEMENT = "#dot#";
+    
     /** Protected constants */
     public static final String DEFAULT_CONTENT_MIMETYPE = "text/plain";
     

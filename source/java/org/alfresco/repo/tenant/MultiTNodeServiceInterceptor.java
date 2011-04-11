@@ -147,6 +147,15 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                     String rawStoreId = (String)ret;
                     ret = tenantService.getBaseName(rawStoreId);
                 }
+                else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER))
+                {
+                    // ALF-6029 (else need to patch affected spaces - eg. Models, Workflow Definitions)
+                    String rawUserId = (String)ret;
+                    if ("admin".equals(rawUserId))
+                    {
+                        ret = tenantService.getDomainUser(rawUserId, tenantService.getCurrentUserDomain());
+                    }
+                }
                 else
                 {
                     ret = convertOutboundValue(ret);
@@ -165,15 +174,22 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 {
                     QName qname = rawValue.getKey();
                     Serializable value = rawValue.getValue();
-
+                    
                     if (qname.equals(ContentModel.PROP_STORE_IDENTIFIER) && (value != null))
                     {
-                        rawValues.put(ContentModel.PROP_STORE_IDENTIFIER, tenantService.getBaseName((String)value));
+                        value = tenantService.getBaseName((String)value);
                     }
-                    else
+                    else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER))
                     {
-                        rawValues.put(qname, (Serializable)convertOutboundValue(value));
+                        // ALF-6029 (else need to patch affected spaces - eg. Models, Workflow Definitions)
+                        String rawUserId = (String)value;
+                        if ("admin".equals(rawUserId))
+                        {
+                            value = tenantService.getDomainUser(rawUserId, tenantService.getCurrentUserDomain());
+                        }
                     }
+                    
+                    rawValues.put(qname, (Serializable)convertOutboundValue(value));
                 }
                 
                 ret = rawValues;

@@ -39,6 +39,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
+import org.apache.pdfbox.exceptions.COSVisitorException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.DefaultResourceLoader;
 
@@ -211,24 +215,103 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
                 + sourceExtension);
         File tempToFile = TempFileProvider
                 .createTempFile("OpenOfficeContentTransformer-target-", "." + targetExtension);
+
+        
+        final long documentSize = reader.getSize();
+        
         // download the content from the source reader
         reader.getContent(tempFromFile);
-
-        try
+        
+        // There is a bug (reported in ALF-219) whereby JooConverter (the Alfresco Community Edition's 3rd party
+        // OpenOffice connector library) struggles to handle zero-size files being transformed to pdf.
+        // For zero-length .html files, it throws NullPointerExceptions.
+        // For zero-length .txt files, it produces a pdf transformation, but it is not a conformant
+        // pdf file and cannot be viewed (contains no pages).
+        //
+        // For these reasons, if the file is of zero length, we will not use JooConverter & OpenOffice
+        // and will instead ask Apache PDFBox to produce an empty pdf file for us.
+		if (documentSize == 0L)
         {
-            this.converter.convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
-            // conversion success
+			produceEmptyPdfFile(tempToFile);
         }
-        catch (OpenOfficeException e)
+        else
         {
-            throw new ContentIOException("OpenOffice server conversion failed: \n" + "   reader: " + reader + "\n"
-                    + "   writer: " + writer + "\n" + "   from file: " + tempFromFile + "\n" + "   to file: "
-                    + tempToFile, e);
+        	// We have some content, so we'll use OpenOffice to render the pdf document.
+        	// Currently, OpenOffice does a better job of rendering documents into PDF and so
+        	// it is preferred over PDFBox.
+        	try
+        	{
+        		this.converter.convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
+        		// conversion success
+        	}
+        	catch (OpenOfficeException e)
+        	{
+        		throw new ContentIOException("OpenOffice server conversion failed: \n" + "   reader: " + reader + "\n"
+        				+ "   writer: " + writer + "\n" + "   from file: " + tempFromFile + "\n" + "   to file: "
+        				+ tempToFile, e);
+        	}
         }
+        
 
         // upload the temp output to the writer given us
         writer.putContent(tempToFile);
     }
+
+    /**
+     * This method produces an empty PDF file at the specified File location.
+     * Apache's PDFBox is used to create the PDF file.
+     */
+	private void produceEmptyPdfFile(File tempToFile)
+	{
+	    // If improvement PDFBOX-914 is incorporated, we can do this with a straight call to 
+	    // org.apache.pdfbox.TextToPdf.createPDFFromText(new StringReader(""));
+	    // https://issues.apache.org/jira/browse/PDFBOX-914
+	    
+        PDDocument pdfDoc = null;
+        PDPageContentStream contentStream = null;
+        try
+        {
+            pdfDoc = new PDDocument();
+            PDPage pdfPage = new PDPage();
+			// Even though, we want an empty PDF, some libs (e.g. PDFRenderer) object to PDFs
+			// that have literally nothing in them. So we'll put a content stream in it.
+            contentStream = new PDPageContentStream(pdfDoc, pdfPage);
+            pdfDoc.addPage(pdfPage);
+            
+			// Now write the in-memory PDF document into the temporary file.
+            pdfDoc.save(tempToFile.getAbsolutePath());
+
+        }
+        catch (COSVisitorException cvx)
+        {
+        	throw new ContentIOException("Error creating empty PDF file", cvx);
+        }
+        catch (IOException iox)
+        {
+        	throw new ContentIOException("Error creating empty PDF file", iox);
+        }
+        finally
+        {
+        	if (contentStream != null)
+        	{
+        		try
+        		{
+					contentStream.close();
+				} catch (IOException ignored) {
+					// Intentionally empty
+				}
+        	}
+        	if (pdfDoc != null)
+        	{
+        		try
+        		{
+					pdfDoc.close();
+				} catch (IOException ignored) {
+					// Intentionally empty.
+				}
+        	}
+        }
+	}
 
     /*
      * (non-Javadoc)

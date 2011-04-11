@@ -199,16 +199,13 @@ public class MigrateVersionStorePatch extends AbstractPatch
     /**
      * Gets a set of work to do and executes it within this transaction.
      * Can be kicked off via a job or called as a patch.
+     *
+     * Note that this is not wrapped in a transaction. The patch manages
+     * its own transactions.
      */
     @Override
     protected String applyInternal() throws Exception
     {
-        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
-        {
-            // Nothing to do
-            return null;
-        }
-        
         if (useDeprecatedV1)
         {
             // Nothing to do
@@ -221,7 +218,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
             return null;
         }
         
-        boolean isRunningAsJob = runningAsJob.get().booleanValue();
+        final boolean isRunningAsJob = runningAsJob.get().booleanValue();
         
         // Do we bug out of patch execution
         if (runAsScheduledJob && !isRunningAsJob)
@@ -230,7 +227,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
         }
         
         // Lock
-        String lockToken = getLock();
+        final String lockToken = getLock();
         if (lockToken == null)
         {
             // Some other process is busy
@@ -249,7 +246,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
                 throw new RuntimeException("Unable to get job lock during patch execution.  Only one server should perform the upgrade.");
             }
         }
-        
+
         if (isRunningAsJob && (! this.deleteImmediately))
         {
             if (logger.isDebugEnabled())
@@ -262,27 +259,46 @@ public class MigrateVersionStorePatch extends AbstractPatch
         
         try
         {
-            if (tenantService.isEnabled() && tenantService.isTenantUser())
+            RetryingTransactionCallback<Boolean> preMigrate = new RetryingTransactionCallback<Boolean>()
             {
-                // bootstrap new version store
-                StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
-                
-                if (! nodeService.exists(bootstrapStoreRef))
+                public Boolean execute() throws Throwable
                 {
-                    bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(), bootstrapStoreRef);
-                    version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-                    version2ImporterBootstrap.bootstrap();
+                	if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+                	{
+                		// Nothing to do
+                		return false;
+                	}
+                	
+                    if (tenantService.isEnabled() && tenantService.isTenantUser())
+                    {
+                        // bootstrap new version store
+                        StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
+                        
+                        if (! nodeService.exists(bootstrapStoreRef))
+                        {
+                            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(), bootstrapStoreRef);
+                            version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+                            version2ImporterBootstrap.bootstrap();
+                        }
+                    }
+
+                    if (AuthenticationUtil.getRunAsUser() == null)
+                    {
+                        logger.info("Set system user");
+                        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+                    }
+
+                    return true;
                 }
-            }
-            
-            if (AuthenticationUtil.getRunAsUser() == null)
+            };
+            Boolean doMigration = transactionService.getRetryingTransactionHelper().doInTransaction(preMigrate);
+            if(!doMigration.booleanValue())
             {
-                logger.info("Set system user");
-                AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+            	return null;
             }
-            
+
             Boolean migrated = versionMigrator.migrateVersions(batchSize, threadCount, limitPerJobCycle, deleteImmediately, lockToken, isRunningAsJob);
-            
+
             migrationComplete = (migrated != null ? migrated : true);
             
             // return the result message
@@ -349,6 +365,8 @@ public class MigrateVersionStorePatch extends AbstractPatch
         }
     }
     
+    
+    
     /**
      * Job to initiate the {@link MigrateVersionStorePatch}
      * 
@@ -379,4 +397,5 @@ public class MigrateVersionStorePatch extends AbstractPatch
             migrateVersionStore.executeViaJob();
         }
     }
+
 }

@@ -291,7 +291,7 @@
         from
             alf_global_attributes ga
         where
-            name not in ('alfresco-tenants', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
+            name not in ('alfresco-tenants', '.href', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
     </select>
     
     <select id="select_AllAclIds" resultClass="long">

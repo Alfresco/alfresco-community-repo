@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -217,7 +218,15 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         StringBuilder builder = new StringBuilder(ownerUsername);
         
         // get the person node
-        NodeRef ownerNodeRef = this.personService.getPerson(ownerUsername);
+        NodeRef ownerNodeRef = null;
+        try
+        {
+            ownerNodeRef = this.personService.getPerson(ownerUsername);
+        }
+        catch (NoSuchPersonException nspe)
+        {
+            // just return the username if the user doesn't exist
+        }
         
         if (ownerNodeRef != null)
         {

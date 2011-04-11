@@ -30,7 +30,8 @@ public interface ImapModel
     static final String IMAP_MODEL_1_0_URI = "http://www.alfresco.org/model/imap/1.0";
 
     static final QName ASPECT_IMAP_FOLDER_NONSUBSCRIBED = QName.createQName(IMAP_MODEL_1_0_URI, "nonSubscribed");
-    static final QName ASPECT_IMAP_FOLDER_NONSELECTABLE = QName.createQName(IMAP_MODEL_1_0_URI, "nonselectable");
+    static final QName ASPECT_IMAP_FOLDER_NONSELECTABLE = QName.createQName(IMAP_MODEL_1_0_URI, "nonSelectable");
+    static final QName ASPECT_IMAP_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "imapFolder");
 
     static final QName ASPECT_IMAP_CONTENT = QName.createQName(IMAP_MODEL_1_0_URI, "imapContent");
     static final QName PROP_MESSAGE_FROM = QName.createQName(IMAP_MODEL_1_0_URI, "messageFrom");
@@ -54,5 +55,7 @@ public interface ImapModel
 
     static final QName TYPE_IMAP_ATTACH = QName.createQName(IMAP_MODEL_1_0_URI, "imapAttach");
     static final QName PROP_ATTACH_ID = QName.createQName(IMAP_MODEL_1_0_URI, "attachID");
+
+    static final QName PROP_UIDVALIDITY = QName.createQName(IMAP_MODEL_1_0_URI, "uidValidity");
 
 }

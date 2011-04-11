@@ -93,9 +93,18 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                  * Extract RFC822 values that doesn't match to headers and need to be encoded.
                  * Or those special fields that require some code to extract data 
                  */
-                putRawValue(KEY_MESSAGE_FROM, InternetAddress.toString(mimeMessage.getFrom()), rawProperties);
-                putRawValue(KEY_MESSAGE_TO, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.TO)), rawProperties);
-                putRawValue(KEY_MESSAGE_CC, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.CC)), rawProperties);
+                String tmp = InternetAddress.toString(mimeMessage.getFrom());
+                tmp = tmp != null ? MimeUtility.decodeText(tmp) : null;
+                putRawValue(KEY_MESSAGE_FROM, tmp, rawProperties);
+                
+                tmp = InternetAddress.toString(mimeMessage.getRecipients(RecipientType.TO));
+                tmp = tmp != null ? MimeUtility.decodeText(tmp) : null;
+                putRawValue(KEY_MESSAGE_TO, tmp, rawProperties);
+
+                tmp = InternetAddress.toString(mimeMessage.getRecipients(RecipientType.CC));
+                tmp = tmp != null ? MimeUtility.decodeText(tmp) : null;
+                putRawValue(KEY_MESSAGE_CC, tmp, rawProperties);
+                
                 putRawValue(KEY_MESSAGE_SENT, mimeMessage.getSentDate(), rawProperties); 
                 
                 /**
@@ -124,6 +133,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                     if(rx != null && rx.length > 0)
                     {
                         String lastReceived = rx[0];    
+                        lastReceived = MimeUtility.unfold(lastReceived);
                         int x = lastReceived.indexOf(';');
                         if(x > 0)
                         {
@@ -158,11 +168,12 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                     Header header = (Header) headers.nextElement();
                     if (keys.contains(header.getName()))
                     {
-                        header.getValue();
-                        putRawValue(header.getName(), header.getValue(), rawProperties);
+                        tmp = header.getValue();
+                        tmp = tmp != null ? MimeUtility.decodeText(tmp) : null;
+                      
+                        putRawValue(header.getName(), tmp, rawProperties);
                     }
-                }
-                
+                }    
             }
         }
         finally
@@ -190,4 +201,5 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
     {
          return super.getMapping();
     }
+    
 }

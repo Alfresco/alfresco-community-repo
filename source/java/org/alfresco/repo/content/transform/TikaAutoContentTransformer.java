@@ -73,6 +73,12 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
              // Skip these, as we handle container formats in a different
              //  transformer to give the user control over recursion
           }
+          else if(mt.toString().equals("message/rfc822") ||
+                  mt.toString().equals("application/vnd.ms-outlook"))
+          {
+             // Skip these, as we want our textual representations to include
+             //  parts of the metadata (eg people, subjects, dates) too
+          }
           else
           {
              // Tika can probably do some useful text

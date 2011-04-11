@@ -19,7 +19,15 @@
 
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.*;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarAcceptUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteTicket;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeGenPassword;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviterUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRejectUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +40,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
@@ -44,6 +53,8 @@ public class SendInviteAction extends JBPMSpringActionHandler
     private InviteSender inviteSender;
     private NamespaceService namespaceService;
 
+    private boolean sendEmails;
+
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
@@ -52,11 +63,14 @@ public class SendInviteAction extends JBPMSpringActionHandler
         MessageService messageService= (MessageService) factory.getBean("messageService");
         inviteSender = new InviteSender(services, repository, messageService);
         namespaceService = services.getNamespaceService();
+        InvitationService invitationService = services.getInvitationService();
+        sendEmails = invitationService.isSendEmails();
     }
 
     public void execute(final ExecutionContext context) throws Exception
     {
-
+        if(sendEmails == false)
+            return;
         Collection<String> propertyNames = Arrays.asList(wfVarInviteeUserName,//
                     wfVarResourceName,//
                     wfVarInviterUserName,//

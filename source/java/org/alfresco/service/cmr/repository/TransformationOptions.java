@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.repository;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -231,4 +232,22 @@ public class TransformationOptions
         optionsMap.put(OPT_INCLUDE_EMBEDDED, includeEmbedded);
         return optionsMap;
     }
+    
+    public static TypeConverter.Converter<String, Boolean> relaxedBooleanTypeConverter = new TypeConverter.Converter<String, Boolean>()
+    {
+        public Boolean convert(String source)
+        {
+            if(source == null || source.length() == 0)
+                return null;
+            
+            if(source.equalsIgnoreCase("true") ||
+               source.equalsIgnoreCase("t") ||
+               source.equalsIgnoreCase("yes") ||
+               source.equalsIgnoreCase("y"))
+            {
+                return Boolean.TRUE;
+            }
+            return Boolean.FALSE;
+        }
+    };
 }

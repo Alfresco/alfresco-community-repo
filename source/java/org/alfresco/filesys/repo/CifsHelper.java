@@ -107,6 +107,15 @@ public class CifsHelper
     }
 
     /**
+     * Return the node service
+     * 
+     * @return NodeService
+     */
+    protected NodeService getNodeService() {
+        return nodeService;
+    }
+    
+    /**
      * @return Returns true if all files/folders should be treated as read-only
      */
     public boolean isReadOnly()
@@ -596,11 +605,11 @@ public class CifsHelper
      * @param newName New name for the moved node
      * @throws FileExistsException
      */
-    public void move(NodeRef nodeToMoveRef, NodeRef newParentNodeRef, String newName) throws FileExistsException
+    public void move(NodeRef nodeToMoveRef, NodeRef oldParent, NodeRef newParentNodeRef, String newName) throws FileExistsException
     {
         try
         {
-            fileFolderService.move(nodeToMoveRef, newParentNodeRef, newName);
+            fileFolderService.move(nodeToMoveRef, oldParent, newParentNodeRef, newName);
         }
         catch (org.alfresco.service.cmr.model.FileExistsException e)
         {

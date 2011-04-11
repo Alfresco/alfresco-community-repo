@@ -165,21 +165,13 @@
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
-    <bean id="jmxUrlPattern" class="java.lang.String">
-       <constructor-arg value="service:jmx:rmi://(host):${monitor.rmi.service.port}/jndi/rmi://(host):${alfresco.rmi.services.port}/alfresco/jmxrmi" />
-    </bean>
-
-    <bean id="jmxUrl" factory-bean="jmxUrlPattern" factory-method="replaceAll">
-       <constructor-arg value="\(host\)" />
-       <constructor-arg>
-          <bean factory-bean="hostConfigurableSocketFactory" factory-method="getHost" />
-       </constructor-arg>
+    <bean id="jmxUrl" factory-bean="sysAdminParams" factory-method="subsituteHost">
+       <constructor-arg value="service:jmx:rmi://${alfresco.rmi.services.external.host}:${monitor.rmi.service.port}/jndi/rmi://${alfresco.rmi.services.host}:${alfresco.rmi.services.port}/alfresco/jmxrmi" />
     </bean>
 
     <bean id="serverConnector"
-          class="org.springframework.jmx.support.ConnectorServerFactoryBean"
-          depends-on="registry"
-          lazy-init="true">
+          class="org.alfresco.mbeans.ConnectorServerFactory"
+          depends-on="registry">
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
@@ -190,6 +182,12 @@
                 <!-- The following keys are only valid when sun jmx is used -->
                 <entry key="jmx.remote.x.password.file" value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
                 <entry key="jmx.remote.x.access.file"   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
+                <entry>
+                    <key>
+                        <value>jmx.remote.rmi.server.socket.factory</value>
+                    </key>
+                    <ref bean="hostConfigurableSocketFactory" />
+                </entry>
             </map>
         </property>
     </bean>
@@ -248,25 +246,7 @@
     <!--
          http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module#log4j.properties
     -->
-    <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" init-method="init">
-        <property name="extraLog4jUrls">
-            <list>
-                <!-- NOTE: value entries are listed from lowest precedence to highest.  -->
-
-                <!--  Installed  AMP modules  -->
-                <value>classpath*:alfresco/module/*/log4j.properties</value>
-
-                <!--  Enterprise extensions  -->
-                <value>classpath*:alfresco/enterprise/*-log4j.properties</value>
-
-                <!--  Other installed extensions  -->
-                <value>classpath*:alfresco/extension/*-log4j.properties</value>
-
-                <!--  private developer overrides -->
-                <value>classpath*:alfresco/extension/dev-log4j.properties</value>
-            </list>
-        </property>
-    </bean>
+    <import resource="classpath:alfresco/logging-context.xml" />
 
 
     <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">
@@ -489,9 +469,6 @@
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
-        <property name="searchService">
-            <ref bean="SearchService"/>
-        </property>
         <property name="namespaceService">
             <ref bean="namespaceService"/>
         </property>
@@ -634,6 +611,9 @@
     </bean>
 
     <bean id="abstractLuceneIndexerAndSearcherFactory" abstract="true">
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
         <property name="indexRootLocation">
             <value>${dir.indexes}</value>
         </property>
@@ -1225,6 +1205,9 @@
         <property name="lockService">
             <ref bean="LockService" />
         </property>
+        <property name="ownableService">
+            <ref bean="OwnableService" />
+        </property>
         <property name="copyService">
             <ref bean="CopyService" />
         </property>
@@ -1242,6 +1225,9 @@
         </property>
         <property name="policyComponent">
             <ref bean="policyComponent" />
+        </property>
+         <property name="behaviourFilter" >
+            <ref bean="policyBehaviourFilter" />
         </property>
     </bean>
 

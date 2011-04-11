@@ -97,12 +97,48 @@
     </bean>
     
 
+<bean id="imap.foldersCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+        <property name="cache">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+               <property name="cacheManager">
+                  <ref bean="internalEHCacheManager" />
+               </property>
+               <property name="cacheName">
+                  <value>org.alfresco.cache.imapFoldersCache</value>
+               </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="imap.folderAccessInterceptor" class="org.alfresco.repo.imap.AlfrescoImapFolderAccessInterceptor">
+        <property name="permissionService">
+            <ref bean="PermissionService"/>
+        </property>
+    </bean>
+    
+    <bean id="imap.foldersCacheSecured" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.cache.SimpleCache</value>
+        </property>
+        <property name="target">
+            <ref bean="imap.foldersCache"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="imap.folderAccessInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
     <bean id="imapService" class="org.alfresco.repo.imap.ImapServiceImpl" init-method="init">
         <property name="sysAdminParams">
             <ref bean="sysAdminParams" />
         </property>
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
+        </property>
+        <property name="foldersCache">
+            <ref bean="imap.foldersCacheSecured"/>
         </property>
         <property name="nodeService">
             <ref bean="NodeService"/>
@@ -114,7 +150,7 @@
             <ref bean="PermissionService"/>
         </property>
         
-        <property name="imapConfigMountPoints">
+<property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />
         </property>
         <property name="ignoreExtractionFolders">

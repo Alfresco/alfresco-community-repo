@@ -82,6 +82,9 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     
     private static boolean busy = false;
     
+    private static final String CLEAN_OLD_VERSION_STORE = "CleanOldVersionStore";
+    private static final String MIGRATE_VERSION_STORE = "MigrateVersionStore";
+
     public final static String PREFIX_MIGRATED = "migrated-";
     
     private VersionServiceImpl version1Service = new VersionServiceImpl();
@@ -413,65 +416,310 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     }
     
     /**
+     * Construct the migration data structures for the BatchProcessor
+     * 
+     * ALF-5621: construct the BatchProcessor migration work in a new transaction to ensure the
+     * transaction is not alive during the batch processing work.
+     *
+     * @param batchSize
+     * @param threadCount
+     * @param limit
+     * @param deleteImmediately
+     * @param lockToken
+     * @param isRunningAsJob
+     * 
+     * @return MigrationWork, encapsulating what needs to be done for version migration
+     */
+    private MigrationWork getMigrationWork(final int batchSize, final int threadCount, final int limit, final boolean deleteImmediately, final String lockToken, final boolean isRunningAsJob)
+    {
+        RetryingTransactionCallback<MigrationWork> buildMigrationWork = new RetryingTransactionCallback<MigrationWork>()
+        {
+            public MigrationWork execute() throws Throwable
+            {
+                final NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
+                final NodeRef newRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_NEW);
+                
+                refreshLock(lockToken);
+                
+                long startTime = System.currentTimeMillis();
+                
+                final List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
+                
+                int toDo = childAssocRefs.size();
+                
+                if (toDo == 0)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(I18NUtil.getMessage(MSG_PATCH_NOOP));
+                    }
+                    migrationComplete = true;
+                    return null;
+                }
+                
+                migrationComplete = false;
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Found "+childAssocRefs.size()+" version histories in old version store (in "+((System.currentTimeMillis()-startTime)/1000)+" secs)");
+                }
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount+", deleteImmediately="+deleteImmediately);
+                }
+                
+                long splitTime = System.currentTimeMillis();
+                
+                boolean firstMigration = false;
+                
+                if (! isRunningAsJob)
+                {
+                    List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
+                    firstMigration = (newChildAssocRefs.size() == 0);
+                    
+                    if (logger.isInfoEnabled())
+                    {
+                        if (! firstMigration)
+                        {
+                            logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+                        }
+                    }
+                }
+                
+                // note: assumes patch runs before cleanup starts
+                int toMigrateCount = 0;
+                int totalCount = 0;
+                int alreadyMigratedCount = 0;
+                
+                boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+
+                List<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
+                
+                try
+                {
+                    //
+                    // split into batches (ignore version histories that have already been migrated)
+                    //
+                    
+                    splitTime = System.currentTimeMillis();
+                    
+                    final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
+                    
+                    int maxToDo = childAssocRefs.size();
+                    
+                    if (limit > -1)
+                    {
+                        maxToDo = limit;
+                        
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("Limit this job cycle to max of "+limit+" version histories");
+                        }
+                    }
+                    
+                    for (final ChildAssociationRef childAssocRef : childAssocRefs)
+                    {
+                        // short-cut if first migration
+                        if (!firstMigration)
+                        {
+                            if (isMigrated(childAssocRef))
+                            {
+                                // skip - already migrated
+                                alreadyMigratedCount++;
+                                continue;
+                            }
+                        }
+                        
+                        toMigrateCount++;
+                        
+                        if (tmpBatch.size() < batchSize)
+                        {
+                            tmpBatch.add(childAssocRef.getChildRef());
+                        }
+                        
+                        if ((tmpBatch.size() == batchSize) ||
+                            (toMigrateCount >= maxToDo) ||
+                            (totalCount == childAssocRefs.size()))
+                        {
+                            if (tmpBatch.size() > 0)
+                            {
+                                // Each thread gets 1 batch to execute
+                                batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
+                                tmpBatch.clear();
+                            }
+                        }
+                        
+                        if (toMigrateCount >= maxToDo)
+                        {
+                            break;
+                        }
+                    }
+                }
+	            finally
+	            {
+	                MLPropertyInterceptor.setMLAware(wasMLAware);
+	            }
+
+	            return new MigrationWork(toMigrateCount, alreadyMigratedCount, toDo, batchProcessorWork, splitTime, startTime);
+            }
+        };
+
+        MigrationWork work = transactionService.getRetryingTransactionHelper().doInTransaction(buildMigrationWork, false, true);
+        return work;
+    }
+    
+    /**
      * Do the Version migration work
      * @return          Returns null if no work to do, true if the work is done, false is incomplete (or in progress)
      */
-    public Boolean migrateVersions(int batchSize, int threadCount, int limit, final boolean deleteImmediately, final String lockToken, boolean isRunningAsJob)
+    public Boolean migrateVersions(final int batchSize, final int threadCount, final int limit, final boolean deleteImmediately, final String lockToken, final boolean isRunningAsJob)
     {
-        final NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
-        final NodeRef newRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_NEW);
-        
-        refreshLock(lockToken);
-        
-        long startTime = System.currentTimeMillis();
-        
-        final List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
-        
-        int toDo = childAssocRefs.size();
-        
-        if (toDo == 0)
+        RetryingTransactionCallback<MigrationWork> buildMigrationWork = new RetryingTransactionCallback<MigrationWork>()
         {
-            if (logger.isDebugEnabled())
+            public MigrationWork execute() throws Throwable
             {
-                logger.debug(I18NUtil.getMessage(MSG_PATCH_NOOP));
-            }
-            migrationComplete = true;
-            return null;
-        }
-        
-        migrationComplete = false;
-        
-        if (logger.isInfoEnabled())
-        {
-            logger.info("Found "+childAssocRefs.size()+" version histories in old version store (in "+((System.currentTimeMillis()-startTime)/1000)+" secs)");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount+", deleteImmediately="+deleteImmediately);
-        }
-        
-        long splitTime = System.currentTimeMillis();
-        
-        boolean firstMigration = false;
-        
-        if (! isRunningAsJob)
-        {
-            List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
-            firstMigration = (newChildAssocRefs.size() == 0);
-            
-            if (logger.isInfoEnabled())
-            {
-                if (! firstMigration)
+                final NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
+                final NodeRef newRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_NEW);
+                
+                refreshLock(lockToken);
+                
+                long startTime = System.currentTimeMillis();
+                
+                final List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
+                
+                int toDo = childAssocRefs.size();
+                
+                if (toDo == 0)
                 {
-                    logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(I18NUtil.getMessage(MSG_PATCH_NOOP));
+                    }
+                    migrationComplete = true;
+                    return null;
                 }
+                
+                migrationComplete = false;
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Found "+childAssocRefs.size()+" version histories in old version store (in "+((System.currentTimeMillis()-startTime)/1000)+" secs)");
+                }
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount+", deleteImmediately="+deleteImmediately);
+                }
+                
+                long splitTime = System.currentTimeMillis();
+                
+                boolean firstMigration = false;
+                
+                if (! isRunningAsJob)
+                {
+                    List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
+                    firstMigration = (newChildAssocRefs.size() == 0);
+                    
+                    if (logger.isInfoEnabled())
+                    {
+                        if (! firstMigration)
+                        {
+                            logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+                        }
+                    }
+                }
+                
+                // note: assumes patch runs before cleanup starts
+                int toMigrateCount = 0;
+                int totalCount = 0;
+                int alreadyMigratedCount = 0;
+                List<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
+                
+                boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+                
+                try
+                {
+                    //
+                    // split into batches (ignore version histories that have already been migrated)
+                    //
+                    
+                    splitTime = System.currentTimeMillis();
+                    
+                    final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
+                    
+                    int maxToDo = childAssocRefs.size();
+                    
+                    if (limit > -1)
+                    {
+                        maxToDo = limit;
+                        
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("Limit this job cycle to max of "+limit+" version histories");
+                        }
+                    }
+                    
+                    for (final ChildAssociationRef childAssocRef : childAssocRefs)
+                    {
+                        // short-cut if first migration
+                        if (!firstMigration)
+                        {
+                            if (isMigrated(childAssocRef))
+                            {
+                                // skip - already migrated
+                                alreadyMigratedCount++;
+                                continue;
+                            }
+                        }
+                        
+                        toMigrateCount++;
+                        
+                        if (tmpBatch.size() < batchSize)
+                        {
+                            tmpBatch.add(childAssocRef.getChildRef());
+                        }
+                        
+                        if ((tmpBatch.size() == batchSize) ||
+                            (toMigrateCount >= maxToDo) ||
+                            (totalCount == childAssocRefs.size()))
+                        {
+                            if (tmpBatch.size() > 0)
+                            {
+                                // Each thread gets 1 batch to execute
+                                batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
+                                tmpBatch.clear();
+                            }
+                        }
+                        
+                        if (toMigrateCount >= maxToDo)
+                        {
+                            break;
+                        }
+                    }
+ 
+                    return new MigrationWork(toMigrateCount, alreadyMigratedCount, toDo, batchProcessorWork, splitTime, startTime);
+                }
+	            finally
+	            {
+	                MLPropertyInterceptor.setMLAware(wasMLAware);
+	            }
             }
+        };
+
+        MigrationWork migrationWork = transactionService.getRetryingTransactionHelper().doInTransaction(buildMigrationWork, false, true);
+        if(migrationWork == null)
+        {
+        	return Boolean.TRUE;
         }
+
+        List<List<NodeRef>> batchProcessorWork = migrationWork.getBatchProcessorWork();
+        int toMigrateCount = migrationWork.getToMigrateCount();
+        int toDo = migrationWork.getToDo();
+        long splitTime = migrationWork.getSplitTime();
+        int alreadyMigratedCount = migrationWork.getAlreadyMigratedCount();
+        long startTime = migrationWork.getStartTime();
         
-        // note: assumes patch runs before cleanup starts
-        
-        int alreadyMigratedCount = 0;
         int batchErrorCount = 0;
         int batchCount = 0;
         
@@ -479,69 +727,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         
         try
         {
-            //
-            // split into batches (ignore version histories that have already been migrated)
-            //
-            
-            splitTime = System.currentTimeMillis();
-            
-            int toMigrateCount = 0;
-            int totalCount = 0;
-            
-            List<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
-            
-            final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
-            
-            int maxToDo = childAssocRefs.size();
-            
-            if (limit > -1)
-            {
-                maxToDo = limit;
-                
-                if (logger.isInfoEnabled())
-                {
-                    logger.info("Limit this job cycle to max of "+limit+" version histories");
-                }
-            }
-            
-            for (final ChildAssociationRef childAssocRef : childAssocRefs)
-            {
-                // short-cut if first migration
-                if (!firstMigration)
-                {
-                    if (isMigrated(childAssocRef))
-                    {
-                        // skip - already migrated
-                        alreadyMigratedCount++;
-                        continue;
-                    }
-                }
-                
-                toMigrateCount++;
-                
-                if (tmpBatch.size() < batchSize)
-                {
-                    tmpBatch.add(childAssocRef.getChildRef());
-                }
-                
-                if ((tmpBatch.size() == batchSize) ||
-                    (toMigrateCount >= maxToDo) ||
-                    (totalCount == childAssocRefs.size()))
-                {
-                    if (tmpBatch.size() > 0)
-                    {
-                        // Each thread gets 1 batch to execute
-                        batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
-                        tmpBatch.clear();
-                    }
-                }
-                
-                if (toMigrateCount >= maxToDo)
-                {
-                    break;
-                }
-            }
-            
             batchCount = batchProcessorWork.size();
             
             if (batchCount > 0)
@@ -602,9 +787,8 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                     
                     List<List<NodeRef>> batchProcessorWorkFirst = new ArrayList<List<NodeRef>>(2);
                     batchProcessorWorkFirst.add(new ArrayList<NodeRef>(batchProcessorWork.get(0)));
-                    
                     BatchProcessor<List<NodeRef>> batchProcessorFirst = new BatchProcessor<List<NodeRef>>(
-                            "MigrateVersionStore",
+                            MIGRATE_VERSION_STORE,
                             transactionService.getRetryingTransactionHelper(),
                             batchProcessorWorkFirst, threadCount, 1,
                             applicationEventPublisher, logger, loggingInterval);
@@ -620,7 +804,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                 {
                     // process remaining batches
                     BatchProcessor<List<NodeRef>> batchProcessor = new BatchProcessor<List<NodeRef>>(
-                            "MigrateVersionStore",
+                    		MIGRATE_VERSION_STORE,
                             transactionService.getRetryingTransactionHelper(),
                             batchProcessorWork, threadCount, 1,
                             applicationEventPublisher, logger, loggingInterval);
@@ -664,7 +848,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         return migrationComplete;
     }
     
-    
     public void executeCleanup(final int batchSize, final int threadCount)
     {
         if (! busy)
@@ -673,156 +856,10 @@ public class VersionMigrator implements ApplicationEventPublisherAware
             {
                 busy = true;
                 
-                final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
-                txHelper.setMaxRetries(1);
-                txHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                {
-                    public Object execute() throws Throwable
-                    {
-                        long startTime = System.currentTimeMillis();
-                        
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount);
-                        }
-                        
-                        NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
-                        List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
-                        
-                        int toDo = childAssocRefs.size();
-                        
-                        if (toDo == 0)
-                        {
-                            migrationComplete = true;
-                        }
-                        else
-                        {
-                            if (logger.isInfoEnabled())
-                            {
-                                logger.info("Found "+toDo+" version histories to delete from old version store (in "+((System.currentTimeMillis()-startTime)/1000)+" secs)");
-                            }
-                            
-                            // note: assumes cleanup runs after patch has completed
-                            
-                            int notMigratedCount = 0;
-                            int batchErrorCount = 0;
-                            int batchCount = 0;
-                            
-                            boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
-                            
-                            try
-                            {
-                                //
-                                // split into batches
-                                //
-                                
-                                long splitTime = System.currentTimeMillis();
-                                
-                                int totalCount = 0;
-                                
-                                Collection<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
-                                final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
-                                
-                                for (final ChildAssociationRef childAssocRef : childAssocRefs)
-                                {
-                                    totalCount++;
-                                    
-                                    if (! isMigrated(childAssocRef))
-                                    {
-                                       notMigratedCount++;
-                                    }
-                                    else
-                                    {
-                                        if (tmpBatch.size() < batchSize)
-                                        {
-                                            tmpBatch.add(childAssocRef.getChildRef());
-                                        }
-                                        
-                                        if ((tmpBatch.size() == batchSize) || (totalCount == childAssocRefs.size()))
-                                        {
-                                            // Each thread gets 1 batch to execute
-                                            batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
-                                            tmpBatch.clear();
-                                        }
-                                    }
-                                }
-                                
-                                batchCount = batchProcessorWork.size();
-                                
-                                if (batchCount > 0)
-                                {
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Split into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
-                                    }
-                                    
-                                    //
-                                    // do the work
-                                    //
-                                    
-                                    BatchProcessWorkerAdaptor<List<NodeRef>> batchProcessorWorker = new BatchProcessWorkerAdaptor<List<NodeRef>>()
-                                    {
-                                        public void process(List<NodeRef> vhBatch) throws Throwable
-                                        {
-                                            long startTime = System.currentTimeMillis();
-                                            
-                                            for (NodeRef oldVHNodeRef : vhBatch)
-                                            {
-                                                // delete old version history node
-                                                v1DeleteVersionHistory(oldVHNodeRef);
-                                            }
-                                            
-                                            if (logger.isTraceEnabled())
-                                            {
-                                                logger.trace("Deleted batch of "+vhBatch.size()+" migrated version histories in "+(System.currentTimeMillis()-startTime)+ " ms ["+AlfrescoTransactionSupport.getTransactionId()+"]["+Thread.currentThread().getId()+"]");
-                                            }
-                                        }
-                                    };
-                                    
-                                    BatchProcessor<List<NodeRef>> batchProcessor = new BatchProcessor<List<NodeRef>>(
-                                            "CleanOldVersionStore",
-                                            transactionService.getRetryingTransactionHelper(),
-                                            batchProcessorWork, threadCount, 1,
-                                            applicationEventPublisher, logger, loggingInterval);
-                                    
-                                    boolean splitTxns = true;
-                                    batchProcessor.process(batchProcessorWorker, splitTxns);
-                                    
-                                    batchErrorCount = batchProcessor.getTotalErrors();
-                                }
-                            }
-                            finally
-                            {
-                                MLPropertyInterceptor.setMLAware(wasMLAware);
-                            }
-                            
-                            if (notMigratedCount > 0)
-                            {
-                                logger.warn(I18NUtil.getMessage(MSG_DELETE_SKIP2, notMigratedCount));
-                            }
-                            
-                            if (batchCount > 0)
-                            {
-                                if (batchErrorCount > 0)
-                                {
-                                    logger.warn(I18NUtil.getMessage(MSG_DELETE_SKIP1, batchErrorCount, ((System.currentTimeMillis()-startTime)/1000)));
-                                }
-                                else
-                                {
-                                    logger.info(I18NUtil.getMessage(MSG_DELETE_COMPLETE, (toDo - notMigratedCount), toDo, ((System.currentTimeMillis()-startTime)/1000)));
-                                    
-                                    if (notMigratedCount == 0)
-                                    {
-                                        migrationComplete = null;
-                                        isMigrationComplete();
-                                    }
-                                }
-                            }
-                        }
-                        
-                        return null;
-                    }
-                }, true, true);
+                CleanupWork work = new CleanupWork(batchSize, threadCount);
+                work.setLoggingInterval(loggingInterval);
+                work.setApplicationEventPublisher(applicationEventPublisher);
+                work.execute();
             }
             finally
             {
@@ -831,8 +868,284 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         }
     }
     
+    private class CleanupWork
+    {
+    	private BatchProcessor<List<NodeRef>> batchProcessor;
+    	private int toDo;
+    	private int threadCount;
+    	private int batchSize;
+    	private int batchErrorCount;
+    	private int batchCount;
+    	private long splitTime;
+    	private int notMigratedCount;
+    	private int loggingInterval;
+    	private Collection<List<NodeRef>> batchProcessorWork;
+    	private ApplicationEventPublisher applicationEventPublisher;
+    	
+    	private long startTime;
+
+    	public CleanupWork(final int batchSize, final int threadCount)
+    	{
+    		this.batchSize = batchSize;
+    		this.threadCount = threadCount;
+    	}
+
+    	public void setLoggingInterval(int loggingInterval)
+    	{
+    		this.loggingInterval = loggingInterval;
+    	}
+
+        public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) 
+        {
+            this.applicationEventPublisher = applicationEventPublisher;
+        }
+        
+    	private void setup()
+    	{
+            final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+            txHelper.setMaxRetries(1);
+            txHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable
+                {
+                	startTime = System.currentTimeMillis();
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount);
+                    }
+                    
+                    NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
+                    List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
+                    
+                    toDo = childAssocRefs.size();
+                    
+                    if (toDo == 0)
+                    {
+                        migrationComplete = true;
+                    }
+                    else
+                    {
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("Found "+toDo+" version histories to delete from old version store (in "+((System.currentTimeMillis()-startTime)/1000)+" secs)");
+                        }
+                        
+                        // note: assumes cleanup runs after patch has completed
+                        
+                        notMigratedCount = 0;
+                        batchErrorCount = 0;
+                        batchCount = 0;
+                        
+                        boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+                        
+                        try
+                        {
+                            //
+                            // split into batches
+                            //
+                            
+                            splitTime = System.currentTimeMillis();
+                            
+                            int totalCount = 0;
+                            
+                            batchProcessorWork = new ArrayList<List<NodeRef>>(2);
+                            final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
+                            
+                            for (final ChildAssociationRef childAssocRef : childAssocRefs)
+                            {
+                                totalCount++;
+                                
+                                if (!isMigrated(childAssocRef))
+                                {
+                                   notMigratedCount++;
+                                }
+                                else
+                                {
+                                    if (tmpBatch.size() < batchSize)
+                                    {
+                                        tmpBatch.add(childAssocRef.getChildRef());
+                                    }
+                                    
+                                    if ((tmpBatch.size() == batchSize) || (totalCount == childAssocRefs.size()))
+                                    {
+                                        // Each thread gets 1 batch to execute
+                                        batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
+                                        tmpBatch.clear();
+                                    }
+                                }
+                            }
+                            
+                            batchCount = batchProcessorWork.size();
+                        }
+                        finally
+                        {
+                            MLPropertyInterceptor.setMLAware(wasMLAware);
+                        }
+                    }
+
+                    return null;
+                }
+            }, true, true);
+    	}
+
+    	private void cleanup()
+    	{
+    		// Note, this is not run in an enclosing transaction. The BatchProcessor will create
+    		// transactions as necessary to perform the work.
+
+    		boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+
+    		try
+    		{
+	    		if (batchCount > 0)
+	    		{
+	    			if (logger.isDebugEnabled())
+	    			{
+	    				logger.debug("Split into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
+	    			}
+	
+	    			//
+	    			// do the work
+	    			//
+	
+	    			BatchProcessWorkerAdaptor<List<NodeRef>> batchProcessorWorker = new BatchProcessWorkerAdaptor<List<NodeRef>>()
+	    			{
+	    				public void process(List<NodeRef> vhBatch) throws Throwable
+	    				{
+	    					long startTime = System.currentTimeMillis();
+	
+	    					for (NodeRef oldVHNodeRef : vhBatch)
+	    					{
+	    						// delete old version history node
+	    						v1DeleteVersionHistory(oldVHNodeRef);
+	    					}
+	
+	    					if (logger.isTraceEnabled())
+	    					{
+	    						logger.trace("Deleted batch of "+vhBatch.size()+" migrated version histories in "+(System.currentTimeMillis()-startTime)+ " ms ["+AlfrescoTransactionSupport.getTransactionId()+"]["+Thread.currentThread().getId()+"]");
+	    					}
+	    				}
+	    			};
+	
+	    			batchProcessor = new BatchProcessor<List<NodeRef>>(
+	    					CLEAN_OLD_VERSION_STORE,
+	    					transactionService.getRetryingTransactionHelper(),
+	    					batchProcessorWork, threadCount, 1,
+	    					applicationEventPublisher, logger, loggingInterval);
+	
+	    			boolean splitTxns = true;
+	    			batchProcessor.process(batchProcessorWorker, splitTxns);
+					batchErrorCount = batchProcessor.getTotalErrors();
+	    		}
+	    	}
+	    	finally
+	    	{
+	    		MLPropertyInterceptor.setMLAware(wasMLAware);
+	    	}
+    	}
+
+    	private void processResults()
+    	{
+            final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+            txHelper.setMaxRetries(1);
+            txHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable
+                {
+		            boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
+		
+		    		try
+		    		{
+			            if (notMigratedCount > 0)
+			            {
+			                logger.warn(I18NUtil.getMessage(MSG_DELETE_SKIP2, notMigratedCount));
+			            }
+			            
+			            if (batchCount > 0)
+			            {
+			                if (batchErrorCount > 0)
+			                {
+			                    logger.warn(I18NUtil.getMessage(MSG_DELETE_SKIP1, batchErrorCount, ((System.currentTimeMillis()-startTime)/1000)));
+			                }
+			                else
+			                {
+			                    logger.info(I18NUtil.getMessage(MSG_DELETE_COMPLETE, (toDo - notMigratedCount), toDo, ((System.currentTimeMillis()-startTime)/1000)));
+			                    
+			                    if (notMigratedCount == 0)
+			                    {
+			                        migrationComplete = null;
+			                        isMigrationComplete();
+			                    }
+			                }
+			            }
+			    	}
+			    	finally
+			    	{
+			    		MLPropertyInterceptor.setMLAware(wasMLAware);
+			    	}
+			    	
+			    	return null;
+                }
+            }, true, true);
+    	}
+
+    	public void execute()
+    	{
+    		setup();
+    		cleanup();
+    		processResults();
+    	}
+    }
+
     protected boolean isMigrated(ChildAssociationRef vhChildAssocRef)
     {
         return (((String)dbNodeService.getProperty(vhChildAssocRef.getChildRef(), ContentModel.PROP_NAME)).startsWith(VersionMigrator.PREFIX_MIGRATED));
+    }
+    
+    private static class MigrationWork
+    {
+    	private int toMigrateCount;
+    	private int alreadyMigratedCount;
+    	private int toDo;
+    	private long splitTime;
+    	private long startTime;
+    	private List<List<NodeRef>> batchProcessorWork;
+
+    	MigrationWork(int toMigrateCount, int alreadyMigratedCount,
+				int toDo, List<List<NodeRef>> batchProcessorWork, long splitTime, long startTime) {
+			super();
+			this.toMigrateCount = toMigrateCount;
+			this.alreadyMigratedCount = alreadyMigratedCount;
+			this.toDo = toDo;
+			this.splitTime = splitTime;
+			this.startTime = startTime;
+			this.batchProcessorWork = batchProcessorWork;
+		}
+
+		int getToMigrateCount() {
+			return toMigrateCount;
+		}
+
+		int getAlreadyMigratedCount() {
+			return alreadyMigratedCount;
+		}
+
+		int getToDo() {
+			return toDo;
+		}
+		
+		long getSplitTime() {
+			return splitTime;
+		}
+
+		long getStartTime() {
+			return startTime;
+		}
+		
+		List<List<NodeRef>> getBatchProcessorWork()
+		{
+			return batchProcessorWork;
+		}
     }
 }

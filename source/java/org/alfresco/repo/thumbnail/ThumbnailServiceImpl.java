@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
@@ -190,6 +191,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
             return ImageRenderingEngine.NAME;
         }
         else if (options instanceof SWFTransformationOptions)
+        {
+            return ReformatRenderingEngine.NAME;
+        }
+        else if (options instanceof RuntimeExecutableContentTransformerOptions)
         {
             return ReformatRenderingEngine.NAME;
         }

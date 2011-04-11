@@ -304,14 +304,14 @@ public class ModuleManagementTool
                 else if (compareValue == 0)
                 {
                     // Trying to install the same extension version again
-                    outputMessage("WARNING: This version of this module is already installed in the WAR");
-                    throw new ModuleManagementToolException("This version of this module is alreay installed.  Use the 'force' parameter if you want to overwrite the current installation.");                    
+                    outputMessage("WARNING: This version of this module is already installed in the WAR. Installation skipped.");
+                    return;
                 }
                 else if (compareValue == 1)
                 {
                     // Trying to install an earlier version of the extension
-                    outputMessage("WARNING: A later version of this module is already installed in the WAR");
-                    throw new ModuleManagementToolException("A later version of this module is already installed.  You must first unistall the current version before installing this version of the module.");
+                    outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.");
+                    return;
                 }
             }
             

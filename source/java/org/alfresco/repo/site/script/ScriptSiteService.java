@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -113,6 +115,18 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     public boolean hasCreateSitePermissions()
     {
     	return siteService.hasCreateSitePermissions();
+    }
+    
+    /**
+     * Determines if the current user is a manager of the given site.
+     * 
+     * @param siteId The short name of the site to check
+     * @return true if the current user is a manager of the given site
+     */
+    public boolean isSiteManager(String siteId)
+    {
+        String role = siteService.getMembersRole(siteId, AuthenticationUtil.getFullyAuthenticatedUser());
+        return (SiteServiceImpl.SITE_MANAGER.equals(role));
     }
     
     /**

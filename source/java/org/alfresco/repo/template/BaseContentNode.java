@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
@@ -71,6 +73,7 @@ public abstract class BaseContentNode implements TemplateContent
     private Boolean isContainer = null;
     private Boolean isLinkToDocument = null;
     private Boolean isLinkToContainer = null;
+    private Boolean hasChildren = null;
     private String siteName;
     private boolean siteNameResolved = false;
     
@@ -282,9 +285,23 @@ public abstract class BaseContentNode implements TemplateContent
                 TemplateNode child = new TemplateNode(ref.getChildRef(), this.services, this.imageResolver);
                 this.children.add(child);
             }
+            this.hasChildren = (childRefs.size() != 0);
         }
         
         return this.children;
+    }
+    
+    /**
+     * @return true if the node has the children false otherwise
+     */
+    public boolean getHasChildren()
+    {
+        if (this.hasChildren == null)
+        {
+             this.hasChildren = !this.services.getNodeService().getChildAssocs(
+                   getNodeRef(), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false).isEmpty();
+        }
+        return this.hasChildren;
     }
     
     /**
@@ -525,7 +542,8 @@ public abstract class BaseContentNode implements TemplateContent
                         Path.Element siteName = path.get(i+1);
                      
                         // remove the "cm:" prefix and add to result object
-                        this.siteName = siteName.getPrefixedString(this.services.getNamespaceService()).substring(3);
+                        this.siteName = ISO9075.decode(siteName.getPrefixedString(
+                                    this.services.getNamespaceService()).substring(3));
                     }
                   
                     break;

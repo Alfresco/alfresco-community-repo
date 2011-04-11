@@ -76,7 +76,7 @@
       </property>
       <property name="transformationOptionOverrides">
          <map>
-            <entry key="includeContents" value="no" />
+            <entry key="includeEmbedded" value="no" />
          </map>
       </property>
    </bean>

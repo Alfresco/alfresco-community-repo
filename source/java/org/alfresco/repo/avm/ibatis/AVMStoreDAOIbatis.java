@@ -29,6 +29,8 @@ import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.domain.permissions.Acl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * iBATIS DAO wrapper for AVMStore
@@ -37,6 +39,8 @@ import org.alfresco.repo.domain.permissions.Acl;
  */
 class AVMStoreDAOIbatis implements AVMStoreDAO
 {
+    private static Log logger = LogFactory.getLog(AVMStoreDAOIbatis.class);
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMStoreDAO#save(org.alfresco.repo.avm.AVMStore)
      */
@@ -134,7 +138,26 @@ class AVMStoreDAOIbatis implements AVMStoreDAO
         }
         store.setStoreAcl(acl);
         
-        DirectoryNode rootNode = (DirectoryNode) ((AVMNodeDAOIbatis)AVMDAOs.Instance().fAVMNodeDAO).getRootNodeByID(store, storeEntity.getRootNodeId());
+        Long rootNodeId = storeEntity.getRootNodeId();
+        if (rootNodeId == null)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Root node id is null for store: "+storeEntity);
+            }
+            return null;
+        }
+        
+        DirectoryNode rootNode = (DirectoryNode) ((AVMNodeDAOIbatis)AVMDAOs.Instance().fAVMNodeDAO).getRootNodeByID(store, rootNodeId);
+        if (rootNode == null)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Root node ("+rootNodeId+") not found for store: "+storeEntity);
+            }
+            return null;
+        }
+        
         store.setRoot(rootNode);
         
         return store;

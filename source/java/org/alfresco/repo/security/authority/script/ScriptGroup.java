@@ -19,6 +19,9 @@
 package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -187,46 +190,84 @@ public class ScriptGroup implements Authority, Serializable
 	private ScriptGroup[] childGroups; 
 	public ScriptGroup[] getChildGroups()
 	{
+	    return getChildGroups(-1, -1);
+	}
+
+	/**
+	 * Get child groups of this group
+	 */
+	public ScriptGroup[] getChildGroups(int maxItems, int skipCount)
+	{
 		if(childGroups == null)
 		{
 			Set<String> children = getChildNamesOfType(AuthorityType.GROUP);
-			Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-			for(String authority : children)
-			{
-				ScriptGroup group = new ScriptGroup(authority, authorityService);
-				groups.add(group);
-			
-			}
+			Set<ScriptGroup> groups =makeScriptGroups(children); 
 			childGroups = groups.toArray(new ScriptGroup[groups.size()]);
 		}
-		return childGroups;
+		return makePagedGroups(maxItems, skipCount, childGroups);
 	}
 	
 	/**
 	 * Get the parents of this this group
 	 */
 	private ScriptGroup[] parentCache;
-	
+
+	   
+    /**
+     * Get the immediate parents of this group
+     * @return the immediate parents of this group
+     */
+    public ScriptGroup[] getParentGroups()
+    {
+        return getParentGroups(-1, -1);
+    }
+    
 	/**
 	 * Get the immediate parents of this group
 	 * @return the immediate parents of this group
 	 */
-	public ScriptGroup[] getParentGroups()
+	public ScriptGroup[] getParentGroups(int maxItems, int skipCount)
 	{
 		if(parentCache == null)
 		{
 			Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, true);
-			Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-			for(String authority : parents)
-			{
-				ScriptGroup group = new ScriptGroup(authority, authorityService);
-				groups.add(group);
-			
-			}
+			Set<ScriptGroup> groups = makeScriptGroups(parents);
 			parentCache = groups.toArray(new ScriptGroup[groups.size()]);
 		}
-		return parentCache;
+		return makePagedGroups(maxItems, skipCount, parentCache);
 	}
+
+    private ScriptGroup[] makePagedGroups(int maxItems, int skipCount, ScriptGroup[] groups)
+    {
+        boolean invalidSkipCount = skipCount <1 || skipCount>= groups.length;
+		skipCount = invalidSkipCount ? 0 : skipCount;
+		int maxSize = groups.length - skipCount;
+		boolean invalidMaxItems = maxItems <1 || maxItems>=maxSize;
+
+		if(invalidMaxItems && invalidSkipCount)
+		{
+		    return groups;
+		}
+		
+		maxItems = invalidMaxItems ? maxSize : maxItems;
+		ScriptGroup[] results = new ScriptGroup[maxItems];
+		System.arraycopy(groups, skipCount, results, 0, maxItems);
+        return results;
+    }
+
+    private Set<ScriptGroup> makeScriptGroups(Set<String> parents)
+    {
+        ArrayList<String> sortedParents = new ArrayList<String>(parents);
+        Collections.sort(sortedParents);
+        LinkedHashSet<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+        for(String authority : sortedParents)
+        {
+        	ScriptGroup group = new ScriptGroup(authority, authorityService);
+        	groups.add(group);
+        
+        }
+        return groups;
+    }
 	
 	/**
 	 * Get all the parents of this this group
@@ -234,15 +275,20 @@ public class ScriptGroup implements Authority, Serializable
 	 */
 	public ScriptGroup[] getAllParentGroups()
 	{
+	    return getAllParentGroups(-1, -1);
+	}
+
+    /**
+     * Get all the parents of this this group
+     * 
+     * @param maxItems Maximum number of groups to return.
+     * @param skipCount number of groups to skip before returning the first result.
+     * @return all the parents of this group
+     */
+    public ScriptGroup[] getAllParentGroups(int maxItems, int skipCount)
+    {
 		Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, false);
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		for(String authority : parents)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
-			
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+		return makeScriptGroups(parents, maxItems, skipCount, authorityService);
 	}
 	
 	/**
@@ -304,9 +350,9 @@ public class ScriptGroup implements Authority, Serializable
 	 * Create a new group as a child of this group.
 	 * @return the new group
 	 */
-	public ScriptGroup createGroup(String shortName, String displayName)
+	public ScriptGroup createGroup(String newShortName, String newDisplayName)
 	{
-		String authorityName = authorityService.createAuthority(AuthorityType.GROUP, shortName, displayName, authorityService.getDefaultZones());
+		String authorityName = authorityService.createAuthority(AuthorityType.GROUP, newShortName, displayName, authorityService.getDefaultZones());
 		authorityService.addAuthority(fullName, authorityName);
 		ScriptGroup childGroup = new ScriptGroup(authorityName, authorityService);
 		clearCaches();
@@ -315,11 +361,11 @@ public class ScriptGroup implements Authority, Serializable
 		
 	/**
 	 * remove sub group from this group
-	 * @param shortName the shortName of the sub group to remove from this group.
+	 * @param newShortName the shortName of the sub group to remove from this group.
 	 */
-	public void removeGroup(String shortName)
+	public void removeGroup(String newShortName)
 	{
-		String fullAuthorityName = authorityService.getName(AuthorityType.GROUP, shortName);
+		String fullAuthorityName = authorityService.getName(AuthorityType.GROUP, newShortName);
 		
 		authorityService.removeAuthority(fullName, fullAuthorityName);
 		clearCaches();
@@ -327,11 +373,11 @@ public class ScriptGroup implements Authority, Serializable
 	
 	/**
 	 * Remove child user from this group
-	 * @param shortName the shortName of the user to remove from this group.
+	 * @param newShortName the shortName of the user to remove from this group.
 	 */
-	public void removeUser(String shortName)
+	public void removeUser(String newShortName)
 	{
-		String fullAuthorityName = authorityService.getName(AuthorityType.USER, shortName);
+		String fullAuthorityName = authorityService.getName(AuthorityType.USER, newShortName);
 		
 		authorityService.removeAuthority(fullName, fullAuthorityName);
 		clearCaches();
@@ -366,5 +412,35 @@ public class ScriptGroup implements Authority, Serializable
 		childGroups = null;
 		childAuthorityNames = null;
 	}
+	
+    public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
+                int maxItems, int skipCount, AuthorityService authorityService)
+    {
+        ArrayList<String> authList = new ArrayList<String>(authorities);
+        Collections.sort(authList);
+        int totalItems = authList.size();
+        if(maxItems<1 || maxItems>totalItems)
+        {
+            maxItems = totalItems;
+        }
+        if(skipCount<0)
+        {
+            skipCount = 0;
+        }
+        int endPoint = skipCount + maxItems;
+        if(endPoint > totalItems)
+        {
+            endPoint = totalItems;
+        }
+        int size = skipCount > endPoint ? 0 : endPoint - skipCount;
+        ScriptGroup[] groups = new ScriptGroup[size];
+        for (int i = skipCount; i < endPoint; i++)
+        {
+            String authority = authList.get(i);
+            ScriptGroup group = new ScriptGroup(authority, authorityService);
+            groups[i-skipCount] = group;
+        }
+        return groups;
+    }
 	
 }

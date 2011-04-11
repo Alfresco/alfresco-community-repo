@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -27,6 +26,7 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Test class for ArchiveContentTransformer.
@@ -110,7 +110,7 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
 
        
        // Bean on, Transformation Options off
-       transformer.setIncludeContents("TRUE");
+       transformer.setIncludeContents("T");
 
        writer = getTestWriter();
        transformer.transform(getTestReader(), writer, options);
@@ -131,7 +131,7 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
        
        
        // Bean on, Transformation Options on
-       transformer.setIncludeContents("TRUE");
+       transformer.setIncludeContents("YeS");
 
        writer = getTestWriter();
        transformer.transform(getTestReader(), writer, options);
@@ -147,7 +147,7 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
        return sourceReader;
     }
     private ContentWriter getTestWriter() throws IOException {
-       ContentWriter writer = new FileContentWriter(File.createTempFile("test", ".txt"));
+       ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile("test", ".txt"));
        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
        return writer;
     }

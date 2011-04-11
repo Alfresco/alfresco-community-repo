@@ -102,6 +102,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private int maxUserNameGenRetries = MAX_NUM_INVITEE_USER_NAME_GEN_TRIES;
 
+    // Property determining whether emails should be sent.
+    private boolean sendEmails = true;
     /**
      * Set the policy component
      * 
@@ -1450,5 +1452,21 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         }
         
         return I18NUtil.getMessage(messageId, siteTitle);
+    }
+    
+    /**
+     * @param sendEmails the sendEmails to set
+     */
+    public void setSendEmails(boolean sendEmails)
+    {
+        this.sendEmails = sendEmails;
+    }
+    
+    /**
+     * @return true if emails are sent on invite.
+     */
+    public boolean isSendEmails()
+    {
+        return sendEmails;
     }
 }

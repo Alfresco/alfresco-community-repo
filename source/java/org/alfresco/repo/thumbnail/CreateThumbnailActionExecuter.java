@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -27,6 +28,7 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -103,9 +105,22 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 contentProperty = ContentModel.PROP_CONTENT;
             }
             
+            // If there isn't a currently active transformer for this, log and skip
+            Serializable contentProp = nodeService.getProperty(actionedUponNodeRef, contentProperty);
+            if(contentProp != null && contentProp instanceof ContentData)
+            {
+                String mimetype = ((ContentData)contentProp).getMimetype();
+                if (!registry.isThumbnailDefinitionAvailable(mimetype, details))
+                {
+                    logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
+                            mimetype + " as no transformer is currently available");
+                    return;
+                }
+            }
+            
+            // Create the thumbnail
             try
             {
-                // Create the thumbnail
                 this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), details.getTransformationOptions(), thumbnailName, null);
             }
             catch (Exception exception)

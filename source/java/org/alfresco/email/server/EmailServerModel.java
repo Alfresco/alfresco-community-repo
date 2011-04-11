@@ -40,6 +40,4 @@ public interface EmailServerModel
 
     static final QName PROP_ALIAS = QName.createQName(NamespaceService.EMAILSERVER_MODEL_URI, "alias");
 
-    // Aspect emailed
-    static final QName ASPECT_EMAILED = QName.createQName(NamespaceService.EMAILSERVER_MODEL_URI, "emailed");
 }

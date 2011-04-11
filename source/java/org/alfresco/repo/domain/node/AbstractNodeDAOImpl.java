@@ -79,8 +79,8 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
+import org.alfresco.util.SerializationUtils;
 import org.alfresco.util.EqualsHelper.MapValueComparison;
-import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -94,10 +94,6 @@ import org.springframework.util.Assert;
  * for CRUD operations. 
  * <p>
  * TODO: Timestamp propagation
- * TODO: Local retries for certain operations that might benefit
- * TODO: Take out joins to parent nodes for selectChildAssoc queries (it's static data)
- * TODO: Child nodes' cache invalidation must use a leaner query
- * TODO: Bulk loading of caches
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -357,6 +353,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 return serverIdStorage.get();
             }
+            // Avoid write operations in read-only transactions
+            //    ALF-5456: IP address change can cause read-write errors on startup
+            if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY)
+            {
+                return null;
+            }
+
             // Server IP address
             String ipAddress = null;
             try
@@ -386,7 +389,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /**
-     * Get the ID of the current server
+     * Get the ID of the current server, or <tt>null</tt> if there is no ID for the current
+     * server and one can't be created.
      * 
      * @see ServerIdCallback
      */
@@ -792,14 +796,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param nodeId                the node
      * @return                      Returns the fully populated node
-     * @throws DataIntegrityViolationException if the ID doesn't reference a <b>live</b> node
+     * @throws ConcurrencyFailureException if the ID doesn't reference a <b>live</b> node
      */
     private Node getNodeNotNull(Long nodeId)
     {
         Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
         if (pair == null || pair.getSecond().getDeleted())
         {
-            throw new DataIntegrityViolationException("No live node exists for ID " + nodeId);
+            throw new ConcurrencyFailureException("No live node exists for ID " + nodeId);
         }
         else
         {

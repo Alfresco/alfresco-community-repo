@@ -102,5 +102,10 @@
         <property name="siteService" ref="siteService"/>
     </bean>
     
-    
+    <!-- Behaviours and policies for Sites -->
+    <bean id="siteAspect" class="org.alfresco.repo.site.SiteAspect" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+    </bean>
+   
 </beans>

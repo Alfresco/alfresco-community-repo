@@ -659,10 +659,6 @@ public class BatchProcessor<T> implements BatchMonitor
         /** Has a retryable failure occurred ? */
         private boolean hadRetryFailure;
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute ()
-         */
         public Object execute() throws Throwable
         {
             reset();
@@ -730,10 +726,6 @@ public class BatchProcessor<T> implements BatchMonitor
             return null;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Runnable#run()
-         */
         public void run()
         {
             try
@@ -748,9 +740,23 @@ public class BatchProcessor<T> implements BatchMonitor
             final BatchProcessor<T>.TxnCallback callback = this;
             try
             {
+                Throwable tt = null;
                 worker.beforeProcess();
-                BatchProcessor.this.retryingTransactionHelper.doInTransaction(callback, false, splitTxns);
+                try
+                {
+                    BatchProcessor.this.retryingTransactionHelper.doInTransaction(callback, false, splitTxns);
+                }
+                catch (Throwable t)
+                {
+                    // Keep this and rethrow
+                    tt = t;
+                }
                 worker.afterProcess();
+                // Throw if there was a processing exception
+                if (tt != null)
+                {
+                    throw tt;
+                }
             }
             catch (Throwable t)
             {
@@ -874,5 +880,4 @@ public class BatchProcessor<T> implements BatchMonitor
             }
         }
     }
-
 }

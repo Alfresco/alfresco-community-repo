@@ -29,12 +29,13 @@ import net.sf.ehcache.CacheException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 
 /**
  * A 2-level cache that mainains both a transaction-local cache and
@@ -78,13 +79,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
 
     /** a name used to uniquely identify the transactional caches */
     private String name;
-    
+    /** enable/disable write through to the shared cache */
+    private boolean disableSharedCache;
     /** the shared cache that will get updated after commits */
     private SimpleCache<Serializable, Object> sharedCache;
-
+    /** can the cached values be modified */
+    private boolean isMutable;
     /** the maximum number of elements to be contained in the cache */
     private int maxCacheSize = 500;
-    
     /** a unique string identifying this instance when binding resources */
     private String resourceKeyTxnData;
 
@@ -95,6 +97,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         logger = LogFactory.getLog(TransactionalCache.class);
         isDebugEnabled = logger.isDebugEnabled();
+        disableSharedCache = false;
+        isMutable = true;
     }
     
     /**
@@ -119,7 +123,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return false;
         }
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         TransactionalCache that = (TransactionalCache) obj;
         return EqualsHelper.nullSafeEquals(this.name, that.name);
     }
@@ -133,11 +137,30 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Set the shared cache to use during transaction synchronization or when no transaction
      * is present.
      * 
-     * @param sharedCache
+     * @param sharedCache           underlying cache shared by transactions
      */
     public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
     {
         this.sharedCache = sharedCache;
+    }
+
+    /**
+     * Set whether values must be written through to the shared cache or not
+     * 
+     * @param disableSharedCache    <tt>true</tt> to prevent values from being written to
+     *                              the shared cache
+     */
+    public void setDisableSharedCache(boolean disableSharedCache)
+    {
+        this.disableSharedCache = disableSharedCache;
+    }
+
+    /**
+     * @param isMutable             <tt>true</tt> if the data stored in the cache is modifiable
+     */
+    public void setMutable(boolean isMutable)
+    {
+        this.isMutable = isMutable;
     }
 
     /**
@@ -170,12 +193,20 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     public void afterPropertiesSet() throws Exception
     {
-        Assert.notNull(name, "name property not set");
+        PropertyCheck.mandatory(this, "name", name);
+        PropertyCheck.mandatory(this, "sharedCache", sharedCache);
+        
         // generate the resource binding key
         resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + name;
         // Refine the log category
         logger = LogFactory.getLog(TransactionalCache.class.getName() + "." + name);
         isDebugEnabled = logger.isDebugEnabled();
+        
+        // Assign a 'null' cache if write-through is disabled
+        if (disableSharedCache)
+        {
+            sharedCache = new NullCache<Serializable, Object>();
+        }
     }
 
     /**
@@ -183,6 +214,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     private TransactionData getTransactionData()
     {
+        @SuppressWarnings("unchecked")
         TransactionData data = (TransactionData) AlfrescoTransactionSupport.getResource(resourceKeyTxnData);
         if (data == null)
         {
@@ -190,6 +222,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             // create and initialize caches
             data.updatedItemsCache = new LRULinkedHashMap<K, CacheBucket<V>>(23);
             data.removedItemsCache = new HashSet<K>(13);
+            data.isReadOnly = AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
             // ensure that we get the transaction callbacks as we have bound the unique
             // transactional caches to a common manager
@@ -570,10 +603,62 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * NO-OP
+     * Merge the transactional caches into the shared cache
      */
     public void beforeCommit(boolean readOnly)
     {
+        if (isDebugEnabled)
+        {
+            logger.debug("Processing before-commit");
+        }
+        
+        TransactionData txnData = getTransactionData();
+        try
+        {
+            if (txnData.isClearOn)
+            {
+                // clear shared cache
+                sharedCache.clear();
+                if (isDebugEnabled)
+                {
+                    logger.debug("Clear notification recieved in commit - clearing shared cache");
+                }
+            }
+            else
+            {
+                // transfer any removed items
+                for (Serializable key : txnData.removedItemsCache)
+                {
+                    sharedCache.remove(key);
+                }
+                if (isDebugEnabled)
+                {
+                    logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache in commit");
+                }
+            }
+
+            // transfer updates
+            Set<K> keys = (Set<K>) txnData.updatedItemsCache.keySet();
+            for (Map.Entry<K, CacheBucket<V>> entry : (Set<Map.Entry<K, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
+            {
+                K key = entry.getKey();
+                CacheBucket<V> bucket = entry.getValue();
+                bucket.doPreCommit(sharedCache, key, this.isMutable, txnData.isReadOnly);
+            }
+            if (isDebugEnabled)
+            {
+                logger.debug("Pre-commit called for " + keys.size() + " values.");
+            }
+        }
+        catch (CacheException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
+        }
+        finally
+        {
+            // Block any further updates
+            txnData.isClosed = true;
+        }
     }
 
     /**
@@ -617,11 +702,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 K key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
-                bucket.doPostCommit(sharedCache, key);
+                bucket.doPostCommit(sharedCache, key, this.isMutable, txnData.isReadOnly);
             }
             if (isDebugEnabled)
             {
-                logger.debug("Added " + keys.size() + " values to shared cache");
+                logger.debug("Post-commit called for " + keys.size() + " values.");
             }
         }
         catch (CacheException e)
@@ -705,7 +790,20 @@ public class TransactionalCache<K extends Serializable, V extends Object>
          * @param sharedCache       the cache to flush to
          * @param key               the key that the bucket was stored against
          */
-        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key);
+        public void doPreCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly);
+        /**
+         * Flush the current bucket to the shared cache as far as possible.
+         * 
+         * @param sharedCache       the cache to flush to
+         * @param key               the key that the bucket was stored against
+         */
+        public void doPostCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly);
     }
     
     /**
@@ -726,18 +824,43 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return value;
         }
-        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
+        public void doPreCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
         {
-            Object sharedValue = sharedCache.get(key);
-            if (sharedValue != null)
+        }
+        public void doPostCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
+        {
+            Object sharedObj = sharedCache.get(key);
+            if (!mutable)
             {
-                // A value was added during the txn
-                sharedCache.remove(key);
+                // Value can't change
+                if (sharedObj == null)
+                {
+                    // Still nothing in the cache
+                    sharedCache.put(key, value);
+                }
+            }
+            else if (readOnly)
+            {
+                // Only add if nothing else has been added in the interim
+                if (sharedObj == null)
+                {
+                    sharedCache.put(key, value);
+                }
             }
             else
             {
-                // The shared cache value is still null (it might have changed a few times, though) so write
-                sharedCache.put(key, value);
+                // Mutable, read-write
+                if (sharedObj != null)
+                {
+                    // Remove new value in the cache
+                    sharedCache.remove(key);
+                }
             }
         }
     }
@@ -762,25 +885,45 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return value;
         }
-        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
+        public void doPreCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
         {
-            Object sharedValue = sharedCache.get(key);
-            if (sharedValue != null)
+        }
+        public void doPostCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
+        {
+            Object sharedObj = sharedCache.get(key);
+            if (!mutable)
             {
-                if (sharedValue == originalValue)
+                // Not normally required as mutable objects don't change,
+                // but we can write it straight through as it should represent
+                // unchanging values
+                sharedCache.put(key, value);
+            }
+            else if (readOnly)
+            {
+                // Only add if value has not changed in the interim
+                if (sharedObj == originalValue)
                 {
-                    // The cache entry is safe for writing
-                    sharedCache.put(key, getValue());
-                }
-                else
-                {
-                    // The shared value has moved on since
-                    sharedCache.remove(key);
+                    sharedCache.put(key, value);
                 }
             }
             else
             {
-                // The shared cache no longer has a value
+                // Mutable, read-write
+                if (sharedObj == originalValue)
+                {
+                    sharedCache.put(key, value);
+                }
+                else
+                {
+                    // The value changed
+                    sharedCache.remove(key);
+                }
             }
         }
     }
@@ -793,6 +936,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;
+        private boolean isReadOnly;
     }
     
     /**

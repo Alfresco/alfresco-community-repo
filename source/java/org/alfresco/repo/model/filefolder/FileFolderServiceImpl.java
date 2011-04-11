@@ -34,8 +34,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
 import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -698,7 +696,7 @@ public class FileFolderServiceImpl implements FileFolderService
         String marker = sourceNodeRef.toString()+"rename";
         nodeRefRenameSet.add(marker);
     	
-        return moveOrCopy(sourceNodeRef, null, newName, true);
+        return moveOrCopy(sourceNodeRef, null, null, newName, true);
     }
 
     /**
@@ -706,7 +704,15 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
     {
-        return moveOrCopy(sourceNodeRef, targetParentRef, newName, true);
+        return moveOrCopy(sourceNodeRef, null, targetParentRef, newName, true);
+    }
+    
+    /**
+     * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
+     */
+    public FileInfo move(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
+    {
+        return moveOrCopy(sourceNodeRef, sourceParentRef, targetParentRef, newName, true);
     }
     
     /**
@@ -714,7 +720,7 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileInfo copy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
     {
-        return moveOrCopy(sourceNodeRef, targetParentRef, newName, false);
+        return moveOrCopy(sourceNodeRef, null, targetParentRef, newName, false);
     }
 
     /**
@@ -722,7 +728,7 @@ public class FileFolderServiceImpl implements FileFolderService
      * 
      * @param move true to move, otherwise false to copy
      */
-    private FileInfo moveOrCopy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName, boolean move) throws FileExistsException, FileNotFoundException
+    private FileInfo moveOrCopy(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName, boolean move) throws FileExistsException, FileNotFoundException
     {
         // get file/folder in its current state
         FileInfo beforeFileInfo = toFileInfo(sourceNodeRef, true);
@@ -731,11 +737,37 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             newName = beforeFileInfo.getName();
         }
-        
+
         boolean nameChanged = (newName.equals(beforeFileInfo.getName()) == false);
-        
+
+        // check is primary parent
+        boolean isPrimaryParent = true;
+        if (sourceParentRef != null)
+        {
+            isPrimaryParent = sourceParentRef.equals(nodeService.getPrimaryParent(sourceNodeRef).getParentRef());
+        }
+
         // we need the current association type
-        ChildAssociationRef assocRef = nodeService.getPrimaryParent(sourceNodeRef);
+        ChildAssociationRef assocRef = null;
+        if (isPrimaryParent)
+        {
+            assocRef = nodeService.getPrimaryParent(sourceNodeRef);
+        }
+        else
+        {
+            List<ChildAssociationRef> assocList = nodeService.getParentAssocs(sourceNodeRef);
+            if (assocList != null)
+            {
+                for (ChildAssociationRef assocListEntry : assocList)
+                {
+                    if (sourceParentRef.equals(assocListEntry.getParentRef()))
+                    {
+                        assocRef = assocListEntry;
+                        break;
+                    }
+                }
+            }
+        }
         if (targetParentRef == null)
         {
             targetParentRef = assocRef.getParentRef();
@@ -772,21 +804,29 @@ public class FileFolderServiceImpl implements FileFolderService
         
         QName targetParentType = nodeService.getType(targetParentRef);
         
-        // Fix AWC-1517
+        // Fix AWC-1517 & ALF-5569
         QName assocTypeQname = null;
-        if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_FOLDER))
+        if (nameChanged && move)
         {
-        	assocTypeQname = ContentModel.ASSOC_CONTAINS; // cm:folder -> cm:contains
-        }
-        else if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_CONTAINER))
-        {
-        	assocTypeQname = ContentModel.ASSOC_CHILDREN; // sys:container -> sys:children
+            // if it's a rename use the existing assoc type
+            assocTypeQname = assocRef.getTypeQName();
         }
         else
         {
-        	throw new InvalidTypeException("Unexpected type (" + targetParentType + ") for target parent: " + targetParentRef);
+            if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_FOLDER))
+            {
+            	assocTypeQname = ContentModel.ASSOC_CONTAINS; // cm:folder -> cm:contains
+            }
+            else if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_CONTAINER))
+            {
+            	assocTypeQname = ContentModel.ASSOC_CHILDREN; // sys:container -> sys:children
+            }
+            else
+            {
+            	throw new InvalidTypeException("Unexpected type (" + targetParentType + ") for target parent: " + targetParentRef);
+            }
         }
-               
+        
         // move or copy
         NodeRef targetNodeRef = null;
         if (move)
@@ -805,12 +845,19 @@ public class FileFolderServiceImpl implements FileFolderService
                 }
                 try
                 {
-                    // move the node so that the association moves as well
-                    ChildAssociationRef newAssocRef = nodeService.moveNode(
-                            sourceNodeRef,
-                            targetParentRef,
-                            assocTypeQname,
-                            qname);
+                    ChildAssociationRef newAssocRef = null;
+
+                    if (isPrimaryParent)
+                    {
+                        // move the node so that the association moves as well
+                        newAssocRef = nodeService.moveNode(sourceNodeRef, targetParentRef, assocTypeQname, qname);
+                    }
+                    else
+                    {
+                        nodeService.removeChild(sourceParentRef, sourceNodeRef);
+                        newAssocRef = nodeService.addChild(targetParentRef, sourceNodeRef, assocRef.getTypeQName(), assocRef.getQName());
+                    }
+
                     targetNodeRef = newAssocRef.getChildRef();
                 }
                 catch (DuplicateChildNodeNameException e)

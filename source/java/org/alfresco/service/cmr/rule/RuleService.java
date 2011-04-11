@@ -125,6 +125,30 @@ public interface RuleService
      */
     @Auditable(parameters = {"rule"})
     public void enableRule(Rule rule);
+    
+    /**
+     * Disables the rules of a given type.
+     * 
+     * @param ruleType	rule type
+     */
+    @Auditable(parameters = {"ruleType"})
+    public void disableRuleType(String ruleType);
+
+    /**
+     * Enables rules of a given type.
+     * 
+     * @param ruleType 	rule type
+     */
+    @Auditable(parameters = {"ruleType"})
+    public void enableRuleType(String ruleType);
+    
+    /**
+     * Indicates whether the rule is enabled or not
+     * @param ruleType	rule type
+     * @return boolean	true if enabled false otherwise
+     */
+    @Auditable(parameters = {"ruleType"})
+    public boolean isRuleTypeEnabled(String ruleType);
 
     /**
      * Indicates whether the node in question has any rules associated with it.

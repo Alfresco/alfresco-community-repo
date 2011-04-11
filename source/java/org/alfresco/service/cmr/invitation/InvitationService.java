@@ -200,14 +200,19 @@ public interface InvitationService
    @NotAuditable
 	public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName);
 		
- 	/**
- 	 * search invitation
- 	 * 
- 	 * @param criteria
- 	 * @return the list of invitations
- 	 */
+    /**
+     * search invitation
+     * 
+     * @param criteria
+     * @return the list of invitations
+     */
    @NotAuditable
- 	public List<Invitation> searchInvitation(InvitationSearchCriteria criteria);
+   public List<Invitation> searchInvitation(InvitationSearchCriteria criteria);
 	
+    /**
+     * @return true if emails are sent on invite.
+     */
+    @NotAuditable
+    boolean isSendEmails();
 	
 }

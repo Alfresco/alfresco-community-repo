@@ -19,13 +19,15 @@
 package org.alfresco.email.server.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessagePart;
 
 /**
- * Implementation EmailMessage interface.   
+ * Implementation EmailMessage interface. 
  * 
+ * @deprecated - class not used.  
  * @author maxim
  * @since 2.2
  */
@@ -79,6 +81,11 @@ public class EmailMessageImpl implements EmailMessage
     public String getSubject() 
     {
         return subject;
+    }
+    
+    public List<String> getCC() 
+    {
+        return null;
     }
 
     public Date getSentDate() 

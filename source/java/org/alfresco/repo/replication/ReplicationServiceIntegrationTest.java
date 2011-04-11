@@ -38,6 +38,8 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.replication.script.ScriptReplicationDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.TransferServiceImpl2;
 import org.alfresco.repo.transfer.TransferTransmitter;
@@ -129,6 +131,11 @@ public class ReplicationServiceIntegrationTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            fail("Dangling transaction detected.");
+        }
+        
         replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
         replicationService = (ReplicationService) ctx.getBean("replicationService");
         replicationParams = (ReplicationParams) ctx.getBean("replicationParams");
@@ -568,7 +575,14 @@ public class ReplicationServiceIntegrationTest extends TestCase
        // Will execute without error
        txn = transactionService.getUserTransaction();
        txn.begin();
-       actionService.executeAction(rd, replicationRoot);
+       try {
+           actionService.executeAction(rd, replicationRoot);
+       } catch(ReplicationServiceException e) {
+           // This shouldn't happen normally! Something is wrong!
+           // Tidy up before we throw the exception
+           txn.rollback();
+           throw e;
+       }
        txn.commit();
        
        
@@ -649,7 +663,14 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        UserTransaction txn = transactionService.getUserTransaction();
        txn.begin();
-       actionService.executeAction(rd, replicationRoot);
+       try {
+           actionService.executeAction(rd, replicationRoot);
+       } catch(ReplicationServiceException e) {
+           // This shouldn't happen normally! Something is wrong!
+           // Tidy up before we throw the exception
+           txn.rollback();
+           throw e;
+       }
        txn.commit();
        long end = System.currentTimeMillis();
        
@@ -774,7 +795,14 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        txn = transactionService.getUserTransaction();
        txn.begin();
-       actionService.executeAction(rd, replicationRoot);
+       try {
+           actionService.executeAction(rd, replicationRoot);
+       } catch(ReplicationServiceException e) {
+           // This shouldn't happen normally! Something is wrong!
+           // Tidy up before we throw the exception
+           txn.rollback();
+           throw e;
+       }
        txn.commit();
        
        // Correct things have turned up

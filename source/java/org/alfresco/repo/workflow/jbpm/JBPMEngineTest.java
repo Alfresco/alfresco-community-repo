@@ -538,8 +538,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     }        
 
     
-    public void testScript()
-        throws IOException
+    public void testScript() throws IOException
     {
         // deploy test script definition
         ClassPathResource processDef = new ClassPathResource("jbpmresources/test_script.xml");
@@ -561,6 +560,48 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         assertNotNull(updatedTask);
     }        
     
+//    public void testAssignTaskVariablesWithScript() throws Exception
+//    {
+//        WorkflowDefinition definition = workflowComponent.getDefinitionByName("jbpm$testwf:testTaskVarScriptAssign");
+//        assertNotNull(definition);
+//        
+//        String testwfUrl = "http://www.alfresco.org/model/workflow/test/1.0";
+//        QName simpleTextName = QName.createQName(testwfUrl, "simpleText");
+//        QName listConstrainedName = QName.createQName(testwfUrl, "listConstrainedText");
+//        
+//        String simpleTextValue = "Foo";
+//        String listConstrainedValue = "Second";
+//        
+//        
+//        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+//        params.put(simpleTextName, simpleTextValue);
+//        params.put(listConstrainedName, listConstrainedValue);
+//        params.put(WorkflowModel.ASSOC_PACKAGE, packageComponent.createPackage(null));
+//        
+//        WorkflowPath path = workflowComponent.startWorkflow(definition.getId(), params);
+//        // End start task.
+//        List<WorkflowTask> tasks = workflowComponent.getTasksForWorkflowPath(path.getId());
+//        
+//        // Get Start Task
+//        assertEquals(1, tasks.size());
+//        WorkflowTask startTask = tasks.get(0);
+//        QName startTaskName = definition.getStartTaskDefinition().getMetadata().getName();
+//        assertEquals("This is not the start task!", startTaskName, startTask.getDefinition().getMetadata().getName());
+//
+//        taskComponent.endTask(startTask.getId(), null);
+//        
+//        tasks = workflowComponent.getTasksForWorkflowPath(path.getId());
+//        
+//        // Get Task
+//        assertEquals(1, tasks.size());
+//        WorkflowTask task = tasks.get(0);
+//        QName taskName = QName.createQName(testwfUrl, "assignVarTask");
+//        assertEquals("This is not the start task!", taskName, task.getDefinition().getMetadata().getName());
+//        
+//        Map<QName, Serializable> props = task.getProperties();
+//        assertEquals("Simple Text property value doesn't match!", simpleTextValue, props.get(simpleTextName));
+//        assertEquals("List Constrained property value doesn't match!", listConstrainedValue, props.get(listConstrainedName));
+//    }
     
     /**
      * Locate the Test Workflow Definition

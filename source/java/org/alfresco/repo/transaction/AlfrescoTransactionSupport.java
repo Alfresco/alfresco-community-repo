@@ -144,6 +144,11 @@ public abstract class AlfrescoTransactionSupport
         TXN_READ_WRITE
     }
     
+    public static boolean isActualTransactionActive()
+    {
+    	return TransactionSynchronizationManager.isActualTransactionActive();
+    }
+    
     /**
      * @return      Returns the read-write state of the current transaction
      * @since 2.1.4

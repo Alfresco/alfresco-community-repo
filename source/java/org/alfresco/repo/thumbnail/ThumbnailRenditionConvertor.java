@@ -173,7 +173,7 @@ public class ThumbnailRenditionConvertor
                 parameters.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, resizeToThumbnail);
             }
         }
-
+        // TODO Handle RuntimeExecutableTransformationOptions
         return parameters;
     }
     

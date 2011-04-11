@@ -24,17 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Ensures that the <b>Web Projects</b> and <b>Web Forms</b>folders are present.
@@ -311,6 +312,9 @@ public class WCMFoldersPatch extends AbstractPatch
         
         // add the required aspects
         nodeService.addAspect(wcmProjectsFolderNodeRef, ApplicationModel.ASPECT_UIFACETS, null);
+
+        // ALF-906: ensure that DM rules are not inherited by web projects
+        nodeService.addAspect(wcmProjectsFolderNodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
     }
     
     private void createWebFormsFolder()

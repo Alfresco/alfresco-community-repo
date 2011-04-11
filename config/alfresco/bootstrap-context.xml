@@ -132,6 +132,7 @@
              <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
              <ref bean="patch.db-V3.4-property-unique-ctx-value" />
              <ref bean="patch.db-V3.4-child-assoc-indexes" />
+             <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
           </list>
        </property>
     </bean>

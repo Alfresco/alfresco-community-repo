@@ -125,12 +125,11 @@
 #imap.server.port=143
 #imap.server.host=localhost
 
-# The RMI registry host and port is defined in the alfresco-shared.properties file
+# Default value of alfresco.rmi.services.host is 0.0.0.0 which means 'listen on all adapters'.
+# This allows connections to JMX both remotely and locally.
 #
-# To make your RMI services available from other machines you will need to change 
-# alfresco.rmi.services.host from "localhost".
-# alfresco.rmi.services.port=50500
-# alfresco.rmi.services.host=localhost
+alfresco.rmi.services.host=0.0.0.0
+
 #
 # RMI service ports for the individual services.
 # These seven services are available remotely.

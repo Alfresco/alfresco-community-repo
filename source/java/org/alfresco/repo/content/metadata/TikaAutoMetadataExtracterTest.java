@@ -215,10 +215,13 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       
       // Geo tagged image
       p = openAndCheck("GEO.jpg", "image/jpeg");
+      // Check raw EXIF properties
       assertEquals("100 pixels", p.get("Image Width"));
       assertEquals("68 pixels", p.get("Image Height"));
       assertEquals("8 bits", p.get("Data Precision"));
-      assertEquals(QUICK_TITLE, p.get("Comments"));
+      // Check regular Tika properties
+      assertEquals(QUICK_TITLE, p.get(Metadata.COMMENT));
+      assertEquals("canon-55-250", p.get(Metadata.SUBJECT));
       // Check namespace'd Tika properties
       assertEquals("12.54321", p.get("geo:lat"));
       assertEquals("-54.1234", p.get("geo:long"));

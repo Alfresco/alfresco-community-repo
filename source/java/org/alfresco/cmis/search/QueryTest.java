@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,12 +73,15 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryException;
 import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
@@ -155,7 +159,9 @@ public class QueryTest extends BaseCMISTest
 
     QName multipleDatetime = QName.createQName(TEST_NAMESPACE, "multipleDatetime");
 
-    private int file_count = 0;
+    private int content_only_count;
+    
+    private int doc_count = 0;
 
     private int folder_count = 0;
 
@@ -198,6 +204,8 @@ public class QueryTest extends BaseCMISTest
     private NodeRef c8;
 
     private NodeRef c9;
+    
+    private NodeRef c10;
 
     private Date date1;
 
@@ -209,10 +217,16 @@ public class QueryTest extends BaseCMISTest
 
     private String contentUrl0;
 
+    private boolean usesDateTimeAnalyser;
+
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
+        
+        DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.DATETIME);
+        String analyserClassName = dataType.getAnalyserClassName();
+        usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
 
         f0 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Folder 0", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(f0, ContentModel.PROP_NAME, "Folder 0");
@@ -277,7 +291,8 @@ public class QueryTest extends BaseCMISTest
         nodeService.addAspect(c0, ContentModel.ASPECT_TITLED, null);
         nodeService.addAspect(c0, ContentModel.ASPECT_OWNABLE, null);
         nodeService.setProperty(c0, ContentModel.PROP_OWNER, "andy");
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         MLText desc1 = new MLText();
@@ -293,7 +308,8 @@ public class QueryTest extends BaseCMISTest
         writer1.setEncoding("UTF-8");
         writer1.putContent("One Zebra Apple");
         nodeService.addAspect(c1, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
         MLText desc2 = new MLText();
@@ -309,8 +325,8 @@ public class QueryTest extends BaseCMISTest
         writer2.setEncoding("UTF-8");
         writer2.putContent("Two Zebra Banana");
         nodeService.addAspect(c2, ContentModel.ASPECT_TITLED, null);
-        file_count++;
-
+        content_only_count++;
+        doc_count++;
         Map<QName, Serializable> properties3 = new HashMap<QName, Serializable>();
         MLText desc3 = new MLText();
         desc3.addValue(Locale.ENGLISH, "Three");
@@ -325,7 +341,8 @@ public class QueryTest extends BaseCMISTest
         writer3.setEncoding("UTF-8");
         writer3.putContent("Three Zebra Clementine");
         nodeService.addAspect(c3, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties4 = new HashMap<QName, Serializable>();
         MLText desc4 = new MLText();
@@ -341,7 +358,8 @@ public class QueryTest extends BaseCMISTest
         writer4.setEncoding("UTF-8");
         writer4.putContent("Four zebra durian");
         nodeService.addAspect(c4, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties5 = new HashMap<QName, Serializable>();
         MLText desc5 = new MLText();
@@ -358,7 +376,8 @@ public class QueryTest extends BaseCMISTest
         writer5.setEncoding("UTF-8");
         writer5.putContent("Five zebra Ebury");
         nodeService.addAspect(c5, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> lockProperties = new HashMap<QName, Serializable>();
         lockProperties.put(ContentModel.PROP_EXPIRY_DATE, DefaultTypeConverter.INSTANCE.convert(Date.class, "2012-12-12T12:12:12.012Z"));
@@ -381,7 +400,8 @@ public class QueryTest extends BaseCMISTest
         writer6.setEncoding("UTF-8");
         writer6.putContent("Six zebra fig");
         nodeService.addAspect(c6, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties7 = new HashMap<QName, Serializable>();
         MLText desc7 = new MLText();
@@ -397,7 +417,8 @@ public class QueryTest extends BaseCMISTest
         writer7.setEncoding("UTF-8");
         writer7.putContent("Seven zebra grapefruit");
         nodeService.addAspect(c7, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties8 = new HashMap<QName, Serializable>();
         MLText desc8 = new MLText();
@@ -413,7 +434,8 @@ public class QueryTest extends BaseCMISTest
         writer8.setEncoding("UTF-8");
         writer8.putContent("Eight zebra jackfruit");
         nodeService.addAspect(c8, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
 
         Map<QName, Serializable> properties9 = new HashMap<QName, Serializable>();
         MLText desc9 = new MLText();
@@ -429,8 +451,26 @@ public class QueryTest extends BaseCMISTest
         writer9.setEncoding("UTF-8");
         writer9.putContent("Nine zebra kiwi");
         nodeService.addAspect(c9, ContentModel.ASPECT_TITLED, null);
-        file_count++;
+        content_only_count++;
+        doc_count++;
         nodeService.setProperty(c9, ContentModel.PROP_VERSION_LABEL, "label");
+        
+        Map<QName, Serializable> properties10 = new HashMap<QName, Serializable>();
+        MLText desc10 = new MLText();
+        desc10.addValue(Locale.ENGLISH, "Ten");
+        desc10.addValue(Locale.US, "Ten");
+        properties10.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
+        properties10.put(ContentModel.PROP_DESCRIPTION, desc10);
+        properties10.put(ContentModel.PROP_TITLE, desc10);
+        properties10.put(ContentModel.PROP_NAME, "aa-thumb");
+        properties10.put(ContentModel.PROP_CREATED, new Date());
+        c10 = nodeService.createNode(f9, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Ten", namespaceService), ContentModel.TYPE_DICTIONARY_MODEL, properties10).getChildRef();
+        ContentWriter writer10 = contentService.getWriter(c10, ContentModel.PROP_CONTENT, true);
+        writer10.setEncoding("UTF-8");
+        writer10.putContent("Tem zebra kiwi thumb");
+        nodeService.addAspect(c10, ContentModel.ASPECT_TITLED, null);
+        doc_count++;
+        nodeService.setProperty(c10, ContentModel.PROP_VERSION_LABEL, "label");
     }
 
     private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow) throws Exception
@@ -704,7 +744,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:contentStreamId");
@@ -739,7 +779,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:contentStreamId FROM cmis:document", file_count, false, "cmis:contentStreamId", new String(), false);
+        testQuery("SELECT cmis:contentStreamId FROM cmis:document", doc_count, false, "cmis:contentStreamId", new String(), false);
 
         // not allowed in predicates
         testQuery("SELECT cmis:contentStreamId FROM cmis:document WHERE cmis:contentStreamId =  '" + contentUrl0 + "'", 1, false, "cmis:contentStreamId", new String(), true);
@@ -752,7 +792,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:contentStreamFileName");
@@ -797,46 +837,46 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'Alfresco Tutorial'", 1, false, "cmis:contentStreamFileName",
                 new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName <> 'Alfresco Tutorial'", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName <> 'Alfresco Tutorial'", 10, false, "cmis:contentStreamFileName",
                 new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName <  'Alfresco Tutorial'", 1, false, "cmis:contentStreamFileName",
                 new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName <= 'Alfresco Tutorial'", 2, false, "cmis:contentStreamFileName",
                 new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName >  'Alfresco Tutorial'", 8, true, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName >  'Alfresco Tutorial'", 9, true, "cmis:contentStreamFileName",
                 new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName >= 'Alfresco Tutorial'", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName >= 'Alfresco Tutorial'", 10, false, "cmis:contentStreamFileName",
                 new String(), false);
 
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName IN     ('Alfresco Tutorial')", 1, false, "cmis:contentStreamFileName",
                 new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName NOT IN ('Alfresco Tutorial')", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName NOT IN ('Alfresco Tutorial')", 10, false, "cmis:contentStreamFileName",
                 new String(), false);
 
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName     LIKE 'Alfresco Tutorial'", 1, false, "cmis:contentStreamFileName",
                 new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName NOT LIKE 'Alfresco Tutorial'", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName NOT LIKE 'Alfresco Tutorial'", 10, false, "cmis:contentStreamFileName",
                 new String(), false);
 
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName IS NOT NULL", 10, false, "cmis:contentStreamFileName", new String(), false);
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName IS NOT NULL", 11, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName IS     NULL", 0, false, "cmis:contentStreamFileName", new String(), false);
 
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' =  ANY cmis:contentStreamFileName", 1, false, "cmis:contentStreamFileName",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:contentStreamFileName", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:contentStreamFileName", 11, false, "cmis:contentStreamFileName",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' <  ANY cmis:contentStreamFileName", 1, false, "cmis:contentStreamFileName",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' <= ANY cmis:contentStreamFileName", 2, false, "cmis:contentStreamFileName",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:contentStreamFileName", 8, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:contentStreamFileName", 9, false, "cmis:contentStreamFileName",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:contentStreamFileName", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:contentStreamFileName", 11, false, "cmis:contentStreamFileName",
                 new String(), true);
 
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE ANY cmis:contentStreamFileName IN     ('Alfresco Tutorial')", 1, false, "cmis:contentStreamFileName",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE ANY cmis:contentStreamFileName NOT IN ('Alfresco Tutorial')", 9, false, "cmis:contentStreamFileName",
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE ANY cmis:contentStreamFileName NOT IN ('Alfresco Tutorial')", 10, false, "cmis:contentStreamFileName",
                 new String(), true);
     }
 
@@ -846,7 +886,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:contentStreamMimeType");
@@ -877,46 +917,46 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType =  'text/plain'", 10, false, "cmis:contentStreamMimeType", new String(),
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType =  'text/plain'", doc_count, false, "cmis:contentStreamMimeType", new String(),
                 false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType <> 'text/plain'", 0, false, "cmis:contentStreamMimeType", new String(),
                 false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType <  'text/plain'", 0, true, "cmis:contentStreamMimeType", new String(),
                 false);
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType <= 'text/plain'", 10, false, "cmis:contentStreamMimeType", new String(),
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType <= 'text/plain'", doc_count, false, "cmis:contentStreamMimeType", new String(),
                 false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType >  'text/plain'", 0, false, "cmis:contentStreamMimeType", new String(),
                 false);
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType >= 'text/plain'", 10, false, "cmis:contentStreamMimeType", new String(),
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType >= 'text/plain'", doc_count, false, "cmis:contentStreamMimeType", new String(),
                 false);
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType IN     ('text/plain')", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType IN     ('text/plain')", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType NOT IN ('text/plain')", 0, false, "cmis:contentStreamMimeType",
                 new String(), false);
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType     LIKE 'text/plain'", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType     LIKE 'text/plain'", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType NOT LIKE 'text/plain'", 0, false, "cmis:contentStreamMimeType",
                 new String(), false);
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType IS NOT NULL", 10, false, "cmis:contentStreamMimeType", new String(), false);
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType IS NOT NULL", doc_count, false, "cmis:contentStreamMimeType", new String(), false);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE cmis:contentStreamMimeType IS     NULL", 0, false, "cmis:contentStreamMimeType", new String(), false);
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' =  ANY cmis:contentStreamMimeType", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' =  ANY cmis:contentStreamMimeType", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' <> ANY cmis:contentStreamMimeType", 0, false, "cmis:contentStreamMimeType",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' <  ANY cmis:contentStreamMimeType", 0, false, "cmis:contentStreamMimeType",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' <= ANY cmis:contentStreamMimeType", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' <= ANY cmis:contentStreamMimeType", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' >  ANY cmis:contentStreamMimeType", 0, false, "cmis:contentStreamMimeType",
                 new String(), true);
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' >= ANY cmis:contentStreamMimeType", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE 'text/plain' >= ANY cmis:contentStreamMimeType", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), true);
 
-        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE ANY cmis:contentStreamMimeType IN     ('text/plain')", 10, false, "cmis:contentStreamMimeType",
+        testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE ANY cmis:contentStreamMimeType IN     ('text/plain')", doc_count, false, "cmis:contentStreamMimeType",
                 new String(), true);
         testQuery("SELECT cmis:contentStreamMimeType FROM cmis:document WHERE ANY cmis:contentStreamMimeType NOT IN ('text/plain')", 0, false, "cmis:contentStreamMimeType",
                 new String(), true);
@@ -928,7 +968,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:contentStreamLength");
@@ -960,30 +1000,30 @@ public class QueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength =  750", 0, false, "cmis:contentStreamLength", new String(), false);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <> 750", 10, true, "cmis:contentStreamLength", new String(), false);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <  750", 10, false, "cmis:contentStreamLength", new String(), false);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <= 750", 10, false, "cmis:contentStreamLength", new String(), false);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <> 750", doc_count, true, "cmis:contentStreamLength", new String(), false);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <  750", doc_count, false, "cmis:contentStreamLength", new String(), false);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength <= 750", doc_count, false, "cmis:contentStreamLength", new String(), false);
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength >  750", 0, false, "cmis:contentStreamLength", new String(), false);
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength >= 750", 0, false, "cmis:contentStreamLength", new String(), false);
 
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength IN     (750)", 0, false, "cmis:contentStreamLength", new String(), false);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength NOT IN (750)", 10, false, "cmis:contentStreamLength", new String(), false);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength NOT IN (750)", doc_count, false, "cmis:contentStreamLength", new String(), false);
 
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength     LIKE '750'", 0, false, "cmis:contentStreamLength", new String(), true);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength NOT LIKE '750'", 10, false, "cmis:contentStreamLength", new String(), true);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength NOT LIKE '750'", doc_count, false, "cmis:contentStreamLength", new String(), true);
 
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength IS NOT NULL", 10, false, "cmis:contentStreamLength", new String(), false);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength IS NOT NULL", doc_count, false, "cmis:contentStreamLength", new String(), false);
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE cmis:contentStreamLength IS     NULL", 0, false, "cmis:contentStreamLength", new String(), false);
 
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 =  ANY cmis:contentStreamLength", 0, false, "cmis:contentStreamLength", new String(), true);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <> ANY cmis:contentStreamLength", 10, false, "cmis:contentStreamLength", new String(), true);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <  ANY cmis:contentStreamLength", 10, false, "cmis:contentStreamLength", new String(), true);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <= ANY cmis:contentStreamLength", 10, false, "cmis:contentStreamLength", new String(), true);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <> ANY cmis:contentStreamLength", doc_count, false, "cmis:contentStreamLength", new String(), true);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <  ANY cmis:contentStreamLength", doc_count, false, "cmis:contentStreamLength", new String(), true);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 <= ANY cmis:contentStreamLength", doc_count, false, "cmis:contentStreamLength", new String(), true);
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 >  ANY cmis:contentStreamLength", 0, false, "cmis:contentStreamLength", new String(), true);
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE 750 >= ANY cmis:contentStreamLength", 0, false, "cmis:contentStreamLength", new String(), true);
 
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE ANY cmis:contentStreamLength IN     (750)", 0, false, "cmis:contentStreamLength", new String(), true);
-        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE ANY cmis:contentStreamLength NOT IN (750)", 10, false, "cmis:contentStreamLength", new String(), true);
+        testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE ANY cmis:contentStreamLength NOT IN (750)", doc_count, false, "cmis:contentStreamLength", new String(), true);
     }
 
     public void test_CHECKIN_COMMENT() throws Exception
@@ -992,7 +1032,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:checkinComment");
@@ -1006,33 +1046,33 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:checkinComment FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
         
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment =  'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <> 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <> 'admin'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <= 'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment >  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment >= 'admin'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment IN     ('admin')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment NOT IN ('admin')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment     LIKE 'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment NOT LIKE 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment NOT LIKE 'admin'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment IS     NULL", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' =  ANY cmis:checkinComment", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' <> ANY cmis:checkinComment", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' <> ANY cmis:checkinComment", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' <  ANY cmis:checkinComment", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' <= ANY cmis:checkinComment", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' >  ANY cmis:checkinComment", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE 'admin' >= ANY cmis:checkinComment", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE ANY cmis:checkinComment IN     ('admin')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE ANY cmis:checkinComment NOT IN ('admin')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE ANY cmis:checkinComment NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
     public void test_VERSION_SERIES_CHECKED_OUT_ID() throws Exception
@@ -1041,7 +1081,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:versionSeriesCheckedOutId");
@@ -1055,26 +1095,26 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
         
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId =  'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId <> 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId <> 'admin'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId <  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId <= 'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId >  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId >= 'admin'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId IN     ('admin')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId NOT IN ('admin')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId     LIKE 'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId NOT LIKE 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId NOT LIKE 'admin'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId IS     NULL", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' =  ANY cmis:versionSeriesCheckedOutId", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' <> ANY cmis:versionSeriesCheckedOutId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' <> ANY cmis:versionSeriesCheckedOutId", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' <  ANY cmis:versionSeriesCheckedOutId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' <= ANY cmis:versionSeriesCheckedOutId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE 'admin' >  ANY cmis:versionSeriesCheckedOutId", 0, false, "cmis:objectId", new String(), true);
@@ -1082,7 +1122,7 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutId IN     ('admin')", 0, false, "cmis:objectId", new String(),
                 true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutId NOT IN ('admin')", 10, false, "cmis:objectId", new String(),
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutId NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(),
                 true);
     }
 
@@ -1092,7 +1132,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:versionSeriesCheckedOutBy");
@@ -1106,26 +1146,26 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
         
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy =  'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy <> 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy <> 'admin'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy <  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy <= 'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy >  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy >= 'admin'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy IN     ('admin')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy NOT IN ('admin')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy     LIKE 'admin'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy NOT LIKE 'admin'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy NOT LIKE 'admin'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy IS     NULL", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' =  ANY cmis:versionSeriesCheckedOutBy", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' <> ANY cmis:versionSeriesCheckedOutBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' <> ANY cmis:versionSeriesCheckedOutBy", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' <  ANY cmis:versionSeriesCheckedOutBy", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' <= ANY cmis:versionSeriesCheckedOutBy", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE 'admin' >  ANY cmis:versionSeriesCheckedOutBy", 0, false, "cmis:objectId", new String(), true);
@@ -1133,7 +1173,7 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutBy IN     ('admin')", 0, false, "cmis:objectId", new String(),
                 true);
-        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutBy NOT IN ('admin')", 10, false, "cmis:objectId", new String(),
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE ANY cmis:versionSeriesCheckedOutBy NOT IN ('admin')", doc_count, false, "cmis:objectId", new String(),
                 true);
     }
 
@@ -1143,7 +1183,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:isVersionSeriesCheckedOut");
@@ -1158,33 +1198,33 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
         
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <> 'TRUE'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <> 'TRUE'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut     LIKE 'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT LIKE 'TRUE'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT LIKE 'TRUE'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS     NULL", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' =  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <> ANY cmis:isVeriesSeriesCheckedOut", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <> ANY cmis:isVeriesSeriesCheckedOut", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
     public void test_VERSION_SERIES_ID() throws Exception
@@ -1193,7 +1233,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:versionSeriesId");
@@ -1208,34 +1248,34 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
         
         
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId =  'company'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <> 'company'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <> 'company'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <= 'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId >  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId >= 'company'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId IN     ('company')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId NOT IN ('company')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId     LIKE 'company'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId NOT LIKE 'company'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId NOT LIKE 'company'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId IS     NULL", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' =  ANY cmis:versionSeriesId", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' <> ANY cmis:versionSeriesId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' <> ANY cmis:versionSeriesId", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' <  ANY cmis:versionSeriesId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' <= ANY cmis:versionSeriesId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' >  ANY cmis:versionSeriesId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE 'company' >= ANY cmis:versionSeriesId", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE ANY cmis:versionSeriesId IN     ('company')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE ANY cmis:versionSeriesId NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE ANY cmis:versionSeriesId NOT IN ('company')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
     public void test_VERSION_LABEL() throws Exception
@@ -1244,7 +1284,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:versionLabel");
@@ -1258,33 +1298,33 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
         
-        testQuery("SELECT cmis:versionLabel FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel =  'company'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <> 'company'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <> 'company'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <= 'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >  'company'", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >= 'company'", 1, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IN     ('company')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT IN ('company')", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel     LIKE 'company'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT LIKE 'company'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT LIKE 'company'", doc_count, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS NOT NULL", 1, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", 9, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", doc_count-1, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' =  ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <> ANY cmis:versionLabel", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <> ANY cmis:versionLabel", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <  ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <= ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' >  ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' >= ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE ANY cmis:versionLabel IN     ('company')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE ANY cmis:versionLabel NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE ANY cmis:versionLabel NOT IN ('company')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
     public void test_IS_LATEST_MAJOR_VERSION() throws Exception
@@ -1293,7 +1333,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:isLatestMajorVersion");
@@ -1308,7 +1348,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
         
-        testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE cmis:isLatestMajorVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE cmis:isLatestMajorVersion <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1343,7 +1383,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:isMajorVersion");
@@ -1358,7 +1398,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:isMajorVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:isMajorVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
         
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  TRUE", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  true", 0, false, "cmis:objectId", new String(), true);
@@ -1396,7 +1436,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:isLatestVersion");
@@ -1411,7 +1451,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
         
-        testQuery("SELECT cmis:isLatestVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:isLatestVersion FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE cmis:isLatestVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE cmis:isLatestVersion <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1446,7 +1486,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:isImmutable");
@@ -1461,7 +1501,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:isImmutable FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:isImmutable FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
         
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1562,7 +1602,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:name");
@@ -1596,30 +1636,30 @@ public class QueryTest extends BaseCMISTest
         rs.close();
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name =  'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <> 'Alfresco Tutorial'", 9, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <> 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <  'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name <= 'Alfresco Tutorial'", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >  'Alfresco Tutorial'", 8, true, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >= 'Alfresco Tutorial'", 9, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >  'Alfresco Tutorial'", doc_count-2, true, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name >= 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IN     ('Alfresco Tutorial')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT IN ('Alfresco Tutorial')", 9, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT IN ('Alfresco Tutorial')", doc_count-1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT LIKE 'Alfresco Tutorial'", 9, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name NOT LIKE 'Alfresco Tutorial'", doc_count-1, false, "cmis:name", new String(), false);
 
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IS NOT NULL", 10, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IS NOT NULL", doc_count, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name IS     NULL", 0, false, "cmis:name", new String(), false);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' =  ANY cmis:name", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:name", 9, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <> ANY cmis:name", doc_count-1, false, "cmis:name", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <  ANY cmis:name", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' <= ANY cmis:name", 2, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:name", 8, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:name", 9, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >  ANY cmis:name", doc_count-2, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE 'Alfresco Tutorial' >= ANY cmis:name", doc_count-1, false, "cmis:name", new String(), true);
 
         testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name IN     ('Alfresco Tutorial')", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name NOT IN ('Alfresco Tutorial')", 9, false, "cmis:name", new String(), true);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name NOT IN ('Alfresco Tutorial')", doc_count-1, false, "cmis:name", new String(), true);
     }
 
     public void test_CHANGE_TOKEN() throws Exception
@@ -1628,7 +1668,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:changeToken");
@@ -1677,7 +1717,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:lastModificationDate");
@@ -1726,121 +1766,227 @@ public class QueryTest extends BaseCMISTest
 
         Date date = testQuery("SELECT cmis:lastModificationDate FROM cmis:document", -1, false, "cmis:lastModificationDate", new Date(), false);
         today.setTime(date);
-
-        // start.set(Calendar.YEAR, start.getMinimum(Calendar.YEAR));
-        // start.set(Calendar.DAY_OF_YEAR, start.getMinimum(Calendar.DAY_OF_YEAR));
-        // start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
-        // start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
-        // start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
-        today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        if(!usesDateTimeAnalyser)
+        {
+            today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        }
 
         String sDate = df.format(today.getTime());
         String sDate2 = sDate.substring(0, sDate.length() - 1) + "+00:00";
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", 10, false, "cmis:objectId", new String(),
-                false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", 10, false, "cmis:objectId", new String(),
-                false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
+        if(usesDateTimeAnalyser)
+        {
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", 1, false, "cmis:objectId", new String(),
+                    false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", 1, false, "cmis:objectId", new String(),
+                    false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count-1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count-1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(),
-                true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(),
+                    true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", 0, false,
-                "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", doc_count-1, false,
+                    "cmis:objectId", new String(), true);
 
-        // using yesterday
+            // using yesterday
 
-        date = Duration.subtract(date, new Duration("P1D"));
-        Calendar yesterday = Calendar.getInstance();
-        yesterday.setTime(date);
-        yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        sDate = df.format(yesterday.getTime());
+            date = Duration.subtract(date, new Duration("P1D"));
+            Calendar yesterday = Calendar.getInstance();
+            yesterday.setTime(date);
+            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(yesterday.getTime());
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(),
-                true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                    true);
 
-        // using tomorrow
+            // using tomorrow
 
-        date = Duration.add(date, new Duration("P2D"));
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.setTime(date);
-        tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        sDate = df.format(tomorrow.getTime());
+            date = Duration.add(date, new Duration("P2D"));
+            Calendar tomorrow = Calendar.getInstance();
+            tomorrow.setTime(date);
+            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(tomorrow.getTime());
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(),
-                true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                    true);
+        }
+        else
+        {
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate + "'", doc_count, false, "cmis:objectId", new String(),
+                    false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + sDate2 + "'", doc_count, false, "cmis:objectId", new String(),
+                    false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                    true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "') order by cmis:lastModificationDate", 0, false,
+                    "cmis:objectId", new String(), true);
+
+            // using yesterday
+
+            date = Duration.subtract(date, new Duration("P1D"));
+            Calendar yesterday = Calendar.getInstance();
+            yesterday.setTime(date);
+            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(yesterday.getTime());
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                    true);
+
+            // using tomorrow
+
+            date = Duration.add(date, new Duration("P2D"));
+            Calendar tomorrow = Calendar.getInstance();
+            tomorrow.setTime(date);
+            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(tomorrow.getTime());
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE cmis:lastModificationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:lastModificationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:lastModificationDate", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:lastModificationDate FROM cmis:document WHERE ANY cmis:lastModificationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(),
+                    true);
+        }
+
 
     }
 
@@ -1850,7 +1996,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:lastModifiedBy");
@@ -1869,7 +2015,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:lastModifiedBy");
@@ -1883,30 +2029,30 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy =  'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy =  'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy <> 'System'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy <  'System'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy <= 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy <= 'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy >  'System'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy >= 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy >= 'System'", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy IN     ('System')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy IN     ('System')", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy     LIKE 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy     LIKE 'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy NOT LIKE 'System'", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE cmis:lastModifiedBy IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' =  ANY cmis:lastModifiedBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' =  ANY cmis:lastModifiedBy", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' <> ANY cmis:lastModifiedBy", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' <  ANY cmis:lastModifiedBy", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' <= ANY cmis:lastModifiedBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' <= ANY cmis:lastModifiedBy", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' >  ANY cmis:lastModifiedBy", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' >= ANY cmis:lastModifiedBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE 'System' >= ANY cmis:lastModifiedBy", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy IN     ('System')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy IN     ('System')", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:lastModifiedBy FROM cmis:document WHERE ANY cmis:lastModifiedBy NOT IN ('System') order by cmis:lastModifiedBy", 0, true, "cmis:objectId",
@@ -1919,7 +2065,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:creationDate");
@@ -1974,107 +2120,212 @@ public class QueryTest extends BaseCMISTest
         // start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
         // start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
         // start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
-        today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        if(!usesDateTimeAnalyser)
+        {
+            today.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+        }
 
         String sDate = df.format(today.getTime());
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
+        if(usesDateTimeAnalyser)
+        {
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 1, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count-1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count-1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count-1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 1, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count-1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", 0, false, "cmis:objectId",
-                new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", doc_count-1, false, "cmis:objectId",
+                    new String(), true);
 
-        // using yesterday
+            // using yesterday
 
-        date = Duration.subtract(date, new Duration("P1D"));
-        Calendar yesterday = Calendar.getInstance();
-        yesterday.setTime(date);
-        yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        sDate = df.format(yesterday.getTime());
+            date = Duration.subtract(date, new Duration("P1D"));
+            Calendar yesterday = Calendar.getInstance();
+            yesterday.setTime(date);
+            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(yesterday.getTime());
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
 
-        // using tomorrow
+            // using tomorrow
 
-        date = Duration.add(date, new Duration("P2D"));
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.setTime(date);
-        tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
-        sDate = df.format(tomorrow.getTime());
+            date = Duration.add(date, new Duration("P2D"));
+            Calendar tomorrow = Calendar.getInstance();
+            tomorrow.setTime(date);
+            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(tomorrow.getTime());
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 10, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+        }
+        else
+        {
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "') order by cmis:creationDate", 0, false, "cmis:objectId",
+                    new String(), true);
+
+            // using yesterday
+
+            date = Duration.subtract(date, new Duration("P1D"));
+            Calendar yesterday = Calendar.getInstance();
+            yesterday.setTime(date);
+            yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(yesterday.getTime());
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+
+            // using tomorrow
+
+            date = Duration.add(date, new Duration("P2D"));
+            Calendar tomorrow = Calendar.getInstance();
+            tomorrow.setTime(date);
+            tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
+            sDate = df.format(tomorrow.getTime());
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate =  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <> '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <  '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate <= '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >  '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate >= '" + sDate + "'", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate     LIKE '" + sDate + "'", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate NOT LIKE '" + sDate + "'", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE cmis:creationDate IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' =  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <> ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <  ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' <= ANY cmis:creationDate", doc_count, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >  ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE '" + sDate + "' >= ANY cmis:creationDate", 0, false, "cmis:objectId", new String(), true);
+
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate IN     ('" + sDate + "')", 0, false, "cmis:objectId", new String(), true);
+            testQuery("SELECT cmis:creationDate FROM cmis:document WHERE ANY cmis:creationDate NOT IN ('" + sDate + "')", doc_count, false, "cmis:objectId", new String(), true);
+
+        }
 
     }
 
@@ -2084,7 +2335,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:createdBy");
@@ -2103,7 +2354,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:createdBy");
@@ -2117,33 +2368,33 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy =  'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy =  'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy <> 'System'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy <  'System'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy <= 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy <= 'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy >  'System'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy >= 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy >= 'System'", doc_count, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy IN     ('System')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy IN     ('System')", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy     LIKE 'System'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy     LIKE 'System'", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy NOT LIKE 'System'", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE cmis:createdBy IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' =  ANY cmis:createdBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' =  ANY cmis:createdBy", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' <> ANY cmis:createdBy", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' <  ANY cmis:createdBy", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' <= ANY cmis:createdBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' <= ANY cmis:createdBy", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' >  ANY cmis:createdBy", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' >= ANY cmis:createdBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE 'System' >= ANY cmis:createdBy", doc_count, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System')", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy NOT IN ('System')", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System') order by cmis:createdBy", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:createdBy FROM cmis:document WHERE ANY cmis:createdBy IN     ('System') order by cmis:createdBy", doc_count, false, "cmis:objectId", new String(), true);
 
     }
 
@@ -2153,13 +2404,13 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:objectTypeId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            assertEquals("cmis:document", value);
+            assertTrue(value.equals("cmis:document") || value.equals("D:cm:dictionaryModel"));
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:objectTypeId");
             assertNotNull(column);
             assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
@@ -2190,30 +2441,30 @@ public class QueryTest extends BaseCMISTest
         // DOC
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId =  'cmis:document'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <> 'cmis:document'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <> 'cmis:document'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId <= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId >  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId >= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT IN ('cmis:document')", 1, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId     LIKE 'cmis:document'", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT LIKE 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId NOT LIKE 'cmis:document'", 1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE cmis:objectTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:objectTypeId", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <> ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <> ANY cmis:objectTypeId", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' <= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' >  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE 'cmis:document' >= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:document WHERE ANY cmis:objectTypeId NOT IN ('cmis:document')", 1, false, "cmis:objectId", new String(), true);
 
         // FOLDER
 
@@ -2255,7 +2506,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:baseTypeId");
@@ -2291,32 +2542,32 @@ public class QueryTest extends BaseCMISTest
 
         // DOC
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document", file_count, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document", doc_count, false, "cmis:baseTypeId", new String(), false);
         
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", file_count, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", doc_count, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <> 'cmis:document'", 0, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId >  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId >= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IN     ('cmis:document')", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId     LIKE 'cmis:document'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId     LIKE 'cmis:document'", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId NOT LIKE 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:baseTypeId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:baseTypeId", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <> ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <  ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <= ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' >  ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' >= ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId IN     ('cmis:document')", doc_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), true);
         
         
@@ -2331,23 +2582,23 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >  'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >= 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IN     ('cmis:folder')", folder_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId NOT IN ('cmis:folder')", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId     LIKE 'cmis:folder'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId     LIKE 'cmis:folder'", folder_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId NOT LIKE 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IS NOT NULL", folder_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' =  ANY cmis:objectTypeId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' =  ANY cmis:objectTypeId", folder_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <> ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' >  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' >= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE ANY cmis:objectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE ANY cmis:objectTypeId IN     ('cmis:folder')", folder_count, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE ANY cmis:objectTypeId NOT IN ('cmis:folder')", 0, false, "cmis:objectId", new String(), true);
 
         // RELATIONSHIP
@@ -2370,7 +2621,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals(file_count, rs.length());
+        assertEquals(doc_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
             Serializable sValue = row.getValue("cmis:objectId");
@@ -2486,13 +2737,13 @@ public class QueryTest extends BaseCMISTest
         testOrderBy("SELECT  F.cmis:objectId Meep FROM cmis:folder F ORDER BY Meep ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
         testOrderBy("SELECT  F.cmis:objectId Meep FROM cmis:folder F ORDER BY Meep DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "Meep");
 
-        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
+        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP", doc_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "MEEP");
-        testOrderBy("SELECT SCORE(), cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY SEARCH_SCORE", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
+        testOrderBy("SELECT SCORE(), cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY SEARCH_SCORE", doc_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "SEARCH_SCORE");
-        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP ASC", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
+        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP ASC", doc_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "MEEP");
-        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP DESC", file_count, false, Order.DESCENDING,
+        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP DESC", doc_count, false, Order.DESCENDING,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS, "MEEP");
 
         testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder where CONTAINS('cmis:name:*') ORDER BY MEEP", folder_count, false, Order.ASCENDING,
@@ -2540,22 +2791,22 @@ public class QueryTest extends BaseCMISTest
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         
-        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name ASC", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
-        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", file_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
-        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name ASC", doc_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", doc_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
 
         // version label is not orderable as indexed and tokenised
-        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel ASC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:versionLabel");
-        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel DESC", file_count, true, Order.DESCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel ASC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:versionLabel");
+        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel DESC", doc_count, true, Order.DESCENDING, CMISQueryMode.CMS_STRICT,
                 "cmis:versionLabel");
-        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel DESC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:versionLabel");
+        testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel DESC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:versionLabel");
 
         // cmis:contentStreamFileName is not orderable as indexed and tokenised
-        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName ASC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName ASC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
                 "cmis:contentStreamFileName");
-        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName DESC", file_count, true, Order.DESCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName DESC", doc_count, true, Order.DESCENDING, CMISQueryMode.CMS_STRICT,
                 "cmis:contentStreamFileName");
-        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName DESC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT cmis:contentStreamFileName FROM cmis:document ORDER BY cmis:contentStreamFileName DESC", doc_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
                 "cmis:contentStreamFileName");
 
         testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
@@ -2651,22 +2902,55 @@ public class QueryTest extends BaseCMISTest
                                 }
                             }
 
-                            Method ct = null;
-                            Method[] methods = last.getClass().getMethods();
-                            for (int m = 0; m < methods.length; m++)
+                            int comparison = 0;
+                            if(last instanceof String )
                             {
-                                if (methods[m].getName().equals("compareTo")
-                                        && (methods[m].getParameterTypes().length == 1) && (methods[m].getParameterTypes()[0].equals(methods[m].getDeclaringClass())))
+                                Collator myCollator = Collator.getInstance();
+                                if(last == null)
                                 {
-                                    if (ct != null)
+                                    if(current == null)
                                     {
-                                        throw new IllegalStateException("Found 2 or more compareTo methods");
+                                        comparison = 0;
                                     }
-                                    ct = methods[m];
+                                    else
+                                    {
+                                        comparison = -1;
+                                    }
                                 }
+                                else
+                                {
+                                    if(current == null)
+                                    {
+                                        comparison = 1;
+                                    }
+                                    else
+                                    {
+                                        comparison = myCollator.compare(last, current);
+                                    }
+                                }
+                                
+
+                            }
+                            else
+                            {
+                                Method ct = null;
+                                Method[] methods = last.getClass().getMethods();
+                                for (int m = 0; m < methods.length; m++)
+                                {
+                                    if (methods[m].getName().equals("compareTo")
+                                            && (methods[m].getParameterTypes().length == 1) && (methods[m].getParameterTypes()[0].equals(methods[m].getDeclaringClass())))
+                                    {
+                                        if (ct != null)
+                                        {
+                                            throw new IllegalStateException("Found 2 or more compareTo methods");
+                                        }
+                                        ct = methods[m];
+                                    }
+                                }
+                                comparison = (Integer) ct.invoke(last, current);
                             }
 
-                            int comparison = (Integer) ct.invoke(last, current);
+                           
                             switch (order)
                             {
                             case ASCENDING:
@@ -2932,9 +3216,9 @@ public class QueryTest extends BaseCMISTest
 
     public void testExists() throws Exception
     {
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL", folder_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NULL", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE cmis:name IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE cmis:name IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE cmis:name IS NULL", 0, false, "cmis:objectId", new String(), false);
     }
 
@@ -2998,10 +3282,10 @@ public class QueryTest extends BaseCMISTest
 
     public void testFTS() throws Exception
     {
-        testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", 9, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'') AND CONTAINS('\\'quick\\'')", 9, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT SCORE()as ONE, SCORE()as TWO, D.* FROM cmis:document D WHERE CONTAINS('\\'zebra\\'')", 9, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'')", 9, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'') AND CONTAINS('\\'quick\\'')", doc_count-1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT SCORE()as ONE, SCORE()as TWO, D.* FROM cmis:document D WHERE CONTAINS('\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS(D, 'cmis:name:\\'Tutorial\\'')", 1, false, "cmis:objectId", new String(), false);
@@ -3019,7 +3303,6 @@ public class QueryTest extends BaseCMISTest
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
-            assertEquals(1.0f, row.getScore());
         }
         rs.close();
         rs = null;
@@ -3036,7 +3319,7 @@ public class QueryTest extends BaseCMISTest
 
         options = new CMISQueryOptions("SELECT SCORE() AS ONE FROM cmis:document WHERE CONTAINS('\\'Zebra\\'')", rootNodeRef.getStoreRef());
         rs = cmisQueryService.query(options);
-        assertEquals(9, rs.getLength());
+        assertEquals(doc_count-1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("cmis:objectId") + " Score " + row.getScore() + " " + row.getScores());
@@ -3055,13 +3338,13 @@ public class QueryTest extends BaseCMISTest
     public void testBasicSelectAsCmis() throws Exception
     {
         runAs("cmis");
-        testQuery("SELECT * FROM cmis:document", 7, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document", doc_count-3, false, "cmis:objectId", new String(), false);
 
     }
 
     public void testBasicSelect() throws Exception
     {
-        testQuery("SELECT * FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:document", doc_count, false, "cmis:objectId", new String(), false);
     }
 
     public void testBasicDefaultMetaData()
@@ -3354,12 +3637,12 @@ public class QueryTest extends BaseCMISTest
 
     public void testFTSConnectives() throws Exception
     {
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' and \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false,
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\'  \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -3378,7 +3661,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSFieldConnective(Connective.OR);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         rs = cmisQueryService.query(options);
-        assertEquals(9, rs.length());
+        assertEquals(doc_count-1, rs.length());
         rs.close();
     }
 
@@ -3403,7 +3686,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'AA%'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'AA\\%'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'A%'", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'a%'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'a%'", 2, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'A\\%'", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'BB_'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'BB\\_'", 1, false, "cmis:name", new String(), false);
@@ -5103,22 +5386,22 @@ public class QueryTest extends BaseCMISTest
     {
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick')", 9, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick')", doc_count-1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick brown fox')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick one')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick -one')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick -one')", 8, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick -one')", doc_count-2, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('fox brown quick')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR one')", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR -one')", 9, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick OR -one')", 10, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR -one')", doc_count-1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-quick OR -one')", doc_count, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\'')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'fox brown quick\\'')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' one')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick brown fox\\' -one')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' one')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' -one')", 8, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('-\\'quick brown fox\\' -one')", doc_count-2, false, "cmis:name", new String(), false);
 
         // escaping
         testExtendedQuery("SELECT * FROM cmis:folder WHERE CONTAINS('cmis:name:\\'Folder 9\\\\\\'\\'')", 1, false, "cmis:name", new String(), false);

@@ -191,7 +191,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 	 */
 	private final static NodeLocator defaultNodeLocator = new NodeLocator()
 	{
-	    public NodeRef getNode(NodeRef sourceNode, Map<String, Serializable> params)
+	    @Override
+        public NodeRef getNode(NodeRef sourceNode, Map<String, Serializable> params)
 	    {
 	        return sourceNode;
 	    }
@@ -244,6 +245,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     
     public AbstractRenderingEngine(NodeLocator temporaryParentNodeLocator, QName temporaryRenditionLinkType)
     {
+        this.publicAction = false;
         this.temporaryParentNodeLocator = temporaryParentNodeLocator != null ? temporaryParentNodeLocator
                     : defaultNodeLocator;
         this.temporaryRenditionLinkType = temporaryRenditionLinkType != null ? temporaryRenditionLinkType
@@ -408,6 +410,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // by default.
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
+            @Override
             public Void doWork() throws Exception
             {
             	ChildAssociationRef result = null;
@@ -957,10 +960,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, tempRenditionNode,
                 renditionLocation, renditionDefinition, nodeService, renditionService, behaviourFilter);
         ChildAssociationRef renditionNode = renditionNodeManager.findOrCreateRenditionNode();
-
-        // Copy relevant properties from the temporary node to the new rendition
-        // node.
-        renditionNodeManager.transferNodeProperties();
 
         // Set the name property on the rendition if it has not already been
         // set.

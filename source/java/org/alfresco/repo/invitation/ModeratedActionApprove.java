@@ -19,16 +19,11 @@
 package org.alfresco.repo.invitation;
 
 
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.invitation.site.AcceptInviteAction;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -39,37 +34,27 @@ public class ModeratedActionApprove extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 4377660284993206875L;
     
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private PersonService personService;
-    private WorkflowService workflowService;
     private SiteService siteService;
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
         ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
-        personService = (PersonService) services.getPersonService();
-        workflowService = (WorkflowService) services.getWorkflowService();
         siteService = services.getSiteService();
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
-     * Approve Moderated
+    /**
+     * {@inheritDoc}
      **/
-    @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
-        final String resourceType = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceType);
         final String resourceName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceName);
         final String inviteeUserName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
         final String inviteeRole = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeRole);
         final String reviewer = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewer);
-        final String reviewComments = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewComments);
     	
         /**
          * Add invitee to the site

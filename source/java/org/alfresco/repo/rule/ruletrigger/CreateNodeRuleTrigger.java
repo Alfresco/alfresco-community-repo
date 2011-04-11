@@ -98,11 +98,11 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 		this.policyComponent.bindClassBehaviour(
 		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
 		        ASPECT_NO_CONTENT, 
-		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
+		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
 		this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
                 ASPECT_NO_CONTENT, 
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.FIRST_EVENT));
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
 	}
     
     /**
@@ -110,26 +110,23 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {    
-        if (childAssocRef != null)
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        if (nodeRef != null && 
+            nodeService.exists(nodeRef) == true &&
+            nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
         {
-            NodeRef nodeRef = childAssocRef.getChildRef();
-            if (nodeRef != null && 
-                nodeService.exists(nodeRef) == true &&
-                nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
+            NodeRef parentNodeRef = childAssocRef.getParentRef();
+            
+            if (logger.isDebugEnabled() == true)
             {
-                NodeRef parentNodeRef = childAssocRef.getParentRef();
-                
-                if (logger.isDebugEnabled() == true)
-                {
-                    logger.debug(
-                            "Create node rule trigger fired for parent node " + 
-                            this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
-                            " and child node " +
-                            this.nodeService.getType(nodeRef).toString() + " " + nodeRef);
-                }
-                
-                triggerRules(parentNodeRef, nodeRef);
+                logger.debug(
+                        "Create node rule trigger fired for parent node " + 
+                        this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
+                        " and child node " +
+                        this.nodeService.getType(nodeRef).toString() + " " + nodeRef);
             }
+            
+            triggerRules(parentNodeRef, nodeRef);
         }
     }
 
@@ -138,19 +135,20 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == true)
+        if (!nodeService.exists(nodeRef))
         {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug(
-                        "Removing the pending rules for the node " + 
-                        nodeRef.toString() + 
-                        " since the noContent aspect has been applied.");
-            }
-            
-            // Removes any rules that have already been triggered for that node
-            ruleService.removeRulePendingExecution(nodeRef);
+            return;
         }
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(
+                    "Removing the pending rules for the node " + 
+                    nodeRef.toString() + 
+                    " since the noContent aspect has been applied.");
+        }
+        
+        // Removes any rules that have already been triggered for that node
+        ruleService.removeRulePendingExecution(nodeRef);
     }
     
     /**
@@ -158,23 +156,24 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
+        if (!nodeService.exists(nodeRef))
         {
-            // We can assume it is the primary parent since it is only in the CIFS use case this aspect
-            // is added.  It's added during create, therefore we must be talking about the primary parent
-            NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-            
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug(
-                        "Create node rule trigger fired for parent node " + 
-                        this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
-                        " and child node " +
-                        this.nodeService.getType(nodeRef).toString() + " " + nodeRef + 
-                        " (this was triggered on removal of the noContent aspect)");
-            }
-            
-            triggerRules(parentNodeRef, nodeRef);
+            return;
         }
+        // We can assume it is the primary parent since it is only in the CIFS use case this aspect
+        // is added.  It's added during create, therefore we must be talking about the primary parent
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(
+                    "Create node rule trigger fired for parent node " + 
+                    this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
+                    " and child node " +
+                    this.nodeService.getType(nodeRef).toString() + " " + nodeRef + 
+                    " (this was triggered on removal of the noContent aspect)");
+        }
+        
+        triggerRules(parentNodeRef, nodeRef);
     }
 }

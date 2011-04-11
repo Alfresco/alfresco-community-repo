@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.contentdata;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -55,10 +56,11 @@ public interface ContentDataDAO
      * Creates an immediately-orphaned content URL, if possible
      * 
      * @param contentUrl    the URL to create if it doesn't exist
+     * @parma orphanTime    the recorded orphan time or <tt>null</tt> to apply the current time
      * @return              Returns the ID-URL pair
      * @throws DataIntegrityViolationException      if the URL already exists
      */
-    Pair<Long, String> createContentUrlOrphaned(String contentUrl);
+    Pair<Long, String> createContentUrlOrphaned(String contentUrl, Date orphanTime);
     
     /**
      * @param id            the unique ID of the entity
@@ -96,19 +98,15 @@ public interface ContentDataDAO
     /**
      * Enumerate all available content URLs that were orphaned on or before the given time
      * 
-     * @param contentUrlHandler     the callback object to process the rows
-     * @param maxOrphanTime         the maximum orphan time
+     * @param contentUrlHandler         the callback object to process the rows
+     * @param maxOrphanTimeExclusive    the maximum orphan time (exclusive)
+     * @param maxResults                the maximum number of results (1 or greater)
+     * @return                          Returns a list of orphaned content URLs ordered by ID
      */
-    void getContentUrlsOrphaned(ContentUrlHandler contentUrlHandler, long maxOrphanTime);
-    
-    /**
-     * Enumerate all available content URLs that were orphaned on or before the given time
-     * 
-     * @param contentUrlHandler     the callback object to process the rows
-     * @param maxOrphanTime         the maximum orphan time
-     * @param maxResults            the maximum number of results (1 or greater)
-     */
-    void getContentUrlsOrphaned(ContentUrlHandler contentUrlHandler, long maxOrphanTime, int maxResults);
+    void getContentUrlsOrphaned(
+            ContentUrlHandler contentUrlHandler,
+            Long maxOrphanTimeExclusive,
+            int maxResults);
     
     /**
      * Delete a batch of content URL entities.

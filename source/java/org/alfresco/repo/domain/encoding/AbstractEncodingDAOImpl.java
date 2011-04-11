@@ -65,12 +65,14 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
 
     public Pair<Long, String> getEncoding(String encoding)
     {
+        encoding = encoding.toUpperCase();
         ParameterCheck.mandatory("encoding", encoding);
         return encodingEntityCache.getByValue(encoding);
     }
 
     public Pair<Long, String> getOrCreateEncoding(String encoding)
     {
+        encoding = encoding.toUpperCase();
         ParameterCheck.mandatory("encoding", encoding);
         return encodingEntityCache.getOrCreateByValue(encoding);
     }
@@ -95,7 +97,7 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
             }
             else
             {
-                return new Pair<Long, String>(id, entity.getEncoding());
+                return new Pair<Long, String>(id, entity.getEncoding().toUpperCase());
             }
         }
         

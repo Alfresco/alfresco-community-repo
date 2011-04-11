@@ -20,6 +20,7 @@ package org.alfresco.repo.imap;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +45,8 @@ import javax.mail.internet.MimeUtility;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -53,6 +56,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Utf7;
 import org.apache.commons.logging.Log;
@@ -71,10 +75,17 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
  * Implementation of greenmail MailFolder. It represents an Alfresco content folder and handles
  * appendMessage, copyMessage, expunge (delete), getMessages, getMessage and so requests.
  * 
+ * The folder is identified by a qualifiedMailboxName and versioned with a version number called UIDVALIDITY.
+ * 
  * @author Mike Shavnev
  */
-public class AlfrescoImapFolder extends AbstractImapFolder
+public class AlfrescoImapFolder extends AbstractImapFolder implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7223111284066976111L;
+
     private final static long YEAR_2005 = 1101765600000L;
 
     private static Log logger = LogFactory.getLog(AlfrescoImapFolder.class);
@@ -124,12 +135,16 @@ public class AlfrescoImapFolder extends AbstractImapFolder
      */
     private Boolean readOnly;
     
+    /**
+     * The UIDValidity
+     */
+    private long uidValidity = 0;
+    
     private boolean extractAttachmentsEnabled;
     
     private Map<Long, SimpleStoredMessage> messages = new TreeMap<Long, SimpleStoredMessage>();
     private Map<Long, Integer> msnCache = new HashMap<Long, Integer>();
-   
-    private Map<Long, CacheItem> messagesCache = Collections.synchronizedMap(new MaxSizeMap<Long, CacheItem>(10, CACHE_SIZE));
+    private Map<Long, CacheItem> messagesCache = Collections.synchronizedMap(new MaxSizeMap<Long, CacheItem>(10, MESSAGE_CACHE_SIZE));
     
     /** 
      * Map that ejects the last recently used element(s) to keep the size to a 
@@ -140,6 +155,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder
      */
     private class MaxSizeMap<K,V> extends LinkedHashMap<K,V> 
     {
+        private static final long serialVersionUID = 1L;
+
         private int maxSize;
 
         public MaxSizeMap(int initialSize, int maxSize) 
@@ -156,7 +173,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         }
     }
     
-    private final static int CACHE_SIZE = 20;
+    private final static int MESSAGE_CACHE_SIZE = 40;
 
     private static final Flags PERMANENT_FLAGS = new Flags();
 
@@ -238,6 +255,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         {
             this.imapService = serviceRegistry.getImapService();
         }
+        
+        this.uidValidity = generateUidValidity();
 
         // MailFolder object can be null if it is used to obtain hierarchy delimiter by LIST command:
         // Example:
@@ -339,6 +358,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         {
             serviceRegistry.getFileFolderService().copy(sourceMessageFileInfo.getNodeRef(), destFolderNodeRef, null);
         }
+        removeMessageFromCache(uid);
+        
     }
 
     /**
@@ -359,8 +380,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             imapService.setFlag(fileInfo, Flags.Flag.DELETED, true);
             // comment out to physically remove content.
             // fileFolderService.delete(fileInfo.getNodeRef());
-            messages.remove(mess.getUid());
-            msnCache.remove(mess.getUid());
+             removeMessageFromCache(mess.getUid());
         }
     }
 
@@ -384,6 +404,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             {
                 NodeRef nodeRef = ((AbstractMimeMessage) mess.getMimeMessage()).getMessageInfo().getNodeRef();
                 serviceRegistry.getFileFolderService().delete(nodeRef);
+                removeMessageFromCache(mess.getUid());
             }
         }
     }
@@ -424,7 +445,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getFullNameInternal] entry");
+            logger.debug("[getFullNameInternal] " + this);
         }
 
         StringBuilder fullName = new StringBuilder();
@@ -472,6 +493,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected SimpleStoredMessage getMessageInternal(long uid) throws MessagingException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("[getMessageInternal] " + this);
+        }
         AbstractMimeMessage mes = (AbstractMimeMessage) messages.get(uid).getMimeMessage();
         FileInfo mesInfo = mes.getMessageInfo();
 
@@ -517,7 +542,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getMessageCountInternal] entry");
+            logger.debug("[getMessageCountInternal] " + this);
         }
         
         if (messages.size() == 0 && folderInfo != null)
@@ -542,8 +567,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getMessageUidsInternal] entry");
+            logger.debug("[getMessageUidsInternal] " + this);
         }
+        
         if (messages == null || messages.size() == 0 && folderInfo != null)
         {
             List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
@@ -570,7 +596,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getMessagesInternal] entry");
+            logger.debug("[getMessagesInternal] " + this);
         }
         List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
         return convertToMessages(fileInfos);
@@ -580,7 +606,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[convertToMessages] entry");
+            logger.debug("[convertToMessages] " + this);
         }
         if (fileInfos == null || fileInfos.size() == 0)
         {
@@ -616,6 +642,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
 
     protected SimpleStoredMessage createImapMessage(FileInfo fileInfo, Long key, boolean generateBody) throws MessagingException
     {
+        // TODO MER 26/11/2010- this test should really be that the content of the node is of type message/RFC822
         if (serviceRegistry.getNodeService().hasAspect(fileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT))
         {
             return new SimpleStoredMessage(new ImapModelMessage(fileInfo, serviceRegistry, generateBody), new Date(), key);
@@ -637,7 +664,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getMessagesInternal] entry");
+            logger.debug("[getMessagesInternal] " + this);
         }
         if (messages == null || messages.size() == 0)
         {
@@ -653,11 +680,6 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             }
         }
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("[getMessagesInternal] exit");
-        }
-
         return ret;
     }
 
@@ -700,7 +722,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getNonDeletedMessagesInternal] entry");
+            logger.debug("[getNonDeletedMessagesInternal] " + this);
         }
         List<SimpleStoredMessage> result = new ArrayList<SimpleStoredMessage>();
 
@@ -750,7 +772,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getRecentCountInternal] entry");
+            logger.debug("[getRecentCountInternal] " + this);
         }
         if (messages.size() == 0 && folderInfo != null)
         {
@@ -790,6 +812,18 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         return getUidValidity();
     }
+    
+    public boolean isStale()
+    {
+        if(uidValidity == generateUidValidity())
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 
     /**
      * Returns UIDVALIDITY value of the folder.
@@ -799,8 +833,25 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected long getUidValidityInternal()
     {
-       long modifDate = ((Date) serviceRegistry.getNodeService().getProperty(folderInfo.getNodeRef(), ContentModel.PROP_MODIFIED)).getTime();
-       return (modifDate - YEAR_2005)/1000;
+        return uidValidity;
+        //return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * Generates UIDVALIDITY value of the folder.
+     * 
+     * @return UIDVALIDITY value.
+     */
+    private long generateUidValidity()
+    {
+        if(folderInfo != null)
+        {
+            return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     /**
@@ -813,7 +864,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("[getUnseenCountInternal] entry");
+            logger.debug("[getUnseenCountInternal] " + this);
         }
         if (messages.size() == 0 && folderInfo != null)
         {
@@ -1115,6 +1166,13 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         FileCopyUtils.copy(part.getInputStream(), os);
     }
     
+    private void removeMessageFromCache(long uid)
+    {
+        messages.remove(uid);
+        msnCache.remove(uid);
+        messagesCache.remove(uid);
+    }
+
     class CacheItem
     {
         private Date modified;
@@ -1147,4 +1205,45 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         }
     }
     
+    public class GetUidValidityWork implements RunAsWork<Long>
+    {
+
+        private NodeService nodeService;
+        private NodeRef folderNodeRef;
+        
+        public GetUidValidityWork(NodeRef folderNodeRef, NodeService nodeService)
+        {
+            this.folderNodeRef = folderNodeRef;
+            this.nodeService = nodeService;
+        }
+
+        @Override
+        public Long doWork() throws Exception
+        {
+            if(nodeService.exists(folderNodeRef))
+            {
+                long modifDate = 0L;
+                if (nodeService.hasAspect(folderNodeRef, ImapModel.ASPECT_IMAP_FOLDER))
+                {
+                    modifDate = ((Long) nodeService.getProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY));
+                }
+                else
+                {
+                    Date currDate = new Date();
+                    modifDate = currDate.getTime();
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1);
+                    aspectProperties.put(ImapModel.PROP_UIDVALIDITY, modifDate);
+                    nodeService.addAspect(folderNodeRef, ImapModel.ASPECT_IMAP_FOLDER, aspectProperties);
+                }
+                return (modifDate - YEAR_2005) / 1000;
+            }
+            else
+            {
+                return new Long(0);
+            }
+        }
+        
+    }
+
+
 }

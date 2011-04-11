@@ -48,6 +48,7 @@ public interface AlfrescoImapConst
     public static final String NAMESPACE_PREFIX = "#";
     public static final String USER_NAMESPACE = "#mail";
     public static final String INBOX_NAME = "INBOX";
+    public static final String TRASH_NAME = "Trash";
 
     public static final String BODY_TEXT_PLAIN_NAME = "Body.txt";
     public static final String BODY_TEXT_HTML_NAME = "Body.html";

@@ -55,6 +55,7 @@
         <property name="auditService"   ref="AuditService"/>
         <property name="jobLockService" ref="JobLockService" />
         <property name="transactionService" ref="transactionService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean> 
     
     <bean id="refresh-tagscope" class="org.alfresco.repo.tagging.RefreshTagScopeActionExecuter" parent="action-executer">

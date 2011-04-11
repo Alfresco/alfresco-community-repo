@@ -88,6 +88,14 @@
             </list>
         </property>
     </bean>
+    <bean id="patch.sample.03" class="org.alfresco.repo.admin.patch.SimplePatch" parent="basePatch" >
+        <property name="id"><value>Sample03</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+    </bean>
 
     <!--              -->
     <!-- Helper beans -->
@@ -1207,6 +1215,9 @@
         </property>
         <property name="limitPerJobCycle">
            <value>${version.store.migrateVersionStore.limitPerJobCycle}</value>
+        </property>
+        <property name="requiresTransaction">
+           <value>false</value>        
         </property>
     </bean>
     
@@ -2484,5 +2495,16 @@
         <property name="template" ref="avmSqlMapClientTemplate" />
         <property name="temporaryExtension" value="temp" />
     </bean>
-    
+
+   <bean id="patch.db-V3.4-RemovingLinkValidationMetadata" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+      <property name="id" value="patch.db-V3.4-RemovingLinkValidationMetadata" />
+      <property name="description" value="patch.removingLinkValidationMetadata.description" />
+      <property name="fixesFromSchema" value="0" />
+      <property name="fixesToSchema" value="4113" />
+      <property name="targetSchema" value="4114" />
+      <property name="scriptUrl">
+         <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/link-validation-metadata-removing.sql</value>
+      </property>
+   </bean>
+
 </beans>

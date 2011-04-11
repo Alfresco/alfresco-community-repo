@@ -383,7 +383,7 @@ public abstract class AbstractImapFolder implements MailFolder
                 return getUidNextInternal();
             }
         };
-        return command.run(true);
+        return command.run(false);
     }
 
     /**
@@ -400,7 +400,7 @@ public abstract class AbstractImapFolder implements MailFolder
                 return getUidValidityInternal();
             }
         };
-        return command.run(true);
+        return command.run(false);
     }
 
     /**

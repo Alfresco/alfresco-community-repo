@@ -29,6 +29,7 @@ import java.util.Map;
 import org.alfresco.email.server.EmailServerModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ImapModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -247,12 +248,28 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      */
     protected void addEmailedAspect(NodeRef nodeRef, EmailMessage message) 
     {
+
+    /*
+     * TODO - get rid of this and use the RFC822 metadata extractor instead.
+     */
         Map<QName, Serializable> emailProps = new HashMap<QName, Serializable>();
         emailProps.put(ContentModel.PROP_SENTDATE, message.getSentDate());
         emailProps.put(ContentModel.PROP_ORIGINATOR, message.getFrom());
         emailProps.put(ContentModel.PROP_ADDRESSEE, message.getTo());
+        emailProps.put(ContentModel.PROP_ADDRESSEES, (Serializable)message.getCC());
         emailProps.put(ContentModel.PROP_SUBJECT, message.getSubject());
-        nodeService.addAspect(nodeRef, EmailServerModel.ASPECT_EMAILED, emailProps);
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_EMAILED, emailProps);
+
+        /*
+         * MER 
+         * Can't add IMAP_CONTENT here since that means the body of the message is a mime message. 
+         */
+        //Map<QName, Serializable> imapProps = new HashMap<QName, Serializable>();
+        //emailProps.put(ImapModel.PROP_MESSAGE_FROM, message.getFrom());
+        //emailProps.put(ImapModel.PROP_MESSAGE_TO, message.getTo());
+        //emailProps.put(ImapModel.PROP_MESSAGE_CC, (Serializable)message.getCC());
+        //emailProps.put(ImapModel.PROP_MESSAGE_SUBJECT, message.getSubject());
+        //nodeService.addAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT, imapProps);
         
         if (log.isDebugEnabled())
         {

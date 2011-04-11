@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -422,7 +423,7 @@ public class FileFolderPerformanceTester extends TestCase
         }
         catch (Throwable e)
         {
-            System.out.println("Failed to run CifsHelper performance test");
+            System.out.println("Failed to run FileFolder performance test");
             e.printStackTrace();
         }
         finally
@@ -495,6 +496,7 @@ public class FileFolderPerformanceTester extends TestCase
                                     companyHomeNodeRef,
                                     "TOP_FOLDER_" + System.currentTimeMillis(),
                                     ContentModel.TYPE_FOLDER).getNodeRef();
+                            System.out.println("Created folder " + folderNodeRef + " with user " + user);
                         }
                         finally
                         {
@@ -508,7 +510,7 @@ public class FileFolderPerformanceTester extends TestCase
                         folderNodeRef = selectedFolderNodeRef;
                         // Grant permissions
                         permissionService.setPermission(folderNodeRef, user, PermissionService.ALL_PERMISSIONS, true);
-                        System.out.println("Reusing folder " + folderNodeRef);
+                        System.out.println("Reusing folder " + folderNodeRef + " with user " + user);
                     }
                 }
                 finally
@@ -541,6 +543,11 @@ public class FileFolderPerformanceTester extends TestCase
                                     nodeRef,
                                     QName.createQName("{test}aspect_"+m), null);
                         }
+                        // write the content
+                        ContentWriter writer = fileFolderService.getWriter(nodeRef);
+                        writer.setEncoding("UTF-8");
+                        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                        writer.putContent("Some small text data");
                     }
                     System.out.println("Created " + fileCount + " files in folder " + folderNodeRef);
                     

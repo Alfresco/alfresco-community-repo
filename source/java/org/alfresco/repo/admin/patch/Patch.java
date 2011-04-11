@@ -84,6 +84,13 @@ public interface Patch
     public boolean applies(int version);
     
     /**
+     * Does the patch need to be wrapped in a transaction?
+     * 
+     * @return Returns true if the patch needs to be wrapped, false otherwise
+     */
+    public boolean requiresTransaction();
+    
+    /**
      * Applies the patch.  Typically this will be within the bounds of a new
      * transaction.
      * 

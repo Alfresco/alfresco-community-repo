@@ -51,7 +51,7 @@ public class CacheTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private SimpleCache<String, Object> standaloneCache;
     private SimpleCache<String, Object> backingCache;
-    private SimpleCache<String, Object> transactionalCache;
+    private TransactionalCache<String, Object> transactionalCache;
     private SimpleCache<String, Object> objectCache;
     
     @SuppressWarnings("unchecked")
@@ -61,8 +61,11 @@ public class CacheTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         standaloneCache = (SimpleCache<String, Object>) ctx.getBean("ehCache1");
         backingCache = (SimpleCache<String, Object>) ctx.getBean("backingCache");
-        transactionalCache = (SimpleCache<String, Object>) ctx.getBean("transactionalCache");
+        transactionalCache = (TransactionalCache<String, Object>) ctx.getBean("transactionalCache");
         objectCache = (SimpleCache<String, Object>) ctx.getBean("objectCache");
+        
+        // Make the cache mutable (default)
+        transactionalCache.setMutable(true);
     }
     
     @Override
@@ -183,7 +186,6 @@ public class CacheTest extends TestCase
     
     public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
-        
         // add item to global cache
         backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
         backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
@@ -206,7 +208,7 @@ public class CacheTest extends TestCase
             transactionalCache.put(UPDATE_TXN_THREE, "XXX");
             assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(UPDATE_TXN_THREE));
             assertFalse(
-                    "Item was put into backing cache (excl. NullValueMarker)",
+                    "Item was put into backing cache",
                     backingCache.contains(UPDATE_TXN_THREE));
             
             // check that the keys collection is correct
@@ -238,11 +240,11 @@ public class CacheTest extends TestCase
             // check that backing cache was updated with the in-transaction changes
             assertFalse("Item was not removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
             assertNull("Item could still be fetched from backing cache", backingCache.get(NEW_GLOBAL_ONE));
-            assertEquals("Item not updated in backing cache", "XXX", backingCache.get(UPDATE_TXN_THREE));
+            assertEquals("Item not updated in backing cache", null, backingCache.get(UPDATE_TXN_THREE));
             
             // Check that the transactional cache serves get requests
-            assertEquals("Transactional cache must serve post-commit get requests", "XXX",
-                    transactionalCache.get(UPDATE_TXN_THREE));
+            assertEquals("Transactional cache must serve post-commit get requests",
+                    null, transactionalCache.get(UPDATE_TXN_THREE));
         }
         catch (Throwable e)
         {
@@ -511,10 +513,14 @@ public class CacheTest extends TestCase
     }
     
     /** Execute the callback and ensure that the backing cache is left with the expected value */
-    private void executeAndCheck(RetryingTransactionCallback<Object> callback, String key, Object expectedValue) throws Throwable
+    private void executeAndCheck(
+            RetryingTransactionCallback<Object> callback,
+            boolean readOnly,
+            String key,
+            Object expectedValue) throws Throwable
     {
         TransactionService transactionService = serviceRegistry.getTransactionService();
-        UserTransaction txn = transactionService.getUserTransaction();
+        UserTransaction txn = transactionService.getUserTransaction(readOnly);
         try
         {
             txn.begin();
@@ -526,14 +532,7 @@ public class CacheTest extends TestCase
             try { txn.rollback(); } catch (Throwable ee) {}
         }
         Object actualValue = backingCache.get(key);
-        if (expectedValue == null)
-        {
-            assertNull("Expected backing cache to have null", actualValue);
-        }
-        else
-        {
-            assertEquals("Backing cache value was not correct", expectedValue, actualValue);
-        }
+        assertEquals("Backing cache value was not correct", expectedValue, actualValue);
     }
     
     private static final String COMMON_KEY = "A";
@@ -555,7 +554,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, "aaa");
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -576,7 +580,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, commonValue);
+        executeAndCheck(callback, true, COMMON_KEY, commonValue);
     }
     /**
      * <ul>
@@ -596,7 +605,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, "AAA");   // Relaxed for ALF-5134
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -618,7 +632,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, "aaa2");
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -640,7 +659,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -662,7 +686,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, "aaa2");
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -684,7 +713,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -706,7 +740,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "AAA");
+        executeAndCheck(callback, true, COMMON_KEY, "AAA");
     }
     /**
      * <ul>
@@ -728,7 +767,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -750,7 +794,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -772,7 +821,12 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
     }
     /**
      * <ul>
@@ -794,6 +848,11 @@ public class CacheTest extends TestCase
                 return null;
             }
         };
-        executeAndCheck(callback, COMMON_KEY, null);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, null);
     }
 }

@@ -59,14 +59,14 @@ public class SubethaEmailServer extends EmailServer
         serverImpl.setHostName(getDomain());
         serverImpl.setMaxConnections(getMaxConnections());
         serverImpl.start();
-        log.info("Email Server has started successfully");
+        log.info("Inbound SMTP Email Server has started successfully, on hostName:" + getDomain() + "port:" + getPort());
     }
 
     @Override
     public void shutdown()
     {
         serverImpl.stop();
-        log.info("Email Server has stopped successfully");
+        log.info("Inbound SMTP Email Server has stopped successfully");
     }
 
     class HandlerFactory implements MessageHandlerFactory

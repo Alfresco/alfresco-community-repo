@@ -53,6 +53,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -61,6 +64,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -85,6 +89,9 @@ public class TaggingServiceImplTest extends TestCase
     private ActionTrackingService actionTrackingService;
     private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
+    private PersonService personService;
+    private PermissionService permissionService;
+    private MutableAuthenticationService authenticationService;
     private AsyncOccurs asyncOccurs;
     
     private static StoreRef storeRef;
@@ -130,6 +137,10 @@ public class TaggingServiceImplTest extends TestCase
         this.scriptService = (ScriptService)ctx.getBean("scriptService");        
         this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        
+        this.personService = (PersonService)ctx.getBean("PersonService");
+        this.permissionService = (PermissionService)ctx.getBean("PermissionService");
+        this.authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
 
         if (init == false)
         {
@@ -1001,6 +1012,110 @@ public class TaggingServiceImplTest extends TestCase
        tx.commit();
     }
     
+    /**
+     * Ensures that a user can only tag a node they can write to,
+     *  but that the tag scope updates propagate upwards as the system
+     *  (even to things the user can't write to)
+     * Also checks that policies are disabled during tag scope updates,
+     *  so that the auditable flags aren't incorrectly set by the change
+     */
+    public void testPermissionsAndPolicies() throws Exception
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
+        // Create a user
+        String USER_1 = "User1";
+        if(authenticationService.authenticationExists(USER_1))
+            authenticationService.deleteAuthentication(USER_1);
+        if(personService.personExists(USER_1))
+            personService.deletePerson(USER_1);
+        
+        authenticationService.createAuthentication(USER_1, "PWD".toCharArray());
+        PropertyMap personProperties = new PropertyMap();
+        personProperties.put(ContentModel.PROP_USERNAME, USER_1);
+        personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_1);
+        personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
+        personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
+        personProperties.put(ContentModel.PROP_EMAIL, USER_1+"@example.com");
+        personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+        personService.createPerson(personProperties);
+        
+        
+        // Give that user permissions on the tagging category root, so
+        //  they're allowed to add new tags
+        NodeRef tn = taggingService.createTag(folder.getStoreRef(), "Testing");
+        NodeRef tr = nodeService.getPrimaryParent(tn).getParentRef();
+        permissionService.setPermission(tr, USER_1, PermissionService.EDITOR, true);
+        permissionService.setPermission(tr, USER_1, PermissionService.CONTRIBUTOR, true);
+        
+        
+        // Create a folder with a tag scope on it + auditable aspect
+        // User can read but not write
+        authenticationComponent.setSystemUserAsCurrentUser();
+        NodeRef auditableFolder = nodeService.createNode(
+                folder, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("Folder"), ContentModel.TYPE_FOLDER
+        ).getChildRef();
+        nodeService.addAspect(auditableFolder, ContentModel.ASPECT_AUDITABLE, null);
+        taggingService.addTagScope(auditableFolder);
+        permissionService.setPermission(auditableFolder, USER_1, PermissionService.CONSUMER, true);
+        
+        // Auditable checks
+        assertEquals("System", nodeService.getProperty(auditableFolder, ContentModel.PROP_CREATOR));
+        assertEquals("System", nodeService.getProperty(auditableFolder, ContentModel.PROP_MODIFIER));
+        Date origModified = (Date)nodeService.getProperty(auditableFolder, ContentModel.PROP_MODIFIED);
+        
+        
+        // Create a node without tags, which the user
+        //  can write to
+        NodeRef taggedNode = nodeService.createNode(
+                auditableFolder, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("Tagged"), ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        permissionService.setPermission(taggedNode, USER_1, PermissionService.EDITOR, true);
+        
+        
+        // Tag the node as the user
+        authenticationComponent.setCurrentUser(USER_1);
+        assertEquals(0, taggingService.getTags(taggedNode).size());
+        
+        nodeService.setProperty(taggedNode, ContentModel.PROP_TITLE, "To ensure we're allowed to write");
+        
+        taggingService.addTag(taggedNode, TAG_1);
+        taggingService.addTag(taggedNode, TAG_2);
+        assertEquals(2, taggingService.getTags(taggedNode).size());
+        
+        
+        // Ensure the folder tag scope got the update
+        TagScope ts = taggingService.findTagScope(taggedNode);
+        assertEquals(auditableFolder, ts.getNodeRef());
+        assertEquals(0, ts.getTags().size());
+        
+        assertEquals("System", nodeService.getProperty(auditableFolder, ContentModel.PROP_CREATOR));
+        assertEquals("System", nodeService.getProperty(ts.getNodeRef(), ContentModel.PROP_MODIFIER));
+
+        tx = asyncOccurs.awaitExecution(tx);
+        
+        ts = taggingService.findTagScope(taggedNode);
+        assertEquals(auditableFolder, ts.getNodeRef());
+        assertEquals(2, ts.getTags().size());
+        assertEquals(1, ts.getTag(TAG_1).getCount());
+        assertEquals(1, ts.getTag(TAG_2).getCount());
+        
+        // Ensure the auditable flags on the folder are unchanged
+        assertEquals("System", nodeService.getProperty(auditableFolder, ContentModel.PROP_CREATOR));
+        assertEquals("System", nodeService.getProperty(ts.getNodeRef(), ContentModel.PROP_MODIFIER));
+        assertEquals(origModified.getTime(), ((Date)nodeService.getProperty(auditableFolder, ContentModel.PROP_MODIFIED)).getTime());
+
+        // Tidy up
+        authenticationComponent.setSystemUserAsCurrentUser();
+        authenticationService.deleteAuthentication(USER_1);
+        personService.deletePerson(USER_1);
+        tx.commit();
+    }
+    
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception
@@ -1178,7 +1293,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
-    public void DISABLEtestMultiThreaded() throws Exception
+    public void DISABLEDtestMultiThreaded() throws Exception
     {
         UserTransaction tx = this.transactionService.getNonPropagatingUserTransaction();
         tx.begin();
@@ -1191,7 +1306,10 @@ public class TaggingServiceImplTest extends TestCase
 
         // Prepare a bunch of threads to do tagging
         final List<Thread> threads = new ArrayList<Thread>();
-        String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5 };
+        String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5,
+              "testTag06", "testTag07", "testTag08", "testTag09", "testTag10",
+              "testTag11", "testTag12", "testTag13", "testTag14", "testTag15",
+              "testTag16", "testTag17", "testTag18", "testTag19", "testTag20"};
         for (String tmpTag : tags)
         {
             final String tag = tmpTag;
@@ -1257,7 +1375,7 @@ public class TaggingServiceImplTest extends TestCase
         //  async actions to kick off
         Thread.sleep(150);
         
-        // Wait until we've had 5 async tagging actions run (One per Thread)
+        // Wait until we've had 20 async tagging actions run (One per Thread)
         // Not all of the actions will do something, but we just need to
         //  wait for all of them!
         // As a backup check, also ensure that the action tracking service
@@ -1266,7 +1384,7 @@ public class TaggingServiceImplTest extends TestCase
         {
            try
            {
-              if(asyncOccurs.wantedActionsCount < 5)
+              if(asyncOccurs.wantedActionsCount < tags.length)
               {
                  Thread.sleep(100);
                  continue;
@@ -1297,11 +1415,11 @@ public class TaggingServiceImplTest extends TestCase
         TagScope ts2 = this.taggingService.findTagScope(this.subFolder);
         assertEquals(
               "Wrong tags on folder tagscope: " + ts1.getTags(), 
-              5, ts1.getTags().size()
+              tags.length, ts1.getTags().size()
         );
         assertEquals(
               "Wrong tags on subfolder tagscope: " + ts2.getTags(), 
-              5, ts2.getTags().size()
+              tags.length, ts2.getTags().size()
         );
 
         // Each tag should crop up 3 times on the folder

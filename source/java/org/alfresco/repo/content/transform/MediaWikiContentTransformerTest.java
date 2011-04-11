@@ -28,6 +28,7 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.util.TempFileProvider;
 
 import de.schlichtherle.io.FileOutputStream;
 
@@ -89,12 +90,12 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
     
     public void testMediaWikiToHTML() throws Exception
     {
-       File input = File.createTempFile("mediaWikiTest", ".mw");
+       File input = TempFileProvider.createTempFile("mediaWikiTest", ".mw");
        FileOutputStream fos = new FileOutputStream(input);
        fos.write(WIKI_TEXT.getBytes());
        fos.close();
        
-       File output = File.createTempFile("mediaWikiTest", ".htm");
+       File output = TempFileProvider.createTempFile("mediaWikiTest", ".htm");
        
        ContentReader contentReader = new FileContentReader(input);
        contentReader.setMimetype(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI);

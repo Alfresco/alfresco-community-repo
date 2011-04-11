@@ -171,7 +171,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyStringValue() throws Exception
     {
-        final String stringValue = "One Two Three - " + System.currentTimeMillis();
+        final String stringValue = "One Two Three - àâæçéèêëîïôœùûüÿñ - " + System.currentTimeMillis();
         final String stringValueUpper = stringValue.toUpperCase();
         final String stringValueLower = stringValue.toLowerCase();
         RetryingTransactionCallback<Pair<Long, String>> createStringCallback = new RetryingTransactionCallback<Pair<Long, String>>()

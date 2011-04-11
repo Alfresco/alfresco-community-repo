@@ -99,7 +99,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             config = new Configuration();
             
             // setup template cache
-            config.setCacheStorage(new MruCacheStorage(32, 32));
+            config.setCacheStorage(new MruCacheStorage(512, 1024));
             
             // use our custom loader to find templates on the ClassPath
             config.setTemplateLoader(new ClassPathRepoTemplateLoader(

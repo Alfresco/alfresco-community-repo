@@ -21,16 +21,20 @@ package org.alfresco.repo.content.transform;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.TextToPDF;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.tika.io.IOUtils;
 
 /**
  * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library's <code>TextToPDF</code> utility.
@@ -40,6 +44,8 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
  */
 public class TextToPdfContentTransformer extends AbstractContentTransformer2
 {
+    private static final Log logger = LogFactory.getLog(TextToPdfContentTransformer.class);
+    
     private TextToPDF transformer;
     
     public TextToPdfContentTransformer()
@@ -110,11 +116,14 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     {
         PDDocument pdf = null;
         InputStream is = null;
+        InputStreamReader ir = null;
         OutputStream os = null;
         try
         {
             is = reader.getContentInputStream();
-            pdf = transformer.createPDFFromText(new InputStreamReader(is));
+            ir = buildReader(is, reader.getEncoding(), reader.getContentUrl());
+            
+            pdf = transformer.createPDFFromText(ir);
             // dump it all to the writer
             os = writer.getContentOutputStream();
             pdf.save(os);
@@ -125,6 +134,10 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
             {
                 try { pdf.close(); } catch (Throwable e) {e.printStackTrace(); }
             }
+            if (ir != null)
+            {
+                try { ir.close(); } catch (Throwable e) {e.printStackTrace(); }
+            }
             if (is != null)
             {
                 try { is.close(); } catch (Throwable e) {e.printStackTrace(); }
@@ -134,5 +147,31 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
                 try { os.close(); } catch (Throwable e) {e.printStackTrace(); }
             }
         }
+    }
+    
+    protected InputStreamReader buildReader(InputStream is, String encoding, String node)
+    {
+        // If they gave an encoding, try to use it
+        if(encoding != null)
+        {
+            Charset charset = null;
+            try
+            {
+                charset = Charset.forName(encoding);
+            } catch(Exception e)
+            {
+                logger.warn("JVM doesn't understand encoding '" + encoding + 
+                        "' when transforming " + node);
+            }
+            if(charset != null)
+            {
+                logger.debug("Processing plain text in encoding " + charset.displayName());
+                return new InputStreamReader(is, charset);
+            }
+        }
+        
+        // Fall back on the system default
+        logger.debug("Processing plain text using system default encoding");
+        return new InputStreamReader(is);
     }
 }

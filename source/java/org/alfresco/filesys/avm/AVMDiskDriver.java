@@ -1374,13 +1374,26 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         
         if ( ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
         {
+            // Search for the pseudo path, to check for any new stores
+            
+            FileState fstate = findPseudoState( storePath, ctx);
+            
             // Check if the search path is for the root, a store or version folder
             
             if ( storePath.isRootPath())
             {
-                // Return dummy file informatiom for the root folder
+                // Return dummy file informatiom for the root folder, use cached timestamps
                 
-                return new FileInfo( name, 0L, FileAttribute.Directory);
+                FileInfo finfo = new FileInfo( name, 0L, FileAttribute.Directory);
+                
+                if ( fstate != null) {
+                    finfo.setModifyDateTime( fstate.getModifyDateTime());
+                    finfo.setChangeDateTime( fstate.getModifyDateTime());
+                }
+                
+                // Return the root folder file information
+                
+                return finfo;
             }
             else
             {
@@ -2367,6 +2380,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         		
         		addNewStore( avmCtx, curStoreName);
         	}
+
+        	// Get the root folder file state, update the modification timestamp
+        	
+            FileState rootState = avmCtx.getStateCache().findFileState( FileName.DOS_SEPERATOR_STR);
+            if  ( rootState != null)
+                rootState.updateModifyDateTime();
         }
         
         // Check if the path is to a store pseudo folder
@@ -2394,6 +2413,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     fstate = avmCtx.getStateCache().findFileState( FileName.DOS_SEPERATOR_STR, true);
                     fstate.setExpiryTime( FileState.NoTimeout);
                     fstate.setFileStatus( DirectoryExists);
+                    
+                    // Set the modification timestamp for the root folder
+                    
+                    fstate.updateModifyDateTime();
                     
                     // Get a list of the available AVM stores
                     

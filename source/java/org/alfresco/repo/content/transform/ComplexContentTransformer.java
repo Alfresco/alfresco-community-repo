@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +34,7 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
@@ -142,7 +144,27 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
               {
                  try 
                  {
-                    PropertyUtils.setProperty(options, key, transformationOptionOverrides.get(key));
+                    PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(options, key);
+                    Class<?> propertyClass = pd.getPropertyType();
+                    
+                    Object value = transformationOptionOverrides.get(key);
+                    if(value != null)
+                    {
+                        if(propertyClass.isInstance(value))
+                        {
+                            // Nothing to do
+                        }
+                        else if(value instanceof String && propertyClass.isInstance(Boolean.TRUE))
+                        {
+                            // Use relaxed converter
+                            value = TransformationOptions.relaxedBooleanTypeConverter.convert((String)value);
+                        }
+                        else
+                        {
+                            value = DefaultTypeConverter.INSTANCE.convert(propertyClass, value);
+                        }
+                    }
+                    PropertyUtils.setProperty(options, key, value);
                  } 
                  catch(MethodNotFoundException mnfe) {}
                  catch(NoSuchMethodException nsme) {}

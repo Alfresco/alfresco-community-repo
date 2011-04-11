@@ -247,7 +247,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * @param cache                 the cache that will back the two-way lookups
      * @param entityLookup          the instance that is able to find and persist entities
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public EntityLookupCache(SimpleCache cache, EntityLookupCallbackDAO<K, V, VK> entityLookup)
     {
         this(cache, CACHE_REGION_DEFAULT, entityLookup);
@@ -264,7 +264,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * @param cacheRegion           the region within the cache to use.
      * @param entityLookup          the instance that is able to find and persist entities
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public EntityLookupCache(SimpleCache cache, String cacheRegion, EntityLookupCallbackDAO<K, V, VK> entityLookup)
     {
         ParameterCheck.mandatory("cacheRegion", cacheRegion);
@@ -501,7 +501,8 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         
         // Remove entries for the key (bidirectional removal removes the old value as well)
-        removeByKey(key);
+        // but leave the key as it will get updated
+        removeByKey(key, false);
         
         // Do the update
         int updateCount = entityLookup.updateValue(key, value);
@@ -595,7 +596,8 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         
         // Remove entries for the key (bidirectional removal removes the old value as well)
-        removeByKey(key);
+        // but leave the key as it will get updated
+        removeByKey(key, false);
         
         // Get the value key.
         VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
@@ -668,7 +670,6 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     /**
      * Cache-only operation: Remove all cache values associated with the given key.
      */
-    @SuppressWarnings("unchecked")
     public void removeByKey(K key)
     {
         // Handle missing cache
@@ -677,6 +678,17 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             return;
         }
         
+        removeByKey(key, true);
+    }
+    
+    /**
+     * Cache-only operation: Remove all cache values associated with the given key.
+     * 
+     * @param removeKey             <tt>true</tt> to remove the given key's entry
+     */
+    @SuppressWarnings("unchecked")
+    private void removeByKey(K key, boolean removeKey)
+    {
         CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
         V value = (V) cache.get(keyCacheKey);
         if (value != null && !value.equals(VALUE_NOT_FOUND))
@@ -686,10 +698,19 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             if (valueKey != null)
             {
                 CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
-                cache.remove(valueCacheKey);
+                if (cache.contains(valueCacheKey))
+                {
+                    cache.remove(valueCacheKey);
+                }
             }
         }
-        cache.remove(keyCacheKey);
+        if (removeKey)
+        {
+            if (cache.contains(keyCacheKey))
+            {
+                cache.remove(keyCacheKey);
+            }
+        }
     }
     
     /**

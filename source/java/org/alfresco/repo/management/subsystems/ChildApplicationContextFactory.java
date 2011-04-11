@@ -43,7 +43,12 @@ import org.springframework.beans.factory.config.ListFactoryBean;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.util.Assert;
 
 /**
  * A factory allowing initialization of an entire 'subsystem' in a child application context. As with other
@@ -280,7 +285,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         overrideFactory.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
         overrideFactory.setLocations(getParent().getResources(
                 ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
-                        + idList.get(idList.size() - 1) + '/' + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
+                        + idList.get(idList.size() - 1) + ChildApplicationContextFactory.PROPERTIES_SUFFIX));
         overrideFactory.setProperties(((ApplicationContextState) state).properties);
         overrideFactory.afterPropertiesSet();
         ((ApplicationContextState) state).properties = (Properties) overrideFactory.getObject();
@@ -370,8 +375,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                         + '/'
                         + getTypeName()
                         + '/'
-                        + ChildApplicationContextFactory.this.getId().get(
-                                ChildApplicationContextFactory.this.getId().size() - 1) + '/'
+                        + ChildApplicationContextFactory.this.getId().get(ChildApplicationContextFactory.this.getId().size() - 1) 
                         + ChildApplicationContextFactory.CONTEXT_SUFFIX
             }, false, ChildApplicationContextFactory.this.getParent());
 
@@ -435,6 +439,22 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                     return bean;
                 }
             });
+        }
+        
+        @Override
+        public void publishEvent(ApplicationEvent event)
+        {
+            Assert.notNull(event, "Event must not be null");
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Publishing event in " + getDisplayName() + ": " + event);
+            }
+            ((ApplicationEventMulticaster) getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)).multicastEvent(event);
+
+            if (!(getParent() == null || event instanceof ContextRefreshedEvent || event instanceof ContextClosedEvent))
+            {
+                getParent().publishEvent(event);
+            }
         }
     }
 

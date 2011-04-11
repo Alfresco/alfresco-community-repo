@@ -33,6 +33,7 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
@@ -82,6 +83,9 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     
     /** Transaction Service, used for retrying operations */
     private TransactionService transactionService;
+    
+    /** Used to disable policies/behaviours when changing tag scope properties */
+    private BehaviourFilter behaviourFilter;
     
     /** Action name and parameters */
     public static final String NAME = "update-tagscope";
@@ -157,6 +161,16 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    /**
+     * Set the behaviour filter
+     * 
+     * @param behaviourFilter    the behaviour filter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     /**
@@ -359,6 +373,10 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
        {
           List<TagDetails> tags = null;
           
+          // Changing the tag scope values is a system operation
+          // As such, don't fire policies/behaviours during this
+          behaviourFilter.disableAllBehaviours();
+          
           // Get the current tags
           ContentReader contentReader = contentService.getReader(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE);
           if (contentReader == null)
@@ -427,7 +445,11 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           ContentWriter contentWriter = contentService.getWriter(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE, true);
           contentWriter.setEncoding("UTF-8");
           contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-          contentWriter.putContent(tagContent);    
+          contentWriter.putContent(tagContent);  
+          
+          // We're done making our changes
+          // Allow behaviours to fire again if they want to
+          behaviourFilter.enableAllBehaviours();
           
           // Log this if required
           if(logger.isDebugEnabled())

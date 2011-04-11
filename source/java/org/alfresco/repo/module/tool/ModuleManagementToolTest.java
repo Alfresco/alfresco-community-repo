@@ -98,7 +98,8 @@ public class ModuleManagementToolTest extends TestCase
         try
         {
             this.manager.installModule(ampLocation, warLocation);
-            fail("The module is already installed so an exception should have been raised since we are not forcing an overwite");
+            // Already installed is now a Warning rather than an Error and is now non fatal
+            // fail("The module is already installed so an exception should have been raised since we are not forcing an overwite");
         }
         catch(ModuleManagementToolException exception)
         {
@@ -142,11 +143,18 @@ public class ModuleManagementToolTest extends TestCase
         // Ensure the file has been reverted as it isnt updated in the v2.0
         checkContentsOfFile(warLocation + orig, "ORIGIONAL");
         
-        // Try and install and earlier version
+        /**
+         *  Try and install an earlier version over a later version
+         */
         try
         {
             this.manager.installModule(ampLocation, warLocation);
-            fail("An earlier version of this module is already installed so an exception should have been raised since we are not forcing an overwite");
+            //fail("A later version of this module is already installed so an exception should have been raised since we are not forcing an overwite");
+            //this is now a warning rather than an error
+            
+            // Check that the war has not been modified
+            checkForFileExistance(warLocation, files2);      
+            checkForFileNonExistance(warLocation, files3);
         }
         catch(ModuleManagementToolException exception)
         {

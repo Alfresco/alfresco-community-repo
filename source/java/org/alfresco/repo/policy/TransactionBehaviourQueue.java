@@ -20,6 +20,7 @@ package org.alfresco.repo.policy;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -69,10 +70,15 @@ public class TransactionBehaviourQueue implements TransactionListener
         }
         
         // Determine if behaviour instance has already been queued
-        Integer instanceKey = createInstanceKey(behaviour, definition.getArguments(), args);
-        ExecutionContext executionContext = queueContext.index.get(instanceKey);
+        
+        // Identity of ExecutionContext is Behaviour + KEY argument(s)
+        ExecutionInstanceKey key = new  ExecutionInstanceKey(behaviour, definition.getArguments(), args);
+        
+        ExecutionContext executionContext = queueContext.index.get(key);
+        
         if (executionContext == null)
         {
+            // Context does not exist
             // Create execution context for behaviour
             executionContext = new ExecutionContext<P>();
             executionContext.method = method;
@@ -90,10 +96,11 @@ public class TransactionBehaviourQueue implements TransactionListener
                 // execute now
                 execute(executionContext);
             }
-            queueContext.index.put(instanceKey, executionContext);
+            queueContext.index.put(key, executionContext);
         }
         else
         {
+            // Context does already exist
             // Update behaviour instance execution context, in particular, argument state that is marked END_TRANSACTION
             Arg[] argDefs = definition.getArguments();
             for (int i = 0; i < argDefs.length; i++)
@@ -150,26 +157,81 @@ public class TransactionBehaviourQueue implements TransactionListener
     public void afterRollback()
     {
     }
-
+    
     /**
-     * Create an instance key for the behaviour based on the "key" arguments passed in
+     * Execution Instance Key - to uniquely identify an ExecutionContext
      * 
-     * @param argDefs  definitions of behaviour arguments
-     * @param args  the argument values
-     * @return  the key
+     * @param <P>
      */
-    private Integer createInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
+    private class ExecutionInstanceKey
     {
-        int key = behaviour.hashCode();
-        for (int i = 0; i < argDefs.length; i++)
+        public ExecutionInstanceKey(Behaviour behaviour, Arg[] argDefs, Object[] args)
         {
-            if (argDefs[i].equals(Arg.KEY))
+            this.behaviour = behaviour;
+            
+            for (int i = 0; i < argDefs.length; i++)
             {
-                key = (37 * key) + args[i].hashCode();
+                if (argDefs[i].equals(Arg.KEY))
+                {
+                    keys.add(args[i]);
+                }
             }
         }
-        return new Integer(key);
-    }
+        
+        Behaviour behaviour;
+        ArrayList<Object> keys = new ArrayList<Object>();
+        
+        /**
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode()
+        {   
+            int key = behaviour.hashCode();
+            for (int i = 0; i < keys.size(); i++)
+            {
+                key = (37 * key) + keys.get(i).hashCode();
+            }
+            return key;
+        }
+        
+        /**
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj instanceof ExecutionInstanceKey)
+            {
+                ExecutionInstanceKey that = (ExecutionInstanceKey) obj;
+                if(this.behaviour.equals(that.behaviour))
+                {
+                    if(keys.size() != that.keys.size())
+                    {
+                        // different number of keys
+                        return false;
+                    }
+                    if(keys.containsAll(that.keys))
+                    {
+                        // yes keys are equal
+                        return true;
+                    }
+                }
+
+                // behavior is different
+                return false;
+            }
+            else
+            {
+                // Object is wrong type
+                return false;
+            }
+        } // equals
+    } // ExecutionInstanceKey
 
     /**
      * Execute behaviour as described in execution context
@@ -237,7 +299,7 @@ public class TransactionBehaviourQueue implements TransactionListener
         Object[] args;
         P policyInterface;
     }
-
+    
     
     /**
      * Queue Context
@@ -246,7 +308,7 @@ public class TransactionBehaviourQueue implements TransactionListener
     {
         // TODO: Tune sizes
         Queue<ExecutionContext> queue = new LinkedList<ExecutionContext>();
-        Map<Integer, ExecutionContext> index = new HashMap<Integer, ExecutionContext>();
+        Map<ExecutionInstanceKey, ExecutionContext> index = new HashMap<ExecutionInstanceKey, ExecutionContext>();
         boolean committed = false;
     }
         

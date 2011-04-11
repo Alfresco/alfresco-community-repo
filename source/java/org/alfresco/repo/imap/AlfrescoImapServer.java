@@ -52,6 +52,11 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         this.imapServerEnabled = imapServerEnabled;
     }
+    
+    public boolean isImapServerEnabled()
+    {
+        return imapServerEnabled;
+    }
 
     public void setPort(int port)
     {
@@ -87,6 +92,27 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         if (imapServerEnabled)
         {
+            startup();
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("IMAP service is disabled.");
+            }
+        }
+    }
+
+    protected void onShutdown(ApplicationEvent event)
+    {
+        shutdown();
+
+    }
+    
+    public void startup()
+    {
+        if(serverImpl == null)
+        {
             Managers imapManagers = new Managers()
             {
                 public ImapHostManager getImapHostManager()
@@ -111,15 +137,19 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("IMAP service is disabled.");
+                logger.debug("IMAP server already running.");
             }
         }
     }
-
-    protected void onShutdown(ApplicationEvent event)
+    
+    public void shutdown()
     {
         if (serverImpl != null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("IMAP service stopping.");
+            }
             serverImpl.stopService(null);
         }
     }

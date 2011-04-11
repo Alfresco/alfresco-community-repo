@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -44,6 +45,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
@@ -54,6 +56,7 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -78,6 +81,7 @@ public class FileFolderServiceImplTest extends TestCase
     private static final String NAME_L1_FILE_C = "L1- File C (%_)";
     private static final String NAME_CHECK_FILE = "CHECK_FILE";
     private static final String NAME_CHECK_FOLDER = "CHECK_FOLDER";
+    private static final String NAME_DISCUSSION_FOLDER = "CHECK_DISCUSSION_RENAME";
 
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -362,6 +366,35 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
+    }
+    
+    public void testRenameDiscussionALF5569() throws Exception
+    {
+        FileInfo fileInfo = getByName(NAME_L0_FILE_A, false);
+        assertNotNull(fileInfo);
+        
+        // create a discussion for the file, this happens in a behaviour
+        // when adding the discussable aspect
+        nodeService.addAspect(fileInfo.getNodeRef(), ForumModel.ASPECT_DISCUSSABLE, null);
+        List<ChildAssociationRef> destChildren = nodeService.getChildAssocs(
+              fileInfo.getNodeRef(),
+              ForumModel.ASSOC_DISCUSSION,
+              RegexQNamePattern.MATCH_ALL);
+        assertEquals(1, destChildren.size());
+        
+        // get the first child
+        NodeRef discussionNodeRef = destChildren.get(0).getChildRef();
+        
+        // check the current name
+        String currentName = (String)nodeService.getProperty(discussionNodeRef, ContentModel.PROP_NAME);
+        assertFalse(NAME_DISCUSSION_FOLDER.equals(currentName));
+        
+        // rename the discussion node
+        FileInfo newFileInfo = fileFolderService.rename(discussionNodeRef, NAME_DISCUSSION_FOLDER);
+        
+        // get the name now
+        String newName = (String)nodeService.getProperty(newFileInfo.getNodeRef(), ContentModel.PROP_NAME);
+        assertEquals(NAME_DISCUSSION_FOLDER, newName);
     }
 
     public void testMove() throws Exception

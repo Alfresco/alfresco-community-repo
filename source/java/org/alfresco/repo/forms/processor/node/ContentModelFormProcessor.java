@@ -24,6 +24,8 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DA
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DEFAULT_CONTENT_MIMETYPE;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DOT_CHARACTER;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DOT_CHARACTER_REPLACEMENT;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -300,7 +302,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             getLogger().debug("Processing field " + fieldData + " for property persistence");
 
         // match and extract the prefix and name parts
-        Matcher m = this.propertyNamePattern.matcher(fieldData.getName());
+        Matcher m = this.propertyNamePattern.matcher(fieldData.getName().replaceAll(DOT_CHARACTER_REPLACEMENT, DOT_CHARACTER));
         if (m.matches())
         {
             String qNamePrefix = m.group(1);
@@ -483,7 +485,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             getLogger().debug("Processing field " + fieldData + " for association persistence");
 
         String fieldName = fieldData.getName();
-        Matcher m = this.associationNamePattern.matcher(fieldName);
+        Matcher m = this.associationNamePattern.matcher(fieldName.replaceAll(DOT_CHARACTER_REPLACEMENT, DOT_CHARACTER));
         if (m.matches())
         {
             String qNamePrefix = m.group(1);

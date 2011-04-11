@@ -486,6 +486,10 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
         	catch (Exception ex) {
         		logger.debug( ex);
         		ex.printStackTrace();
+        		
+        		// Rethrow exception, convert to access denied
+        		
+        		throw new AccessDeniedException("Failed to open file for write access, " + m_avmPath);
         	}
 
         	// Indicate that we have a writable channel to the file

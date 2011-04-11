@@ -36,6 +36,9 @@
       <property name="protectDays" >
          <value>${system.content.orphanProtectDays}</value>
       </property>
+      <property name="deletionFailureAction" >
+         <value>${system.content.deletionFailureAction}</value>
+      </property>
       <property name="eagerContentStoreCleaner" >
          <ref bean="eagerContentStoreCleaner" />
       </property>
@@ -121,6 +124,7 @@
       <property name="charactersetFinders">
          <list>
             <bean class="org.alfresco.encoding.GuessEncodingCharsetFinder" />
+            <bean class="org.alfresco.encoding.TikaCharsetFinder" />
          </list>
       </property>
     </bean>

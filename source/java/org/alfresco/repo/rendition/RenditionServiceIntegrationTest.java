@@ -205,6 +205,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                     {
+                        @Override
                         public NodeRef execute() throws Throwable
                         {
                             // create test model
@@ -221,6 +222,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
+            @Override
             public Void execute() throws Throwable
             {
                 String output = readTextContent(renditionNode);
@@ -1718,7 +1720,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void testPathBasedRenditionOverwrite() throws Exception
     {
-       //TODO Implement Test
+       
     }
     
     /**
@@ -1754,7 +1756,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        
        // Do a plain rendition, and check we acquired the one node
        renditionService.render(nodeWithDocContent, rdPlain);
-       assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
+       ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
        assertEquals(plainQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
        
@@ -1772,6 +1775,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
        assertEquals(compositeQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
        
        // Tidy
@@ -1788,15 +1793,18 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
 
        // Run again, shouldn't change, should re-use the node
-       renditionNode = nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef();
+       renditionNode = renditionAssoc.getChildRef();
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(renditionNode, nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
+       assertEquals(renditionNode, renditionAssoc.getChildRef());
        assertEquals(plainQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
-       
        
        // Tidy, and re-create for composite
        nodeService.deleteNode(
@@ -1805,13 +1813,17 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
+
        // Run again, shouldn't change, should re-use the node
-       renditionNode = nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef();
+       renditionNode = renditionAssoc.getChildRef();
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(renditionNode, nodeService.getChildAssocs(nodeWithDocContent).get(0).getChildRef());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
+       assertEquals(renditionNode, renditionAssoc.getChildRef());
        assertEquals(compositeQName, nodeService.getChildAssocs(nodeWithDocContent).get(0).getQName());
        
        // Tidy
@@ -1830,11 +1842,12 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        //        Switch to being path based                 //
        // ================================================= //
 
-       String path = "/" +
+       String fileName = "HelloWorld.txt";
+    String path = "/" +
            (String) nodeService.getProperty(repositoryHelper.getCompanyHome(), ContentModel.PROP_NAME) +
            "/" +
            (String) nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME) +
-           "/" + "HelloWorld.txt";
+           "/" + fileName;
        
        rdPlain.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path
@@ -1842,7 +1855,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        rdComposite.setParameterValue(
              RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path
        );
-
+       QName expectedName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName);
        
        // ================================================= //
        //   Path based rendition, no existing one there     //
@@ -1851,15 +1864,21 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertNotNull(nodeWithDocContent);
        assertEquals(0, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(0, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(0, nodeService.getChildAssocs(testTargetFolder).size());
+       List<ChildAssociationRef> children = nodeService.getChildAssocs(testTargetFolder);
+       assertEquals(0, children.size());
        
        // Do a plain rendition, and check we acquired the one node
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertTrue(nodeService.getChildAssocs(nodeWithDocContent).get(0).isPrimary() == false);
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
+       assertFalse(renditionAssoc.isPrimary());
+       children = nodeService.getChildAssocs(testTargetFolder);
+       assertEquals(1, children.size());
+       ChildAssociationRef childAssoc = children.get(0);
+       assertEquals(expectedName, childAssoc.getQName());
+       assertTrue(childAssoc.isPrimary());
        
        nodeService.deleteNode(
              renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
@@ -1879,9 +1898,15 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        //assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
-       
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
+       assertFalse(renditionAssoc.isPrimary());
+       children = nodeService.getChildAssocs(testTargetFolder);
+       assertEquals(1, children.size());
+       childAssoc = children.get(0);
+       assertEquals(expectedName, childAssoc.getQName());
+       assertTrue(childAssoc.isPrimary());
+              
        // Tidy
        nodeService.deleteNode(
              renditionService.getRenditions(nodeWithDocContent).get(0).getChildRef()
@@ -1896,17 +1921,25 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        //assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-
+       assertEquals(1, children.size());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
+       
        // Run again, shouldn't change, should re-use the node
-       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       renditionNode = renditionAssoc.getChildRef();
        renditionService.render(nodeWithDocContent, rdPlain);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        //assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
-       assertEquals(plainQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
-       
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, plainQName);
+       assertNotNull(renditionAssoc);
+       assertFalse(renditionAssoc.isPrimary());
+       assertEquals(renditionNode, renditionAssoc.getChildRef());
+       children = nodeService.getChildAssocs(testTargetFolder);
+       assertEquals(1, children.size());
+       childAssoc = children.get(0);
+       assertEquals(expectedName, childAssoc.getQName());
+       assertTrue(childAssoc.isPrimary());
+       assertEquals(renditionNode, childAssoc.getChildRef());
        
        // Tidy, and re-create for composite
        nodeService.deleteNode(
@@ -1915,43 +1948,50 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        //assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
+       assertEquals(1, children.size());
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
        
        // Run again, shouldn't change, should re-use the node
-       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
+       renditionNode = renditionAssoc.getChildRef();
        renditionService.render(nodeWithDocContent, rdComposite);
        assertEquals(1, renditionService.getRenditions(nodeWithDocContent).size());
        //assertEquals(1, nodeService.getChildAssocs(nodeWithDocContent).size());
-       assertEquals(1, nodeService.getChildAssocs(testTargetFolder).size());
-       assertEquals(renditionNode, nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef());
-       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
-       
+       renditionAssoc = renditionService.getRenditionByName(nodeWithDocContent, compositeQName);
+       assertNotNull(renditionAssoc);
+       assertFalse(renditionAssoc.isPrimary());
+       assertEquals(renditionNode, renditionAssoc.getChildRef());
+       children = nodeService.getChildAssocs(testTargetFolder);
+       assertEquals(1, children.size());
+       childAssoc = children.get(0);
+       assertEquals(expectedName, childAssoc.getQName());
+       assertTrue(childAssoc.isPrimary());
+       assertEquals(renditionNode, childAssoc.getChildRef());
+
        
        // ================================================= //
        //   Path Based Rendition, existing one, wrong type  //
        // ================================================= //
 
        // We currently have a composite one
-       assertEquals(compositeQName, nodeService.getChildAssocs(testTargetFolder).get(0).getQName());
+       assertEquals(expectedName, children.get(0).getQName());
        
        // Run the plain rendition, the composite one should be replaced
        //  with the new one
-       renditionNode = nodeService.getChildAssocs(testTargetFolder).get(0).getChildRef();
-
+       renditionNode = children.get(0).getChildRef();
 
        // Currently, there is only one scenario in which it is legal for a rendition to overwrite an existing
        // node. That is when the rendition is an update of the source node i.e. the rendition node is already
        // linked to its source node by a rn:rendition association of the same name as the new rendition.
-       boolean exceptionThrown = false;
        try
        {
            renditionService.render(nodeWithDocContent, rdPlain);
+           fail("Expected RenditionServiceException not thrown");
        } catch (RenditionServiceException expected)
        {
-           exceptionThrown = true;
+           // Do Nothing.
        }
        
-       assertTrue("Expected RenditionServiceException not thrown", exceptionThrown);
     }
 
     
@@ -2085,6 +2125,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("testSourceNode", this.nodeWithImageContent);
+        model.put("testDocNode", this.nodeWithDocContent);
         
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/rendition/script/test_renditionService.js");
         this.scriptService.executeScript(location, model);

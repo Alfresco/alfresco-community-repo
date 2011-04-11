@@ -96,7 +96,9 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -964,9 +966,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( finfo != null) {
             	
             	// Set the file id
-            
-            	finfo.setFileId( path.hashCode());
-            
+  
+                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                finfo.setFileId((int) (id & 0xFFFFFFFFL));
+
             	// Copy cached file details, if available
             	
                 FileState fstate = getStateForPath(tree, infoPath);
@@ -1856,8 +1859,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Generate a file id for the file
             
-            if ( netFile != null)
-            	netFile.setFileId( params.getPath().hashCode());
+            if ( netFile != null) {
+                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
+            }
             
             // If the file has been opened for overwrite then truncate the file to zero length, this will
             // also prevent the existing content data from being copied to the new version of the file
@@ -2016,8 +2021,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             // Generate a file id for the file
             
-            if ( netFile != null)
-            	netFile.setFileId( params.getPath().hashCode());
+            if ( netFile != null) {
+                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(netFile.getNodeRef(), ContentModel.PROP_NODE_DBID));
+                netFile.setFileId((int) (id & 0xFFFFFFFFL));
+            }
             
             // Add a file state for the new file/folder
             
@@ -2191,7 +2198,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // DEBUG
                     
                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                        logger.debug("Create folder, state=" + fstate);
+                        logger.debug("Create folder, state=" + fstate); 
                 }
                 
                 // Update the parent folder file state
@@ -2383,9 +2390,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     if ( fstate.decrementOpenCount() == 0)
                         fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
                     
-    	            // Check if there is a cached modification timestamp to be written out
-    	            
-    	            if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject()) {
+                    // Check if there is a cached modification timestamp to be written out
+                    
+                    if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject() && fstate.isDirectory() == false) {
     	            	
                         // Update the modification date on the file/folder node
                         toUpdate = fstate;
@@ -2481,14 +2488,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Update the modification timestamp
                     
                     getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-                    Date modifyDate = new Date(finalFileState.getModifyDateTime());
-                    nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
-	
-	            	// Debug
-	                
-	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-	                    logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
-	            }
+
+                    if (permissionService.hasPermission((NodeRef) finalFileState.getFilesystemObject(), PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED)
+                    { 
+                        Date modifyDate = new Date(finalFileState.getModifyDateTime());
+                        nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
+                        
+                        // Debug
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
+                    }
+                }
                 
                 // Defer to the network file to close the stream and remove the content
                    
@@ -2839,13 +2850,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the new target folder - it must be a folder
 
             String[] splitPaths = FileName.splitPath(newName);
+            String[] oldPaths = FileName.splitPath(oldName);
+
             final NodeRef targetFolderRef = getNodeForPath(tree, splitPaths[0]);
+            final NodeRef sourceFolderRef = getNodeForPath(tree, oldPaths[0]);
             final String name = splitPaths[1];
 
             // Check if this is a rename within the same folder
-
-            String[] oldPaths = FileName.splitPath(oldName);
-
+            
             final boolean sameFolder = splitPaths[0].equalsIgnoreCase(oldPaths[0]);
 
             // Get the file state for the old file, if available
@@ -2877,7 +2889,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         if (sameFolder == true)
                             cifsHelper.rename(nodeToMoveRef, name);
                         else
-                            cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
+                            cifsHelper.move(nodeToMoveRef, sourceFolderRef, targetFolderRef, name);
                         return null;
                     }
                 });
@@ -2933,7 +2945,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                                     // Use the renamed node to clone aspects/state if it is of the correct type
 
-                                    cloneNodeAspects(name, newStateNode, nodeToMoveRef, ctx);
+                                    cloneNode(name, newStateNode, nodeToMoveRef, ctx);
                                 }
                                 else
                                 {
@@ -2950,8 +2962,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
                                     // Copy aspects from the original state
                                     
-                                    cloneNodeAspects( name, newStateNode, targetNodeRef, ctx);
-                                    
+                                    cloneNode( name, newStateNode, targetNodeRef, ctx);
                                 }
                             }
                             else if ( newState.getFileStatus() == DeleteOnClose) {
@@ -2989,8 +3000,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                         
                                         // Clone aspects from the linked node onto the restored node
                                         
-                                        cloneNodeAspects( name, linkNode, targetNodeRef, ctx);
-        
+                                        cloneNode( name, linkNode, targetNodeRef, ctx);
+
                                         // DEBUG
                                         
                                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME)) {
@@ -3028,7 +3039,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
                                 // Copy aspects from the original file
                                 
-                                cloneNodeAspects( name, nodeToMoveRef, targetNodeRef, ctx);
+                                cloneNode( name, nodeToMoveRef, targetNodeRef, ctx);
                             }
                         }
 
@@ -3918,6 +3929,33 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 nodeService.setProperty( toNode, propName, nodeProp);
         }
     } 
+    
+    private void cloneNode(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx) {
+    	cloneNodeAspects(newName, fromNode, toNode, ctx);
+
+        // copy over the node creator and owner properties
+        // need to disable the auditable aspect first to prevent default audit behaviour
+        boolean alreadyDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+        	nodeService.setProperty(toNode, ContentModel.PROP_CREATOR, nodeService.getProperty(fromNode, ContentModel.PROP_CREATOR));
+        	nodeService.setProperty(toNode, ContentModel.PROP_OWNER, nodeService.getProperty(fromNode, ContentModel.PROP_OWNER));
+        }
+        finally
+        {
+        	if(!alreadyDisabled)
+	        {
+        		policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+	        }
+        }
+        
+    	Set<AccessPermission> permissions = permissionService.getAllSetPermissions(fromNode);
+    	permissionService.deletePermissions(fromNode);
+    	for(AccessPermission permission : permissions)
+    	{
+    		permissionService.setPermission(toNode, permission.getAuthority(), permission.getPermission(), (permission.getAccessStatus() == AccessStatus.ALLOWED));
+    	}
+    }
     
     /**
      * Return the file state status as a string

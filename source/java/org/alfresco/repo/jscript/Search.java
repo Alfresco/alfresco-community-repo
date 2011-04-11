@@ -33,6 +33,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -743,11 +744,15 @@ public class Search extends BaseScopableProcessorExtension
             
             if (results.length() != 0)
             {
+                NodeService nodeService = this.services.getNodeService();
                 set = new LinkedHashSet<ScriptNode>(results.length(), 1.0f);
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
-                    set.add(new ScriptNode(nodeRef, this.services, getScope()));
+                    if (nodeService.exists(nodeRef))
+                    {
+                       set.add(new ScriptNode(nodeRef, this.services, getScope()));
+                    }
                 }
             }
         }

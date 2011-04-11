@@ -33,8 +33,8 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -240,9 +240,7 @@ public class NodeMonitor extends TransactionListenerAdapter
     		NodeEvent nodeEvent = new CreateNodeEvent( fType, nodeRef);
     		
     		// Store the event in the transaction until committed, and register the transaction listener
-    		
-    		AlfrescoTransactionSupport.bindListener( this);
-    		AlfrescoTransactionSupport.bindResource( FileSysNodeEvent, nodeEvent);
+    		fireNodeEvent(nodeEvent);
     	}
     }
 
@@ -269,33 +267,23 @@ public class NodeMonitor extends TransactionListenerAdapter
 
     		// Check if there has been a lock change
     		
-    		NodeEvent nodeEvent = null;
-    		
     		String beforeLock = (String) before.get( ContentModel.PROP_LOCK_TYPE);
     		String afterLock  = (String) after.get( ContentModel.PROP_LOCK_TYPE);
     		
     		if (( beforeLock != null && afterLock == null) ||
     				( beforeLock == null && afterLock != null)) {
-    			
     			// Process the update
-
-    			nodeEvent = new LockNodeEvent( fType, nodeRef, beforeLock, afterLock);
+        		fireNodeEvent(new LockNodeEvent( fType, nodeRef, beforeLock, afterLock));
     		}
     		
-    		// Check if a node event has been created
+    		// Check if node has been renamed
+    		String beforeName = (String) before.get(ContentModel.PROP_NAME);
+    		String afterName = (String) after.get(ContentModel.PROP_NAME);
     		
-    		if ( nodeEvent != null) {
-
-    			// Check for an existing event
-    			
-    			String eventKey = FileSysNodeEvent;
-    			if ( AlfrescoTransactionSupport.getResource( FileSysNodeEvent) != null)
-    				eventKey = FileSysNodeEvent2;
-    			
-	    		// Store the event in the transaction until committed, and register the transaction listener
-	    		
-	    		AlfrescoTransactionSupport.bindListener( this);
-	    		AlfrescoTransactionSupport.bindResource( eventKey, nodeEvent);
+    		if (beforeName != null && !beforeName.equals(afterName)) {
+    			ChildAssociationRef childAssocRef = m_nodeService.getPrimaryParent(nodeRef);
+    			String relPath = buildRelativePathString(childAssocRef.getParentRef(), nodeRef, beforeName);
+    			fireNodeEvent(new MoveNodeEvent( fType, nodeRef, relPath , nodeRef));
     		}
     	}
     }
@@ -353,19 +341,12 @@ public class NodeMonitor extends TransactionListenerAdapter
     	if ( fType != FileFolderServiceType.INVALID) {
     		
     		// Get the full path to the file/folder node
-    		
+
     		Path nodePath = m_nodeService.getPath( oldNodeRef);
     		String fName = (String) m_nodeService.getProperty( oldNodeRef, ContentModel.PROP_NAME);
     		
     		// Build the share relative path to the node
-    		
-    		StringBuilder pathStr = new StringBuilder();
-    		pathStr.append( nodePath.toDisplayPath(m_nodeService, m_permissionService));
-    		if ( pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\')
-    			pathStr.append("\\");
-    		pathStr.append( fName);
-
-    		String relPath = pathStr.toString();
+    		String relPath = buildRelativePathString(oldChildAssocRef.getParentRef(), oldNodeRef, fName);
     		
     		// DEBUG
     		
@@ -381,9 +362,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 				NodeEvent nodeEvent = new MoveNodeEvent( fType, oldNodeRef, relPath, newChildAssocRef.getChildRef());
 			
 	    		// Store the event in the transaction until committed, and register the transaction listener
-	    		
-	    		AlfrescoTransactionSupport.bindListener( this);
-	    		AlfrescoTransactionSupport.bindResource( FileSysNodeEvent, nodeEvent);
+	    		fireNodeEvent(nodeEvent);
     		}
     	}
 	}
@@ -443,6 +422,48 @@ public class NodeMonitor extends TransactionListenerAdapter
     	}
 	}
 
+	/**
+	 * The relative path of a renamed/moved node
+	 * 
+	 * ALF-2309: construct the path from the old parent of the moved
+	 * node (parentNodeRef) - this will have the correct path
+	 * 
+	 * @param parentNodeRef the old parent of the node
+	 * @param childNodeRef  the child node (renamed or moved node)
+	 * @param nodeName		the old name of the childs
+	 * @return
+	 */
+	private String buildRelativePathString(NodeRef parentNodeRef, NodeRef childNodeRef, String nodeName) {
+		Path nodePath = m_nodeService.getPath(parentNodeRef);
+		
+		StringBuilder pathStr = new StringBuilder();
+		pathStr.append(nodePath.toDisplayPath(m_nodeService, m_permissionService));
+		if (pathStr.length() == 0 
+				||  pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\')
+			pathStr.append("/");
+
+		pathStr.append((String) m_nodeService.getProperty( parentNodeRef, ContentModel.PROP_NAME))
+			.append("\\")
+			.append( nodeName);
+
+		return pathStr.toString();
+	}
+
+	/**
+	 * 	Fires a node event
+	 * @param nodeEvent the event to fire
+	 */
+	private void fireNodeEvent(NodeEvent nodeEvent) {
+    	String eventKey = FileSysNodeEvent;
+		if ( AlfrescoTransactionSupport.getResource( FileSysNodeEvent) != null)
+			eventKey = FileSysNodeEvent2;
+		
+		// Store the event in the transaction until committed, and register the transaction listener
+		
+		AlfrescoTransactionSupport.bindListener( this);
+		AlfrescoTransactionSupport.bindResource( eventKey, nodeEvent);
+    }
+	
 	/**
 	 * Request the node monitor thread to shut down
 	 */

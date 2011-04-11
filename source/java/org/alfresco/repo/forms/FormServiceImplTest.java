@@ -222,7 +222,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         aspectProps.put(ContentModel.PROP_ADDRESSEES, (Serializable)addressees);
         aspectProps.put(ContentModel.PROP_SUBJECT, VALUE_SUBJECT);
         aspectProps.put(ContentModel.PROP_SENTDATE, VALUE_SENT_DATE);
-        this.nodeService.addAspect(this.document, ContentModel.ASPECT_MAILED, aspectProps);
+        this.nodeService.addAspect(this.document, ContentModel.ASPECT_EMAILED, aspectProps);
         
         // add referencing aspect (has association)
         aspectProps.clear();

@@ -18,7 +18,7 @@
     <!-- Permissions Model DAO -->
     <!-- ===================== -->
 
-    <bean id='permissionsModelDAO' class="org.alfresco.repo.security.permissions.impl.model.PermissionModel">
+    <bean id='permissionsModelDAO' class="org.alfresco.repo.security.permissions.impl.model.PermissionModel" init-method="init">
         <property name="model">
             <value>alfresco/model/permissionDefinitions.xml</value>
         </property>

@@ -89,6 +89,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -170,6 +171,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     private Boolean isContainer = null;
     private Boolean isLinkToDocument = null;
     private Boolean isLinkToContainer = null;
+    private Boolean hasChildren = null;
     private String displayPath = null;
     protected TemplateImageResolver imageResolver = null;
     protected ScriptNode parent = null;
@@ -388,9 +390,23 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                 children[i] = newInstance(childRefs.get(i).getChildRef(), this.services, this.scope);
             }
             this.children = Context.getCurrentContext().newArray(this.scope, children);
+            this.hasChildren = (children.length != 0);
         }
         
         return this.children;
+    }
+    
+    /**
+     * @return true if the Node has children
+     */
+    public boolean getHasChildren()
+    {
+        if (this.hasChildren == null)
+        {
+            this.hasChildren = !this.services.getNodeService().getChildAssocs(
+                  getNodeRef(), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false).isEmpty();
+        }
+        return hasChildren;
     }
     
     /**
@@ -1651,7 +1667,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * Add an existing node as a child of this node.
+     * Creates a new secondary association between the current node and the specified child node.   
+     * The association is given the same name as the child node's primary association.
      * 
      * @param node  node to add as a child of this node
      */
@@ -1787,6 +1804,39 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         // reset cached values
         reset();
         
+        return true;
+    }
+    
+    /**
+     * Move this Node from specified parent to a new parent destination.
+     * 
+     * @param source Node
+     * @param destination Node
+     * @return true on successful move, false on failure to move.
+     */
+    public boolean move(ScriptNode source, ScriptNode destination)
+    {
+        ParameterCheck.mandatory("Destination Node", destination);
+
+        if (source == null)
+        {
+            return move(destination);
+        }
+        else
+        {
+            try
+            {
+                this.services.getFileFolderService().move(this.nodeRef, source.getNodeRef(), destination.getNodeRef(), null);
+            }
+            catch (Exception e)
+            {
+                throw new ScriptException("Can't move node", e);
+            }
+        }
+
+        // reset cached values
+        reset();
+
         return true;
     }
     
@@ -2404,6 +2454,17 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             throw new ScriptException("The thumbnail name '" + thumbnailName + "' is not registered");
         }
         
+        // If there's nothing currently registered to generate thumbnails for the
+        //  specified mimetype, then log a message and bail out
+        String nodeMimeType = getMimetype();
+        if (!registry.isThumbnailDefinitionAvailable(nodeMimeType, details))
+        {
+            logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
+                    nodeMimeType + " as no transformer is currently available");
+            return null;
+        }
+        
+        // Have the thumbnail created
         if (async == false)
         {
             // Create the thumbnail
@@ -2729,7 +2790,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                         Path.Element siteName = path.get(i+1);
                      
                         // remove the "cm:" prefix and add to result object
-                        this.siteName = siteName.getPrefixedString(this.services.getNamespaceService()).substring(3);
+                        this.siteName = ISO9075.decode(siteName.getPrefixedString(
+                                    this.services.getNamespaceService()).substring(3));
                     }
                   
                     break;
@@ -2917,6 +2979,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.sourceAssocs = null;
         this.childAssocs = null;
         this.children = null;
+        this.hasChildren = null;
         this.parentAssocs = null;
         this.displayPath = null;
         this.isDocument = null;

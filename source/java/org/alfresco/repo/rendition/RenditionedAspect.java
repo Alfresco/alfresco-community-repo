@@ -20,11 +20,9 @@ package org.alfresco.repo.rendition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -136,11 +134,8 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        // Ignore working copies
-        if (this.nodeService.exists(nodeRef) == true &&
-            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        if (this.nodeService.exists(nodeRef))
         {
-            
             // Find the changed properties
             List<QName> changedProperties = getChangedProperties(before, after);
             
@@ -309,52 +304,13 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
         private static final CopyBehaviourCallback INSTANCE = new RenditionedAspectCopyBehaviourCallback();
         
         /**
-         * @return              Returns <tt>true</tt> always
+         * We do not copy the {@link RenditionModel#ASPECT_RENDITIONED rn:renditioned} aspect.
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
         {
-            return true;
-        }
-
-        /**
-         * Copy rendition-related associations, {@link RenditionModel#ASSOC_RENDITION} regardless of
-         * cascade options.
-         */
-        @Override
-        public ChildAssocCopyAction getChildAssociationCopyAction(
-                QName classQName,
-                CopyDetails copyDetails,
-                CopyChildAssociationDetails childAssocCopyDetails)
-        {
-            ChildAssociationRef childAssocRef = childAssocCopyDetails.getChildAssocRef();
-            if (childAssocRef.getTypeQName().equals(RenditionModel.ASSOC_RENDITION))
-            {
-                return ChildAssocCopyAction.COPY_CHILD;
-            }
-            else
-            {
-                throw new IllegalStateException(
-                        "Behaviour should have been invoked: \n" +
-                        "   Aspect: " + this.getClass().getName() + "\n" +
-                        "   " + childAssocCopyDetails + "\n" +
-                        "   " + copyDetails);
-            }
-        }
-        
-        /**
-         * Copy only the {@link ContentModel#PROP_AUTOMATIC_UPDATE}
-         */
-        @Override
-        public Map<QName, Serializable> getCopyProperties(
-                QName classQName,
-                CopyDetails copyDetails,
-                Map<QName, Serializable> properties)
-        {
-            Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(5);
-//            Serializable value = properties.get(ContentModel.PROP_AUTOMATIC_UPDATE);
-//            newProperties.put(ContentModel.PROP_AUTOMATIC_UPDATE, value);
-            return newProperties;
+            // Prevent the copying of the renditioned aspect only.
+            return (! RenditionModel.ASPECT_RENDITIONED.equals(classQName));
         }
     }
 }

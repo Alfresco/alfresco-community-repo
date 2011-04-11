@@ -23,15 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.action.executer.MailActionExecuter;
-import org.alfresco.repo.invitation.site.RejectInviteAction;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
@@ -45,35 +41,36 @@ public class ModeratedActionReject extends JBPMSpringActionHandler
     private static final long serialVersionUID = 4377660284993206875L;
     private static final Log logger = LogFactory.getLog(ModeratedActionReject.class);
     
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private PersonService personService;
-    private WorkflowService workflowService;
     private ActionService actionService;
     private TemplateService templateService;
     //private String rejectTemplate = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:moderated-reject-email.ftl\"";
     private String rejectTemplate = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+    private boolean sendEmails = true;
+    
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
         ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
-        personService = (PersonService) services.getPersonService();
-        workflowService = (WorkflowService) services.getWorkflowService();
-        templateService = (TemplateService) services.getTemplateService();
-        actionService = (ActionService) services.getActionService();
+        templateService = services.getTemplateService();
+        actionService = services.getActionService();
+        sendEmails = services.getInvitationService().isSendEmails();
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
-     * Reject Moderated
+    /**
+     * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
+        //Do nothing if emails disabled.
+        if(sendEmails == false)
+        {
+            return;
+        }
+        
         final String resourceType = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceType);
         final String resourceName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceName);
         final String inviteeUserName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeUserName);

@@ -89,6 +89,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         QName nodeTypeQName = nodeService.getType(nodeRef);
         // get property definitions for the node type
         TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
+        if (typeDef == null)
+        {
+            // Type not found, so ignore properties
+            return;
+        }
         Collection<PropertyDefinition> propertyDefs = typeDef.getProperties().values();
         // check them
         checkAllProperties(nodeRef, nodeTypeQName, propertyDefs, nodeProperties, eventResults);
@@ -110,6 +115,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
             
             // get property definitions for the aspect
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
+            if (aspectDef == null)
+            {
+                // Aspect not found, so can't check properties
+                continue;
+            }
             propertyDefs = aspectDef.getProperties().values();
             // check them
             checkAllProperties(nodeRef, aspectTypeQName, propertyDefs, nodeProperties, eventResults);

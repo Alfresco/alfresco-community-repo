@@ -917,6 +917,7 @@
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         <include refid="alfresco.node.select_Transaction_FullWhere"/>
+        order by node.id
     </select>
     
     <select id="select_Txns" parameterClass="TransactionQuery" resultMap="result_Transaction">

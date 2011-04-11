@@ -21,6 +21,8 @@ package org.alfresco.email.server.impl.subetha;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,9 +33,11 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
@@ -41,11 +45,17 @@ import org.alfresco.service.cmr.email.EmailMessagePart;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/* 
+ * TODO There's a lot of metadata extraction going on in this class that 
+ * is duplicated by RFC822MetadataExtracter
+ */
+
 /**
  * Concrete representation of an email message as implemented for the SubEtha mail server.
  * 
  * @since 2.2
  */
+
 public class SubethaEmailMessage implements EmailMessage
 {
     private static final String ERR_FAILED_TO_CREATE_MIME_MESSAGE = "email.server.err.failed_to_create_mime_message";
@@ -73,6 +83,7 @@ public class SubethaEmailMessage implements EmailMessage
     private String from;
     private String to;
     private String subject;
+    private List<String> cc;
     private Date sentDate;
     private EmailMessagePart body;
     private EmailMessagePart[] attachments;
@@ -145,7 +156,31 @@ public class SubethaEmailMessage implements EmailMessage
             }
             to = addresses[0].toString();
         }
-
+        
+        if (cc == null)
+        {
+            try
+            {
+                ArrayList<String> list = new ArrayList<String>();
+            
+                Address[] cca = mimeMessage.getRecipients(RecipientType.CC);
+            
+                if(cca != null)
+                {
+                    for(Address a : cca)
+                    {
+                        list.add(a.toString());
+                    }
+                }
+                cc = list;
+            }
+            catch (MessagingException e)
+            {
+                // Do nothing - this is not a show-stopper.
+                cc = null;
+            }
+        }
+            
         try
         {
             subject = encodeSubject(mimeMessage.getSubject());
@@ -298,7 +333,7 @@ public class SubethaEmailMessage implements EmailMessage
             body = new SubethaEmailMessagePart(messagePart, getPartFileName(getSubject(), messagePart));
             if (log.isDebugEnabled())
             {
-                log.debug("Boby has been added.");
+                log.debug("Body has been added.");
             }
         }
 
@@ -372,6 +407,11 @@ public class SubethaEmailMessage implements EmailMessage
                 ((SubethaEmailMessagePart) attachment).setRmiRegistry(rmiRegistryHost, rmiRegistryPort);
             }
         }
+    }
+    
+    public List<String> getCC()
+    {
+        return cc;
     }
     
     

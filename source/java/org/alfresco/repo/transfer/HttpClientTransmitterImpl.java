@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.json.ExceptionJsonSerializer;
 import org.alfresco.util.json.JsonSerializer;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -91,7 +93,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private JsonSerializer<Throwable, JSONObject> jsonErrorSerializer;
     
     private ContentService contentService;
-
+    
+    
     public HttpClientTransmitterImpl()
     {
         protocolMap = new TreeMap<String,Protocol>();
@@ -106,6 +109,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     
     public void init()
     {
+        PropertyCheck.mandatory(this, "contentService", contentService);
     }
 
     /**
@@ -230,9 +234,9 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         return hostConfig;
     }
 
-    public Transfer begin(TransferTarget target) throws TransferException
+    public Transfer begin(TransferTarget target, String fromRepositoryId) throws TransferException
     {
-        HttpMethod beginRequest = getPostMethod();
+        PostMethod beginRequest = getPostMethod();
         try
         {
             HostConfiguration hostConfig = getHostConfig(target);
@@ -241,6 +245,10 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             beginRequest.setPath(target.getEndpointPath() + "/begin");
             try
             {
+                beginRequest.setRequestBody(   new NameValuePair[] {
+                        new NameValuePair(TransferCommons.PARAM_FROM_REPOSITORYID, fromRepositoryId),
+                        new NameValuePair(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF, "false")});
+                                          
                 int responseStatus = httpClient.executeMethod(hostConfig, beginRequest, httpState);
                 checkResponseStatus("begin", responseStatus, beginRequest);
                 //If we get here then we've received a 200 response
@@ -705,6 +713,5 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void setJsonErrorSerializer(JsonSerializer<Throwable, JSONObject> jsonErrorSerializer)
     {
         this.jsonErrorSerializer = jsonErrorSerializer;
-    }
-    
+    }    
 }

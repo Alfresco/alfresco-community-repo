@@ -18,16 +18,28 @@
  */
 package org.alfresco.wcm.webproject;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
+import org.alfresco.repo.action.executer.CounterIncrementActionExecuter;
+import org.alfresco.repo.rule.ruletrigger.CreateNodeRuleTrigger;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -36,9 +48,15 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxInfo;
@@ -79,6 +97,10 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     private PermissionService permissionService;
     private AVMService avmService;
     private NodeService nodeService;
+    protected ActionService actionService;
+    protected RuleService ruleService;
+    protected SearchService searchService;
+    protected NamespaceService namespaceService;
     
     @Override
     protected void setUp() throws Exception
@@ -86,12 +108,17 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
+        ServiceRegistry serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
         avmService = (AVMService)ctx.getBean("AVMService");
         nodeService = (NodeService)ctx.getBean("NodeService");
-        
+        actionService = (ActionService)ctx.getBean("actionService");
+        ruleService = (RuleService)ctx.getBean("ruleService");
+        searchService = (SearchService)ctx.getBean("searchService");
+        namespaceService = serviceRegistry.getNamespaceService();
+
         createUser(USER_FIVE);
         createUser(USER_SIX);
         
@@ -139,6 +166,94 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         if (authorityService.authorityExists(groupName) == true)
         {
             authorityService.deleteAuthority(groupName);
+        }
+    }
+    
+    private NodeRef getCompanyHome()
+    {
+        NodeRef companyHomeRef;
+        
+        List<NodeRef> refs = searchService.selectNodes(
+                nodeService.getRootNode(new StoreRef("workspace://SpacesStore")),
+                "app:company_home",
+                null,
+                namespaceService,
+                false);
+        if (refs.size() != 1)
+        {
+            throw new IllegalStateException("Invalid company home path: " + "app:company_home" + " - found: " + refs.size());
+        }
+        companyHomeRef = refs.get(0);
+
+        return companyHomeRef;
+    }
+    
+    @SuppressWarnings("unchecked")
+	protected Rule createTestRule(NodeRef nodeRef, boolean isAppliedToChildren, String title, NodeRef destFolder)
+    {
+        Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
+        RuleType ruleType = this.ruleService.getRuleType(RuleType.INBOUND);
+        List<String> ruleTypes = new ArrayList<String>(1);
+        ruleTypes.add(ruleType.getName());
+
+        // Create the action
+        Action action = this.actionService.createAction(CounterIncrementActionExecuter.NAME);
+        action.setParameterValues(actionProps);
+
+        ActionCondition actionCondition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
+        actionCondition.setParameterValues(Collections.EMPTY_MAP);
+        action.addActionCondition(actionCondition);
+
+        // Create the rule
+        Rule rule = new Rule();
+        rule.setRuleTypes(ruleTypes);
+        rule.setTitle(title);
+        rule.setDescription(title);
+        rule.applyToChildren(isAppliedToChildren);        
+        rule.setAction(action);
+        rule.setExecuteAsynchronously(false);
+        rule.setRuleDisabled(false);
+
+        return rule;
+    }
+    
+    public void testALF906() throws Exception
+    {
+        UserTransaction txn = transactionService.getUserTransaction();
+
+    	try
+    	{
+	        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+	        txn.begin();
+
+	        NodeRef companyHome = getCompanyHome();
+
+	    	// Create a rule on workspace://SpacesStore/app:company_home
+	        Rule newRule = createTestRule(companyHome, true, "ALF906", companyHome);
+	        this.ruleService.saveRule(companyHome, newRule);
+	        assertNotNull(newRule.getNodeRef());
+	
+	        // Check the owning node reference
+	        assertNotNull(this.ruleService.getOwningNodeRef(newRule));
+	        assertEquals(companyHome, this.ruleService.getOwningNodeRef(newRule));
+	
+	        Rule savedRule = this.ruleService.getRule(newRule.getNodeRef());
+	        assertNotNull(savedRule);
+
+	        // Create a web project
+        	WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+	        
+	        // get the rules for web projects root - should be 0 (no inherited rules)
+	        List<Rule> rules = ruleService.getRules(wpService.getWebProjectsRoot());
+	        assertEquals("Web project root has inherited rules", 0, rules.size());
+
+	        // get the rules for the new web project - should be 0 (no inherited rules)
+	        rules = ruleService.getRules(wpInfo.getNodeRef());
+	        assertEquals("Web project has inherited rules", 0, rules.size());
+    	}
+        finally
+        {
+	        txn.rollback();
         }
     }
     

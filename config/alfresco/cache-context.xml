@@ -44,9 +44,9 @@
       <property name="name">
          <value>org.alfresco.cache.propertyValueTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -77,9 +77,9 @@
       <property name="name">
          <value>org.alfresco.cache.contentDataTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -110,9 +110,9 @@
       <property name="name">
          <value>org.alfresco.cache.immutableEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -143,9 +143,9 @@
       <property name="name">
          <value>org.alfresco.cache.node.rootNodesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>50</value>
-      </property>
+      <property name="maxCacheSize" value="50" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -176,9 +176,9 @@
       <property name="name">
          <value>org.alfresco.cache.node.nodesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>50000</value>
-      </property>
+      <property name="maxCacheSize" value="50000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -209,9 +209,9 @@
       <property name="name">
          <value>org.alfresco.cache.node.aspectsTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -242,9 +242,9 @@
       <property name="name">
          <value>org.alfresco.cache.node.propertiesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>5000</value>
-      </property>
+      <property name="maxCacheSize" value="50000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -275,16 +275,16 @@
       <property name="name">
          <value>org.alfresco.cache.node.parentAssocsTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>80000</value>
-      </property>
+      <property name="maxCacheSize" value="80000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
    <!-- Rules lookup for nodes                -->
    <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for Parent Associations -->
+   <!-- The cross-transaction shared cache for Node Rules -->
    
    <bean name="nodeRulesSharedCache" class="org.alfresco.repo.cache.NullCache"/>
    
@@ -297,9 +297,9 @@
       <property name="name">
          <value>org.alfresco.nodeRulesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>2000</value>
-      </property>
+      <property name="maxCacheSize" value="2000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -330,9 +330,9 @@
       <property name="name">
          <value>org.alfresco.userToAuthorityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ====================================== -->
@@ -363,9 +363,9 @@
       <property name="name">
          <value>org.alfresco.authorityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- ===================================== -->
@@ -396,9 +396,9 @@
       <property name="name">
          <value>org.alfresco.permissionsAccessTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- ===================================== -->
@@ -426,13 +426,12 @@
       <property name="sharedCache">
          <ref bean="readersSharedCache" />
       </property>
-      <!-- Eh cache area -->
       <property name="name">
          <value>org.alfresco.readersTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
       
    <!-- ===================================== -->
@@ -463,9 +462,9 @@
       <property name="name">
          <value>org.alfresco.nodeOwnerTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -496,9 +495,9 @@
       <property name="name">
          <value>org.alfresco.personTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- ===================================== -->
@@ -552,9 +551,9 @@
       <property name="name">
          <value>org.alfresco.cache.avmStoreTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- The cross-transaction shared cache for AVM entities (various - using cache region) -->
@@ -581,9 +580,9 @@
       <property name="name">
          <value>org.alfresco.cache.avmEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>5000</value>
-      </property>
+      <property name="maxCacheSize" value="5000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- The cross-transaction shared cache for AVM VersionRoot entities -->
@@ -610,9 +609,9 @@
       <property name="name">
          <value>org.alfresco.cache.avmVersionRootEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- The cross-transaction shared cache for AVM Node entities -->
@@ -639,9 +638,9 @@
       <property name="name">
          <value>org.alfresco.cache.avmNodeTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>5000</value>
-      </property>
+      <property name="maxCacheSize" value="5000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    
@@ -669,9 +668,9 @@
       <property name="name">
          <value>org.alfresco.cache.avmNodeAspectsTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>5000</value>
-      </property>
+      <property name="maxCacheSize" value="5000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -702,9 +701,9 @@
        <property name="name">
            <value>org.alfresco.repo.webservices.querySessionTransactionalCache</value>
        </property>
-       <property name="maxCacheSize">
-           <value>50</value>
-       </property>
+      <property name="maxCacheSize" value="50" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
 	
@@ -736,9 +735,9 @@
       <property name="name">
          <value>org.alfresco.aclTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>10000</value>
-      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -769,9 +768,9 @@
       <property name="name">
          <value>org.alfresco.cache.aclEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>50000</value>
-      </property>
+      <property name="maxCacheSize" value="50000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -806,9 +805,9 @@
       <property name="name">
          <value>org.alfresco.cache.authorityEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>50000</value>
-      </property>
+      <property name="maxCacheSize" value="50000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -843,9 +842,9 @@
       <property name="name">
          <value>org.alfresco.cache.permissionEntityTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>50000</value>
-      </property>
+      <property name="maxCacheSize" value="50000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -876,9 +875,9 @@
       <property name="name">
          <value>org.alfresco.resourceBundleBaseNamesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- The cross-transaction shared cache for In-Memory LoadedResourceBundles -->
@@ -905,9 +904,9 @@
       <property name="name">
          <value>org.alfresco.loadedResourceBundlesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- The cross-transaction shared cache for In-Memory Messages -->
@@ -934,9 +933,9 @@
       <property name="name">
          <value>org.alfresco.messagesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
 
@@ -968,9 +967,9 @@
       <property name="name">
          <value>org.alfresco.compiledModelsTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- The cross-transaction shared cache for Dictionary Namespaces -->
@@ -997,9 +996,9 @@
       <property name="name">
          <value>org.alfresco.prefixesTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -1030,9 +1029,9 @@
       <property name="name">
          <value>org.alfresco.webScriptsRegistryTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>100</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -1063,9 +1062,9 @@
       <property name="name">
          <value>org.alfresco.routingContentStoreTransactionalCache</value>
       </property>
-      <property name="maxCacheSize">
-         <value>1000</value>
-      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->

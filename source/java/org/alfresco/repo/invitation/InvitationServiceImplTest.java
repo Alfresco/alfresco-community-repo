@@ -89,7 +89,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService) this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                     .getBean("authenticationComponent");
-
+        
         // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
         // during unit testing
         // (or sending out email by accident from tests)

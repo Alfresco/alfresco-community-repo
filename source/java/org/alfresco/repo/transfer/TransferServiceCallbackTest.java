@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferEvent.TransferState;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
@@ -84,6 +85,7 @@ public class TransferServiceCallbackTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private TransferTransmitter mockedTransferTransmitter;
     private TransferService2 transferService;
+    private DescriptorService descriptorService;
     private TransactionService transactionService;
     private UserTransaction tx;
     private Repository repository;
@@ -96,6 +98,8 @@ public class TransferServiceCallbackTest extends TestCase
     private String file1ContentUrl;
     private String file2ContentUrl;
     private String file3ContentUrl;
+    
+    private String localRepositoryId; 
 
     private TransferTarget target;
 
@@ -115,6 +119,8 @@ public class TransferServiceCallbackTest extends TestCase
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         repository = (Repository) applicationContext.getBean("repositoryHelper");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
+               
+        localRepositoryId =  transferServiceImpl.getDescriptorService().getCurrentRepositoryDescriptor().getId();
         
         mockedTransferTransmitter = mock(TransferTransmitter.class);
         mockedCallback = mock(TransferCallback.class);
@@ -191,7 +197,7 @@ public class TransferServiceCallbackTest extends TestCase
         
         TransferProgress[] statuses = new TransferProgress[] {status0, status1, status2, status3, status4};
         configureBasicMockTransmitter(statuses);
-        when(mockedTransferTransmitter.begin(target)).thenReturn(transfer);
+        when(mockedTransferTransmitter.begin(target, localRepositoryId)).thenReturn(transfer);
 
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
@@ -327,7 +333,7 @@ public class TransferServiceCallbackTest extends TestCase
         
         TransferProgress[] statuses = new TransferProgress[] {status0, status1, status2, status3, status4};
         configureBasicMockTransmitter(statuses);
-        when(mockedTransferTransmitter.begin(target)).thenReturn(transfer);
+        when(mockedTransferTransmitter.begin(target, localRepositoryId)).thenReturn(transfer);
 
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
@@ -437,7 +443,7 @@ public class TransferServiceCallbackTest extends TestCase
     public void testTargetAlreadyLocked()
     {
         configureBasicMockTransmitter(null);
-        when(mockedTransferTransmitter.begin(target)).thenThrow(new TransferException("Simulate lock unavailable"));
+        when(mockedTransferTransmitter.begin(target, "localRepositoryId")).thenThrow(new TransferException("Simulate lock unavailable"));
         
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
@@ -484,7 +490,7 @@ public class TransferServiceCallbackTest extends TestCase
         status0.setEndPosition(0);
         TransferProgress[] statuses = new TransferProgress[] {status0};
         configureBasicMockTransmitter(statuses);
-        when(mockedTransferTransmitter.begin(target)).thenReturn(transfer);
+        when(mockedTransferTransmitter.begin(target, localRepositoryId)).thenReturn(transfer);
         doThrow(new TransferException("Simulate failure to write content")).when(mockedTransferTransmitter).sendManifest(any(Transfer.class), any(File.class), any(OutputStream.class));
         when(mockedTransferTransmitter.getStatus(transfer)).thenReturn(statuses[0]);
         

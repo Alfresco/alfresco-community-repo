@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="testworkflowBootstrap" parent="workflowDeployer">
+        <property name="workflowDefinitions">
+            <list>
+                <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">jbpmresources/test_taskVarScriptAssign.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+                </props>
+            </list>
+        </property>
+        <property name="models">
+            <list>
+                <value>jbpmresources/testWorkflowModel.xml</value>
+            </list>
+        </property>
+    </bean>
+</beans>

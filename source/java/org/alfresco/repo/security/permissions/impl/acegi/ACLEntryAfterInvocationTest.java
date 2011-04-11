@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,6 +112,66 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         assertNotNull(answer);
     }
 
+    public void testBasicDenyInvalidNodeRef() throws Exception
+    {
+        runAs("andy");
+
+        Object o = new ClassWithMethods();
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+        
+        permissionService.setPermission(
+                new SimplePermissionEntry(
+                        rootNodeRef,
+                        getPermission(PermissionService.READ),
+                        "andy",
+                        AccessStatus.ALLOWED));
+        
+        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+        assertEquals("Value passed out must be valid", rootNodeRef, answer);
+
+        NodeRef invalidNodeRef = new NodeRef("workspace://SpacesStore/noodle");
+        answer = method.invoke(proxy, new Object[] { invalidNodeRef });
+        method.invoke(proxy, new Object[] { invalidNodeRef });
+        assertEquals("Value passed out must be equal", invalidNodeRef, answer);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testBasicFilterInvalidNodeRefs() throws Exception
+    {
+        runAs("andy");
+
+        Object o = new ClassWithMethods();
+        Method method = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+
+        permissionService.setPermission(
+                new SimplePermissionEntry(
+                        rootNodeRef,
+                        getPermission(PermissionService.READ),
+                        "andy",
+                        AccessStatus.ALLOWED));
+        
+        List<Object> answer = (List<Object>) method.invoke(proxy, new Object[] { Collections.singletonList(rootNodeRef) });
+        assertEquals("Collection must be intact", 1, answer.size());
+
+        NodeRef invalidNodeRef = new NodeRef("workspace://SpacesStore/noodle");
+        answer = (List<Object>) method.invoke(proxy, new Object[] { Collections.singletonList(invalidNodeRef) });
+        assertEquals("Invalid NodeRef should not have been filtered out", 1, answer.size());
+    }
+
     public void testBasicDenyStore() throws Exception
     {
         runAs("andy");
@@ -134,7 +195,6 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         {
 
         }
-
     }
     
     public void testBasicDenyNode() throws Exception
@@ -906,6 +966,8 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
             after.setPermissionService(permissionService);
             after.setNodeService(nodeService);
             after.setAuthenticationService(authenticationService);
+            after.setUnfilteredFor(Collections.singleton("{ns}ln"));
+            after.afterPropertiesSet();
 
             Object returnObject = invocation.proceed();
             return after.decide(null, invocation, cad, returnObject);

@@ -72,7 +72,7 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
             ContentWriter writer,
             TransformationOptions options) throws Exception
     {
-        RandomAccessFile raf;
+        RandomAccessFile raf = null;
         try 
         {
            File file = TempFileProvider.createTempFile("pdfToImage", ".pdf");
@@ -129,6 +129,20 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
         catch (IOException e) 
         {
            throw new AlfrescoRuntimeException("Unable to create image from pdf file.", e);
+        }
+        finally
+        {
+            if (raf != null)
+            {
+		        try
+		        {
+		            raf.close();
+		        }
+		        catch (IOException ignored)
+		        {
+		            // Intentionally empty
+		        }
+            }
         }
     }
 }

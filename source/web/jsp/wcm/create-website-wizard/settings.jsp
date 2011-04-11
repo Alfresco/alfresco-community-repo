@@ -24,7 +24,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid id="grid-1" columns="1" cellpadding="2" width="100%">
    <%-- Workflow selection list - scrollable DIV area --%>
    <h:outputText id="msg-select" styleClass="mainSubText" value="#{msg.website_select_workflows}:" />
    <h:panelGroup id="grp-1">
@@ -49,7 +49,7 @@
             <h:outputText id="title-01" value="#{msg.name}" />
          </f:facet>
          <h:outputText id="msg-01" value="#{row.title}" />
-         <h:graphicImage id="img-01"url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
+         <h:graphicImage id="img-01" url="/images/icons/warning.gif" style="padding:2px" width="16" height="16"
                rendered="#{row.params == null}" title="#{msg.workflow_not_configured}" />
       </h:column>
       <h:column id="col2">

@@ -154,6 +154,7 @@
          <language locale="es_ES">Spanish</language>
          <language locale="fr_FR">French</language>
          <language locale="it_IT">Italian</language>
+			<language locale="ja_JP">Japanese</language>
       </languages>
    </config>
    

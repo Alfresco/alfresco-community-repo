@@ -809,6 +809,9 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             else
             {
                handleBrowseDispatch(context, fromAction, overriddenOutcome);
+               
+               // ALF-6661, always clear the view stack with an overridden outcome
+               getViewStack(context).clear();
             }
          }
       }

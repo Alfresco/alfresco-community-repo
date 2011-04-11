@@ -20,6 +20,7 @@ package org.alfresco.web.bean;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.users.UserPreferencesBean;
+import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -215,6 +217,47 @@ public class LoginBean implements Serializable
       return Application.getClientConfig(FacesContext.getCurrentInstance()).isLanguageSelect();
    }
 
+   /**
+    * Returns the HTML to display if the system is in TEAM mode
+    * 
+    * @return The HTML to display
+    */
+   public String getTeamLoginWarningHTML()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      StringBuilder html = new StringBuilder();
+      
+      try
+      {
+         html.append("<tr><td colspan='2'>");
+         
+         StringWriter writer = new StringWriter();
+         PanelGenerator.generatePanelStart(writer, contextPath, "yellowInner", "#ffffcc");
+         html.append(writer.toString());
+         
+         html.append("<table cellpadding='0' cellspacing='0' border='0' width='100%'>");
+         html.append("<tr><td valign='top' style='padding-top: 2px' width='20'>");
+         html.append("<img src='");
+         html.append(contextPath);
+         html.append("/images/icons/warning.gif' width='16' height='16' /></td>");
+         html.append("<td width='180' class='statusErrorText'>");
+         html.append(Application.getMessage(context, "team_login_warning"));
+         html.append("</td></tr></table>");
+         
+         writer = new StringWriter();
+         PanelGenerator.generatePanelEnd(writer, contextPath, "yellowInner");
+         html.append(writer.toString());
+            
+         html.append("</td></tr>");
+      }
+      catch (IOException ioe)
+      {
+         logger.error(ioe);
+      }
+      
+      return html.toString();
+   }
 
    // ------------------------------------------------------------------------------
    // Validator methods

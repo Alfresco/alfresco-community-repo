@@ -248,7 +248,7 @@ public final class Utils extends StringUtils
       {
          buf.append("'");
       }
-      buf.append(fieldValue);
+      buf.append(Utils.encode(fieldValue));
       if (valueIsParam == false)
       {
          buf.append("'");
@@ -265,7 +265,7 @@ public final class Utils extends StringUtils
             buf.append(name);
             buf.append("'].value='");
             String val = params.get(name);
-            if(val != null)
+            if (val != null)
             {
                val = Utils.encode(val);
             }

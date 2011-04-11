@@ -40,13 +40,20 @@ import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -75,6 +82,7 @@ import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.shelf.UIShelf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Bean providing access and management of the various global navigation mechanisms
@@ -147,6 +155,21 @@ public class NavigationBean implements Serializable
       if (namespaceService == null)
          this.namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
       return namespaceService;
+   }
+   
+   public void setRepoAdminService(RepoAdminService repoAdminService)
+   {
+       this.repoAdminService = repoAdminService;
+   }
+
+
+   public RepoAdminService getRepoAdminService()
+   {
+       if (repoAdminService == null)
+       {
+           this.repoAdminService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRepoAdminService();
+       }
+       return repoAdminService;
    }
    
    /**
@@ -1061,6 +1084,32 @@ public class NavigationBean implements Serializable
        return this.authService.isAuthenticationMutable(this.authService.getCurrentUserName());
    }
    
+   /**
+    * @return true if this is a team license
+    */
+   public boolean isTeamMode()
+   {
+       Boolean teamMode = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+       {
+            public Boolean doWork() throws Exception
+            {
+                RepoAdminService s = getRepoAdminService();
+                
+                if (s != null)
+                {
+                    if (RepoUsage.LicenseMode.TEAM.equals(s.getRestrictions().getLicenseMode()))
+                    {
+                        return Boolean.TRUE;
+                    }
+                }
+                
+                return Boolean.FALSE;
+            }
+       }, AuthenticationUtil.getSystemUserName());
+       
+       return teamMode.booleanValue();
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Helpers
@@ -1081,7 +1130,10 @@ public class NavigationBean implements Serializable
    // ------------------------------------------------------------------------------
    // Inner classes
    
-   /**
+
+
+
+/**
     * Class to handle breadcrumb interaction for top-level navigation pages
     */
    public class NavigationBreadcrumbHandler implements IRepoBreadcrumbHandler
@@ -1177,6 +1229,9 @@ public class NavigationBean implements Serializable
    
    /** RuleService bean reference*/
    transient private RuleService ruleService;
+   
+   /** Repo Admin Service reference */
+   transient private RepoAdminService repoAdminService;
    
    /** File server configuration reference */
    transient private ServerConfigurationAccessor serverConfiguration;

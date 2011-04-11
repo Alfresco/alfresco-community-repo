@@ -1,22 +1,23 @@
 /**
- * $Id: WindowManager.js 890 2008-07-09 10:40:52Z spocke $
+ * $Id: WindowManager.js 1176 2009-08-04 09:42:14Z spocke $
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
-(function() {
+(function(tinymce) {
 	var Dispatcher = tinymce.util.Dispatcher, each = tinymce.each, isIE = tinymce.isIE, isOpera = tinymce.isOpera;
 
-	/**#@+
-	 * @class This class handles the creation of native windows and dialogs. This class can be extended to provide for example inline dialogs.
-	 * @member tinymce.WindowManager
+	/**
+	 * This class handles the creation of native windows and dialogs. This class can be extended to provide for example inline dialogs.
+	 * @class tinymce.WindowManager
 	 */
 	tinymce.create('tinymce.WindowManager', {
 		/**
 		 * Constructs a new window manager instance.
 		 *
 		 * @constructor
+		 * @method WindowManager
 		 * @param {tinymce.Editor} ed Editor instance that the windows are bound to.
 		 */
 		WindowManager : function(ed) {
@@ -29,13 +30,10 @@
 			t.features = {};
 		},
 
-		/**#@+
-		 * @method
-		 */
-
 		/**
 		 * Opens a new window.
 		 *
+		 * @method open
 		 * @param {Object} s Optional name/value settings collection contains things like width/height/url etc.
 		 * @param {Object} p Optional parameters/arguments collection can be used by the dialogs to retrive custom parameters.
 		 */
@@ -86,9 +84,6 @@
 			t.onOpen.dispatch(t, s, p);
 
 			u = s.url || s.file;
-			if (tinymce.relaxedDomain)
-				u += (u.indexOf('?') == -1 ? '?' : '&') + 'mce_rdomain=' + tinymce.relaxedDomain;
-
 			u = tinymce._addVer(u);
 
 			try {
@@ -108,6 +103,7 @@
 		/**
 		 * Closes the specified window. This will also dispatch out a onClose event.
 		 *
+		 * @method close
 		 * @param {Window} w Native window object to close.
 		 */
 		close : function(w) {
@@ -120,6 +116,7 @@
 		 * of classes from a parent window due to some reference problem. Any arguments passed after the class name
 		 * will be passed as arguments to the constructor.
 		 *
+		 * @method createInstance
 		 * @param {String} cl Class name to create an instance of.
 		 * @return {Object} Instance of the specified class.
 		 */
@@ -133,6 +130,7 @@
 		 * Creates a confirm dialog. Please don't use the blocking behavior of this
 		 * native version use the callback method instead then it can be extended.
 		 *
+		 * @method confirm
 		 * @param {String} t Title for the new confirm dialog.
 		 * @param {function} cb Callback function to be executed after the user has selected ok or cancel.
 		 * @param {Object} s Optional scope to execute the callback in.
@@ -147,6 +145,7 @@
 		 * Creates a alert dialog. Please don't use the blocking behavior of this
 		 * native version use the callback method instead then it can be extended.
 		 *
+		 * @method alert
 		 * @param {String} t Title for the new alert dialog.
 		 * @param {function} cb Callback function to be executed after the user has selected ok.
 		 * @param {Object} s Optional scope to execute the callback in.
@@ -166,7 +165,5 @@
 		_decode : function(s) {
 			return tinymce.DOM.decode(s).replace(/\\n/g, '\n');
 		}
-
-		/**#@-*/
 	});
-}());
+}(tinymce));

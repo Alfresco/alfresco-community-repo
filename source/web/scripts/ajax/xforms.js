@@ -1006,7 +1006,21 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
               img.setAttribute("src", urlToReplace + href);			
             }
           });
-          
+    //ALF-6807 fix
+    $each(this.widget.getElementsByTagName("a"), 
+          function(a, index)
+          {
+              var href = a.getAttribute("href");
+              if (href && href.match("^/"))
+              {
+                var urlToReplace = alfresco.constants.AVM_WEBAPP_PREFIX;
+                if (alfresco.constants.AVM_WEBAPP_CONTEXT == "ROOT")
+                {
+                  urlToReplace = alfresco.constants.AVM_WEBAPP_URL;
+                }
+                a.setAttribute("href", urlToReplace + href);
+              }
+          });
     if (!this.isReadonly())
     {
       this.domNode.onmouseover = this._div_mouseoverHandler.bindAsEventListener(this);

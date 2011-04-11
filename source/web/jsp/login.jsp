@@ -109,6 +109,9 @@
                   </td>
                </tr>
 
+               <%-- warning message for Team mode --%>
+               <h:outputText id="team-login-warning" rendered="#{NavigationBean.teamMode}" value="#{LoginBean.teamLoginWarningHTML}" escape="false" />
+               
                <tr>
                   <td colspan=2>
                      <span class='mainSubTitle'><h:outputText value="#{msg.login_details}" />:</span>

@@ -1,29 +1,24 @@
 /**
- * $Id: DOMUtils.js 967 2008-11-27 17:38:42Z spocke $
+ * $Id: DOMUtils.js 1233 2009-09-21 22:08:30Z spocke $
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
-(function() {
+(function(tinymce) {
 	// Shorten names
 	var each = tinymce.each, is = tinymce.is;
 	var isWebKit = tinymce.isWebKit, isIE = tinymce.isIE;
 
-	/**#@+
-	 * @class Utility class for various DOM manipulation and retrival functions.
-	 * @member tinymce.dom.DOMUtils
+	/**
+	 * Utility class for various DOM manipulation and retrival functions.
+	 * @class tinymce.dom.DOMUtils
 	 */
 	tinymce.create('tinymce.dom.DOMUtils', {
 		doc : null,
 		root : null,
 		files : null,
-		listeners : {},
 		pixelStyles : /^(top|left|bottom|right|width|height|borderWidth)$/,
-		cache : {},
-		idPattern : /^#[\w]+$/,
-		elmPattern : /^[\w_*]+$/,
-		elmClassPattern : /^([\w_]*)\.([\w_]+)$/,
 		props : {
 			"for" : "htmlFor",
 			"class" : "className",
@@ -43,6 +38,7 @@
 		 * Constructs a new DOMUtils instance. Consult the Wiki for more details on settings etc for this class.
 		 *
 		 * @constructor
+		 * @method DOMUtils
 		 * @param {Document} d Document reference to bind the utility class to.
 		 * @param {settings} s Optional settings collection.
 		 */
@@ -57,7 +53,7 @@
 			t.boxModel = !tinymce.isIE || d.compatMode == "CSS1Compat"; 
 			t.stdMode = d.documentMode === 8;
 
-			this.settings = s = tinymce.extend({
+			t.settings = s = tinymce.extend({
 				keep_values : false,
 				hex_colors : 1,
 				process_html : 1
@@ -75,14 +71,11 @@
 			tinymce.addUnload(t.destroy, t);
 		},
 
-		/**#@+
-		 * @method
-		 */
-
 		/**
 		 * Returns the root node of the document this is normally the body but might be a DIV. Parents like getParent will not
 		 * go above the point of this root node.
 		 *
+		 * @method getRoot
 		 * @return {Element} Root element for the utility class.
 		 */
 		getRoot : function() {
@@ -94,6 +87,7 @@
 		/**
 		 * Returns the viewport of the window.
 		 *
+		 * @method getViewPort
 		 * @param {Window} w Optional window to get viewport of.
 		 * @return {Object} Viewport object with fields x, y, w and h.
 		 */
@@ -116,6 +110,7 @@
 		/**
 		 * Returns the rectangle for a specific element.
 		 *
+		 * @method getRect
 		 * @param {Element/String} e Element object or element ID to get rectange from.
 		 * @return {object} Rectange for specified element object with x, y, w, h fields.
 		 */
@@ -137,6 +132,7 @@
 		/**
 		 * Returns the size dimensions of the specified element.
 		 *
+		 * @method getSize
 		 * @param {Element/String} e Element object or element ID to get rectange from.
 		 * @return {object} Rectange for specified element object with w, h fields.
 		 */
@@ -167,59 +163,69 @@
 		 * If the function then returns true indicating that it has found what it was looking for, the loop execution will then end
 		 * and the node it found will be returned.
 		 *
+		 * @method getParent
 		 * @param {Node/String} n DOM node to search parents on or ID string.
-		 * @param {function} f Selection function to execute on each node.
+		 * @param {function} f Selection function to execute on each node or CSS pattern.
 		 * @param {Node} r Optional root element, never go below this point.
 		 * @return {Node} DOM Node or null if it wasn't found.
 		 */
 		getParent : function(n, f, r) {
-			var na, se = this.settings;
+			return this.getParents(n, f, r, false);
+		},
 
-			n = this.get(n);
+		/**
+		 * Returns a node list of all parents matching the specified selector function or pattern.
+		 * If the function then returns true indicating that it has found what it was looking for and that node will be collected.
+		 *
+		 * @method getParents
+		 * @param {Node/String} n DOM node to search parents on or ID string.
+		 * @param {function} f Selection function to execute on each node or CSS pattern.
+		 * @param {Node} r Optional root element, never go below this point.
+		 * @return {Array} Array of nodes or null if it wasn't found.
+		 */
+		getParents : function(n, f, r, c) {
+			var t = this, na, se = t.settings, o = [];
+
+			n = t.get(n);
+			c = c === undefined;
 
 			if (se.strict_root)
-				r = r || this.getRoot();
+				r = r || t.getRoot();
 
 			// Wrap node name as func
 			if (is(f, 'string')) {
-				na = f.toUpperCase();
+				na = f;
 
-				f = function(n) {
-					var s = false;
-
-					// Any element
-					if (n.nodeType == 1 && na === '*') {
-						s = true;
-						return false;
-					}
-
-					each(na.split(','), function(v) {
-						if (n.nodeType == 1 && ((se.strict && n.nodeName.toUpperCase() == v) || n.nodeName.toUpperCase() == v)) {
-							s = true;
-							return false; // Break loop
-						}
-					});
-
-					return s;
-				};
+				if (f === '*') {
+					f = function(n) {return n.nodeType == 1;};
+				} else {
+					f = function(n) {
+						return t.is(n, na);
+					};
+				}
 			}
 
 			while (n) {
-				if (n == r)
-					return null;
+				if (n == r || !n.nodeType || n.nodeType === 9)
+					break;
 
-				if (f(n))
-					return n;
+				if (!f || f(n)) {
+					if (c)
+						o.push(n);
+					else
+						return n;
+				}
 
 				n = n.parentNode;
 			}
 
-			return null;
+			return c ? o : null;
 		},
 
 		/**
 		 * Returns the specified element by ID or the input element if it isn't a string.
 		 *
+		 * @method get
 		 * @param {String/Element} n Element id to look for or element to just pass though.
 		 * @return {Element} Element matching the specified id or null if it wasn't found.
 		 */
@@ -238,241 +244,55 @@
 			return e;
 		},
 
-		// #if sizzle
-
 		/**
-		 * Selects specific elements by a CSS level 1 pattern. For example "div#a1 p.test".
-		 * This function is optimized for the most common patterns needed in TinyMCE but it also performes good enough
-		 * on more complex patterns.
+		 * Returns the next node that matches selector or function
 		 *
-		 * @param {String} p CSS level 1 pattern to select/find elements by.
-		 * @param {Object} s Optional root element/scope element to search in.
-		 * @return {Array} Array with all matched elements.
+		 * @param {Node} node Node to find siblings from.
+		 * @param {String/function} selector Selector CSS expression or function.
+		 * @return {Node} Next node item matching the selector or null if it wasn't found.
 		 */
-		sizzleSelect : function(pa, s) {
-			var t = this, siz;
-
-			// Look for Sizzle, this function will only use Sizzle later on
-			if (siz = window.Sizzle) {
-				// Setup new function
-				t.select = function(pa, s) {
-					siz.doc = t.doc;
-					return siz(pa, t.get(s) || t.doc, []);
-				};
-
-				return t.select(pa, s);
-			}
+		getNext : function(node, selector) {
+			return this._findSib(node, selector, 'nextSibling');
 		},
 
-		// #endif
+		/**
+		 * Returns the previous node that matches selector or function
+		 *
+		 * @param {Node} node Node to find siblings from.
+		 * @param {String/function} selector Selector CSS expression or function.
+		 * @return {Node} Previous node item matching the selector or null if it wasn't found.
+		 */
+		getPrev : function(node, selector) {
+			return this._findSib(node, selector, 'previousSibling');
+		},
 
-		// #if !jquery
+		// #ifndef jquery
 
 		/**
-		 * Selects specific elements by a CSS level 1 pattern. For example "div#a1 p.test".
+		 * Selects specific elements by a CSS level 3 pattern. For example "div#a1 p.test".
 		 * This function is optimized for the most common patterns needed in TinyMCE but it also performes good enough
 		 * on more complex patterns.
 		 *
+		 * @method select
 		 * @param {String} p CSS level 1 pattern to select/find elements by.
 		 * @param {Object} s Optional root element/scope element to search in.
 		 * @return {Array} Array with all matched elements.
 		 */
 		select : function(pa, s) {
-			var t = this, cs, c, pl, o = [], x, i, l, n, xp;
+			var t = this;
 
-			s = t.get(s) || t.doc;
+			return tinymce.dom.Sizzle(pa, t.get(s) || t.get(t.settings.root_element) || t.doc, []);
+		},
 
-			// Look for native support and use that if it's found
-			if (s.querySelectorAll) {
-				// Element scope then use temp id
-				// We need to do this to be compatible with other implementations
-				// See bug report: http://bugs.webkit.org/show_bug.cgi?id=17461
-				if (s != t.doc) {
-					i = s.id;
-					s.id = '_mc_tmp';
-					pa = '#_mc_tmp ' + pa;
-				}
-
-				// Select elements
-				l = tinymce.grep(s.querySelectorAll(pa));
-
-				// Restore old id
-				s.id = i;
-
-				return l;
-			}
-
-			if (!t.selectorRe)
-				t.selectorRe = /^([\w\\*]+)?(?:#([\w\\]+))?(?:\.([\w\\\.]+))?(?:\[\@([\w\\]+)([\^\$\*!]?=)([\w\\]+)\])?(?:\:([\w\\]+))?/i;;
-
-			// Air doesn't support eval due to security sandboxing and querySelectorAll isn't supported yet
-			if (tinymce.isAir) {
-				each(tinymce.explode(pa), function(v) {
-					if (!(xp = t.cache[v])) {
-						xp = '';
-
-						each(v.split(' '), function(v) {
-							v = t.selectorRe.exec(v);
-
-							xp += v[1] ? '//' + v[1] : '//*';
-
-							// Id
-							if (v[2])
-								xp += "[@id='" + v[2] + "']";
-
-							// Class
-							if (v[3]) {
-								each(v[3].split('.'), function(n) {
-									xp += "[@class = '" + n + "' or contains(concat(' ', @class, ' '), ' " + n + " ')]";
-								});
-							}
-						});
-
-						t.cache[v] = xp;
-					}
-
-					xp = t.doc.evaluate(xp, s, null, 4, null);
-
-					while (n = xp.iterateNext())
-						o.push(n);
-				});
-
-				return o;
-			}
-
-			if (t.settings.strict) {
-				function get(s, n) {
-					return s.getElementsByTagName(n.toLowerCase());
-				};
-			} else {
-				function get(s, n) {
-					return s.getElementsByTagName(n);
-				};
-			}
-
-			// Simple element pattern. For example: "p" or "*"
-			if (t.elmPattern.test(pa)) {
-				x = get(s, pa);
-
-				for (i = 0, l = x.length; i<l; i++)
-					o.push(x[i]);
-
-				return o;
-			}
-
-			// Simple class pattern. For example: "p.class" or ".class"
-			if (t.elmClassPattern.test(pa)) {
-				pl = t.elmClassPattern.exec(pa);
-				x = get(s, pl[1] || '*');
-				c = ' ' + pl[2] + ' ';
-
-				for (i = 0, l = x.length; i<l; i++) {
-					n = x[i];
-
-					if (n.className && (' ' + n.className + ' ').indexOf(c) !== -1)
-						o.push(n);
-				}
-
-				return o;
-			}
-
-			function collect(n) {
-				if (!n.mce_save) {
-					n.mce_save = 1;
-					o.push(n);
-				}
-			};
-
-			function collectIE(n) {
-				if (!n.getAttribute('mce_save')) {
-					n.setAttribute('mce_save', '1');
-					o.push(n);
-				}
-			};
-
-			function find(n, f, r) {
-				var i, l, nl = get(r, n);
-
-				for (i = 0, l = nl.length; i < l; i++)
-					f(nl[i]);
-			};
-
-			each(pa.split(','), function(v, i) {
-				v = tinymce.trim(v);
-
-				// Simple element pattern, most common in TinyMCE
-				if (t.elmPattern.test(v)) {
-					each(get(s, v), function(n) {
-						collect(n);
-					});
-
-					return;
-				}
-
-				// Simple element pattern with class, fairly common in TinyMCE
-				if (t.elmClassPattern.test(v)) {
-					x = t.elmClassPattern.exec(v);
-
-					each(get(s, x[1]), function(n) {
-						if (t.hasClass(n, x[2]))
-							collect(n);
-					});
-
-					return;
-				}
-
-				if (!(cs = t.cache[pa])) {
-					cs = 'x=(function(cf, s) {';
-					pl = v.split(' ');
-
-					each(pl, function(v) {
-						var p = t.selectorRe.exec(v);
-
-						// Find elements
-						p[1] = p[1] || '*';
-						cs += 'find("' + p[1] + '", function(n) {';
-
-						// Check id
-						if (p[2])
-							cs += 'if (n.id !== "' + p[2] + '") return;';
-
-						// Check classes
-						if (p[3]) {
-							cs += 'var c = " " + n.className + " ";';
-							cs += 'if (';
-							c = '';
-							each(p[3].split('.'), function(v) {
-								if (v)
-									c += (c ? '||' : '') + 'c.indexOf(" ' + v + ' ") === -1';
-							});
-							cs += c + ') return;';
-						}
-					});
-
-					cs += 'cf(n);';
-
-					for (i = pl.length - 1; i >= 0; i--)
-						cs += '}, ' + (i ? 'n' : 's') + ');';
-
-					cs += '})';
-
-					// Compile CSS pattern function
-					t.cache[pa] = cs = eval(cs);
-				}
-
-				// Run selector function
-				cs(isIE ? collectIE : collect, s);
-			});
-
-			// Cleanup
-			each(o, function(n) {
-				if (isIE)
-					n.removeAttribute('mce_save');
-				else
-					delete n.mce_save;
-			});
-
-			return o;
+		/**
+		 * Returns true/false if the specified element matches the specified css pattern.
+		 *
+		 * @method is
+		 * @param {Node/NodeList} n DOM node to match or an array of nodes to match.
+		 * @param {String} patt CSS pattern to match the element agains.
+		 */
+		is : function(n, patt) {
+			return tinymce.dom.Sizzle.matches(patt, n.nodeType ? [n] : n).length > 0;
 		},
 
 		// #endif
@@ -480,11 +300,12 @@
 		/**
 		 * Adds the specified element to another element or elements.
 		 *
+		 * @method add
 		 * @param {String/Element/Array} Element id string, DOM node element or array of id's or elements to add to.
 		 * @param {String/Element} n Name of new element to add or existing element to add.
 		 * @param {Object} a Optional object collection with arguments to add to the new element(s).
 		 * @param {String} h Optional inner HTML contents to add for each element.
-		 * @param {bool} c Optional internal state to indicate if it should create or add.
+		 * @param {Boolean} c Optional internal state to indicate if it should create or add.
 		 * @return {Element/Array} Element that got created or array with elements if multiple elements where passed.
 		 */
 		add : function(p, n, a, h, c) {
@@ -510,6 +331,7 @@
 		/**
 		 * Creates a new element.
 		 *
+		 * @method create
 		 * @param {String} n Name of new element.
 		 * @param {Object} a Optional object name/value collection with element attributes.
 		 * @param {String} h Optional HTML string to set as inner HTML of the element.
@@ -522,6 +344,7 @@
 		/**
 		 * Create HTML string for element. The elemtn will be closed unless an empty inner HTML string is passed.
 		 *
+		 * @method createHTML
 		 * @param {String} n Name of new element.
 		 * @param {Object} a Optional object name/value collection with element attributes.
 		 * @param {String} h Optional HTML string to set as inner HTML of the element.
@@ -546,13 +369,16 @@
 		/**
 		 * Removes/deletes the specified element(s) from the DOM.
 		 *
+		 * @method remove
 		 * @param {String/Element/Array} n ID of element or DOM element object or array containing multiple elements/ids.
-		 * @param {bool} k Optional state to keep children or not. If set to true all children will be placed at the location of the removed element.
+		 * @param {Boolean} k Optional state to keep children or not. If set to true all children will be placed at the location of the removed element.
 		 * @return {Element/Array} HTML DOM element that got removed or array of elements depending on input.
 		 */
 		remove : function(n, k) {
+			var t = this;
+
 			return this.run(n, function(n) {
-				var p, g;
+				var p, g, i;
 
 				p = n.parentNode;
 
@@ -560,29 +386,34 @@
 					return null;
 
 				if (k) {
-					each (n.childNodes, function(c) {
-						p.insertBefore(c.cloneNode(true), n);
-					});
+					for (i = n.childNodes.length - 1; i >= 0; i--)
+						t.insertAfter(n.childNodes[i], n);
+
+					//each(n.childNodes, function(c) {
+					//	p.insertBefore(c.cloneNode(true), n);
+					//});
 				}
 
 				// Fix IE psuedo leak
-		/*		if (isIE) {
+				if (t.fixPsuedoLeaks) {
 					p = n.cloneNode(true);
-					n.outerHTML = '';
+					k = 'IELeakGarbageBin';
+					g = t.get(k) || t.add(t.doc.body, 'div', {id : k, style : 'display:none'});
+					g.appendChild(n);
+					g.innerHTML = '';
 
 					return p;
-				}*/
+				}
 
 				return p.removeChild(n);
 			});
 		},
 
-		// #if !jquery
-
 		/**
 		 * Sets the CSS style value on a HTML element. The name can be a camelcase string
 		 * or the CSS style name like background-color.
 		 *
+		 * @method setStyle
 		 * @param {String/Element/Array} n HTML element/Element ID or Array of elements/ids to set CSS style value on.
 		 * @param {String} na Name of the style value to set.
 		 * @param {String} v Value to set on the style.
@@ -635,6 +466,7 @@
 		/**
 		 * Returns the current style or runtime/computed value of a element.
 		 *
+		 * @method getStyle
 		 * @param {String/Element} n HTML element or element id string to get style from.
 		 * @param {String} na Style name to return.
 		 * @param {String} c Computed style.
@@ -679,6 +511,7 @@
 		/**
 		 * Sets multiple styles on the specified element(s).
 		 *
+		 * @method setStyles
 		 * @param {Element/String/Array} e DOM element, element id string or array of elements/ids to set styles on.
 		 * @param {Object} o Name/Value collection of style items to add to the element(s).
 		 */
@@ -701,6 +534,7 @@
 		/**
 		 * Sets the specified attributes value of a element or elements.
 		 *
+		 * @method setAttrib
 		 * @param {Element/String/Array} e DOM element, element id string or array of elements/ids to set attribute on.
 		 * @param {String} n Name of attribute to set.
 		 * @param {String} v Value to set on the attribute of this value is falsy like null 0 or '' it will remove the attribute instead.
@@ -770,6 +604,7 @@
 		/**
 		 * Sets the specified attributes of a element or elements.
 		 *
+		 * @method setAttribs
 		 * @param {Element/String/Array} e DOM element, element id string or array of elements/ids to set attributes on.
 		 * @param {Object} o Name/Value collection of attribute items to add to the element(s).
 		 */
@@ -783,11 +618,10 @@
 			});
 		},
 
-		// #endif
-
 		/**
 		 * Returns the specified attribute by name.
 		 *
+		 * @method getAttrib
 		 * @param {String/Element} e Element string id or DOM element to get attribute from.
 		 * @param {String} n Name of attribute to get.
 		 * @param {String} dv Optional default value to return if the attribute didn't exist.
@@ -820,6 +654,18 @@
 			if (!v)
 				v = e.getAttribute(n, 2);
 
+			// Check boolean attribs
+			if (/^(checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)$/.test(n)) {
+				if (e[t.props[n]] === true && v === '')
+					return n;
+
+				return v ? n : '';
+			}
+
+			// Inner input elements will override attributes on form elements
+			if (e.nodeName === "FORM" && e.getAttributeNode(n))
+				return e.getAttributeNode(n).nodeValue;
+
 			if (n === 'style') {
 				v = v || e.style.cssText;
 
@@ -848,7 +694,7 @@
 
 					case 'size':
 						// IE returns +0 as default value for size
-						if (v === '+0' || v === 20)
+						if (v === '+0' || v === 20 || v === 0)
 							v = '';
 
 						break;
@@ -879,6 +725,7 @@
 
 						break;
 
+					case 'multiple':
 					case 'compact':
 					case 'noshade':
 					case 'nowrap':
@@ -894,7 +741,7 @@
 					default:
 						// IE has odd anonymous function for event attributes
 						if (n.indexOf('on') === 0 && v)
-							v = ('' + v).replace(/^function\s+anonymous\(\)\s+\{\s+(.*)\s+\}$/, '$1');
+							v = ('' + v).replace(/^function\s+\w+\(\)\s+\{\s+(.*)\s+\}$/, '$1');
 				}
 			}
 
@@ -904,44 +751,42 @@
 		/**
 		 * Returns the absolute x, y position of a node. The position will be returned in a object with x, y fields.
 		 *
+		 * @method getPos
 		 * @param {Element/String} n HTML element or element id to get x, y position from.
+		 * @param {Element} ro Optional root element to stop calculations at.
 		 * @return {object} Absolute position of the specified element object with x, y fields.
 		 */
-		getPos : function(n) {
+		getPos : function(n, ro) {
 			var t = this, x = 0, y = 0, e, d = t.doc, r;
 
 			n = t.get(n);
+			ro = ro || d.body;
 
-			// Use getBoundingClientRect on IE, Opera has it but it's not perfect
-			if (n && isIE) {
-				n = n.getBoundingClientRect();
-				e = t.boxModel ? d.documentElement : d.body;
-				x = t.getStyle(t.select('html')[0], 'borderWidth'); // Remove border
-				x = (x == 'medium' || t.boxModel && !t.isIE6) && 2 || x;
-				n.top += t.win.self != t.win.top ? 2 : 0; // IE adds some strange extra cord if used in a frameset
+			if (n) {
+				// Use getBoundingClientRect on IE, Opera has it but it's not perfect
+				if (isIE && !t.stdMode) {
+					n = n.getBoundingClientRect();
+					e = t.boxModel ? d.documentElement : d.body;
+					x = t.getStyle(t.select('html')[0], 'borderWidth'); // Remove border
+					x = (x == 'medium' || t.boxModel && !t.isIE6) && 2 || x;
+					n.top += t.win.self != t.win.top ? 2 : 0; // IE adds some strange extra cord if used in a frameset
 
-				return {x : n.left + e.scrollLeft - x, y : n.top + e.scrollTop - x};
-			}
-
-			r = n;
-			while (r) {
-				x += r.offsetLeft || 0;
-				y += r.offsetTop || 0;
-				r = r.offsetParent;
-			}
-
-			r = n;
-			while (r) {
-				// Opera 9.25 bug fix, fixed in 9.50
-				if (!/^table-row|inline.*/i.test(t.getStyle(r, "display", 1))) {
-					x -= r.scrollLeft || 0;
-					y -= r.scrollTop || 0;
+					return {x : n.left + e.scrollLeft - x, y : n.top + e.scrollTop - x};
 				}
 
-				r = r.parentNode;
+				r = n;
+				while (r && r != ro && r.nodeType) {
+					x += r.offsetLeft || 0;
+					y += r.offsetTop || 0;
+					r = r.offsetParent;
+				}
 
-				if (r == d.body)
-					break;
+				r = n.parentNode;
+				while (r && r != ro && r.nodeType) {
+					x -= r.scrollLeft || 0;
+					y -= r.scrollTop || 0;
+					r = r.parentNode;
+				}
 			}
 
 			return {x : x, y : y};
@@ -952,6 +797,7 @@
 		 * merge and remove any redundant items that browsers might have added. It will also convert non hex
 		 * colors to hex values. Urls inside the styles will also be converted to absolute/relative based on settings.
 		 *
+		 * @method parseStyle
 		 * @param {String} st Style value to parse for example: border:1px solid red;.
 		 * @return {Object} Object representation of that style like {border : '1px solid red'}
 		 */
@@ -1057,6 +903,7 @@
 		/**
 		 * Serializes the specified style object into a string.
 		 *
+		 * @method serializeStyle
 		 * @param {Object} o Object to serialize as string for example: {border : '1px solid red'}
 		 * @return {String} String representation of the style object for example: border: 1px solid red.
 		 */
@@ -1085,28 +932,44 @@
 		/**
 		 * Imports/loads the specified CSS file into the document bound to the class.
 		 *
+		 * @method loadCSS
 		 * @param {String} u URL to CSS file to load.
 		 */
 		loadCSS : function(u) {
-			var t = this, d = t.doc;
+			var t = this, d = t.doc, head;
 
 			if (!u)
 				u = '';
 
+			head = t.select('head')[0];
+
 			each(u.split(','), function(u) {
+				var link;
+
 				if (t.files[u])
 					return;
 
 				t.files[u] = true;
-				t.add(t.select('head')[0], 'link', {rel : 'stylesheet', href : tinymce._addVer(u)});
+				link = t.create('link', {rel : 'stylesheet', href : tinymce._addVer(u)});
+
+				// IE 8 has a bug where dynamically loading stylesheets would produce a 1 item remaining bug
+				// This fix seems to resolve that issue by realcing the document ones a stylesheet finishes loading
+				// It's ugly but it seems to work fine.
+				if (isIE && d.documentMode) {
+					link.onload = function() {
+						d.recalc();
+						link.onload = null;
+					};
+				}
+
+				head.appendChild(link);
 			});
 		},
-
-		// #if !jquery
 
 		/**
 		 * Adds a class to the specified element or elements.
 		 *
+		 * @method addClass
 		 * @param {String/Element/Array} Element ID string or DOM element or array with elements or IDs.
 		 * @param {String} c Class name to add to each element.
 		 * @return {String/Array} String with new class value or array with new class values for all elements.
@@ -1130,6 +993,7 @@
 		/**
 		 * Removes a class from the specified element or elements.
 		 *
+		 * @method removeClass
 		 * @param {String/Element/Array} Element ID string or DOM element or array with elements or IDs.
 		 * @param {String} c Class name to remove to each element.
 		 * @return {String/Array} String with new class value or array with new class values for all elements.
@@ -1156,9 +1020,10 @@
 		/**
 		 * Returns true if the specified element has the specified class.
 		 *
+		 * @method hasClass
 		 * @param {String/Element} n HTML element or element id string to check CSS class on.
-		 * @param {String] c CSS class to check for.
-		 * @return {bool} true/false if the specified element has the specified class.
+		 * @param {String} c CSS class to check for.
+		 * @return {Boolean} true/false if the specified element has the specified class.
 		 */
 		hasClass : function(n, c) {
 			n = this.get(n);
@@ -1172,6 +1037,7 @@
 		/**
 		 * Shows the specified element(s) by ID by setting the "display" style.
 		 *
+		 * @method show
 		 * @param {String/Element/Array} e ID of DOM element or DOM element or array with elements or IDs to show.
 		 */
 		show : function(e) {
@@ -1181,6 +1047,7 @@
 		/**
 		 * Hides the specified element(s) by ID by setting the "display" style.
 		 *
+		 * @method hide
 		 * @param {String/Element/Array} e ID of DOM element or DOM element or array with elements or IDs to hide.
 		 */
 		hide : function(e) {
@@ -1190,8 +1057,9 @@
 		/**
 		 * Returns true/false if the element is hidden or not by checking the "display" style.
 		 *
+		 * @method isHidden
 		 * @param {String/Element} e Id or element to check display state on.
-		 * @return {bool} true/false if the element is hidden or not.
+		 * @return {Boolean} true/false if the element is hidden or not.
 		 */
 		isHidden : function(e) {
 			e = this.get(e);
@@ -1199,12 +1067,11 @@
 			return !e || e.style.display == 'none' || this.getStyle(e, 'display') == 'none';
 		},
 
-		// #endif
-
 		/**
 		 * Returns a unique id. This can be useful when generating elements on the fly.
 		 * This method will not check if the element allready exists.
 		 *
+		 * @method uniqueId
 		 * @param {String} p Optional prefix to add infront of all ids defaults to "mce_".
 		 * @return {String} Unique id.
 		 */
@@ -1216,6 +1083,7 @@
 		 * Sets the specified HTML content inside the element or elements. The HTML will first be processed this means
 		 * URLs will get converted, hex color values fixed etc. Check processHTML for details.
 		 *
+		 * @method setHTML
 		 * @param {Element/String/Array} e DOM element, element id string or array of elements/ids to set HTML inside.
 		 * @param {String} h HTML content to set as inner HTML of the element.
 		 */
@@ -1284,7 +1152,7 @@
 					if (x) {
 						// So if we replace the p elements with divs and mark them and then replace them back to paragraphs
 						// after we use innerHTML we can fix the DOM tree
-						h = h.replace(/<p ([^>]+)>|<p>/g, '<div $1 mce_tmp="1">');
+						h = h.replace(/<p ([^>]+)>|<p>/ig, '<div $1 mce_tmp="1">');
 						h = h.replace(/<\/p>/g, '</div>');
 
 						// Set the new HTML with DIVs
@@ -1339,11 +1207,12 @@
 		 * properly in a RTE environment. It also converts any URLs in links and images and places
 		 * a converted value into a separate attribute with the mce prefix like mce_src or mce_href.
 		 *
+		 * @method processHTML
 		 * @param {String} h HTML to process.
 		 * @return {String} Processed HTML code.
 		 */
 		processHTML : function(h) {
-			var t = this, s = t.settings;
+			var t = this, s = t.settings, codeBlocks = [];
 
 			if (!s.process_html)
 				return h;
@@ -1363,7 +1232,7 @@
 			// Store away src and href in mce_src and mce_href since browsers mess them up
 			if (s.keep_values) {
 				// Wrap scripts and styles in comments for serialization purposes
-				if (/<script|style/.test(h)) {
+				if (/<script|noscript|style/i.test(h)) {
 					function trim(s) {
 						// Remove prefix and suffix code for element
 						s = s.replace(/(<!--\[CDATA\[|\]\]-->)/g, '\n');
@@ -1374,31 +1243,65 @@
 						return s;
 					};
 
-					// Preserve script elements
-					h = h.replace(/<script([^>]+|)>([\s\S]*?)<\/script>/g, function(v, a, b) {
-						// Remove prefix and suffix code for script element
-						b = trim(b);
-
+					// Wrap the script contents in CDATA and keep them from executing
+					h = h.replace(/<script([^>]+|)>([\s\S]*?)<\/script>/gi, function(v, attribs, text) {
 						// Force type attribute
-						if (!a)
-							a = ' type="text/javascript"';
+						if (!attribs)
+							attribs = ' type="text/javascript"';
 
-						// Wrap contents in a comment
-						if (b)
-							b = '<!--\n' + b + '\n// -->';
+						// Convert the src attribute of the scripts
+						attribs = attribs.replace(/src=\"([^\"]+)\"?/i, function(a, url) {
+							if (s.url_converter)
+								url = t.encode(s.url_converter.call(s.url_converter_scope || t, t.decode(url), 'src', 'script'));
 
-						// Output fake element
-						return '<mce:script' + a + '>' + b + '</mce:script>';
+							return 'mce_src="' + url + '"';
+						});
+
+						// Wrap text contents
+						if (tinymce.trim(text)) {
+							codeBlocks.push(trim(text));
+							text = '<!--\nMCE_SCRIPT:' + (codeBlocks.length - 1) + '\n// -->';
+						}
+
+						return '<mce:script' + attribs + '>' + text + '</mce:script>';
 					});
 
-					// Preserve style elements
-					h = h.replace(/<style([^>]+|)>([\s\S]*?)<\/style>/g, function(v, a, b) {
-						b = trim(b);
-						return '<mce:style' + a + '><!--\n' + b + '\n--></mce:style><style' + a + ' mce_bogus="1">' + b + '</style>';
+					// Wrap style elements
+					h = h.replace(/<style([^>]+|)>([\s\S]*?)<\/style>/gi, function(v, attribs, text) {
+						// Wrap text contents
+						if (text) {
+							codeBlocks.push(trim(text));
+							text = '<!--\nMCE_SCRIPT:' + (codeBlocks.length - 1) + '\n-->';
+						}
+
+						return '<mce:style' + attribs + '>' + text + '</mce:style><style ' + attribs + ' mce_bogus="1">' + text + '</style>';
+					});
+
+					// Wrap noscript elements
+					h = h.replace(/<noscript([^>]+|)>([\s\S]*?)<\/noscript>/g, function(v, attribs, text) {
+						return '<mce:noscript' + attribs + '><!--' + t.encode(text).replace(/--/g, '&#45;&#45;') + '--></mce:noscript>';
 					});
 				}
 
 				h = h.replace(/<!\[CDATA\[([\s\S]+)\]\]>/g, '<!--[CDATA[$1]]-->');
+
+				// Remove false bool attributes and force attributes into xhtml style attr="attr"
+				h = h.replace(/<([\w:]+) [^>]*(checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)[^>]*>/gi, function(val) {
+					function handle(val, name, value) {
+						// Remove false/0 attribs
+						if (value === 'false' || value === '0')
+							return '';
+
+						return ' ' + name + '="' + name + '"';
+					};
+
+					val = val.replace(/ (checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)=[\"]([^\"]+)[\"]/gi, handle); // W3C
+					val = val.replace(/ (checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)=[\']([^\']+)[\']/gi, handle); // W3C
+					val = val.replace(/ (checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)=([^\s\"\'>]+)/gi, handle); // IE
+					val = val.replace(/ (checked|compact|declare|defer|disabled|ismap|multiple|nohref|noshade|nowrap|readonly|selected)([\s>])/gi, ' $1="$1"$2'); // Force attr="attr"
+
+					return val;
+				});
 
 				// Process all tags with src, href or style
 				h = h.replace(/<([\w:]+) [^>]*(src|href|style|shape|coords)[^>]*>/gi, function(a, n) {
@@ -1410,25 +1313,12 @@
 							return m;
 
 						if (b == 'style') {
-							// Why did I need this one?
-							//if (isIE)
-							//	u = t.serializeStyle(t.parseStyle(u));
-
 							// No mce_style for elements with these since they might get resized by the user
 							if (t._isRes(c))
 								return m;
 
-							if (s.hex_colors) {
-								u = u.replace(/rgb\([^\)]+\)/g, function(v) {
-									return t.toHex(v);
-								});
-							}
-
-							if (s.url_converter) {
-								u = u.replace(/url\([\'\"]?([^\)\'\"]+)\)/g, function(x, c) {
-									return 'url(' + t.encode(s.url_converter.call(s.url_converter_scope || t, t.decode(c), b, n)) + ')';
-								});
-							}
+							// Parse and serialize the style to convert for example uppercase styles like "BORDER: 1px"
+							u = t.encode(t.serializeStyle(t.parseStyle(u)));
 						} else if (b != 'coords' && b != 'shape') {
 							if (s.url_converter)
 								u = t.encode(s.url_converter.call(s.url_converter_scope || t, t.decode(c), b, n));
@@ -1442,6 +1332,11 @@
 
 					return a.replace(/ (src|href|style|coords|shape)=([^\s\"\'>]+)/gi, handle); // IE
 				});
+
+				// Restore script blocks
+				h = h.replace(/MCE_SCRIPT:([0-9]+)/g, function(val, idx) {
+					return codeBlocks[idx];
+				});
 			}
 
 			return h;
@@ -1450,6 +1345,7 @@
 		/**
 		 * Returns the outer HTML of an element.
 		 *
+		 * @method getOuterHTML
 		 * @param {String/Element} e Element ID or element object to get outer HTML from.
 		 * @return {String} Outer HTML string.
 		 */
@@ -1461,7 +1357,7 @@
 			if (!e)
 				return null;
 
-			if (isIE)
+			if (e.outerHTML !== undefined)
 				return e.outerHTML;
 
 			d = (e.ownerDocument || this.doc).createElement("body");
@@ -1473,6 +1369,7 @@
 		/**
 		 * Sets the specified outer HTML on a element or elements.
 		 *
+		 * @method setOuterHTML
 		 * @param {Element/String/Array} e DOM element, element id string or array of elements/ids to set outer HTML on.
 		 * @param {Object} h HTML code to set as outer value for the element.
 		 * @param {Document} d Optional document scope to use in this process defaults to the document of the DOM class.
@@ -1480,25 +1377,41 @@
 		setOuterHTML : function(e, h, d) {
 			var t = this;
 
-			return this.run(e, function(e) {
+			function setHTML(e, h, d) {
 				var n, tp;
+				
+				tp = d.createElement("body");
+				tp.innerHTML = h;
 
+				n = tp.lastChild;
+				while (n) {
+					t.insertAfter(n.cloneNode(true), e);
+					n = n.previousSibling;
+				}
+
+				t.remove(e);
+			};
+
+			return this.run(e, function(e) {
 				e = t.get(e);
-				d = d || e.ownerDocument || t.doc;
 
-				if (isIE && e.nodeType == 1)
-					e.outerHTML = h;
-				else {
-					tp = d.createElement("body");
-					tp.innerHTML = h;
+				// Only set HTML on elements
+				if (e.nodeType == 1) {
+					d = d || e.ownerDocument || t.doc;
 
-					n = tp.lastChild;
-					while (n) {
-						t.insertAfter(n.cloneNode(true), e);
-						n = n.previousSibling;
-					}
-
-					t.remove(e);
+					if (isIE) {
+						try {
+							// Try outerHTML for IE it sometimes produces an unknown runtime error
+							if (isIE && e.nodeType == 1)
+								e.outerHTML = h;
+							else
+								setHTML(e, h, d);
+						} catch (ex) {
+							// Fix for unknown runtime error
+							setHTML(e, h, d);
+						}
+					} else
+						setHTML(e, h, d);
 				}
 			});
 		},
@@ -1506,6 +1419,7 @@
 		/**
 		 * Entity decode a string, resolves any HTML entities like &aring;.
 		 *
+		 * @method decode
 		 * @param {String} s String to decode entities on.
 		 * @return {String} Entity decoded string.
 		 */
@@ -1535,6 +1449,7 @@
 		/**
 		 * Entity encodes a string, encodes the most common entities <>"& into entities.
 		 *
+		 * @method encode
 		 * @param {String} s String to encode with entities.
 		 * @return {String} Entity encoded string.
 		 */
@@ -1558,11 +1473,10 @@
 			}) : s;
 		},
 
-		// #if !jquery
-
 		/**
 		 * Inserts a element after the reference element.
 		 *
+		 * @method insertAfter
 		 * @param {Element} Element to insert after the reference.
 		 * @param {Element/String/Array} r Reference element, element id or array of elements to insert after.
 		 * @return {Element/Array} Element that got added or an array with elements. 
@@ -1587,13 +1501,12 @@
 			});
 		},
 
-		// #endif
-
 		/**
 		 * Returns true/false if the specified element is a block element or not.
 		 *
+		 * @method isBlock
 		 * @param {Node} n Element/Node to check.
-		 * @return {bool} True/False state if the node is a block element or not.
+		 * @return {Boolean} True/False state if the node is a block element or not.
 		 */
 		isBlock : function(n) {
 			if (n.nodeType && n.nodeType !== 1)
@@ -1601,24 +1514,25 @@
 
 			n = n.nodeName || n;
 
-			return /^(H[1-6]|HR|P|DIV|ADDRESS|PRE|FORM|TABLE|LI|OL|UL|TD|CAPTION|BLOCKQUOTE|CENTER|DL|DT|DD|DIR|FIELDSET|NOSCRIPT|NOFRAMES|MENU|ISINDEX|SAMP)$/.test(n);
+			return /^(H[1-6]|HR|P|DIV|ADDRESS|PRE|FORM|TABLE|LI|OL|UL|TH|TBODY|TR|TD|CAPTION|BLOCKQUOTE|CENTER|DL|DT|DD|DIR|FIELDSET|NOSCRIPT|NOFRAMES|MENU|ISINDEX|SAMP)$/.test(n);
 		},
-
-		// #if !jquery
 
 		/**
 		 * Replaces the specified element or elements with the specified element, the new element will
 		 * be cloned if multiple inputs elements are passed.
 		 *
+		 * @method replace
 		 * @param {Element} n New element to replace old ones with.
 		 * @param {Element/String/Array} o Element DOM node, element id or array of elements or ids to replace.
-		 * @param {bool} k Optional keep children state, if set to true child nodes from the old object will be added to new ones.
+		 * @param {Boolean} k Optional keep children state, if set to true child nodes from the old object will be added to new ones.
 		 */
 		replace : function(n, o, k) {
+			var t = this;
+
 			if (is(o, 'array'))
 				n = n.cloneNode(true);
 
-			return this.run(o, function(o) {
+			return t.run(o, function(o) {
 				if (k) {
 					each(o.childNodes, function(c) {
 						n.appendChild(c.cloneNode(true));
@@ -1627,21 +1541,49 @@
 
 				// Fix IE psuedo leak for elements since replacing elements if fairly common
 				// Will break parentNode for some unknown reason
-	/*			if (isIE && o.nodeType === 1) {
+				if (t.fixPsuedoLeaks && o.nodeType === 1) {
 					o.parentNode.insertBefore(n, o);
-					o.outerHTML = '';
+					t.remove(o);
 					return n;
-				}*/
+				}
 
 				return o.parentNode.replaceChild(n, o);
 			});
 		},
 
-		// #endif
+		/**
+		 * Find the common ancestor of two elements. This is a shorter method than using the DOM Range logic.
+		 *
+		 * @method findCommonAncestor
+		 * @param {Element} a Element to find common ancestor of.
+		 * @param {Element} b Element to find common ancestor of.
+		 * @return {Element} Common ancestor element of the two input elements.
+		 */
+		findCommonAncestor : function(a, b) {
+			var ps = a, pe;
+
+			while (ps) {
+				pe = b;
+
+				while (pe && ps != pe)
+					pe = pe.parentNode;
+
+				if (ps == pe)
+					break;
+
+				ps = ps.parentNode;
+			}
+
+			if (!ps && a.ownerDocument)
+				return a.ownerDocument.documentElement;
+
+			return ps;
+		},
 
 		/**
 		 * Parses the specified RGB color value and returns a hex version of that color.
 		 *
+		 * @method toHex
 		 * @param {String} s RGB string value like rgb(1,2,3)
 		 * @return {String} Hex version of that RGB value like #FF00FF.
 		 */
@@ -1667,6 +1609,7 @@
 		 * Returns a array of all single CSS classes in the document. A single CSS class is a simple
 		 * rule like ".class" complex ones like "div td.class" will not be added to output.
 		 *
+		 * @method getClasses
 		 * @return {Array} Array with class objects each object has a class field might be other fields in the future.
 		 */
 		getClasses : function() {
@@ -1733,6 +1676,7 @@
 		/**
 		 * Executes the specified function on the element by id or dom element node or array of elements/id.
 		 *
+		 * @method run
 		 * @param {String/Element/Array} Element ID or DOM element object or array with ids or elements.
 		 * @param {function} f Function to execute for each item.
 		 * @param {Object} s Optional scope to execute the function in.
@@ -1769,6 +1713,7 @@
 		/**
 		 * Returns an NodeList with attributes for the element.
 		 *
+		 * @method getAttribs
 		 * @param {HTMLElement/string} n Element node or string id to get attributes from.
 		 * @return {NodeList} NodeList with attributes.
 		 */
@@ -1787,9 +1732,13 @@
 				if (n.nodeName == 'OBJECT')
 					return n.attributes;
 
+				// IE doesn't keep the selected attribute if you clone option elements
+				if (n.nodeName === 'OPTION' && this.getAttrib(n, 'selected'))
+					o.push({specified : 1, nodeName : 'selected'});
+
 				// It's crazy that this is faster in IE but it's because it returns all attributes all the time
-				n.cloneNode(false).outerHTML.replace(/([a-z0-9\:\-_]+)=/gi, function(a, b) {
-					o.push({specified : 1, nodeName : b});
+				n.cloneNode(false).outerHTML.replace(/<\/?[\w:]+ ?|=[\"][^\"]+\"|=\'[^\']+\'|=\w+|>/gi, '').replace(/[\w:]+/gi, function(a) {
+					o.push({specified : 1, nodeName : a});
 				});
 
 				return o;
@@ -1798,14 +1747,189 @@
 			return n.attributes;
 		},
 
+		/**
+		 * Destroys all internal references to the DOM to solve IE leak issues.
+		 *
+		 * @method destroy
+		 */
 		destroy : function(s) {
 			var t = this;
 
-			t.win = t.doc = t.root = null;
+			if (t.events)
+				t.events.destroy();
+
+			t.win = t.doc = t.root = t.events = null;
 
 			// Manual destroy then remove unload handler
 			if (!s)
 				tinymce.removeUnload(t.destroy);
+		},
+
+		/**
+		 * Created a new DOM Range object. This will use the native DOM Range API if it's
+		 * available if it's not it will fallback to the custom TinyMCE implementation.
+		 *
+		 * @method createRng
+		 * @return {DOMRange} DOM Range object.
+		 */
+		createRng : function() {
+			var d = this.doc;
+
+			return d.createRange ? d.createRange() : new tinymce.dom.Range(this);
+		},
+
+		/**
+		 * Splits an element into two new elements and places the specified split
+		 * element or element between the new ones. For example splitting the paragraph at the bold element in
+		 * this example <p>abc<b>abc</b>123</p> would produce <p>abc</p><b>abc</b><p>123</p>. 
+		 *
+		 * @method split
+		 * @param {Element} pe Parent element to split.
+		 * @param {Element} e Element to split at.
+		 * @param {Element} re Optional replacement element to replace the split element by.
+		 * @return {Element} Returns the split element or the replacement element if that is specified.
+		 */
+		split : function(pe, e, re) {
+			var t = this, r = t.createRng(), bef, aft, pa;
+
+			// W3C valid browsers tend to leave empty nodes to the left/right side of the contents, this makes sence
+			// but we don't want that in our code since it serves no purpose
+			// For example if this is chopped:
+			//   <p>text 1<span><b>CHOP</b></span>text 2</p>
+			// would produce:
+			//   <p>text 1<span></span></p><b>CHOP</b><p><span></span>text 2</p>
+			// this function will then trim of empty edges and produce:
+			//   <p>text 1</p><b>CHOP</b><p>text 2</p>
+			function trimEdge(n, na) {
+				n = n[na];
+
+				if (n && n[na] && n[na].nodeType == 1 && isEmpty(n[na]))
+					t.remove(n[na]);
+			};
+
+			function isEmpty(n) {
+				n = t.getOuterHTML(n);
+				n = n.replace(/<(img|hr|table)/gi, '-'); // Keep these convert them to - chars
+				n = n.replace(/<[^>]+>/g, ''); // Remove all tags
+
+				return n.replace(/[ \t\r\n]+|&nbsp;|&#160;/g, '') == '';
+			};
+
+			// Added until Gecko can create real HTML documents using implementation.createHTMLDocument
+			// this is to future proof it if Gecko decides to implement the error checking for range methods.
+			function nodeIndex(n) {
+				var i = 0;
+
+				while (n.previousSibling) {
+					i++;
+					n = n.previousSibling;
+				}
+
+				return i;
+			};
+
+			if (pe && e) {
+				// Get before chunk
+				r.setStart(pe.parentNode, nodeIndex(pe));
+				r.setEnd(e.parentNode, nodeIndex(e));
+				bef = r.extractContents();
+
+				// Get after chunk
+				r = t.createRng();
+				r.setStart(e.parentNode, nodeIndex(e) + 1);
+				r.setEnd(pe.parentNode, nodeIndex(pe) + 1);
+				aft = r.extractContents();
+
+				// Insert chunks and remove parent
+				pa = pe.parentNode;
+
+				// Remove right side edge of the before contents
+				trimEdge(bef, 'lastChild');
+
+				if (!isEmpty(bef))
+					pa.insertBefore(bef, pe);
+
+				if (re)
+					pa.replaceChild(re, e);
+				else
+					pa.insertBefore(e, pe);
+
+				// Remove left site edge of the after contents
+				trimEdge(aft, 'firstChild');
+
+				if (!isEmpty(aft))
+					pa.insertBefore(aft, pe);
+
+				t.remove(pe);
+
+				return re || e;
+			}
+		},
+
+		/**
+		 * Adds an event handler to the specified object.
+		 *
+		 * @method bind
+		 * @param {Element/Document/Window/Array/String} o Object or element id string to add event handler to or an array of elements/ids/documents.
+		 * @param {String} n Name of event handler to add for example: click.
+		 * @param {function} f Function to execute when the event occurs.
+		 * @param {Object} s Optional scope to execute the function in.
+		 * @return {function} Function callback handler the same as the one passed in.
+		 */
+		bind : function(target, name, func, scope) {
+			var t = this;
+
+			if (!t.events)
+				t.events = new tinymce.dom.EventUtils();
+
+			return t.events.add(target, name, func, scope || this);
+		},
+
+		/**
+		 * Removes the specified event handler by name and function from a element or collection of elements.
+		 *
+		 * @method unbind
+		 * @param {String/Element/Array} o Element ID string or HTML element or an array of elements or ids to remove handler from.
+		 * @param {String} n Event handler name like for example: "click"
+		 * @param {function} f Function to remove.
+		 * @return {bool/Array} Bool state if true if the handler was removed or an array with states if multiple elements where passed in.
+		 */
+		unbind : function(target, name, func) {
+			var t = this;
+
+			if (!t.events)
+				t.events = new tinymce.dom.EventUtils();
+
+			return t.events.remove(target, name, func);
+		},
+
+		// #ifdef debug
+
+		dumpRng : function(r) {
+			return 'startContainer: ' + r.startContainer.nodeName + ', startOffset: ' + r.startOffset + ', endContainer: ' + r.endContainer.nodeName + ', endOffset: ' + r.endOffset;
+		},
+
+		// #endif
+
+		_findSib : function(node, selector, name) {
+			var t = this, f = selector;
+
+			if (node) {
+				// If expression make a function of it using is
+				if (is(f, 'string')) {
+					f = function(node) {
+						return t.is(node, selector);
+					};
+				}
+
+				// Loop all siblings
+				for (node = node[name]; node; node = node[name]) {
+					if (f(node))
+						return node;
+				}
+			}
+
+			return null;
 		},
 
 		_isRes : function(c) {
@@ -1842,10 +1966,14 @@
 			return s;
 		}
 		*/
-
-		/**#@-*/
 	});
 
-	// Setup page DOM
+	/**
+	 * Instance of DOMUtils for the current document.
+	 *
+	 * @property DOM
+	 * @member tinymce
+	 * @type tinymce.dom.DOMUtils
+	 */
 	tinymce.DOM = new tinymce.dom.DOMUtils(document, {process_html : 0});
-})();
+})(tinymce);

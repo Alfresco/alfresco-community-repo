@@ -349,7 +349,7 @@
          <f:facet name="header">
             <h:outputText id="txt1" value="#{msg.actions}" />
          </f:facet>
-         <a:actionLink id="view-version-props" value="#{msg.properties}" action="dialog:showVersionedDetails" actionListener="#{VersionedDocumentDetailsDialog.setBrowsingVersion}">
+         <a:actionLink id="view-version-props" value="#{msg.properties}" action="showVersionedDetails" actionListener="#{VersionedDocumentDetailsDialog.setBrowsingVersion}">
             <f:param id="pm1" name="id" value="#{DialogManager.bean.document.id}" />
             <f:param id="pm2" name="versionLabel" value="#{r.versionLabel}" />
          </a:actionLink>

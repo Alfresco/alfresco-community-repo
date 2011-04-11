@@ -24,14 +24,14 @@ function insertTable() {
 	border = formObj.elements['border'].value != "" ? formObj.elements['border'].value  : 0;
 	cellpadding = formObj.elements['cellpadding'].value != "" ? formObj.elements['cellpadding'].value : "";
 	cellspacing = formObj.elements['cellspacing'].value != "" ? formObj.elements['cellspacing'].value : "";
-	align = formObj.elements['align'].options[formObj.elements['align'].selectedIndex].value;
-	frame = formObj.elements['frame'].options[formObj.elements['frame'].selectedIndex].value;
-	rules = formObj.elements['rules'].options[formObj.elements['rules'].selectedIndex].value;
+	align = getSelectValue(formObj, "align");
+	frame = getSelectValue(formObj, "tframe");
+	rules = getSelectValue(formObj, "rules");
 	width = formObj.elements['width'].value;
 	height = formObj.elements['height'].value;
 	bordercolor = formObj.elements['bordercolor'].value;
 	bgcolor = formObj.elements['bgcolor'].value;
-	className = formObj.elements['class'].options[formObj.elements['class'].selectedIndex].value;
+	className = getSelectValue(formObj, "class");
 	id = formObj.elements['id'].value;
 	summary = formObj.elements['summary'].value;
 	style = formObj.elements['style'].value;
@@ -156,6 +156,10 @@ function insertTable() {
 		if (style)
 			style += '; ';
 
+		// Force px
+		if (/^[0-9\.]+$/.test(width))
+			width += 'px';
+
 		style += 'width: ' + width;
 	} else
 		html += makeAttrib('width', width);
@@ -203,7 +207,30 @@ function insertTable() {
 	html += "</table>";
 
 	inst.execCommand('mceBeginUndoLevel');
-	inst.execCommand('mceInsertContent', false, html);
+
+	// Move table
+	if (inst.settings.fix_table_elements) {
+		var bm = inst.selection.getBookmark(), patt = '';
+
+		inst.execCommand('mceInsertContent', false, '<br class="_mce_marker" />');
+
+		tinymce.each('h1,h2,h3,h4,h5,h6,p'.split(','), function(n) {
+			if (patt)
+				patt += ',';
+
+			patt += n + ' ._mce_marker';
+		});
+
+		tinymce.each(inst.dom.select(patt), function(n) {
+			inst.dom.split(inst.dom.getParent(n, 'h1,h2,h3,h4,h5,h6,p'), n);
+		});
+
+		dom.setOuterHTML(dom.select('._mce_marker')[0], html);
+
+		inst.selection.moveToBookmark(bm);
+	} else
+		inst.execCommand('mceInsertContent', false, html);
+
 	inst.addVisual();
 	inst.execCommand('mceEndUndoLevel');
 
@@ -295,7 +322,7 @@ function init() {
 
 	// Update form
 	selectByValue(formObj, 'align', align);
-	selectByValue(formObj, 'frame', frame);
+	selectByValue(formObj, 'tframe', frame);
 	selectByValue(formObj, 'rules', rules);
 	selectByValue(formObj, 'class', className, true, true);
 	formObj.cols.value = cols;

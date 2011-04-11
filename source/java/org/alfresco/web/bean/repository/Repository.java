@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PathUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.ui.common.Utils;
@@ -321,34 +322,7 @@ public final class Repository
     */
    public static String getDisplayPath(Path path, boolean showLeaf)
    {
-      StringBuilder buf = new StringBuilder(64);
-      
-      int count = path.size() - (showLeaf ? 0 : 1);
-      for (int i=0; i<count; i++)
-      {
-         String elementString = null;
-         Path.Element element = path.get(i);
-         if (element instanceof Path.ChildAssocElement)
-         {
-            ChildAssociationRef elementRef = ((Path.ChildAssocElement)element).getRef();
-            if (elementRef.getParentRef() != null)
-            {
-               elementString = elementRef.getQName().getLocalName();
-            }
-         }
-         else
-         {
-            elementString = element.getElementString();
-         }
-         
-         if (elementString != null)
-         {
-            buf.append("/");
-            buf.append(elementString);
-         }
-      }
-      
-      return buf.toString();
+      return PathUtil.getDisplayPath(path, showLeaf);
    }
    
    /**

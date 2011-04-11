@@ -1,31 +1,44 @@
 /**
- * $Id: EditorManager.js 920 2008-09-09 14:05:33Z spocke $
+ * $Id: EditorManager.js 1190 2009-08-12 17:59:29Z spocke $
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
-(function() {
+(function(tinymce) {
 	// Shorten names
 	var each = tinymce.each, extend = tinymce.extend, DOM = tinymce.DOM, Event = tinymce.dom.Event, ThemeManager = tinymce.ThemeManager, PluginManager = tinymce.PluginManager, explode = tinymce.explode;
 
-	/**#@+
-	 * @class This class is used to create multiple editor instances and contain them in a collection. So it's both a factory and a manager for editor instances.
+	/**
+	 * This class is used to create multiple editor instances and contain them in a collection. So it's both a factory and a manager for editor instances.
+	 *
 	 * @static
-	 * @member tinymce.EditorManager
+	 * @class tinymce.EditorManager
 	 */
 	tinymce.create('static tinymce.EditorManager', {
-		editors : {},
-		i18n : {},
-		activeEditor : null,
-
-		/**#@+
-		 * @method
+		/**
+		 * Collection of editor instances.
+		 *
+		 * @property editors
+		 * @type Object
 		 */
+		editors : {},
+
+		i18n : {},
+	
+		/**
+		 * Currently active editor instance.
+		 *
+		 * @property activeEditor
+		 * @type tinymce.Editor
+		 */
+		activeEditor : null,
 
 		/**
 		 * Preinitializes the EditorManager class. This method will be called automatically when the page loads and it
 		 * will setup some important paths and URIs and attach some document events.
+		 *
+		 * @method preInit
 		 */
 		preInit : function() {
 			var t = this, lo = window.location;
@@ -37,14 +50,6 @@
 
 			tinymce.baseURL = new tinymce.util.URI(tinymce.documentBaseURL).toAbsolute(tinymce.baseURL);
 			tinymce.EditorManager.baseURI = new tinymce.util.URI(tinymce.baseURL);
-
-			// User already specified a document.domain value
-			if (document.domain && lo.hostname != document.domain)
-				tinymce.relaxedDomain = document.domain;
-
-			// Setup document domain if tinymce is loaded from other domain
-			if (!tinymce.relaxedDomain && tinymce.EditorManager.baseURI.host != lo.hostname && lo.hostname)
-				document.domain = tinymce.relaxedDomain = lo.hostname.replace(/.*\.(.+\..+)$/, '$1');
 
 			// Add before unload listener
 			// This was required since IE was leaking memory if you added and removed beforeunload listeners
@@ -60,6 +65,7 @@
 		/**
 		 * Initializes a set of editors. This method will create a bunch of editors based in the input.
 		 *
+		 * @method init
 		 * @param {Object} s Settings object to be passed to each editor instance.
 		 */
 		init : function(s) {
@@ -101,10 +107,6 @@
 				// Load plugins
 				if (s.plugins) {
 					pl = explode(s.plugins);
-
-					// Load compat2x first
-					if (tinymce.inArray(pl, 'compat2x') != -1)
-						PluginManager.load('compat2x', 'plugins/compat2x/editor_plugin' + tinymce.suffix + '.js');
 
 					// Load rest if plugins
 					each(pl, function(v) {
@@ -251,6 +253,7 @@
 		/**
 		 * Returns a editor instance by id.
 		 *
+		 * @method get
 		 * @param {String} id Editor instance id to return.
 		 * @return {tinymce.Editor} Editor instance to return.
 		 */
@@ -261,16 +264,20 @@
 		/**
 		 * Returns a editor instance by id. This method was added for compatibility with the 2.x branch.
 		 *
+		 * @method getInstanceById
 		 * @param {String} id Editor instance id to return.
 		 * @return {tinymce.Editor} Editor instance to return.
+		 * @deprecated Use get method instead.
+		 * @see #get
 		 */
 		getInstanceById : function(id) {
 			return this.get(id);
 		},
 
 		/**
-		 * Adds an editor instance to the editor colleciton. This will also set it as the active editor.
+		 * Adds an editor instance to the editor collection. This will also set it as the active editor.
 		 *
+		 * @method add
 		 * @param {tinymce.Editor} e Editor instance to add to the collection.
 		 * @return {tinymce.Editor} The same instance that got passed in.
 		 */
@@ -284,6 +291,7 @@
 		/**
 		 * Removes a editor instance from the collection.
 		 *
+		 * @method remove
 		 * @param {tinymce.Editor} e Editor instance to remove.
 		 * @return {tinymce.Editor} The editor that got passed in will be return if it was found otherwise null.
 		 */
@@ -298,6 +306,8 @@
 
 			// Select another editor since the active one was removed
 			if (t.activeEditor == e) {
+				t._setActive(null);
+
 				each(t.editors, function(e) {
 					t._setActive(e);
 					return false; // Break
@@ -312,10 +322,11 @@
 		/**
 		 * Executes a specific command on the currently active editor.
 		 *
+		 * @method execCommand
 		 * @param {String} c Command to perform for example Bold.
-		 * @param {bool} u Optional boolean state if a UI should be presented for the command or not.
+		 * @param {Boolean} u Optional boolean state if a UI should be presented for the command or not.
 		 * @param {String} v Optional value parameter like for example an URL to a link.
-		 * @return {bool} true/false if the command was executed or not.
+		 * @return {Boolean} true/false if the command was executed or not.
 		 */
 		execCommand : function(c, u, v) {
 			var t = this, ed = t.get(v), w;
@@ -392,11 +403,13 @@
 		/**
 		 * Executes a command on a specific editor by id. This method was added for compatibility with the 2.x branch.
 		 *
+		 * @deprecated Use the execCommand method of a editor instance instead.
+		 * @method execInstanceCommand
 		 * @param {String} id Editor id to perform the command on.
 		 * @param {String} c Command to perform for example Bold.
-		 * @param {bool} u Optional boolean state if a UI should be presented for the command or not.
+		 * @param {Boolean} u Optional boolean state if a UI should be presented for the command or not.
 		 * @param {String} v Optional value parameter like for example an URL to a link.
-		 * @return {bool} true/false if the command was executed or not.
+		 * @return {Boolean} true/false if the command was executed or not.
 		 */
 		execInstanceCommand : function(id, c, u, v) {
 			var ed = this.get(id);
@@ -409,6 +422,8 @@
 
 		/**
 		 * Calls the save method on all editor instances in the collection. This can be useful when a form is to be submitted.
+		 *
+		 * @method triggerSave
 		 */
 		triggerSave : function() {
 			each(this.editors, function(e) {
@@ -419,6 +434,7 @@
 		/**
 		 * Adds a language pack, this gets called by the loaded language files like en.js.
 		 *
+		 * @method addI18n
 		 * @param {String} p Prefix for the language items. For example en.myplugin
 		 * @param {Object} o Name/Value collection with items to add to the language group.
 		 */
@@ -448,12 +464,16 @@
 		_setActive : function(e) {
 			this.selectedInstance = this.activeEditor = e;
 		}
-
-		/**#@-*/
 	});
 
 	tinymce.EditorManager.preInit();
-})();
+})(tinymce);
 
-// Short for editor manager window.tinyMCE is needed when TinyMCE gets loaded though a XHR call
+/**
+ * Shorter version of tinymce.EditorManager also added for 2.x compatibility.
+ *
+ * @member
+ * @property tinyMCE
+ * @type tinymce.EditorManager
+ */
 var tinyMCE = window.tinyMCE = tinymce.EditorManager;

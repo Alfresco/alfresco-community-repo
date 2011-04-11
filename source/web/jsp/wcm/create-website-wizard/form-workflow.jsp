@@ -24,7 +24,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid id="grid-1" columns="1" cellpadding="2" width="100%">
    <r:propertySheetGrid id="task-props" value="#{DialogManager.bean.workflowMetadataNode}" 
          var="taskProps" columns="1" externalConfig="true" />
 </h:panelGrid>

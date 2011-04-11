@@ -35,6 +35,8 @@ import javax.faces.validator.ValidatorException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.person.PersonServiceImpl;
+import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -950,32 +952,18 @@ public class CreateUserWizard extends BaseWizardBean
     
     public boolean checkTenantUserName()
     {
-        if (getTenantService().isEnabled())
-        {         
-            String currentDomain = getTenantService().getCurrentUserDomain();
-            
-            // note: getTenantService().getUserDomain(this.userName) checks whether tenant exists or not, which is not required here
-            String userDomain = TenantService.DEFAULT_DOMAIN;
-            int idx = this.userName.indexOf(TenantService.SEPARATOR);
-            if ((idx != -1) && (idx < (userName.length()-1)))
-            {
-                userDomain = userName.substring(idx+1);
-            }
-            
-            if ((! currentDomain.equals(TenantService.DEFAULT_DOMAIN)) && (userDomain.equals(TenantService.DEFAULT_DOMAIN)))
-            {
-                // force domain onto the end of the username
-                this.userName = getTenantService().getDomainUser(this.userName, currentDomain);
-                logger.warn("Added domain to username: " + this.userName);
-            }
-            else if (! currentDomain.equals(userDomain))
-            {
-                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), ERROR_DOMAIN_MISMATCH), currentDomain, userDomain));
-                return false;
-            }
+        try
+        {
+            this.userName = PersonServiceImpl.updateUsernameForTenancy(
+                    this.userName, getTenantService()
+            );
+            return true;
         }
-        
-        return true;
+        catch(TenantDomainMismatchException e)
+        {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), ERROR_DOMAIN_MISMATCH), e.getTenantA(), e.getTenantB()));
+            return false;
+        }
     }
     
     public Map getPersonPropertiesImmutability()

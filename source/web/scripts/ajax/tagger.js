@@ -592,7 +592,7 @@ var AlfTagger = new Class(
       }.bind(this);
 
       // execute ajax service call to retrieve list of child nodes as JSON response
-      new Ajax(getContextPath() + "/wcs/collaboration/tagActions?a=add&t=" + tagName,
+      new Ajax(getContextPath() + "/wcs/collaboration/tagActions?a=add&t=" + encodeURIComponent(tagName),
       {
          method: 'post',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

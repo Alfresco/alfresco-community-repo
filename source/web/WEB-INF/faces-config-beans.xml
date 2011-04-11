@@ -312,6 +312,10 @@
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>repoAdminService</property-name>
+         <value>#{RepoAdminService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

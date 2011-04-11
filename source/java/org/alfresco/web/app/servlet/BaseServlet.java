@@ -64,7 +64,11 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public abstract class BaseServlet extends HttpServlet
 {
+   private static final long serialVersionUID = -826295358696861789L;
+   
    public static final String FACES_SERVLET = "/faces";
+   public static final String KEY_STORE = "store";
+   public static final String KEY_ROOT_PATH = "rootPath";
    
    /** an existing Ticket can be passed to most servlet for non-session based authentication */
    private static final String ARG_TICKET   = "ticket";
@@ -382,7 +386,7 @@ public abstract class BaseServlet extends HttpServlet
                   
                   // TODO: since these constants are used more widely than just the WebDAVServlet, 
                   // they should be defined somewhere other than in that servlet
-                  String rootPath = wc.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_ROOT_PATH);
+                  String rootPath = wc.getServletContext().getInitParameter(BaseServlet.KEY_ROOT_PATH);
                   
                   // note: rootNodeRef is required (for storeRef part)
                   nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, nodeRef);

@@ -84,8 +84,9 @@ public class CreateGroupDialog extends BaseDialogBean
       {
          Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_EXISTS));
          outcome = null;
+         this.isFinished = false; 
       }
-
+      
       return outcome;
    }
 

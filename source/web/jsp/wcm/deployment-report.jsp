@@ -61,7 +61,7 @@
    
 </a:panel>
 
-<h:outputText value="<div style='padding-top:10px;'></div>" escape="false" />
+<h:outputText id="more-reports-bottom-div" value="<div style='padding-top:10px;'></div>" escape="false" />
 
 
 

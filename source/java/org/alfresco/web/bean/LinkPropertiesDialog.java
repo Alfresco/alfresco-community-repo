@@ -209,13 +209,6 @@ public class LinkPropertiesDialog extends BaseDialogBean
          
          // send the properties back to the repository
          this.getNodeService().setProperties(nodeRef, properties);
-         
-         // reset any document held by the browse bean as it's just been updated
-         // if this is a space link then it doesn't matter anyway
-         if (this.browseBean.getDocument() != null)
-         {
-            this.browseBean.getDocument().reset();
-         }
       }
       catch (InvalidNodeRefException err)
       {
@@ -236,4 +229,19 @@ public class LinkPropertiesDialog extends BaseDialogBean
       
       return outcome;
    }
+   
+   @Override 
+   protected String doPostCommitProcessing(FacesContext context, String outcome) 
+   { 
+      if (this.browseBean.getDocument() != null) 
+      { 
+         this.browseBean.getDocument().reset(); 
+      } 
+      else if (this.browseBean.getActionSpace() != null) 
+      { 
+         this.browseBean.getActionSpace().reset(); 
+      } 
+      
+      return outcome; 
+   } 
 }

@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
@@ -55,11 +56,6 @@ public class JBPMDeployProcessServlet extends HttpServlet
     private static final String BEAN_GLOBAL_PROPERTIES = "global-properties";
     private static final String PROP_ENABLED = "system.workflow.deployservlet.enabled";
 
-    
-
-    /* (non-Javadoc)
-     * @see javax.servlet.GenericServlet#init()
-     */
     @Override
     public void init() throws ServletException
     {
@@ -67,17 +63,14 @@ public class JBPMDeployProcessServlet extends HttpServlet
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         Properties globalProperties = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
         String enabled = globalProperties.getProperty(PROP_ENABLED);
-        if (enabled == null || !Boolean.parseBoolean(enabled))
+        if (!PropertyCheck.isValidPropertyString(enabled) || !Boolean.parseBoolean(enabled))
         {
             throw new UnavailableException("system.workflow.deployservlet.enabled=false");
         }
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    public void service(HttpServletRequest request, HttpServletResponse response)
-        throws IOException
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         try
         {
@@ -97,7 +90,6 @@ public class JBPMDeployProcessServlet extends HttpServlet
             response.getWriter().println("FileUploadException");
         }
     }
-
     
     /**
      * Retrieve the JBPM Process Designer deployment archive from the request
@@ -167,5 +159,4 @@ public class JBPMDeployProcessServlet extends HttpServlet
             return super.getBoundary(contentType.replace(",", ";"));
         }
     }
-    
 }

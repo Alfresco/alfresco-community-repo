@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -132,44 +134,48 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    /**
     * @see org.alfresco.web.bean.clipboard.ClipboardItem#paste(javax.faces.context.FacesContext, java.lang.String, int)
     */
-   public boolean paste(FacesContext fc, String viewId, int action)
-      throws Throwable
+   public boolean paste(final FacesContext fc, String viewId, final int action)
    {
+      final ServiceRegistry serviceRegistry = getServiceRegistry();
+      final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
       if (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
           FORUM_PASTE_VIEW_ID.equals(viewId))
       {
          NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
-         NodeRef destRef = new NodeRef(Repository.getStoreRef(), navigator.getCurrentNodeId());
+         final NodeRef destRef = new NodeRef(Repository.getStoreRef(), navigator.getCurrentNodeId());
 
-         DictionaryService dd = getServiceRegistry().getDictionaryService();
-         NodeService nodeService = getServiceRegistry().getNodeService();
-         FileFolderService fileFolderService = getServiceRegistry().getFileFolderService();
-         CopyService copyService = getServiceRegistry().getCopyService();
-         MultilingualContentService multilingualContentService = getServiceRegistry().getMultilingualContentService();
+         final DictionaryService dd = serviceRegistry.getDictionaryService();
+         final NodeService nodeService = serviceRegistry.getNodeService();
+         final FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+         final CopyService copyService = serviceRegistry.getCopyService();
+         final MultilingualContentService multilingualContentService = serviceRegistry.getMultilingualContentService();
         
-         boolean isPrimaryParent = true;
+         final boolean isPrimaryParent;
 
-         ChildAssociationRef assocRef = null;
+         final ChildAssociationRef assocRef;
 
          if (getParent() == null)
          {
              assocRef = nodeService.getPrimaryParent(getNodeRef());
+             isPrimaryParent = true;
          }
          else
          {
              NodeRef parentNodeRef = getParent();
              List<ChildAssociationRef> assocList = nodeService.getParentAssocs(getNodeRef());
+             ChildAssociationRef foundRef = null;
              if (assocList != null)
              {
-                 for (ChildAssociationRef assocListEntry : assocList)
-                 {
-                     if (parentNodeRef.equals(assocListEntry.getParentRef()))
-                     {
-                         assocRef = assocListEntry;
-                         break;
-                     }
-                 }
+                for (ChildAssociationRef assocListEntry : assocList)
+                {
+                   if (parentNodeRef.equals(assocListEntry.getParentRef()))
+                   {
+                      foundRef = assocListEntry;
+                      break;
+                   }
+                }
              }
+             assocRef = foundRef;
              isPrimaryParent = parentNodeRef.equals(nodeService.getPrimaryParent(getNodeRef()).getParentRef());
          }
   
@@ -184,258 +190,235 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
             name = linkTo + ' ' + name;
          }
 
-         boolean operationComplete = false;
-         while (operationComplete == false)
+         // Loop until we find a target name that doesn't exist
+         for(;;)
          {
-            UserTransaction tx = null;
             try
             {
+               final String currentTranslationPrefix = translationPrefix;
+               final String currentName = name;
+               
                // attempt each copy/paste in its own transaction
-               tx = Repository.getUserTransaction(fc, false);
-               tx.begin();
-               if (getMode() == ClipboardStatus.COPY)
+               retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
                {
-                  if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
+                  public Void execute() throws Throwable
                   {
-                     // LINK operation
-                     if (logger.isDebugEnabled())
-                        logger.debug("Attempting to link node ID: " + getNodeRef() + " into node: " + destRef.toString());
-
-                     // we create a special Link Object node that has a property to reference the original
-                     // create the node using the nodeService (can only use FileFolderService for content)
-                     if (checkExists(name + LINK_NODE_EXTENSION, destRef) == false)
+                     if (getMode() == ClipboardStatus.COPY)
                      {
-                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                        String newName = name + LINK_NODE_EXTENSION;
-                        props.put(ContentModel.PROP_NAME, newName);
-                        props.put(ContentModel.PROP_LINK_DESTINATION, getNodeRef());
-                        if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT))
+                        if (action == UIClipboardShelfItem.ACTION_PASTE_LINK)
                         {
-                           // create File Link node
-                           ChildAssociationRef childRef = nodeService.createNode(
-                                 destRef,
-                                 ContentModel.ASSOC_CONTAINS,
+                           // LINK operation
+                           if (logger.isDebugEnabled())
+                              logger.debug("Attempting to link node ID: " + getNodeRef() + " into node: " + destRef.toString());
+   
+                           // we create a special Link Object node that has a property to reference the original
+                           // create the node using the nodeService (can only use FileFolderService for content)
+                           if (checkExists(currentName + LINK_NODE_EXTENSION, destRef) == false)
+                           {
+                              Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+                              String newName = currentName + LINK_NODE_EXTENSION;
+                              props.put(ContentModel.PROP_NAME, newName);
+                              props.put(ContentModel.PROP_LINK_DESTINATION, getNodeRef());
+                              if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT))
+                              {
+                                 // create File Link node
+                                 ChildAssociationRef childRef = nodeService.createNode(
+                                       destRef,
+                                       ContentModel.ASSOC_CONTAINS,
                                  QName.createQName(assocRef.getQName().getNamespaceURI(), newName),
-                                 ApplicationModel.TYPE_FILELINK,
-                                 props);
-
-                           // apply the titled aspect - title and description
-                           Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
-                           titledProps.put(ContentModel.PROP_TITLE, name);
-                           titledProps.put(ContentModel.PROP_DESCRIPTION, name);
-                           nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_TITLED, titledProps);
+                                       ApplicationModel.TYPE_FILELINK,
+                                       props);
+   
+                                 // apply the titled aspect - title and description
+                                 Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
+                                 titledProps.put(ContentModel.PROP_TITLE, currentName);
+                                 titledProps.put(ContentModel.PROP_DESCRIPTION, currentName);
+                                 nodeService.addAspect(childRef.getChildRef(), ContentModel.ASPECT_TITLED, titledProps);
+                              }
+                              else
+                              {
+                                 // create Folder link node
+                                 ChildAssociationRef childRef = nodeService.createNode(
+                                       destRef,
+                                       ContentModel.ASSOC_CONTAINS,
+                                       assocRef.getQName(),
+                                       ApplicationModel.TYPE_FOLDERLINK,
+                                       props);
+   
+                                 // apply the uifacets aspect - icon, title and description props
+                                 Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
+                                 uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-link");
+                                 uiFacetsProps.put(ContentModel.PROP_TITLE, currentName);
+                                 uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, currentName);
+                                 nodeService.addAspect(childRef.getChildRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+                              }
+                           }
                         }
                         else
                         {
-                           // create Folder link node
-                           ChildAssociationRef childRef = nodeService.createNode(
-                                 destRef,
-                                 ContentModel.ASSOC_CONTAINS,
-                                 assocRef.getQName(),
-                                 ApplicationModel.TYPE_FOLDERLINK,
-                                 props);
-
-                           // apply the uifacets aspect - icon, title and description props
-                           Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4, 1.0f);
-                           uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-link");
-                           uiFacetsProps.put(ContentModel.PROP_TITLE, name);
-                           uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, name);
-                           nodeService.addAspect(childRef.getChildRef(), ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+                           // COPY operation
+                           if (logger.isDebugEnabled())
+                              logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
+   
+                           // first check that we are not attempting to copy a duplicate into the same parent
+                           if (destRef.equals(assocRef.getParentRef()) && currentName.equals(getName()))
+                           {
+                              // manually change the name if this occurs
+                              throw new FileExistsException(destRef, currentName);
+                           }
+   
+                           if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
+                               dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
+                           {
+                              // copy the file/folder
+                              fileFolderService.copy(
+                                    getNodeRef(),
+                                    destRef,
+                                    currentName);
+                           }
+                           else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+                           {
+                               // copy the mlContainer and its translations
+                               multilingualContentService.copyTranslationContainer(getNodeRef(), destRef, currentTranslationPrefix);
+                           }
+                           else
+                           {
+                              // copy the node
+                              if (checkExists(currentName, destRef) == false)
+                              {
+                                 copyService.copyAndRename(
+                                       getNodeRef(),
+                                       destRef,
+                                       ContentModel.ASSOC_CONTAINS,
+                                       assocRef.getQName(),
+                                       true);
+                              }
+                           }
                         }
-
-                        // if we get here without an exception, the clipboard link operation was successful
-                        operationComplete = true;
-                     }
-                  }
-                  else
-                  {
-                     // COPY operation
-                     if (logger.isDebugEnabled())
-                        logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
-
-                     // first check that we are not attempting to copy a duplicate into the same parent
-                     if (destRef.equals(assocRef.getParentRef()) && name.equals(getName()))
-                     {
-                        // manually change the name if this occurs
-                        String copyOf = Application.getMessage(fc, MSG_COPY_OF);
-                        name = copyOf + ' ' + name;
-                     }
-
-                     if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
-                         dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
-                     {
-                        // copy the file/folder
-                        fileFolderService.copy(
-                              getNodeRef(),
-                              destRef,
-                              name);
-                     }
-                     else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
-                     {
-                         // copy the mlContainer and its translations
-                         multilingualContentService.copyTranslationContainer(getNodeRef(), destRef, translationPrefix);
                      }
                      else
                      {
-                        // copy the node
-                        if (checkExists(name, destRef) == false)
+                        // MOVE operation
+                        if (logger.isDebugEnabled())
+                           logger.debug("Attempting to move node: " + getNodeRef() + " into node ID: " + destRef.toString());
+   
+                        if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
+                            dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
                         {
-                           copyService.copyAndRename(
-                                 getNodeRef(),
-                                 destRef,
-                                 ContentModel.ASSOC_CONTAINS,
-                                 assocRef.getQName(),
-                                 true);
+                           // move the file/folder
+                           fileFolderService.moveFrom(getNodeRef(), getParent(), destRef, currentName);
+                        }
+                        else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+                        {
+                            // copy the mlContainer and its translations
+                            multilingualContentService.moveTranslationContainer(getNodeRef(), destRef);
+                        }
+                        else
+                        {
+                           if (isPrimaryParent)
+                           {
+                              // move the node
+                              nodeService.moveNode(getNodeRef(), destRef, ContentModel.ASSOC_CONTAINS, assocRef.getQName());
+                           }
+                           else
+                           {
+                              nodeService.removeChild(getParent(), getNodeRef());
+                              nodeService.addChild(destRef, getNodeRef(), assocRef.getTypeQName(), assocRef.getQName());
+                           }
                         }
                      }
+                     return null;
+                  }
+               });
 
-                     // if we get here without an exception, the clipboard copy operation was successful
-                     operationComplete = true;
-                  }
-               }
-               else
-               {
-                  // MOVE operation
-                  if (logger.isDebugEnabled())
-                     logger.debug("Attempting to move node: " + getNodeRef() + " into node ID: " + destRef.toString());
-
-                  if (dd.isSubClass(getType(), ContentModel.TYPE_CONTENT) ||
-                      dd.isSubClass(getType(), ContentModel.TYPE_FOLDER))
-                  {
-                     // move the file/folder
-                     fileFolderService.move(getNodeRef(), getParent(), destRef, name);
-                  }
-                  else if(dd.isSubClass(getType(), ContentModel.TYPE_MULTILINGUAL_CONTAINER))
-                  {
-                      // copy the mlContainer and its translations
-                      multilingualContentService.moveTranslationContainer(getNodeRef(), destRef);
-                  }
-                  else
-                  {
-                      if (isPrimaryParent)
-                      {
-                          // move the node
-                          nodeService.moveNode(getNodeRef(), destRef, ContentModel.ASSOC_CONTAINS, assocRef.getQName());
-                      }
-                      else
-                      {
-                          nodeService.removeChild(getParent(), getNodeRef());
-                          nodeService.addChild(destRef, getNodeRef(), assocRef.getTypeQName(), assocRef.getQName());
-                      }
-                  }
-
-                  // if we get here without an exception, the clipboard move operation was successful
-                  operationComplete = true;
-               }
+               // We got here without error, so no need to loop with a new name
+               break;
             }
             catch (FileExistsException fileExistsErr)
             {
-               if (getMode() != ClipboardStatus.COPY)
+               // If mode is COPY, have another go around the loop with a new name
+               if (getMode() == ClipboardStatus.COPY)
+               {
+                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
+                  name = copyOf + ' ' + name;
+                  translationPrefix = copyOf + ' ' + translationPrefix;                  
+               }
+               else
                {
                    // we should not rename an item when it is being moved - so exit
                    throw fileExistsErr;
                }
             }
-            catch (Throwable e)
-            {
-               // some other type of exception occured - rollback and exit
-               throw e;
-            }
-            finally
-            {
-               // rollback if the operation didn't complete
-               if (operationComplete == false)
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
-                  name = copyOf + ' ' + name;
-                  translationPrefix = copyOf + ' ' + translationPrefix;
-               }
-               else
-               {
-                  // commit the transaction
-                  tx.commit();
-               }
-            }
          }
-         return operationComplete;
+         return true;
       }
       else if (AVM_PASTE_VIEW_ID.equals(viewId))
       {
          AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
 
-         String destPath = avmBrowseBean.getCurrentPath();
-         NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
+         final String destPath = avmBrowseBean.getCurrentPath();
+         final NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
 
-         CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
+         final CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
 
          // initial name to attempt the copy of the item with
          String name = getName();
 
-         boolean operationComplete = false;
-         while (operationComplete == false)
+         for(;;)
          {
-            UserTransaction tx = null;
             try
             {
-               // attempt each copy/paste in its own transaction
-               tx = Repository.getUserTransaction(fc, false);
-               tx.begin();
-               if (getMode() == ClipboardStatus.COPY)
-               {
-                  // COPY operation
-                  if (logger.isDebugEnabled())
-                     logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
+               final String currentName = name;
 
-                  // inter-store copy operation
-                  crossRepoCopyService.copy(getNodeRef(), destRef, name);
-                  
-                  if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                  {
-                      // ETHREEOH-2110
-                      AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + name);
-                      recursiveFormCheck(desc);
-                  }
-                  
-                  // if we get here without an exception, the clipboard copy operation was successful
-                  operationComplete = true;
-               }
-               else
+               // attempt each copy/paste in its own transaction
+               retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
                {
-                  // this should not occur as the canMoveToViewId() will return false
-                  throw new Exception("Move operation not supported between stores.");
-               }
+                  public Void execute() throws Throwable
+                  {
+                     if (getMode() == ClipboardStatus.COPY)
+                     {
+                        // COPY operation
+                        if (logger.isDebugEnabled())
+                           logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
+      
+                        // inter-store copy operation
+                        crossRepoCopyService.copy(getNodeRef(), destRef, currentName);
+                  
+                        if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                        {
+                            // ETHREEOH-2110
+                            AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + currentName);
+                            recursiveFormCheck(desc);
+                        }
+                     }
+                     else
+                     {
+                        // this should not occur as the canMoveToViewId() will return false
+                        throw new Exception("Move operation not supported between stores.");
+                     }                  
+                     return null;               
+                  }
+               });
+
+               // We got here without error, so no need to loop with a new name
+               break;
             }
             catch (FileExistsException fileExistsErr)
             {
-               if (getMode() != ClipboardStatus.COPY)
+               // If mode is COPY, have another go around the loop with a new name
+               if (getMode() == ClipboardStatus.COPY)
+               {
+                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
+                  name = copyOf + ' ' + name;                  
+               }
+               else
                {
                    // we should not rename an item when it is being moved - so exit
                    throw fileExistsErr;
                }
             }
-            catch (Throwable e)
-            {
-               // some other type of exception occured - rollback and exit
-               throw e;
-            }
-            finally
-            {
-               // rollback if the operation didn't complete
-               if (operationComplete == false)
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
-                  name = copyOf + ' ' + name;
-               }
-               else
-               {
-                  // commit the transaction
-                  tx.commit();
-               }
-            }
          }
-         return operationComplete;
+         return true;
       }
       else
       {

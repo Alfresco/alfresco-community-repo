@@ -1,5 +1,5 @@
 /**
- * $Id: Popup.js 920 2008-09-09 14:05:33Z spocke $
+ * $Id: Popup.js 1204 2009-08-19 12:12:07Z spocke $
  *
  * @author Moxiecode
  * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
@@ -8,34 +8,22 @@
 // Some global instances
 var tinymce = null, tinyMCEPopup, tinyMCE;
 
-/**#@+
- * @class TinyMCE popup/dialog helper class. This gives you easy access to the
+/**
+ * TinyMCE popup/dialog helper class. This gives you easy access to the
  * parent editor instance and a bunch of other things. It's higly recommended
  * that you load this script into your dialogs.
  *
  * @static
- * @member tinyMCEPopup
+ * @class tinyMCEPopup
  */
 tinyMCEPopup = {
-	/**#@+
-	 * @method
-	 */
-
 	/**
 	 * Initializes the popup this will be called automatically.
+	 *
+	 * @method init
 	 */
 	init : function() {
-		var t = this, w, ti, li, q, i, it;
-
-		li = ('' + document.location.search).replace(/^\?/, '').split('&');
-		q = {};
-		for (i=0; i<li.length; i++) {
-			it = li[i].split('=');
-			q[unescape(it[0])] = unescape(it[1]);
-		}
-
-		if (q.mce_rdomain)
-			document.domain = q.mce_rdomain;
+		var t = this, w, ti;
 
 		// Find window & API
 		w = t.getWin();
@@ -68,15 +56,18 @@ tinyMCEPopup = {
 	/**
 	 * Returns the reference to the parent window that opened the dialog.
 	 *
+	 * @method getWin
 	 * @return {Window} Reference to the parent window that opened the dialog.
 	 */
 	getWin : function() {
-		return window.dialogArguments || opener || parent || top;
+		// Added frameElement check to fix bug: #2817583
+		return (!window.frameElement && window.dialogArguments) || opener || parent || top;
 	},
 
 	/**
 	 * Returns a window argument/parameter by name.
 	 *
+	 * @method getWindowArg
 	 * @param {String} n Name of the window argument to retrive.
 	 * @param {String} dv Optional default value to return.
 	 * @return {String} Argument value or default value if it wasn't found.
@@ -90,6 +81,7 @@ tinyMCEPopup = {
 	/**
 	 * Returns a editor parameter/config option value.
 	 *
+	 * @method getParam
 	 * @param {String} n Name of the editor config option to retrive.
 	 * @param {String} dv Optional default value to return.
 	 * @return {String} Parameter value or default value if it wasn't found.
@@ -101,6 +93,7 @@ tinyMCEPopup = {
 	/**
 	 * Returns a language item by key.
 	 *
+	 * @method getLang
 	 * @param {String} n Language item like mydialog.something.
 	 * @param {String} dv Optional default value to return.
 	 * @return {String} Language value for the item like "my string" or the default value if it wasn't found.
@@ -112,8 +105,9 @@ tinyMCEPopup = {
 	/**
 	 * Executed a command on editor that opened the dialog/popup.
 	 *
+	 * @method execCommand
 	 * @param {String} cmd Command to execute.
-	 * @param {bool} ui Optional boolean value if the UI for the command should be presented or not.
+	 * @param {Boolean} ui Optional boolean value if the UI for the command should be presented or not.
 	 * @param {Object} val Optional value to pass with the comman like an URL.
 	 * @param {Object} a Optional arguments object.
 	 */
@@ -128,6 +122,8 @@ tinyMCEPopup = {
 	/**
 	 * Resizes the dialog to the inner size of the window. This is needed since various browsers
 	 * have different border sizes on windows.
+	 *
+	 * @method resizeToInnerSize
 	 */
 	resizeToInnerSize : function() {
 		var t = this, n, b = document.body, vp = t.dom.getViewPort(window), dw, dh;
@@ -145,6 +141,7 @@ tinyMCEPopup = {
 	 * Will executed the specified string when the page has been loaded. This function
 	 * was added for compatibility with the 2.x branch.
 	 *
+	 * @method executeOnLoad
 	 * @param {String} s String to evalutate on init.
 	 */
 	executeOnLoad : function(s) {
@@ -156,14 +153,18 @@ tinyMCEPopup = {
 	/**
 	 * Stores the current editor selection for later restoration. This can be useful since some browsers
 	 * looses it's selection if a control element is selected/focused inside the dialogs.
+	 *
+	 * @method storeSelection
 	 */
 	storeSelection : function() {
-		this.editor.windowManager.bookmark = tinyMCEPopup.editor.selection.getBookmark('simple');
+		this.editor.windowManager.bookmark = tinyMCEPopup.editor.selection.getBookmark(1);
 	},
 
 	/**
 	 * Restores any stored selection. This can be useful since some browsers
 	 * looses it's selection if a control element is selected/focused inside the dialogs.
+	 *
+	 * @method restoreSelection
 	 */
 	restoreSelection : function() {
 		var t = tinyMCEPopup;
@@ -175,12 +176,14 @@ tinyMCEPopup = {
 	/**
 	 * Loads a specific dialog language pack. If you pass in plugin_url as a arugment
 	 * when you open the window it will load the <plugin url>/langs/<code>_dlg.js lang pack file.
+	 *
+	 * @method requireLangPack
 	 */
 	requireLangPack : function() {
-		var u = this.getWindowArg('plugin_url') || this.getWindowArg('theme_url');
+		var t = this, u = t.getWindowArg('plugin_url') || t.getWindowArg('theme_url');
 
-		if (u && this.editor.settings.language) {
-			u += '/langs/' + this.editor.settings.language + '_dlg.js';
+		if (u && t.editor.settings.language && t.features.translate_i18n !== false) {
+			u += '/langs/' + t.editor.settings.language + '_dlg.js';
 
 			if (!tinymce.ScriptLoader.isDone(u)) {
 				document.write('<script type="text/javascript" src="' + tinymce._addVer(u) + '"></script>');
@@ -193,6 +196,7 @@ tinyMCEPopup = {
 	 * Executes a color picker on the specified element id. When the user
 	 * then selects a color it will be set as the value of the specified element.
 	 *
+	 * @method pickColor
 	 * @param {DOMEvent} e DOM event object.
 	 * @param {string} element_id Element id to be filled with the color value from the picker.
 	 */
@@ -215,6 +219,7 @@ tinyMCEPopup = {
 	 * Opens a filebrowser/imagebrowser this will set the output value from
 	 * the browser as a value on the specified element.
 	 *
+	 * @method openBrowser
 	 * @param {string} element_id Id of the element to set value in.
 	 * @param {string} type Type of browser to open image/file/flash.
 	 * @param {string} option Option name to get the file_broswer_callback function name from.
@@ -228,6 +233,7 @@ tinyMCEPopup = {
 	 * Creates a confirm dialog. Please don't use the blocking behavior of this
 	 * native version use the callback method instead then it can be extended.
 	 *
+	 * @method confirm
 	 * @param {String} t Title for the new confirm dialog.
 	 * @param {function} cb Callback function to be executed after the user has selected ok or cancel.
 	 * @param {Object} s Optional scope to execute the callback in.
@@ -240,6 +246,7 @@ tinyMCEPopup = {
 	 * Creates a alert dialog. Please don't use the blocking behavior of this
 	 * native version use the callback method instead then it can be extended.
 	 *
+	 * @method alert
 	 * @param {String} t Title for the new alert dialog.
 	 * @param {function} cb Callback function to be executed after the user has selected ok.
 	 * @param {Object} s Optional scope to execute the callback in.
@@ -250,6 +257,8 @@ tinyMCEPopup = {
 
 	/**
 	 * Closes the current window.
+	 *
+	 * @method close
 	 */
 	close : function() {
 		var t = this;
@@ -284,7 +293,12 @@ tinyMCEPopup = {
 	},*/
 
 	_onDOMLoaded : function() {
-		var t = this, ti = document.title, bm, h, nv;
+		var t = tinyMCEPopup, ti = document.title, bm, h, nv;
+
+		if (t.domLoaded)
+			return;
+
+		t.domLoaded = 1;
 
 		// Translate page
 		if (t.features.translate_i18n !== false) {
@@ -306,8 +320,12 @@ tinyMCEPopup = {
 		document.body.style.display = '';
 
 		// Restore selection in IE when focus is placed on a non textarea or input element of the type text
-		if (tinymce.isIE)
+		if (tinymce.isIE) {
 			document.attachEvent('onmouseup', tinyMCEPopup._restoreSelection);
+
+			// Add base target element for it since it would fail with modal dialogs
+			t.dom.add(t.dom.select('head')[0], 'base', {target : '_self'});
+		}
 
 		t.restoreSelection();
 		t.resizeToInnerSize();
@@ -374,30 +392,37 @@ tinyMCEPopup = {
 	},
 
 	_wait : function() {
-		var t = this, ti;
-
-		if (tinymce.isIE && document.location.protocol != 'https:') {
-			// Fake DOMContentLoaded on IE
-			document.write('<script id=__ie_onload defer src=\'javascript:""\';><\/script>');
-			document.getElementById("__ie_onload").onreadystatechange = function() {
-				if (this.readyState == "complete") {
-					t._onDOMLoaded();
-					document.getElementById("__ie_onload").onreadystatechange = null; // Prevent leak
+		// Use IE method
+		if (document.attachEvent) {
+			document.attachEvent("onreadystatechange", function() {
+				if (document.readyState === "complete") {
+					document.detachEvent("onreadystatechange", arguments.callee);
+					tinyMCEPopup._onDOMLoaded();
 				}
-			};
-		} else {
-			if (tinymce.isIE || tinymce.isWebKit) {
-				ti = setInterval(function() {
-					if (/loaded|complete/.test(document.readyState)) {
-						clearInterval(ti);
-						t._onDOMLoaded();
+			});
+
+			if (document.documentElement.doScroll && window == window.top) {
+				(function() {
+					if (tinyMCEPopup.domLoaded)
+						return;
+
+					try {
+						// If IE is used, use the trick by Diego Perini
+						// http://javascript.nwbox.com/IEContentLoaded/
+						document.documentElement.doScroll("left");
+					} catch (ex) {
+						setTimeout(arguments.callee, 0);
+						return;
 					}
-				}, 10);
-			} else {
-				window.addEventListener('DOMContentLoaded', function() {
-					t._onDOMLoaded();
-				}, false);
+
+					tinyMCEPopup._onDOMLoaded();
+				})();
 			}
+
+			document.attachEvent('onload', tinyMCEPopup._onDOMLoaded);
+		} else if (document.addEventListener) {
+			window.addEventListener('DOMContentLoaded', tinyMCEPopup._onDOMLoaded, false);
+			window.addEventListener('load', tinyMCEPopup._onDOMLoaded, false);
 		}
 	}
 };

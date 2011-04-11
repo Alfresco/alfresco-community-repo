@@ -20,6 +20,8 @@
 package org.alfresco.web.ui.common.tag;
 
 import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.el.ValueBinding;
 
 import org.apache.myfaces.taglib.html.HtmlInputTextTag;
 
@@ -44,13 +46,26 @@ public class UploadInputTag extends HtmlInputTextTag
       return "javax.faces.Text";
    }
 
-   protected void setProperties(UIComponent component)
-   {
-      super.setProperties(component);
-      setStringProperty(component, "framework", this.framework);
-      setBooleanProperty(component, "immediate", "true");
-      setStringProperty(component, "style", "display:none;");
-   }
+    @SuppressWarnings("unchecked")
+    protected void setProperties(UIComponent component)
+    {
+        super.setProperties(component);
+        FacesContext context = getFacesContext();
+        if (null != framework)
+        {
+            if (isValueReference(framework))
+            {
+                ValueBinding vb = context.getApplication().createValueBinding(framework);
+                component.setValueBinding("maxlength", vb);
+            }
+            else
+            {
+                component.getAttributes().put("framework", framework);
+            }
+        } 
+        component.getAttributes().put("immediate", true);
+        component.getAttributes().put("style", "display:none;");
+    }
 
    public void release()
    {

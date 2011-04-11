@@ -132,9 +132,9 @@ if (Application.getWizardManager().getState() == null)
                                  <tr>
                                     <td style="width: 100%;" valign="top">
                                        <f:subview id="wizard-body">
-                                       <h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
-                              		 <jsp:include page="<%=Application.getWizardManager().getPage() %>" />
-                              	       </f:subview>
+                                          <h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
+                                          <jsp:include page="<%=Application.getWizardManager().getPage() %>" />
+                              	      </f:subview>
                                     </td>
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>

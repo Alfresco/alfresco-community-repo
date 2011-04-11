@@ -35,7 +35,7 @@
 </f:verbatim>
 <h:panelGroup id="dashboard-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalChange">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalTmp">
          <r:actionInstanceEvaluator id="eval1" value="#{DialogManager.bean.document}" evaluatorClassName="org.alfresco.web.action.evaluator.UnlockedDocEvaluator">
             <a:actionLink id="actModify" value="#{msg.modify}" action="dialog:applyDocTemplate" showLink="false" image="/images/icons/preview.gif" style="padding-right:8px" />
             <a:actionLink id="actRemove" value="#{msg.remove}" actionListener="#{DialogManager.bean.removeTemplate}" showLink="false" image="/images/icons/delete.gif" />
@@ -93,7 +93,7 @@
 
 <h:panelGroup id="props-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalModify">
          <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="#{DialogManager.bean.editContentProperties}" />
       </r:permissionEvaluator>
    </f:facet>
@@ -159,7 +159,7 @@
 <%-- Multilingual properties --%>
 <h:panelGroup id="ml-props-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="WriteProperties" id="evalML">
          <a:actionLink id="titleLinkMl" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="dialog:editMlContainer" />
       </r:permissionEvaluator>
    </f:facet>
@@ -173,7 +173,7 @@
    <f:verbatim>
       <div style="padding: 4px"></div>
    </f:verbatim>
-   <h:outputText value="#{msg.properties}" styleClass="nodeWorkflowInfoTitle" style="padding:20px;" />
+   <h:outputText id="nowfinfo" value="#{msg.properties}" styleClass="nodeWorkflowInfoTitle" style="padding:20px;" />
    <f:verbatim>
       <div style="padding: 4px"></div>
    </f:verbatim>
@@ -197,10 +197,10 @@
          <%-- Name and icon columns --%>
          <a:column id="col21" primary="true" width="300" style="text-align:left">
             <f:facet name="small-icon">
-               <h:graphicImage url="/images/filetypes/_default.gif" width="16" height="16" />
+               <h:graphicImage id="gfx0" url="/images/filetypes/_default.gif" width="16" height="16" />
             </f:facet>
             <f:facet name="header">
-               <a:sortLink label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header" />
+               <a:sortLink id="sort5" label="#{msg.name}" value="Name" mode="case-insensitive" styleClass="header" />
             </f:facet>
             <a:actionLink id="view-name" value="#{r.name}" href="#{r.url}" target="new" />
          </a:column>
@@ -208,7 +208,7 @@
          <%-- Language columns --%>
          <a:column id="col22" width="50" style="text-align:left">
             <f:facet name="header">
-               <a:sortLink label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header" />
+               <a:sortLink id="sort6" label="#{msg.language}" value="language" mode="case-insensitive" styleClass="header" />
             </f:facet>
             <h:outputText id="view-language" value="#{r.language}" />
          </a:column>
@@ -216,15 +216,13 @@
          <%-- view actions --%>
          <a:column id="col25" style="text-align: left">
             <f:facet name="header">
-               <h:outputText value="#{msg.actions}" />
+               <h:outputText id="txt0" value="#{msg.actions}" />
             </f:facet>
-            <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" />
-            <%--
-                                             Start the new edition wizard from this translation
-                                          --%>
-            <h:outputText id="space" value=" " />
+            <a:actionLink id="view-link1" value="#{msg.view}" href="#{r.url}" target="new" />
+            <%-- Start the new edition wizard from this translation --%>
+            <h:outputText id="space1" value=" " />
             <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.userHasRight}">
-               <f:param name="lang" value="#{r.language}" />
+               <f:param name="lang" value="#{r.language}" id="param0" />
             </a:actionLink>
          </a:column>
 
@@ -233,7 +231,7 @@
    </a:panel>
 
    <%-- Actions - Add Translation, Add Translation with Content --%>
-   <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
+   <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply1">
       <f:verbatim>
          <div style="padding: 16px">
       </f:verbatim>
@@ -250,7 +248,7 @@
    expanded='#{DialogManager.bean.panels["ml-info-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
    <h:outputText id="no-ml-msg" value="#{msg.not_multilingual}" />
    <%-- Action - Add Translation --%>
-   <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
+   <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply2">
       <f:verbatim>
          <div style="padding: 16px"></f:verbatim><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" rendered="#{DialogManager.bean.locked == false && DialogManager.bean.workingCopy == false}"/><f:verbatim></div>
       </f:verbatim>
@@ -263,7 +261,7 @@
 
 <h:panelGroup id="workflow-panel-facets">
    <f:facet name="title">
-      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
+      <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalWf">
          <a:actionLink id="titleLink2" value="#{msg.title_edit_simple_workflow}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editContentSimpleWorkflow" rendered="#{DialogManager.bean.approveStepName != null}" />
       </r:permissionEvaluator>
    </f:facet>
@@ -281,7 +279,7 @@
    <f:facet name="title">
       <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="eval_cat0">
          <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editNodeCategories" actionListener="#{DialogManager.setupParameters}">
-            <f:param name="nodeRef" value="#{DialogManager.bean.document.nodeRefAsString}" />
+            <f:param name="nodeRef" value="#{DialogManager.bean.document.nodeRefAsString}" id="param1" />
          </a:actionLink>
       </r:permissionEvaluator>
    </f:facet>
@@ -314,7 +312,7 @@
       <%-- Primary column for details view mode --%>
       <a:column id="col1" primary="true" width="100" style="padding:2px;text-align:left">
          <f:facet name="header">
-            <a:sortLink label="#{msg.version}" value="versionLabel" mode="case-insensitive" styleClass="header" />
+            <a:sortLink id="sort1" label="#{msg.version}" value="versionLabel" mode="case-insensitive" styleClass="header" />
          </f:facet>
          <a:actionLink id="label-link" value="#{r.versionLabel}" href="#{r.url}" target="new" rendered="#{r.url != null}" />
          <a:actionLink id="label-no-link" value="#{r.versionLabel}" rendered="#{r.url == null}" />
@@ -323,7 +321,7 @@
       <%-- Version notes columns --%>
       <a:column id="col2" width="170" style="text-align:left">
          <f:facet name="header">
-            <a:sortLink label="#{msg.notes}" value="notes" styleClass="header" />
+            <a:sortLink id="sort2" label="#{msg.notes}" value="notes" styleClass="header" />
          </f:facet>
          <h:outputText id="notes" value="#{r.notes}" />
       </a:column>
@@ -331,7 +329,7 @@
       <%-- Description columns --%>
       <a:column id="col3" style="text-align:left">
          <f:facet name="header">
-            <a:sortLink label="#{msg.author}" value="author" styleClass="header" />
+            <a:sortLink id="sort3" label="#{msg.author}" value="author" styleClass="header" />
          </f:facet>
          <h:outputText id="author" value="#{r.author}" />
       </a:column>
@@ -339,7 +337,7 @@
       <%-- Created Date column for details view mode --%>
       <a:column id="col4" style="text-align:left; white-space:nowrap">
          <f:facet name="header">
-            <a:sortLink label="#{msg.date}" value="versionDate" styleClass="header" />
+            <a:sortLink id="sort4" label="#{msg.date}" value="versionDate" styleClass="header" />
          </f:facet>
          <h:outputText id="date" value="#{r.versionDate}">
             <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
@@ -349,14 +347,14 @@
       <%-- view the contents of the specific version --%>
       <a:column id="col5" style="text-align: left">
          <f:facet name="header">
-            <h:outputText value="#{msg.actions}" />
+            <h:outputText id="txt1" value="#{msg.actions}" />
          </f:facet>
          <a:actionLink id="view-version-props" value="#{msg.properties}" action="dialog:showVersionedDetails" actionListener="#{VersionedDocumentDetailsDialog.setBrowsingVersion}">
             <f:param id="pm1" name="id" value="#{DialogManager.bean.document.id}" />
             <f:param id="pm2" name="versionLabel" value="#{r.versionLabel}" />
          </a:actionLink>
-         <h:outputText id="space" value=" " />
-         <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}" />
+         <h:outputText id="space2" value=" " />
+         <a:actionLink id="view-link2" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}" />
       </a:column>
 
       <a:dataPager styleClass="pager" id="pager-version-history" />

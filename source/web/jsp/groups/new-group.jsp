@@ -69,7 +69,6 @@
    }
 
 </script>
-<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />   
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
 <tr>
 <td colspan="2" class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.group_props}" /><f:verbatim></td>

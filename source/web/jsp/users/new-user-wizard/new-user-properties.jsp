@@ -88,7 +88,6 @@ function validate()
 }
 
 </script>
-<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
 </f:verbatim>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"

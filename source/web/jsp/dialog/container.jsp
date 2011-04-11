@@ -190,8 +190,8 @@ if (Application.getDialogManager().getState() == null)
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <f:subview id="dialog-body">
-                              	<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
-                              	<jsp:include page="<%=Application.getDialogManager().getPage() %>" />
+                                 <h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
+                                 <jsp:include page="<%=Application.getDialogManager().getPage() %>" />
                               </f:subview>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
                            </td>

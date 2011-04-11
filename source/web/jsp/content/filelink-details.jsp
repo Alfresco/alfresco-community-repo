@@ -60,9 +60,9 @@
 
       <h:panelGroup id="props-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
+            <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalChange">
                <a:actionLink id="titleLink10" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editLinkProperties" actionListener="#{DialogManager.setupParameters}" >
-                   <f:param name="nodeRef" value="#{DialogManager.bean.document.nodeRefAsString}" />
+                   <f:param name="nodeRef" value="#{DialogManager.bean.document.nodeRefAsString}" id="param1" />
                </a:actionLink>
             </r:permissionEvaluator>
          </f:facet>

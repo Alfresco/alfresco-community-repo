@@ -21,14 +21,14 @@ package org.alfresco.web.ui.common.component;
 import java.io.IOException;
 
 import javax.faces.component.NamingContainer;
-import javax.faces.component.UIInput;
+import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 
-public class UploadInput extends UIInput implements NamingContainer
+public class UploadInput extends HtmlInputText implements NamingContainer
 {
    private static final long serialVersionUID = 4064734856565167835L;
 

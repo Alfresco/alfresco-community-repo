@@ -53,15 +53,15 @@
 <h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.first_name}:"/>
-   <h:inputText id="firstName" value="#{WizardManager.bean.firstName}" disabled="#{WizardManager.bean.personPropertiesImmutability.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="firstName" value="#{WizardManager.bean.firstName}" disabled="#{WizardManager.bean.personPropertiesImmutability.firstName == true}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.last_name}:"/>
-   <h:inputText id="lastName" value="#{WizardManager.bean.lastName}" disabled="#{WizardManager.bean.personPropertiesImmutability.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="lastName" value="#{WizardManager.bean.lastName}" disabled="#{WizardManager.bean.personPropertiesImmutability.lastName == true}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.email}"/>
-   <h:inputText id="email" value="#{WizardManager.bean.email}" disabled="#{WizardManager.bean.personPropertiesImmutability.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="email" value="#{WizardManager.bean.email}" disabled="#{WizardManager.bean.personPropertiesImmutability.email == true}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
@@ -74,23 +74,23 @@
    <h:inputText value="#{WizardManager.bean.companyId}" size="35" maxlength="1024" />
    
    <h:outputText value="#{msg.user_organization}:"/>
-   <h:inputText id="organisation" value="#{WizardManager.bean.organization}" disabled="#{WizardManager.bean.personPropertiesImmutability.organization}" size="35" maxlength="1024" />
+   <h:inputText id="organisation" value="#{WizardManager.bean.organization}" disabled="#{WizardManager.bean.personPropertiesImmutability.organization == true}" size="35" maxlength="1024" />
    
    <h:outputText value="#{msg.user_jobtitle}:"/>
-   <h:inputText id="jobtitle" value="#{WizardManager.bean.jobtitle}" disabled="#{WizardManager.bean.personPropertiesImmutability.jobtitle}" size="35" maxlength="1024" />
+   <h:inputText id="jobtitle" value="#{WizardManager.bean.jobtitle}" disabled="#{WizardManager.bean.personPropertiesImmutability.jobtitle == true}" size="35" maxlength="1024" />
    
    <h:outputText value="#{msg.user_location}:"/>
-   <h:inputText id="location" value="#{WizardManager.bean.location}" disabled="#{WizardManager.bean.personPropertiesImmutability.location}" size="35" maxlength="1024" />
+   <h:inputText id="location" value="#{WizardManager.bean.location}" disabled="#{WizardManager.bean.personPropertiesImmutability.location == true}" size="35" maxlength="1024" />
    
    <h:outputText value="#{msg.presence_provider}:" />
-   <h:selectOneMenu value="#{WizardManager.bean.presenceProvider}" disabled="#{WizardManager.bean.personPropertiesImmutability.presenceProvider}">
+   <h:selectOneMenu value="#{WizardManager.bean.presenceProvider}" disabled="#{WizardManager.bean.personPropertiesImmutability.presenceProvider == true}">
 		<f:selectItem itemValue="" itemLabel="(#{msg.none})"/>
 		<f:selectItem itemValue="skype" itemLabel="Skype"/>
 		<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
 	</h:selectOneMenu>
 	
 	<h:outputText value="#{msg.presence_username}:"/>
-	<h:inputText value="#{WizardManager.bean.presenceUsername}" disabled="#{WizardManager.bean.personPropertiesImmutability.presenceUsername}" size="35" maxlength="256" />
+	<h:inputText value="#{WizardManager.bean.presenceUsername}" disabled="#{WizardManager.bean.personPropertiesImmutability.presenceUsername == true}" size="35" maxlength="256" />
 	
 	<h:outputText value="#{msg.sizeQuota}:" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
 	<h:panelGroup>

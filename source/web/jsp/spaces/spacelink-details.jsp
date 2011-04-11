@@ -55,9 +55,9 @@
       <%-- wrapper comment used by the panel to add additional component facets --%> 
       <h:panelGroup id="props-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write">
+            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write" id="evalProps">
                <a:actionLink id="titleLink10" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editLinkProperties" actionListener="#{DialogManager.setupParameters}" >
-                <f:param name="nodeRef" value="#{DialogManager.bean.space.nodeRefAsString}" />
+                <f:param name="nodeRef" value="#{DialogManager.bean.space.nodeRefAsString}" id="param0" />
                </a:actionLink>
             </r:permissionEvaluator>
          </f:facet>

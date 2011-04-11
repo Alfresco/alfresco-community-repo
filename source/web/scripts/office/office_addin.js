@@ -115,7 +115,7 @@ var OfficeAddin =
    
       OfficeAddin.showStatusText("Running action...", "ajax_anim.gif", false);
       var actionURL = useTemplate + "?a=" + action + "&n=" + nodeId;
-      if ((inParams !== null) && (inParams !== ""))
+      if (inParams && inParams !== "")
       {
          actionURL += "&" + inParams;
       }
@@ -134,12 +134,12 @@ var OfficeAddin =
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
                href += "st=" + encodeURIComponent(textResponse);
-               if ((outParams !== null) && (outParams !== ""))
+               if (outParams && outParams !== "")
                {
                   href += "&" + outParams;
                }
             }
-            window.location.href = href;
+            window.location.href = href.replace(/&undefined/g, "");
          }
       }).request();
    },

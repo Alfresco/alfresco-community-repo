@@ -251,7 +251,7 @@
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
                            <h:outputFormat id="no-space-items" value="#{msg.no_space_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
-                              <f:param value="#{msg.create_space}" />
+                              <f:param id="param-cp" value="#{msg.create_space}" />
                            </h:outputFormat>
                         </f:facet>
                         
@@ -262,11 +262,11 @@
                            </f:facet>
                            <f:facet name="small-icon">
                               <a:actionLink id="col1-act1" value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
-                                 <f:param name="id" value="#{r.id}" />
+                                 <f:param name="id" value="#{r.id}" id="param3" />
                               </a:actionLink>
                            </f:facet>
                            <a:actionLink id="col1-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}">
-                              <f:param name="id" value="#{r.id}" />
+                              <f:param name="id" value="#{r.id}" id="param4" />
                            </a:actionLink>
                            <r:nodeInfo id="col1-info" value="#{r.id}">
                               <h:graphicImage id="col1-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
@@ -277,11 +277,11 @@
                         <a:column id="col2" primary="true" style="padding:2px;text-align:left;vertical-align:top;" rendered="#{BrowseBean.browseViewMode == 'icons'}">
                            <f:facet name="large-icon">
                               <a:actionLink id="col2-act1" value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
-                                 <f:param name="id" value="#{r.id}" />
+                                 <f:param name="id" value="#{r.id}" id="param5" />
                               </a:actionLink>
                            </f:facet>
                            <a:actionLink id="col2-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="header">
-                              <f:param name="id" value="#{r.id}" />
+                              <f:param name="id" value="#{r.id}" id="param6" />
                            </a:actionLink>
                            <r:nodeInfo id="col2-info" value="#{r.id}">
                               <h:graphicImage id="col2-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
@@ -292,11 +292,11 @@
                         <a:column id="col3" primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'list'}">
                            <f:facet name="large-icon">
                               <a:actionLink id="col3-act1" value="#{r.name}" image="/images/icons/#{r.icon}.gif" actionListener="#{BrowseBean.clickSpace}" showLink="false">
-                                 <f:param name="id" value="#{r.id}" />
+                                 <f:param name="id" value="#{r.id}" id="param7" />
                               </a:actionLink>
                            </f:facet>
                            <a:actionLink id="col3-act2" value="#{r.name}" actionListener="#{BrowseBean.clickSpace}" styleClass="title">
-                              <f:param name="id" value="#{r.id}" />
+                              <f:param name="id" value="#{r.id}" id="param8" />
                            </a:actionLink>
                            <r:nodeInfo id="col3-info" value="#{r.id}">
                               <h:graphicImage id="col3-img" url="/images/icons/popup.gif" styleClass="popupImage" width="16" height="16" />
@@ -397,8 +397,8 @@
                         <f:facet name="empty">
                            <%-- TODO: either build complete message in BrowseBean or have no icon... --%>
                            <h:outputFormat id="no-content-items" value="#{msg.no_content_items}" escape="false" rendered="#{NavigationBean.searchContext == null}">
-                              <f:param value="#{msg.add_content}" />
-                              <f:param value="#{msg.create_content}" />
+                              <f:param value="#{msg.add_content}" id="param10" />
+                              <f:param value="#{msg.create_content}" id="param11" />
                            </h:outputFormat>
                         </f:facet>
                         

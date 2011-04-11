@@ -20,6 +20,11 @@
    </context-param>
 
    <context-param>
+      <param-name>javax.faces.PARTIAL_STATE_SAVING_METHOD</param-name>
+      <param-value>false</param-value>
+   </context-param>
+
+   <context-param>
       <param-name>javax.faces.CONFIG_FILES</param-name>
       <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-wcm.xml,/WEB-INF/faces-config-custom.xml</param-value>
    </context-param>
@@ -667,6 +672,11 @@
       <exception-type>java.lang.Exception</exception-type>
       <location>/jsp/error.jsp</location>
    </error-page>
+   
+   <context-param>
+      <param-name>org.apache.myfaces.ERROR_HANDLING</param-name>
+      <param-value>false</param-value>
+   </context-param>
 
    <resource-ref>
       <description>The Alfresco database connection</description>

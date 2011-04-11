@@ -82,7 +82,6 @@
       d.style.display = d.style.display == 'block' ? 'none' : 'block';
    }
 </script>
-<h:outputText id="validation_invalid_character" style="display:none" value="#{msg.validation_invalid_character}" />
 <h:outputText id="validation_invalid_dns_name" style="display:none" value="#{msg.validation_invalid_dns_name}" />
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
    <tr>

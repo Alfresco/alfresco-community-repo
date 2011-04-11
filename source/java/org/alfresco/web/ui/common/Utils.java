@@ -51,6 +51,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.webdav.WebDAVHelper;
 import org.alfresco.repo.webdav.WebDAVServlet;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -73,7 +74,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
 import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -364,7 +364,7 @@ public final class Utils extends StringUtils
                // build up the path skipping the first path as it is the root folder
                for (int x = 1; x < paths.size(); x++)
                {
-                  path.append("/").append(URLEncoder.encode(paths.get(x).getName()));
+                  path.append("/").append(WebDAVHelper.encodeURL(paths.get(x).getName(), getUserAgent(context)));
                }
                url = path.toString();
             }

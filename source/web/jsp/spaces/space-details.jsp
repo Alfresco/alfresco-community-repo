@@ -84,7 +84,7 @@
       <%-- wrapper comment used by the panel to add additional component facets --%> 
       <h:panelGroup id="props-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="WriteProperties">
+            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="WriteProperties" id="evalProp">
                <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="dialog:editSpace" />
             </r:permissionEvaluator>
          </f:facet>
@@ -111,7 +111,7 @@
                </f:verbatim>
                <%-- properties for the space --%> 
                <r:propertySheetGrid id="space-props" value="#{DialogManager.bean.space}" var="spaceProps" columns="1" mode="view" labelStyleClass="propertiesLabel" externalConfig="true" /> <h:message
-                  for="space-props" styleClass="statusMessage" /><f:verbatim></td>
+                  for="space-props" styleClass="statusMessage" id="msg1" /><f:verbatim></td>
             </tr>
          </table>
          </f:verbatim>
@@ -121,7 +121,7 @@
 
       <h:panelGroup id="workflow-panel-facets">
          <f:facet name="title">
-            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write">
+            <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write" id="evalWf">
                <a:actionLink id="titleLink4" value="#{msg.title_edit_simple_workflow}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editSpaceSimpleWorkflow" rendered="#{DialogManager.bean.approveStepName != null}" />
             </r:permissionEvaluator>
          </f:facet>
@@ -137,7 +137,7 @@
          <f:facet name="title">
             <r:permissionEvaluator value="#{DialogManager.bean.space}" allow="Write" id="eval_cat0">
                <a:actionLink id="titleLink3" value="#{msg.change_category}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editNodeCategories" actionListener="#{DialogManager.setupParameters}">
-                  <f:param name="nodeRef" value="#{DialogManager.bean.space.nodeRefAsString}" />
+                  <f:param name="nodeRef" value="#{DialogManager.bean.space.nodeRefAsString}" id="param0" />
                </a:actionLink>
             </r:permissionEvaluator>
          </f:facet>
@@ -189,7 +189,7 @@
                <f:facet name="header">
                   <a:sortLink id="sortlink3" label="#{msg.local}" value="local" styleClass="header" />
                </f:facet>
-               <h:outputText value="#{r.local}">
+               <h:outputText id="local" value="#{r.local}">
                   <a:convertBoolean />
                </h:outputText>
             </a:column>
@@ -214,7 +214,7 @@
                </h:outputText>
             </a:column>
 
-            <a:dataPager styleClass="pager" />
+            <a:dataPager id="pager0" styleClass="pager" />
          </a:richList>
       </a:panel>
 

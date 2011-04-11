@@ -200,6 +200,8 @@
         where
             ca.id >= #idTwo# and
             ca.id < #idThree#
+        order by 
+            ca.id ASC
         ]]>
     </select>
 

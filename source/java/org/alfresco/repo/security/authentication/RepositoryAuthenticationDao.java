@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
@@ -33,27 +34,24 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
-import org.springframework.util.StringUtils;
 
-public class RepositoryAuthenticationDao implements MutableAuthenticationDao
+public class RepositoryAuthenticationDao implements MutableAuthenticationDao, InitializingBean
 {
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
@@ -63,17 +61,15 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
     private NamespacePrefixResolver namespacePrefixResolver;
 
-    @SuppressWarnings("unused")
-    private DictionaryService dictionaryService;
-
-    private SearchService searchService;
-
-    private RetryingTransactionHelper retryingTransactionHelper;
-
     private PasswordEncoder passwordEncoder;
 
     private UserNameMatcher userNameMatcher;
+    
+    private PolicyComponent policyComponent;    
 
+    /** User folder ref cache (Tennant aware) */
+    private Map<String, NodeRef> userFolderRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    
     public RepositoryAuthenticationDao()
     {
         super();
@@ -89,11 +85,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.userNameMatcher = userNameMatcher;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
     public void setNamespaceService(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
@@ -102,11 +93,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     public void setTenantService(TenantService tenantService)
@@ -119,9 +105,20 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void setSearchService(SearchService searchService)
+    public void setPolicyComponent(PolicyComponent policyComponent)
     {
-        this.searchService = searchService;
+        this.policyComponent = policyComponent;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        this.policyComponent.bindClassBehaviour(
+                OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "onUpdateProperties"));
     }
 
     public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException, DataAccessException
@@ -152,78 +149,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             return null;
         }
 
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@usr\\:username:\"" + StringUtils.delete(searchUserName, "\"") + "\"");
-
-        try
-        {
-            sp.addStore(tenantService.getName(searchUserName, STOREREF_USERS));
-        }
-        catch (AlfrescoRuntimeException e)
-        {
-            return null; // no such tenant or tenant not enabled
-        }
-
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        ResultSet rs = null;
-
-        try
-        {
-            rs = searchService.query(sp);
-
-            NodeRef returnRef = null;
-
-            for (ResultSetRow row : rs)
-            {
-
-                final NodeRef nodeRef = row.getNodeRef();
-                if (nodeService.exists(nodeRef))
-                {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USER_USERNAME));
-
-                    if(userNameMatcher.matches(realUserName, searchUserName))
-                    {
-                        if (returnRef == null)
-                        {
-                            returnRef = nodeRef;
-                        }
-                        else
-                        {
-                            try
-                            {
-                                this.retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                                {
-                                    public Object execute() throws Throwable
-                                    {
-                                        // Delete the extra user node references
-                                        RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
-
-                                        return null;
-                                    }
-
-                                }, false, true);
-                            }
-                            catch (InvalidNodeRefException exception)
-                            {
-                                // Ignore this exception as the node has already been deleted
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            return returnRef;
-        }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
+                ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
+        return results.isEmpty() ? null : results.get(0).getChildRef();
     }
 
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
@@ -245,37 +173,43 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
-        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER, properties);
+        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI,
+                caseSensitiveUserName), ContentModel.TYPE_USER, properties);
     }
 
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
     {
-        QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
-        QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver); // see
-
-        StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
-
-        // AR-527
-        NodeRef rootNode = nodeService.getRootNode(userStoreRef);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
-        NodeRef sysNodeRef = null;
-        if (results.size() == 0)
+        String cacheKey = tenantService.getUserDomain(caseSensitiveUserName);
+        NodeRef userNodeRef = userFolderRefs.get(cacheKey);
+        if (userNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Required authority system folder path not found: " + qnameAssocSystem);
-        }
-        else
-        {
-            sysNodeRef = results.get(0).getChildRef();
-        }
-        results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocUsers);
-        NodeRef userNodeRef = null;
-        if (results.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Required user folder path not found: " + qnameAssocUsers);
-        }
-        else
-        {
-            userNodeRef = results.get(0).getChildRef();
+            QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
+            QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver); // see
+    
+            StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+    
+            // AR-527
+            NodeRef rootNode = nodeService.getRootNode(userStoreRef);
+            List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
+            NodeRef sysNodeRef = null;
+            if (results.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required authority system folder path not found: " + qnameAssocSystem);
+            }
+            else
+            {
+                sysNodeRef = results.get(0).getChildRef();
+            }
+            results = nodeService.getChildAssocs(sysNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocUsers);
+            if (results.size() == 0)
+            {
+                throw new AlfrescoRuntimeException("Required user folder path not found: " + qnameAssocUsers);
+            }
+            else
+            {
+                userNodeRef = tenantService.getName(results.get(0).getChildRef());
+            }
+            userFolderRefs.put(cacheKey, userNodeRef);            
         }
         return userNodeRef;
     }
@@ -583,4 +517,19 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         }
     }
 
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USERNAME));
+        String uidAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(ContentModel.PROP_USERNAME));
+        if (uidBefore != null && !EqualsHelper.nullSafeEquals(uidBefore, uidAfter))
+        {
+            NodeRef userNode = getUserOrNull(uidBefore);
+            if (userNode != null)
+            {
+                nodeService.setProperty(userNode, ContentModel.PROP_USER_USERNAME, uidAfter);
+                nodeService.moveNode(userNode, nodeService.getPrimaryParent(userNode).getParentRef(),
+                        ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, uidAfter));
+            }
+        }
+    }
 }

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -85,6 +86,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** The state. */
     private PropertyBackedBeanState state;
+    
+    /** Lock for concurrent access. */
+    protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /*
      * (non-Javadoc)
@@ -214,11 +218,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      *            are we making use of the state? I.e. should we start it if it has not been already?
      * @return the state
      */
-    protected synchronized PropertyBackedBeanState getState(boolean start)
+    protected PropertyBackedBeanState getState(boolean start)
     {
         if (start)
         {
-            start();
+            start(true);
         }
         return this.state;
     }
@@ -250,31 +254,72 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * Initializes or resets the bean and its state.
      */
-    public void init()
+    public final void init()
     {
+        this.lock.writeLock().lock();
+        try
+        {
+            doInit();
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Initializes or resets the bean and its state.
+     */
+    protected void doInit()
+    {
+        boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (this.state == null)
         {
+            if (!hadWriteLock)
+            {
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+            }
             try
             {
-                this.state = createInitialState();
-                applyDefaultOverrides(this.state);
+                if (this.state == null)
+                {
+                    this.state = createInitialState();
+                    applyDefaultOverrides(this.state);
+                    this.registry.register(this);
+                }
             }
             catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
-            this.registry.register(this);
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
+            }
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void revert()
+    public final void revert()
     {
-        stop();
-        destroy(true);
-        init();
+        this.lock.writeLock().lock();
+        try
+        {
+            stop(true);
+            destroy(true);
+            doInit();
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -337,9 +382,17 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * {@inheritDoc}
      */
-    public void destroy()
+    public final void destroy()
     {
-        destroy(false);
+        this.lock.writeLock().lock();
+        try
+        {
+            destroy(false);
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -350,13 +403,33 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      *            this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this
      *            value would be <code>true</code>.
      */
-    protected synchronized void destroy(boolean isPermanent)
+    protected void destroy(boolean isPermanent)
     {
         if (this.state != null)
         {
-            stop(false);
-            this.registry.deregister(this, isPermanent);
-            this.state = null;
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (!hadWriteLock)
+            {
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+            }
+            try
+            {
+                if (this.state != null)
+                {
+                    stop(false);
+                    this.registry.deregister(this, isPermanent);
+                    this.state = null;
+                }
+            }
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
+            }
         }
     }
 
@@ -383,11 +456,20 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         if (this.autoStart && event instanceof ContextRefreshedEvent && event.getSource() == this.parent)
         {
-            start(false);
+            this.lock.writeLock().lock();
+            try
+            {
+                start(false);
+            }
+            finally
+            {
+                this.lock.writeLock().unlock();
+            }
         }
         else if (event instanceof PropertyBackedBeanStartedEvent)
         {
-            synchronized (this)
+            this.lock.writeLock().lock();
+            try
             {
                 if (!this.isStarted)
                 {
@@ -396,48 +478,93 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     start(false);
                 }
             }
+            finally
+            {
+                this.lock.writeLock().unlock();                
+            }
         }
         else if (event instanceof PropertyBackedBeanStoppedEvent)
         {
-            // Completely destroy the state so that it will have to be reinitialized should the bean be put back in to
-            // use by this node
-            destroy(false);
+            this.lock.writeLock().lock();
+            try
+            {
+                // Completely destroy the state so that it will have to be reinitialized should the bean be put back in
+                // to
+                // use by this node
+                destroy(false);
+            }
+            finally
+            {
+                this.lock.writeLock().unlock();
+            }
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized String getProperty(String name)
+    public String getProperty(String name)
     {
-        init();
-        return this.state.getProperty(name);
+        this.lock.readLock().lock();
+        try
+        {
+            doInit();
+            return this.state.getProperty(name);
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized Set<String> getPropertyNames()
+    public Set<String> getPropertyNames()
     {
-        init();
-        return this.state.getPropertyNames();
+        this.lock.readLock().lock();
+        try
+        {
+            doInit();
+            return this.state.getPropertyNames();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void setProperty(String name, String value)
+    public void setProperty(String name, String value)
     {
-        init();
-        this.state.setProperty(name, value);
+        this.lock.writeLock().lock();
+        try
+        {
+            doInit();
+            this.state.setProperty(name, value);
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void start()
+    public final void start()
     {
-        start(true);
+        this.lock.writeLock().lock();
+        try
+        {
+            start(true);
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -446,26 +573,54 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      * @param broadcast
      *            Should the event be broadcast?
      */
-    protected synchronized void start(boolean broadcast)
+    protected void start(boolean broadcast)
     {
+        boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (!this.isStarted)
         {
-            init();
-            if (broadcast)
+            if (!hadWriteLock)
             {
-                this.registry.broadcastStart(this);
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
             }
-            this.state.start();
-            this.isStarted = true;
+            try
+            {
+                if (!this.isStarted)
+                {
+                    doInit();
+                    if (broadcast)
+                    {
+                        this.registry.broadcastStart(this);
+                    }
+                    this.state.start();
+                    this.isStarted = true;
+                }
+            }
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
+            }
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void stop()
+    public final void stop()
     {
-        stop(true);
+        this.lock.writeLock().lock();
+        try
+        {
+            stop(true);
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -474,16 +629,36 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      * @param broadcast
      *            Should the event be broadcast?
      */
-    protected synchronized void stop(boolean broadcast)
+    protected void stop(boolean broadcast)
     {
+        boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (this.isStarted)
         {
-            if (broadcast)
+            if (!hadWriteLock)
             {
-                this.registry.broadcastStop(this);
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
             }
-            this.state.stop();
-            this.isStarted = false;
+            try
+            {
+                if (this.isStarted)
+                {
+                    if (broadcast)
+                    {
+                        this.registry.broadcastStop(this);
+                    }
+                    this.state.stop();
+                    this.isStarted = false;
+                }
+            }
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
+            }
         }
     }
 

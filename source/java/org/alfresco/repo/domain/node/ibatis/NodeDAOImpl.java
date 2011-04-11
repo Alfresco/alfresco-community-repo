@@ -351,7 +351,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Store
         node.setStore(store);
         // UUID
-        node.setUuid(nodeRef.getId());
+        String uuid = nodeRef.getId();
+        if (uuid.length() > 36)
+        {
+            return null;            // Avoid DB2 query failure if someone passes in a made-up UUID
+        }
+        node.setUuid(uuid);
         // Deleted
         if (deleted != null)
         {

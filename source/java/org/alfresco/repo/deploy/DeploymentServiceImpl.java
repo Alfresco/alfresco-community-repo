@@ -1189,6 +1189,10 @@ public class DeploymentServiceImpl implements DeploymentService
 		                {
 		                    errors.add(e);
 		                }
+                		catch (Throwable t)
+                		{
+                    		errors.add(new AVMException("Unexpected Throwable", t));
+                		}
 		                finally
 		                {
 		                    // clean up senders thread pool

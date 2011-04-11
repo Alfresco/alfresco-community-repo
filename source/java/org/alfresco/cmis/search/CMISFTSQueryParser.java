@@ -168,6 +168,8 @@ public class CMISFTSQueryParser
         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
         LiteralArgument larg = factory.createLiteralArgument(FTSPhrase.ARG_PHRASE, DataTypeDefinition.TEXT, getText(testNode.getChild(0)));
         functionArguments.put(larg.getName(), larg);
+        larg = factory.createLiteralArgument(FTSPhrase.ARG_TOKENISATION_MODE, DataTypeDefinition.ANY, AnalysisMode.DEFAULT);
+        functionArguments.put(larg.getName(), larg);
         return factory.createFunctionalConstraint(function, functionArguments);
     }
 

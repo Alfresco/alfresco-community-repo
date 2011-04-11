@@ -73,4 +73,8 @@ public class NoActionIndexer implements Indexer
         return;
     }
 
+    public void flushPending()
+    {
+        return;
+    }    
 }

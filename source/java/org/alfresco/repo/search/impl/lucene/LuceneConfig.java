@@ -131,14 +131,6 @@ public interface LuceneConfig
     public int getMergerMergeFactor();
     
     /**
-     * The factor by which the merge factor is multiplied to determine the allowable number of indexes before blocking.
-     * 
-     * @return the factor by which the merge factor is multiplied to determine the allowable number of indexes before
-     *         blocking
-     */
-    public int getMergerMergeBlockingFactor();
-
-    /**
      * Lucene merger config
      * @return
      */

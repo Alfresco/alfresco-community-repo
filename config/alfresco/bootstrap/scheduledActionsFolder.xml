@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
-  <cm:folder xmlns="" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" view:childName="cm:Scheduled Actions">
-    <view:aspects>
-      <app:uifacets></app:uifacets>
-      <cm:titled></cm:titled>
-    </view:aspects>
-    <view:properties>
-      <app:icon>space-icon-default</app:icon>
-      <cm:name>Scheduled Actions</cm:name>
-      <cm:title>
-        <view:mlvalue view:locale="en_US">Scheduled Actions</view:mlvalue>
-      </cm:title>
-      <cm:description>
-        <view:mlvalue view:locale="en_US">Schedule of when persistent actions are executed</view:mlvalue>
-      </cm:description>
-    </view:properties>
-  </cm:folder>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <cm:folder view:childName="${spaces.scheduled_actions.childname}">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <cm:name>${spaces.actions.scheduled_actions.name}</cm:name>
+         <cm:title>${spaces.actions.scheduled_actions.name}</cm:title>
+         <cm:description>${spaces.actions.scheduled_actions.description}</cm:description>
+      </view:properties>
+   </cm:folder>
 </view:view>

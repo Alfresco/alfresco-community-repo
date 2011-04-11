@@ -83,23 +83,17 @@
       <property name="tenantService">
          <ref bean="tenantService" />
       </property>
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
       <property name="namespaceService">
          <ref bean="namespaceService" />
-      </property>
-      <property name="searchService">
-         <ref bean="admSearchService" />
-      </property>
-      <property name="retryingTransactionHelper">
-         <ref bean="retryingTransactionHelper" />
       </property>
       <property name="userNameMatcher">
          <ref bean="userNameMatcher" />
       </property>
       <property name="passwordEncoder">
          <ref bean="passwordEncoder" />
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent" />
       </property>
    </bean>
 

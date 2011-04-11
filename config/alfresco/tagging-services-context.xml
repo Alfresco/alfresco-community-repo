@@ -75,4 +75,10 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
     
+   <bean id="tagscopeSummaryPropertyInterceptor" class="org.alfresco.repo.tagging.TagScopePropertyMethodInterceptor">
+      <property name="nodeService" ref="mlAwareNodeService" />
+      <property name="contentService" ref="contentService" />
+      <property name="cache" ref="tagscopeSummaryCache" />
+   </bean>
+
 </beans>

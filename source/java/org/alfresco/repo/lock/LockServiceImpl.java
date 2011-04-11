@@ -244,7 +244,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType)
      */
-    public synchronized void lock(NodeRef nodeRef, LockType lockType)
+    public void lock(NodeRef nodeRef, LockType lockType)
     {
         // Lock with no expiration
         lock(nodeRef, lockType, 0);
@@ -253,7 +253,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int)
      */
-    public synchronized void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
+    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
     {
         nodeRef = tenantService.getName(nodeRef);
         
@@ -319,7 +319,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int, boolean)
      */
-    public synchronized void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
+    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
             throws UnableToAquireLockException
     {
         lock(nodeRef, lockType, timeToExpire);
@@ -337,7 +337,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(java.util.Collection, java.lang.String, org.alfresco.service.cmr.lock.LockType, int)
      */
-    public synchronized void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
+    public void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
             throws UnableToAquireLockException
     {
         // Lock each of the specifed nodes
@@ -350,7 +350,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String)
      */
-    public synchronized void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
+    public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
         nodeRef = tenantService.getName(nodeRef);
         
@@ -373,7 +373,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String,
      *      boolean)
      */
-    public synchronized void unlock(NodeRef nodeRef, boolean unlockChildren)
+    public void unlock(NodeRef nodeRef, boolean unlockChildren)
             throws UnableToReleaseLockException
     {
         // Unlock the parent
@@ -394,7 +394,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.repo.lock.LockService#unlock(Collection<NodeRef>,
      *      String)
      */
-    public synchronized void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
+    public void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
     {
         for (NodeRef nodeRef : nodeRefs)
         {

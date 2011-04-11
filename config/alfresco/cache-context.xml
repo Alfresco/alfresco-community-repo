@@ -46,7 +46,7 @@
       </property>
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -112,7 +112,7 @@
       </property>
       <property name="maxCacheSize" value="10000" />
       <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -145,7 +145,7 @@
       </property>
       <property name="maxCacheSize" value="50" />
       <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -1085,5 +1085,39 @@
          </bean>
       </property>
    </bean>
+
+   <!-- ===================================== -->
+   <!-- TagScope Summary caches               -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for tagscope summary properties -->
+   
+   <bean name="tagscopeSummarySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.tagscopeSummaryCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for tagscope summary properties -->
+   
+   <bean name="tagscopeSummaryCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="tagscopeSummarySharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.tagscopeSummaryTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="1000" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+   </bean>
+
 
 </beans>

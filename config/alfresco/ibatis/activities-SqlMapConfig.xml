@@ -6,7 +6,12 @@
 
 <sqlMapConfig>
 
-    <settings useStatementNamespaces="true" />
+    <settings useStatementNamespaces="true"
+    lazyLoadingEnabled="false"
+    enhancementEnabled="false"
+    maxTransactions="500"
+    maxSessions="500"
+    />
     
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>

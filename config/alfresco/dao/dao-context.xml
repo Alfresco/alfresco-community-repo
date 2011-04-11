@@ -235,6 +235,8 @@
       <property name="aclCrudDAO" ref="aclCrudDAO"/>
       <property name="aclCache" ref="aclCache"/>
       <property name="readersCache" ref="readersCache"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
    
    <bean id="usageDAO" class="org.alfresco.repo.domain.usage.ibatis.UsageDAOImpl">

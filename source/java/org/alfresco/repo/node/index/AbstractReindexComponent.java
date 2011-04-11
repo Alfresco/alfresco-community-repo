@@ -904,14 +904,37 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
         
         @Override
-        public void afterCommit()
+        public void beforeCommit(boolean readOnly)
         {
+            // Do whatever reindexing work we can in parallel before final queue serialization
+            indexer.flushPending();
+
+            // Do the queue ordering in the prepare phase so we don't deadlock with throttling!
             handleQueue();
         }
+
+        @Override
+        public void afterCommit()
+        {
+            // Lucene can now get on with the commit.  We didn't have ordering at this level
+            // and the IndexInfo locks are handled by Lucene.  So we let the thread go and
+            // the other worker threads can get on with it.
+            // Record the fact that the thread is on the final straight.  From here on, no
+            // more work notifications will be possible so the timestamp needs to spoof it.
+            recordTimestamp();
+        }
+
         @Override
         public void afterRollback()
         {
             handleQueue();
+            
+            // Lucene can now get on with the commit.  We didn't have ordering at this level
+            // and the IndexInfo locks are handled by Lucene.  So we let the thread go and
+            // the other worker threads can get on with it.
+            // Record the fact that the thread is on the final straight.  From here on, no
+            // more work notifications will be possible so the timestamp needs to spoof it.
+            recordTimestamp();            
         }
         /**
          * Lucene will do its final commit once this has been allowed to proceed.
@@ -941,12 +964,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     // Loop again
                 }
             }
-            // Lucene can now get on with the commit.  We didn't have ordering at this level
-            // and the IndexInfo locks are handled by Lucene.  So we let the thread go and
-            // the other worker threads can get on with it.
-            // Record the fact that the thread is on the final straight.  From here on, no
-            // more work notifications will be possible so the timestamp needs to spoof it.
-            recordTimestamp();
         }
     }
         

@@ -110,6 +110,5 @@ public interface Indexer
     public void deleteIndex(StoreRef storeRef);
 
   
-    
-
+    public void flushPending();    
 }

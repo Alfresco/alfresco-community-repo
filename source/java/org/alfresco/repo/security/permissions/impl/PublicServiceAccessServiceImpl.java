@@ -53,12 +53,133 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
 
             MethodInvocation methodInvocation = null;
             Object publicServiceImpl = beanFactory.getBean(publicService);
-            for (Method method : publicServiceImpl.getClass().getMethods())
+            NEXT_METHOD: for (Method method : publicServiceImpl.getClass().getMethods())
             {
                 if (method.getName().equals(methodName))
                 {
                     if (method.getParameterTypes().length == args.length)
                     {
+                        // check argument types are assignable
+                        int parameterPosition = 0;
+                        for(Class<?> clazz : method.getParameterTypes())
+                        {
+                            if(args[parameterPosition] == null)
+                            {
+                                if(clazz.isPrimitive())
+                                {
+                                    continue NEXT_METHOD;
+                                }
+                                else
+                                {
+                                    // OK, null assigns to any non-primitive type
+                                }
+                            }
+                            else 
+                            { 
+                                if(clazz.isPrimitive())
+                                {
+
+                                    if(clazz.getName().equals("boolean"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Boolean"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("byte"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Byte"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("char"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Char"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("short"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Short"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("int"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Integer"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("long"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Long"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("float"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Float"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else  if(clazz.getName().equals("double"))
+                                    {
+                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Double"))
+                                        {
+                                            // OK
+                                        }
+                                        else
+                                        {
+                                            continue NEXT_METHOD; 
+                                        }
+                                    }
+                                    else
+                                    {
+                                        continue NEXT_METHOD; 
+                                    }
+                                    
+                                }
+                                else if(!(clazz.isAssignableFrom(args[parameterPosition].getClass())))
+                                {
+                                    continue NEXT_METHOD; 
+                                }
+                            }
+                            parameterPosition++;
+                        }
                         methodInvocation = new ReflectiveMethodInvocation(null, null, method, args, null, null) {};
                     }
                 }
@@ -66,7 +187,7 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
 
             if (methodInvocation == null)
             {
-                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName);
+                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName + " with argumsnets "+args);
             }
 
             return msi.pre(methodInvocation);

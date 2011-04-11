@@ -8,7 +8,7 @@
         <sys:children>
             <sys:container view:childName="${alfresco_user_store.user_container.childname}">
                 <sys:children>
-                    <usr:user view:childName="usr:user">
+                    <usr:user view:childName="usr:${alfresco_user_store.adminusername}">
                         <usr:username>${alfresco_user_store.adminusername}</usr:username>
                         <usr:password>${alfresco_user_store.adminpassword}</usr:password>
                         <usr:enabled>true</usr:enabled>

@@ -160,18 +160,17 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
      * {@inheritDoc}
      */
     @Override
-    protected synchronized AuditModelRegistryState getState(boolean start)
-    {
-        return (AuditModelRegistryState)super.getState(start);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Map<String, AuditApplication> getAuditApplications()
     {
-        return getState(true).getAuditApplications();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((AuditModelRegistryState) getState(true)).getAuditApplications();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -180,7 +179,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     @Override
     public AuditApplication getAuditApplicationByKey(String key)
     {
-        return getState(true).getAuditApplicationByKey(key);
+        this.lock.readLock().lock();
+        try
+        {
+            return ((AuditModelRegistryState) getState(true)).getAuditApplicationByKey(key);
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -189,7 +196,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     @Override
     public AuditApplication getAuditApplicationByName(String applicationName)
     {
-        return getState(true).getAuditApplicationByName(applicationName);
+        this.lock.readLock().lock();
+        try
+        {
+            return ((AuditModelRegistryState) getState(true)).getAuditApplicationByName(applicationName);
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -198,7 +213,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     @Override
     public PathMapper getAuditPathMapper()
     {
-        return getState(true).getAuditPathMapper();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((AuditModelRegistryState) getState(true)).getAuditPathMapper();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -227,11 +250,19 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
      * 
      * @param auditModelUrl             the source of the model
      */
-    public synchronized void registerModel(URL auditModelUrl)
+    public void registerModel(URL auditModelUrl)
     {
-        stop();
-        setProperty(AUDIT_PROPERTY_AUDIT_ENABLED, "true");
-        getState(false).registerModel(auditModelUrl);
+        this.lock.writeLock().lock();
+        try
+        {
+            stop();
+            setProperty(AUDIT_PROPERTY_AUDIT_ENABLED, "true");
+            ((AuditModelRegistryState) getState(false)).registerModel(auditModelUrl);
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }        
     }
         
     /**

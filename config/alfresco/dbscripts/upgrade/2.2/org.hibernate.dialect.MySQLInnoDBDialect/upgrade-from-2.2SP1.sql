@@ -449,7 +449,6 @@ CREATE TABLE t_alf_node_properties
    PRIMARY KEY (node_id, qname_id, list_index, locale_id)
 ) ENGINE=InnoDB;
 
---BEGIN TXN
 -- Copy values over
 --FOREACH alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 INSERT INTO t_alf_node_properties
@@ -601,37 +600,61 @@ CREATE TABLE t_del_attributes
    id BIGINT NOT NULL,
    PRIMARY KEY (id)
 );
+
+--FOREACH alf_attributes.id system.upgrade.t_del_attributes.batchsize
 INSERT INTO t_del_attributes
    SELECT id FROM alf_attributes WHERE type = 'M'
+   AND alf_attributes.id >= ${LOWERBOUND} AND alf_attributes.id <= ${UPPERBOUND}
 ;
+
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE t_del_attributes
    FROM t_del_attributes
    JOIN alf_map_attribute_entries ma ON (ma.attribute_id = t_del_attributes.id)
+   WHERE t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
 ;
+
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE t_del_attributes
    FROM t_del_attributes
    JOIN alf_list_attribute_entries la ON (la.attribute_id = t_del_attributes.id)
+   WHERE t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
 ;
+
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE t_del_attributes
    FROM t_del_attributes
    JOIN alf_global_attributes ga ON (ga.attribute = t_del_attributes.id)
+   WHERE t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
 ;
+
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 INSERT INTO t_del_attributes
    SELECT a.id FROM t_del_attributes t
    JOIN alf_map_attribute_entries ma ON (ma.map_id = t.id)
    JOIN alf_attributes a ON (ma.attribute_id = a.id)
+   WHERE t.id >= ${LOWERBOUND} AND t.id <= ${UPPERBOUND}
 ;
+
+--FOREACH alf_map_attribute_entries.map_id system.upgrade.alf_map_attribute_entries.batchsize
 DELETE alf_map_attribute_entries
    FROM alf_map_attribute_entries
    JOIN t_del_attributes t ON (alf_map_attribute_entries.map_id = t.id)
+   WHERE alf_map_attribute_entries.map_id >= ${LOWERBOUND} AND alf_map_attribute_entries.map_id <= ${UPPERBOUND}
 ;
+
+--FOREACH alf_list_attribute_entries.list_id system.upgrade.alf_list_attribute_entries.batchsize
 DELETE alf_list_attribute_entries
    FROM alf_list_attribute_entries
    JOIN t_del_attributes t ON (alf_list_attribute_entries.list_id = t.id)
+   WHERE alf_list_attribute_entries.list_id >= ${LOWERBOUND} AND alf_list_attribute_entries.list_id <= ${UPPERBOUND}
 ;
+
+--FOREACH alf_attributes.id system.upgrade.alf_attributes.batchsize
 DELETE alf_attributes
    FROM alf_attributes
    JOIN t_del_attributes t ON (alf_attributes.id = t.id)
+   WHERE alf_attributes.id >= ${LOWERBOUND} AND alf_attributes.id <= ${UPPERBOUND}
 ;
 DROP TABLE t_del_attributes;
 

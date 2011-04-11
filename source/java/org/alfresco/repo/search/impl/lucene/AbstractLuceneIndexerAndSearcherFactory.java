@@ -173,8 +173,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private int mergerMergeFactor = 5;
 
-    private int mergerMergeBlockingFactor = 1;
-
+    
     private int mergerMaxBufferedDocs = IndexWriter.DISABLE_AUTO_FLUSH;
 
     private double mergerRamBufferSizeMb = 16.0;
@@ -1711,16 +1710,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.mergerMergeFactor = mergerMergeFactor;
     }
-
-    public int getMergerMergeBlockingFactor()
-    {
-        return mergerMergeBlockingFactor;
-    }
-
-    public void setMergerMergeBlockingFactor(int mergerMergeBlockingFactor)
-    {
-        this.mergerMergeBlockingFactor = mergerMergeBlockingFactor;
-    }
+    
 
     public int getMergerMaxBufferedDocs()
     {

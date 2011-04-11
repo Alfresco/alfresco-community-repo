@@ -21,6 +21,7 @@ package org.alfresco.repo.audit;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -91,6 +92,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
     private PublicServiceIdentifier publicServiceIdentifier;
     private AuditComponent auditComponent;
     private TransactionService transactionService;
+    
+    private ThreadPoolExecutor threadPoolExecutor;
 
     private final ThreadLocal<Boolean> inAudit = new ThreadLocal<Boolean>();
     
@@ -124,6 +127,11 @@ public class AuditMethodInterceptor implements MethodInterceptor
         this.transactionService = transactionService;
     }
 
+    public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
+    {
+        this.threadPoolExecutor = threadPoolExecutor;
+    }
+    
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         if(!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
@@ -350,7 +358,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
      */
     private void auditInvocationAfter(
             String serviceName, String methodName, Map<String, Serializable> namedArguments,
-            Object ret, Throwable thrown)
+            Object ret, final Throwable thrown)
     {
         final String rootPath = AuditApplication.buildPath(AUDIT_PATH_API_POST, serviceName, methodName);
         
@@ -388,40 +396,59 @@ public class AuditMethodInterceptor implements MethodInterceptor
                 }
             }
         }
-        Map<String, Serializable> auditedData;
+
         if (thrown != null)
         {
-            StringBuilder sb = new StringBuilder(1024);
-            StackTraceUtil.buildStackTrace(
-                    thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
-            auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
-            
-            // An exception will generally roll the current transaction back
-            RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
-                    new RetryingTransactionCallback<Map<String, Serializable>>()
+        	// ALF-3055: an exception has occurred - make sure the audit occurs in a new thread
+        	// rather than a nested transaction to avoid contention for the same audit table
+            threadPoolExecutor.execute(new Runnable()
             {
-                public Map<String, Serializable> execute() throws Throwable
-                {
-                    return auditComponent.recordAuditValues(rootPath, auditData);
-                }
-            };
-            auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
+				public void run() {
+			        Map<String, Serializable> auditedData;
+
+		            StringBuilder sb = new StringBuilder(1024);
+		            StackTraceUtil.buildStackTrace(
+		                    thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
+		            auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
+
+		            // An exception will generally roll the current transaction back
+		            RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
+		                    new RetryingTransactionCallback<Map<String, Serializable>>()
+		            {
+		                public Map<String, Serializable> execute() throws Throwable
+		                {
+		                    return auditComponent.recordAuditValues(rootPath, auditData);
+		                }
+		            };
+		            auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
+		            
+			        // Done
+			        if (logger.isDebugEnabled() && auditedData.size() > 0)
+			        {
+			            logger.debug(
+			                    "Audited after invocation: \n" +
+			                    (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+			                    "   Values: " + auditedData);
+			        }
+				}
+            });
         }
         else
         {
+            Map<String, Serializable> auditedData;
             // Add the "no error" indicator
             auditData.put(AUDIT_SNIPPET_NO_ERROR, null);
             // The current transaction will be fine
             auditedData = auditComponent.recordAuditValues(rootPath, auditData);
-        }
-        
-        // Done
-        if (logger.isDebugEnabled() && auditedData.size() > 0)
-        {
-            logger.debug(
-                    "Audited after invocation: \n" +
-                    (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
-                    "   Values: " + auditedData);
+
+	        // Done
+	        if (logger.isDebugEnabled() && auditedData.size() > 0)
+	        {
+	            logger.debug(
+	                    "Audited after invocation: \n" +
+	                    (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+	                    "   Values: " + auditedData);
+	        }
         }
     }
 }

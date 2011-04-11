@@ -112,4 +112,8 @@ public class IndexerComponent extends AbstractLifecycleBean implements Indexer
         indexer.deleteIndex(storeRef);
     }
 
+    public void flushPending()
+    {
+        indexerAndSearcherFactory.flush();
+    }
 }

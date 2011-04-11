@@ -192,7 +192,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
     {
-        if (isSystemUserName(userName))
+        if (validationMode == UserNameValidationMode.NONE || isSystemUserName(userName))
         {
             return setCurrentUserImpl(userName);
         }

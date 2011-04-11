@@ -193,7 +193,15 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
      */
     protected Object getBean()
     {
-        return ((CompositeDataBeanState) getState(true)).getBean();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((CompositeDataBeanState) getState(true)).getBean();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /*
@@ -201,7 +209,7 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#stop(boolean)
      */
     @Override
-    protected synchronized void stop(boolean broadcast)
+    protected void stop(boolean broadcast)
     {
         super.stop(broadcast);
 

@@ -26,7 +26,7 @@ public interface AuthenticationComponent extends AuthenticationContext
 {
     public enum UserNameValidationMode
     {
-        CHECK, CHECK_AND_FIX;
+        NONE, CHECK, CHECK_AND_FIX;
     }
     
     /**

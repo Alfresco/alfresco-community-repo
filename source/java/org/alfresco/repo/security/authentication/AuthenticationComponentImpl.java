@@ -29,7 +29,9 @@ import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 public class AuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
@@ -66,15 +68,36 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * Authenticate
      */
     @Override
-    protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
+    protected void authenticateImpl(final String userName, final char[] password) throws AuthenticationException
     {
         try
         {
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userName,
-                    new String(password));
-            this.authenticationManager.authenticate(authentication);
-            setCurrentUser(userName);
-
+            String normalized = getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<String>()
+                    {
+                        public String execute() throws Throwable
+                        {
+                            return AuthenticationUtil.runAs(new RunAsWork<String>()
+                            {
+                                public String doWork() throws Exception
+                                {
+                                    String normalized = getPersonService().getUserIdentifier(userName);
+                                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                            normalized == null ? userName : normalized, new String(password));
+                                    authenticationManager.authenticate(authentication);
+                                    return normalized;
+                                }
+                            }, getSystemUserName(getUserDomain(userName)));
+                        }
+                    }, true); 
+            if (normalized == null)
+            {
+                setCurrentUser(userName, UserNameValidationMode.CHECK_AND_FIX);
+            }
+            else
+            {
+                setCurrentUser(normalized, UserNameValidationMode.NONE);                
+            }
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {

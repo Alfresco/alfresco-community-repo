@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -84,9 +86,12 @@ public class BatchProcessor<T> implements BatchMonitor
     
     /** The current entry id. */
     private String currentEntryId;
-    
+
     /** The number of batches currently executing. */
     private int executingCount;
+    
+    /** What transactions need to be retried?. We do these single-threaded in order to avoid cross-dependency issues */
+    private SortedSet<Integer> retryTxns = new TreeSet<Integer>();
 
     /** The last error. */
     private Throwable lastError;
@@ -374,6 +379,7 @@ public class BatchProcessor<T> implements BatchMonitor
         try
         {
             Iterator<T> iterator = new WorkProviderIterator<T>(this.workProvider);
+            int id=0;
             List<T> batch = new ArrayList<T>(this.batchSize);
             while (iterator.hasNext())
             {
@@ -381,7 +387,7 @@ public class BatchProcessor<T> implements BatchMonitor
                 boolean hasNext = iterator.hasNext();
                 if (batch.size() >= this.batchSize || !hasNext)
                 {
-                    final TxnCallback callback = new TxnCallback(worker, batch, splitTxns);
+                    final TxnCallback callback = new TxnCallback(id++, worker, batch, splitTxns);
                     if (hasNext)
                     {
                         batch = new ArrayList<T>(this.batchSize);
@@ -625,13 +631,16 @@ public class BatchProcessor<T> implements BatchMonitor
          * @param splitTxns
          *            If <code>true</code>, the worker invocation is made in a new transaction.
          */
-        public TxnCallback(BatchProcessWorker<T> worker, List<T> batch, boolean splitTxns)
+        public TxnCallback(int id, BatchProcessWorker<T> worker, List<T> batch, boolean splitTxns)
         {
+            this.id = id;
             this.worker = worker;
             this.batch = batch;
             this.splitTxns = splitTxns;
         }
 
+        private final int id;
+        
         /** The worker. */
         private final BatchProcessWorker<T> worker;
 
@@ -656,9 +665,6 @@ public class BatchProcessor<T> implements BatchMonitor
         /** The last error entry id. */
         private String txnLastErrorEntryId;
         
-        /** Has a retryable failure occurred ? */
-        private boolean hadRetryFailure;
-
         public Object execute() throws Throwable
         {
             reset();
@@ -672,23 +678,27 @@ public class BatchProcessor<T> implements BatchMonitor
 
             synchronized (BatchProcessor.this)
             {
+                if (BatchProcessor.this.logger.isDebugEnabled())
+                {
+                    BatchProcessor.this.logger.debug("RETRY TXNS: " + BatchProcessor.this.retryTxns);
+                }
                 // If we are retrying after failure, assume there are cross-dependencies and wait for other
                 // executing batches to complete
-                if (this.hadRetryFailure)
+                while (!BatchProcessor.this.retryTxns.isEmpty()
+                        && (BatchProcessor.this.retryTxns.first() < this.id || BatchProcessor.this.retryTxns.first() == this.id
+                                && BatchProcessor.this.executingCount > 0)
+                        && BatchProcessor.this.retryTxns.last() >= this.id)
                 {
-                    while (BatchProcessor.this.executingCount > 0)
-                    {
-                        if (BatchProcessor.this.logger.isDebugEnabled())
-                        {
-                            BatchProcessor.this.logger.debug(Thread.currentThread().getName()
-                                    + " Recoverable failure: waiting for other batches to complete");
-                        }
-                        BatchProcessor.this.wait();
-                    }
                     if (BatchProcessor.this.logger.isDebugEnabled())
                     {
-                        BatchProcessor.this.logger.debug(Thread.currentThread().getName() + " ready to execute");
+                        BatchProcessor.this.logger.debug(Thread.currentThread().getName()
+                                + " Recoverable failure: waiting for other batches to complete");
                     }
+                    BatchProcessor.this.wait();
+                }
+                if (BatchProcessor.this.logger.isDebugEnabled())
+                {
+                    BatchProcessor.this.logger.debug(Thread.currentThread().getName() + " ready to execute");
                 }
                 BatchProcessor.this.currentEntryId = this.worker.getIdentifier(this.batch.get(0));
                 BatchProcessor.this.executingCount++;
@@ -718,7 +728,6 @@ public class BatchProcessor<T> implements BatchMonitor
                     else
                     {
                         // Next time we retry, we will wait for other executing batches to complete
-                        this.hadRetryFailure = true;
                         throw t;
                     }
                 }
@@ -853,8 +862,12 @@ public class BatchProcessor<T> implements BatchMonitor
                     BatchProcessor.this.lastError = this.txnLastError;
                     BatchProcessor.this.lastErrorEntryId = this.txnLastErrorEntryId;
                 }
-
+                
                 reset();
+                
+                // Make sure we don't wait for a failing transaction
+                BatchProcessor.this.retryTxns.remove(this.id);
+                BatchProcessor.this.notifyAll();                
             }
         }
 
@@ -865,7 +878,7 @@ public class BatchProcessor<T> implements BatchMonitor
             synchronized (BatchProcessor.this)
             {
                 BatchProcessor.this.executingCount--;
-                BatchProcessor.this.notifyAll();
+                // We do the final notifications in commitProgress so we can handle a transaction ending in a rollback
             }
         }
 
@@ -876,6 +889,7 @@ public class BatchProcessor<T> implements BatchMonitor
             synchronized (BatchProcessor.this)
             {
                 BatchProcessor.this.executingCount--;
+                BatchProcessor.this.retryTxns.add(this.id);
                 BatchProcessor.this.notifyAll();
             }
         }

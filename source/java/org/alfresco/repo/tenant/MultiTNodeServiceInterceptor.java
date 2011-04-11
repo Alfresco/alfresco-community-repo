@@ -147,9 +147,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                     String rawStoreId = (String)ret;
                     ret = tenantService.getBaseName(rawStoreId);
                 }
-                else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER))
+                else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER) || qname.equals(ContentModel.PROP_OWNER))
                 {
-                    // ALF-6029 (else need to patch affected spaces - eg. Models, Workflow Definitions)
+                    // ALF-6029 (eg. upgrade from V3.0.x - else need to patch all affected nodes)
                     String rawUserId = (String)ret;
                     if ("admin".equals(rawUserId))
                     {
@@ -179,9 +179,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                     {
                         value = tenantService.getBaseName((String)value);
                     }
-                    else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER))
+                    else if (qname.equals(ContentModel.PROP_CREATOR) || qname.equals(ContentModel.PROP_MODIFIER) || qname.equals(ContentModel.PROP_OWNER))
                     {
-                        // ALF-6029 (else need to patch affected spaces - eg. Models, Workflow Definitions)
+                        // ALF-6029 (eg. upgrade from V3.0.x - else need to patch all affected nodes)
                         String rawUserId = (String)value;
                         if ("admin".equals(rawUserId))
                         {

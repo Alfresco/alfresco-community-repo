@@ -30,7 +30,6 @@ import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 public interface LuceneIndexer extends Indexer, TransactionSynchronisationAwareIndexer
 { 
     public String getDeltaId();
-    public  void flushPending() throws LuceneIndexException;
     public Set<String> getDeletions();
     public boolean getDeleteOnlyNodes();   
     public <R> R doReadOnly(IndexInfo.LockWork <R> lockWork);

@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g 2010-05-17 15:10:38
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g 2011-01-12 12:54:17
 
 package org.alfresco.repo.search.impl.parsers;
 import org.alfresco.cmis.CMISQueryException;
@@ -91,18 +91,18 @@ public class CMIS_FTSLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g"; }
+    public String getGrammarFileName() { return "W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g"; }
 
     // $ANTLR start "FTSPHRASE"
     public final void mFTSPHRASE() throws RecognitionException {
         try {
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:346:9: ( '\\'' ( F_ESC | ~ ( '\\\\' | '\\'' ) )* '\\'' )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:347:9: '\\'' ( F_ESC | ~ ( '\\\\' | '\\'' ) )* '\\''
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:346:9: ( '\\'' ( F_ESC | ~ ( '\\\\' | '\\'' ) )* '\\'' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:347:9: '\\'' ( F_ESC | ~ ( '\\\\' | '\\'' ) )* '\\''
             {
             match('\''); 
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:348:9: ( F_ESC | ~ ( '\\\\' | '\\'' ) )*
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:348:9: ( F_ESC | ~ ( '\\\\' | '\\'' ) )*
             loop1:
             do {
                 int alt1=3;
@@ -118,14 +118,14 @@ public class CMIS_FTSLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:349:17: F_ESC
+            	    // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:349:17: F_ESC
             	    {
             	    mF_ESC(); 
 
             	    }
             	    break;
             	case 2 :
-            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:351:17: ~ ( '\\\\' | '\\'' )
+            	    // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:351:17: ~ ( '\\\\' | '\\'' )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -160,8 +160,8 @@ public class CMIS_FTSLexer extends Lexer {
     // $ANTLR start "F_ESC"
     public final void mF_ESC() throws RecognitionException {
         try {
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:362:9: ( '\\\\' ( '\\\\' | '\\'' ) )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:363:9: '\\\\' ( '\\\\' | '\\'' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:362:9: ( '\\\\' ( '\\\\' | '\\'' ) )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:363:9: '\\\\' ( '\\\\' | '\\'' )
             {
             match('\\'); 
             if ( input.LA(1)=='\''||input.LA(1)=='\\' ) {
@@ -187,8 +187,8 @@ public class CMIS_FTSLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:372:9: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:373:9: ( 'O' | 'o' ) ( 'R' | 'r' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:372:9: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:373:9: ( 'O' | 'o' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -224,8 +224,8 @@ public class CMIS_FTSLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:384:9: ( '-' )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:385:9: '-'
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:384:9: ( '-' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:385:9: '-'
             {
             match('-'); 
 
@@ -244,10 +244,10 @@ public class CMIS_FTSLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:395:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:396:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:395:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:396:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:396:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:396:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt2=0;
             loop2:
             do {
@@ -261,7 +261,7 @@ public class CMIS_FTSLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:
+            	    // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -302,11 +302,11 @@ public class CMIS_FTSLexer extends Lexer {
         try {
             int _type = FTSWORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:407:9: ( START_WORD ( IN_WORD )* )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:9: START_WORD ( IN_WORD )*
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:407:9: ( START_WORD ( IN_WORD )* )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:9: START_WORD ( IN_WORD )*
             {
             mSTART_WORD(); 
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:20: ( IN_WORD )*
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:20: ( IN_WORD )*
             loop3:
             do {
                 int alt3=2;
@@ -319,7 +319,7 @@ public class CMIS_FTSLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:20: IN_WORD
+            	    // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:408:20: IN_WORD
             	    {
             	    mIN_WORD(); 
 
@@ -345,8 +345,8 @@ public class CMIS_FTSLexer extends Lexer {
     // $ANTLR start "START_WORD"
     public final void mSTART_WORD() throws RecognitionException {
         try {
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:413:9: (~ ( ' ' | '\\t' | '\\r' | '\\n' | '-' ) )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:414:9: ~ ( ' ' | '\\t' | '\\r' | '\\n' | '-' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:413:9: (~ ( ' ' | '\\t' | '\\r' | '\\n' | '-' ) )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:414:9: ~ ( ' ' | '\\t' | '\\r' | '\\n' | '-' )
             {
             if ( (input.LA(1)>='\u0000' && input.LA(1)<='\b')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\u001F')||(input.LA(1)>='!' && input.LA(1)<=',')||(input.LA(1)>='.' && input.LA(1)<='\uFFFF') ) {
                 input.consume();
@@ -369,8 +369,8 @@ public class CMIS_FTSLexer extends Lexer {
     // $ANTLR start "IN_WORD"
     public final void mIN_WORD() throws RecognitionException {
         try {
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:425:9: (~ ( ' ' | '\\t' | '\\r' | '\\n' ) )
-            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:426:9: ~ ( ' ' | '\\t' | '\\r' | '\\n' )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:425:9: (~ ( ' ' | '\\t' | '\\r' | '\\n' ) )
+            // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:426:9: ~ ( ' ' | '\\t' | '\\r' | '\\n' )
             {
             if ( (input.LA(1)>='\u0000' && input.LA(1)<='\b')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\u001F')||(input.LA(1)>='!' && input.LA(1)<='\uFFFF') ) {
                 input.consume();
@@ -391,40 +391,40 @@ public class CMIS_FTSLexer extends Lexer {
     // $ANTLR end "IN_WORD"
 
     public void mTokens() throws RecognitionException {
-        // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:8: ( FTSPHRASE | OR | MINUS | WS | FTSWORD )
+        // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:8: ( FTSPHRASE | OR | MINUS | WS | FTSWORD )
         int alt4=5;
         alt4 = dfa4.predict(input);
         switch (alt4) {
             case 1 :
-                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:10: FTSPHRASE
+                // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:10: FTSPHRASE
                 {
                 mFTSPHRASE(); 
 
                 }
                 break;
             case 2 :
-                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:20: OR
+                // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:20: OR
                 {
                 mOR(); 
 
                 }
                 break;
             case 3 :
-                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:23: MINUS
+                // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:23: MINUS
                 {
                 mMINUS(); 
 
                 }
                 break;
             case 4 :
-                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:29: WS
+                // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:29: WS
                 {
                 mWS(); 
 
                 }
                 break;
             case 5 :
-                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:32: FTSWORD
+                // W:\\alfresco\\BRANCHES\\V3.3\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:1:32: FTSWORD
                 {
                 mFTSWORD(); 
 

@@ -40,6 +40,7 @@ import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -362,6 +363,137 @@ public class CopyServiceImplTest extends BaseSpringTest
         dictionaryDAO.putModel(model);
     }
     
+    public void testCopyToNewNodeWithPermissions()
+    {
+        permissionService.setPermission(sourceNodeRef, "Test", PermissionService.READ_PERMISSIONS, true);
+        permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.CREATE_CHILDREN, true);
+        assertEquals(3, permissionService.getAllSetPermissions(sourceNodeRef).size());
+        
+        NodeRef copy = this.copyService.copy(
+                this.sourceNodeRef,
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyOne"));
+        
+        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+        
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef copy = copyService.copy(
+                        sourceNodeRef,
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}aclCopyTwo"));
+                
+                assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                sourceNodeRef,
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}aclCopyThree"));
+                        
+                        assertEquals(2, permissionService.getAllSetPermissions(copy).size());
+                        return null;
+                    }
+                }, AuthenticationUtil.getGuestUserName());
+        
+        permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, true);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                sourceNodeRef,
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}aclCopyFour"));
+                        
+                        assertEquals(2, permissionService.getAllSetPermissions(copy).size());
+                        return null;
+                    }
+                }, AuthenticationUtil.getGuestUserName());
+        
+        permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.CHANGE_PERMISSIONS, true);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                sourceNodeRef,
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}aclCopyFour"));
+                        
+                        assertEquals(5, permissionService.getAllSetPermissions(copy).size());
+                        return null;
+                    }
+                }, AuthenticationUtil.getGuestUserName());
+        
+        
+        permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, false);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                sourceNodeRef,
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}aclCopyFour"));
+                        
+                        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+                        return null;
+                    }
+                }, AuthenticationUtil.getGuestUserName());
+        
+        permissionService.deletePermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                sourceNodeRef,
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}aclCopyFour"));
+                        
+                        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+                        return null;
+                    }
+                }, AuthenticationUtil.getGuestUserName());
+        
+    }
+    
+    
+    
     /**
      * Test copy new node within store     
      */
@@ -509,7 +641,7 @@ public class CopyServiceImplTest extends BaseSpringTest
     {
         // Copy nodes within the same store
         this.copyService.copy(this.sourceNodeRef, this.destinationNodeRef);
-        checkCopiedNode(this.sourceNodeRef, this.destinationNodeRef, false, true, false);
+        checkCopiedNode(this.sourceNodeRef, this.destinationNodeRef, false, true, true);
         
         // TODO check copying from a copy
         // TODO check copying from a versioned copy
@@ -989,14 +1121,14 @@ public class CopyServiceImplTest extends BaseSpringTest
         assertNotNull(value4);
         assertEquals(TEST_VALUE_2, value4);
         
-//        // Check all the target associations have been copied
-//        List<AssociationRef> destinationTargets = this.nodeService.getTargetAssocs(destinationNodeRef, TEST_ASSOC_TYPE_QNAME);
-//        assertNotNull(destinationTargets);
-//        assertEquals(1, destinationTargets.size());
-//        AssociationRef nodeAssocRef = destinationTargets.get(0);
-//        assertNotNull(nodeAssocRef);
-//        assertEquals(this.targetNodeRef, nodeAssocRef.getTargetRef());
-//        
+        // Check all the target associations have been copied
+        List<AssociationRef> destinationTargets = this.nodeService.getTargetAssocs(destinationNodeRef, TEST_ASSOC_TYPE_QNAME);
+        assertNotNull(destinationTargets);
+        assertEquals(1, destinationTargets.size());
+        AssociationRef nodeAssocRef = destinationTargets.get(0);
+        assertNotNull(nodeAssocRef);
+        assertEquals(this.targetNodeRef, nodeAssocRef.getTargetRef());
+        
         // Check all the child associations have been copied
         List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(destinationNodeRef);
         assertNotNull(childAssocRefs);

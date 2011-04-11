@@ -40,11 +40,17 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -81,6 +87,7 @@ public class WorkflowInterpreter extends BaseInterpreter
     private PersonService personService;
     private FileFolderService fileFolderService;
     private TenantService tenantService;
+    private DictionaryService dictionaryService;
 
     /**
      * Current context
@@ -139,6 +146,14 @@ public class WorkflowInterpreter extends BaseInterpreter
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    /**
+     * @param dictionaryService dictionaryService
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -879,7 +894,9 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 return "Workflow definition not selected.\n";
             }
+            setupStartTaskParameters(currentWorkflowDef.getStartTaskDefinition().metadata, params);
             WorkflowPath path = workflowService.startWorkflow(currentWorkflowDef.getId(), params);
+            endStartTaskForPath(path);
             out.println("started workflow id: " + path.getInstance().getId() + " , def: " + path.getInstance().getDefinition().getTitle());
             currentPath = path;
             out.print(interpretCommand("show transitions"));
@@ -1251,4 +1268,73 @@ public class WorkflowInterpreter extends BaseInterpreter
         return currentWorkflowDef;
     }
 
+    private void setupStartTaskParameters(TypeDefinition typeDef, Map<QName, Serializable> params)
+    {
+        // build a complete anonymous type for the start task
+        List<AspectDefinition> aspects = typeDef.getDefaultAspects();
+        List<QName> aspectNames = new ArrayList<QName>(aspects.size());
+        getMandatoryAspects(typeDef, aspectNames);
+        ClassDefinition startTaskDef = dictionaryService.getAnonymousType(typeDef.getName(), aspectNames);
+
+        // apply default values
+        Map<QName, PropertyDefinition> propertyDefs = startTaskDef.getProperties(); 
+        for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
+        {
+            String defaultValue = entry.getValue().getDefaultValue();
+
+            if (params.get(entry.getKey()) == null)
+            {
+                if (defaultValue != null)
+                {
+                    params.put(entry.getKey(), (Serializable)DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), defaultValue));
+                }
+            }
+            else
+            {
+                params.put(entry.getKey(), (Serializable)DefaultTypeConverter.INSTANCE.convert(entry.getValue().getDataType(), params.get(entry.getKey())));
+            }
+        }
+        
+        if (params.containsKey(WorkflowModel.ASSOC_ASSIGNEE))
+        {
+            String value = (String)params.get(WorkflowModel.ASSOC_ASSIGNEE);
+            ArrayList<NodeRef> assignees = new ArrayList<NodeRef>();
+            assignees.add(personService.getPerson(value));
+            params.put(WorkflowModel.ASSOC_ASSIGNEE, assignees);
+        }
+        
+        params.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
+    }
+
+    private void getMandatoryAspects(ClassDefinition classDef, List<QName> aspects)
+    {
+        for (AspectDefinition aspect : classDef.getDefaultAspects())
+        {
+            QName aspectName = aspect.getName();
+            if (!aspects.contains(aspectName))
+            {
+                aspects.add(aspect.getName());
+                getMandatoryAspects(aspect, aspects);
+            }
+        }
+    }
+
+    private void endStartTaskForPath(WorkflowPath path)
+    {
+        if (path != null)
+        {
+           List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+           if (tasks.size() == 1)
+           {
+              WorkflowTask startTask = tasks.get(0);
+              
+              if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+              {
+                 // end the start task to trigger the first 'proper'
+                 // task in the workflow
+                 this.workflowService.endTask(startTask.id, null);
+              }
+           }
+        }
+    }
 }

@@ -25,8 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -38,7 +41,10 @@ import org.alfresco.repo.security.permissions.SimpleAccessControlList;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
@@ -66,6 +72,11 @@ public class AclDAOImpl implements AclDAO
     /** Access to ACL entities */
     private AclCrudDAO aclCrudDAO;
     
+    /** Access to Nodes entities */
+    private NodeDAO nodeDAO;
+
+    private TenantService tenantService;
+
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
     
@@ -108,11 +119,21 @@ public class AclDAOImpl implements AclDAO
         this.qnameDAO = qnameDAO;
     }
     
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
     {
         this.aclCrudDAO = aclCrudDAO;
     }
     
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
     /**
      * Set the ACL cache
      * 
@@ -736,6 +757,7 @@ public class AclDAOImpl implements AclDAO
         
         List<AclMember> members = aclCrudDAO.getAclMembersByAuthority(authority);
         
+        boolean leaveAuthority = false;
         if (members.size() > 0)
         {
             List<Long> membersToDelete = new ArrayList<Long>(members.size());
@@ -748,41 +770,82 @@ public class AclDAOImpl implements AclDAO
                 Long aclId = member.getAclId();
                 Long aceId = member.getAceId();
                 
-                aclCache.remove(aclId);
-                readersCache.remove(aclId);
+                boolean hasAnotherTenantNodes = false;
+                if (AuthenticationUtil.isMtEnabled())
+                {
+                    // ALF-3563
+                    
+                    // Retrieve dependent nodes
+                    List<Long> nodeIds = aclCrudDAO.getADMNodesByAcl(aclId, -1);
+                    nodeIds.addAll(aclCrudDAO.getAVMNodesByAcl(aclId, -1));
+                    
+                    if (nodeIds.size() > 0)
+                    {
+                        for (Long nodeId : nodeIds)
+                        {
+                            Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
+                            if (nodePair == null)
+                            {
+                                logger.warn("Node does not exist: " + nodeId);
+                            }
+                            NodeRef nodeRef = nodePair.getSecond();
+                            
+                            try
+                            {
+                                // Throws AlfrescoRuntimeException in case of domain mismatch
+                                tenantService.checkDomain(nodeRef.getStoreRef().getIdentifier());
+                            }
+                            catch (AlfrescoRuntimeException e)
+                            {
+                                hasAnotherTenantNodes = true;
+                                leaveAuthority = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 
-                Acl list = aclCrudDAO.getAcl(aclId);
-                acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
-                membersToDelete.add(aclMemberId);
-                aces.add((Long)aceId);
+                if (!hasAnotherTenantNodes)
+                {
+                    aclCache.remove(aclId);
+                    readersCache.remove(aclId);
+                
+                    Acl list = aclCrudDAO.getAcl(aclId);
+                    acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
+                    membersToDelete.add(aclMemberId);
+                    aces.add((Long)aceId);
+                }
             }
             
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(membersToDelete);
         }
         
-        // remove ACEs
-        aclCrudDAO.deleteAces(aces);
-        
-        // Tidy up any unreferenced ACEs
-        
-        // get aces by authority
-        List<Ace> unreferenced = aclCrudDAO.getAcesByAuthority(authEntity.getId());
-        
-        if (unreferenced.size() > 0)
+        if (!leaveAuthority)
         {
-            List<Long> unrefencedAcesToDelete = new ArrayList<Long>(unreferenced.size());
-            for (Ace ace : unreferenced)
+            // remove ACEs
+            aclCrudDAO.deleteAces(aces);
+        
+            // Tidy up any unreferenced ACEs
+        
+            // get aces by authority
+            List<Ace> unreferenced = aclCrudDAO.getAcesByAuthority(authEntity.getId());
+        
+            if (unreferenced.size() > 0)
             {
-                unrefencedAcesToDelete.add(ace.getId());
+                List<Long> unrefencedAcesToDelete = new ArrayList<Long>(unreferenced.size());
+                for (Ace ace : unreferenced)
+                {
+                    unrefencedAcesToDelete.add(ace.getId());
+                }
+                aclCrudDAO.deleteAces(unrefencedAcesToDelete);
             }
-            aclCrudDAO.deleteAces(unrefencedAcesToDelete);
-        }
         
-        // remove authority
-        if (authEntity != null)
-        {
-            aclCrudDAO.deleteAuthority(authEntity.getId());
+            // remove authority
+            if (authEntity != null)
+            {
+                aclCrudDAO.deleteAuthority(authEntity.getId());
+            }
         }
         
         return acls;

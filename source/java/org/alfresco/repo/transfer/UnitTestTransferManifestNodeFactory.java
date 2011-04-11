@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -93,6 +94,7 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
                 primaryParentAssoc.getQName(), mappedNodeRef, primaryParentAssoc.isPrimary(),
                 primaryParentAssoc.getNthSibling()));
 
+        
         /**
          * Fiddle with the parent assocs
          */
@@ -142,6 +144,34 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
             {
                 props.put(ContentModel.PROP_NODE_UUID, mappedNodeRef.getId());
             }
+        }
+        
+        /**
+         * Fiddle with the Peer Assocs property
+         */
+        if (newNode instanceof TransferManifestNormalNode)
+        {
+            TransferManifestNormalNode normalNode = (TransferManifestNormalNode) newNode;
+           
+            List<AssociationRef> source = normalNode.getSourceAssocs();
+            List<AssociationRef> target = normalNode.getTargetAssocs();
+            
+            List<AssociationRef> mappedSourceAssocs = new ArrayList<AssociationRef>();
+            List<AssociationRef> mappedTargetAssocs = new ArrayList<AssociationRef>();
+            
+            for(AssociationRef ref :source)
+            {
+                mappedSourceAssocs.add(new AssociationRef(6L, getMappedNodeRef(ref.getSourceRef()), ref.getTypeQName(), getMappedNodeRef(ref.getTargetRef())));
+            }
+            
+            for(AssociationRef ref: target)
+            {
+                mappedTargetAssocs.add(new AssociationRef(6L, getMappedNodeRef(ref.getSourceRef()), ref.getTypeQName(), getMappedNodeRef(ref.getTargetRef())));
+            }
+            normalNode.setSourceAssocs(mappedSourceAssocs);
+            normalNode.setTargetAssocs(mappedTargetAssocs);
+
+
         }
 
         return newNode;

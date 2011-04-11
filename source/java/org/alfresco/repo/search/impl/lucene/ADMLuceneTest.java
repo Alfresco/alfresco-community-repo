@@ -1208,6 +1208,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, "lazy -dog", 16);
         ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "=cm_content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "~cm_content:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
         ftsQueryWithCount(searcher, "cm:content:big AND cm:content:lazy", 0);
         ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);

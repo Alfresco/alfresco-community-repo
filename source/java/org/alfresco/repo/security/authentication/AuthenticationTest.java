@@ -43,6 +43,7 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
@@ -50,11 +51,9 @@ import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
@@ -76,8 +75,6 @@ public class AuthenticationTest extends TestCase
 
     private TenantService tenantService;
 
-    private SearchService searchService;
-
     private NodeRef rootNodeRef;
 
     private NodeRef systemNodeRef;
@@ -85,8 +82,6 @@ public class AuthenticationTest extends TestCase
     private NodeRef typesNodeRef;
 
     private NodeRef personAndyNodeRef;
-
-    private DictionaryService dictionaryService;
 
     private MD4PasswordEncoder passwordEncoder;
 
@@ -119,6 +114,8 @@ public class AuthenticationTest extends TestCase
     // TODO: pending replacement
     private Dialect dialect;
 
+    private PolicyComponent policyComponent;
+
     public AuthenticationTest()
     {
         super();
@@ -135,8 +132,6 @@ public class AuthenticationTest extends TestCase
         
         nodeService = (NodeService) ctx.getBean("nodeService");
         tenantService = (TenantService) ctx.getBean("tenantService");
-        searchService = (SearchService) ctx.getBean("searchService");
-        dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
@@ -146,6 +141,7 @@ public class AuthenticationTest extends TestCase
         pubPersonService =  (PersonService) ctx.getBean("PersonService");
         personService =  (PersonService) ctx.getBean("personService");
         userNameMatcher = (UserNameMatcher) ctx.getBean("userNameMatcher");
+        policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -184,12 +180,10 @@ public class AuthenticationTest extends TestCase
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
-        dao.setSearchService(searchService);
-        dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
         dao.setUserNameMatcher(userNameMatcher);
-        dao.setRetryingTransactionHelper(transactionService.getRetryingTransactionHelper());
+        dao.setPolicyComponent(policyComponent);
 
         if (dao.getUserOrNull("andy") != null)
         {
@@ -402,12 +396,10 @@ public class AuthenticationTest extends TestCase
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
-        dao.setSearchService(searchService);
-        dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
         dao.setUserNameMatcher(userNameMatcher);
-        dao.setRetryingTransactionHelper(transactionService.getRetryingTransactionHelper());
+        dao.setPolicyComponent(policyComponent);
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 

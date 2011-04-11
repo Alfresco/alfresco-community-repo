@@ -987,6 +987,13 @@
                <type>d:content</type>
                <protected>true</protected>
             </property>        
+            <property name="cm:tagScopeSummary">
+               <title>Tag Summary</title>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>        
          </properties>    
       </aspect>
       

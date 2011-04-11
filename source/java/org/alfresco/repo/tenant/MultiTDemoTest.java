@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -51,6 +52,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -184,6 +187,223 @@ public class MultiTDemoTest extends TestCase
             }
         }
     }
+    
+    
+    private void deleteTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
+    {
+        // Check deletion for tenant1
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // find person
+                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                assertNotNull(homeSpaceRef);
+                
+                // Delete authorities
+                for (int i = 0; i < uniqueGroupNames.length; i++)
+                {
+                    authorityService.deleteAuthority("GROUP_" + uniqueGroupNames[i]);
+                }
+                return null;
+            }
+        }, tenantName);
+    }
+    private void createTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
+    {
+        // Create groups for tenant
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // find person
+                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                assertNotNull(homeSpaceRef);
+                
+                for (int i = 0; i < uniqueGroupNames.length; i++)
+                {
+                    authorityService.createAuthority(AuthorityType.GROUP, uniqueGroupNames[i]);
+                    permissionService.setPermission(homeSpaceRef, "GROUP_" + uniqueGroupNames[i], "Consumer", true);
+                }
+                
+                return null;
+            }
+        }, tenantName);
+    }
+
+    private void checkTestAuthoritiesPresence(final String[] uniqueGroupNames, final String tenantName, final boolean shouldPresent)
+    {
+        // Check that created permissions are not visible to tenant 2
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                Set<AccessPermission> perms = permissionService.getAllSetPermissions(homeSpaceRef);
+                Set<String> auths = authorityService.getAllAuthorities(AuthorityType.GROUP);
+                
+                for (int i = 0; i < uniqueGroupNames.length; i++)
+                {
+                    AccessPermission toCheck = new AccessPermissionImpl("Consumer", AccessStatus.ALLOWED, "GROUP_" + uniqueGroupNames[i], 0);
+                    if (shouldPresent)
+                    {
+                        assertTrue(auths.contains("GROUP_" + uniqueGroupNames[i]));
+                        assertTrue(perms.contains(toCheck));
+                    }
+                    else
+                    {
+                        assertTrue(!auths.contains("GROUP_" + uniqueGroupNames[i]));
+                        assertTrue(!perms.contains(toCheck));
+                    }
+                }
+                
+                return null;
+            }
+        }, tenantName);
+    }
+    
+    public void testNonSharedGroupDeletion()
+    {
+        final String tenantDomain1 = TEST_RUN+".groupdel1";
+        final String tenantDomain2 = TEST_RUN+".groupdel2";
+        
+        final String[] tenantUniqueGroupNames = new String[10];
+        final String[] superadminUniqueGroupNames = new String[10];
+        for (int i = 0; i < tenantUniqueGroupNames.length; i++)
+        {
+            tenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
+            superadminUniqueGroupNames[i] = TEST_RUN + "test_group_sa" + i;
+        }
+        
+        clearUsage(AuthenticationUtil.getAdminUserName());
+        
+        createTenant(tenantDomain1);
+        createTenant(tenantDomain2);
+        
+        final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+        final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
+        final String superAdmin = "admin";
+        
+        // Create test authorities that are visible only to tenant1
+        clearUsage(tenantDomain1);
+        createTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
+        // Check that tenant1's authorities are visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, true);
+        // Check that tenant1's authorities are not visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName2, false);
+        // Check that tenant1's authorities are not visible to super-admin
+        checkTestAuthoritiesPresence(tenantUniqueGroupNames, superAdmin, false);
+        
+        
+        // Create test authorities that are visible only to super-admin
+        createTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
+        // Check that super-admin's authorities are not visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName1, false);
+        // Check that super-admin's authorities are not visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName2, false);
+        // Check that super-admin's authorities are visible to super-admin
+        checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, true);
+        
+        
+        // Delete tenant1's authorities
+        clearUsage(tenantDomain1);
+        deleteTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
+        // Check that tenant1's authorities are not visible to tenant1
+        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, false);
+        
+        // Delete super-admin's authorities
+        deleteTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
+        // Check that super-admin's authorities are not visible to super-admin
+        checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, false);
+    }
+    
+    public void testSharedGroupDeletion()
+    {
+        final String tenantDomain1 = TEST_RUN+".groupdel3";
+        final String tenantDomain2 = TEST_RUN+".groupdel4";
+        
+        final String[] commonTenantUniqueGroupNames = new String[10];
+        for (int i = 0; i < commonTenantUniqueGroupNames.length; i++)
+        {
+            commonTenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
+        }
+        
+        clearUsage(AuthenticationUtil.getAdminUserName());
+        
+        createTenant(tenantDomain1);
+        createTenant(tenantDomain2);
+        
+        final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+        final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
+        final String superAdmin = "admin";
+        
+        // Create test common authorities for tenant1
+        clearUsage(tenantDomain1);
+        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+        // Create test common authorities for tenant2
+        clearUsage(tenantDomain2);
+        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+        // Create test common authorities for super-admin
+        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
+        
+        // Check that authorities are visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+        // Check that authorities are visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+        // Check that authorities are visible to super-admin
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+        
+        // Delete tenant1's authorities
+        clearUsage(tenantDomain1);
+        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+        // Check that authorities are not visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, false);
+        // Check that authorities are visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+        // Check that authorities are visible to super-admin
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+        
+        // Create test common authorities for tenant1
+        clearUsage(tenantDomain1);
+        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+        // Delete tenant2's authorities
+        clearUsage(tenantDomain2);
+        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+        // Check that authorities are visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+        // Check that authorities are not visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, false);
+        // Check that authorities are visible to super-admin
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+        
+        // Create test common authorities for tenant2
+        clearUsage(tenantDomain2);
+        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+        // Delete super-admin's authorities
+        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
+        // Check that authorities are visible to tenant1
+        clearUsage(tenantDomain1);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+        // Check that authorities are visible to tenant2
+        clearUsage(tenantDomain2);
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+        // Check that authorities are not visible to super-admin
+        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, false);
+    }
+    
     
     private void createTenant(final String tenantDomain)
     {

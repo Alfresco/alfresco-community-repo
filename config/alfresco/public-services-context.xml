@@ -40,6 +40,9 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
+        <property name="threadPoolExecutor">
+            <ref bean="auditThreadPool"/>
+        </property>
     </bean>
 
 

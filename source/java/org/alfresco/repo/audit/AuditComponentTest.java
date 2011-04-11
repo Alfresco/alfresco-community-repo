@@ -88,7 +88,7 @@ public class AuditComponentTest extends TestCase
     {
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
-        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
+        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
@@ -629,9 +629,21 @@ public class AuditComponentTest extends TestCase
                 // Expected
             }
         }
-        results.clear();
-        sb.delete(0, sb.length());
-        queryAuditLog(auditQueryCallback, params, -1);
+
+        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
+        // 1 second sleep to ensure that the audit is processed
+        for(int i = 0; i < 60; i++)
+        {
+            results.clear();
+            sb.delete(0, sb.length());
+            queryAuditLog(auditQueryCallback, params, -1);
+	        if(results.size() == iterations)
+	        {
+	        	break;
+	        }
+        	Thread.sleep(1000);
+        }
+
         logger.debug(sb.toString());
         assertEquals("Incorrect number of audit entries after failed login", iterations, results.size());
         

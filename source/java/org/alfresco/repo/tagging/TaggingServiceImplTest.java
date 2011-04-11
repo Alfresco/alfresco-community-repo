@@ -450,7 +450,108 @@ public class TaggingServiceImplTest extends TestCase
     }
     
     public void testTagScope()
-        throws Exception
+    throws Exception
+{
+    UserTransaction tx = this.transactionService.getUserTransaction();
+    tx.begin();
+   
+    // TODO add some tags before the scopes are added
+    
+    // Add some tag scopes
+    this.taggingService.addTagScope(this.folder);
+    this.taggingService.addTagScope(this.subFolder);
+
+    // Add some more tags after the scopes have been added
+    this.taggingService.addTag(this.subDocument, TAG_1); // folder+subfolder
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.addTag(this.subDocument, TAG_2); // folder+subfolder
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.addTag(this.subDocument, TAG_3); // folder+subfolder
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.addTag(this.subFolder, TAG_1); // folder+subfolder
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.addTag(this.subFolder, TAG_2); // folder+subfolder
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.addTag(this.folder, TAG_2); // folder only
+    
+    tx = asyncOccurs.awaitExecution(tx);
+    
+    // re get the tag scopes
+    TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
+    TagScope ts2 = this.taggingService.findTagScope(this.folder);
+    
+    // Check that the tag scopes got populated
+    assertEquals(
+          "Wrong tags on sub folder: " + ts1.getTags(),
+          3, ts1.getTags().size()
+    );
+    assertEquals(
+          "Wrong tags on main folder: " + ts2.getTags(),
+          3, ts2.getTags().size()
+    );
+    
+    // check the order and count of the tagscopes
+    assertEquals(2, ts1.getTags().get(0).getCount());
+    assertEquals(2, ts1.getTags().get(1).getCount());
+    assertEquals(1, ts1.getTags().get(2).getCount());
+    assertEquals(TAG_1, ts1.getTags().get(0).getName());
+    assertEquals(TAG_2, ts1.getTags().get(1).getName());
+    assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(2).getName());
+    
+    assertEquals(3, ts2.getTags().get(0).getCount());
+    assertEquals(2, ts2.getTags().get(1).getCount());
+    assertEquals(1, ts2.getTags().get(2).getCount());
+    assertEquals(TAG_2, ts2.getTags().get(0).getName());
+    assertEquals(TAG_1, ts2.getTags().get(1).getName());
+    assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getName());
+    
+    
+    // Take some off again
+    this.taggingService.removeTag(this.folder, TAG_2);
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.removeTag(this.subFolder, TAG_2);
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.removeTag(this.subFolder, TAG_1);
+    tx = asyncOccurs.awaitExecution(tx);
+    this.taggingService.removeTag(this.subDocument, TAG_1);
+    tx = asyncOccurs.awaitExecution(tx);
+    // And add one more
+    this.taggingService.addTag(this.folder, TAG_3);
+    
+    tx = asyncOccurs.awaitExecution(tx);
+    
+    // re get the tag scopes
+    ts1 = this.taggingService.findTagScope(this.subDocument);
+    ts2 = this.taggingService.findTagScope(this.folder);
+    
+    // Recheck the tag scopes
+    assertEquals(
+          "Wrong tags on sub folder: " + ts1.getTags(),
+          2, ts1.getTags().size()
+    );
+    assertEquals(
+          "Wrong tags on main folder: " + ts2.getTags(),
+          2, ts2.getTags().size()
+    );
+    
+    // Sub-folder should be ordered by tag name, as all values 1
+    assertEquals(1, ts1.getTags().get(0).getCount());
+    assertEquals(1, ts1.getTags().get(1).getCount());
+    assertEquals(TAG_2, ts1.getTags().get(0).getName());
+    assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
+    
+    // Folder should be still sorted by size, as a 2 & a 1
+    assertEquals(2, ts2.getTags().get(0).getCount());
+    assertEquals(1, ts2.getTags().get(1).getCount());
+    assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
+    assertEquals(TAG_2, ts2.getTags().get(1).getName());
+    
+    // Finish
+    tx.commit();
+}
+
+    @SuppressWarnings("unchecked")
+    public void testTagScopeSummary() throws Exception
     {
         UserTransaction tx = this.transactionService.getUserTransaction();
         tx.begin();
@@ -460,7 +561,7 @@ public class TaggingServiceImplTest extends TestCase
         // Add some tag scopes
         this.taggingService.addTagScope(this.folder);
         this.taggingService.addTagScope(this.subFolder);
-
+    
         // Add some more tags after the scopes have been added
         this.taggingService.addTag(this.subDocument, TAG_1); // folder+subfolder
         tx = asyncOccurs.awaitExecution(tx);
@@ -475,81 +576,39 @@ public class TaggingServiceImplTest extends TestCase
         this.taggingService.addTag(this.folder, TAG_2); // folder only
         
         tx = asyncOccurs.awaitExecution(tx);
+
+        TagScopePropertyMethodInterceptor.setEnabled(Boolean.TRUE);
         
-        // re get the tag scopes
-        TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
-        TagScope ts2 = this.taggingService.findTagScope(this.folder);
+        Serializable summaryObj = nodeService.getProperty(this.folder, ContentModel.PROP_TAGSCOPE_SUMMARY);
+        assertTrue("TagScopeSummary value on main folder is not of correct class: " + summaryObj.getClass().getName(),
+                List.class.isAssignableFrom(summaryObj.getClass()));
+        assertEquals(3, ((List)summaryObj).size());
+
+        //Check that the next call for the same summary comes from the cache
+        Serializable summaryObj2 = nodeService.getProperty(this.folder, ContentModel.PROP_TAGSCOPE_SUMMARY);
+        assertTrue("TagScopeSummary value on main folder did not come from the cache",
+                summaryObj == summaryObj2);
         
-        // Check that the tag scopes got populated
-        assertEquals(
-              "Wrong tags on sub folder: " + ts1.getTags(),
-              3, ts1.getTags().size()
-        );
-        assertEquals(
-              "Wrong tags on main folder: " + ts2.getTags(),
-              3, ts2.getTags().size()
-        );
+        Map<QName,Serializable> props = nodeService.getProperties(this.subFolder);
+        assertTrue("Properties of subfolder do not include tagScopeSummary", props.containsKey(ContentModel.PROP_TAGSCOPE_SUMMARY));
+        summaryObj = props.get(ContentModel.PROP_TAGSCOPE_SUMMARY);
+        assertTrue("TagScopeSummary value on subfolder is not of correct class: " + summaryObj.getClass().getName(),
+                List.class.isAssignableFrom(summaryObj.getClass()));
+        assertEquals(3, ((List)summaryObj).size());
         
-        // check the order and count of the tagscopes
-        assertEquals(2, ts1.getTags().get(0).getCount());
-        assertEquals(2, ts1.getTags().get(1).getCount());
-        assertEquals(1, ts1.getTags().get(2).getCount());
-        assertEquals(TAG_1, ts1.getTags().get(0).getName());
-        assertEquals(TAG_2, ts1.getTags().get(1).getName());
-        assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(2).getName());
+        TagScopePropertyMethodInterceptor.setEnabled(Boolean.FALSE);
         
-        assertEquals(3, ts2.getTags().get(0).getCount());
-        assertEquals(2, ts2.getTags().get(1).getCount());
-        assertEquals(1, ts2.getTags().get(2).getCount());
-        assertEquals(TAG_2, ts2.getTags().get(0).getName());
-        assertEquals(TAG_1, ts2.getTags().get(1).getName());
-        assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getName());
+        summaryObj = nodeService.getProperty(this.folder, ContentModel.PROP_TAGSCOPE_SUMMARY);
+        assertNull("TagScopeSummary value on main folder should be null: " + summaryObj,
+                summaryObj);
         
-        
-        // Take some off again
-        this.taggingService.removeTag(this.folder, TAG_2);
-        tx = asyncOccurs.awaitExecution(tx);
-        this.taggingService.removeTag(this.subFolder, TAG_2);
-        tx = asyncOccurs.awaitExecution(tx);
-        this.taggingService.removeTag(this.subFolder, TAG_1);
-        tx = asyncOccurs.awaitExecution(tx);
-        this.taggingService.removeTag(this.subDocument, TAG_1);
-        tx = asyncOccurs.awaitExecution(tx);
-        // And add one more
-        this.taggingService.addTag(this.folder, TAG_3);
-        
-        tx = asyncOccurs.awaitExecution(tx);
-        
-        // re get the tag scopes
-        ts1 = this.taggingService.findTagScope(this.subDocument);
-        ts2 = this.taggingService.findTagScope(this.folder);
-        
-        // Recheck the tag scopes
-        assertEquals(
-              "Wrong tags on sub folder: " + ts1.getTags(),
-              2, ts1.getTags().size()
-        );
-        assertEquals(
-              "Wrong tags on main folder: " + ts2.getTags(),
-              2, ts2.getTags().size()
-        );
-        
-        // Sub-folder should be ordered by tag name, as all values 1
-        assertEquals(1, ts1.getTags().get(0).getCount());
-        assertEquals(1, ts1.getTags().get(1).getCount());
-        assertEquals(TAG_2, ts1.getTags().get(0).getName());
-        assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
-        
-        // Folder should be still sorted by size, as a 2 & a 1
-        assertEquals(2, ts2.getTags().get(0).getCount());
-        assertEquals(1, ts2.getTags().get(1).getCount());
-        assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
-        assertEquals(TAG_2, ts2.getTags().get(1).getName());
-        
+        props = nodeService.getProperties(this.subFolder);
+        assertFalse("Properties of subfolder should not contain tagScopeProperty", props.containsKey(ContentModel.PROP_TAGSCOPE_SUMMARY));
+
         // Finish
         tx.commit();
     }
-    
+
     public void testTagScopeRefresh()
         throws Exception
     {

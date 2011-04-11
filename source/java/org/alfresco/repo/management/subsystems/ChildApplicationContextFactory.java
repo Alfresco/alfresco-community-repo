@@ -319,26 +319,58 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean)
      */
     @Override
-    protected synchronized void destroy(boolean permanent)
+    protected void destroy(boolean permanent)
     {
-        ApplicationContextState state = (ApplicationContextState) getState(false);
-
         // Cascade the destroy / shutdown
-        if (state != null)
+        if (getState(false) != null)
         {
-            state.destroy(permanent);
-        }
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (!hadWriteLock)
+            {
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+            }
+            try
+            {
+                ApplicationContextState state = (ApplicationContextState) getState(false);
 
-        super.destroy(permanent);
+                // Cascade the destroy / shutdown
+                if (state != null)
+                {
+                    state.destroy(permanent);
+                }
+                super.destroy(permanent);
+            }
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
+            }
+        }
+        else
+        {
+            super.destroy(permanent);            
+        }
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.ManagedApplicationContextFactory#getApplicationContext()
      */
-    public synchronized ApplicationContext getApplicationContext()
+    public ApplicationContext getApplicationContext()
     {
-        return ((ApplicationContextState) getState(true)).getApplicationContext();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((ApplicationContextState) getState(true)).getApplicationContext();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -495,7 +527,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
          */
         @SuppressWarnings("unchecked")
-        public synchronized Set<String> getPropertyNames()
+        public Set<String> getPropertyNames()
         {
             Set<String> result = new TreeSet<String>(((Map) this.properties).keySet());
             result.add(ChildApplicationContextFactory.TYPE_NAME_PROPERTY);
@@ -507,7 +539,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
          */
-        public synchronized String getProperty(String name)
+        public String getProperty(String name)
         {
             if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
             {
@@ -613,7 +645,15 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                 for (String id : idsToRemove)
                 {
                     CompositeDataBean child = propertyValues.get(id);
-                    child.destroy(true);
+                    child.lock.writeLock().lock();
+                    try
+                    {
+                        child.destroy(true);
+                    }
+                    finally
+                    {
+                        child.lock.writeLock().unlock();
+                    }
                 }
                 this.compositeProperties.put(name, newPropertyValues);
             }
@@ -631,7 +671,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
          */
-        public synchronized void start()
+        public void start()
         {
             // This is where we actually create and start a child application context based on the configured
             // properties.
@@ -686,7 +726,15 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             {
                 for (CompositeDataBean bean : beans.values())
                 {
-                    bean.destroy(permanent);
+                    bean.lock.writeLock().lock();
+                    try
+                    {
+                        bean.destroy(permanent);
+                    }
+                    finally
+                    {
+                        bean.lock.writeLock().unlock();
+                    }
                 }
             }
         }
@@ -696,7 +744,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * 
          * @return the application context
          */
-        public synchronized ApplicationContext getApplicationContext()
+        public ApplicationContext getApplicationContext()
         {
             start();
             return this.applicationContext;

@@ -56,7 +56,15 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
      */
     public ApplicationContext getApplicationContext()
     {
-        return ((SwitchableState) getState(true)).getApplicationContext();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((SwitchableState) getState(true)).getApplicationContext();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /*
@@ -96,7 +104,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
          * (non-Javadoc)
          * @see org.alfresco.enterprise.repo.management.ConfigurableBean#onStart()
          */
-        public synchronized void start()
+        public void start()
         {
             if (this.sourceApplicationContextFactory == null)
             {
@@ -131,7 +139,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
          * 
          * @return the application context
          */
-        public synchronized ApplicationContext getApplicationContext()
+        public ApplicationContext getApplicationContext()
         {
             if (this.sourceApplicationContextFactory == null)
             {
@@ -144,7 +152,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
          */
-        public synchronized String getProperty(String name)
+        public String getProperty(String name)
         {
             if (!name.equals(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY))
             {
@@ -167,7 +175,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
          * java.lang.String)
          */
-        public synchronized void setProperty(String name, String value)
+        public void setProperty(String name, String value)
         {
             if (!name.equals(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY))
             {

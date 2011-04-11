@@ -45,6 +45,7 @@
    	<bean id="activitiesSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="activitiesDataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
+        <property name="useTransactionAwareDataSource" value="false" />
         <property name="configLocation">
             <value>classpath:alfresco/ibatis/activities-SqlMapConfig.xml</value>
         </property> 
@@ -54,6 +55,7 @@
     <bean id="alfrescoSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
+        <property name="useTransactionAwareDataSource" value="false" />
         <property name="configLocation">
             <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property> 

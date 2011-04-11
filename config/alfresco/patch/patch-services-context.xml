@@ -1697,6 +1697,7 @@
         <property name="targetSchema"><value>2013</value></property>
         <property name="dependsOn" >
             <list>
+                <ref bean="patch.fixUserQNames" />
                 <ref bean="patch.updateDmPermissions" />
                 <ref bean="patch.zonedAuthorities" />
             </list>
@@ -2436,6 +2437,7 @@
             <props>
                 <prop key="path">/app:company_home/app:dictionary</prop>
                 <prop key="location">alfresco/bootstrap/scheduledActionsFolder.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>
@@ -2496,15 +2498,62 @@
         <property name="temporaryExtension" value="temp" />
     </bean>
 
-   <bean id="patch.db-V3.4-RemovingLinkValidationMetadata" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-      <property name="id" value="patch.db-V3.4-RemovingLinkValidationMetadata" />
-      <property name="description" value="patch.removingLinkValidationMetadata.description" />
-      <property name="fixesFromSchema" value="0" />
-      <property name="fixesToSchema" value="4113" />
-      <property name="targetSchema" value="4114" />
-      <property name="scriptUrl">
-         <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/link-validation-metadata-removing.sql</value>
-      </property>
-   </bean>
-
+    <bean id="patch.db-V3.4-RemovingLinkValidationMetadata" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V3.4-RemovingLinkValidationMetadata" />
+        <property name="description" value="patch.removingLinkValidationMetadata.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="4113" />
+        <property name="targetSchema" value="4114" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/link-validation-metadata-removing.sql</value>
+        </property>
+    </bean>
+   
+    <bean id="patch.mtFixAdminExistingTenants" class="org.alfresco.repo.admin.patch.impl.MultiTFixAdminExistingTenantsPatch" parent="basePatch" >
+        <property name="id"><value>patch.mtFixAdminExistingTenants</value></property>
+        <property name="description"><value>patch.mtFixAdminExistingTenants.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4114</value></property>
+        <property name="targetSchema"><value>4115</value></property>
+        
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="policyBehaviourFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+        <property name="pathsToNodes">
+            <list>
+                <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.models.childname}</value>
+                <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.workflow.definitions.childname}</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="patch.fixUserQNames" class="org.alfresco.repo.admin.patch.impl.FixUserQNamesPatch" parent="basePatch">
+        <property name="id"><value>patch.fixUserQNames</value></property>
+        <property name="description"><value>patch.fixUserQNames.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4115</value></property>
+        <property name="targetSchema"><value>4116</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.fixNameCrcValues-2" />
+            </list>
+        </property>
+        <!-- helper beans -->
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+        <property name="userBootstrap">
+            <ref bean="userBootstrap" />
+        </property>
+    </bean>
+   
 </beans>

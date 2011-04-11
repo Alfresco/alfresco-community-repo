@@ -19,6 +19,7 @@ package org.apache.lucene.store;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -26,10 +27,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.lucene.index.IndexFileNameFilter;
-
-// Used only for WRITE_LOCK_NAME in deprecated create=true case:
 import org.apache.lucene.index.IndexWriter;
 
 /**
@@ -541,23 +542,71 @@ public class FSDirectory extends Directory {
 
   protected static class FSIndexInput extends BufferedIndexInput {
   
-    protected static class Descriptor extends RandomAccessFile {
+    protected static class Descriptor implements Cloneable{
       // remember if the file is open, so that we don't try to close it
       // more than once
-      protected volatile boolean isOpen;
-      long position;
+      private boolean isOpen;
       final long length;
-      
+      final Map<String, RandomAccessFile> fileMap = new TreeMap<String, RandomAccessFile>();
+      final File file;
+      final String mode;
+      final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
       public Descriptor(File file, String mode) throws IOException {
-        super(file, mode);
+        this.file = file;
+        this.mode = mode;
         isOpen=true;
-        length=length();
+        RandomAccessFile raf = new RandomAccessFile(file, mode);
+        length=raf.length();
+        fileMap.put(Thread.currentThread().getName(), raf);
       }
-  
+
+      private RandomAccessFile getFile() {
+        String threadKey = Thread.currentThread().getName();
+        lock.readLock().lock();
+        RandomAccessFile file = fileMap.get(threadKey);
+        if (file == null) {
+          lock.readLock().unlock();
+          lock.writeLock().lock();
+          try {          
+            file = fileMap.get(threadKey);
+            if (file == null) {
+              file = new RandomAccessFile(this.file, mode);
+              fileMap.put(threadKey, file);
+            }
+          } catch (FileNotFoundException e) {
+              throw new RuntimeException(e); 
+          } finally {
+            lock.writeLock().unlock();
+          }
+        } else {
+          lock.readLock().unlock();
+        }
+        return file;
+      }
+      
       public void close() throws IOException {
+        lock.readLock().lock();
         if (isOpen) {
-          isOpen=false;
-          super.close();
+          lock.readLock().unlock();
+          lock.writeLock().lock();
+          try {
+            if (isOpen) {
+              for (RandomAccessFile file : fileMap.values())
+              {
+                  file.close();
+              }
+              fileMap.clear();
+              isOpen=false;
+            }
+          }
+          finally
+          {
+              lock.writeLock().unlock();
+          }
+        }
+        else {
+          lock.readLock().unlock();
         }
       }
   
@@ -585,21 +634,15 @@ public class FSDirectory extends Directory {
     /** IndexInput methods */
     protected void readInternal(byte[] b, int offset, int len)
          throws IOException {
-      synchronized (file) {
-        long position = getFilePointer();
-        if (position != file.position) {
-          file.seek(position);
-          file.position = position;
-        }
-        int total = 0;
-        do {
-          int i = file.read(b, offset+total, len-total);
-          if (i == -1)
-            throw new IOException("read past EOF");
-          file.position += i;
-          total += i;
-        } while (total < len);
-      }
+      int total = 0;
+      do {
+        RandomAccessFile raf = file.getFile();
+        raf.seek(getFilePointer());
+        int i = raf.read(b, offset+total, len-total);
+        if (i == -1)
+          throw new IOException("read past EOF");
+        total += i;
+      } while (total < len);
     }
   
     public void close() throws IOException {
@@ -624,7 +667,7 @@ public class FSDirectory extends Directory {
      *  file descriptor is valid.
      */
     boolean isFDValid() throws IOException {
-      return file.getFD().valid();
+      return file.getFile().getFD().valid();
     }
   }
 

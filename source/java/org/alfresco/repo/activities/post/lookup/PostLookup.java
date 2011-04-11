@@ -61,6 +61,7 @@ public class PostLookup
     private TransactionService transactionService;
     private PersonService personService;
     private TenantService tenantService;
+    private volatile boolean busy;
     
     public static final String JSON_NODEREF_LOOKUP = "nodeRefL"; // requires additional lookup
     
@@ -122,6 +123,13 @@ public class PostLookup
     public void execute() throws JobExecutionException
     {
         checkProperties();
+        if (busy)
+        {
+            logger.warn("Still busy ...");
+            return;
+        }
+        
+        busy = true;
         try
         {
             ActivityPostEntity params = new ActivityPostEntity();
@@ -251,6 +259,11 @@ public class PostLookup
                 logger.error("Exception during update of posts", e);
             }
         }
+        finally
+        {
+            busy = false;
+        }
+        
     }
     
     private Pair<String, String> lookupPerson(final String postUserId) throws JSONException

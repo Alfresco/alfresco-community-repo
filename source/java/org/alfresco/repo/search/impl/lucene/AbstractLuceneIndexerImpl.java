@@ -382,6 +382,10 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      */
     public void commit() throws LuceneIndexException
     {
+        if (s_logger.isDebugEnabled())
+        {
+            s_logger.debug(Thread.currentThread().getName() + " Starting Commit");
+        }
         switch (getStatus().getStatus())
         {
         case Status.STATUS_COMMITTING:
@@ -414,20 +418,33 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 }
                 setStatus(TransactionStatus.COMMITTED);
             }
-            catch (IOException e)
-            {
-                // If anything goes wrong we try and do a roll back
-                rollback();
-                throw new LuceneIndexException("Commit failed", e);
-            }
             catch (LuceneIndexException e)
             {
                 // If anything goes wrong we try and do a roll back
                 rollback();
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Commit Failed", e);
+                }
                 throw new LuceneIndexException("Commit failed", e);
+            }
+            catch (Throwable t)
+            {
+                // If anything goes wrong we try and do a roll back
+                rollback();
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Commit Failed", t);
+                }
+                throw new LuceneIndexException("Commit failed", t);                
             }
             finally
             {
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Ending Commit");
+                }
+                
                 // Make sure we tidy up
                 // deleteDelta();
             }
@@ -444,6 +461,10 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      */
     public int prepare() throws LuceneIndexException
     {
+        if (s_logger.isDebugEnabled())
+        {
+            s_logger.debug(Thread.currentThread().getName() + " Starting Prepare");
+        }
         switch (getStatus().getStatus())
         {
         case Status.STATUS_COMMITTING:
@@ -467,20 +488,39 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 if (isModified())
                 {
                     doPrepare();
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug(Thread.currentThread().getName() + " Waiting to Finish Preparing");
+                    }                    
                 }
                 setStatus(TransactionStatus.PREPARED);
                 return isModified() ? XAResource.XA_OK : XAResource.XA_RDONLY;
             }
-            catch (IOException e)
-            {
-                // If anything goes wrong we try and do a roll back
-                rollback();
-                throw new LuceneIndexException("Commit failed", e);
-            }
             catch (LuceneIndexException e)
             {
                 setRollbackOnly();
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Prepare Failed", e);
+                }
                 throw new LuceneIndexException("Index failed to prepare", e);
+            }
+            catch (Throwable t)
+            {
+                // If anything goes wrong we try and do a roll back
+                rollback();
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Prepare Failed", t);
+                }
+                throw new LuceneIndexException("Prepared failed", t);                
+            }
+            finally
+            {
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(Thread.currentThread().getName() + " Ending Prepare");
+                }                
             }
         }
     }

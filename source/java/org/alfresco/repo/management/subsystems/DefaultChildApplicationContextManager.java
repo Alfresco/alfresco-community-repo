@@ -112,19 +112,51 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     @Override
     public void destroy(boolean permanent)
     {
-        ApplicationContextManagerState state = (ApplicationContextManagerState) getState(false);
-
-        if (state != null)
+        if (getState(false) != null)
         {
-            // Cascade the destroy / shutdown
-            for (String id : state.getInstanceIds())
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (!hadWriteLock)
             {
-                ChildApplicationContextFactory factory = state.getApplicationContextFactory(id);
-                factory.destroy(permanent);
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+            }
+            try
+            {
+                ApplicationContextManagerState state = (ApplicationContextManagerState) getState(false);
+
+                if (state != null)
+                {
+                    // Cascade the destroy / shutdown
+                    for (String id : state.getInstanceIds())
+                    {
+                        ChildApplicationContextFactory factory = state.getApplicationContextFactory(id);
+                        factory.lock.writeLock().lock();
+                        try
+                        {
+                            factory.destroy(permanent);
+                        }
+                        finally
+                        {
+                            factory.lock.writeLock().unlock();
+                        }
+                    }
+                }
+
+                super.destroy(permanent);
+            }
+            finally
+            {
+                if (!hadWriteLock)
+                {
+                    this.lock.readLock().lock();
+                    this.lock.writeLock().unlock();
+                }
             }
         }
-
-        super.destroy(permanent);
+        else
+        {
+            super.destroy(permanent);
+        }
     }
 
     /* (non-Javadoc)
@@ -142,7 +174,15 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
      */
     public Collection<String> getInstanceIds()
     {
-        return ((ApplicationContextManagerState) getState(true)).getInstanceIds();
+        this.lock.readLock().lock();
+        try
+        {
+            return ((ApplicationContextManagerState) getState(true)).getInstanceIds();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /*
@@ -151,7 +191,15 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
      */
     public ApplicationContext getApplicationContext(String id)
     {
-        return ((ApplicationContextManagerState) getState(true)).getApplicationContext(id);
+        this.lock.readLock().lock();
+        try
+        {
+            return ((ApplicationContextManagerState) getState(true)).getApplicationContext(id);
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /**
@@ -205,7 +253,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
          */
-        public synchronized String getProperty(String name)
+        public String getProperty(String name)
         {
             if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
             {
@@ -228,7 +276,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
          * java.lang.String)
          */
-        public synchronized void setProperty(String name, String value)
+        public void setProperty(String name, String value)
         {
             if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
             {
@@ -267,7 +315,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
          * 
          * @return the instance ids
          */
-        public synchronized Collection<String> getInstanceIds()
+        public Collection<String> getInstanceIds()
         {
             return Collections.unmodifiableList(this.instanceIds);
         }
@@ -283,7 +331,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
          *            the id
          * @return the application context
          */
-        public synchronized ApplicationContext getApplicationContext(String id)
+        public ApplicationContext getApplicationContext(String id)
         {
             ChildApplicationContextFactory child = this.childApplicationContexts.get(id);
             return child == null ? null : child.getApplicationContext();
@@ -349,7 +397,15 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
                     // If we have the same instance ID but a different type, treat that as a destroy and remove
                     if (factory != null && !factory.getTypeName().equals(typeName))
                     {
-                        factory.destroy(true);
+                        factory.lock.writeLock().lock();
+                        try
+                        {
+                            factory.destroy(true);
+                        }
+                        finally
+                        {
+                            factory.lock.writeLock().unlock();
+                        }
                         factory = null;
                     }
                     if (factory == null)
@@ -369,7 +425,15 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
                 for (String id : idsToRemove)
                 {
                     ChildApplicationContextFactory factory = this.childApplicationContexts.remove(id);
-                    factory.destroy(true);
+                    factory.lock.writeLock().lock();
+                    try
+                    {
+                        factory.destroy(true);
+                    }
+                    finally
+                    {
+                        factory.lock.writeLock().unlock();
+                    }
                 }
                 this.instanceIds = newInstanceIds;
             }

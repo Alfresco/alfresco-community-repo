@@ -661,9 +661,6 @@
         <property name="mergerMergeFactor">
             <value>${lucene.indexer.mergerMergeFactor}</value>
         </property>
-        <property name="mergerMergeBlockingFactor">
-            <value>${lucene.indexer.mergerMergeBlockingFactor}</value>
-        </property>
         <property name="mergerMaxBufferedDocs">
             <value>${lucene.indexer.mergerMaxBufferedDocs}</value>
         </property>
@@ -1180,6 +1177,12 @@
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+         <property name="publicServiceAccessService">
+            <ref bean="publicServiceAccessService" />
         </property>
         <property name="searchService">
             <ref bean="ADMSearchService" />

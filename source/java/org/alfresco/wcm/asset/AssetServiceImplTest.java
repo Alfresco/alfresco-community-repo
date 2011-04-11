@@ -672,7 +672,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         {
             // submit the changes
             sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, "some updates by "+user);
-        
+
             snapCnt += (canUpdateExisting || canDeleteExisting) ? (1):(0);
             pollForSnapshotCount(stagingStoreId, snapCnt);
             

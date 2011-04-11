@@ -2,7 +2,19 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
+
+    <bean id="auditThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>defaultThreadPool</value>
+        </property>
+        <property name="corePoolSize">
+            <value>1</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>1</value>
+        </property>
+    </bean>
+
     <!-- Base audit service - non TX -->
     
     <bean id="auditService" class="org.alfresco.repo.audit.AuditServiceImpl">

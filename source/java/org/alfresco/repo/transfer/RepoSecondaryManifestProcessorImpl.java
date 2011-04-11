@@ -33,7 +33,11 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
@@ -50,6 +54,8 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
 {
     private NodeService nodeService;
     private CorrespondingNodeResolver nodeResolver;
+    
+    private static final Log log = LogFactory.getLog(RepoSecondaryManifestProcessorImpl.class);
 
     /**
      * @param receiver 
@@ -72,6 +78,10 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
 
     protected void processNode(TransferManifestNormalNode node)
     {
+        logComment("Seconday Processing incoming node: " + node.getNodeRef());
+      
+        log.debug("Seconday Processing incoming node: " + node.getNodeRef());
+        
         NodeRef correspondingNodeRef = nodeResolver.resolveCorrespondingNode(node.getNodeRef(),
                 TransferManifestNodeHelper.getPrimaryParentAssoc(node), node.getParentPath()).resolvedChild;
 
@@ -91,81 +101,105 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         currentAssocs = nodeService.getChildAssocs(correspondingNodeRef);
         processParentChildAssociations(requiredAssocs, currentAssocs, correspondingNodeRef, true);
         
-
         //Process "target" peer associations (associations *from* this node)
-        List<AssociationRef> requiredPeerAssocs = node.getTargetAssocs();
-        List<AssociationRef> currentPeerAssocs = nodeService.getTargetAssocs(correspondingNodeRef, RegexQNamePattern.MATCH_ALL);
-        processPeerAssociations(requiredPeerAssocs, currentPeerAssocs, correspondingNodeRef, true);
+        List<AssociationRef> requiredTargetAssocs = node.getTargetAssocs();
+        List<AssociationRef> currentTargetAssocs = nodeService.getTargetAssocs(correspondingNodeRef, RegexQNamePattern.MATCH_ALL);
+        processPeerAssociations(requiredTargetAssocs, currentTargetAssocs, correspondingNodeRef, true);
 
         //Process "source" peer associations (associations *to* this node)
-        requiredPeerAssocs = node.getSourceAssocs();
-        currentPeerAssocs = nodeService.getSourceAssocs(correspondingNodeRef, RegexQNamePattern.MATCH_ALL);
-        processPeerAssociations(requiredPeerAssocs, currentPeerAssocs, correspondingNodeRef, false);
+        List<AssociationRef> requiredSourceAssocs = node.getSourceAssocs();
+        List<AssociationRef> currentSourceAssocs = nodeService.getSourceAssocs(correspondingNodeRef, RegexQNamePattern.MATCH_ALL);
+        processPeerAssociations(requiredSourceAssocs, currentSourceAssocs, correspondingNodeRef, false);
 
     }
 
 
     /**
+     * Process the peer associations
+     * 
      * @param requiredAssocs
      * @param currentAssocs
      * @param correspondingNodeRef
      * @param isSource
      */
     private void processPeerAssociations(List<AssociationRef> requiredAssocs,
-            List<AssociationRef> currentAssocs, NodeRef nodeRef, boolean isSource)
+            List<AssociationRef> currentAssocs, 
+            NodeRef nodeRef, 
+            boolean isSource)
     {
-        if (requiredAssocs == null) {
+        if (requiredAssocs == null) 
+        {
             requiredAssocs = new ArrayList<AssociationRef>();
         }
-        if (currentAssocs == null) {
+        if (currentAssocs == null) 
+        {
             currentAssocs = new ArrayList<AssociationRef>();
         }
+               
+        List<AssociationRefKey> keysRequired = new ArrayList<AssociationRefKey>();
+        List<AssociationRefKey> keysCurrent = new ArrayList<AssociationRefKey>();
         
-        List<AssociationRef> assocsToAdd = new ArrayList<AssociationRef>();
-        List<AssociationRef> assocsToRemove = new ArrayList<AssociationRef>();
-        
-        Map<NodeRef, AssociationRef> currentAssocMap = new HashMap<NodeRef, AssociationRef>();
-        
-        for (AssociationRef currentAssoc : currentAssocs) {
-            NodeRef otherNode = isSource ? currentAssoc.getTargetRef() : currentAssoc.getSourceRef();
-            currentAssocMap.put(otherNode, currentAssoc);
-        }
-        
-        for (AssociationRef requiredAssoc : requiredAssocs)
+        /**
+         *  Which assocs do we need to add ?
+         *  
+         *  Need to compare on sourceNodeRef, targetNodeRef and qname but ignore, irrelevant id property 
+         *  which is why we need to introduce AssociationRefKey
+         */
+        for(AssociationRef ref : requiredAssocs)
         {
-            NodeRef otherNode = isSource ? requiredAssoc.getTargetRef() : requiredAssoc.getSourceRef();
-            AssociationRef existingAssociation = currentAssocMap.remove(otherNode);
-            if (existingAssociation != null) {
-                //We already have an association with the required node. 
-                //Check whether it is correct
-                if (!existingAssociation.getTypeQName().equals(requiredAssoc.getTypeQName())) {
-                    //No, the existing one doesn't match the required one
-                    assocsToRemove.add(existingAssociation);
-                    assocsToAdd.add(requiredAssoc);
-                }
-            } else {
+            keysRequired.add(new AssociationRefKey(ref));
+        }
+       
+        for(AssociationRef ref : currentAssocs )
+        {
+            keysCurrent.add(new AssociationRefKey(ref));
+        }
+          
+        /**
+         * Which assocs do we need to add?
+         */
+        for(AssociationRefKey ref : keysRequired)
+        {
+            
+            if(!keysCurrent.contains(ref))
+            {
                 //We don't have an existing association with this required node
-                //Check that the required node exists in this repo, and record it for adding
-                //if it does
-                if (nodeService.exists(otherNode)) {
-                    assocsToAdd.add(requiredAssoc);
+                NodeRef otherNode = isSource ? ref.targetRef : ref.sourceRef;
+                if (nodeService.exists(otherNode)) 
+                {
+                    //the other node exists in this repo
+                    if(log.isDebugEnabled())
+                    {
+                        log.debug("need to add peer assoc from:" + ref.sourceRef + ", to:" + ref.targetRef +", qname:" + ref.assocTypeQName);
+                    }
+                    nodeService.createAssociation(ref.sourceRef, ref.targetRef, ref.assocTypeQName);
                 }
             }
         }
-        //Once we get here, any entries remaining in currentParentMap are associations that need to be deleted.
-        assocsToRemove.addAll(currentAssocMap.values());
-        //Deal with associations to be removed
-        for (AssociationRef assocToRemove : assocsToRemove) {
-            nodeService.removeAssociation(assocToRemove.getSourceRef(), assocToRemove.getTargetRef(), assocToRemove.getTypeQName());
-        }
-        //Deal with associations to be added
-        for (AssociationRef assocToAdd : assocsToAdd) {
-            NodeRef source = isSource ? nodeRef : assocToAdd.getSourceRef();
-            NodeRef target = isSource ? assocToAdd.getTargetRef() : nodeRef;
-            nodeService.createAssociation(source, target, assocToAdd.getTypeQName());
-        }
+        
+        /** 
+         * Which assocs do we need to remove ?
+         * 
+         * Only remove the assocs for this node. 
+         * 
+         * TODO ALF-6543 - What if there is a local, non transferred, peer assoc, for example a rendition 
+         * or a rule or something? Is there some way to say that that link was not transferred?
+         */
+//        if(isSource)
+//        {
+            for(AssociationRefKey ref : keysCurrent)
+            {               
+                if(!keysRequired.contains(ref))
+                {
+                    if(log.isDebugEnabled())
+                    {
+                        log.debug("need to remove peer assoc from:" + ref.sourceRef + ", to:" + ref.targetRef +", qname:" + ref.assocTypeQName);
+                    }
+                    nodeService.removeAssociation(ref.sourceRef, ref.targetRef, ref.assocTypeQName);
+                }
+             }
+//        }             
     }
-    
 
     private void processParentChildAssociations(List<ChildAssociationRef> requiredAssocs, 
             List<ChildAssociationRef> currentAssocs, NodeRef nodeRef, boolean isParent) {
@@ -262,5 +296,79 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
     public void setNodeResolver(CorrespondingNodeResolver nodeResolver)
     {
         this.nodeResolver = nodeResolver;
+    }
+    
+    /**
+     * The AssociationRefKey is the key value for peer associations.
+     * 
+     * In particular is differs from AssociationRef in that it does not have the "id" property.
+     */
+    private class AssociationRefKey
+    {
+        NodeRef sourceRef;
+        NodeRef targetRef;
+        QName assocTypeQName;
+        
+        /**
+         * 
+         * @param sourceRef
+         * @param targetRef
+         * @param assocTypeQName
+         */
+        public AssociationRefKey(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+        {
+            this.sourceRef = sourceRef;
+            this.targetRef = targetRef;
+            this.assocTypeQName = assocTypeQName;
+        }
+        
+        /**
+         * 
+         * @param sourceRef
+         * @param targetRef
+         * @param assocTypeQName
+         */
+        public AssociationRefKey(AssociationRef ref)
+        {
+            this.sourceRef = ref.getSourceRef();
+            this.targetRef = ref.getTargetRef();
+            this.assocTypeQName = ref.getTypeQName();
+        }
+        
+        /**
+         * Compares:
+         * <ul>
+         * <li>{@link #id}</li>
+         * <li>{@link #sourceRef}</li>
+         * <li>{@link #targetRef}</li>
+         * <li>{@link #assocTypeQName}</li>
+         * </ul>
+         */
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (!(o instanceof AssociationRefKey))
+            {
+                return false;
+            }
+            AssociationRefKey other = (AssociationRefKey) o;
+
+            return 
+                    EqualsHelper.nullSafeEquals(this.sourceRef, other.sourceRef)
+                    && EqualsHelper.nullSafeEquals(this.assocTypeQName, other.assocTypeQName)
+                    && EqualsHelper.nullSafeEquals(this.targetRef, other.targetRef);
+        }
+
+        public int hashCode()
+        {
+            int hashCode = targetRef.hashCode();
+            hashCode = 37 * hashCode + ((sourceRef == null) ? 0 : sourceRef.hashCode());
+            hashCode = 37 * hashCode + ((assocTypeQName == null) ? 0 : assocTypeQName.hashCode());
+            return hashCode;
+        }
+        
     }
 }

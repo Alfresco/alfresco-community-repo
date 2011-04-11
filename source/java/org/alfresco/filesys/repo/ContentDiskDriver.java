@@ -2870,15 +2870,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             if ( isFolder == true || sameFolder == false) {
                 
-                // Update the old file state
-
-                if (oldState != null)
-                {
-                    // Update the file state index to use the new name
-
-                    ctx.getStateCache().renameFileState(newName, oldState, true);
-                }
-
                 // Rename or move the file/folder
 
                 doInWriteTransaction(sess, new CallableIO<Void>()
@@ -2893,6 +2884,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         return null;
                     }
                 });
+
+                // Update the old file state
+
+                if (oldState != null)
+                {
+                    // Update the file state index to use the new name
+
+                    ctx.getStateCache().renameFileState(newName, oldState, true);
+                }
 
                 // DEBUG
 

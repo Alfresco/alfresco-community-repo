@@ -512,7 +512,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     { 
         if (! existsTenant(tenantDomain))
         {
-            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
         }
         
         if (isEnabledTenant(tenantDomain))
@@ -555,7 +555,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     { 
         if (! existsTenant(tenantDomain))
         {
-            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
         }
         
         if (! isEnabledTenant(tenantDomain))
@@ -631,7 +631,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         if (! existsTenant(tenantDomain))
         {
-            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
         }
         
         return new Tenant(tenantDomain, isEnabledTenant(tenantDomain), getRootContentStoreDir(tenantDomain));
@@ -644,7 +644,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         if (! existsTenant(tenantDomain))
         {
-            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
         }
         else
         {                        

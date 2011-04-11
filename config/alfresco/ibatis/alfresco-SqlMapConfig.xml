@@ -6,7 +6,13 @@
 
 <sqlMapConfig>
 
-    <settings useStatementNamespaces="true" />
+    <settings useStatementNamespaces="true"
+    lazyLoadingEnabled="false"
+    enhancementEnabled="false"
+    maxTransactions="500"
+    maxSessions="500"
+    />
+    
     
     <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" callback="org.alfresco.ibatis.SerializableTypeHandlerCallback"/>
     

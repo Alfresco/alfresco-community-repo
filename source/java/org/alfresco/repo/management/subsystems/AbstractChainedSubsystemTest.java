@@ -30,8 +30,17 @@ public abstract class AbstractChainedSubsystemTest extends TestCase
     
     public ChildApplicationContextFactory getChildApplicationContextFactory(DefaultChildApplicationContextManager childApplicationContextManager, String id)
     {
-        DefaultChildApplicationContextManager.ApplicationContextManagerState state = (DefaultChildApplicationContextManager.ApplicationContextManagerState)childApplicationContextManager.getState(true);
-        return state.getApplicationContextFactory(id);
+        childApplicationContextManager.lock.readLock().lock();
+        try
+        {
+            DefaultChildApplicationContextManager.ApplicationContextManagerState state = (DefaultChildApplicationContextManager.ApplicationContextManagerState) childApplicationContextManager
+                    .getState(true);
+            return state.getApplicationContextFactory(id);
+        }
+        finally
+        {
+            childApplicationContextManager.lock.readLock().unlock();
+        }
     }
 
 }

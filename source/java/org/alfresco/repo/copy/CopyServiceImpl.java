@@ -40,6 +40,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -57,6 +58,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -95,6 +100,10 @@ public class CopyServiceImpl implements CopyService
     private PolicyComponent policyComponent;
     /** Rule service */
     private RuleService ruleService;
+    
+    private PermissionService permissionService;
+    
+    private PublicServiceAccessService publicServiceAccessService;
 
     /** Policy delegates */
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
@@ -161,6 +170,22 @@ public class CopyServiceImpl implements CopyService
         this.ruleService = ruleService;
     }
     
+    /**
+     * @param permissionService the permissionService to set
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    /**
+     * @param publicServiceAccessService the publicServiceAccessService to set
+     */
+    public void setPublicServiceAccessService(PublicServiceAccessService publicServiceAccessService)
+    {
+        this.publicServiceAccessService = publicServiceAccessService;
+    }
+
     /**
      * Initialise method
      */
@@ -297,6 +322,11 @@ public class CopyServiceImpl implements CopyService
                 false);
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * Defer to the standard implementation with copyChildren set to false
+     */
     public void copy(NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
         QName sourceNodeTypeQName = nodeService.getType(sourceNodeRef);
@@ -333,10 +363,22 @@ public class CopyServiceImpl implements CopyService
         copyAspects(copyDetails, targetNodeRef, Collections.<QName>emptySet(), callbacks);
         copyResidualProperties(copyDetails, targetNodeRef);
         
-        // invoke the copy complete policy
         Map<NodeRef, NodeRef> copiedNodeRefs = new HashMap<NodeRef, NodeRef>(1);
         copiedNodeRefs.put(sourceNodeRef, targetNodeRef);
-        copyPendingAssociations(copiedNodeRefs);          // Copy an associations that were left until now
+
+        Set<NodeRef> copies = new HashSet<NodeRef>(5);
+        copyChildren(
+                copyDetails,
+                targetNodeRef,
+                false,                              // We know that the node has been created
+                true,
+                copiedNodeRefs,
+                copies,
+                callbacks);
+        
+        // Copy an associations that were left until now
+        copyPendingAssociations(copiedNodeRefs);
+        // invoke the copy complete policy
         invokeCopyComplete(sourceNodeRef, targetNodeRef, false, copiedNodeRefs);         
     }
     
@@ -534,7 +576,8 @@ public class CopyServiceImpl implements CopyService
             copyProperties.put(ContentModel.PROP_COPY_REFERENCE, sourceNodeRef);
             internalNodeService.addAspect(copyTarget, ContentModel.ASPECT_COPIEDFROM, copyProperties);
 
-            // Do not copy permissions
+            // Copy permissions
+            copyPermissions(sourceNodeRef, copyTarget);
             
             // We present the recursion option regardless of what the client chooses
             copyChildren(
@@ -747,6 +790,41 @@ public class CopyServiceImpl implements CopyService
             }
         }
         
+    }
+
+    /**
+     * Copies the permissions of the source node reference onto the destination node reference
+     * 
+     * @param sourceNodeRef            the source node reference
+     * @param destinationNodeRef    the destination node reference
+     */
+    private void copyPermissions(final NodeRef sourceNodeRef, final NodeRef destinationNodeRef) 
+    {
+        if((publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", sourceNodeRef) ==  AccessStatus.ALLOWED) &&
+                (publicServiceAccessService.hasAccess("PermissionService", "getInheritParentPermissions", sourceNodeRef) ==  AccessStatus.ALLOWED))
+        {
+            // Get the permission details of the source node reference
+            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(sourceNodeRef);
+            boolean includeInherited = permissionService.getInheritParentPermissions(sourceNodeRef);
+
+            if((publicServiceAccessService.hasAccess("PermissionService", "setPermission", destinationNodeRef, "dummyAuth", "dummyPermission", true) == AccessStatus.ALLOWED) &&
+                    (publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", destinationNodeRef, includeInherited) == AccessStatus.ALLOWED))
+            {
+                // Set the permission values on the destination node        
+                for (AccessPermission permission : permissions) 
+                {
+                    if(permission.isSetDirectly())
+                    {
+                        permissionService.setPermission(
+                                destinationNodeRef, 
+                                permission.getAuthority(), 
+                                permission.getPermission(), 
+                                permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                    }
+                }
+                permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
+            }
+        }
     }
 
     /**

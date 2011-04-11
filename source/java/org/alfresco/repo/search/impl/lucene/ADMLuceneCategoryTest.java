@@ -993,8 +993,9 @@ public class ADMLuceneCategoryTest extends TestCase
         
         // Finally add some Japanese ones
         
-         //  オペレーション中ににシステムエラーが発生しました
-        String jp1 = "\u30aa\u30da\u30ec\u30fc\u30b7\u30e7\u30f3\u4e2d\u306b\u306b\u30b7\u30b9\u30c6\u30e0\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f";
+        //  オペレーション中ににシステム
+        // Shortened to 14 Japanese characters for default DB2 install: ALF-6545
+        String jp1 = "\u30aa\u30da\u30ec\u30fc\u30b7\u30e7\u30f3\u4e2d\u306b\u306b\u30b7\u30b9\u30c6\u30e0";
         catRef = categoryService.createRootCategory(
                 storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, jp1
         );

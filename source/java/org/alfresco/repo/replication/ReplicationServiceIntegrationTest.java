@@ -154,6 +154,8 @@ public class ReplicationServiceIntegrationTest extends TestCase
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
+        replicationParams.setEnabled(true);
+        
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
         
@@ -500,7 +502,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     {
        // We need the test transfer target for this test
        makeTransferTarget();
-       
+             
        // Ensure the destination is empty 
        // (don't want to get confused with older runs)
        assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
@@ -1119,8 +1121,15 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(IntervalPeriod.Hour, rd.getScheduleIntervalPeriod());
        
        
-       // Disable it
-       replicationService.disableScheduling(rd);
+        // Disable it
+        transactionService.getRetryingTransactionHelper().doInTransaction(new DoInTransaction(rd)
+        {
+            public Void execute() throws Throwable
+            {
+                replicationService.disableScheduling(replicationDefinition);
+                return null;
+            }
+        });
        assertEquals(false, rd.isSchedulingEnabled());
        
        

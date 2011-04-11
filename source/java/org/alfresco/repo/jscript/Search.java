@@ -29,7 +29,6 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -127,16 +126,11 @@ public class Search extends BaseScopableProcessorExtension
     public ScriptNode findNode(NodeRef ref)
     {
         ParameterCheck.mandatory("ref", ref);
-        String query = "ID:" + LuceneQueryParser.escape(ref.toString());
-        Object[] result = query(ref.getStoreRef().toString(), query, null, SearchService.LANGUAGE_LUCENE);
-        if (result.length != 0)
+        if (this.services.getNodeService().exists(ref))
         {
-            return (ScriptNode)result[0];
+            return new ScriptNode(ref, this.services, getScope());
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     /**

@@ -377,118 +377,84 @@ public class CopyServiceImplTest extends BaseSpringTest
                 QName.createQName("{test}aclCopyOne"));
         
         assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+       
+        // Admin
         
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-            @Override
-            public Void doWork() throws Exception
-            {
-                NodeRef copy = copyService.copy(
-                        sourceNodeRef,
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("{test}aclCopyTwo"));
-                
-                assertEquals(3, permissionService.getAllSetPermissions(copy).size());
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyTwo"));
 
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        NodeRef copy = copyService.copy(
-                                sourceNodeRef,
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{test}aclCopyThree"));
-                        
-                        assertEquals(2, permissionService.getAllSetPermissions(copy).size());
-                        return null;
-                    }
-                }, AuthenticationUtil.getGuestUserName());
+        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+
+        // guest
+
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
+
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyThree"));
+        assertEquals(2, permissionService.getAllSetPermissions(copy).size());
+
+        // guest with read permissions - write from ownership
         
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, true);
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
 
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        NodeRef copy = copyService.copy(
-                                sourceNodeRef,
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{test}aclCopyFour"));
-                        
-                        assertEquals(2, permissionService.getAllSetPermissions(copy).size());
-                        return null;
-                    }
-                }, AuthenticationUtil.getGuestUserName());
-        
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyFour"));
+
+        assertEquals(4, permissionService.getAllSetPermissions(copy).size());
+
+        // guest with read and write
+
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.setPermission(rootNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.CHANGE_PERMISSIONS, true);
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
 
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        NodeRef copy = copyService.copy(
-                                sourceNodeRef,
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{test}aclCopyFour"));
-                        
-                        assertEquals(5, permissionService.getAllSetPermissions(copy).size());
-                        return null;
-                    }
-                }, AuthenticationUtil.getGuestUserName());
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyFour"));
+
+        assertEquals(5, permissionService.getAllSetPermissions(copy).size());
         
-        
+        // guest with write but not read
+                      
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.setPermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS, false);
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
 
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        NodeRef copy = copyService.copy(
-                                sourceNodeRef,
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{test}aclCopyFour"));
-                        
-                        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
-                        return null;
-                    }
-                }, AuthenticationUtil.getGuestUserName());
-        
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyFour"));
+
+        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         permissionService.deletePermission(sourceNodeRef, AuthenticationUtil.getGuestUserName(), PermissionService.READ_PERMISSIONS);
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getGuestUserName());
 
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        NodeRef copy = copyService.copy(
-                                sourceNodeRef,
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                QName.createQName("{test}aclCopyFour"));
-                        
-                        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
-                        return null;
-                    }
-                }, AuthenticationUtil.getGuestUserName());
+        copy = copyService.copy(
+                sourceNodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}aclCopyFour"));
+
+        assertEquals(3, permissionService.getAllSetPermissions(copy).size());
+
         
     }
     

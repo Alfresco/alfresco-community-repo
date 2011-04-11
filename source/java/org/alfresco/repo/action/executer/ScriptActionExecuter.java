@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.UrlUtil;
 
 /**
  * Action to execute a JavaScript. The script has access to the default model.
@@ -154,7 +155,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
                 model.put("action", scriptAction);
 
-                model.put("webApplicationContextUrl", sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext());
+                model.put("webApplicationContextUrl", UrlUtil.getAlfrescoUrl(sysAdminParams)); 
 
                 Object result = null;
                 if (this.scriptLocation == null)

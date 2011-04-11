@@ -14,6 +14,8 @@
    <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
    <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
    
+   <typeAlias alias="ActivityFeedQuery" type="org.alfresco.repo.domain.activities.ActivityFeedQueryEntity"/>
+   
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
@@ -105,80 +107,76 @@
    </select>
    
    <!-- user feed - all sites - everyone -->
-   <select id="select_activity_feed_for_feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
    </select>
    
    <!-- user feed - all sites - others (not me) -->
-   <select id="select_activity_feed_for_feeduser_others" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser_others" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
-      and post_user_id <> #feedUserId#
+       <![CDATA[ and post_user_id <> #feedUserId# ]]>
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
    </select>
    
    <!-- user feed - all sites - me only (not others) -->
-   <select id="select_activity_feed_for_feeduser_me" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser_me" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id = #feedUserId#
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
    </select>
    
    <!-- user feed - given site - everyone -->
-   <select id="select_activity_feed_for_feeduser_and_site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser_and_site" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and site_network = #siteNetwork#
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
    </select>
    
    <!-- user feed - given site - others (not me) -->
-   <select id="select_activity_feed_for_feeduser_others_and_site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser_others_and_site" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
+      
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
-      and post_user_id <> #feedUserId#
+      <![CDATA[ and post_user_id <> #feedUserId# ]]>
       and site_network = #siteNetwork#
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
+
    </select>
    
    <!-- user feed - given site - me only (not others) -->
-   <select id="select_activity_feed_for_feeduser_me_and_site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
-      <![CDATA[
+   <select id="select_activity_feed_for_feeduser_me_and_site" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id = #feedUserId#
       and site_network = #siteNetwork#
       and activity_format = #activitySummaryFormat#
+      <isNotNull property="minId"><![CDATA[ and id >= #minId# ]]></isNotNull>
       order by post_date desc
-      ]]>
    </select>
    
    <!-- site feed - given site -->
-   <select id="select_activity_feed_for_site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+   <select id="select_activity_feed_for_site" parameterClass="ActivityFeedQuery" resultClass="ActivityFeed">
       <![CDATA[
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
@@ -208,6 +206,11 @@
       ]]>
    </delete>
    
+   <delete id="delete_activity_feed_for_site_entries" parameterClass="ActivityFeed">
+      delete from alf_activity_feed
+      where site_network = #siteNetwork#
+   </delete>
+   
    <delete id="delete_activity_feed_for_feeduser_entries_older_than_date" parameterClass="ActivityFeed">
       <![CDATA[
       delete from alf_activity_feed 
@@ -215,6 +218,11 @@
       and feed_user_id = #feedUserId#
       and activity_format = #activitySummaryFormat#
       ]]>
+   </delete>
+   
+   <delete id="delete_activity_feed_for_feeduser_entries" parameterClass="ActivityFeed">
+      delete from alf_activity_feed
+      where feed_user_id = #feedUserId#
    </delete>
    
    <select id="select_activity_feedcontrols_for_user" parameterClass="FeedControl" resultClass="FeedControl">

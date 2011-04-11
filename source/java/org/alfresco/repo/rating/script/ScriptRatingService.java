@@ -88,6 +88,19 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     {
         return ratingService.getRatingScheme(ratingSchemeName).getMaxRating();
     }
+    
+    /**
+     * This method checks whether self-rating is allowed for the specified rating scheme.
+     * If self-rating is allowed in the specified scheme, then the cm:creator of a node can apply a rating,
+     * otherwise they cannot.
+     * 
+     * @param ratingSchemeName the rating scheme bean name.
+     * @return <code>true</code> if users can rate their own content, else <code>false</code>.
+     */
+    public boolean isSelfRatingAllowed(String ratingSchemeName)
+    {
+        return ratingService.getRatingScheme(ratingSchemeName).isSelfRatingAllowed();
+    }
 
     /**
      * Applies the given rating to the specified node using the specified ratingScheme.

@@ -25,7 +25,6 @@ import org.alfresco.ibatis.BatchingDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.StoreRef;
 
 import com.ibatis.sqlmap.client.event.RowHandler;
 
@@ -134,13 +133,6 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
         return deleteAclMemberEntitiesForAcls(aclIds);
     }
     
-    public void getUsersWithoutUsageProp(StoreRef storeRef, StringHandler handler)
-    {
-        selectUsersWithoutUsageProp(storeRef, handler);
-    }
-    
-    protected abstract void selectUsersWithoutUsageProp(StoreRef storeRef,StringHandler handler);
-
     /**
      * {@inheritDoc}
      * <p>

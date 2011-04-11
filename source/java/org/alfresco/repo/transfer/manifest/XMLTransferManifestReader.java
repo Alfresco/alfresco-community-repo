@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.alfresco.repo.transfer.PathHelper;
+import org.alfresco.repo.transfer.TransferVersionImpl;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -323,6 +325,16 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 }
                 props.put("acl", acl);
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_VERSION))
+            {
+                String versionMajor = (String)atts.getValue("", "versionMajor");
+                String versionMinor = (String)atts.getValue("", "versionMinor");
+                String versionRevision = (String)atts.getValue("", "versionRevision");
+                String edition = (String)atts.getValue("", "edition");
+                
+                props.put("headerVersion", new TransferVersionImpl(versionMajor, versionMinor, versionRevision, edition));
+            }
+  
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION))
             {
 
@@ -601,6 +613,12 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 ContentData data = (ContentData)props.get("contentHeader");
                 props.put("value", data);
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_VERSION))
+            {
+                TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
+                TransferVersion version = (TransferVersion)props.get("headerVersion");
+                header.setTransferVersion(version);   
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL))
             {

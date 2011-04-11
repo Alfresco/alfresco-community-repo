@@ -26,11 +26,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -40,6 +45,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -82,20 +88,52 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      * Test store ref
      */
     private StoreRef testStoreRef;
+
+    private TransactionService transactionService;
+
+    private AuthenticationComponent authenticationComponent;
+
+    private UserTransaction testTX;
     
     
     @Override
     protected void setUp() throws Exception
-    {  	
+    {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            fail("Detected a leaked transaction from a previous test.");
+        }
+        
     	// Get the services by name from the application context
     	messageService = (MessageService)applicationContext.getBean("messageService");
         nodeService = (NodeService)applicationContext.getBean("NodeService");
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         contentService = (ContentService) applicationContext.getBean("ContentService");
+        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         
         // Re-set the current locale to be the default
         Locale.setDefault(Locale.ENGLISH);
         messageService.setLocale(Locale.getDefault());
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        authenticationComponent.setSystemUserAsCurrentUser();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception
+    {
+        if (testTX != null)
+        {
+            try
+            {
+                testTX.rollback();
+            }
+            catch (Throwable e) {} // Ignore
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
+        super.tearDown();
     }
     
     private void setupRepo() throws Exception

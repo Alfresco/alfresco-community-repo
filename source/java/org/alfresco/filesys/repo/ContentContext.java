@@ -18,6 +18,8 @@
  */
 package org.alfresco.filesys.repo;
 
+import java.util.regex.Pattern;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
@@ -74,6 +76,8 @@ public class ContentContext extends AlfrescoContext
     // Thread pool
     
     private ThreadRequestPool m_threadPool;
+    
+    private Pattern renameShufflePattern = Pattern.compile("(.*\\.tmp)|(.*\\.wbk)|(.*\\.bak)|(.*\\~)");
     
     /**
      * Default constructor allowing initialization by container.
@@ -163,7 +167,32 @@ public class ContentContext extends AlfrescoContext
     public void setDisableOplocks( boolean disableOplocks) {
     	m_oplocksDisabled = disableOplocks;
     }
-    
+
+    /**
+     * Get the regular expression pattern that will be applied to detected potential
+     * rename shuffles.
+     * 
+     * @return                          the regular expression pattern to match against
+     */
+    public Pattern getRenameShufflePattern()
+    {
+        return renameShufflePattern;
+    }
+
+    /**
+     * Set the regular expression that will be applied to filenames during renames
+     * to detect whether clients are performing a renaming shuffle - common during
+     * file saving on various clients.
+     * <p/>
+     * <b>ALF-3856</b>
+     * 
+     * @param renameShufflePattern      a regular expression filename match
+     */
+    public void setRenameShufflePattern(Pattern renameShufflePattern)
+    {
+        this.renameShufflePattern = renameShufflePattern;
+    }
+
     @Override
     public void initialize(AlfrescoDiskDriver filesysDriver)
     {

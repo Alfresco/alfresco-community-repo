@@ -263,16 +263,28 @@
                <type>d:text</type>
             </property>
             
-            <!-- system maintained values -->
+            <property name="cm:emailFeedDisabled">
+                <type>d:boolean</type>
+            </property>
+            
+            <!-- system maintained / protected values -->
+            
+            <property name="cm:emailFeedId">
+                <type>d:long</type>
+                <protected>true</protected>
+            </property>
+            
             <property name="cm:sizeCurrent">
                 <type>d:long</type>
                 <protected>true</protected>
                 <mandatory enforced="true">true</mandatory>
             </property>
+            
             <property name="cm:sizeQuota">
                 <type>d:long</type>
                 <protected>true</protected>
             </property>
+            
          </properties>
          
          <associations>
@@ -465,6 +477,25 @@
          </properties>
       </type>
 
+
+      <!-- Failed thumbnail content type -->
+      <type name="cm:failedThumbnail">
+         <title>Failed Thumbnail</title>
+         <parent>cm:cmobject</parent> 
+         <archive>false</archive>
+         <properties>
+            <property name="cm:failureCount">
+               <title>Count of thumbnail failures</title>
+               <type>d:int</type>
+               <default>0</default>
+            </property>
+            <property name="cm:failedThumbnailTime">
+               <title>Failed Thumbnail Time</title>
+               <type>d:datetime</type>
+            </property>
+         </properties>
+      </type>
+
       <!--              -->
       <!--  DEPRECATED  -->
       <!--              -->
@@ -473,7 +504,7 @@
       <type name="cm:thumbnail">
          <title>Thumbnail</title>
          <parent>cm:content</parent>
-         <archive>true</archive>
+         <archive>false</archive>
          <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
          <properties>     
             <property name="cm:thumbnailName">
@@ -570,6 +601,11 @@
                </index>
             </property>
          </properties>
+      </aspect>
+
+      <aspect name="cm:personDisabled">
+         <title>Person Disabled</title>
+         <description>Indicates that a cm:person type has been disabled.</description>
       </aspect>
 
       <aspect name="cm:transformable">
@@ -997,6 +1033,8 @@
          </properties>    
       </aspect>
       
+
+      <!-- Aspects used by the Rating Service -->
       <aspect name="cm:rateable">
          <title>Rateable</title>
          <associations>
@@ -1014,6 +1052,58 @@
             </child-association>
          </associations>
       </aspect>
+
+      <!-- The Rating Service uses aspects to store rolled up rating values.
+           The aspect and property names here must follow the naming convention
+           as described in the code. -->
+      <aspect name="cm:likesRatingSchemeRollups">
+         <title>Likes rating scheme rollups</title>
+         <properties>
+            <property name="cm:likesRatingSchemeCount">
+               <title>Likes Rating Scheme ratings count</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:likesRatingSchemeTotal">
+               <title>Likes Rating Scheme ratings total</title>
+               <type>d:float</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="cm:fiveStarRatingSchemeRollups">
+         <title>Five star rating scheme rollups</title>
+         <properties>
+            <property name="cm:fiveStarRatingSchemeCount">
+               <title>Five Star Rating Scheme ratings count</title>
+               <type>d:int</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:fiveStarRatingSchemeTotal">
+               <title>Five Star Rating Scheme ratings total</title>
+               <type>d:float</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
    
       <aspect name="cm:attachable">
          <title>Attachable</title>
@@ -1204,6 +1294,23 @@
             </child-association>
          </associations>
       </aspect>      
+      
+      <aspect name="cm:failedThumbnailSource">
+         <title>Failed Thumbnail Source</title>
+         <associations>
+            <child-association name="cm:failedThumbnail">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:failedThumbnail</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
       
       <!--       -->
       <!--  EXIF -->

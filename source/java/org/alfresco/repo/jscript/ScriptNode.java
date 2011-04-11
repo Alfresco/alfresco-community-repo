@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,9 +46,9 @@ import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.tagging.script.TagScope;
-import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.version.VersionModel;
@@ -1826,7 +1826,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         {
             try
             {
-                this.services.getFileFolderService().move(this.nodeRef, source.getNodeRef(), destination.getNodeRef(), null);
+                this.services.getFileFolderService().moveFrom(this.nodeRef, source.getNodeRef(), destination.getNodeRef(), null);
             }
             catch (Exception e)
             {
@@ -1935,6 +1935,27 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     // ------------------------------------------------------------------------------
     // Checkout/Checkin Services
 
+    /**
+     * Ensures that this document has the cm:versionable aspect applied to it,
+     *  and that it has the initial version in the version store.
+     * Calling this on a versioned node with a version store entry will have 
+     *  no effect.
+     * Calling this on a newly uploaded share node will have versioning enabled
+     *  for it (Share currently does lazy versioning to improve performance of
+     *  documents that are uploaded but never edited, and multi upload performance).
+     * 
+     * @param autoVersion If the cm:versionable aspect is applied, should auto versioning be requested?
+     * @param autoVersionProps If the cm:versionable aspect is applied, should auto versioning of properties be requested?
+     */
+    public void ensureVersioningEnabled(boolean autoVersion, boolean autoVersionProps)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+        props.put(ContentModel.PROP_AUTO_VERSION, autoVersion);
+        props.put(ContentModel.PROP_AUTO_VERSION_PROPS, autoVersionProps);
+        
+        this.services.getVersionService().ensureVersioningEnabled(nodeRef, props);
+    }
+    
     /**
      * Create a version of this document.  Note: this will add the cm:versionable aspect.
      * 
@@ -2480,10 +2501,10 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         }
         else
         {
+            Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+            
             // Queue async creation of thumbnail
-            Action action = this.services.getActionService().createAction(CreateThumbnailActionExecuter.NAME);
-            action.setParameterValue(CreateThumbnailActionExecuter.PARAM_THUMBANIL_NAME, thumbnailName);
-            this.services.getActionService().executeAction(action, this.nodeRef, false, true);
+            this.services.getActionService().executeAction(action, this.nodeRef, true, true);
         }
         
         return result;

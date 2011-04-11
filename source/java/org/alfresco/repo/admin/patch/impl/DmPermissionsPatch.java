@@ -95,6 +95,7 @@ public class DmPermissionsPatch extends AbstractPatch
                 {
                     RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
                     txHelper.setMaxRetries(1);
+                    txHelper.setForceWritable(true);
                     RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
                     {
                         public Long execute() throws Throwable

@@ -32,6 +32,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -92,6 +93,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     private PatchService patchService;
     /** used to ensure a unique transaction per execution */
     protected TransactionService transactionService;
+    /** Use this helper to ensure that patches can execute even on a read-only system */
+    protected RetryingTransactionHelper transactionHelper;
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
     protected SearchService searchService;
@@ -140,6 +143,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+        this.transactionHelper = transactionService.getRetryingTransactionHelper();
+        this.transactionHelper.setForceWritable(true);
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -378,6 +383,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         checkPropertyNotNull(id, "id");
         checkPropertyNotNull(description, "description");
         checkPropertyNotNull(transactionService, "transactionService");
+        checkPropertyNotNull(transactionHelper, "transactionHelper");
         checkPropertyNotNull(namespaceService, "namespaceService");
         checkPropertyNotNull(nodeService, "nodeService");
         checkPropertyNotNull(searchService, "searchService");

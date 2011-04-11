@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.alfresco.service.namespace.QName;
 
-
-
 /**
  * Rule action interface.
  * 
@@ -37,4 +35,16 @@ public interface ActionDefinition extends ParameterizedItemDefinition
      * @return  list of types
      */
     public List<QName> getApplicableTypes();
+    
+    /**
+     * Get whether the basic action definition supports action tracking
+     * or not.  This can be overridden for each {@link Action#getTrackStatus() action}
+     * but if not, this value is used.  Defaults to <tt>false</tt>.
+     * 
+     * @return      <tt>true</tt> to track action execution status or <tt>false</tt> (default)
+     *              to do no action tracking
+     * 
+     * @since 3.4.1
+     */
+    public boolean getTrackStatus();
 }

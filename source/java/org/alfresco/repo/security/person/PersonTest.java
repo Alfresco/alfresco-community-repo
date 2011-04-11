@@ -38,7 +38,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -62,34 +65,37 @@ public class PersonTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TransactionService transactionService;
-
     private PersonService personService;
-    
     private BehaviourFilter policyBehaviourFilter;
-
     private NodeService nodeService;
-
     private NodeRef rootNodeRef;
-
     private PermissionService permissionService;
-
     private AuthorityService authorityService;
-
+    private MutableAuthenticationDao authenticationDAO;
     private UserTransaction testTX;
 
     public PersonTest()
     {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public void setUp() throws Exception
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         transactionService = (TransactionService) ctx.getBean("transactionService");
         personService = (PersonService) ctx.getBean("personService");
         nodeService = (NodeService) ctx.getBean("nodeService");
         permissionService = (PermissionService) ctx.getBean("permissionService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         policyBehaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
         
         testTX = transactionService.getUserTransaction();
@@ -1151,5 +1157,28 @@ public class PersonTest extends TestCase
         }
         
         personService.deletePerson(TEST_PERSON);
+    }
+    
+    public void testDisableEnablePerson()
+    {
+        String userName = GUID.generate();
+        
+        authenticationDAO.createUser(userName, "abc".toCharArray());
+        
+        Map<QName, Serializable> properties = createDefaultProperties(
+                userName,
+                "firstName",
+                "lastName",
+                "email@orgId",
+                "orgId",
+                null);
+        NodeRef personNodeRef = personService.createPerson(properties);
+        assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
+        
+        authenticationDAO.setEnabled(userName, true);
+        assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
+        
+        authenticationDAO.setEnabled(userName, false);
+        assertTrue("Person should be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
     }
 }

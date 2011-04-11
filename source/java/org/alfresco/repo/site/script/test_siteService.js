@@ -41,6 +41,8 @@ function testCRUD()
 
 function testListSites()
 {
+   var sitesStart = siteService.listSites(null, null);
+
 	// Create a couple of sites
 	siteService.createSite("sitePreset", "siteShortName", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
 	siteService.createSite("sitePreset", "siteShortName2", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
@@ -50,8 +52,7 @@ function testListSites()
 	
 	// Check the list
 	test.assertNotNull(sites);
-	// Note: the result is 3 since we created a site to place in the model
-	test.assertEquals(3, sites.length);
+	test.assertEquals(2 + sitesStart.length, sites.length);
 	
 	// TODO .. check the filters
 }

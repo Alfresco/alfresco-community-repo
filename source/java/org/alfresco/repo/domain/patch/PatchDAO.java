@@ -25,7 +25,6 @@ import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -89,13 +88,9 @@ public interface PatchDAO
     }
     
     /**
-     * Iterate over all person nodes with missing usage property (for one-off patch)
-     * 
-     * @param storeRef                          the store to search in
-     * @param handler                           the callback to use while iterating over the people
-     * @return Returns the values for person node uuid
+     * Add a <b>cm:sizeCurrent</b> property to person nodes that don't have it.
      */
-    public void getUsersWithoutUsageProp(StoreRef storeRef, StringHandler handler);
+    public int addSizeCurrentProp();
     
     // ACL-related
     

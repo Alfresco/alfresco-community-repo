@@ -204,9 +204,20 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             versionProperties.putAll(origVersionProperties);
         }
         
+        // We don't want either the adding of the Versionable aspect, or the setting
+        //  of the version label, to affect the auditable properties on the node that
+        //  is being versioned.
+        // So, disable the auditable aspect on that node for now
+        boolean disableAuditable = policyBehaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
+        if(disableAuditable)
+        {
+            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+        
         // If the version aspect is not there then add it to the 'live' (versioned) node
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
         {
+            // Add the versionable aspect to the node
             this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
         }
         
@@ -352,6 +363,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 ContentModel.PROP_VERSION_LABEL,
                 version.getVersionLabel());
 
+        // Re-enable the auditable aspect (if we turned it off earlier)
+        if(disableAuditable)
+        {
+            policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+        
         // Invoke the policy behaviour
         invokeAfterCreateVersion(nodeRef, version);
 

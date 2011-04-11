@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.json.ExceptionJsonSerializer;
@@ -234,7 +235,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         return hostConfig;
     }
 
-    public Transfer begin(TransferTarget target, String fromRepositoryId) throws TransferException
+    public Transfer begin(TransferTarget target, String fromRepositoryId, TransferVersion fromVersion) throws TransferException
     {
         PostMethod beginRequest = getPostMethod();
         try
@@ -247,25 +248,51 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 beginRequest.setRequestBody(   new NameValuePair[] {
                         new NameValuePair(TransferCommons.PARAM_FROM_REPOSITORYID, fromRepositoryId),
-                        new NameValuePair(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF, "false")});
+                        new NameValuePair(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF, "false"),
+                        new NameValuePair(TransferCommons.PARAM_VERSION_MAJOR, fromVersion.getVersionMajor()),
+                        new NameValuePair(TransferCommons.PARAM_VERSION_MINOR, fromVersion.getVersionMinor()),
+                        new NameValuePair(TransferCommons.PARAM_VERSION_REVISION, fromVersion.getVersionRevision()),
+                        new NameValuePair(TransferCommons.PARAM_VERSION_EDITION, fromVersion.getEdition())
+                });
                                           
                 int responseStatus = httpClient.executeMethod(hostConfig, beginRequest, httpState);
+                
                 checkResponseStatus("begin", responseStatus, beginRequest);
                 //If we get here then we've received a 200 response
                 //We're expecting the transfer id encoded in a JSON object...
                 JSONObject response = new JSONObject(beginRequest.getResponseBodyAsString());
-                String transferId = response.getString("transferId");                
+                
+                Transfer transfer = new Transfer();
+                transfer.setTransferTarget(target);
+                
+                String transferId = response.getString(TransferCommons.PARAM_TRANSFER_ID);
+                transfer.setTransferId(transferId);
+           
+                if(response.has(TransferCommons.PARAM_VERSION_MAJOR))
+                {
+                    String versionMajor = response.getString(TransferCommons.PARAM_VERSION_MAJOR);
+                    String versionMinor = response.getString(TransferCommons.PARAM_VERSION_MINOR);
+                    String versionRevision = response.getString(TransferCommons.PARAM_VERSION_REVISION);
+                    String edition = response.getString(TransferCommons.PARAM_VERSION_EDITION);
+                    TransferVersion version = new TransferVersionImpl(versionMajor, versionMinor, versionRevision, edition);
+                    transfer.setToVersion(version);
+                }
+                else
+                {
+                    TransferVersion version = new TransferVersionImpl("0", "0", "0", "Unknown");
+                    transfer.setToVersion(version);
+                }
+                    
                 if(log.isDebugEnabled())
                 {
                     log.debug("begin transfer transferId:" + transferId +", target:" + target);
                 }
-                Transfer transfer = new Transfer();
-                transfer.setTransferId(transferId);
-                transfer.setTransferTarget(target);
+               
                 return transfer;
             } 
             catch (RuntimeException e)
             {
+                log.debug("unexpected exception", e);
                 throw e;
             } 
             catch (Exception e)
@@ -277,6 +304,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         } 
         finally
         {
+            log.debug("releasing connection");
             beginRequest.releaseConnection();
         }
     }

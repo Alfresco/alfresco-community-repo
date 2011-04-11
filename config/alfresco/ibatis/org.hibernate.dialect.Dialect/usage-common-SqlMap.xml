@@ -170,21 +170,6 @@
             p1.string_value, n.audit_creator
     </select>
     
-    <!-- for patch (PersonUsagePatch) -->
-    <select id="select_GetUsersWithoutUsageProp" parameterMap="parameter_Selector3Map" resultClass="string">
-        select
-            n.uuid as uuid
-        from
-            alf_node n
-            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
-            left join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
-        where
-            s.protocol = ? and
-            s.identifier = ? and
-            n.node_deleted = ? and
-            p1.persisted_type_n is null
-    </select>
-    
     <!--                -->
     <!-- Deletes        -->
     <!--                -->

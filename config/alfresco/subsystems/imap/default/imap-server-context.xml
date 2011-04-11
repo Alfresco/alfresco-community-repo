@@ -149,6 +149,9 @@
         <property name="permissionService">
             <ref bean="PermissionService"/>
         </property>
+        <property name="policyFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>
         
 <property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />

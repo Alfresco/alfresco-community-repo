@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,10 @@
 
 package org.alfresco.repo.rating;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -35,14 +39,32 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
     private String name;
     private float minRating, maxRating;
     
+    private List<AbstractRatingRollupAlgorithm> propertyRollups = Collections.emptyList();
+    
+    /**
+     * Is the cm:creator of the content node allowed to apply ratings to it?
+     * <code>true</code> if yes, else <code>false</code>.
+     */
+    private boolean selfRatingAllowed;
+    
     public RatingSchemeImpl(RatingSchemeRegistry registry)
     {
         this.ratingSchemeRegistry = registry;
     }
     
+    public void setPropertyRollups(List<AbstractRatingRollupAlgorithm> rollupAlgorithms)
+    {
+        this.propertyRollups = rollupAlgorithms;
+    }
+    
     public void init()
     {
         ratingSchemeRegistry.register(this.name, this);
+    }
+    
+    public List<AbstractRatingRollupAlgorithm> getPropertyRollups()
+    {
+        return Collections.unmodifiableList(this.propertyRollups);
     }
 
     /*
@@ -62,6 +84,11 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
     public void setMaxRating(float maxRating)
     {
         this.maxRating = maxRating;
+    }
+    
+    public void setSelfRatingAllowed(boolean selfRatingAllowed)
+    {
+        this.selfRatingAllowed = selfRatingAllowed;
     }
 
     /*
@@ -100,6 +127,15 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingScheme#isSelfRatingAllowed()
+     */
+    public boolean isSelfRatingAllowed()
+    {
+        return this.selfRatingAllowed;
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingScheme#getName()
      */
     public String getName()
@@ -116,6 +152,20 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
            .append(" [").append(this.minRating)
            .append("..").append(this.maxRating)
            .append("]");
+        
+        // Injected rollups.
+        msg.append(" <");
+        for (Iterator<AbstractRatingRollupAlgorithm> iter = propertyRollups.iterator(); iter.hasNext(); )
+        {
+            AbstractRatingRollupAlgorithm nextRollup = iter.next();
+            msg.append(nextRollup.getRollupName());
+            if (iter.hasNext())
+            {
+                msg.append(", ");
+            }
+        }
+        msg.append(">");
+        
         return msg.toString();
     }
 }

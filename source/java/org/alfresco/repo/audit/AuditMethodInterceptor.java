@@ -134,6 +134,12 @@ public class AuditMethodInterceptor implements MethodInterceptor
     
     public Object invoke(MethodInvocation mi) throws Throwable
     {
+        // Bypass all auditing if the system is in read-only mode
+        if (!transactionService.getAllowWrite())
+        {
+            return mi.proceed();
+        }
+        // Shortcut if no audit values are required
         if(!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
         {
             // No auditing or server is read-only
@@ -403,7 +409,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
         	// rather than a nested transaction to avoid contention for the same audit table
             threadPoolExecutor.execute(new Runnable()
             {
-				public void run() {
+				public void run()
+				{
 			        Map<String, Serializable> auditedData;
 
 		            StringBuilder sb = new StringBuilder(1024);

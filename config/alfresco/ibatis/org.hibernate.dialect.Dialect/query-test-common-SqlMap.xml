@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!--
+    ** This configuraton is for tests only. **
+    Applications or services should create specific 'query-xxx-common-SqlMap.xml' files to define
+    queries required.
+
+    The namespace must start 'alfresco.query.' and then contain the reference to the app using it.
+    In this case, the application is 'test' so the filename is 'query-test-...' and the
+    namespace is 'alfresco.query.test'.
+    
+    Select statements are prefixed 'select_' in Alfresco's config.  The underscore is important to
+    prevent confusion (at a code level) between namespaces and the type of SQL statement.
+    
+    Hints:
+        Do not use 'parameterMap' or 'resultMap' as these are deprecated in MyBatis (when last we checked).
+        
+        Ensure that all 'types' (see 'typeAlias') have concise toString methods to aid debugging.
+        
+        We are using SQL, so it is OK to embed '%' in wildcard strings.  It becomes unwieldy to assume
+        that the client code always wants to match a prefix or suffix in 'like' clauses.  However, it
+        is up to the application logic as to whether the '%' is embedded in the SQL or in the code.
+    
+    See class CannedQueryDAOTest for a demonstration.
+-->
+<sqlMap namespace="alfresco.query.test">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
+
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_CountMimetypes" parameterClass="TestOne" resultClass="Long">
+        select
+            count(*)
+        from
+            alf_mimetype
+        <isNotNull property="mimetypeMatch">
+        where
+            <isEqual property="exact" compareValue="true">mimetype_str = #mimetypeMatch#</isEqual>
+            <isEqual property="exact" compareValue="false">mimetype_str like #mimetypeMatch#</isEqual>
+        </isNotNull>
+        <isEqual property="forceFail" compareValue="true">JUNKED</isEqual>
+    </select>
+
+</sqlMap>

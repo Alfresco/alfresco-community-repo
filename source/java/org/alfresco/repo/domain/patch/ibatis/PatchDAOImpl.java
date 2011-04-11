@@ -29,6 +29,7 @@ import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
+import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.patch.AbstractPatchDAOImpl;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,7 +62,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_ADM_MAX_NODE_ID = "alfresco.patch.select_admMaxNodeId";
     private static final String SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_avmNodesWithOldContentProperties";
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
-    private static final String SELECT_USERS_WITHOUT_USAGE_PROP = "alfresco.usage.select_GetUsersWithoutUsageProp";
     private static final String SELECT_AUTHORITIES_AND_CRC = "alfresco.patch.select_authoritiesAndCrc";
     private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.patch.select_AllAclIds";
     private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.patch.select_UsedAclIds";
@@ -78,6 +78,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String UPDATE_AVM_NODE_LIST_NULLIFY_ACL = "alfresco.avm.update_AVMNodeList_nullifyAcl";
     private static final String UPDATE_AVM_NODE_LIST_SET_ACL = "alfresco.avm.update_AVMNodeList_setAcl";
     private static final String UPDATE_CHILD_ASSOC_CRC = "alfresco.patch.update_childAssocCrc";
+    private static final String UPDATE_CREATE_SIZE_CURRENT_PROPERTY = "alfresco.patch.update_CreateSizeCurrentProperty";
     
     private static final String DELETE_PERMISSIONS_UNUSED_ACES = "alfresco.permissions.delete_UnusedAces";
     private static final String DELETE_PERMISSIONS_ACL_LIST = "alfresco.permissions.delete_AclList";
@@ -96,6 +97,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     
     private SqlMapClientTemplate template;
     private QNameDAO qnameDAO;
+    private LocaleDAO localeDAO;
     
     public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
     {
@@ -105,6 +107,11 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
+    }
+    
+    public void setLocaleDAO(LocaleDAO localeDAO)
+    {
+        this.localeDAO = localeDAO;
     }
     
     public void startBatch()
@@ -226,50 +233,23 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     }
     
     @Override
-    protected void selectUsersWithoutUsageProp(StoreRef storeRef, StringHandler handler)
+    public int addSizeCurrentProp()
     {
-        long personTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
-        long sizeCurrentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        Long sizeCurrentPropQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        Long defaultLocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst(); 
+        Long personTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
         
-        Map<String, Object> params = new HashMap<String, Object>(1);
-        params.put("personTypeQNameID", personTypeQNameEntityId); // cm:person
-        params.put("sizeCurrentPropQNameID",sizeCurrentPropQNameEntityId); // cm:sizeCurrent
-        params.put("storeProtocol", storeRef.getProtocol());
-        params.put("storeIdentifier", storeRef.getIdentifier());
-        params.put("isDeleted", false);
+        SizeCurrentParams params = new SizeCurrentParams();
+        params.setSizeCurrentQNameId(sizeCurrentPropQNameId);
+        params.setDefaultLocaleId(defaultLocaleId);
+        params.setPersonTypeQNameId(personTypeQNameId);
         
-        StringRowHandler rowHandler = new StringRowHandler(handler);
-        
-        template.queryWithRowHandler(SELECT_USERS_WITHOUT_USAGE_PROP, params, rowHandler);
-        
+        int rowsAffected = template.update(UPDATE_CREATE_SIZE_CURRENT_PROPERTY, params);
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Listed " + rowHandler.total + " users without usage");
+            logger.debug("Added " + rowsAffected + " cm:sizeCurrent properties.");
         }
-    }
-    
-    /**
-     * Row handler for getting strings
-     */
-    private static class StringRowHandler implements RowHandler
-    {
-        private final StringHandler handler;
-        
-        private int total = 0;
-        
-        private StringRowHandler(StringHandler handler)
-        {
-            this.handler = handler;
-        }
-        public void handleRow(Object valueObject)
-        {
-            handler.handle((String)valueObject);
-            total++;
-            if (logger.isDebugEnabled() && (total == 0 || (total % 1000 == 0) ))
-            {
-                logger.debug("   Listed " + total + " strings");
-            }
-        }
+        return rowsAffected;
     }
     
     @Override

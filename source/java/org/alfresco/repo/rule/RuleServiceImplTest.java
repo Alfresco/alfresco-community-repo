@@ -891,7 +891,7 @@ public class RuleServiceImplTest extends BaseRuleTest
                 NodeRef testFolderNodeRef = childAssocRef.getChildRef();
 
                 // get script nodeRef
-                NodeRef scriptRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts/cm:backup.js", null, namespaceService, false).get(0);
+                NodeRef scriptRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts/cm:backup.js.sample", null, namespaceService, false).get(0);
 
                 assertNotNull("NodeRef script is null", scriptRef);
 

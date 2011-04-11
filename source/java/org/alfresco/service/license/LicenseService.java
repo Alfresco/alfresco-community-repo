@@ -29,7 +29,11 @@ import org.alfresco.service.PublicService;
 @PublicService
 public interface LicenseService
 {
-
+    /**
+     * Force license reload
+     */
+    public String loadLicense();
+    
     /**
      * Begin the license verification loop. Throws an exception if a new .lic file has been supplied that is invalid.
      * Will quietly make the repository read only if there is no license and the repository isn't eligible for the free
@@ -55,10 +59,35 @@ public interface LicenseService
      */
     @NotAuditable
     public LicenseDescriptor getLicense();
-
+    
+    /**
+     * Register a callback that gets called when a license changes.
+     */
+    public void registerOnLicenseChange(LicenseChangeHandler callback);
+    
     /**
      * Informs the service it is being shutdown.
      */
     @NotAuditable
     public void shutdown();
+    
+    /**
+     * Inteface for components wishing to know when the license has changed
+     *  
+     * @see registerOnLicenseChange
+     */
+    public interface LicenseChangeHandler 
+    {
+        /**
+         * Notification of a license change.
+         * 
+         * @param licenseDescriptor         the new license (never <tt>null</tt>)
+         */
+        void onLicenseChange(LicenseDescriptor licenseDescriptor);
+        
+        /**
+         * Notification that a license have failed to validate
+         */
+        void onLicenseFail();
+    }
 }

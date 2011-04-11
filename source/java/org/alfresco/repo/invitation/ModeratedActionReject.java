@@ -19,6 +19,7 @@
 package org.alfresco.repo.invitation;
 
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,9 @@ import org.springframework.beans.factory.BeanFactory;
 
 /**
  * JBPM Action fired when a moderated invitation is rejected.
+ * Note - uses a classpath template, rather than a data dictionary template,
+ *  so behaves slightly differently to many other mail actions, and can't
+ *  currently be localised easily.
  */
 public class ModeratedActionReject extends JBPMSpringActionHandler
 {
@@ -43,7 +47,7 @@ public class ModeratedActionReject extends JBPMSpringActionHandler
     
     private ActionService actionService;
     private TemplateService templateService;
-    //private String rejectTemplate = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:moderated-reject-email.ftl\"";
+//    private String rejectTemplate = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:moderated-reject-email.ftl\"";
     private String rejectTemplate = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
 
     private boolean sendEmails = true;
@@ -81,16 +85,21 @@ public class ModeratedActionReject extends JBPMSpringActionHandler
         // send email to the invitee if possible - but don't fail the rejection if email cannot be sent
         try 
         {
-        	Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
+            // Build our model
+        	Map<String, Serializable> model = new HashMap<String, Serializable>(8, 1.0f);
         	model.put("resourceName", resourceName);
         	model.put("resourceType", resourceType);
         	model.put("inviteeRole", inviteeRole);
         	model.put("reviewComments", reviewComments);
         	model.put("reviewer", reviewer);
         	model.put("inviteeUserName", inviteeUserName);
-     
+        	
+        	// Process the template
+        	// Note - because we use a classpath template, rather than a Data Dictionary
+        	//        one, we can't have the MailActionExecutor do the template for us
         	String emailMsg = templateService.processTemplate("freemarker", rejectTemplate,  model);
         	        
+        	// Send
         	Action emailAction = actionService.createAction("mail");
         	emailAction.setParameterValue(MailActionExecuter.PARAM_TO, inviteeUserName);
         	emailAction.setParameterValue(MailActionExecuter.PARAM_FROM, reviewer);

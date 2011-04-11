@@ -32,6 +32,7 @@ import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
 import org.alfresco.repo.domain.permissions.AclCrudDAOTest;
 import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
 import org.alfresco.repo.domain.qname.QNameDAOTest;
+import org.alfresco.repo.domain.query.CannedQueryDAOTest;
 import org.alfresco.repo.domain.usage.UsageDAOTest;
 
 /**
@@ -58,6 +59,7 @@ public class DomainTestSuite extends TestSuite
         suite.addTestSuite(AppliedPatchDAOTest.class);
         suite.addTestSuite(AclCrudDAOTest.class);
         suite.addTestSuite(UsageDAOTest.class);
+        suite.addTestSuite(CannedQueryDAOTest.class);
         
         return suite;
     }

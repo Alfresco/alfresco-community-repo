@@ -389,6 +389,11 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getContainingAuthorities(type, name, immediate);
     }
+    
+    public NodeRef getAuthorityNodeRef(String name)
+    {
+        return authorityDAO.getAuthorityNodeRefOrNull(name);
+    }
 
     public void removeAuthority(String parentName, String childName)
     {

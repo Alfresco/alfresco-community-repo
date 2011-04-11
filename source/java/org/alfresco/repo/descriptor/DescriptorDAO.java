@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.descriptor;
 
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
 
 /**
@@ -42,7 +43,7 @@ public interface DescriptorDAO
      *            the current server descriptor
      * @return the descriptor
      */
-    public Descriptor updateDescriptor(Descriptor serverDescriptor);
+    public Descriptor updateDescriptor(Descriptor serverDescriptor, LicenseMode licenseMode);
 
     /**
      * Gets the license key.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -56,7 +56,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     private RatingService ratingService;
     private Repository repositoryHelper;
     private ScriptService scriptService;
-//    private RetryingTransactionHelper transactionHelper;
+    private RatingNamingConventionsUtil ratingNamingConventions;
+    
     private NodeRef companyHome;
     
     // These NodeRefs are used by the test methods.
@@ -81,6 +82,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
 //        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
         this.scriptService = (ScriptService) this.applicationContext.getBean("scriptService");
+        this.ratingNamingConventions = (RatingNamingConventionsUtil)this.applicationContext.getBean("rollupNamingConventions");
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -187,8 +189,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals("Wrong number of ratings nodes.", 1, allChildren.size());
         // child-assoc of type cm:ratings
         assertEquals("Wrong type qname on ratings assoc", ContentModel.ASSOC_RATINGS, allChildren.get(0).getTypeQName());
-        // child-assoc of name cm:<username>
-        QName expectedAssocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, AuthenticationUtil.getFullyAuthenticatedUser());
+        // child-assoc of name cm:<username__ratingScheme>
+        QName expectedAssocName = ratingNamingConventions.getRatingAssocNameFor(AuthenticationUtil.getFullyAuthenticatedUser(), FIVE_STAR_SCHEME_NAME);
         assertEquals("Wrong qname on ratings assoc", expectedAssocName, allChildren.get(0).getQName());
         // node structure seems ok.
         
@@ -250,8 +252,6 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     private void assertDateIsCloseToNow(Date d)
     {
-        //TODO Turning this assertion off temporarily
-        
 //        assertNotNull("Date was unexpectedly null", d);
 //        Date now = new Date();
 //        assertTrue("Date was not before 'now'", now.after(d));
@@ -282,39 +282,23 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     /**
      * This test method ensures that if a single user attempts to rate a piece of content in two
-     * different rating schemes, then an exception should be thrown.
-     * @throws Exception
+     * different rating schemes, then an exception should not be thrown.
      */
     public void testOneUserRatesInTwoSchemes() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
-        ratingService.applyRating(testDoc_Admin, 1.0f, FIVE_STAR_SCHEME_NAME);
+        ratingService.applyRating(testDoc_Admin, 2.0f, FIVE_STAR_SCHEME_NAME);
 
-        // A new score in a different rating scheme by the same user should fail.
-        boolean correctExceptionThrown = false;
-        try
-        {
-            ratingService.applyRating(testDoc_Admin, 2.0f, LIKES_SCHEME_NAME);
-        } catch (RatingServiceException expected)
-        {
-            correctExceptionThrown = true;
-        }
-        if (correctExceptionThrown == false)
-        {
-            fail("Expected exception not thrown.");
-        }
+        // A new score in a different rating scheme by the same user should not fail.
+        ratingService.applyRating(testDoc_Admin, 1.0f, LIKES_SCHEME_NAME);
         
-        float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
-        assertEquals("Document had wrong mean rating.", 1f, meanRating);
-
-        float totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
-        assertEquals("Document had wrong total rating.", 1f, totalRating);
-
-        int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
-        assertEquals("Document had wrong ratings count.", 1, ratingsCount);
+        // There should be two rating child nodes under the rated node.
+        assertEquals("Wrong number of child nodes", 2 , nodeService.getChildAssocs(testDoc_Admin).size());
         
-        // There should only be one rating child node under the rated node.
-        assertEquals("Wrong number of child nodes", 1 , nodeService.getChildAssocs(testDoc_Admin).size());
+        List<Rating> ratings = ratingService.getRatingsByCurrentUser(testDoc_Admin);
+        assertEquals(2, ratings.size());
+        assertEquals(FIVE_STAR_SCHEME_NAME, ratings.get(0).getScheme().getName());
+        assertEquals(LIKES_SCHEME_NAME, ratings.get(1).getScheme().getName());
     }
     
     /**
@@ -343,6 +327,22 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         assertEquals("Document had wrong ratings count.", 2, ratingsCount);
+        
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
+        
+        // One user removes their rating.
+        ratingService.removeRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+
+        meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong mean rating.", 4f, meanRating);
+
+        totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong total rating.", 4f, totalRating);
+
+        ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong ratings count.", 1, ratingsCount);
+        
+        assertModifierIs(testDoc_Admin, AuthenticationUtil.getAdminUserName());
     }
 
     /**
@@ -359,9 +359,13 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     public void testUsersCantRateTheirOwnContent() throws Exception
     {
+        // In the likes rating scheme, users can rate their own content.
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        ratingService.applyRating(testDoc_UserTwo, 1, LIKES_SCHEME_NAME);
+
         try
         {
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+            // But fiveStar rating scheme disallows rating your own content.
             ratingService.applyRating(testDoc_UserTwo, 4, FIVE_STAR_SCHEME_NAME);
         } catch (RatingServiceException expected)
         {

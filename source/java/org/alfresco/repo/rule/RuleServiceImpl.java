@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
@@ -70,7 +69,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  */
 public class RuleServiceImpl
         implements RuleService, RuntimeRuleService,
-                NodeServicePolicies.BeforeCreateChildAssociationPolicy,
+                NodeServicePolicies.OnCreateChildAssociationPolicy,
                 NodeServicePolicies.OnCreateNodePolicy,
                 NodeServicePolicies.OnUpdateNodePolicy,
                 NodeServicePolicies.OnAddAspectPolicy
@@ -227,40 +226,40 @@ public class RuleServiceImpl
     public void init()
     {
         policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 RuleModel.ASPECT_RULES,
                 RuleModel.ASSOC_RULE_FOLDER,
-                new JavaBehaviour(this, "beforeCreateChildAssociation"));
+                new JavaBehaviour(this, "onCreateChildAssociation"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                NodeServicePolicies.OnAddAspectPolicy.QNAME,
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                NodeServicePolicies.OnUpdateNodePolicy.QNAME,
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onUpdateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 RuleModel.TYPE_RULE,
                 new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                NodeServicePolicies.OnUpdateNodePolicy.QNAME,
                 RuleModel.TYPE_RULE,
                 new JavaBehaviour(this, "onUpdateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 ActionModel.TYPE_ACTION_BASE,
                 new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                NodeServicePolicies.OnUpdateNodePolicy.QNAME,
                 ActionModel.TYPE_ACTION_BASE,
                 new JavaBehaviour(this, "onUpdateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 ActionModel.TYPE_ACTION_PARAMETER,
                 new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                NodeServicePolicies.OnUpdateNodePolicy.QNAME,
                 ActionModel.TYPE_ACTION_PARAMETER,
                 new JavaBehaviour(this, "onUpdateNode"));
     }
@@ -268,12 +267,8 @@ public class RuleServiceImpl
     /**
      * Cache invalidation
      */
-	public void beforeCreateChildAssociation(
-            NodeRef parentNodeRef,
-            NodeRef childNodeRef,
-            QName assocTypeQName,
-            QName assocQName,
-            boolean isNewNode)
+    @Override
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         nodeRulesCache.clear();
     }

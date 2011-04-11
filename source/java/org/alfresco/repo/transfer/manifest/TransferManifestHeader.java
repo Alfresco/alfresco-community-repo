@@ -20,6 +20,8 @@ package org.alfresco.repo.transfer.manifest;
 
 import java.util.Date;
 
+import org.alfresco.service.cmr.transfer.TransferVersion;
+
 /**
  * Data value object
  *
@@ -33,6 +35,7 @@ public class TransferManifestHeader
     private String repositoryId;
     private boolean isSync;
     private boolean isReadOnly;
+    private TransferVersion version;
     
     public void setCreatedDate(Date createDate)
     {
@@ -97,6 +100,14 @@ public class TransferManifestHeader
     {
         return isReadOnly;
     }
-
     
+    public void setTransferVersion(TransferVersion version)
+    {
+        this.version = version;
+    }
+    
+    public TransferVersion getTransferVersion()
+    {
+        return version;
+    }
 }

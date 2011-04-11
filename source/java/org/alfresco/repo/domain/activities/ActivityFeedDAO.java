@@ -40,11 +40,15 @@ public interface ActivityFeedDAO extends ActivitiesDAO
     
     public int deleteUserFeedEntries(String feedUserId, String format, Date keepDate) throws SQLException;
     
+    public int deleteUserFeedEntries(String feedUserId) throws SQLException;
+    
     public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException;
+    
+    public int deleteSiteFeedEntries(String siteUserId) throws SQLException;
     
     public List<ActivityFeedEntity> selectFeedsToClean(int maxFeedSize) throws SQLException;
     
-    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException;
+    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedItems) throws SQLException;
     
-    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteUserId, String format) throws SQLException;
+    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteUserId, String format, int maxFeedItems) throws SQLException;
 }

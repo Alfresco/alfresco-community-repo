@@ -44,18 +44,19 @@ import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -101,14 +102,12 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private static final String FAVORITE_SITES = "imap.favorite.sites.list";
     private static final String UIDVALIDITY_LISTENER_ALREADY_BOUND = "imap.uidvalidity.already.bound";
     
-    private static final String INBOX = "INBOX";
-    private static final String TRASH = "TRASH";
-    
     private SysAdminParams sysAdminParams;
     private FileFolderService fileFolderService;
     private NodeService nodeService;
     private PermissionService permissionService;
     private ServiceRegistry serviceRegistry;
+    private BehaviourFilter policyBehaviourFilter;
 
     /**
      * Folders cache
@@ -246,6 +245,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
         this.serviceRegistry = serviceRegistry;
     }
+    
+    public void setPolicyFilter(BehaviourFilter policyFilter)
+    {
+        this.policyBehaviourFilter = policyFilter;
+    }
 
     public void setImapHome(RepositoryFolderConfigBean imapHomeConfigBean)
     {
@@ -310,6 +314,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         PropertyCheck.mandatory(this, "defaultFromAddress", defaultFromAddress);
         PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
+        PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
     }
 
     public void startup()
@@ -567,7 +572,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     }
                     else
                     {
-                        newFileInfo = fileFolderService.move(sourceNode.getFolderInfo().getNodeRef(), parentNodeRef, folderName);
+                        newFileInfo = fileFolderService.move(
+                                sourceNode.getFolderInfo().getNodeRef(),
+                                parentNodeRef, folderName);
                     }
                     
                     foldersCache.remove(oldMailboxName);
@@ -1890,9 +1897,17 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             }
             else
             {    
-                logger.debug("[checkForFlaggableAspect] Adding flaggable aspect to nodeRef: " + nodeRef);
-                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
-                nodeService.addAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE, aspectProperties);
+                try
+                {
+                    policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    logger.debug("[checkForFlaggableAspect] Adding flaggable aspect to nodeRef: " + nodeRef);
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+                    nodeService.addAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE, aspectProperties);
+                }
+                finally
+                {
+                    policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                }
             }
         }
         alreadyChecked.add(nodeRef);
@@ -1915,6 +1930,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 String result = onetype.getClasspathTempltePath();
                 try
                 {
+                    // This query uses cm:name to find the template node(s).
+                    // For the case where the templates are renamed, it would be better to use a QName path-based query.
+                    
                     final StringBuilder templateName = new StringBuilder(DICTIONARY_TEMPLATE_PREFIX).append("-").append(onetype.getTypeSubtype()).append(".ftl");
                     final String repositoryTemplatePath = getRepositoryTemplatePath();
                     int indexOfStoreDelim = repositoryTemplatePath.indexOf(StoreRef.URI_FILLER);
@@ -1941,7 +1959,12 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     {
                         throw new IllegalArgumentException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
                     }
-                    result = resultSet.getNodeRef(0).toString();
+                    final NodeRef defaultLocaleTemplate = resultSet.getNodeRef(0);
+                    
+                    NodeRef localisedSibling = serviceRegistry.getFileFolderService().getLocalizedSibling(defaultLocaleTemplate);
+
+                    result = localisedSibling.toString();
+                    
                     resultSet.close();
                 }
                 // We are catching all exceptions. E.g. search service can possibly trow an exceptions on malformed queries.

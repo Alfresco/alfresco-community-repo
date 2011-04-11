@@ -21,6 +21,7 @@ package org.alfresco.repo.content;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -572,6 +573,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         return transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
     }
+    
+    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return transformerRegistry.getActiveTransformers(sourceMimetype, targetMimetype, options);
+    }
+
     
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#getImageTransformer()

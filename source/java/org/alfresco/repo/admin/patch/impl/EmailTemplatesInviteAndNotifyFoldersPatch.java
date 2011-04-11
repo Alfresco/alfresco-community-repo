@@ -59,7 +59,7 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
     private static final String PROPERTY_EMAIL_INVITE_TEMPLATES_FOLDER_NAME = "spaces.invite_templates.email.name";
     private static final String PROPERTY_EMAIL_INVITE_TEMPLATES_FOLDER_DESCRIPTION = "spaces.invite_templates.email.description";
     
-    private static final String NOTIFY_TEMPLATE_NAME = "notify_user_email.ftl";
+    private static final String SAMPLE_NOTIFY_TEMPLATE_NAME = "notify_user_email.ftl.sample";
     private static final String INVITE_TEMPLATE_NAME = "invite_user_email.ftl";
     
     private static final String MSG_EMAIL_INVITE_TEMPLATES_FOLDER_EXISTS  = "patch.emailInviteTemplatesFolder.result.exists";
@@ -78,7 +78,7 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
     protected Properties configuration;
     protected NodeRef emailTemplatesFolderNodeRef;
     
-    private String emaiemailTemplatesFolderXPath;
+    private String emailTemplatesFolderXPath;
     
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
@@ -148,21 +148,21 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
         sb.append("/").append(companyHomeChildName)
           .append("/").append(dictionaryChildName)
           .append("/").append(emailTemplatesChildName);
-        emaiemailTemplatesFolderXPath = sb.toString();
+        emailTemplatesFolderXPath = sb.toString();
         
         // get the email templates node
-        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, emaiemailTemplatesFolderXPath, null, namespaceService, false);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, emailTemplatesFolderXPath, null, namespaceService, false);
         if (nodeRefs.size() == 0)
         {
             throw new PatchException("XPath didn't return any results: \n" +
                     "   root: " + storeRootNodeRef + "\n" +
-                    "   xpath: " + emaiemailTemplatesFolderXPath);
+                    "   xpath: " + emailTemplatesFolderXPath);
         }
         else if (nodeRefs.size() > 1)
         {
             throw new PatchException("XPath returned too many results: \n" +
                     "   root: " + storeRootNodeRef + "\n" +
-                    "   xpath: " + emaiemailTemplatesFolderXPath + "\n" +
+                    "   xpath: " + emailTemplatesFolderXPath + "\n" +
                     "   results: " + nodeRefs);
         }
         this.emailTemplatesFolderNodeRef = nodeRefs.get(0);
@@ -190,7 +190,7 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
             emailNotifyTemplatesFolderNodeRef = createFolderAndMoveTemplate(PROPERTY_EMAIL_NOTIFY_TEMPLATES_FOLDER_CHILDNAME,
                     PROPERTY_EMAIL_NOTIFY_TEMPLATES_FOLDER_NAME,
                     PROPERTY_EMAIL_NOTIFY_TEMPLATES_FOLDER_DESCRIPTION,
-                    NOTIFY_TEMPLATE_NAME);
+                    SAMPLE_NOTIFY_TEMPLATE_NAME);
             msg.append(I18NUtil.getMessage(MSG_EMAIL_NOTIFY_TEMPLATES_FOLDER_CREATED, emailNotifyTemplatesFolderNodeRef));
         }
         else
@@ -281,7 +281,7 @@ public class EmailTemplatesInviteAndNotifyFoldersPatch extends AbstractPatch {
         nodeService.addAspect(createdFolderNodeRef, ApplicationModel.ASPECT_UIFACETS, null);
         
         //move template
-        String xpath = emaiemailTemplatesFolderXPath + "/cm:" + templateName;
+        String xpath = emailTemplatesFolderXPath + "/cm:" + templateName;
         List<NodeRef> templateNodeRefs = searchService.selectNodes(emailTemplatesFolderNodeRef, xpath, null, namespaceService, false);
         for (NodeRef templateNodeRef : templateNodeRefs)
         {

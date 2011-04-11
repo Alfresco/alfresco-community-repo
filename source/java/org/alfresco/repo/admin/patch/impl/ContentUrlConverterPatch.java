@@ -48,6 +48,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -60,8 +62,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * Component to migrate old-style content URL storage (<tt>contentUrl=store://...|mimetype=...</tt>)
@@ -246,7 +246,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
                         }
                     }
                 };
-                return transactionService.getRetryingTransactionHelper().doInTransaction(patchTxn);
+                return transactionHelper.doInTransaction(patchTxn);
             }
         };
         String report = AuthenticationUtil.runAs(patchRunAs, AuthenticationUtil.getSystemUserName());
@@ -374,7 +374,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         {
             refreshLock(lockToken, batchSize*100L);
             
-            done = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+            done = transactionHelper.doInTransaction(callback, false, true);
             if (done)
             {
                 break;
@@ -434,7 +434,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         };
         BatchProcessor<Pair<Long, Long>> batchProcessor = new BatchProcessor<Pair<Long, Long>>(
                 "ContentUrlConverter.ADM (" + maxId + ")",
-                transactionService.getRetryingTransactionHelper(),
+                transactionHelper,
                 batchProcessorWork, threadCount, 1,
                 applicationEventPublisher, null, 1);
         batchProcessor.process(batchProcessorWorker, true);
@@ -481,7 +481,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         {
             refreshLock(lockToken, batchSize*100L);
             
-            done = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+            done = transactionHelper.doInTransaction(callback, false, true);
             if (done)
             {
                 break;
@@ -532,7 +532,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         };
         BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
                 "ContentUrlConverter.AVM (" + maxId + ")",
-                transactionService.getRetryingTransactionHelper(),
+                transactionHelper,
                 nodeIds, threadCount, batchSize,
                 applicationEventPublisher, null, 1);
         batchProcessor.process(batchProcessorWorker, true);
@@ -574,7 +574,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 return applyUrlLiftingInTxn(lockToken);
             }
         };
-        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        return transactionHelper.doInTransaction(callback, false, true);
     }
     
     private boolean applyUrlLiftingInTxn(final String lockToken) throws Exception

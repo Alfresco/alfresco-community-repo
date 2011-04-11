@@ -1285,16 +1285,20 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        return failingAction;
     }
     
-    protected Action createWorkingSleepAction() throws Exception {
+    protected Action createWorkingSleepAction() throws Exception
+    {
        return createWorkingSleepAction(null);
     }
-    protected Action createWorkingSleepAction(String id) throws Exception {
+    protected Action createWorkingSleepAction(String id) throws Exception
+    {
        return createWorkingSleepAction(id, this.actionService);
     }
-    protected static Action createWorkingSleepAction(String id, ActionService actionService) throws Exception {
-       Action workingAction = new CancellableSleepAction(
-             actionService.createAction(SleepActionExecuter.NAME));
-       if(id != null) {
+    protected static Action createWorkingSleepAction(String id, ActionService actionService) throws Exception
+    {
+       Action workingAction = new CancellableSleepAction(actionService.createAction(SleepActionExecuter.NAME));
+       workingAction.setTrackStatus(Boolean.TRUE);
+       if(id != null)
+       {
           Field idF = ParameterizedItemImpl.class.getDeclaredField("id");
           idF.setAccessible(true);
           idF.set(workingAction, id);
@@ -1337,24 +1341,20 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        private ActionTrackingService actionTrackingService;
               
        /**
-        * Loads this executor into the ApplicationContext, if it
-        *  isn't already there
+        * Loads this executor into the ApplicationContext, if it isn't already there
         */
-       public static void registerIfNeeded(ConfigurableApplicationContext ctx)
-       {
-          if(!ctx.containsBean(SleepActionExecuter.NAME))
-          {
-             // Create, and do dependencies
-             SleepActionExecuter executor = new SleepActionExecuter();
-             executor.actionTrackingService = (ActionTrackingService)
-                ctx.getBean("actionTrackingService");
-             // Register
-             ctx.getBeanFactory().registerSingleton(
-                   SleepActionExecuter.NAME,
-                   executor
-             );
-          }
-       }
+        public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+        {
+            if (!ctx.containsBean(SleepActionExecuter.NAME))
+            {
+                // Create, and do dependencies
+                SleepActionExecuter executor = new SleepActionExecuter();
+                executor.setTrackStatus(true);
+                executor.actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
+                // Register
+                ctx.getBeanFactory().registerSingleton(SleepActionExecuter.NAME, executor);
+            }
+        }
        
        public Thread getExecutingThread()
        {
@@ -1415,9 +1415,11 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     }
     protected static class CancellableSleepAction extends ActionImpl implements CancellableAction
     {
-      public CancellableSleepAction(Action action) {
-         super(action);
-      }
+        public CancellableSleepAction(Action action)
+        {
+            super(action);
+            this.setTrackStatus(Boolean.TRUE);
+        }
     }
     
     public static void assertBefore(Date before, Date after)

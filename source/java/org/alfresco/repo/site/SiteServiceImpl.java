@@ -112,9 +112,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
     private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
     private static final String MSG_SITE_NO_EXIST = "site_service.site_no_exist";
-    private static final String MSG_CAN_NOT_REMOVE_MSHIP = "site_service.can_not_reomve_memebership";
+    private static final String MSG_CAN_NOT_REMOVE_MSHIP = "site_service.can_not_remove_membership";
     private static final String MSG_DO_NOT_CHANGE_MGR = "site_service.do_not_change_manager";
-    private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_memebership";
+    private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_membership";
     private static final String MSG_SITE_CONTAINER_NOT_FOLDER = "site_service.site_container_not_folder";
 
     /* Services */
@@ -1081,7 +1081,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         this.siteNodeRefs.remove(cacheKey);
         
-        // Delete the node
+        // Delete the site node, marking it as "not to be archived" on the way.
+        // The site node will be permanently deleted immediately. See ALF-7888 for info on why
+        this.nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
         this.nodeService.deleteNode(siteNodeRef);
 
         // Delete the associated groups
@@ -1344,36 +1346,42 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private List<String> getPermissionGroups(String siteShortName, String authorityName)
     {
-        List<String> result = new ArrayList<String>(5);
-        Set<String> roles = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);  
-        
+        List<String> fullResult = new ArrayList<String>(5);
+        Set<String> roles = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+
+        // First use the authority's cached recursive group memberships to answer the question quickly
+        Set<String> authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
+                authorityName, false);
         for (String role : roles)
         {
             String roleGroup = getSiteRoleGroup(siteShortName, role, true);
-            Set<String> authorities = this.authorityService.getContainedAuthorities(AuthorityType.USER, roleGroup, true);
-            if (authorities.contains(authorityName) == true)
+            if (authorityGroups.contains(roleGroup))
+            {
+                fullResult.add(roleGroup);
+            }
+        }
+        
+        // Unfortunately, due to direct membership taking precendence, we can't answer the question quickly if more than one role has been inherited
+        if (fullResult.size() <= 1)
+        {
+            return fullResult;
+        }
+        
+        // Check direct group memberships
+        List<String> result = new ArrayList<String>(5);
+        authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
+                authorityName, true);
+        for (String role : roles)
+        {
+            String roleGroup = getSiteRoleGroup(siteShortName, role, true);
+            if (authorityGroups.contains(roleGroup))
             {
                 result.add(roleGroup);
             }
         }
         
         // If there are user permissions then they take priority
-        if (result.size() > 0)
-        {
-            return result;
-        }
-        
-        // Now do a deep search through all users and groups
-        for (String role : roles)
-        {
-            String roleGroup = getSiteRoleGroup(siteShortName, role, true);
-            Set<String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, false);
-            if (authorities.contains(authorityName) == true)
-            {
-                result.add(roleGroup);
-            }
-        }
-        return result;
+        return result.size() > 0 ? result : fullResult;
     }
 
     /**

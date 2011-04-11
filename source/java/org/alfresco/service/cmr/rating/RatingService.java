@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,8 +19,11 @@
 
 package org.alfresco.service.cmr.rating;
 
+import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.rating.AbstractRatingRollupAlgorithm;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,18 +67,13 @@ public interface RatingService
     /**
      * This method applies the given rating to the specified target node. If a rating
      * from the current user in the specified scheme already exists, it will be replaced.
-     * <p/>
-     * Note that only one rating scheme per user per targetNode is supported at present.
-     * If a user attempts to apply a second rating in a different rating scheme to any given
-     * target node, a {@link RatingServiceException} will be thrown.
      * 
      * @param targetNode the node to which the rating is to be applied.
      * @param rating the rating which is to be applied.
      * @param ratingSchemeName the name of the rating scheme to use.
      * 
      * @throws RatingServiceException if the rating is not within the range defined by the named scheme
-     *                                or if the named scheme is not registered or if the rating would result
-     *                                in multiple ratings by the same user.
+     *                                or if the named scheme is not registered.
      * @see RatingService#getRatingSchemes()
      * @see RatingScheme
      */
@@ -137,6 +135,20 @@ public interface RatingService
     Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName);
     
     /**
+     * This method gets the {@link Rating ratings} applied by the current user to the specified node.
+     * 
+     * @param targetNode the node on which the ratings are sought.
+     * 
+     * @return a List of Rating objects if there are any, else {@link java.util.Collections#emptyList()}.
+     * @see RatingService#getRatingSchemes()
+     * @see RatingScheme
+     * 
+     * @since 3.5
+     */
+    @NotAuditable
+    List<Rating> getRatingsByCurrentUser(NodeRef targetNode);
+    
+    /**
      * This method removes any {@link Rating} applied by the current user to the specified node in the specified
      * {@link RatingScheme}.
      * 
@@ -149,4 +161,27 @@ public interface RatingService
      */
     @NotAuditable
     Rating removeRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName);
+    
+    /**
+     * This method returns a 'rolled up' property value for the specified targetNode. Examples
+     * of rolled up property values are 'ratingTotal', 'ratingCount', but other values can be added.
+     * <p/>
+     * Rolled up properties in the RatingService are stored as properties on the rated node and have their values
+     * calculated by running a fixed algorithm on properties stored across the <code>cm:rating</code> child nodes.
+     * An example of such a roll up would be 'ratingTotal' which would be the sum of all ratings applied to the
+     * targetNode in the specified rating scheme.
+     * <p/>
+     * By rolling up property values from the various <code>cm:rating</code> child nodes and persisting them
+     * as individual properties on the <code>cm:rateable</code> node itself, we are able to support indexing, searching
+     * and sorting of such properties.
+     * 
+     * @param targetNode the rated node whose rolled up property we wish to read.
+     * @param ratingSchemeName the rating scheme name in which the property is relevant.
+     * @param ratingRollupName the name of the rating rollup property, as given in {@link AbstractRatingRollupAlgorithm#getRollupName()}.
+     * @return A value for the rolled up property, which will depend of course on the rollup requested.
+     * 
+     * @since 3.5
+     */
+    @NotAuditable
+    Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName);
 }

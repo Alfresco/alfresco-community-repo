@@ -28,6 +28,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -200,6 +201,53 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         
         return;
     }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public ChildAssociationRef render(NodeRef sourceNode, final QName renditionDefinitionQName)
+    {
+        RenditionDefinition rendDefn = AuthenticationUtil.runAs(
+            new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+            {
+                public RenditionDefinition doWork() throws Exception
+                {
+                    return loadRenditionDefinition(renditionDefinitionQName);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        
+        if (rendDefn == null)
+        {
+            throw new RenditionServiceException("Rendition Definition " + renditionDefinitionQName + " was not found.");
+        }
+        
+        return this.render(sourceNode, rendDefn);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.rendition.RenderCallback)
+     */
+    public void render(NodeRef sourceNode, final QName renditionDefinitionQName, RenderCallback callback)
+    {
+        RenditionDefinition rendDefn = AuthenticationUtil.runAs(
+                new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+                {
+                    public RenditionDefinition doWork() throws Exception
+                    {
+                        return loadRenditionDefinition(renditionDefinitionQName);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            
+        if (rendDefn == null)
+        {
+            throw new RenditionServiceException("Rendition Definition " + renditionDefinitionQName + " was not found.");
+        }
+        
+        this.render(sourceNode, rendDefn, callback);
+    }
+
 
     /**
      * This method delegates the execution of the specified RenditionDefinition
@@ -229,7 +277,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
                 .append(" with ").append(definition.getRenditionName());
             log.debug(msg.toString());
         }
-        final boolean checkConditions = false;
+        final boolean checkConditions = true;
         actionService.executeAction(definition, sourceNode, checkConditions, asynchronous);
         
         ChildAssociationRef result = (ChildAssociationRef)definition.getParameterValue(ActionExecuter.PARAM_RESULT);

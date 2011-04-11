@@ -551,7 +551,6 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
 //        invokeBeforeDeleteChildAssociation(oldAssocRef);
         String dstPath = AVMNodeConverter.ExtendAVMPath(dstParent, dstName);
         NodeRef newChildRef = AVMNodeConverter.ToNodeRef(-1, dstPath);
-//        invokeBeforeCreateChildAssociation(newParentRef, newChildRef, assocTypeQName, assocQName);
 //        invokeBeforeUpdateNode(oldParentRef);
 //        invokeBeforeUpdateNode(newParentRef);
         // Actually perform the rename and return a pseudo 

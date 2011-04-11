@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.descriptor;
 
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.util.VersionNumber;
 
 
@@ -95,6 +96,13 @@ public interface Descriptor
      * @return  the edition
      */
     public String getEdition();
+    
+    /**
+     * Gets LicenseMode
+     *  
+     * @return the licenseMode
+     */
+    public LicenseMode getLicenseMode();
     
     /**
      * Gets the schema number

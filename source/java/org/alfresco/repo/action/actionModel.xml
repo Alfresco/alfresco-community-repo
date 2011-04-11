@@ -66,6 +66,10 @@
                <type>d:text</type>
                <mandatory>false</mandatory>
             </property>
+            <property name="act:trackStatus">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+            </property>
             <property name="act:executeAsynchronously">
                <type>d:boolean</type>
                <mandatory>true</mandatory>

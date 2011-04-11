@@ -28,6 +28,9 @@
 		<property name="descriptorService">
             <ref bean="DescriptorService" />
         </property>
+        <property name="transferVersionChecker">
+            <ref bean="transferVersionChecker" />
+        </property>
 		<property name="transferSpaceQuery">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_groups.childname}</value>
 		</property>
@@ -49,6 +52,9 @@
 		init-method="init">
 		<property name="contentService" ref="ContentService" />
 	</bean>
+	
+    <bean id="transferVersionChecker" class="org.alfresco.repo.transfer.TransferVersionCheckerImpl">
+    </bean>
 
    <bean id="transferReporter" class="org.alfresco.repo.transfer.report.TransferReporterImpl" init-method="init" >
          <property name="contentService" ref="ContentService" />
@@ -81,6 +87,9 @@
 		<property name="descriptorService" ref="DescriptorService" />
 		<property name="alienProcessor" ref="alienProcessor" />
 		<property name="jobLockService" ref="JobLockService" />
+		<property name="transferVersionChecker">
+            <ref bean="transferVersionChecker" />
+        </property>
 
 		<property name="transferLockFolderPath">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value>
@@ -128,6 +137,7 @@
 		<property name="publicAction">
 			<value>false</value>
 		</property>
+        <property name="trackStatus" value="true" />
 	</bean>
 
 	<bean id="transferManifestProcessorFactory"
@@ -157,7 +167,8 @@
 		class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
 	<bean id="TransferService_transaction"
-		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+		<property name="transactionService" ref="TransactionService" />
 		<property name="transactionManager">
 			<ref bean="transactionManager" />
 		</property>
@@ -250,6 +261,7 @@
 		<property name="publicAction">
 			<value>false</value>
 		</property>
+        <property name="trackStatus" value="true" />
 	</bean>
 
    <bean id="transferServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.transfer.script.ScriptTransferService">

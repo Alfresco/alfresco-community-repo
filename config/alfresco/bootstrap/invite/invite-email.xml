@@ -12,28 +12,5 @@
             <cm:title>${spaces.templates.email.invite.name}</cm:title>
             <cm:name>${spaces.templates.email.invite.name}</cm:name>
         </view:properties>
-        <view:associations>
-            <cm:contains>
-                <cm:content
-                    view:childName="cm:invite-email.ftl">
-                    <view:aspects>
-                        <cm:titled></cm:titled>
-                        <cm:author></cm:author>
-                        <app:inlineeditable></app:inlineeditable>
-                    </view:aspects>
-                    <view:properties>
-                        <app:editInline>
-                            true
-                        </app:editInline>
-                        <cm:description>${spaces.templates.email.generate_the_invite_email.description}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\invite\invite-email.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
-                        <cm:title>invite-email.ftl</cm:title>
-                        <cm:author></cm:author>
-                        <cm:name>invite-email.ftl</cm:name>
-                    </view:properties>
-                    <view:associations></view:associations>
-                </cm:content>
-            </cm:contains>
-        </view:associations>
     </cm:folder>
 </view:view>

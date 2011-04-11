@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,6 +50,7 @@ import org.jgroups.View;
 import org.jgroups.protocols.LOOPBACK;
 import org.jgroups.stack.ProtocolStack;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.util.ResourceUtils;
 
 /**
@@ -718,7 +718,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         }
 
         @Override
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         public Map dumpStats()
         {
             return delegate.dumpStats();
@@ -736,8 +736,8 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             return delegate.flushSupported();
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
-        @SuppressWarnings("unchecked")
         public boolean getAllStates(Vector targets, long timeout) throws ChannelNotConnectedException, ChannelClosedException
         {
             return delegate.getAllStates(targets, timeout);
@@ -922,6 +922,30 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             {
                 return delegate.toString();
             }
+        }
+
+        @Override
+        public String getName(Address member)
+        {
+            return delegate.getName(member);
+        }
+
+        @Override
+        public void send(Address dst, Address src, byte[] buf) throws ChannelNotConnectedException, ChannelClosedException
+        {
+            delegate.send(dst, src, buf);
+        }
+
+        @Override
+        public void send(Address dst, Address src, byte[] buf, int offset, int length) throws ChannelNotConnectedException, ChannelClosedException
+        {
+            delegate.send(dst, src, buf, offset, length);
+        }
+
+        @Override
+        public void setName(String name)
+        {
+            delegate.setName(name);
         }
     }
 }

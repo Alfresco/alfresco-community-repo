@@ -156,7 +156,7 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
             // get the association types to check
             BatchProcessor<String> batchProcessor = new BatchProcessor<String>(
                     "FixAuthorityCrcValuesPatch",
-                    transactionService.getRetryingTransactionHelper(),
+                    transactionHelper,
                     mismatchedAuthorities,
                     2, 20,
                     applicationEventPublisher,

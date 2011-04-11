@@ -262,8 +262,8 @@ INSERT INTO t_alf_node_aspects
       JOIN alf_qname qn ON (na.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      ns.uri != 'http://www.alfresco.org/model/system/1.0' OR
-      qn.local_name != 'referenceable'
+      (ns.uri != 'http://www.alfresco.org/model/system/1.0' OR
+      qn.local_name != 'referenceable')
       AND na.node_id >= ${LOWERBOUND} AND na.node_id <= ${UPPERBOUND}
 ;
 

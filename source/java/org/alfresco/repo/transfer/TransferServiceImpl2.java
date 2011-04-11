@@ -89,6 +89,7 @@ import org.alfresco.service.cmr.transfer.TransferFailureException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
@@ -127,6 +128,7 @@ public class TransferServiceImpl2 implements TransferService2
     private static final String MSG_TARGET_ERROR = "transfer_service.target_error";
     private static final String MSG_UNKNOWN_TARGET_ERROR = "transfer_service.unknown_target_error";
     private static final String MSG_TARGET_NOT_ENABLED = "transfer_service.target_not_enabled";
+    private static final String MSG_INCOMPATIBLE_VERSIONS = "transfer_service.incompatible_versions";
     
     private static final String FILE_DIRECTORY = "transfer";
     private static final String FILE_SUFFIX = ".xml";
@@ -149,6 +151,7 @@ public class TransferServiceImpl2 implements TransferService2
         PropertyCheck.mandatory(this, "actionService", actionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
+        PropertyCheck.mandatory(this, "transferVersionChecker", getTransferVersionChecker());
     }
     
     private String transferSpaceQuery; 
@@ -162,6 +165,7 @@ public class TransferServiceImpl2 implements TransferService2
     private TransferReporter transferReporter;
     private TenantService tenantService;
     private DescriptorService descriptorService;
+    private TransferVersionChecker transferVersionChecker;
     
     /**
      * How long to delay while polling for commit status.
@@ -552,7 +556,11 @@ public class TransferServiceImpl2 implements TransferService2
         int pollPosition = -1;
         boolean cancelled = false;
         
-        final String localRepositoryId = getDescriptorService().getCurrentRepositoryDescriptor().getId();
+      
+        Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+        final String localRepositoryId = currentDescriptor.getId();
+        TransferVersion fromVersion = new TransferVersionImpl(serverDescriptor);
 
         // Wire in the transferReport - so any callbacks are stored in transferReport
         TransferCallback reportCallback = new TransferCallback()
@@ -577,11 +585,12 @@ public class TransferServiceImpl2 implements TransferService2
                     case Begin:
                     {
                         eventProcessor.start();
-                        manifest = createManifest(definition);
+                     
+                        manifest = createManifest(definition, localRepositoryId, fromVersion);
                         logger.debug("transfer begin");
                         target = getTransferTarget(targetName);
                         checkTargetEnabled(target);
-                        transfer = transmitter.begin(target, localRepositoryId);
+                        transfer = transmitter.begin(target, localRepositoryId, fromVersion);
                         String transferId = transfer.getTransferId();
                         TransferStatus status = new TransferStatus();
                         transferMonitoring.put(transferId, status);
@@ -596,6 +605,13 @@ public class TransferServiceImpl2 implements TransferService2
                     
                     case Prepare:
                     {
+                        // check alfresco versions are compatible
+                        TransferVersion toVersion = transfer.getToVersion();
+                        if(!getTransferVersionChecker().checkTransferVersions(fromVersion, toVersion))
+                        {
+                            throw new TransferException(MSG_INCOMPATIBLE_VERSIONS, new Object[] {transfer.getTransferId(), fromVersion, toVersion});
+                        }
+                        
                         // send Manifest, get the requsite back.
                         eventProcessor.sendSnapshot(1,1);
                         
@@ -900,7 +916,7 @@ public class TransferServiceImpl2 implements TransferService2
         }
     }
     
-    private File createManifest(TransferDefinition definition)
+    private File createManifest(TransferDefinition definition, String repositoryId, TransferVersion fromVersion)
         throws IOException, SAXException
     {
         // which nodes to write to the snapshot
@@ -925,8 +941,8 @@ public class TransferServiceImpl2 implements TransferService2
         // Write the manifest file
         TransferManifestWriter formatter = new XMLTransferManifestWriter();
         TransferManifestHeader header = new TransferManifestHeader();
-        Descriptor descriptor = descriptorService.getCurrentRepositoryDescriptor();
-        header.setRepositoryId(descriptor.getId());
+        header.setRepositoryId(repositoryId);
+        header.setTransferVersion(fromVersion);
         header.setCreatedDate(new Date());
         header.setNodeCount(nodes.size());
         header.setSync(definition.isSync());
@@ -1449,10 +1465,20 @@ public class TransferServiceImpl2 implements TransferService2
         return descriptorService;
     }
 
+    public void setTransferVersionChecker(TransferVersionChecker transferVersionChecker)
+    {
+        this.transferVersionChecker = transferVersionChecker;
+    }
+
+    public TransferVersionChecker getTransferVersionChecker()
+    {
+        return transferVersionChecker;
+    }
+
     private class TransferStatus 
     {
         boolean cancelMe = false;
         boolean cancelInProgress = false;
     }
-   
-}
+  
+  }

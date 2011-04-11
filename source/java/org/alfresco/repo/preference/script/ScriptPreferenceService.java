@@ -60,7 +60,7 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
         
         for (Map.Entry<String, Serializable> entry : prefs.entrySet())
         {
-            String[] keys = entry.getKey().replace(".", "-").split("-");            
+            String[] keys = entry.getKey().replace(".", "+").split("\\+");            
             setPrefValue(keys, entry.getValue(), result);
         }        
         

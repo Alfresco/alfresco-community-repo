@@ -1225,22 +1225,30 @@ public class ActionTrackingServiceImplTest extends TestCase
        }
     }
 
-    
-    private Action createFailingMoveAction() {
-       Action failingAction = this.actionService.createAction(MoveActionExecuter.NAME);
-       failingAction.setParameterValue(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CHILDREN);
-       failingAction.setParameterValue(MoveActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CHILDREN);
-       // Create a bad node ref
-       NodeRef badNodeRef = new NodeRef(this.storeRef, "123123");
-       failingAction.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, badNodeRef);
-       
-       return failingAction;
+    private Action createFailingMoveAction()
+    {
+        Action failingAction = this.actionService.createAction(MoveActionExecuter.NAME);
+        failingAction.setTrackStatus(Boolean.TRUE);
+        failingAction.setParameterValue(
+                MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME,
+                ContentModel.ASSOC_CHILDREN);
+        failingAction.setParameterValue(
+                MoveActionExecuter.PARAM_ASSOC_QNAME,
+                ContentModel.ASSOC_CHILDREN);
+        // Create a bad node ref
+        NodeRef badNodeRef = new NodeRef(this.storeRef, "123123");
+        failingAction.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, badNodeRef);
+
+        return failingAction;
     }
-    
-    private Action createFailingSleepAction(String id) throws Exception {
-       return ActionServiceImplTest.createFailingSleepAction(id, actionService);
+
+    private Action createFailingSleepAction(String id) throws Exception
+    {
+        return ActionServiceImplTest.createFailingSleepAction(id, actionService);
     }
-    private Action createWorkingSleepAction(String id) throws Exception {
-       return ActionServiceImplTest.createWorkingSleepAction(id, actionService);
+
+    private Action createWorkingSleepAction(String id) throws Exception
+    {
+        return ActionServiceImplTest.createWorkingSleepAction(id, actionService);
     }
 }

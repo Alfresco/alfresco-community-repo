@@ -38,4 +38,9 @@ public class FormException extends AlfrescoRuntimeException
     {
         super(msgId, cause);
     }
+    
+    public FormException(String msgId, Object[] msgParams)
+    {
+        super(msgId, msgParams);
+    }
 }

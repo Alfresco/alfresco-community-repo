@@ -25,7 +25,10 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This class provides the implementation of RenditionDefinition persistence.
+ * This class provides the implementation of {@link RenditionDefinition} persistence.
+ * <p/>
+ * Note that rendition definitions are saved underneath the Data Dictionary and therefore any code
+ * which loads or saves rendition definitions must have the appropriate authorisation.
  * 
  * @author Nick Smith
  * @author Neil McErlean

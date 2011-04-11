@@ -23,54 +23,53 @@ import java.lang.reflect.Constructor;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.usage.RepoUsageComponent;
+import org.alfresco.service.cmr.admin.RepoUsage;
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.license.LicenseService;
+import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.VersionNumber;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Implementation of Descriptor Service.
  * 
  * @author David Caruana
  */
-public class DescriptorServiceImpl extends AbstractLifecycleBean implements DescriptorService, InitializingBean
+public class DescriptorServiceImpl extends AbstractLifecycleBean
+                                    implements DescriptorService, InitializingBean, LicenseChangeHandler
 {
-    /** The server descriptor DAO. */
     private DescriptorDAO serverDescriptorDAO;
-
-    /** The current repo descriptor DAO. */
     private DescriptorDAO currentRepoDescriptorDAO;
-
-    /** The installed repo descriptor DAO. */
     private DescriptorDAO installedRepoDescriptorDAO;
-
-    /** The transaction service. */
+    
     private TransactionService transactionService;
-
-    /** The license service. */
     private LicenseService licenseService;
-
-    /** The heart beat service. */
+    private RepoUsageComponent repoUsageComponent;
     @SuppressWarnings("unused")
     private Object heartBeat;
-
-    /** The server descriptor. */
+    
+    /**
+     * The version of the software
+     */
     private Descriptor serverDescriptor;
-
-    /** The current repo descriptor. */
     private Descriptor currentRepoDescriptor;
-
-    /** The installed repo descriptor. */
     private Descriptor installedRepoDescriptor;
+    
+    private static final Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
 
     /**
      * Sets the server descriptor DAO.
@@ -116,129 +115,154 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         this.transactionService = transactionService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.descriptor.DescriptorService#getDescriptor()
-     */
-    public Descriptor getServerDescriptor()
+    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent)
+    {
+        this.repoUsageComponent = repoUsageComponent;
+    }
+
+    @Override
+    public synchronized Descriptor getServerDescriptor()
     {
         return this.serverDescriptor;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.descriptor.DescriptorService#getCurrentRepositoryDescriptor()
-     */
-    public Descriptor getCurrentRepositoryDescriptor()
+    @Override
+    public synchronized Descriptor getCurrentRepositoryDescriptor()
     {
         return this.currentRepoDescriptor;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.descriptor.DescriptorService#getRepositoryDescriptor()
-     */
-    public Descriptor getInstalledRepositoryDescriptor()
+    @Override
+    public synchronized Descriptor getInstalledRepositoryDescriptor()
     {
         return this.installedRepoDescriptor;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.descriptor.DescriptorService#getLicenseDescriptor()
-     */
-    public LicenseDescriptor getLicenseDescriptor()
+    @Override
+    public synchronized LicenseDescriptor getLicenseDescriptor()
     {
         return this.licenseService == null ? null : this.licenseService.getLicense();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+    /**
+     * Load license management method.
+     * 
+     * Return Message to user to say what happened.
+     */
+    @Override
+    public String loadLicense()
+    {
+        String result = AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+                helper.setForceWritable(true);
+                
+                return helper.doInTransaction(new RetryingTransactionCallback<String>()
+                {
+                    public String execute()
+                    {    
+                        return licenseService.loadLicense();      
+                    }
+                });
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Load license call returning: " + result);
+        }
+        return result;
+    }
+    
+    /**
+     * On bootstrap load the special services for LicenseComponent and HeartBeat
+     * 
+     * Also set installedRepoDescriptor and update current
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.RunAsWork<Void> bootstrapWork = new RunAsWork<Void>()
         {
-            public Object doWork() throws Exception
+            @Override
+            public Void doWork() throws Exception
             {
-                final boolean initialiseHeartBeat;
-
-                // Initialize license service (if installed)
-                DescriptorServiceImpl.this.licenseService = DescriptorServiceImpl.this.transactionService
-                        .getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<LicenseService>()
-                                {
-                                    public LicenseService execute()
-                                    {
-                                        return (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
-                                    }
-                                }, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
-                if (DescriptorServiceImpl.this.licenseService == null)
-                {
-                    DescriptorServiceImpl.this.licenseService = new NOOPLicenseService();
-                    initialiseHeartBeat = true;
-                }
-                else
-                {
-                    initialiseHeartBeat = false;
-                }
-
-                // Make the license service available through the application context as a singleton for other beans
-                // that need it (e.g. the HeartBeat).
-                ApplicationContext applicationContext = getApplicationContext();
-                if (applicationContext instanceof ConfigurableApplicationContext)
-                {
-                    ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
-                            "licenseService", DescriptorServiceImpl.this.licenseService);
-                }
-
-                DescriptorServiceImpl.this.installedRepoDescriptor = DescriptorServiceImpl.this.transactionService
-                        .getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Descriptor>()
-                        {
-                            public Descriptor execute() throws ClassNotFoundException
-                            {
-
-                                // verify license, but only if license component is installed
-                                try
-                                {
-                                    DescriptorServiceImpl.this.licenseService.verifyLicense();
-                                    LicenseDescriptor l = DescriptorServiceImpl.this.licenseService.getLicense();
-                                    // Initialize the heartbeat unless it is disabled by the license
-                                    if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
-                                    {
-                                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
-                                    }
-                                }
-                                catch (LicenseException e)
-                                {
-                                    // Initialize heart beat anyway
-                                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
-                                    throw e;
-                                }
-
-                                // persist the server descriptor values
-                                DescriptorServiceImpl.this.currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
-                                        .updateDescriptor(DescriptorServiceImpl.this.serverDescriptor);
-
-                                // create the installed descriptor
-                                Descriptor installed = DescriptorServiceImpl.this.installedRepoDescriptorDAO
-                                        .getDescriptor();
-                                return installed == null ? new UnknownDescriptor() : installed;
-                            }
-                        }, DescriptorServiceImpl.this.transactionService.isReadOnly(), false);
+                bootstrap();
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
-
+        };
+        AuthenticationUtil.runAs(bootstrapWork, AuthenticationUtil.getSystemUserName());
+        // Broadcast that the descriptor service is now available
         ((ApplicationContext) event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
+    
+    private synchronized void bootstrap()
+    {
+        logger.debug("onBootstrap");
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
+        // We force write mode
+        RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+        helper.setForceWritable(true);
+        
+        // create the initial installed descriptor
+        Descriptor installed = installedRepoDescriptorDAO.getDescriptor();
+        if(installed != null)
+        {
+            installedRepoDescriptor = installed;
+        }
+        else
+        {
+            installedRepoDescriptor = new UnknownDescriptor();
+        }
+
+        /*
+         *  Initialize license service if on classpath.  
+         *  If no class exists a dummy license service is used.
+         *  Make the LicenseService available in the context.
+         */
+        licenseService = (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
+        if (licenseService == null)
+        {
+            // No license server code - install a dummy license service instead
+            licenseService = new NOOPLicenseService();
+        } 
+        ApplicationContext applicationContext = getApplicationContext();
+        if (applicationContext instanceof ConfigurableApplicationContext)
+        {
+            ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
+                    "licenseService", licenseService);
+        }
+    
+        // Load heart-beat special service (even if disabled at the moment)
+        heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+        
+        // Now listen for future license changes
+        licenseService.registerOnLicenseChange(this);
+        
+        // load the license
+        RetryingTransactionCallback<Void> loadLicenseCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() 
+            {
+                try
+                {   
+                    // Verify license has side effect of loading any new licenses
+                    licenseService.verifyLicense();
+                    return null;
+                }
+                catch (LicenseException e)
+                {
+                    // Swallow Licence Exception Here
+                    // Don't log error: It'll be reported later and the logging fails
+                    return null;
+                }
+            }
+        };
+        helper.doInTransaction(loadLicenseCallback, false, false);
+    }
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
@@ -301,39 +325,55 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     private class NOOPLicenseService implements LicenseService
     {
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.license.LicenseService#verifyLicense(org.alfresco.service.descriptor.Descriptor,
-         * org.alfresco.service.descriptor.DescriptorDAO)
+        /**
+         * Ensures that a repository Descriptor is available.
+         * This is done here to prevent flip-flopping on the license mode
+         * during startup i.e. the Enterprise mode will be set once when
+         * the real license is validated.
          */
         public void verifyLicense() throws LicenseException
         {
+            if (currentRepoDescriptor == null)
+            {
+                currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                        serverDescriptor,
+                        LicenseMode.UNKNOWN);
+            }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.license.LicenseService#isLicenseValid()
+        /**
+         * @return              <tt>true</tt> always
          */
         public boolean isLicenseValid()
         {
             return true;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.license.LicenseService#getLicense()
+        /**
+         * @return              <tt>null</tt> always
          */
         public LicenseDescriptor getLicense() throws LicenseException
         {
             return null;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.license.LicenseService#shutdown()
+        /**
+         * NO NOP
          */
         public void shutdown()
         {
+        }
+
+        @Override
+        public void registerOnLicenseChange(LicenseChangeHandler callback)
+        {
+           
+        }
+
+        @Override
+        public String loadLicense()
+        {
+            return "Done";
         }
 
     }
@@ -345,121 +385,117 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     private class UnknownDescriptor implements Descriptor
     {
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getId()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getId()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getName()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getName()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersionMajor()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMinor()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersionMinor()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionRevision()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersionRevision()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionLabel()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersionLabel()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersionBuild()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionNumber()
+        /**
+         * @return              <b>1.0.0</b> always
          */
         public VersionNumber getVersionNumber()
         {
             return new VersionNumber("1.0.0");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getVersion()
         {
             return "Unknown (pre 1.0.0 RC2)";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getEdition()
+        /**
+         * @return              <b>Unknown</b> always
          */
         public String getEdition()
         {
             return "Unknown";
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
+        /**
+         * @return              <b>0</b> always
          */
         public int getSchema()
         {
             return 0;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
+        /**
+         * @return              Empty <tt>String[]</tt> always
          */
         public String[] getDescriptorKeys()
         {
             return new String[0];
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptor(java.lang.String)
+        /**
+         * @return              <tt>null</tt> always
          */
         public String getDescriptor(String key)
         {
             return null;
+        }
+
+        /**
+         * @return              <b>Unknown</b> always
+         */
+        @Override
+        public LicenseMode getLicenseMode()
+        {
+            return LicenseMode.UNKNOWN;
         }
     }
 
@@ -477,10 +513,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         /** The number as a string. */
         private String strVersion = null;
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionNumber()
-         */
         public VersionNumber getVersionNumber()
         {
             if (this.versionNumber == null)
@@ -496,10 +528,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return this.versionNumber;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
-         */
         public String getVersion()
         {
             if (this.strVersion == null)
@@ -579,5 +607,66 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             }
         }
     }
+    
+    @Override
+    public synchronized void onLicenseChange(final LicenseDescriptor licenseDescriptor)
+    {
+        logger.debug("Received changed license descriptor: " + licenseDescriptor);
+        
+        RetryingTransactionCallback<RepoUsage> updateLicenseCallback = new RetryingTransactionCallback<RepoUsage>()
+        {
+            public RepoUsage execute()
+            {
+                // Configure the license restrictions
+                RepoUsage.LicenseMode newMode = licenseDescriptor.getLicenseMode();
+                Long expiryTime = licenseDescriptor.getValidUntil() == null ? null : licenseDescriptor.getValidUntil().getTime();
+                RepoUsage restrictions = new RepoUsage(
+                        System.currentTimeMillis(), 
+                        licenseDescriptor.getMaxUsers(), 
+                        licenseDescriptor.getMaxDocs(), 
+                        newMode,
+                        expiryTime,
+                        false);
+                repoUsageComponent.setRestrictions(restrictions);
+                
+                // persist the server descriptor values in the current repository descriptor
+                if (currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode())
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Changing license mode in current repo descriptor to: " + newMode);
+                    }
+                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                            serverDescriptor,
+                            newMode);
+                }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("License restrictions updated: " + restrictions);
+                }
+                return null;
+            }
+        };
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        txnHelper.doInTransaction(updateLicenseCallback);
+    }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Restrictions are not changed; previous restrictions remain in place.
+     */
+    @Override
+    public synchronized void onLicenseFail()
+    {
+        // Current restrictions remain in place
+        // Make sure that the repo descriptor is updated the first time
+        if (currentRepoDescriptor == null)
+        {
+            currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                    serverDescriptor,
+                    LicenseMode.UNKNOWN);
+        }
+    }
 }

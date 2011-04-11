@@ -609,7 +609,7 @@ public class CifsHelper
     {
         try
         {
-            fileFolderService.move(nodeToMoveRef, oldParent, newParentNodeRef, newName);
+            fileFolderService.moveFrom(nodeToMoveRef, oldParent, newParentNodeRef, newName);
         }
         catch (org.alfresco.service.cmr.model.FileExistsException e)
         {

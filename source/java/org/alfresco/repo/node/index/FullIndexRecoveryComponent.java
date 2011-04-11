@@ -31,6 +31,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -65,11 +67,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         /** Do nothing - not even a check. */
         NONE,
         /**
-         * Perform a quick check on the state of the indexes only.  This only checks that the
-         * first N transactions are present in the index and doesn't guarantee that the indexes
-         * are wholely consistent.  Normally, the indexes are consistent up to a certain time.
-         * The system does a precautionary index top-up by default, so the last transactions are
-         * not validated.
+         * Perform a quick check on the state of the indexes.  This only checks that the
+         * first N and last M transactions are present in the index and doesn't guarantee that
+         * the indexes are wholely consistent.  Normally, the indexes are consistent up to a certain time.
          */
         VALIDATE,
         /**
@@ -90,6 +90,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     private IndexTransactionTracker indexTracker;
     private boolean stopOnError;
     private int maxTransactionsPerLuceneCommit;
+    
+    private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "FullIndexRecoveryComponent");
+    
     
     /**
      * <ul>
@@ -178,8 +181,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         {
             if (lockServer)
             {
+                
                 // set the server into read-only mode
-                transactionService.setAllowWrite(false);
+                transactionService.setAllowWrite(false, vetoName);
             }
             
             
@@ -223,7 +227,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         finally
         {
             // restore read-only state
-            transactionService.setAllowWrite(allowWrite);
+            transactionService.setAllowWrite(true, vetoName);
         }
         
     }
@@ -385,7 +389,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                     {
                         try
                         {
-                            reindexTransactionAsynchronously(txnIdBuffer);
+                            reindexTransactionAsynchronously(txnIdBuffer, true);
                         }
                         catch (Throwable e)
                         {

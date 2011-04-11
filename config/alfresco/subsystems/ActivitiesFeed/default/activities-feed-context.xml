@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+   <!--  Note: ActivityService / FeedGenerator -> SiteService -> ActivityPostService -->
+   
+   <bean id="activityPostService" class="org.alfresco.repo.activities.ActivityPostServiceImpl">
+      <property name="postDAO" ref="postDAO"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+   </bean>
+   
+   <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">
+      <property name="feedDAO" ref="feedDAO"/>
+      <property name="feedControlDAO" ref="feedControlDAO"/>
+      <property name="feedCleaner" ref="feedCleaner"/>
+      <property name="authorityService" ref="AuthorityService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="siteService" ref="siteService"/>
+      <property name="activityPostService" ref="activityPostService"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+      <property name="maxFeedItems" value="${activities.feed.max.size}"/>
+   </bean>
+   
+   <!-- cleans out-of-date feed entries -->
+   <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner" init-method="init">
+      <property name="feedDAO" ref="feedDAO"/>
+      <property name="siteService" ref="SiteService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      
+      <property name="maxAgeMins">
+         <value>${activities.feed.max.ageMins}</value> <!-- max age in mins, eg. 44640 mins = 31 days -->
+      </property>
+      <property name="maxFeedSize">
+         <value>${activities.feed.max.size}</value> <!--  max entries per site feed or user feed (to nearest postDate) -->
+      </property>
+   </bean>
+   
+   <!-- cleans processed posts - max age can be small, unless required to be kept longer (for debugging) -->
+   <bean id="postCleaner" class="org.alfresco.repo.activities.post.cleanup.PostCleaner">
+      <property name="postDAO" ref="postDAO"/>
+      <property name="maxAgeMins">
+         <value>30</value> <!-- 30 minutes -->
+      </property>
+   </bean>
+   
+   <!-- secondary lookup for pending posts -->
+   <bean id="postLookup" class="org.alfresco.repo.activities.post.lookup.PostLookup">
+      <property name="postDAO" ref="postDAO"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      <property name="transactionService" ref="transactionService"/>
+      <property name="personService" ref="personService"/>
+      <property name="tenantService" ref="tenantService"/>
+   </bean>
+    
+   <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">
+      <property name="postDAO" ref="postDAO"/>
+      <property name="authenticationService" ref="AuthenticationService"/>
+      <property name="repoEndPoint" value="${repo.remote.url}${repo.remote.endpoint}"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+      <property name="maxItemsPerCycle" value="100"/>
+      <property name="activityPostServiceImpl" ref="activityPostService"/>
+   </bean>
+   
+   
+   <!-- Local (non-grid-based) Feed Generator -->
+   
+   <bean id="feedGenerator" class="org.alfresco.repo.activities.feed.local.LocalFeedGenerator" parent="baseFeedGenerator">
+      <property name="feedTaskProcessor" ref="feedTaskProcessor"/>
+   </bean>
+   
+   <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">
+      <!-- NOTE: assumes same sqlMapClient is also configured for postDAO and feedDAO -->
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+      <property name="postDAO" ref="postDAO"/>
+      <property name="feedDAO" ref="feedDAO"/>
+      <property name="feedControlDAO" ref="feedControlDAO"/>
+      
+      <property name="useRemoteCallbacks">
+          <value>false</value>
+      </property>
+      
+      <property name="siteService" ref="SiteService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      
+      <property name="templateSearchPaths">
+          <list>
+              <value>alfresco/extension/templates/activities</value>
+              <value>alfresco/templates/activities</value>
+          </list>
+      </property>
+      
+   </bean>
+   
+   <!--  Feed Email Notifier -->
+   <bean id="feedNotifier" class="org.alfresco.repo.activities.feed.FeedNotifierImpl">
+      <property name="activityService" ref="activityService"/>
+      <property name="personService" ref="PersonService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="actionService" ref="ActionService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="siteService" ref="SiteService"/>
+      <property name="jobLockService" ref="JobLockService"/>
+      <property name="transactionService" ref="TransactionService"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
+      <property name="sysAdminParams" ref="sysAdminParams"/>
+      <property name="repoAdminService" ref="repoAdminService"/>
+      <property name="feedEmailTemplateLocation" ref="feedEmailTemplateLocation"/>
+      <property name="excludedEmailSuffixes">
+          <list>
+              <value>admin@alfresco.com</value>
+          </list>
+      </property>
+   </bean>
+   
+   <bean id="feedEmailTemplateLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overridden here -->
+        <property name="path">
+            <value>/app:company_home/app:dictionary/app:email_templates/cm:activities/cm:activities-email.ftl</value>
+        </property>
+   </bean>
+   
+   <bean id="activitiesResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.activities-service</value>
+            <value>alfresco.messages.activity-list</value>
+            <value>alfresco.messages.slingshot</value>
+         </list>
+      </property>
+   </bean>
+   
+</beans>

@@ -34,6 +34,8 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -51,7 +53,7 @@ import org.alfresco.util.EqualsHelper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 
-public class RepositoryAuthenticationDao implements MutableAuthenticationDao, InitializingBean
+public class RepositoryAuthenticationDao implements MutableAuthenticationDao, InitializingBean, OnUpdatePropertiesPolicy, BeforeDeleteNodePolicy
 {
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
@@ -69,6 +71,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
 
     /** User folder ref cache (Tennant aware) */
     private Map<String, NodeRef> userFolderRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    
+    private SimpleCache<String, NodeRef> authenticationCache;    
     
     public RepositoryAuthenticationDao()
     {
@@ -110,6 +114,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         this.policyComponent = policyComponent;
     }
     
+    public void setAuthenticationCache(SimpleCache<String, NodeRef> authenticationCache)
+    {
+        this.authenticationCache = authenticationCache;
+    }
+
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
@@ -119,6 +128,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "onUpdateProperties"));
+        this.policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                ContentModel.TYPE_USER,
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException, DataAccessException
@@ -148,10 +161,19 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         {
             return null;
         }
-
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
-                ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
-        return results.isEmpty() ? null : results.get(0).getChildRef();
+        
+        NodeRef result = authenticationCache.get(searchUserName);
+        if (result == null)
+        {
+            List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
+                    ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
+            if (!results.isEmpty())
+            {
+                result = tenantService.getName(results.get(0).getChildRef());
+                authenticationCache.put(searchUserName, result);
+            }
+        }
+        return result;
     }
 
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
@@ -529,7 +551,17 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 nodeService.setProperty(userNode, ContentModel.PROP_USER_USERNAME, uidAfter);
                 nodeService.moveNode(userNode, nodeService.getPrimaryParent(userNode).getParentRef(),
                         ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, uidAfter));
+                authenticationCache.remove(uidBefore);
             }
         }
     }
+
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USER_USERNAME);
+        if (userName != null)
+        {
+            authenticationCache.remove(userName);
+        }
+    }        
 }

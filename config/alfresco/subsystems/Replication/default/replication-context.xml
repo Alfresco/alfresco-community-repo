@@ -7,6 +7,9 @@
       <property name="transferReadOnly">
          <value>${replication.transfer.readonly}</value>
       </property>
+      <property name="enabled">
+         <value>${replication.enabled}</value>
+      </property>
    </bean>
 
 </beans>

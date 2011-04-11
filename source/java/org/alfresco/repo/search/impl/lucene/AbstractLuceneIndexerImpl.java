@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -182,6 +183,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                         reader.deleteDocument(doc);
                     }
                 }
+                td.close();
             }
             catch (IOException e)
             {
@@ -216,6 +218,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                         reader.deleteDocument(doc);
                     }
                 }
+                td.close();
             }
             catch (IOException e)
             {
@@ -253,6 +256,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                         reader.deleteDocument(doc);
                     }
                 }
+                td.close();
             }
         }
         catch (IOException e)
@@ -270,6 +274,11 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      * Consider if this information needs to be persisted for recovery
      */
     protected Set<String> deletions = new LinkedHashSet<String>();
+    
+    /**
+     * A list of deletions associated with the changes to nodes in the current flush
+     */
+    protected Set<String> deletionsSinceFlush = new HashSet<String>(); 
 
     /**
      * List of pending indexing commands.
@@ -616,6 +625,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         getDeltaReader();
         // outputTime("Delete "+nodeRef+" size = "+getDeltaWriter().docCount());
         Set<String> refs = new LinkedHashSet<String>();
+        Set<String> containerRefs = new LinkedHashSet<String>();
         Set<String> temp = null;
 
         switch(mode)
@@ -623,19 +633,25 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         case MOVE:
         	temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
             closeDeltaReader();
-            refs.addAll(temp);
-            deletions.addAll(temp);
+            containerRefs.addAll(temp);
             temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
-            refs.addAll(temp);
-            deletions.addAll(temp);
+            containerRefs.addAll(temp);
             
-            leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+            temp = deletePrimary(containerRefs, getDeltaReader(), true);
+            leafrefs.addAll(temp);
             closeDeltaReader();
             // May not have to delete references
-            leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+            temp = deleteReference(containerRefs, getDeltaReader(), true);
+            leafrefs.addAll(temp);
             closeDeltaReader();
+            
+            refs.addAll(containerRefs);
             refs.addAll(leafrefs);
-            deletions.addAll(leafrefs);
+            deletions.addAll(refs);
+            // should not be included as a delete for optimisation in deletionsSinceFlush
+            // should be optimised out
+            // defensive against any issue with optimisation of events
+            // the node has only moved - it still requires a real delete
             
             // make sure leaves are also removed from the delta before reindexing
             
@@ -651,13 +667,21 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
             closeDeltaReader();
             refs.addAll(temp);
             deletions.addAll(temp);
+            // should not be included as a delete for optimisation in deletionsSinceFlush
+            // should be optimised out
+            // defensive against any issue with optimisation of events
+            // the nodes have not been deleted and would require a real delete 
             temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
             refs.addAll(temp);
             deletions.addAll(temp);
+            // should not be included as a delete for optimisation
+            // should be optimised out
+            // defensive agaainst any issue with optimisation of events
+            // the nodes have not been deleted and would require a real delete 
             break;
         case DELETE:
             // if already deleted don't do it again ...
-            if(deletions.contains(nodeRef))
+            if(deletionsSinceFlush.contains(nodeRef))
             {
                 // nothing to do
                 break;
@@ -668,22 +692,30 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 // Most will skip any indexing as they will really have gone.
                 temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
                 closeDeltaReader();
-                deletions.addAll(temp);
+                containerRefs.addAll(temp);
                 refs.addAll(temp);
                 temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
-                deletions.addAll(temp);
-                refs.addAll(temp);
+                containerRefs.addAll(temp);
 
-                leafrefs.clear();
-                leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+                temp = deletePrimary(containerRefs, getDeltaReader(), true);
+                leafrefs.addAll(temp);
                 closeDeltaReader();
-                leafrefs.addAll(deletePrimary(deletions, mainReader, false));
+                temp = deletePrimary(containerRefs, mainReader, false);
+                leafrefs.addAll(temp);
+                
                 // May not have to delete references
-                leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+                temp = deleteReference(containerRefs, getDeltaReader(), true);
+                leafrefs.addAll(temp);
                 closeDeltaReader();
-                leafrefs.addAll(deleteReference(deletions, mainReader, false));
+                temp = deleteReference(containerRefs, mainReader, false);
+                leafrefs.addAll(temp);
+               
+                refs.addAll(containerRefs);
                 refs.addAll(leafrefs);
-                deletions.addAll(leafrefs);
+                deletions.addAll(refs);
+                // do not delete anything we have deleted before in this flush
+                // probably OK to cache for the TX as a whole but done per flush => See ALF-8007 
+                deletionsSinceFlush.addAll(refs);
 
                 // make sure leaves are also removed from the delta before reindexing
 
@@ -835,6 +867,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      */
     public void flushPending() throws LuceneIndexException
     {
+        // Make sure the in flush deletion list is clear at the start
+        deletionsSinceFlush.clear();
         IndexReader mainReader = null;
         try
         {
@@ -892,6 +926,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
             commandList.clear();
             indexImpl(forIndex, false);
             docs = getDeltaWriter().docCount();
+            deletionsSinceFlush.clear();
         }
         catch (IOException e)
         {
@@ -961,7 +996,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
     }
 
     /**
-     * Delete all index entries which do not start with the goven prefix
+     * Delete all index entries which do not start with the given prefix
      * 
      * @param prefix
      */
@@ -980,6 +1015,9 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                     if ((prefix == null) || nonStartwWith(ids, prefix))
                     {
                         deletions.add(ids[ids.length - 1]);
+                        // should be included in the deletion cache if we move back to caching at the TX level and not the flush level
+                        // Entries here will currently be ignored as the list is cleared at the start and end of a flush.
+                        deletionsSinceFlush.add(ids[ids.length - 1]);
                     }
                 }
             }

@@ -302,7 +302,7 @@ public class AuthorityMigrationPatch extends AbstractPatch
         // Migrate using 2 threads, 20 authorities per transaction. Log every 100 entries.
         new BatchProcessor<Map.Entry<String, Set<String>>>(
                 I18NUtil.getMessage(AuthorityMigrationPatch.MSG_PROCESS_NAME),
-                this.transactionService.getRetryingTransactionHelper(),
+                transactionHelper,
                 parentAssocs.entrySet(),
                 2, 20,
                 AuthorityMigrationPatch.this.applicationEventPublisher,

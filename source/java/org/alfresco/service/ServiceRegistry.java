@@ -24,11 +24,13 @@ import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -134,6 +136,7 @@ public interface ServiceRegistry
     static final QName PREFERENCE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PreferenceService");
     static final QName RENDITION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RenditionService");
     static final QName RATING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RatingService");
+    static final QName REPO_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RepoAdminService");
     
     // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
@@ -548,5 +551,17 @@ public interface ServiceRegistry
     @NotAuditable
     PublicServiceAccessService getPublicServiceAccessService();
     
-    
+    /**
+     * Get the repo admin service (or null if one is not provided)
+     * @return the invitation service
+     */
+    @NotAuditable
+    RepoAdminService getRepoAdminService();
+
+    /**
+     * Get the sys admin params helper bean.
+     * @return the sys admin params bean.
+     */
+    @NotAuditable
+    SysAdminParams getSysAdminParams();
 }

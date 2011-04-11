@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provides methods specific to manipulating {@link org.alfresco.model.ContentModel#TYPE_CONTENT files}
@@ -79,6 +80,19 @@ public interface FileFolderService
     public List<FileInfo> listDeepFolders(NodeRef contextNodeRef, SubFolderFilter filter);
     
     /**
+     * Uses the <b>cm:name</b> of the given node and attempts to find a sibling node
+     * with a more specific localized name.  The node passed in must represent the base
+     * of the possible translations i.e. the base name for the resource names will be
+     * calculated using the filename without extension.  The locale used will come from
+     * {@link I18NUtil#getLocale() the thread's default locale}.
+     * 
+     * @param nodeRef           the node that acts as the baseline for the search
+     * @return                  Returns a sibling node or the original node
+     */
+    @Auditable(parameters = ("nodeRef"))
+    public NodeRef getLocalizedSibling(NodeRef nodeRef);
+    
+    /**
      * Get a node ref of the node that has the name within the parent node
      * 
      * @param contextNodeRef the parent node
@@ -87,7 +101,6 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"contextNodeRef", "name"})
     public NodeRef searchSimple(NodeRef contextNodeRef, String name);
-    
     
     /**
      * Searches for all files and folders with the matching name pattern,
@@ -175,14 +188,25 @@ public interface FileFolderService
      * Move a file or folder to a new name and/or location.
      * <p>
      * If both the parent folder and name remain the same, then nothing is done.
+     * <p/>
+     * It is possible to specify <i>which</i> is the parent node when moving nodes; nodes
+     * can reside in multiple locations.
      * 
      * @param sourceNodeRef the file or folder to move
-     * @param sourceParentRef the source parent of node - null means move from primary parent
+     * @param sourceParentRef the source parent of node - <tt>null</tt> means move from primary parent
      * @param targetParentRef the new parent node to move the node to - null means rename in situ
      * @param newName the name to change the file or folder to - null to keep the existing name
      * @return Returns the new file info
      * @throws FileExistsException
      * @throws FileNotFoundException
+     */
+    @Auditable(parameters = { "sourceNodeRef", "sourceParentRef", "targetParentRef", "newName" })
+    public FileInfo moveFrom(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException;
+
+    /**
+     * @deprecated  From 3.4.2, use {@link #moveFrom(NodeRef, NodeRef, NodeRef, String)} or
+     *              {@link #move(NodeRef, NodeRef, String)}.  See
+     *              <a href="https://issues.alfresco.com/jira/browse/ALF-7692">ALF-7692</a>
      */
     @Auditable(parameters = { "sourceNodeRef", "sourceParentRef", "targetParentRef", "newName" })
     public FileInfo move(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException;

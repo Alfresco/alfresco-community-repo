@@ -55,6 +55,12 @@
         <property name="ownableService">
            <ref bean="ownableService" />
         </property>
+        <property name="versionService">
+           <ref bean="versionService" />
+        </property>
+        <property name="dbNodeService">
+            <ref bean="mtAwareNodeService" />
+        </property>
     </bean>
     
     
@@ -181,6 +187,13 @@
       </property>
     </bean>
     
+    <bean id="avmZipExporterService" class="org.alfresco.repo.exporter.AVMZipExporterServiceImpl">
+       <property name="avmService" ref="AVMService"/>
+    </bean>
+
+    <bean id="avmZipImporter" class="org.alfresco.repo.importer.AVMZipImporter">
+       <property name="avmService" ref="AVMService"/>
+    </bean>
 
     <!-- System Info Importer -->
     
@@ -234,6 +247,30 @@
         </property>
         -->
    </bean>
+
+    <bean id="avmZipBootstrap" class="org.alfresco.repo.importer.AVMZipBootstrap" abstract="true">
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="storeImporterTransactionHelper"/>
+        </property>
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="avmZipImporter">
+            <ref bean="avmZipImporter"/>
+        </property>
+        <property name="avmService">
+            <ref bean="AVMService"/>
+        </property>
+        <property name="allowWrite">
+            <value>${server.transaction.allow-writes}</value>
+        </property>
+    </bean>
 
     <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
     </bean>
@@ -347,6 +384,7 @@
                 <prop key="spaces.templates.email.invite.childname">${spaces.templates.email.invite.childname}</prop>
                 <prop key="spaces.templates.email.invite1.childname">${spaces.templates.email.invite1.childname}</prop>
                 <prop key="spaces.templates.email.notify.childname">${spaces.templates.email.notify.childname}</prop>
+                <prop key="spaces.templates.email.activities.childname">${spaces.templates.email.activities.childname}</prop>
                 <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
                 <prop key="spaces.transfers.childname">${spaces.transfers.childname}</prop>
                 <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
@@ -483,6 +521,11 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
                 <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/activities-email-templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
                     <prop key="location">alfresco/templates/rss_templates.acp</prop>
                     <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
@@ -551,14 +594,8 @@
                 </props>
 
                 <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/imapScripts.xml</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-imapScripts</prop>
-                </props>
-                
-                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/imapSpaces.xml</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpaces.acp</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>      
                 
@@ -595,8 +632,40 @@
                     <prop key="location">alfresco/bootstrap/scheduledActionsFolder.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/new-user-templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
                 
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/invite-email-templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.notify.childname}</prop>
+                    <prop key="location">alfresco/templates/email_templates2.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <!-- imapSpacesLocales.acp depends on the above imapSpaces.acp being bootstrapped as it imports
+                    into folders defined in that acp.  -->
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpacesLocales.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
             </list>
+        </property>
+    </bean>
+
+    <bean id="sitesAVMZipBootstrap-base" parent="avmZipBootstrap" abstract="true">
+        <property name="avmRoot">
+            <value>sitestore:/</value>
         </property>
     </bean>
 

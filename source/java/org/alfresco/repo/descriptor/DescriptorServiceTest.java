@@ -49,9 +49,6 @@ public class DescriptorServiceTest extends BaseSpringTest
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
-        
-      
       
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     } 
@@ -64,6 +61,9 @@ public class DescriptorServiceTest extends BaseSpringTest
     }
     
     
+    /**
+     * Test server decriptor
+     */
     public void testServerDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -75,6 +75,9 @@ public class DescriptorServiceTest extends BaseSpringTest
         String revision = serverDescriptor.getVersionRevision();
         String label = serverDescriptor.getVersionLabel();
         String build = serverDescriptor.getVersionBuild();
+        String edition = serverDescriptor.getEdition();
+        String id = serverDescriptor.getId();
+        
         String version = major + "." + minor + "."  + revision;
         version = buildVersionString(version, label, build);
         
@@ -82,9 +85,77 @@ public class DescriptorServiceTest extends BaseSpringTest
         
         int schemaVersion = serverDescriptor.getSchema();
         assertTrue("Server schema version must be greater than 0", schemaVersion > 0);
+        
+        assertNotNull("edition is null", edition);
+        assertEquals("id ", id, "Unknown");
+    }
+    
+    /**
+     * Test current repository descriptor
+     */
+    public void testCurrentRepositoryDescriptor()
+    {
+        ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        DescriptorService descriptorService = registry.getDescriptorService();
+        Descriptor repoDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        
+        String major = repoDescriptor.getVersionMajor();
+        String minor = repoDescriptor.getVersionMinor();
+        String revision = repoDescriptor.getVersionRevision();
+        String label = repoDescriptor.getVersionLabel();
+        String build = repoDescriptor.getVersionBuild();
+        String id = repoDescriptor.getId();
+        
+        String version = major + "." + minor + "."  + revision;
+        version = buildVersionString(version, label, build);
+       
+        assertEquals(version, repoDescriptor.getVersion());
+        
+        assertNotNull("repository id is null", id);
+        assertNotNull("major is null", major);
+        assertNotNull("minor is null", minor);
+        assertNotNull("revision is null", revision);
+        
+        int schemaVersion = repoDescriptor.getSchema();
+        assertTrue("Repository schema version must be greater than -1", schemaVersion > -1);
+    }
+    
+    public void testCompareDescriptors()
+    {
+        ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        DescriptorService descriptorService = registry.getDescriptorService();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+        Descriptor repoDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        
+        String major1 = repoDescriptor.getVersionMajor();
+        String minor1 = repoDescriptor.getVersionMinor();
+        String revision1 = repoDescriptor.getVersionRevision();
+        String label1 = repoDescriptor.getVersionLabel();
+        String build1 = repoDescriptor.getVersionBuild();
+        String id1 = repoDescriptor.getId();
+        
+        String major2 = serverDescriptor.getVersionMajor();
+        String minor2 = serverDescriptor.getVersionMinor();
+        String revision2 = serverDescriptor.getVersionRevision();
+        String label2 = serverDescriptor.getVersionLabel();
+        String build2 = serverDescriptor.getVersionBuild();
+        String id2 = serverDescriptor.getId();
+        
+        assertEquals("major version different", major1, major2);
+        assertEquals("minor version different", minor1, minor2);
+        assertEquals("revision version different", revision1, revision2);
+        assertEquals("label version different", label1, label2);
+        assertEquals("build version different", build1, build2);
+        
+
     }
 
-    public void testRepositoryDescriptor()
+    // TODO : missing getLicenceDescriptor
+
+    /**
+     * Test installed repository descriptor
+     */
+    public void testInstalledRepositoryDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         DescriptorService descriptorService = registry.getDescriptorService();

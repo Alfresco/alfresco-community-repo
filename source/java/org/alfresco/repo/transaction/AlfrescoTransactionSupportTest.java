@@ -235,10 +235,23 @@ public class AlfrescoTransactionSupportTest extends TestCase
     
     public void testReadWriteStateRetrieval() throws Exception
     {
+        final TxnReadState[] postCommitReadState = new TxnReadState[1];
+        final TransactionListenerAdapter getReadStatePostCommit = new TransactionListenerAdapter()
+        {
+            @Override
+            public void afterCommit()
+            {
+                postCommitReadState[0] = AlfrescoTransactionSupport.getTransactionReadState();
+            }
+        };
+
         RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>()
         {
             public TxnReadState execute() throws Exception
             {
+                // Register to list to post-commit
+                AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
+                
                 return AlfrescoTransactionSupport.getTransactionReadState();
             }
         };
@@ -246,12 +259,15 @@ public class AlfrescoTransactionSupportTest extends TestCase
         // Check TXN_NONE
         TxnReadState checkTxnReadState = AlfrescoTransactionSupport.getTransactionReadState();
         assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, checkTxnReadState);
+        assertNull("Expected no post-commit read state", postCommitReadState[0]);
         // Check TXN_READ_ONLY
         checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, true);
         assertEquals("Expected 'read-only transaction'", TxnReadState.TXN_READ_ONLY, checkTxnReadState);
+        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
         // check TXN_READ_WRITE
         checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, false);
         assertEquals("Expected 'read-write transaction'", TxnReadState.TXN_READ_WRITE, checkTxnReadState);
+        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
     }
     
     public void testResourceHelper() throws Exception

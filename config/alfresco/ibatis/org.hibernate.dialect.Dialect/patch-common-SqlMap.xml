@@ -11,7 +11,7 @@
     <!--                -->
     
     <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
-    
+    <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
     <typeAlias alias="DuplicateEntry" type="org.alfresco.repo.admin.patch.impl.DuplicateEntry" />
     
     <!--                -->
@@ -223,9 +223,9 @@
     
     <select id="select_oldAttrTenants" resultMap="result_admTenant">
         select
-            ma.mkey         tenantDomain,
-            a2.bool_value   isEnabled,
-            a3.string_value rootDir
+            ma.mkey         as tenantDomain,
+            a2.bool_value   as isEnabled,
+            a3.string_value as rootDir
         from 
             alf_global_attributes ga
             join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
@@ -239,10 +239,10 @@
     
     <select id="select_oldAttrAVMLocks" resultMap="result_avmLock">
         select
-            ma2.mkey wpStoreId,
-            a4.string_value relPath,
-            a5.string_value avmStore,
-            a6.string_value owner1
+            ma2.mkey        as wpStoreId,
+            a4.string_value as relPath,
+            a5.string_value as avmStore,
+            a6.string_value as owner1
         from 
             alf_global_attributes ga
             join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
@@ -261,9 +261,9 @@
     
     <select id="select_oldAttrPropertyBackedBeans" resultMap="result_PBB">
          select
-            ma.mkey         componentName,
-            ma2.mkey        propName,
-            a2.string_value propValue
+            ma.mkey         as componentName,
+            ma2.mkey        as propName,
+            a2.string_value as propValue
         from 
             alf_global_attributes ga
             join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
@@ -275,9 +275,9 @@
     
     <select id="select_oldAttrChainingURS" resultMap="result_ChainingURS">
          select
-            ma.mkey       label,
-            ma2.mkey      zoneId,
-            a2.long_value lastModified
+            ma.mkey       as label,
+            ma2.mkey      as zoneId,
+            a2.long_value as lastModified
         from 
             alf_global_attributes ga
             join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
@@ -337,6 +337,7 @@
             acl_id > ?
     </select>
     
+    <!-- deprecated - superceded by 'patch.db-V3.4-AVM-rename-dupes' -->
     <select id="select_AvmNodeDuplicates" resultMap="result_DuplicateEntry">
         <![CDATA[
         select
@@ -399,6 +400,7 @@
             id = ?
     </update>
     
+    <!-- deprecated - superceded by 'patch.db-V3.4-AVM-rename-dupes' -->
     <update id="update_AvmNodeNameById" parameterMap="parameter_RenamedDuplicateEntry">
         update
             avm_child_entries
@@ -407,6 +409,38 @@
         where
             child_id = ?
             and parent_id = ?
+    </update>
+    
+    <update id="update_CreateSizeCurrentProperty" parameterClass="SizeCurrentParams" >
+        INSERT INTO alf_node_properties
+        (
+           node_id, actual_type_n, persisted_type_n,
+           boolean_value,
+           long_value,
+           double_value,
+           float_value,
+           string_value,
+           serializable_value,
+           qname_id, list_index, locale_id)
+        SELECT
+            n.id, 0, 0,
+            #false#,
+            0,
+            0,
+            0,
+            null,
+            null,
+            #sizeCurrentQNameId#, -1, #defaultLocaleId#
+        FROM
+            alf_node n
+        WHERE
+            n.type_qname_id = #personTypeQNameId#
+            AND NOT EXISTS
+            (
+                SELECT 1 FROM alf_node_properties np
+                WHERE np.node_id = n.id
+                AND np.qname_id = #sizeCurrentQNameId#
+            )
     </update>
     
     <!--                -->

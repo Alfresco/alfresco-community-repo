@@ -246,7 +246,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
            assertNull("Not been sent yet", msg.getReceivedDate());
            
            // TODO - check some more details of the email
-           assertEquals("Invitation to join InviteSiteTitle site", msg.getSubject());
+           assertTrue((msg.getSubject().indexOf("You have been invited to join the") != -1));
         }
 
         /**

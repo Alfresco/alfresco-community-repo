@@ -1479,6 +1479,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Deleted
         nodeUpdate.setDeleted(true);
         nodeUpdate.setUpdateDeleted(true);
+        // Use a 'deleted' type QName
+        Long deletedQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
+        nodeUpdate.setUpdateTypeQNameId(true);
+        nodeUpdate.setTypeQNameId(deletedQNameId);
         
         // Update cm:auditable
         Set<QName> nodeAspects = getNodeAspects(nodeId);

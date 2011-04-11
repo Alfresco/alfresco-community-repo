@@ -91,6 +91,12 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
                 // item id looks like a full qname
                 type = QName.createQName(itemId);
             }
+            else if (itemId.indexOf(":") != -1)
+            {
+                // if a : is present the item id has not been escaped
+                // so leave it as it is
+                type = QName.createQName(itemId, this.namespaceService);
+            }
             else if (itemId.indexOf("_") != -1)
             {
                 // if item id contains _ change the first occurrence to :

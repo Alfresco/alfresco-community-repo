@@ -26,6 +26,7 @@ public class ReplicationParamsImpl implements ReplicationParams
 {
     /** Lock replication items? */
     private boolean readOnly = true;
+    private boolean isEnabled = true;
     
     public ReplicationParamsImpl()
     {
@@ -48,5 +49,16 @@ public class ReplicationParamsImpl implements ReplicationParams
     public boolean getTransferReadOnly()
     {
         return this.readOnly;
+    }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return isEnabled;
+    }
+    
+    public void setEnabled(boolean isEnabled)
+    {
+        this.isEnabled = isEnabled;
     }
 }

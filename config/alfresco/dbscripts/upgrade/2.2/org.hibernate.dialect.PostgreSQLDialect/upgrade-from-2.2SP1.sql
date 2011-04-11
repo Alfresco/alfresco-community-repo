@@ -70,10 +70,13 @@ CREATE TABLE t_summary_nstat
    transaction_id INT8 DEFAULT NULL,
    PRIMARY KEY (node_id)
 );
+--FOREACH alf_node_status.node_id system.upgrade.t_summary_nstat.batchsize
 INSERT INTO t_summary_nstat (node_id, transaction_id) 
-  SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL;
+  SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL
+  AND node_id >= ${LOWERBOUND} AND node_id <= ${UPPERBOUND};
 
 -- Copy data over
+--FOREACH alf_node.id system.upgrade.t_alf_node.batchsize
 INSERT INTO t_alf_node
    (
       id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
@@ -86,6 +89,8 @@ INSERT INTO t_alf_node
       alf_node n
       JOIN t_summary_nstat nstat ON (nstat.node_id = n.id)
       JOIN t_alf_store s ON (s.protocol = n.protocol AND s.identifier = n.identifier)
+   WHERE
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 ;
 DROP TABLE t_summary_nstat;
 
@@ -154,6 +159,7 @@ CREATE INDEX fk_alf_cass_tqn ON t_alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON t_alf_child_assoc (qname_ns_id);
 CREATE INDEX idx_alf_cass_pri ON t_alf_child_assoc (parent_node_id, is_primary, child_node_id);
 
+--FOREACH alf_child_assoc.id system.upgrade.t_alf_child_assoc.batchsize
 INSERT INTO t_alf_child_assoc
    (
       id, version,
@@ -174,6 +180,8 @@ INSERT INTO t_alf_child_assoc
       ca.is_primary, ca.assoc_index
    FROM
       alf_child_assoc ca
+   WHERE
+      ca.id >= ${LOWERBOUND} AND ca.id <= ${UPPERBOUND}
 ;
 
 -- Clean up
@@ -202,6 +210,7 @@ CREATE INDEX fk_alf_nass_snode ON t_alf_node_assoc (source_node_id);
 CREATE INDEX fk_alf_nass_tnode ON t_alf_node_assoc (target_node_id);
 CREATE INDEX fk_alf_nass_tqn ON t_alf_node_assoc (type_qname_id);
 
+--FOREACH alf_node_assoc.id system.upgrade.t_alf_node_assoc.batchsize
 INSERT INTO t_alf_node_assoc
    (
       id, version,
@@ -214,6 +223,8 @@ INSERT INTO t_alf_node_assoc
       na.type_qname_id
    FROM
       alf_node_assoc na
+   WHERE
+      na.id >= ${LOWERBOUND} AND na.id <= ${UPPERBOUND}
 ;
 
 -- Clean up
@@ -238,6 +249,7 @@ CREATE INDEX fk_alf_nasp_n ON t_alf_node_aspects (node_id);
 CREATE INDEX fk_alf_nasp_qn ON t_alf_node_aspects (qname_id);
 
 -- Note the omission of sys:referencable.  This is implicit.
+--FOREACH alf_node_aspects.node_id system.upgrade.t_alf_node_aspects.batchsize
 INSERT INTO t_alf_node_aspects
    (
       node_id, qname_id
@@ -250,8 +262,9 @@ INSERT INTO t_alf_node_aspects
       JOIN alf_qname qn ON (na.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      ns.uri != 'http://www.alfresco.org/model/system/1.0' OR
-      qn.local_name != 'referenceable'
+      (ns.uri != 'http://www.alfresco.org/model/system/1.0' OR
+      qn.local_name != 'referenceable')
+      AND na.node_id >= ${LOWERBOUND} AND na.node_id <= ${UPPERBOUND}
 ;
 
 -- Clean up
@@ -273,6 +286,7 @@ CREATE TABLE t_avm_aspects
 CREATE INDEX fk_avm_nasp_n ON t_avm_aspects (node_id);
 CREATE INDEX fk_avm_nasp_qn ON t_avm_aspects (qname_id);
 
+--FOREACH avm_aspects_new.id system.upgrade.t_avm_aspects.batchsize
 INSERT INTO t_avm_aspects
    (
       node_id, qname_id
@@ -282,6 +296,8 @@ INSERT INTO t_avm_aspects
       anew.qname_id
    FROM
       avm_aspects_new anew
+   WHERE
+      anew.id >= ${LOWERBOUND} AND anew.id <= ${UPPERBOUND}
 ;
 
 -- Clean up
@@ -315,6 +331,7 @@ CREATE TABLE t_avm_store_properties
 CREATE INDEX fk_avm_sprop_store ON t_avm_store_properties (avm_store_id);
 CREATE INDEX fk_avm_sprop_qname ON t_avm_store_properties (qname_id);
 
+--FOREACH avm_store_properties.avm_store_id system.upgrade.t_avm_store_properties.batchsize
 INSERT INTO t_avm_store_properties
    (
       id,
@@ -331,6 +348,8 @@ INSERT INTO t_avm_store_properties
       p.multi_valued, p.boolean_value, p.long_value, p.float_value, p.double_value, p.string_value, p.serializable_value
    FROM
       avm_store_properties p
+   WHERE
+      p.avm_store_id >= ${LOWERBOUND} AND p.avm_store_id <= ${UPPERBOUND}
 ;
 DROP TABLE avm_store_properties;
 ALTER TABLE t_avm_store_properties RENAME TO avm_store_properties;
@@ -356,6 +375,7 @@ CREATE TABLE t_avm_node_properties
 CREATE INDEX fk_avm_nprop_n ON t_avm_node_properties (node_id);
 CREATE INDEX fk_avm_nprop_qn ON t_avm_node_properties (qname_id);
 
+--FOREACH avm_node_properties_new.node_id system.upgrade.t_avm_node_properties.batchsize
 INSERT INTO t_avm_node_properties
    (
       node_id,
@@ -370,6 +390,8 @@ INSERT INTO t_avm_node_properties
       p.multi_valued, p.boolean_value, p.long_value, p.float_value, p.double_value, p.string_value, p.serializable_value
    FROM
       avm_node_properties_new p
+   WHERE
+      p.node_id >= ${LOWERBOUND} AND p.node_id <= ${UPPERBOUND}
 ;
 
 DROP TABLE avm_node_properties_new;
@@ -393,6 +415,7 @@ CREATE TABLE alf_locale
 INSERT INTO alf_locale (id, locale_str) VALUES (1, '.default');
 
 -- Locales come from the attribute table which was used to support MLText persistence
+--FOREACH alf_attributes.id system.upgrade.alf_attributes.batchsize
 INSERT INTO alf_locale (id, locale_str)
    SELECT NEXTVAL ('hibernate_sequence'), mkey
       FROM
@@ -400,8 +423,12 @@ INSERT INTO alf_locale (id, locale_str)
          FROM alf_node_properties np
          JOIN alf_attributes a1 ON (np.attribute_value = a1.id)
          JOIN alf_map_attribute_entries ma ON (ma.map_id = a1.id)
-      ) X
-;
+         WHERE NOT EXISTS
+         (
+             SELECT 1 FROM alf_locale l WHERE ma.mkey = l.locale_str
+         )
+         AND a1.id >= ${LOWERBOUND} AND a1.id <= ${UPPERBOUND}
+      )X;
 
 -- -------------------------------
 -- Migrate ADM Property Tables --
@@ -431,6 +458,7 @@ CREATE INDEX fk_alf_nprop_qn ON t_alf_node_properties (qname_id);
 CREATE INDEX fk_alf_nprop_loc ON t_alf_node_properties (locale_id);
 
 -- Copy values over
+--FOREACH alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 INSERT INTO t_alf_node_properties
    (
       node_id, qname_id, locale_id, list_index,
@@ -449,8 +477,10 @@ INSERT INTO t_alf_node_properties
       alf_node_properties np
    WHERE
       np.attribute_value IS NULL
+      AND np.node_id >= ${LOWERBOUND} AND np.node_id <= ${UPPERBOUND}
 ;
 
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_creator =
 (
    SELECT
@@ -463,7 +493,10 @@ UPDATE t_alf_node n SET audit_creator =
       np.node_id = n.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'creator'
-);
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_created =
 (
    SELECT
@@ -476,7 +509,10 @@ UPDATE t_alf_node n SET audit_created =
       np.node_id = n.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'created'
-);
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modifier =
 (
    SELECT
@@ -489,7 +525,10 @@ UPDATE t_alf_node n SET audit_modifier =
       np.node_id = n.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'modifier'
-);
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modified =
 (
    SELECT
@@ -502,8 +541,10 @@ UPDATE t_alf_node n SET audit_modified =
       np.node_id = n.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'modified'
-);
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
 -- Remove the unused cm:auditable properties
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 DELETE
    FROM t_alf_node_properties
    WHERE EXISTS
@@ -513,10 +554,12 @@ DELETE
          t_alf_node_properties.qname_id = alf_qname.id AND
          alf_qname.ns_id = alf_namespace.id AND
          alf_namespace.uri = 'http://www.alfresco.org/model/content/1.0' AND
-         alf_qname.local_name IN ('creator', 'created', 'modifier', 'modified')
+         alf_qname.local_name IN ('creator', 'created', 'modifier', 'modified') AND
+         t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
    );
 
 -- Copy all MLText values over
+--FOREACH alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 INSERT INTO t_alf_node_properties
    (
       node_id, qname_id, list_index, locale_id,
@@ -537,16 +580,24 @@ INSERT INTO t_alf_node_properties
       JOIN alf_map_attribute_entries ma ON (ma.map_id = a1.id)
       JOIN alf_locale loc ON (ma.mkey = loc.locale_str)
       JOIN alf_attributes a2 ON (ma.attribute_id = a2.id)
+   WHERE
+      np.node_id >= ${LOWERBOUND} AND np.node_id <= ${UPPERBOUND}
 ;  -- (OPTIONAL)
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 UPDATE t_alf_node_properties
    SET actual_type_n = 6, persisted_type_n = 6, serializable_value = NULL
    WHERE actual_type_n = -1 AND string_value IS NOT NULL
+   AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
 ;
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 UPDATE t_alf_node_properties
    SET actual_type_n = 9, persisted_type_n = 9
    WHERE actual_type_n = -1 AND serializable_value IS NOT NULL
+   AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
 ;
-DELETE FROM t_alf_node_properties WHERE actual_type_n = -1;
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
+DELETE FROM t_alf_node_properties WHERE actual_type_n = -1
+AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND};
 
 -- Delete the node properties and move the fixed values over
 DROP TABLE alf_node_properties;
@@ -557,55 +608,73 @@ CREATE TABLE t_del_attributes
    id INT8 NOT NULL,
    PRIMARY KEY (id)
 );
+
+--FOREACH alf_attributes.id system.upgrade.t_del_attributes.batchsize
 INSERT INTO t_del_attributes
    SELECT id FROM alf_attributes WHERE type = 'M'
+   AND alf_attributes.id >= ${LOWERBOUND} AND alf_attributes.id <= ${UPPERBOUND}
 ;
+
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE FROM t_del_attributes
    WHERE EXISTS
    (
       SELECT 1
       FROM alf_map_attribute_entries ma
       WHERE ma.attribute_id = t_del_attributes.id
+      AND t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
    );   
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE FROM t_del_attributes
    WHERE EXISTS
    (
       SELECT 1
       FROM alf_list_attribute_entries la
       WHERE la.attribute_id = t_del_attributes.id
+      AND t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
    );   
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 DELETE FROM t_del_attributes
    WHERE EXISTS
    (
       SELECT 1
       FROM alf_global_attributes ga
       WHERE ga.attribute = t_del_attributes.id
+      AND t_del_attributes.id >= ${LOWERBOUND} AND t_del_attributes.id <= ${UPPERBOUND}
    );   
+--FOREACH t_del_attributes.id system.upgrade.t_del_attributes.batchsize
 INSERT INTO t_del_attributes
    SELECT a.id FROM t_del_attributes t
    JOIN alf_map_attribute_entries ma ON (ma.map_id = t.id)
    JOIN alf_attributes a ON (ma.attribute_id = a.id)
+   WHERE t.id >= ${LOWERBOUND} AND t.id <= ${UPPERBOUND}
 ;
+--FOREACH alf_map_attribute_entries.map_id system.upgrade.alf_map_attribute_entries.batchsize
 DELETE FROM alf_map_attribute_entries
    WHERE EXISTS
    (
       SELECT 1
       FROM t_del_attributes t
       WHERE alf_map_attribute_entries.map_id = t.id
+      AND alf_map_attribute_entries.map_id >= ${LOWERBOUND} AND alf_map_attribute_entries.map_id <= ${UPPERBOUND}
    );
+--FOREACH alf_list_attribute_entries.list_id system.upgrade.alf_list_attribute_entries.batchsize
 DELETE FROM alf_list_attribute_entries
    WHERE EXISTS
    (
       SELECT 1
       FROM t_del_attributes t
       WHERE alf_list_attribute_entries.list_id = t.id
+      AND alf_list_attribute_entries.list_id >= ${LOWERBOUND} AND alf_list_attribute_entries.list_id <= ${UPPERBOUND}
    );
+--FOREACH alf_attributes.id system.upgrade.alf_attributes.batchsize
 DELETE FROM alf_attributes
    WHERE EXISTS
    (
       SELECT 1
       FROM t_del_attributes t
       WHERE alf_attributes.id = t.id
+      AND alf_attributes.id >= ${LOWERBOUND} AND alf_attributes.id <= ${UPPERBOUND}
    );
 DROP TABLE t_del_attributes;
 

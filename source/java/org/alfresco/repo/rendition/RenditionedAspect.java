@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,10 @@ import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.rendition.executer.DeleteRenditionActionExecuter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -66,11 +70,12 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     private static final Log logger = LogFactory.getLog(RenditionedAspect.class);
 
     /** Services */
-    private PolicyComponent policyComponent;
-    private NodeService nodeService;
+    private ActionService actionService;
     private DictionaryService dictionaryService;
+    private NodeService nodeService;
+    private PolicyComponent policyComponent;
     private RenditionService renditionService;
-    
+
     /**
      * Set the policy component
      * 
@@ -81,6 +86,14 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
         this.policyComponent = policyComponent;
     }
     
+    /**
+     * @since 3.4.2
+     */
+    public void setActionService(ActionService actionService) 
+    {
+        this.actionService = actionService;
+    }
+
     /**
      * Set the node service
      * 
@@ -119,7 +132,7 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                 RenditionModel.ASPECT_RENDITIONED, 
-                new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+                new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
                 RenditionModel.ASPECT_RENDITIONED, 
@@ -143,8 +156,19 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
             List<ChildAssociationRef> renditions = this.renditionService.getRenditions(nodeRef);
             for (ChildAssociationRef chAssRef : renditions)
             {
-                QName renditionAssocName = chAssRef.getQName();
-                RenditionDefinition rendDefn = this.renditionService.loadRenditionDefinition(renditionAssocName);
+                final QName renditionAssocName = chAssRef.getQName();
+                
+                // Rendition Definitions are persisted underneath the Data Dictionary for which Group ALL
+                // has Consumer access by default. However, we cannot assume that that access level applies for all deployments. See ALF-7334.
+                RenditionDefinition rendDefn = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+                    {
+                        @Override
+                        public RenditionDefinition doWork() throws Exception
+                        {
+                            return renditionService.loadRenditionDefinition(renditionAssocName);
+                        }
+                    }, AuthenticationUtil.getSystemUserName());
+                
                 if (rendDefn == null)
                 {
                     if (logger.isDebugEnabled())
@@ -252,6 +276,10 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
 
         if (rendDefn != null)
         {
+            Action deleteRendition = actionService.createAction(DeleteRenditionActionExecuter.NAME);
+            deleteRendition.setParameterValue(DeleteRenditionActionExecuter.PARAM_RENDITION_DEFINITION_NAME, rendDefn.getRenditionName());
+            rendDefn.setCompensatingAction(deleteRendition);
+            
             renditionService.render(sourceNodeRef, rendDefn, new RenderCallback()
             {
                 public void handleFailedRendition(Throwable t)
@@ -268,11 +296,6 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                             .append("The following exception is shown for informational purposes only ")
                             .append("and does not affect operation of the system.");
                         logger.debug(msg.toString(), t);
-                    }
-
-                    if (nodeService.exists(renditionAssoc.getChildRef()))
-                    {
-                        nodeService.deleteNode(renditionAssoc.getChildRef());
                     }
                 }
 

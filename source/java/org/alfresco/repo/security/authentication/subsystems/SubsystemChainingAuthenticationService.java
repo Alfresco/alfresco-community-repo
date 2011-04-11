@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.security.authentication.subsystems;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
@@ -43,6 +47,11 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
 
     /** The source bean name. */
     private String sourceBeanName;
+    
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private Collection<String> instanceIds;
+    private Map<String, ApplicationContext> contexts = new TreeMap<String, ApplicationContext>();
+    private Map<String, Object> sourceBeans = new TreeMap<String, Object>();
 
     /**
      * Sets the application context manager.
@@ -66,6 +75,58 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
         this.sourceBeanName = sourceBeanName;
     }
 
+    // Bring our cached copies of the source beans in line with the application context manager, using a RW lock to
+    // ensure consistency
+    private void refreshBeans()
+    {
+        boolean haveWriteLock = false;
+        try
+        {
+            if (this.instanceIds == null || !this.instanceIds.equals(this.applicationContextManager.getInstanceIds()))
+            {
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+                haveWriteLock = true;
+                this.instanceIds = this.applicationContextManager.getInstanceIds();
+                this.contexts.keySet().retainAll(this.instanceIds);
+                this.sourceBeans.keySet().retainAll(this.instanceIds);
+            }
+
+            for (String instance : this.instanceIds)
+            {
+                ApplicationContext newContext = this.applicationContextManager.getApplicationContext(instance);
+                ApplicationContext context = this.contexts.get(instance);
+                if (context != newContext)
+                {
+                    if (!haveWriteLock)
+                    {
+                        this.lock.readLock().unlock();
+                        this.lock.writeLock().lock();
+                        haveWriteLock = true;
+                    }
+                    newContext = this.applicationContextManager.getApplicationContext(instance);
+                    this.contexts.put(instance, newContext);
+                    try
+                    {
+                        this.sourceBeans.put(instance, newContext.getBean(this.sourceBeanName));
+                    }
+                    catch (NoSuchBeanDefinitionException e)
+                    {
+                        this.sourceBeans.remove(instance);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (haveWriteLock)
+            {
+                this.lock.readLock().lock();
+                this.lock.writeLock().unlock();
+            }
+        }
+    }
+
     /*
      * (non-Javadoc)
      * @see
@@ -74,12 +135,13 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
     @Override
     public MutableAuthenticationService getMutableAuthenticationService()
     {
-        for (String instance : this.applicationContextManager.getInstanceIds())
+        this.lock.readLock().lock();
+        try
         {
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
-            try
+            refreshBeans();
+            for (String instance : this.instanceIds)
             {
-                AuthenticationService authenticationService = (AuthenticationService) context.getBean(sourceBeanName);
+                AuthenticationService authenticationService = (AuthenticationService) this.sourceBeans.get(instance);
                 // Only add active authentication services. E.g. we might have an ldap context that is only used for
                 // synchronizing
                 if (authenticationService instanceof MutableAuthenticationService
@@ -90,12 +152,12 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
                     return (MutableAuthenticationService) authenticationService;
                 }
             }
-            catch (NoSuchBeanDefinitionException e)
-            {
-                // Ignore and continue
-            }
+            return null;
         }
-        return null;
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     /*
@@ -107,12 +169,13 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
     protected List<AuthenticationService> getUsableAuthenticationServices()
     {
         List<AuthenticationService> result = new LinkedList<AuthenticationService>();
-        for (String instance : this.applicationContextManager.getInstanceIds())
+        this.lock.readLock().lock();
+        try
         {
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
-            try
+            refreshBeans();
+            for (String instance : this.instanceIds)
             {
-                AuthenticationService authenticationService = (AuthenticationService) context.getBean(sourceBeanName);
+                AuthenticationService authenticationService = (AuthenticationService) this.sourceBeans.get(instance);
                 // Only add active authentication components. E.g. we might have an ldap context that is only used for
                 // synchronizing
                 if (!(authenticationService instanceof ActivateableBean)
@@ -122,12 +185,12 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
                     result.add(authenticationService);
                 }
             }
-            catch (NoSuchBeanDefinitionException e)
-            {
-                // Ignore and continue
-            }
+            return result;
         }
-        return result;
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
 }

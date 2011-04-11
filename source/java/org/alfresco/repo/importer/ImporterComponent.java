@@ -35,6 +35,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -57,6 +61,8 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterException;
@@ -68,6 +74,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.engine.TransactionHelper;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -103,6 +110,12 @@ public class ImporterComponent
     private AuthorityService authorityService;
     private AuthenticationContext authenticationContext;
     private OwnableService ownableService;
+    private VersionService versionService;
+
+    /**
+     * The db node service, used when updating the version store.
+     */
+    protected NodeService dbNodeService;
 
     // binding markers    
     private static final String START_BINDING_MARKER = "${";
@@ -207,6 +220,24 @@ public class ImporterComponent
         this.ownableService = ownableService;
     }
 
+    /**
+     * @param versionService  versionService
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+    
+    /**
+     * Sets the db node service, used when updating the 
+     *  versioning information
+     *
+     * @param nodeService  the node service
+     */
+    public void setDbNodeService(NodeService nodeService)
+    {
+        this.dbNodeService = nodeService;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ImporterService#importView(java.io.InputStreamReader, org.alfresco.service.cmr.view.Location, java.util.Properties, org.alfresco.service.cmr.view.ImporterProgress)
@@ -461,7 +492,7 @@ public class ImporterComponent
             // initialise list of content models to exclude from import
             if (binding == null || binding.getExcludedClasses() == null)
             {
-                this.excludedClasses = new QName[] { ContentModel.ASPECT_REFERENCEABLE, ContentModel.ASPECT_VERSIONABLE };
+                this.excludedClasses = new QName[] { ContentModel.ASPECT_REFERENCEABLE };
             }
             else
             {
@@ -606,7 +637,48 @@ public class ImporterComponent
                 }
             }
             
+            // if the node has the versionable aspect applied to it,
+            //  create an initial version for it
+            if(context.getNodeAspects().contains(ContentModel.ASPECT_VERSIONABLE))
+            {
+                generateVersioningForVersionableNode(nodeRef);
+            }
+            
             return nodeRef;
+        }
+        
+        /**
+         * Fixes things up for versionable nodes after importing.
+         * Because version information is stored in a different store,
+         *  the past versions are not included in the ACP. 
+         * However, because the node has the versionable aspect applied to 
+         *  it, we still need it to have a single version in the version store.
+         * This method arranges for that. 
+         */
+        private void generateVersioningForVersionableNode(final NodeRef nodeRef)
+        {
+            // Is versioning already turned on?
+            if(versionService.getVersionHistory(nodeRef) != null)
+            {
+                // There is already version history, so we don't need to do anything
+                return;
+            }
+            
+            // Take a copy of the version label, as it'll be reset when
+            //  we request that versioning occurs
+            final String label = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            
+            // Have versioning enabled
+            Version version = versionService.createVersion(nodeRef, null);
+            final NodeRef versionNodeRef = VersionUtil.convertNodeRef(version.getFrozenStateNodeRef());
+            
+            // Put the version label back how it should be on the main node
+            dbNodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, label);
+            
+            // Fix up the versioned version node to be what it should be
+            // (The previous version label should be off, and the current label is the new one)
+            dbNodeService.setProperty(versionNodeRef, ContentModel.PROP_VERSION_LABEL, null);
+            dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_VERSION_LABEL, label);
         }
 
         /**
@@ -1509,6 +1581,12 @@ public class ImporterComponent
                             {
                                 permissionService.setPermission(existingNodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
                             }
+                        }
+                        
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("Updating existing node " + existingNodeRef + " at " +
+                                    nodeService.getPath(existingNodeRef) + " for " + node.toString());
                         }
 
                         // report update

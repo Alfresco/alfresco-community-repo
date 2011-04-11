@@ -24,12 +24,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
+import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,9 +44,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ValueDerivingMapFactory;
 import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
@@ -54,6 +53,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Scripted People service for describing and executing actions against People & Groups.
@@ -232,7 +232,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
     }
     
     /**
-     * Create a Person with an optionally generated user name
+     * Create a Person with an optionally generated user name. 
+     * This version doesn't notify them.
      * 
      * @param userName userName or null for a generated user name
      * @param firstName firstName
@@ -246,6 +247,30 @@ public final class People extends BaseScopableProcessorExtension implements Init
      *         could not be created
      */
     public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, String password, boolean setAccountEnabled)
+    {
+        return createPerson(userName, firstName, lastName, emailAddress, password, setAccountEnabled, false);
+    }
+    
+    /**
+     * Create a Person with an optionally generated user name
+     * 
+     * @param userName userName or null for a generated user name
+     * @param firstName firstName
+     * @param lastName lastName
+     * @param emailAddress emailAddress
+     * @param password if not null creates a new authenticator with the given password.
+     * @param setAccountEnabled
+     *            set to 'true' to create enabled user account, or 'false' to
+     *            create disabled user account for created person.
+     * @param notifyByEmail
+     *            set to 'true' to have the new user emailed to let them know
+     *            their account details. Only applies if a username and 
+     *            password were supplied.
+     * @return the person node (type cm:person) created or null if the person
+     *         could not be created
+     */
+    public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, 
+            String password, boolean setAccountEnabled, boolean notifyByEmail)
     {
     	ParameterCheck.mandatory("firstName", firstName);
     	ParameterCheck.mandatory("lastName", lastName);
@@ -270,29 +295,13 @@ public final class People extends BaseScopableProcessorExtension implements Init
         
         if (userName != null)
         {
-            if (tenantService.isEnabled())
+            try
             {
-                String currentDomain = tenantService.getCurrentUserDomain();
-                if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
-                {
-                    if (! tenantService.isTenantUser(userName))
-                    {
-                        // force domain onto the end of the username
-                        userName = tenantService.getDomainUser(userName, currentDomain);
-                        logger.warn("Added domain to username: " + userName);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            tenantService.checkDomainUser(userName);
-                        }
-                        catch (RuntimeException re)
-                        {
-                            throw new AuthenticationException("User must belong to same domain as admin: " + currentDomain);
-                        }
-                    }
-                }
+                userName = PersonServiceImpl.updateUsernameForTenancy(userName, tenantService);
+            }
+            catch (TenantDomainMismatchException re)
+            {
+                throw new AuthenticationException("User must belong to same domain as admin: " + re.getTenantA());
             }
             
             person = createPerson(userName, firstName, lastName, emailAddress);
@@ -304,6 +313,11 @@ public final class People extends BaseScopableProcessorExtension implements Init
     		    authenticationService.setAuthenticationEnabled(userName, setAccountEnabled);
     			
     			person.save();
+    			
+    			if(notifyByEmail)
+    			{
+    			    personService.notifyPerson(userName, password);
+    			}
     		}
         }
         

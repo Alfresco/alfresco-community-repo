@@ -38,72 +38,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class ActionImpl extends ParameterizedItemImpl implements Action
 {
-    /**
-     * Serial version UID
-     */
     private static final long serialVersionUID = 3258135760426186548L;
 
-    /** The node reference for the action */
     private NodeRef nodeRef;
-
-    /**
-     * The title
-     */
     private String title;
-
-    /**
-     * The description
-     */
     private String description;
-
-    /**
-     * Inidcates whether the action should be executed asynchronously or not
-     */
+    private Boolean trackStatus = null;
     private boolean executeAsynchronously = false;
-
-    /**
-     * The compensating action
-     */
     private Action compensatingAction;
-
-    /**
-     * The created date
-     */
     private Date createdDate;
-
-    /**
-     * The creator
-     */
     private String creator;
-
-    /**
-     * The modified date
-     */
     private Date modifiedDate;
-
-    /**
-     * The modifier
-     */
     private String modifier;
-
-    /**
-     * Rule action definition name
-     */
     private String actionDefinitionName;
-
-    /**
-     * The run as user name
-     */
     private String runAsUserName;
-
-    /**
-     * The chain of actions that have lead to this action
-     */
     private Set<String> actionChain;
-
-    /**
-     * Action conditions
-     */
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
     
     /**
@@ -117,14 +66,12 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     private int executionInstance = -1;
     
     /**
-     * When the action started executing,
-     *  or null if it hasn't yet.
+     * When the action started executing, or null if it hasn't yet.
      */
     private Date executionStartDate;
     
     /**
-     * When the action finished executing,
-     *  or null if it hasn't yet.
+     * When the action finished executing, or null if it hasn't yet.
      */
     private Date executionEndDate;
     
@@ -175,6 +122,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         this.createdDate = action.getCreatedDate();
         this.creator = action.getCreator();
         this.description = action.getDescription();
+        this.trackStatus = action.getTrackStatus();
         this.executeAsynchronously = action.getExecuteAsychronously();
         this.modifiedDate = action.getModifiedDate();
         this.modifier = action.getModifier();
@@ -206,73 +154,67 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         return sb.toString();
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getTitle()
-     */
+    @Override
     public String getTitle()
     {
         return this.title;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#setTitle(java.lang.String)
-     */
+    @Override
     public void setTitle(String title)
     {
         this.title = title;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getDescription()
-     */
+    @Override
     public String getDescription()
     {
         return this.description;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#setDescription(java.lang.String)
-     */
+    @Override
     public void setDescription(String description)
     {
         this.description = description;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getExecuteAsychronously()
-     */
+    @Override
+    public Boolean getTrackStatus()
+    {
+        return trackStatus;
+    }
+
+    @Override
+    public void setTrackStatus(Boolean trackStatus)
+    {
+        this.trackStatus = trackStatus;
+    }
+
+    @Override
     public boolean getExecuteAsychronously()
     {
         return this.executeAsynchronously;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#setExecuteAsynchronously(boolean)
-     */
+    @Override
     public void setExecuteAsynchronously(boolean executeAsynchronously)
     {
         this.executeAsynchronously = executeAsynchronously;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getCompensatingAction()
-     */
+    @Override
     public Action getCompensatingAction()
     {
         return this.compensatingAction;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#setCompensatingAction(org.alfresco.service.cmr.action.Action)
-     */
+    @Override
     public void setCompensatingAction(Action action)
     {
         this.compensatingAction = action;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getCreatedDate()
-     */
+    @Override
     public Date getCreatedDate()
     {
         return this.createdDate;
@@ -288,9 +230,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         this.createdDate = createdDate;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getCreator()
-     */
+    @Override
     public String getCreator()
     {
         return this.creator;
@@ -298,17 +238,13 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Set the creator
-     * 
-     * @param creator the creator
      */
     public void setCreator(String creator)
     {
         this.creator = creator;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getModifiedDate()
-     */
+    @Override
     public Date getModifiedDate()
     {
         return this.modifiedDate;
@@ -316,17 +252,13 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Set the modified date
-     * 
-     * @param modifiedDate the modified date
      */
     public void setModifiedDate(Date modifiedDate)
     {
         this.modifiedDate = modifiedDate;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getModifier()
-     */
+    @Override
     public String getModifier()
     {
         return this.modifier;
@@ -334,91 +266,67 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Set the modifier
-     * 
-     * @param modifier the modifier
      */
     public void setModifier(String modifier)
     {
         this.modifier = modifier;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getActionDefinitionName()
-     */
+    @Override
     public String getActionDefinitionName()
     {
         return this.actionDefinitionName;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#hasActionConditions()
-     */
+    @Override
     public boolean hasActionConditions()
     {
         return (this.actionConditions.isEmpty() == false);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#indexOfActionCondition(org.alfresco.service.cmr.action.ActionCondition)
-     */
+    @Override
     public int indexOfActionCondition(ActionCondition actionCondition)
     {
         return this.actionConditions.indexOf(actionCondition);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getActionConditions()
-     */
+    @Override
     public List<ActionCondition> getActionConditions()
     {
         return this.actionConditions;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getActionCondition(int)
-     */
+    @Override
     public ActionCondition getActionCondition(int index)
     {
         return this.actionConditions.get(index);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#addActionCondition(org.alfresco.service.cmr.action.ActionCondition)
-     */
+    @Override
     public void addActionCondition(ActionCondition actionCondition)
     {
         this.actionConditions.add(actionCondition);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#addActionCondition(int,
-     *      org.alfresco.service.cmr.action.ActionCondition)
-     */
+    @Override
     public void addActionCondition(int index, ActionCondition actionCondition)
     {
         this.actionConditions.add(index, actionCondition);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#setActionCondition(int,
-     *      org.alfresco.service.cmr.action.ActionCondition)
-     */
+    @Override
     public void setActionCondition(int index, ActionCondition actionCondition)
     {
         this.actionConditions.set(index, actionCondition);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#removeActionCondition(org.alfresco.service.cmr.action.ActionCondition)
-     */
+    @Override
     public void removeActionCondition(ActionCondition actionCondition)
     {
         this.actionConditions.remove(actionCondition);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#removeAllActionConditions()
-     */
+    @Override
     public void removeAllActionConditions()
     {
         this.actionConditions.clear();
@@ -454,9 +362,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         this.runAsUserName = runAsUserName;
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.Action#getNodeRef()
-     */
+    @Override
     public NodeRef getNodeRef()
     {
         return this.nodeRef;
@@ -472,6 +378,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         this.nodeRef = nodeRef;
     }
     
+    @Override
     public void addParameterValues(Map<String, Serializable> values)
     {
         getParameterValues().putAll(values);
@@ -491,8 +398,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     }
     
     /**
-     * Called by the ActionService when the action
-     *  begins running. 
+     * Called by the ActionService when the action  begins running. 
      */
     public void setExecutionInstance(int instance) {
        executionInstance = instance;

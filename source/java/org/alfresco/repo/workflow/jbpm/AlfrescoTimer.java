@@ -85,10 +85,12 @@ public class AlfrescoTimer extends Timer
             {
                 boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
                 
-                // End the task. 
+                // End the task if timer does not repeat.
                 // Note the order is a little odd here as the task will be ended
                 // after the token has been signalled to move to the next node.
-                if (taskInstance != null && taskInstance.isOpen())
+                if (deleteTimer
+                    && taskInstance != null 
+                    && taskInstance.isOpen())
                 {
                     taskInstance.setSignalling(false);
                 	taskInstance.end();

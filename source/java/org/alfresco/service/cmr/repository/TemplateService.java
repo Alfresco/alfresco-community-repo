@@ -48,6 +48,8 @@ public interface TemplateService
     public static final String KEY_PERSON = "person";
     public static final String KEY_TEMPLATE = "template";
     public static final String KEY_DATE = "date";
+    public static final String KEY_SHARE_URL = "shareUrl";
+    public static final String KEY_PRODUCT_NAME = "productName";
     
     /**
      * Process a template against the upplied data model and return the result as

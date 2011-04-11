@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
 
 import javax.transaction.UserTransaction;
 
@@ -184,15 +185,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private SysAdminParams sysAdminParams;
 
     private BehaviourFilter policyBehaviourFilter;
-    
-    // Node monitor factory
-    
     private NodeMonitorFactory m_nodeMonitorFactory;
-    
-	//	Lock manager
-	
 	private static FileStateLockManager _lockManager;
-    
+	
     /**
      * Class constructor
      * 
@@ -2439,190 +2434,248 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             }
         }
         
-        // Perform repository updates in a retryable write transaction
-        final FileState finalFileState = toUpdate;
-        Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new CallableIO<Pair<NodeRef, Boolean>>()
+        // Depending on whether the node has the NO_CONTENT aspect, we may have to wipe it out on error
+        final CallableIO<Void> errorHandler = new CallableIO<Void>()
         {
-            public Pair<NodeRef, Boolean> call() throws IOException
+            public Void call() throws IOException
             {
-                // Check if the file is an OpenOffice document and hte truncation flag is set
-                //
-                // Note: Check before the timestamp update
-                
-                if ( file instanceof OpenOfficeContentNetworkFile) {
-                    OpenOfficeContentNetworkFile ooFile = (OpenOfficeContentNetworkFile) file;
-                    if ( ooFile.truncatedToZeroLength()) {
-                        
-                        // Inhibit versioning for this transaction
-                        
-                        getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
-
-                        // Debug
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                            logger.debug("OpenOffice file truncation update only, inhibit versioning, " + file.getFullName());
-                    }
-                }
-                
-                // Update the modification date on the file/folder node
-                if (finalFileState != null && file instanceof ContentNetworkFile)
+                if (file instanceof NodeRefNetworkFile)
                 {
-                    NodeRef nodeRef = (NodeRef) finalFileState.getFilesystemObject();
-
-                    // Check if the file data has been updated, if not then inhibit versioning for this txn
-                    // so the timestamp update does not generate a new file version
-                    
-                    ContentNetworkFile contentFile = (ContentNetworkFile) file;
-                    if ( contentFile.isModified() == false && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) {
-
-                        // Stop a new file version being generated
-                        
-                        getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
-
-                        // Debug
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                            logger.debug("Timestamp update only, inhibit versioning, " + file.getFullName());
-                    }
-
-                    // Update the modification timestamp
-                    
-                    getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-
-                    if (permissionService.hasPermission((NodeRef) finalFileState.getFilesystemObject(), PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED)
-                    { 
-                        Date modifyDate = new Date(finalFileState.getModifyDateTime());
-                        nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
-                        
-                        // Debug
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                            logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
-                    }
-                }
-                
-                // Defer to the network file to close the stream and remove the content
-                   
-                file.closeFile();
-                
-                // Remove the node if marked for delete
-                
-                if (file.hasDeleteOnClose())
-                {
-                    // Check if the file is a noderef based file
-                    
-                    if ( file instanceof NodeRefNetworkFile)
+                    NodeRef nodeRef = ((NodeRefNetworkFile) file).getNodeRef();
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                     {
-                        NodeRefNetworkFile nodeNetFile = (NodeRefNetworkFile) file;
-                        NodeRef nodeRef = nodeNetFile.getNodeRef();
+                        fileFolderService.delete(nodeRef);
+                    }
+                }
+                
+                return null;
+            }
+        };
+        try
+        {
+            // Perform repository updates in a retryable write transaction
+            final FileState finalFileState = toUpdate;
+            Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new CallableIO<Pair<NodeRef, Boolean>>()
+            {
+                public Pair<NodeRef, Boolean> call() throws IOException
+                {
+                    // Check if the file is an OpenOffice document and hte truncation flag is set
+                    //
+                    // Note: Check before the timestamp update
+                    
+                    if ( file instanceof OpenOfficeContentNetworkFile) {
+                        OpenOfficeContentNetworkFile ooFile = (OpenOfficeContentNetworkFile) file;
+                        if ( ooFile.truncatedToZeroLength()) {
+                            
+                            // Inhibit versioning for this transaction
+                            
+                            getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
+    
+                            // Debug
+                            
+                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                logger.debug("OpenOffice file truncation update only, inhibit versioning, " + file.getFullName());
+                        }
+                    }
+
+                    // Update the modification date on the file/folder node
+                    if (finalFileState != null && file instanceof ContentNetworkFile)
+                    {
+                        NodeRef nodeRef = (NodeRef) finalFileState.getFilesystemObject();
+    
+                        // Check if the file data has been updated, if not then inhibit versioning for this txn
+                        // so the timestamp update does not generate a new file version
                         
-                        // We don't know how long the network file has had the reference, so check for existence
+                        ContentNetworkFile contentFile = (ContentNetworkFile) file;
+                        if ( contentFile.isModified() == false && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) {
+    
+                            // Stop a new file version being generated
+                            
+                            getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
+    
+                            // Debug
+                            
+                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                logger.debug("Timestamp update only, inhibit versioning, " + file.getFullName());
+                        }
+    
+                        // Update the modification timestamp
                         
-                        if (fileFolderService.exists(nodeRef))
+                        getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+    
+                        if (permissionService.hasPermission((NodeRef) finalFileState.getFilesystemObject(), PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED)
+                        { 
+                            Date modifyDate = new Date(finalFileState.getModifyDateTime());
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
+                            
+                            // Debug
+                            
+                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
+                        }
+                    }
+                
+                    // Defer to the network file to close the stream and remove the content
+                       
+                    file.closeFile();
+                    
+                    // Remove the node if marked for delete
+                    
+                    if (file.hasDeleteOnClose())
+                    {
+                        // Check if the file is a noderef based file
+                        
+                        if ( file instanceof NodeRefNetworkFile)
                         {
-                            try
+                            NodeRefNetworkFile nodeNetFile = (NodeRefNetworkFile) file;
+                            NodeRef nodeRef = nodeNetFile.getNodeRef();
+                            
+                            // We don't know how long the network file has had the reference, so check for existence
+                            
+                            if (fileFolderService.exists(nodeRef))
                             {
-                            	boolean isVersionable = nodeService.hasAspect( nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                    	
                                 try
                                 {
-                                    // Delete the file                                    
-	                        
-                                    fileFolderService.delete(nodeRef);
-	                        
-                                }
-                                catch ( Exception ex)
-                                {
-                                    // Propagate retryable errors. Log the rest.
-                                    if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                                   boolean isVersionable = nodeService.hasAspect( nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                           
+                                    try
                                     {
-                                        if (ex instanceof RuntimeException)
-                                        {
-                                            throw (RuntimeException)ex;
-                                        }
-                                        else
-                                        {
-                                            throw new AlfrescoRuntimeException("Error during delete on close, " + file.getFullName(), ex);
-                                        }
+                                        // Delete the file                                    
+                               
+                                        fileFolderService.delete(nodeRef);
+                               
                                     }
-                                    if ( logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                                        logger.warn("Error during delete on close, " + file.getFullName(), ex);
+                                    catch ( Exception ex)
+                                    {
+                                        // Propagate retryable errors. Log the rest.
+                                        if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                                        {
+                                            if (ex instanceof RuntimeException)
+                                            {
+                                                throw (RuntimeException)ex;
+                                            }
+                                            else
+                                            {
+                                                throw new AlfrescoRuntimeException("Error during delete on close, " + file.getFullName(), ex);
+                                            }
+                                        }
+                                        if ( logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                            logger.warn("Error during delete on close, " + file.getFullName(), ex);
+                                    }
+                                    
+                                    // Return a node ref to update in the state table
+                                    return new Pair<NodeRef, Boolean>(nodeRef, isVersionable);            
                                 }
-                                
-                                // Return a node ref to update in the state table
-                                return new Pair<NodeRef, Boolean>(nodeRef, isVersionable);            
-                            }
-                            catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
-                            {
-                                // Debug
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                                    logger.debug("Delete on close - access denied, " + file.getFullName());
-                                
-                                // Convert to a filesystem access denied exception
-                                
-                                throw new AccessDeniedException("Delete on close " + file.getFullName());
+                                catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+                                {
+                                    // Debug
+                                    
+                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                        logger.debug("Delete on close - access denied, " + file.getFullName());
+                                    
+                                    // Convert to a filesystem access denied exception
+                                    
+                                    throw new AccessDeniedException("Delete on close " + file.getFullName());
+                                }
                             }
                         }
                     }
-                }
-
-                return null;
-            }});
-
-        if (result != null)
-        {
-            // Check if there is a quota manager enabled, release space back to the user quota
-            
-            if ( ctx.hasQuotaManager())
-                ctx.getQuotaManager().releaseSpace(sess, tree, file.getFileId(), file.getFullName(), fileSize);
-
-            // Set the file state to indicate a delete on close
-
-            if (ctx.hasStateCache())
+    
+                    return null;
+                }});
+    
+            if (result != null)
             {
-                if (result.getSecond())
+                // Check if there is a quota manager enabled, release space back to the user quota
+                
+                if ( ctx.hasQuotaManager())
+                    ctx.getQuotaManager().releaseSpace(sess, tree, file.getFileId(), file.getFullName(), fileSize);
+    
+                // Set the file state to indicate a delete on close
+    
+                if (ctx.hasStateCache())
                 {
-
-                    // Get, or create, the file state
-
-                    FileState fState = ctx.getStateCache().findFileState(file.getFullName(), true);
-
-                    // Indicate that the file was deleted via a delete on close request
-
-                    fState.setFileStatus(DeleteOnClose);
-
-                    // Make sure the file state is cached for a short while, save the noderef details
-
-                    fState.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
-                    fState.setFilesystemObject(result.getFirst());
+                    if (result.getSecond())
+                    {
+    
+                        // Get, or create, the file state
+    
+                        FileState fState = ctx.getStateCache().findFileState(file.getFullName(), true);
+    
+                        // Indicate that the file was deleted via a delete on close request
+    
+                        fState.setFileStatus(DeleteOnClose);
+    
+                        // Make sure the file state is cached for a short while, save the noderef details
+    
+                        fState.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
+                        fState.setFilesystemObject(result.getFirst());
+                    }
+                    else
+                    {
+    
+                        // Remove the file state
+    
+                        ctx.getStateCache().removeFileState(file.getFullName());
+                    }
                 }
-                else
-                {
-
-                    // Remove the file state
-
-                    ctx.getStateCache().removeFileState(file.getFullName());
+            }
+            else if (file.hasDeleteOnClose() && (file instanceof PseudoNetworkFile || file instanceof MemoryNetworkFile)
+                    && hasPseudoFileInterface(ctx))
+            {
+                // Delete the pseudo file
+    
+                getPseudoFileInterface(ctx).deletePseudoFile(sess, tree, file.getFullName());
+    
+            }
+            
+            // DEBUG
+            
+            if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME))) {
+                logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
+                if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) {
+                    ContentNetworkFile cFile = (ContentNetworkFile) file;
+                    logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
                 }
             }
         }
-        else if (file.hasDeleteOnClose() && (file instanceof PseudoNetworkFile || file instanceof MemoryNetworkFile)
-                && hasPseudoFileInterface(ctx))
+        // Make sure we clean up before propagating exceptions
+        catch (IOException e)
         {
-            // Delete the pseudo file
-
-            getPseudoFileInterface(ctx).deletePseudoFile(sess, tree, file.getFullName());
+            try
+            {
+                doInWriteTransaction(sess, errorHandler);
+            }
+            catch (Throwable t)
+            {
+                logger.error(t.getMessage(), t);
+            }
+            throw e;
 
         }
-        
-        // DEBUG
-        
-        if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME))) {
-            logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
-            if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) {
-                ContentNetworkFile cFile = (ContentNetworkFile) file;
-                logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+        catch (RuntimeException e)
+        {
+            try
+            {
+                doInWriteTransaction(sess, errorHandler);
             }
+            catch (Throwable t)
+            {
+                logger.error(t.getMessage(), t);
+            }
+            throw e;
+        }
+        catch (Error e)
+        {
+            try
+            {
+                doInWriteTransaction(sess, errorHandler);
+            }
+            catch (Throwable t)
+            {
+                logger.error(t.getMessage(), t);
+            }
+            throw e;
         }
     }
 
@@ -2921,13 +2974,40 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         boolean isFromVersionable = nodeService.hasAspect( nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
                         boolean typesCompatible = true;
                         
-                        if ( newExists == FileStatus.FileExists) {
+                        // HACK ALF-3856: Version History lost when Versionable Content renamed via CIFS
+                        //                This code will move into the repo layer (or just above it)
+                        //                and this complexity removed from here.
+                        //          Attempt to detect normal renames.  Hack alert!
+                        String oldNameLower = oldName.toLowerCase();
+                        String newNameLower = newName.toLowerCase();
+                        boolean renameShuffle = false;
+                        Pattern renameShufflePattern = ctx.getRenameShufflePattern();
+                        renameShuffle = renameShuffle || renameShufflePattern.matcher(oldNameLower).matches();
+                        renameShuffle = renameShuffle || renameShufflePattern.matcher(newNameLower).matches();
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(
+                                    "Rename file: \n" +
+                                    "   Old name:      " + oldName + "\n" +
+                                    "   New name:      " + newName + "\n" +
+                                    "   Pattern:       " + renameShufflePattern.pattern() + "\n" +
+                                    "   Is shuffle:    " + renameShuffle + "\n" +
+                                    "   Source folder: " + sourceFolderRef + "\n" +
+                                    "   Target folder: " + targetFolderRef + "\n" +
+                                    "   Node:          " + nodeToMoveRef + "\n" +
+                                    "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));
+                                    
+                        }
+                        
+                        if ( newExists == FileStatus.FileExists)
+                        {
                             
                             // Use the existing file as the target node
                             
                             targetNodeRef = getNodeForPath( tree, newName);
                         }
-                        else {
+                        else if (renameShuffle)
+                        {
                             
                             // Check if the target has a renamed or delete-on-close state
                             
@@ -3043,10 +3123,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             }
                         }
 
-                        // If the original or target nodes are not versionable and types are compatible then just use a standard rename of the
-                        // node
-                        if ( isFromVersionable == false && typesCompatible &&
-                                ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)) {
+                        // If the original or target nodes are not versionable and types are compatible then just use a standard rename of the node
+                        if (    !renameShuffle ||
+                                (   !isFromVersionable &&
+                                    typesCompatible &&
+                                    ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)))
+                        {
 
                             // Rename the file/folder
 

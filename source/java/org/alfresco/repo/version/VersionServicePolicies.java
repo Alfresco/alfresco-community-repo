@@ -25,6 +25,7 @@ import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -39,6 +40,7 @@ public interface VersionServicePolicies
 	 */
 	public interface BeforeCreateVersionPolicy extends ClassPolicy
 	{
+	    public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateVersion");
 		/**
 		 * Called before a new version is created for a version
 		 * 
@@ -54,6 +56,7 @@ public interface VersionServicePolicies
 	 */
 	public interface AfterCreateVersionPolicy extends ClassPolicy
 	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "afterCreateVersion");
 		/**
 		 * Called after the version has been created 
 		 * 
@@ -68,6 +71,7 @@ public interface VersionServicePolicies
 	 */
 	public interface OnCreateVersionPolicy extends ClassPolicy
 	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion");
 		/**
 		 * Called during the creation of the version to determine what the versioning policy for a 
 		 * perticular type may be.

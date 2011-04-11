@@ -35,7 +35,11 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.i18n.MessageServiceImpl;
+import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.cmr.admin.RepoUsage;
+import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
+import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -61,13 +65,11 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * Repository Admin Service Implementation.
  * <p>
  * @see RepoAdminService interface
- *
  */
-   
 public class RepoAdminServiceImpl implements RepoAdminService
 {   
     // Logging support
-    private static Log logger = LogFactory.getLog("org.alfresco.repo.admin.RepoAdminServiceImpl");
+    private static Log logger = LogFactory.getLog(RepoAdminServiceImpl.class);
     
     // dependencies  
     private DictionaryDAO dictionaryDAO;
@@ -76,6 +78,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
     private ContentService contentService;
     private NamespaceService namespaceService;
     private MessageService messageService;
+    private RepoUsageComponent repoUsageComponent;
     
     private RepositoryLocation repoModelsLocation;
     private RepositoryLocation repoMessagesLocation;
@@ -116,8 +119,11 @@ public class RepoAdminServiceImpl implements RepoAdminService
         this.messageService = messageService;
     }
 
-    
-    
+    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent)
+    {
+        this.repoUsageComponent = repoUsageComponent;
+    }
+
     public void setRepositoryModelsLocation(RepositoryLocation repoModelsLocation)
     {
         this.repoModelsLocation = repoModelsLocation;
@@ -128,11 +134,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         this.repoMessagesLocation = repoMessagesLocation;
     }
     
-      
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#getModels()
-     */
     public List<RepoModelDefinition> getModels()
     {
         StoreRef storeRef = repoModelsLocation.getStoreRef();
@@ -198,10 +199,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         return modelsInRepo;
     }
         
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#deployModel(java.io.InputStream, java.lang.String)
-     */
     public void deployModel(InputStream modelStream, String modelFileName)
     {     
         try
@@ -294,10 +291,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }     
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#activateModel(java.lang.String)
-     */
     public QName activateModel(String modelFileName)
     {     
         try
@@ -310,10 +303,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
     }  
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#deactivateModel(java.lang.String)
-     */
     public QName deactivateModel(String modelFileName)
     { 
         try
@@ -424,10 +413,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         return modelQName;
     }  
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#undeployModel(java.lang.String)
-     */
     public QName undeployModel(String modelFileName)
     {
         // Check that all the passed values are not null
@@ -522,10 +507,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         return modelQName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#getMessageBundles()
-     */
     public List<String> getMessageBundles()
     {
         StoreRef storeRef = repoMessagesLocation.getStoreRef(); 
@@ -580,10 +561,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         return resourceBundlesInRepo;   
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#deployMessageBundle(java.lang.String)
-     */
     public String deployMessageBundle(String resourceClasspath)
     {   
         // Check that all the passed values are not null        
@@ -744,10 +721,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }      
     }   
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#undeployMessageBundle(java.lang.String)
-     */
     public void undeployMessageBundle(String bundleBaseName)
     {   
         checkBundleBaseName(bundleBaseName);
@@ -792,10 +765,6 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.admin.RepoAdminService#reloadMessageBundle(java.lang.String)
-     */
     public void reloadMessageBundle(String bundleBaseName)
     {
         checkBundleBaseName(bundleBaseName);
@@ -859,5 +828,29 @@ public class RepoAdminServiceImpl implements RepoAdminService
         {
             throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '.' (period)");           
         }
+    }
+
+    @Override
+    public RepoUsage getRestrictions()
+    {
+        return repoUsageComponent.getRestrictions();
+    }
+
+    @Override
+    public RepoUsage getUsage()
+    {
+        return repoUsageComponent.getUsage();
+    }
+
+    @Override
+    public boolean updateUsage(UsageType usageType)
+    {
+        return repoUsageComponent.updateUsage(usageType);
+    }
+
+    @Override
+    public RepoUsageStatus getUsageStatus()
+    {
+        return repoUsageComponent.getUsageStatus();
     }
 }

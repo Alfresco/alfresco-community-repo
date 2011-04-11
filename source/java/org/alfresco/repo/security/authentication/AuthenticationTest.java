@@ -40,6 +40,7 @@ import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
@@ -49,6 +50,8 @@ import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Exp
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -116,6 +119,8 @@ public class AuthenticationTest extends TestCase
 
     private PolicyComponent policyComponent;
 
+    private SimpleCache<String, NodeRef> authenticationCache;    
+
     public AuthenticationTest()
     {
         super();
@@ -128,6 +133,13 @@ public class AuthenticationTest extends TestCase
 
     public void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         dialect = (Dialect) ctx.getBean("dialect");
         
         nodeService = (NodeService) ctx.getBean("nodeService");
@@ -142,6 +154,7 @@ public class AuthenticationTest extends TestCase
         personService =  (PersonService) ctx.getBean("personService");
         userNameMatcher = (UserNameMatcher) ctx.getBean("userNameMatcher");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        authenticationCache = (SimpleCache<String, NodeRef>) ctx.getBean("authenticationCache");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -170,7 +183,9 @@ public class AuthenticationTest extends TestCase
         Map<QName, Serializable> props = createPersonProperties("Andy");
         personAndyNodeRef = nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
         assertNotNull(personAndyNodeRef);
-
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        
         deleteAndy();
         authenticationComponent.clearCurrentSecurityContext();
     }
@@ -184,6 +199,7 @@ public class AuthenticationTest extends TestCase
         dao.setPasswordEncoder(passwordEncoder);
         dao.setUserNameMatcher(userNameMatcher);
         dao.setPolicyComponent(policyComponent);
+        dao.setAuthenticationCache(authenticationCache);
 
         if (dao.getUserOrNull("andy") != null)
         {
@@ -400,6 +416,7 @@ public class AuthenticationTest extends TestCase
         dao.setPasswordEncoder(passwordEncoder);
         dao.setUserNameMatcher(userNameMatcher);
         dao.setPolicyComponent(policyComponent);
+        dao.setAuthenticationCache(authenticationCache);
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 

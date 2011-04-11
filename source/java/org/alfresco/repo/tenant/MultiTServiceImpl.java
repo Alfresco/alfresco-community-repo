@@ -397,12 +397,12 @@ public class MultiTServiceImpl implements TenantService
                 
                 if ((tenantUserDomain == null) || (! tenantDomain.equals(tenantUserDomain)))
                 {
-                    throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + tenantUserDomain);               
+                    throw new TenantDomainMismatchException(tenantDomain, tenantUserDomain); 
                 }
             }
             else
             {
-                throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = <none>");
+                throw new TenantDomainMismatchException(tenantDomain, null); 
             }
         }
     }

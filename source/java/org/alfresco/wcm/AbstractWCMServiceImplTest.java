@@ -120,10 +120,19 @@ public class AbstractWCMServiceImplTest extends TestCase
         USER_ADMIN = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
-        createUser(USER_ONE);
-        createUser(USER_TWO);
-        createUser(USER_THREE);
-        createUser(USER_FOUR);
+        RetryingTransactionCallback<Void> createUsersCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                createUser(USER_ONE);
+                createUser(USER_TWO);
+                createUser(USER_THREE);
+                createUser(USER_FOUR);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createUsersCallback);
     }
     
     @Override
@@ -153,10 +162,19 @@ public class AbstractWCMServiceImplTest extends TestCase
                 }
             }
             
-            deleteUser(USER_ONE);
-            deleteUser(USER_TWO);
-            deleteUser(USER_THREE);
-            deleteUser(USER_FOUR);
+            RetryingTransactionCallback<Void> deleteUsersCallback = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    deleteUser(USER_ONE);
+                    deleteUser(USER_TWO);
+                    deleteUser(USER_THREE);
+                    deleteUser(USER_FOUR);
+                    return null;
+                }
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(deleteUsersCallback);
         }
         
         AuthenticationUtil.clearCurrentSecurityContext();

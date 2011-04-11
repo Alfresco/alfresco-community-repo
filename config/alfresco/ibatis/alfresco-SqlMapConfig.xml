@@ -6,11 +6,13 @@
 
 <sqlMapConfig>
 
-    <settings useStatementNamespaces="true"
-    lazyLoadingEnabled="false"
-    enhancementEnabled="false"
-    maxTransactions="500"
-    maxSessions="500"
+    <settings
+            useStatementNamespaces="true"
+            forceMultipleResultSetSupport="false"
+            lazyLoadingEnabled="false"
+            enhancementEnabled="false"
+            maxTransactions="500"
+            maxSessions="500"
     />
     
     
@@ -39,5 +41,9 @@
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/permissions-insert-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
+    
+    <!-- Canned queries -->
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
     
 </sqlMapConfig>

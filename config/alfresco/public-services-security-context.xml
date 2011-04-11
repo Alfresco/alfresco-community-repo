@@ -415,10 +415,12 @@
                org.alfresco.service.cmr.model.FileFolderService.listFiles=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.listFolders=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.listDeepFolders=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.model.FileFolderService.getLocalizedSibling=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.search=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.model.FileFolderService.searchSimple=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.Read
                org.alfresco.service.cmr.model.FileFolderService.rename=ACL_NODE.0.sys:base.WriteProperties
                org.alfresco.service.cmr.model.FileFolderService.move=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
+               org.alfresco.service.cmr.model.FileFolderService.moveFrom=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.2.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.copy=ACL_NODE.0.sys:base.ReadProperties,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.create=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.delete=ACL_NODE.0.sys:base.DeleteNode
@@ -720,6 +722,7 @@
                 org.alfresco.service.cmr.security.AuthorityService.getAllAuthorities=ACL_ALLOW
 				org.alfresco.service.cmr.security.AuthorityService.findAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthorities=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.getAuthorityNodeRef=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.createAuthority=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.addAuthority=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.removeAuthority=ACL_METHOD.ROLE_ADMINISTRATOR
@@ -821,6 +824,7 @@
                 org.alfresco.service.cmr.security.PersonService.isMutable=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.createPerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.deletePerson=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PersonService.notifyPerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.getAllPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleFilteredByProperty=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
@@ -878,7 +882,18 @@
     
     <!-- TODO: Add repository admin security -->
     
-    <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.admin.RepoAdminService.getRestrictions=ACL_ALLOW
+                org.alfresco.service.cmr.admin.RepoAdminService.getUsageStatus=ACL_ALLOW
+                org.alfresco.service.cmr.admin.RepoAdminService.*=ACL_METHOD.ROLE_ADMINISTRATOR
+            </value>
+        </property>
+    </bean>
 
     <!-- ===================== -->
     <!-- Content Usage Service -->

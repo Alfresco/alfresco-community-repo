@@ -30,6 +30,8 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.dialect.Dialect;
@@ -53,6 +55,8 @@ public class TransactionServiceImplTest extends TestCase
     private TransactionServiceImpl transactionService;
     private NodeService nodeService;
     
+    private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TransactionServiceImplTest");
+    
     private Dialect dialect;
     
     public void setUp() throws Exception
@@ -60,7 +64,7 @@ public class TransactionServiceImplTest extends TestCase
         transactionManager = (PlatformTransactionManager) ctx.getBean("transactionManager");
         transactionService = new TransactionServiceImpl();
         transactionService.setTransactionManager(transactionManager);   
-        transactionService.setAllowWrite(true);
+        transactionService.setAllowWrite(true, vetoName);
         transactionService.setAuthenticationContext((AuthenticationContext) ctx.getBean("authenticationContext"));
         transactionService.setSysAdminParams((SysAdminParams) ctx.getBean("sysAdminParams"));
         
@@ -128,7 +132,7 @@ public class TransactionServiceImplTest extends TestCase
     public void testReadOnlyTxn() throws Exception
     {
         // start a read-only transaction
-        transactionService.setAllowWrite(false);
+        transactionService.setAllowWrite(false, vetoName);
         
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
@@ -184,6 +188,7 @@ public class TransactionServiceImplTest extends TestCase
         }
         finally
         {
+            transactionService.setAllowWrite(true, vetoName);
             try
             {
                 txn.rollback();
@@ -192,6 +197,46 @@ public class TransactionServiceImplTest extends TestCase
         }
     }
     
+    /**
+     * Test the write veto
+     * @throws Exception
+     */
+    public void testReadOnlyVetoTxn() throws Exception
+    {
+       
+        QName v1 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V1");
+        QName v2 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
+        QName v3 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
+        try
+        {
+            // start a read-only transaction
+            transactionService.setAllowWrite(false, v1);
+            transactionService.setAllowWrite(false, v2);
+        
+            assertFalse("v1 AND v2 veto not read only", transactionService.getAllowWrite());
+            
+            transactionService.setAllowWrite(true, v2);
+            assertFalse("v1 not read only", transactionService.getAllowWrite());
+            
+            transactionService.setAllowWrite(true, v1);
+            assertTrue("v1 still read only", transactionService.getAllowWrite());
+        
+            /**
+             * Remove non existent veto
+             */
+            transactionService.setAllowWrite(true, v3);
+            assertTrue("v3 veto", transactionService.getAllowWrite());
+            
+            
+        }
+        finally
+        {
+            transactionService.setAllowWrite(true, v1);
+            transactionService.setAllowWrite(true, v2);
+            transactionService.setAllowWrite(true, v3);
+        }
+    }
+           
     public void testGetRetryingTransactionHelper()
     {
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
@@ -205,11 +250,11 @@ public class TransactionServiceImplTest extends TestCase
         assertFalse("Retriers must be new instances",
                 transactionService.getRetryingTransactionHelper() == transactionService.getRetryingTransactionHelper());
         
-        transactionService.setAllowWrite(true);
+        transactionService.setAllowWrite(true, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false);
 
-        transactionService.setAllowWrite(false);
+        transactionService.setAllowWrite(false, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         try
         {
@@ -220,5 +265,13 @@ public class TransactionServiceImplTest extends TestCase
         {
             // Expected
         }
+        
+        // Now check that we can force writable transactions
+        RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+        helper.setForceWritable(true);
+        helper.doInTransaction(callback, true);
+        helper.doInTransaction(callback, false);
+        
+        transactionService.setAllowWrite(true, vetoName);
     }
 }

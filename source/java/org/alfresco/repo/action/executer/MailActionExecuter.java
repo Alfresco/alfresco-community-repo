@@ -74,8 +74,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TO_MANY = "to_many";
     public static final String PARAM_SUBJECT = "subject";
     public static final String PARAM_TEXT = "text";
+    public static final String PARAM_HTML = "html";
     public static final String PARAM_FROM = "from";
     public static final String PARAM_TEMPLATE = "template";
+    public static final String PARAM_TEMPLATE_MODEL = "template_model";
        
     /**
      * From address
@@ -382,6 +384,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     }
                 }
                 
+                // from person
+                NodeRef fromPerson = null;
+                if (! authService.isCurrentUserTheSystemUser())
+                {
+                    fromPerson = personService.getPerson(authService.getCurrentUserName());
+                }
+                
                 // set subject line
                 message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
                 
@@ -390,29 +399,69 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
                 if (templateRef != null)
                 {
+                    Map<String, Object> suppliedModel = null;
+                    if(ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL) != null)
+                    {
+                        Object m = ruleAction.getParameterValue(PARAM_TEMPLATE_MODEL);
+                        if(m instanceof Map)
+                        {
+                            suppliedModel = (Map<String, Object>)m;
+                        }
+                        else
+                        {
+                            logger.warn("Skipping unsupported email template model parameters of type "
+                                    + m.getClass().getName() + " : " + m.toString());
+                        }
+                    }
+                    
                     // build the email template model
-                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef);
+                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson);
                     
                     // process the template against the model
                     text = templateService.processTemplate("freemarker", templateRef.toString(), model);
                 }
                 
                 // set the text body of the message
+                
+                boolean isHTML = false;
                 if (text == null)
                 {
                     text = (String)ruleAction.getParameterValue(PARAM_TEXT);
                 }
-                message.setText(text);
+                
+                if (text != null)
+                {
+                    // Note: only simplistic match here - expects <html tag at the start of the text
+                    String htmlPrefix = "<html";
+                    if (text.length() >= htmlPrefix.length() &&
+                            text.substring(0, htmlPrefix.length()).equalsIgnoreCase(htmlPrefix))
+                    {
+                        isHTML = true;
+                    }
+                }
+                else
+                {
+                    text = (String)ruleAction.getParameterValue(PARAM_HTML);
+                    if (text != null)
+                    {
+                        // assume HTML
+                        isHTML = true;
+                    }
+                }
+                
+                if (text != null)
+                {
+                    message.setText(text, isHTML);
+                }
                 
                 // set the from address
-                NodeRef person = personService.getPerson(authService.getCurrentUserName());
-                
                 String fromActualUser = null;
-                if (person != null)
+                if (fromPerson != null)
                 {
-                    fromActualUser = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                    fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
                 }
-                if( fromActualUser != null && fromActualUser.length() != 0)
+                
+                if (fromActualUser != null && fromActualUser.length() != 0)
                 {
                     message.setFrom(fromActualUser);
                 }
@@ -430,7 +479,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
             }
         };
-                
+        
         try
         {
             // Send the message unless we are in "testMode"
@@ -490,19 +539,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
 
    /**
-    * @param ref    The node representing the current document ref
+    * @param ref    The node representing the current document ref (or null)
     * 
     * @return Model map for email templates
     */
-   private Map<String, Object> createEmailTemplateModel(NodeRef ref)
+   private Map<String, Object> createEmailTemplateModel(NodeRef ref, Map<String, Object> suppliedModel, NodeRef fromPerson)
    {
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
-      NodeRef person = personService.getPerson(authService.getCurrentUserName());
-      model.put("person", new TemplateNode(person, serviceRegistry, null));
-      model.put("document", new TemplateNode(ref, serviceRegistry, null));
-      NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
-      model.put("space", new TemplateNode(parent, serviceRegistry, null));
+      if (fromPerson != null)
+      {
+          model.put("person", new TemplateNode(fromPerson, serviceRegistry, null));
+      }
+      
+      if (ref != null)
+      {
+          model.put("document", new TemplateNode(ref, serviceRegistry, null));
+          NodeRef parent = serviceRegistry.getNodeService().getPrimaryParent(ref).getParentRef();
+          model.put("space", new TemplateNode(parent, serviceRegistry, null));
+      }
       
       // current date/time is useful to have and isn't supplied by FreeMarker by default
       model.put("date", new Date());
@@ -513,6 +568,26 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       model.put("dateCompare", new DateCompareMethod());
       model.put("url", new URLHelper(repoRemoteUrl));
       
+      // if the caller specified a model, use it without overriding
+      if(suppliedModel != null && suppliedModel.size() > 0)
+      {
+          for(String key : suppliedModel.keySet())
+          {
+              if(model.containsKey(key))
+              {
+                  if(logger.isDebugEnabled())
+                  {
+                      logger.debug("Not allowing overwriting of built in model parameter " + key);
+                  }
+              }
+              else
+              {
+                  model.put(key, suppliedModel.get(key));
+              }
+          }
+      }
+      
+      // all done
       return model;
    }
     
@@ -528,6 +603,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TEXT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE), false, "ac-email-templates"));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE_MODEL, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TEMPLATE_MODEL), true));
     }
 
     public void setTestMode(boolean testMode)

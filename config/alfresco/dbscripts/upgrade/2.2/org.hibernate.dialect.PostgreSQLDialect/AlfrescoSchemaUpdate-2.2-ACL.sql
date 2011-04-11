@@ -29,8 +29,10 @@ ALTER TABLE alf_access_control_list
 CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
 
+--FOREACH alf_access_control_list.id system.upgrade.alf_access_control_list.batchsize
 UPDATE alf_access_control_list acl
-   set acl_id = (acl.id);
+   SET acl_id = (acl.id)
+   WHERE acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
 
 ALTER TABLE alf_access_control_list
    ADD UNIQUE (acl_id, latest, acl_version);
@@ -50,7 +52,9 @@ CREATE TABLE alf_acl_member (
 CREATE INDEX fk_alf_aclm_acl ON alf_acl_member (acl_id);
 CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
 
-ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_acl_id_key;
+-- Fix for ALF-7605, since PG 9.0 makes different names for uniques
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_acl_id_key; -- (optional)
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT alf_access_control_entry_acl_id_permission_id_authority_id_key; -- (optional)
 
 -- Extend ACE
 ALTER TABLE alf_access_control_entry
@@ -78,13 +82,17 @@ ALTER TABLE alf_authority ALTER id DROP DEFAULT;
 CREATE INDEX idx_alf_auth_aut ON alf_authority (authority);
 
 -- migrate data - fix up FK refs to authority
+--FOREACH alf_access_control_entry.id system.upgrade.alf_access_control_entry.batchsize
 UPDATE alf_access_control_entry ace
-   set auth_id = (select id from alf_authority a where a.authority = ace.authority_id);
+   SET auth_id = (SELECT id FROM alf_authority a WHERE a.authority = ace.authority_id)
+   WHERE ace.id >= ${LOWERBOUND} AND ace.id <= ${UPPERBOUND};
 
 
 -- migrate data - build equivalent ACL entries
+--FOREACH alf_access_control_list.id system.upgrade.alf_acl_member.batchsize
 INSERT INTO alf_acl_member (id, version, acl_id, ace_id, pos)
-   select nextval ('hibernate_sequence'), 1, ace.acl_id, ace.id, 0 from alf_access_control_entry ace join alf_access_control_list acl on acl.id = ace.acl_id;
+   SELECT NEXTVAL ('hibernate_sequence'), 1, ace.acl_id, ace.id, 0 FROM alf_access_control_entry ace JOIN alf_access_control_list acl ON acl.id = ace.acl_id
+   WHERE acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
 
 -- Create ACE context
 CREATE TABLE alf_ace_context (
@@ -140,6 +148,7 @@ CREATE TABLE alf_tmp_min_ace (
   UNIQUE (permission_id, authority_id, allowed, applies)
 );
 
+--FOREACH alf_access_control_entry.authority_id system.upgrade.alf_tmp_min_ace.batchsize
 INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
     SELECT
        min(ace1.id),
@@ -149,12 +158,15 @@ INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
        ace1.applies
     FROM
        alf_access_control_entry ace1
+    WHERE
+       ace1.authority_id >= ${LOWERBOUND} AND ace1.authority_id <= ${UPPERBOUND}
     GROUP BY
        ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies
 ;
    
 
 -- Update members to point to the first use of an access control entry
+--FOREACH alf_acl_member.id system.upgrade.alf_acl_member.batchsize
 UPDATE alf_acl_member mem
    SET ace_id = (SELECT help.min FROM alf_access_control_entry ace 
                      JOIN alf_tmp_min_ace help
@@ -162,7 +174,8 @@ UPDATE alf_acl_member mem
                                 help.authority_id = ace.authority_id AND 
                                 help.allowed = ace.allowed AND 
                                 help.applies = ace.applies 
-                     WHERE ace.id = mem.ace_id  );
+                     WHERE ace.id = mem.ace_id  )
+   WHERE mem.id >= ${LOWERBOUND} AND mem.id <= ${UPPERBOUND};
 
 DROP TABLE alf_tmp_min_ace;
 

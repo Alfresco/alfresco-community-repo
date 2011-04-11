@@ -125,7 +125,12 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             }
             catch (Exception exception)
             {
-                logger.info("Creation of thumbnail '" + details.getName() + "' failed");
+                final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
+                logger.info(msg);
+                
+                  // We need to rethrow in order to trigger the compensating action.
+                  // See AddFailedThumbnailActionExecuter
+                  throw new AlfrescoRuntimeException(msg, exception);
             }
         }
     }

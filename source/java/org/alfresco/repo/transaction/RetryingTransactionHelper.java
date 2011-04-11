@@ -115,8 +115,6 @@ public class RetryingTransactionHelper
      */
     private TransactionService txnService;
 
-//    /** Performs post-failure exception neatening */
-//    private ExceptionTransformer exceptionTransformer;
     /** The maximum number of retries. -1 for infinity. */
     private int maxRetries;
     /** The minimum time to wait between retries. */
@@ -142,6 +140,11 @@ public class RetryingTransactionHelper
      * Whether the the transactions may only be reads
      */
     private boolean readOnly;
+    
+    /**
+     * Whether the system's read-only state should be ignored
+     */
+    private boolean forceWritable;
     
     /**
      * Random number generator for retry delays.
@@ -173,19 +176,9 @@ public class RetryingTransactionHelper
         this.minRetryWaitMs = 100;
         this.maxRetryWaitMs = 2000;
         this.retryWaitIncrementMs = 100;
+        this.forceWritable = false;
     }
 
-    // Setters.
-
-//    /**
-//     * Optionally set the component that will transform or neaten any exceptions that are
-//     * propagated.
-//     */
-//    public void setExceptionTransformer(ExceptionTransformer exceptionTransformer)
-//    {
-//        this.exceptionTransformer = exceptionTransformer;
-//    }
-//
     /**
      * Set the TransactionService.
      */
@@ -232,6 +225,20 @@ public class RetryingTransactionHelper
     public void setReadOnly(boolean readOnly)
     {
         this.readOnly = readOnly;
+    }
+    
+    /**
+     * Override to allow the transactions to be writable regardless of the system read-only mode.
+     * <p/>
+     * <b>NOTE: </b> This method may not be used to circumvent the Alfresco License policy.
+     * 
+     * @param forceWritable         <tt>true</tt> to force transactions to be writable
+     *                              regardless of system read-only mode
+     */
+    public void setForceWritable(boolean forceWritable)
+    {
+        this.forceWritable = forceWritable;
+        this.readOnly = false;
     }
 
     /**
@@ -365,8 +372,9 @@ public class RetryingTransactionHelper
                 {
                     if (startingNew)
                     {
-                        txn = requiresNew ? txnService.getNonPropagatingUserTransaction(readOnly) : txnService
-                                .getUserTransaction(readOnly);
+                        txn = requiresNew ?
+                                txnService.getNonPropagatingUserTransaction(readOnly, forceWritable) :
+                                txnService.getUserTransaction(readOnly, forceWritable);
                         txn.begin();
                         // Wrap it to protect it
                         UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();

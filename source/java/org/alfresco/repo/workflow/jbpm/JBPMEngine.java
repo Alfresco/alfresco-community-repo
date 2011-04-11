@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.zip.ZipInputStream;
 
 import org.alfresco.model.ContentModel;
@@ -70,7 +72,9 @@ import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Conjunction;
@@ -129,6 +133,8 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     // Company Home
     protected StoreRef companyHomeStore;
     protected String companyHomePath;
+
+    private QNameCache qNameCache = new QNameCache();
 
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPM 3.2 and get this implemented in jBPM
@@ -790,37 +796,16 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         return new WorkflowException(msg, e);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.WorkflowComponent#getActiveWorkflows(java.
-     * lang.String)
-     */    
     public List<WorkflowInstance> getActiveWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, true);
     }
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.WorkflowComponent#getCompletedWorkflows(java
-     * .lang.String)
-     */    
     public List<WorkflowInstance> getCompletedWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, false);
     }
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.WorkflowComponent#getWorkflows(java.lang.String
-     * )
-     */
     public List<WorkflowInstance> getWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, null);
@@ -1315,6 +1300,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     {
         try
         {
+            // arsenyko: I think it's necessary to avoid undesirable growth,
+            // since a cache implementation is quite simple and doesn't care about
+            // max elements in the cache.
+            qNameCache.clear();
+
             return (List<WorkflowTask>) jbpmTemplate.execute(new JbpmCallback()
             {
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
@@ -1323,16 +1313,22 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     List<TaskInstance> tasks;
                     if (state.equals(WorkflowTaskState.IN_PROGRESS))
                     {
-                        TaskMgmtSession taskSession = context.getTaskMgmtSession();
-                        tasks = taskSession.findTaskInstances(authority);
+                        Session session = context.getSession();
+                        Query query = session.getNamedQuery("org.alfresco.repo.workflow.findTaskInstancesByActorId");
+                        query.setString("actorId", authority);
+                        query.setBoolean("true", true);
+                        List<WorkflowTask> workflowTasks = getWorkflowTasks(session, query.list());
+                        // Do we need to clear a session here? It takes 3 seconds with 2000 workflows.
+                        // session.clear();
+                        return workflowTasks;
                     }
                     else
                     {
                         // Note: This method is not implemented by jBPM
                         tasks = findCompletedTaskInstances(context, authority);
+                        return getWorkflowTasks(tasks);
                     }
                     
-                    return getWorkflowTasks(tasks);
                 }
                 
                 /**
@@ -1347,6 +1343,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                  *            the actor to retrieve tasks for
                  * @return  the tasks
                  */
+                @SuppressWarnings("rawtypes")
                 private List<TaskInstance> findCompletedTaskInstances(JbpmContext jbpmContext, String actorId)
                 {
                     List<TaskInstance> result = null;
@@ -1373,12 +1370,6 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.TaskComponent#getPooledTasks(java.util.List)
-     */
     @SuppressWarnings("unchecked")
     public List<WorkflowTask> getPooledTasks(final List<String> authorities)
     {
@@ -1435,6 +1426,218 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             String msg = messageService.getMessage(ERR_QUERY_TASKS, query);
             throw new WorkflowException(msg, e);
+        }
+    }
+    
+    protected List<WorkflowTask> getWorkflowTasks(Session session, List<Object[]> rows)
+    {
+        List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(rows.size());
+
+        /// ------------------------
+
+        // Preload data into L1 session
+        List<Long> taskInstanceIds = new ArrayList<Long>(rows.size());
+        List<Long> contextInstanceIds = new ArrayList<Long>(rows.size());
+        for (Object[] row : rows)
+        {
+            TaskInstance ti = (TaskInstance) row[0];
+            taskInstanceIds.add(ti.getId());
+            ContextInstance ci = (ContextInstance) row[8];
+            contextInstanceIds.add(ci.getId());
+        }
+        Map<Long, TaskInstance> taskInstanceCache = new HashMap<Long, TaskInstance>(rows.size());
+        if (taskInstanceIds.size() > 0)
+        {
+            taskInstanceCache = cacheTasks(session, taskInstanceIds);
+        }
+        Map<Long, TokenVariableMap> variablesCache = new HashMap<Long, TokenVariableMap>(rows.size());
+        if (contextInstanceIds.size() > 0)
+        {
+            variablesCache = cacheVariables(session, contextInstanceIds);
+        }
+        taskInstanceIds.clear();
+        contextInstanceIds.clear();
+        /// ------------------------
+        for(Object[] row : rows)
+        {
+            TaskInstance ti = (TaskInstance) row[0];
+            Token token = (Token)row[2];
+            ProcessInstance processInstance = (ProcessInstance)row[3];
+            Node node = (Node)row[4];
+            Task task = (Task)row[5];
+            ProcessDefinition processDefinition = (ProcessDefinition)row[6];
+            Task startTask = (Task)row[7];
+            ContextInstance contextInstance = (ContextInstance) row[8];
+            
+            if (tenantService.isEnabled())
+            {                           
+                try 
+                {
+                    tenantService.checkDomain(processDefinition.getName());
+                }
+                catch (RuntimeException re)
+                {
+                    // deliberately skip this one - due to domain mismatch - eg. when querying by group authority
+                    continue;
+                } 
+            }
+            // TaskInstance with some precached properties  
+            TaskInstance helperTi = taskInstanceCache.get(ti.getId());
+            // WorkflowTask
+            WorkflowTask workflowTask = new WorkflowTask();
+            workflowTask.id = createGlobalId(new Long(ti.getId()).toString());
+            workflowTask.name = ti.getName();
+            workflowTask.state = getWorkflowTaskState(ti);
+            // WorkflowPath
+            WorkflowPath path = new WorkflowPath();
+            String tokenId = token.getFullName().replace("/", WORKFLOW_TOKEN_SEPERATOR);
+            path.id = createGlobalId(processInstance.getId() + WORKFLOW_PATH_SEPERATOR + tokenId);
+            // WorkflowInstance
+            WorkflowInstance workflowInstance = new WorkflowInstance();
+            workflowInstance.id = createGlobalId(new Long(processInstance.getId()).toString());
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Object> variables = variablesCache.get(contextInstance.getId()).getVariables();
+            
+            workflowInstance.description = (String)variables.get(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION));
+            String name = tenantService.getBaseName(processDefinition.getName());
+            String title = getLabel(name + ".workflow", TITLE_LABEL, name);
+            String description = getLabel(name + ".workflow", DESC_LABEL, title);
+            workflowInstance.definition = new WorkflowDefinition(createGlobalId(new Long(processDefinition.getId()).toString()),
+                                          createGlobalId(name),
+                                          new Integer(processDefinition.getVersion()).toString(),
+                                          title,
+                                          description,
+                                          (startTask != null
+                                           ? createWorkflowTaskDefinition(startTask)
+                                           : null));
+            workflowInstance.active = !processInstance.hasEnded();
+            JBPMNode initiator = (JBPMNode)variables.get("initiator");
+            if (initiator != null)
+            {
+                workflowInstance.initiator = initiator.getNodeRef(); 
+            }
+            JBPMNode context = (JBPMNode)variables.get(mapQNameToName(WorkflowModel.PROP_CONTEXT));
+            if (context != null)
+            {
+                workflowInstance.context = context.getNodeRef(); 
+            }
+            JBPMNode workflowPackage = (JBPMNode)variables.get(mapQNameToName(WorkflowModel.ASSOC_PACKAGE));
+            if (workflowPackage != null)
+            {
+                workflowInstance.workflowPackage = workflowPackage.getNodeRef(); 
+            }
+            workflowInstance.priority = (Integer)variables.get(mapQNameToName(WorkflowModel.PROP_WORKFLOW_PRIORITY));
+            workflowInstance.dueDate = (Date)variables.get(mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE));
+            workflowInstance.startDate = processInstance.getStart();
+            workflowInstance.endDate = processInstance.getEnd();
+            path.instance = workflowInstance;
+            // WorkflowNode
+            path.node = createWorkflowNode(node);
+            path.active = !token.hasEnded();
+            workflowTask.path = path;
+            // WorkflowTaskDefinition
+            workflowTask.definition = createWorkflowTaskDefinition(task);
+            // WorkflowTaskProperies
+            workflowTask.properties = getTaskProperties(helperTi != null ? helperTi : ti, false, variablesCache);
+            
+            String workflowDisplayId = processDefinition.getName() + ".task." + workflowTask.name;
+            workflowTask.title = getLabel(workflowDisplayId, TITLE_LABEL, null);
+            if (workflowTask.title == null)
+            {
+                workflowTask.title = workflowTask.definition.metadata.getTitle();
+                if (workflowTask.title == null)
+                {
+                    workflowTask.title = workflowTask.name;
+                }
+            }
+            workflowTask.description = getLabel(workflowDisplayId, DESC_LABEL, null);
+            if (workflowTask.description == null)
+            {
+                description = workflowTask.definition.metadata.getDescription();
+                workflowTask.description = (description == null) ? workflowTask.title : description;
+            }
+
+            workflowTasks.add(workflowTask);
+        }
+        return workflowTasks;
+    }
+    
+    private Map<Long, TokenVariableMap> cacheVariables(Session session, List<Long> ids)
+    {
+        // Preload data into L1 session
+        int batchSize = 800;            // Must limit IN clause size!
+        List<Long> batch = new ArrayList<Long>(ids.size());
+        Map<Long, TokenVariableMap> cachedResults = new HashMap<Long, TokenVariableMap>();
+        for (Long id : ids)
+        {
+            batch.add(id);
+            if (batch.size() >= batchSize)
+            {
+                cacheVariablesNoBatch(session, batch, cachedResults);
+                batch.clear();
+            }
+        }
+        if (batch.size() > 0)
+        {
+            cacheVariablesNoBatch(session, batch, cachedResults);
+        }
+        batch.clear();
+        return cachedResults;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cacheVariablesNoBatch(Session session, List<Long> contextInstanceIds, Map<Long, TokenVariableMap> variablesCache)
+    {
+        Query query = session.getNamedQuery("org.alfresco.repo.workflow.cacheInstanceVariables");
+        query.setParameterList("ids", contextInstanceIds);
+        query.setCacheMode(CacheMode.PUT);
+        query.setFlushMode(FlushMode.MANUAL);
+        query.setCacheable(true);
+        
+        List<TokenVariableMap> results = (List<TokenVariableMap>) query.list();
+        for (TokenVariableMap tokenVariableMap : results)
+        {
+            variablesCache.put(tokenVariableMap.getContextInstance().getId(), tokenVariableMap);
+        }
+    }
+    
+    private Map<Long, TaskInstance> cacheTasks(Session session, List<Long> ids)
+    {
+        // Preload data into L1 session
+        int batchSize = 800;            // Must limit IN clause size!
+        List<Long> batch = new ArrayList<Long>(ids.size());
+        Map<Long, TaskInstance> cachedResults = new HashMap<Long, TaskInstance>();
+        for (Long id : ids)
+        {
+            batch.add(id);
+            if (batch.size() >= batchSize)
+            {
+                cacheTasksNoBatch(session, batch, cachedResults);
+                batch.clear();
+            }
+        }
+        if (batch.size() > 0)
+        {
+            cacheTasksNoBatch(session, batch, cachedResults);
+        }
+        batch.clear();
+        return cachedResults;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cacheTasksNoBatch(Session session, List<Long> taskInstanceIds, Map<Long, TaskInstance> returnMap)
+    {
+        Query query = session.getNamedQuery("org.alfresco.repo.workflow.cacheTaskInstanceProperties");
+        query.setParameterList("ids", taskInstanceIds);
+        query.setCacheMode(CacheMode.PUT);
+        query.setFlushMode(FlushMode.MANUAL);
+        query.setCacheable(true);
+        
+        List<TaskInstance> results = (List<TaskInstance>) query.list();
+        for (TaskInstance taskInstance : results)
+        {
+            returnMap.put(taskInstance.getId(), taskInstance);
         }
     }
     
@@ -1558,13 +1761,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                 // note: constrain process variables to same criteria as tasks
                 createProcessCriteria(variables, query);
                 
-                // retrieve list of processes matching specified variables
-                List<?> processList = variables.list();
-                Object[] processIds = getProcessIds( processList);
+                Disjunction processIdCriteria = createProcessIdCriteria(variables);
 
                 // constrain tasks by process list
                 process = (process == null) ? task.createCriteria("processInstance") : process;
-                process.add(Restrictions.in("id", processIds));
+                process.add(processIdCriteria);
             }
         }
 
@@ -1632,6 +1833,43 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
         
         return task;
+    }
+
+    /**
+     * @param variables
+     * @return
+     */
+    private Disjunction createProcessIdCriteria(Criteria variables)
+    {
+        // retrieve list of processes matching specified variables
+        List<?> processList = variables.list();
+        Object[] processIds = getProcessIds( processList);
+
+        // ALF-5841 fix
+        int batch = 0;
+        List<Object> buf = new ArrayList<Object>(1000);
+
+        Disjunction ids = Restrictions.disjunction();
+        for (Object id : processIds)
+        {
+            if (batch < 1000)
+            {
+                batch++;
+                buf.add(id);
+            }
+            else
+            {
+                ids.add(Restrictions.in("id", buf));
+                batch = 0;
+                buf.clear();
+            }
+        }
+
+        if (!buf.isEmpty())
+        {
+            ids.add(Restrictions.in("id", buf));
+        }
+        return ids;
     }
 
     private Object[] getProcessIds(List<?> processList)
@@ -1769,7 +2007,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     {
                         newProperties.putAll(properties);
                     }
-                    Map<QName, Serializable> existingProperties = getTaskProperties(taskInstance, false);
+                    Map<QName, Serializable> existingProperties = getTaskProperties(taskInstance, false, null);
                     if (add != null)
                     {
                         // add new associations
@@ -2179,13 +2417,12 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     /**
      * Gets Properties of Task
      * 
-     * @param instance
-     *            task instance
-     * @param properties
-     *            properties to set
+     * @param instance  task instance
+     * @param properties  properties to set
+     * @param variablesCache cahce og context instance variables if any exists
      */
     @SuppressWarnings("unchecked")
-    protected Map<QName, Serializable> getTaskProperties(TaskInstance instance, boolean localProperties)
+    protected Map<QName, Serializable> getTaskProperties(TaskInstance instance, boolean localProperties, Map<Long, TokenVariableMap> variablesCache)
     {
     	// retrieve type definition for task
         TypeDefinition taskDef = getFullTaskDefinition(instance);
@@ -2200,7 +2437,16 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             Token token = instance.getToken();
             while (token != null)
             {
-                TokenVariableMap varMap = context.getTokenVariableMap(token);
+                TokenVariableMap varMap = null;
+                if (variablesCache != null && variablesCache.containsKey(context.getId()))
+                {
+                    varMap = variablesCache.get(context.getId());
+                }
+                else
+                {
+                    varMap = context.getTokenVariableMap(token);
+                }
+                
                 if (varMap != null)
                 {
                     Map<String, Object> tokenVars = varMap.getVariablesLocally();
@@ -2486,7 +2732,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     protected void setDefaultTaskProperties(TaskInstance instance)
     {
-        Map<QName, Serializable> existingValues = getTaskProperties(instance, true);
+        Map<QName, Serializable> existingValues = getTaskProperties(instance, true, null);
         Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
 
         // construct an anonymous type that flattens all mandatory aspects
@@ -2560,7 +2806,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     protected void setDefaultWorkflowProperties(TaskInstance startTask)
     {
-        Map<QName, Serializable> taskProperties = getTaskProperties(startTask, true);
+        Map<QName, Serializable> taskProperties = getTaskProperties(startTask, true, null);
         
         ContextInstance processContext = startTask.getContextInstance();
         String workflowDescriptionName = mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
@@ -2606,7 +2852,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         List<QName> missingProps = null;
 
         // retrieve properties of task
-        Map<QName, Serializable> existingValues = getTaskProperties(instance, false);
+        Map<QName, Serializable> existingValues = getTaskProperties(instance, false, null);
         
         // retrieve definition of task
         ClassDefinition classDef = getFullTaskDefinition(instance);
@@ -2821,7 +3067,9 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     private QName mapNameToQName(String name)
     {
-        QName qname = null;
+        QName qname = qNameCache.getNameToQName(name);
+        if (qname == null)
+        {
         // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as
         // new scheme (i.e. } -> _)
         String qnameStr = (name.indexOf('}') == -1) ? name.replaceFirst("_", ":") : name.replace("}", ":");
@@ -2832,6 +3080,8 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         catch(NamespaceException e)
         {
             qname = QName.createQName(name, this.namespaceService);
+        }
+            qNameCache.putNameToQName(name, qname);
         }
         return qname;
     }
@@ -2848,12 +3098,18 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as
         // new scheme (i.e. } -> _)
         // NOTE: Use new scheme 
+        String cachedName = qNameCache.getQNameToName(name);
+        if (cachedName == null)
+        {
         String nameStr = name.toPrefixString(this.namespaceService);
         if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
         {
-            return nameStr.replace(':', '}');
+                cachedName = nameStr.replace(':', '}');
+            }
+            cachedName = nameStr.replace(':', '_');
         }
-        return nameStr.replace(':', '_');
+        qNameCache.putQNameToName(name, cachedName);
+        return cachedName;
     }
     
     /**
@@ -2944,6 +3200,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         String type = getRealNode(node).getClass().getSimpleName();
         // TODO: Is there a formal way of determing if task node?
         boolean isTaskNode = type.equals("TaskNode");
+        @SuppressWarnings("rawtypes")
         List<Transition> transitions = node.getLeavingTransitions();
         List<WorkflowTransition> wfTransitions;
         if (transitions != null)
@@ -3066,7 +3323,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         WorkflowPath path = createWorkflowPath(task.getToken());
         WorkflowTaskState state = getWorkflowTaskState(task);
         WorkflowTaskDefinition definition = createWorkflowTaskDefinition(task.getTask());
-        Map<QName, Serializable> properties = getTaskProperties(task, false);
+        Map<QName, Serializable> properties = getTaskProperties(task, false, null);
         return factory.createTask(id, definition, name, null, null, state, path, properties);
     }
  
@@ -3161,6 +3418,105 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             return node;
         }
+    }
+
+    /**
+     * Basic cache implementation for performance improvement with mapping QNames and Names of properties.
+     */
+    private class QNameCache
+    {
+        private Map<QName, String> mapQNameToNameCache;
+        private Map<String, QName> mapNameToQNameCache;
+        
+        private ReentrantReadWriteLock qNameToNameLock = new ReentrantReadWriteLock();
+        private WriteLock qNameToNameWriteLock = qNameToNameLock.writeLock();
+        private ReadLock qNameToNameReadLock = qNameToNameLock.readLock();
+
+        private ReentrantReadWriteLock nameToQNameLock = new ReentrantReadWriteLock();
+        private WriteLock nameToQNameWriteLock = nameToQNameLock.writeLock();
+        private ReadLock nameToQNameReadLock = nameToQNameLock.readLock();
+        
+        QNameCache()
+        {
+            mapQNameToNameCache = new HashMap<QName, String>();
+            mapNameToQNameCache = new HashMap<String, QName>();
+        }
+        
+        String getQNameToName(QName qName)
+        {
+            qNameToNameReadLock.lock();
+            try
+            {
+                return mapQNameToNameCache.get(qName);
+            }
+            finally
+            {
+                qNameToNameReadLock.unlock();
+            }
+        }
+        
+        void putQNameToName(QName qName, String name)
+        {
+            qNameToNameWriteLock.lock();
+            try
+            {
+                mapQNameToNameCache.put(qName, name);
+            }
+            finally
+            {
+                qNameToNameWriteLock.unlock();
+            }
+        }
+        
+        QName getNameToQName(String name)
+        {
+            nameToQNameReadLock.lock();
+            try
+            {
+                return mapNameToQNameCache.get(name);
+            }
+            finally
+            {
+                nameToQNameReadLock.unlock();
+            }
+        }
+        
+        void putNameToQName(String name, QName qName)
+        {
+            nameToQNameWriteLock.lock();
+            try
+            {
+                mapNameToQNameCache.put(name, qName);
+            }
+            finally
+            {
+                nameToQNameWriteLock.unlock();
+            }
+        }
+        
+        void clear()
+        {
+            nameToQNameWriteLock.lock();
+            try
+            {
+                mapNameToQNameCache.clear();
+            }
+            finally
+            {
+                nameToQNameWriteLock.unlock();
+            }
+            qNameToNameWriteLock.lock();
+            try
+            {
+                mapQNameToNameCache.clear();
+            }
+            finally
+            {
+                qNameToNameWriteLock.unlock();
+            }
+            
+        }
+
     }
 
 }

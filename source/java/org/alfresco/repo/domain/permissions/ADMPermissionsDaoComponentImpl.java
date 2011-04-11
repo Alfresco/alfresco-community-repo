@@ -105,7 +105,6 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
         {
             return;
         }
-        System.out.println("Deleting "+acl+" on "+nodeRef);
         if (acl != null)
         {
             switch (acl.getAclType())

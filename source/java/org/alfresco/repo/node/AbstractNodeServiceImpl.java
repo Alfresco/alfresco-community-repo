@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
-import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodeAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateStorePolicy;
@@ -121,7 +120,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<OnRemoveAspectPolicy> onRemoveAspectDelegate;
     private AssociationPolicyDelegate<BeforeCreateNodeAssociationPolicy> beforeCreateNodeAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateNodeAssociationPolicy> onCreateNodeAssociationDelegate;
-    private AssociationPolicyDelegate<BeforeCreateChildAssociationPolicy> beforeCreateChildAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateChildAssociationPolicy> onCreateChildAssociationDelegate;
     private AssociationPolicyDelegate<BeforeDeleteChildAssociationPolicy> beforeDeleteChildAssociationDelegate;
     private AssociationPolicyDelegate<OnDeleteChildAssociationPolicy> onDeleteChildAssociationDelegate;
@@ -212,7 +210,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
 
         beforeCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeCreateNodeAssociationPolicy.class);
         onCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateNodeAssociationPolicy.class);
-        beforeCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeCreateChildAssociationPolicy.class);
         onCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.class);
         beforeDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteChildAssociationPolicy.class);
         onDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.class);
@@ -567,26 +564,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         // execute policy for node type and aspects
         NodeServicePolicies.OnCreateNodeAssociationPolicy policy = onCreateNodeAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
         policy.onCreateNodeAssociation(childAssocRef);
-    }
-
-    /**
-     * @see NodeServicePolicies.BeforeCreateChildAssociationPolicy#beforeCreateChildAssociation(NodeRef,
-     *      NodeRef, QName, QName)
-     *      
-     * @deprecated      V3.3: We don't know the child node reference until the association has been created
-     */
-    protected void invokeBeforeCreateChildAssociation(NodeRef parentNodeRef, NodeRef childNodeRef, QName assocTypeQName, QName assocQName, boolean isNewNode)
-    {
-        if (ignorePolicy(parentNodeRef))
-        {
-            return;
-        }
-        
-        // get qnames to invoke against
-        Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
-        // execute policy for node type
-        NodeServicePolicies.BeforeCreateChildAssociationPolicy policy = beforeCreateChildAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
-        policy.beforeCreateChildAssociation(parentNodeRef, childNodeRef, assocTypeQName, assocQName, isNewNode);
     }
 
     /**

@@ -21,6 +21,8 @@ package org.alfresco.service.license;
 import java.security.Principal;
 import java.util.Date;
 
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+
 /**
  * Provides access to License information.
  * 
@@ -91,4 +93,22 @@ public interface LicenseDescriptor
      * @return a URL or <code>null</code>
      */
     public String getHeartBeatUrl();
+    
+    /**
+     * Gets the maximum number of documents.
+     * @return the maximum number of documents or <code>null</code> if there is no limit
+     */
+    public Long getMaxDocs();
+    
+    /**
+     * Gets the maximum number of users.
+     * @return the maximum number of users or <code>null</code> if there is no limit
+     */
+    public Long getMaxUsers();
+    
+    /**
+     * Get the license mode e.g TEAM or ENTERPRISE or any future license mode.
+     * @return the license mode.
+     */
+    public LicenseMode getLicenseMode();
 }

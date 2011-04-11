@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+   <sql-query name="org.alfresco.repo.workflow.findTaskInstancesByActorId">
+      <!--
+       Query Result Object[]:
+       0=> TaskInstance,
+       1=> TaskMgmtDefinition,
+       2=> Token,
+       3=> ProcessInstance,
+       4=> StartState (Node),
+       5=> Task,
+       6=> ProcessDefinition,
+       7=> Task (StartTask),
+       8=> ContextInstance
+      -->
+   
+      <return alias="taskInstance" class="org.jbpm.taskmgmt.exe.TaskInstance" />
+      <return alias="taskMgmtDefinition" class="org.jbpm.taskmgmt.def.TaskMgmtDefinition" />
+      <return-join alias="token" property="taskInstance.token" />
+      <return-join alias="processInstance" property="token.processInstance" />
+      <return-join alias="node" property="token.node" />
+      <return-join alias="task" property="taskInstance.task" />
+      <return-join alias="processDefinition1" property="task.processDefinition" />
+      <return-join alias="startTask" property="taskMgmtDefinition.startTask" />
+      <return alias="contextInstance" class="org.jbpm.context.exe.ContextInstance" />
+      
+      <![CDATA[
+         SELECT 
+            {taskInstance.*},
+            {token.*},
+            {processInstance.*},
+            {node.*},
+            {task.*},
+            {processDefinition1.*},
+            {taskMgmtDefinition.*},
+            {startTask.*},
+            {contextInstance.*}
+         FROM
+            JBPM_TASKINSTANCE taskInstance
+            JOIN JBPM_TOKEN token ON (taskInstance.TOKEN_ = token.ID_)
+            LEFT JOIN JBPM_NODE node ON (token.NODE_ = node.ID_)
+            JOIN JBPM_TASK task ON (taskInstance.TASK_ = task.ID_)
+            JOIN JBPM_PROCESSINSTANCE processInstance ON (taskInstance.PROCINST_ = processInstance.ID_)
+            JOIN JBPM_MODULEINSTANCE contextInstance ON (contextInstance.PROCESSINSTANCE_ = processInstance.ID_)
+            JOIN JBPM_PROCESSDEFINITION processDefinition1 ON (task.PROCESSDEFINITION_ = processDefinition1.ID_)
+            JOIN JBPM_PROCESSDEFINITION processDefinition2 ON (processInstance.PROCESSDEFINITION_ = processDefinition2.ID_)
+            JOIN JBPM_MODULEDEFINITION taskMgmtDefinition ON (taskMgmtDefinition.PROCESSDEFINITION_ = processDefinition2.ID_)
+            JOIN JBPM_TASK startTask ON (taskMgmtDefinition.STARTTASK_ = startTask.ID_)
+         WHERE
+            taskInstance.ACTORID_=:actorId
+            AND taskMgmtDefinition.NAME_ = 'org.jbpm.taskmgmt.def.TaskMgmtDefinition'
+            AND contextInstance.NAME_='org.jbpm.context.exe.ContextInstance'
+            AND taskInstance.ISSUSPENDED_ <> :true
+            AND taskInstance.ISOPEN_= :true
+      ]]>
+   </sql-query>
+
+   <query name="org.alfresco.repo.workflow.findTaskInstancesByActorIdHQL">
+      select taskInstance
+      from org.jbpm.taskmgmt.exe.TaskInstance as taskInstance
+      left join fetch taskInstance.token as token
+      left join fetch taskInstance.task as task
+      left join fetch token.processInstance as processInstance
+      left join fetch processInstance.processDefinition as processDefinition
+      left join fetch processDefinition.definitions as taskMgmtDefinition
+      where taskInstance.actorId = :actorId
+        and taskInstance.isSuspended != true
+        and taskInstance.isOpen = true
+   </query>
+
+   <query name="org.alfresco.repo.workflow.cacheTaskInstanceProperties">
+    <![CDATA[
+      select taskInstance
+      from org.jbpm.taskmgmt.exe.TaskInstance as taskInstance
+      left join fetch taskInstance.variableInstances
+      left join fetch taskInstance.comments
+      left join fetch taskInstance.pooledActors
+      left join fetch taskInstance.swimlaneInstance as swimlaneInstance
+      left join fetch swimlaneInstance.pooledActors
+      left join fetch taskInstance.token as token
+      left join fetch token.processInstance as processInstance
+      left join fetch processInstance.rootToken as rootToken
+      left join fetch processInstance.instances
+      left join fetch token.node as node
+      left join fetch node.leavingTransitions
+      where taskInstance.id in (:ids)
+    ]]>
+   </query>
+
+   <query name="org.alfresco.repo.workflow.cacheInstanceVariables">
+    <![CDATA[
+      select variableMap
+      from org.jbpm.context.exe.TokenVariableMap as variableMap
+      left join fetch variableMap.contextInstance as contextInstance
+      left join fetch variableMap.variableInstances
+      where contextInstance.id in (:ids)
+    ]]>
+   </query>
+
+</hibernate-mapping>

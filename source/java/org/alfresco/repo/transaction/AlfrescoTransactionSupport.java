@@ -65,6 +65,8 @@ public abstract class AlfrescoTransactionSupport
 
     /** resource key to store the transaction synchronizer instance */
     private static final String RESOURCE_KEY_TXN_SYNCH = "txnSynch";
+    /** resource binding during after-completion phase */
+    private static final String RESOURCE_KEY_TXN_COMPLETING = "AlfrescoTransactionSupport.txnCompleting";
     
     private static Log logger = LogFactory.getLog(AlfrescoTransactionSupport.class);
     
@@ -160,7 +162,12 @@ public abstract class AlfrescoTransactionSupport
             return TxnReadState.TXN_NONE;
         }
         // Find the read-write state of the txn
-        if (TransactionSynchronizationManager.isCurrentTransactionReadOnly())
+        if (AlfrescoTransactionSupport.getResource(RESOURCE_KEY_TXN_COMPLETING) != null)
+        {
+            // Transaction is completing.  For all intents and purposes, we are not in a transaction.
+            return TxnReadState.TXN_NONE;
+        }
+        else if (TransactionSynchronizationManager.isCurrentTransactionReadOnly())
         {
             return TxnReadState.TXN_READ_ONLY;
         }
@@ -180,16 +187,19 @@ public abstract class AlfrescoTransactionSupport
      */
     public static void checkTransactionReadState(boolean requireReadWrite)
     {
-        if (!TransactionSynchronizationManager.isSynchronizationActive())
+        TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
+        switch (readState)
         {
-            throw new IllegalStateException(
-                    "The current operation requires an active " +
-                    (requireReadWrite ? "read-write" : "") +
-                    "transaction.");
-        }
-        if (TransactionSynchronizationManager.isCurrentTransactionReadOnly() && requireReadWrite)
-        {
-            throw new IllegalStateException("The current operation requires an active read-write transaction.");
+            case TXN_NONE:
+                throw new IllegalStateException(
+                        "The current operation requires an active " +
+                        (requireReadWrite ? "read-write" : "") +
+                        "transaction.");
+            case TXN_READ_ONLY:
+                if (requireReadWrite)
+                {
+                    throw new IllegalStateException("The current operation requires an active read-write transaction.");
+                }
         }
     }
     
@@ -776,6 +786,10 @@ public abstract class AlfrescoTransactionSupport
                 logger.debug("After completion (" + statusStr + "): " + this);
             }
             
+            // Force any queries for read-write state to return TXN_READ_ONLY
+            // This will be cleared with the synchronization, so we don't need to clear it out
+            AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_TXN_COMPLETING, Boolean.TRUE);
+            
             // Clean up the transactional caches
             for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
             {
@@ -793,6 +807,26 @@ public abstract class AlfrescoTransactionSupport
                 catch (RuntimeException e)
                 {
                     logger.error("After completion (" + statusStr + ") TransactionalCache exception", e);
+                }
+            }
+            
+            // commit/rollback Lucene
+            for (LuceneIndexerAndSearcher lucene : lucenes)
+            {
+                try
+                {
+                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
+                    {
+                        lucene.commit();
+                    }
+                    else
+                    {
+                        lucene.rollback();
+                    }
+                }
+                catch (RuntimeException e)
+                {
+                    logger.error("After completion (" + statusStr + ") Lucene exception", e);
                 }
             }
             
@@ -828,26 +862,6 @@ public abstract class AlfrescoTransactionSupport
                                 "   listener: " + listener,
                                 e);
                     }
-                }
-            }
-            
-            // commit/rollback Lucene
-            for (LuceneIndexerAndSearcher lucene : lucenes)
-            {
-                try
-                {
-                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
-                    {
-                        lucene.commit();
-                    }
-                    else
-                    {
-                        lucene.rollback();
-                    }
-                }
-                catch (RuntimeException e)
-                {
-                    logger.error("After completion (" + statusStr + ") Lucene exception", e);
                 }
             }
             

@@ -95,6 +95,9 @@
       <property name="policyComponent">
          <ref bean="policyComponent" />
       </property>
+      <property name="authenticationCache">
+         <ref bean="authenticationCache" />
+      </property>
    </bean>
 
    <!-- Authentication service for chaining -->

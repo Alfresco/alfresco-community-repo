@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.action.constraint;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,8 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
     
     private String searchPath;
     
+    private List<String> nodeInclusionFilter = Collections.emptyList();
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -68,6 +72,30 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * This optional property defines a list of file extensions which should be included in the result set from
+     * this class. By implication, all other file extensions will be excluded. (The dot should not be specified
+     * i.e. "txt" not ".txt").
+     * If present, the cm:name of each candidate node will be checked against the values in this list and
+     * only those nodes whose cm:name ends with one of these file extensions will be included.
+     * <p/>
+     * If the property is not set then no inclusion filter is specified and all file extensions will
+     * be included.
+     * 
+     * @param nodeInclusionFilter A list of file extensions
+     * @since 3.5
+     */
+    public void setNodeInclusionFilter(List<String> nodeInclusionFilter)
+    {
+        // We'll convert the extensions from spring to dot+extension
+        this.nodeInclusionFilter = new ArrayList<String>(nodeInclusionFilter.size());
+        for (String extension : nodeInclusionFilter)
+        {
+            StringBuilder dotExt = new StringBuilder().append(".").append(extension);
+            this.nodeInclusionFilter.add(dotExt.toString());
+        }
     }
     
     /**
@@ -103,14 +131,17 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
             QName className = nodeService.getType(nodeRef);
             if (dictionaryService.isSubClass(className, ContentModel.TYPE_CONTENT) == true)
             {
-                String title = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
-                if (title != null && title.length() > 0)
+                if(isCmNameAcceptable(nodeRef))
                 {
-                    result.put(nodeRef.toString(), title);
-                }
-                else
-                {
-                    result.put(nodeRef.toString(), (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                    String title = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
+                    if (title != null && title.length() > 0)
+                    {
+                        result.put(nodeRef.toString(), title);
+                    }
+                    else
+                    {
+                        result.put(nodeRef.toString(), (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                    }
                 }
             }
             else if (dictionaryService.isSubClass(className, ContentModel.TYPE_FOLDER) == true)
@@ -118,5 +149,40 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
                 buildMap(result, nodeRef);
             }
         }
+    }
+
+    /**
+     * Folder contents as returned by this class can be filtered based on the cm:name of the
+     * contained content nodes. If no file extensions are included, then all content NodeRefs
+     * will be included in the result set.
+     * If however, there are any file extensions specified, then the cm:name must match one of
+     * those file extensions to be included in the result set.
+     * 
+     * @param nodeRef the node whose cm:name is to be checked.
+     * @return <code>true</code> if cm:name is acceptable, else <code>false</code>.
+     */
+    private boolean isCmNameAcceptable(NodeRef nodeRef)
+    {
+        // Implementation node: this is very similar to a MIME type check. However, it is
+        // more forgiving in that content with the wrong MIME type will be correctly included.
+        // e.g. it is fairly common for .js files to be saved with a MIME type of text/plain.
+        boolean result = true;
+        
+        if (!nodeInclusionFilter.isEmpty())
+        {
+            result = false;
+            String cmName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            
+            for (String extension : nodeInclusionFilter)
+            {
+                if (cmName.endsWith(extension))
+                {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        
+        return result;
     }
 }

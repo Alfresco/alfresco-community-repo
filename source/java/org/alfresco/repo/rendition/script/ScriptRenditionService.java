@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -58,10 +59,21 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
     
     private RenditionDefinition loadRenditionDefinitionImpl(String shortOrLongFormQName)
     {
-        QName renditionName = createQName(shortOrLongFormQName);
-        RenditionDefinition rendDef = renditionService.loadRenditionDefinition(renditionName);
-        return rendDef;
+        final QName renditionName = createQName(shortOrLongFormQName);
+        
+        // Rendition Definitions are persisted underneath the Data Dictionary for which Group ALL
+        // has Consumer access by default. However, we cannot assume that that access level applies for all deployments. See ALF-7334.
+        RenditionDefinition rendDefn = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+            {
+                @Override
+                public RenditionDefinition doWork() throws Exception
+                {
+                    return renditionService.loadRenditionDefinition(renditionName);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        return rendDefn;
     }
+
 
     /**
      * Creates a new {@link ScriptRenditionDefinition} and sets the rendition name and

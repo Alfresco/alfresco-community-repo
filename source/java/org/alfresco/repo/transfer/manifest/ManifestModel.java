@@ -31,6 +31,7 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_HEADER_NODE_COUNT = "nodeCount";
     static final String LOCALNAME_HEADER_SYNC = "sync";
     static final String LOCALNAME_HEADER_RONLY = "readOnly";
+    static final String LOCALNAME_HEADER_VERSION = "version";
     static final String LOCALNAME_HEADER_REPOSITORY_ID = "repositoryId";
     static final String LOCALNAME_ELEMENT_NODES = "nodes";
     static final String LOCALNAME_ELEMENT_NODE = "node";

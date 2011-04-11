@@ -19,6 +19,9 @@
 
 package org.alfresco.service.cmr.rating;
 
+import java.util.List;
+
+import org.alfresco.repo.rating.AbstractRatingRollupAlgorithm;
 import org.alfresco.repo.rating.RatingSchemeRegistry;
 
 /**
@@ -53,4 +56,22 @@ public interface RatingScheme
      * @return the maximum rating.
      */
     public float getMaxRating();
+    
+    /**
+     * This method returns <code>true</code> if the cm:creator of the node is allowed
+     * to apply a rating to it, else <code>false</code>.
+     * 
+     * @return whether or not the cm:creator of the node can apply a rating in this scheme.
+     */
+    public boolean isSelfRatingAllowed();
+    
+    /**
+     * This method returns a List of {@link AbstractRatingRollupAlgorithm property rollup algorithms}
+     * which are used in order to calculate rating totals, counts etc for a rated node.
+     * 
+     * @return an unmodifiable list of property rollup algorithms.
+     * @since 3.5
+     */
+    public List<AbstractRatingRollupAlgorithm> getPropertyRollups();
+
 }

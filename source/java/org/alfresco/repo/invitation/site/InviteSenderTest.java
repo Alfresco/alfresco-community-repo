@@ -19,9 +19,22 @@
 
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarAcceptUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteTicket;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeGenPassword;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviterUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRejectUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -33,21 +46,27 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.admin.SysAdminParamsImpl;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.cmr.admin.RepoUsage;
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ModelUtil;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -81,10 +100,10 @@ public class InviteSenderTest extends TestCase
     private static final String instanceId = "InstanceId";
 
     private final MessageService messageService = mock(MessageService.class);
-    private Action mailAction = mock(Action.class);
+    private Action mailAction;
     private SiteInfo siteInfo = mock(SiteInfo.class);
-    private TemplateService templateService;
     private InviteSender sender;
+    private Map<String,Serializable> lastSetMailModel;
 
     public void testSendMailWorkingPath() throws Exception
     {
@@ -92,20 +111,31 @@ public class InviteSenderTest extends TestCase
     	String subjectPropertyName = "invitation.invitesender.email.subject";
 
     	String subjectMsg = "Subject message";
-		when(messageService.getMessage(eq(subjectPropertyName), any())).thenReturn(subjectMsg);
+		when(messageService.getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName))).thenReturn(subjectMsg);
     	
         Map<String, String> properties = buildDefaultProperties();
         sender.sendMail(properties);
 
-        verify(messageService).getMessage(eq(subjectPropertyName), any());
+        verify(messageService).getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName));
 		verify(messageService).getMessage(eq(rolePropertyName));
 
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_FROM), eq(inviter.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TO), eq(invitee.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT),
                     eq(subjectMsg));
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE), (Serializable)any());
 
-        Map<String, String> argsMap = getArgsMap();
+        ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+        
+        // Check the model
+        Map model = modelC.getValue();
+        assertNotNull(model);
+        assertEquals(null, model.get("userhome"));
+        assertNotNull(model.get("shareUrl"));
+        
+        // And the args within it
+        Map<String, String> argsMap = (Map)model.get("args");
         assertNotNull(argsMap);
         assertEquals(siteShortName, argsMap.get("siteName"));
         assertEquals(invitee.node.toString(), argsMap.get("inviteePersonRef"));
@@ -120,15 +150,26 @@ public class InviteSenderTest extends TestCase
                     "test://test/path/reject?inviteId=InstanceId&inviteeUserName=invitee&siteShortName=Full Site Name&inviteTicket=Ticket",
                     argsMap.get("rejectLink"));
 
+        
         // When no role message is found then the role name is used.
         assertEquals(role, argsMap.get("inviteeSiteRole"));
         
-        reset(templateService, messageService);
+        
+        // Check that when the role message is set then that role message is used.
+        reset(mailAction, messageService);
         String roleMsg = "role message";
         when(messageService.getMessage(rolePropertyName)).thenReturn(roleMsg);
         sender.sendMail(properties);
-        // Check that when the role message is set then that role message is used.
-        assertEquals(roleMsg, getArgsMap().get("inviteeSiteRole"));
+        
+        // Grab the args and check
+        modelC = ArgumentCaptor.forClass(Map.class);
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+        model = modelC.getValue();
+        assertNotNull(model);
+        argsMap = (Map)model.get("args");
+        assertNotNull(argsMap);
+            
+        assertEquals(roleMsg, argsMap.get("inviteeSiteRole"));
     }
 
     public void testSendMailWithWhitespaceUserName() throws Exception
@@ -136,7 +177,18 @@ public class InviteSenderTest extends TestCase
         Map<String, String> properties = buildDefaultProperties();
         properties.put(wfVarInviteeUserName, whitespaceInvitee.name);
         sender.sendMail(properties);
-        Map<String, String> argsMap = getArgsMap();
+        
+        ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+        
+        // Check the model
+        Map model = modelC.getValue();
+        assertNotNull(model);
+        assertEquals(null, model.get("userhome"));
+        assertNotNull(model.get("shareUrl"));
+        
+        // And the args within it
+        Map<String, String> argsMap = (Map)model.get("args");
         String acceptLink = argsMap.get("acceptLink");
         assertEquals(
                     "test://test/path/accpet?inviteId=InstanceId&inviteeUserName=First%20Second%09third%0aFourth%0d%0aFifth&siteShortName=Full Site Name&inviteTicket=Ticket",
@@ -152,7 +204,18 @@ public class InviteSenderTest extends TestCase
         Map<String, String> properties = buildDefaultProperties();
         properties.put(wfVarInviteeUserName, specialCharInvitee.name);
         sender.sendMail(properties);
-        Map<String, String> argsMap = getArgsMap();
+        
+        ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+        
+        // Check the model
+        Map model = modelC.getValue();
+        assertNotNull(model);
+        assertEquals(null, model.get("userhome"));
+        assertNotNull(model.get("shareUrl"));
+        
+        // And the args within it
+        Map<String, String> argsMap = (Map)model.get("args");
         String acceptLink = argsMap.get("acceptLink");
         assertEquals(
                     "test://test/path/accpet?inviteId=InstanceId&inviteeUserName=%c3%a0%c3%a2%c3%a6%c3%a7%c3%a9%c3%a8%c3%aa%c3%ab%c3%ae%c3%af%c3%b4%c5%93%c3%b9%c3%bb%c3%bc%c3%bf%c3%b1&siteShortName=Full Site Name&inviteTicket=Ticket",
@@ -162,7 +225,7 @@ public class InviteSenderTest extends TestCase
                     "test://test/path/reject?inviteId=InstanceId&inviteeUserName=%c3%a0%c3%a2%c3%a6%c3%a7%c3%a9%c3%a8%c3%aa%c3%ab%c3%ae%c3%af%c3%b4%c5%93%c3%b9%c3%bb%c3%bc%c3%bf%c3%b1&siteShortName=Full Site Name&inviteTicket=Ticket",
                     rejectLink);
     }
-
+    
     private Map<String, String> buildDefaultProperties()
     {
         Map<String, String> properties = new HashMap<String, String>();
@@ -180,16 +243,6 @@ public class InviteSenderTest extends TestCase
         return properties;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, String> getArgsMap()
-    {
-        ArgumentCaptor<Map> modelCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(templateService).processTemplate(eq(template.toString()), modelCaptor.capture());
-        Map<String, Serializable> model = modelCaptor.getValue();
-        Map<String, String> argsMap = (Map<String, String>) model.get("args");
-        return argsMap;
-    }
-
     @Override
     protected void setUp() throws Exception
     {
@@ -197,6 +250,7 @@ public class InviteSenderTest extends TestCase
         ServiceRegistry services = mockServices();
         Repository repository = mockRepository();
         sender = new InviteSender(services, repository, messageService);
+        lastSetMailModel = null;
     }
 
     /**
@@ -221,7 +275,9 @@ public class InviteSenderTest extends TestCase
         PersonService mockPersonService = mockPersonService();
         SearchService mockSearchService = mockSearchService();
         SiteService mockSiteService = mockSiteService();
-        TemplateService mockTemplateService = mockTemplateService();
+        FileFolderService mockFileFolderService = mockFileFolderService();
+        RepoAdminService mockRepoAdminService = mockRepoAdminService();
+        SysAdminParams sysAdminParams = new SysAdminParamsImpl();
 
         ServiceRegistry services = mock(ServiceRegistry.class);
         when(services.getActionService()).thenReturn(mockActionService);
@@ -229,29 +285,41 @@ public class InviteSenderTest extends TestCase
         when(services.getPersonService()).thenReturn(mockPersonService);
         when(services.getSearchService()).thenReturn(mockSearchService);
         when(services.getSiteService()).thenReturn(mockSiteService);
-        when(services.getTemplateService()).thenReturn(mockTemplateService);
+        when(services.getFileFolderService()).thenReturn(mockFileFolderService);
+        when(services.getSysAdminParams()).thenReturn(sysAdminParams);
+        when(services.getRepoAdminService()).thenReturn(mockRepoAdminService);
         return services;
     }
-
+    
     /**
-     * Mocks up a TemplateService that returns an empty HashMap when
-     * buildDefaultModel() is called.
-     * 
-     * @return
+     * Mocks up a FileFolderService that claims there are
+     *  no localised templates available
      */
-    private TemplateService mockTemplateService()
+    private FileFolderService mockFileFolderService()
     {
-        this.templateService = mock(TemplateService.class);
-        when(templateService.buildDefaultModel(inviter.node, null, null, null, null)).thenAnswer(
-                    new Answer<Map<String, Object>>()
+        FileFolderService fileFolderService = mock(FileFolderService.class);
+        when(fileFolderService.getLocalizedSibling( (NodeRef)null )).thenAnswer(
+                new Answer<NodeRef>()
+                {
+                    public NodeRef answer(InvocationOnMock invocation) throws Throwable
                     {
-                        public Map<String, Object> answer(InvocationOnMock invocation) throws Throwable
-                        {
-                            return new HashMap<String, Object>();
-                        }
-                    });
-        when(templateService.processTemplate(anyString(), any())).thenReturn(mailText);
-        return templateService;
+                        Object[] o = invocation.getArguments();
+                        if(o == null || o.length == 0) return null;
+                        return (NodeRef)o[0];
+                    }
+                }
+        );
+        return fileFolderService;
+    }
+    
+    private RepoAdminService mockRepoAdminService()
+    {
+        RepoUsage usage = new RepoUsage(System.currentTimeMillis(), 10l, 100l, 
+                    LicenseMode.ENTERPRISE, System.currentTimeMillis(), false);
+        
+        RepoAdminService repoAdminService = mock(RepoAdminService.class);
+        when(repoAdminService.getRestrictions()).thenReturn(usage);
+        return repoAdminService;
     }
 
     /**
@@ -324,6 +392,8 @@ public class InviteSenderTest extends TestCase
      */
     private ActionService mockActionService()
     {
+        mailAction = mock(Action.class);
+        
         ActionService actionService = mock(ActionService.class);
         when(actionService.createAction(MailActionExecuter.NAME)).thenReturn(mailAction);
         return actionService;

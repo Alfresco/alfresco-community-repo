@@ -19,8 +19,17 @@
 
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.*;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarAcceptUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteTicket;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeGenPassword;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviterUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRejectUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,13 +39,16 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.invitation.InvitationException;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -47,6 +59,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ModelUtil;
+import org.alfresco.util.UrlUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -79,9 +93,11 @@ public class InviteSender
     private final PersonService personService;
     private final SearchService searchService;
     private final SiteService siteService;
-    private final TemplateService templateService;
     private final Repository repository;
     private final MessageService messageService;
+    private final FileFolderService fileFolderService;
+    private final SysAdminParams sysAdminParams;
+    private final RepoAdminService repoAdminService;
     
     public InviteSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
@@ -90,7 +106,9 @@ public class InviteSender
         this.personService = services.getPersonService();
         this.searchService = services.getSearchService();
         this.siteService = services.getSiteService();
-        this.templateService = services.getTemplateService();
+        this.fileFolderService = services.getFileFolderService();
+        this.sysAdminParams = services.getSysAdminParams();
+        this.repoAdminService = services.getRepoAdminService();
         this.repository = repository;
         this.messageService = messageService;
     }
@@ -112,8 +130,9 @@ public class InviteSender
         mail.setParameterValue(MailActionExecuter.PARAM_FROM, getEmail(inviter));
         mail.setParameterValue(MailActionExecuter.PARAM_TO, getEmail(invitee));
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, buildSubject(properties));
-        String mailText = buildMailText(properties, inviter, invitee);
-        mail.setParameterValue(MailActionExecuter.PARAM_TEXT, mailText);
+        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef());
+        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
+                (Serializable)buildMailTextModel(properties, inviter, invitee));
         actionService.executeAction(mail, getWorkflowPackage(properties));
     }
 
@@ -133,22 +152,26 @@ public class InviteSender
 
     private String buildSubject(Map<String, String> properties)
     {
-    	return messageService.getMessage("invitation.invitesender.email.subject", getSiteName(properties));
+    	return messageService.getMessage("invitation.invitesender.email.subject", 
+    	            ModelUtil.getProductName(repoAdminService), getSiteName(properties));
     }
 
-    private String buildMailText(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
+    private Map<String, Serializable> buildMailTextModel(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
     {
-        String template = getEmailTemplate();
-        Map<String, Object> model = makeDefaultModel();
+        // Set the core model parts
+        // Note - the user part is skipped, as that's implied via the run-as
+        Map<String, Serializable> model = new HashMap<String, Serializable>();
+        model.put(TemplateService.KEY_COMPANY_HOME, repository.getCompanyHome());
+        model.put(TemplateService.KEY_USER_HOME, repository.getUserHome(repository.getPerson()));
+        model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams) + "/");
+        model.put(TemplateService.KEY_PRODUCT_NAME, ModelUtil.getProductName(repoAdminService));
+
+        // Build up the args for rendering inside the template
         Map<String, String> args = buildArgs(properties, inviter, invitee);
-        model.put("args", args);
-        return templateService.processTemplate(template, model);
-    }
-
-    private String getEmailTemplate()
-    {
-        NodeRef template = getEmailTemplateNodeRef();
-        return template.toString();
+        model.put("args", (Serializable)args);
+        
+        // All done
+        return model;
     }
 
     private Map<String, String> buildArgs(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
@@ -180,15 +203,6 @@ public class InviteSender
     	return role;
 	}
 
-	private Map<String, Object> makeDefaultModel()
-    {
-        NodeRef person = repository.getPerson();
-        NodeRef companyHome = repository.getCompanyHome();
-        NodeRef userHome = repository.getUserHome(person);
-        Map<String, Object> model = templateService.buildDefaultModel(person, companyHome, userHome, null, null);
-        return model;
-    }
-
     private String getEmail(NodeRef person)
     {
         return (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
@@ -203,7 +217,7 @@ public class InviteSender
     private NodeRef getEmailTemplateNodeRef()
     {
         StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.ftl\"";
+        String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.html.ftl\"";
 
         SearchParameters searchParams = new SearchParameters();
         searchParams.addStore(spacesStore);
@@ -215,14 +229,18 @@ public class InviteSender
         {
             results = searchService.query(searchParams);
             List<NodeRef> nodeRefs = results.getNodeRefs();
-            if (nodeRefs.size() == 1)
-                return nodeRefs.get(0);
+            if (nodeRefs.size() == 1) {
+                // Now localise this
+                NodeRef base = nodeRefs.get(0);
+                NodeRef local = fileFolderService.getLocalizedSibling(base);
+                return local;
+            }
             else
-                throw new InvitationException("Cannot find the email templatte!");
+                throw new InvitationException("Cannot find the email template!");
         }
         catch (SearcherException e)
         {
-            throw new InvitationException("Cannot find the email templatte!", e);
+            throw new InvitationException("Cannot find the email template!", e);
         }
         finally
         {

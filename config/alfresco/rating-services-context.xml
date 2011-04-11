@@ -44,7 +44,9 @@
 	       <ref local="ratingSchemeRegistry"/>
 	    </property>
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="dictionaryService" ref="dictionaryService"/>
         <property name="nodeService" ref="nodeService"/>
+        <property name="rollupNamingConventions" ref="rollupNamingConventions"/>
 	</bean>
 
    <!-- The rating scheme registry maintains the collection of registered rating schemes. -->   
@@ -53,20 +55,58 @@
    <!-- The base rating scheme bean provides for automatic registration of rating schemes. -->
    <bean name="baseRatingScheme" abstract="true" init-method="init">
       <constructor-arg ref="ratingSchemeRegistry"/>
+      <!-- By default users can rate their own content. -->
+      <property name="selfRatingAllowed" value="true"/>
    </bean>
    
    <!-- Out of the box rating schemes -->
-   <bean name="likesRatingScheme" parent="baseRatingScheme"
-         class="org.alfresco.repo.rating.RatingSchemeImpl">
+   <bean name="likesRatingScheme" parent="baseRatingScheme" class="org.alfresco.repo.rating.RatingSchemeImpl">
       <property name="minRating" value="1"/>
       <property name="maxRating" value="1"/>
+      
+      <!-- Property roll-ups. Alfresco supports 'rolling up' totals, counts for the "likes" rating scheme. -->
+      <property name="propertyRollups">
+         <list>
+            <bean class="org.alfresco.repo.rating.RatingCountRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="likesRatingScheme" />
+            </bean>
+            <bean class="org.alfresco.repo.rating.RatingTotalRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="likesRatingScheme" />
+            </bean>
+         </list>
+      </property>
+   </bean>
+   
+   <bean name="baseRollupAlgorithm" abstract="true" class="org.alfresco.repo.rating.AbstractRatingRollupAlgorithm">
+       <property name="namespaceService" ref="namespaceService"/>
+       <property name="nodeService" ref="nodeService"/>
+       <property name="ratingService" ref="ratingService"/>
+   </bean>
+   
+   <bean name="rollupNamingConventions" class="org.alfresco.repo.rating.RatingNamingConventionsUtil">
+      <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
    <bean name="fiveStarRatingScheme" parent="baseRatingScheme"
          class="org.alfresco.repo.rating.RatingSchemeImpl">
       <property name="minRating" value="1"/>
       <property name="maxRating" value="5"/>
+      <!-- For this rating scheme, users cannot rate their own content. -->
+      <property name="selfRatingAllowed" value="false"/>
+      
+      <!-- Property roll-ups. -->
+      <property name="propertyRollups">
+         <list>
+            <bean class="org.alfresco.repo.rating.RatingCountRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="fiveStarRatingScheme" />
+            </bean>
+            <bean class="org.alfresco.repo.rating.RatingTotalRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="fiveStarRatingScheme" />
+            </bean>
+         </list>
+      </property>
    </bean>
+   
 
    <!-- JavaScript API support -->
    <bean id="ratingServiceScript" parent="baseJavaScriptExtension"

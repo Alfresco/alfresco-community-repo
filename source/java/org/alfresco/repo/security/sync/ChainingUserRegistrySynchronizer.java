@@ -452,13 +452,26 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             if (lockToken != null)
             {
                 // Cancel the lock refresher
-                lockRefresher.shutdown();
-                try
+                // Because we may hit a perfect storm when trying to interrupt workers in their unsynchronized getTask()
+                // method we can't wait indefinitely and may have to retry the shutdown
+                int trys = 0;
+                do
                 {
-                    lockRefresher.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+                    lockRefresher.shutdown();
+                    try
+                    {
+                        lockRefresher
+                                .awaitTermination(ChainingUserRegistrySynchronizer.LOCK_TTL, TimeUnit.MILLISECONDS);
+                    }
+                    catch (InterruptedException e)
+                    {
+                    }
                 }
-                catch (InterruptedException e)
+                while (!lockRefresher.isTerminated() && trys++ < 3);
+                if (!lockRefresher.isTerminated())
                 {
+                    lockRefresher.shutdownNow();
+                    ChainingUserRegistrySynchronizer.logger.error("Failed to shut down lock refresher");
                 }
 
                 final String token = lockToken;

@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -41,6 +40,7 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.context.MessageSource;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
 /**
  * Builds folders tree necessary for IMAP functionality and imports email action scripts.
@@ -239,7 +239,7 @@ public class ImapFoldersPatch extends AbstractPatch
          
             };
             
-            transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, true);
+            transactionHelper.doInTransaction(cb, false, true);
             msg = I18NUtil.getMessage(MSG_CREATED);
         }
         else

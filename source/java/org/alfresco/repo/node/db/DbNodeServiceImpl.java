@@ -257,7 +257,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("deprecation")
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -333,10 +332,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     false);
         
         Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(childNodePair.getFirst());
-        
-        // We now have enough to declare the child association creation
-        // TODO: Remove in call
-        invokeBeforeCreateChildAssociation(parentRef, childNodePair.getSecond(), assocTypeQName, assocQName, true);
         
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
@@ -1107,9 +1102,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
             Long parentNodeId = parentNodePair.getFirst();
             parentNodePairs.add(parentNodePair);
-
-            // Invoke policy behaviours
-            invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
 
             // make the association
             Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.newChildAssoc(
@@ -2165,7 +2157,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         else
         {
             invokeBeforeDeleteChildAssociation(oldParentAssocRef);
-            invokeBeforeCreateChildAssociation(newParentRef, nodeToMoveRef, assocTypeQName, assocQName, false);
         }
         
         // Move node under the new parent

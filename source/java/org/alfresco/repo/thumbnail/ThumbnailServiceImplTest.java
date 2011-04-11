@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ package org.alfresco.repo.thumbnail;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +35,21 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -62,8 +69,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private RenditionService renditionService;
     private ThumbnailService thumbnailService;
+    private ScriptThumbnailService scriptThumbnailService;
     private ScriptService scriptService;
     private MimetypeMap mimetypeMap;
+    private RetryingTransactionHelper transactionHelper;
+    private ServiceRegistry services;
     private NodeRef folder;
 
     /**
@@ -78,8 +88,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.renditionService = (RenditionService) this.applicationContext.getBean("RenditionService");
         this.thumbnailService = (ThumbnailService) this.applicationContext.getBean("ThumbnailService");
+        this.scriptThumbnailService = (ScriptThumbnailService) this.applicationContext.getBean("thumbnailServiceScript");
         this.mimetypeMap = (MimetypeMap) this.applicationContext.getBean("mimetypeService");
         this.scriptService = (ScriptService) this.applicationContext.getBean("ScriptService");
+        this.services = (ServiceRegistry) this.applicationContext.getBean("ServiceRegistry");
+        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
 
         // Create a folder and some content
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -247,6 +260,100 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
 
+    /**
+     * @since 3.5.0
+     */
+    public void testCreateFailingThumbnail() throws Exception
+    {
+        final NodeRef corruptNode = this.createCorruptedContent(folder);
+        logger.debug("Running failing thumbnail on " + corruptNode);
+        
+        // Make sure the source node is correctly set up before we start
+        // It should not be renditioned and should not be marked as having any failed thumbnails.
+        assertFalse(nodeService.hasAspect(corruptNode, RenditionModel.ASPECT_RENDITIONED));
+        assertFalse(nodeService.hasAspect(corruptNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+        
+        setComplete();
+        endTransaction();
+
+        // Attempt to perform a thumbnail that we know will fail.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                    
+                    Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
+                    actionService.executeAction(createThumbnailAction, corruptNode, true, true);
+                    return null;
+                }
+            });
+        // The thumbnail attempt has now failed. But a compensating action should have been scheduled that will mark the
+        // source node with a failure aspect. As that is an asynchronous action, we need to wait for that to complete.
+        
+        Thread.sleep(3000); // This should be long enough for the compensating action to run.
+
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertFalse("corrupt node should not have renditioned aspect", nodeService.hasAspect(corruptNode, RenditionModel.ASPECT_RENDITIONED));
+                assertTrue("corrupt node should have failed thumbnails aspect", nodeService.hasAspect(corruptNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+
+                Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
+                assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
+              
+                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
+                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                assertNotNull("Failure info was null", doclibFailureInfo);
+                assertEquals("Failure count was wrong.", 1, doclibFailureInfo.getFailureCount());
+                assertEquals("thumbnail name was wrong.", "doclib", doclibFailureInfo.getThumbnailDefinitionName());
+
+                return null;
+            }
+        });
+        
+        // If you uncomment this line and set the timeout to a value greater than ${system.thumbnail.minimum.retry.period} * 1000.
+        // Then the retry period will have passed, the below re-thumbnail attempt will be made and the test will fail with a
+        // failureCount == 2.
+        //
+        // Thread.sleep(150 * 1000);
+
+        // Run the thumbnail again. It should not run because the action condition should prevent it.
+        // We can check that it does not run by ensuring the failureCount does not change.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                        
+                        Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
+                        actionService.executeAction(createThumbnailAction, corruptNode, true, true);
+                        return null;
+                    }
+                });
+        // Pause to let the async action be considered for running (but not run).
+        Thread.sleep(3000);
+        
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
+                        assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
+                      
+                        assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
+                        final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                        assertNotNull("Failure info was null", doclibFailureInfo);
+                        assertEquals("Failure count was wrong.", 1, doclibFailureInfo.getFailureCount());
+                        assertEquals("thumbnail name was wrong.", "doclib", doclibFailureInfo.getThumbnailDefinitionName());
+
+                        return null;
+                    }
+                });
+    }
+
+
     public void testThumbnailUpdate() throws Exception
     {
         checkTransformer();
@@ -341,7 +448,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
     private void outputThumbnailTempContentLocation(NodeRef thumbnail, String ext, String message) throws IOException
     {
-    	File tempFile = TempFileProvider.createTempFile("thumbnailServiceImplTest", "." + ext);
+        File tempFile = TempFileProvider.createTempFile("thumbnailServiceImplTest", "." + ext);
         ContentReader reader = this.contentService.getReader(thumbnail, ContentModel.PROP_CONTENT);
         reader.getContent(tempFile);
         System.out.println(message + ": " + tempFile.getPath());
@@ -374,7 +481,29 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         return node;
     }
+    
+    private NodeRef createCorruptedContent(NodeRef parentFolder) throws IOException
+    {
+        // The below pdf file has been truncated such that it is identifiable as a PDF but otherwise corrupt.
+        File corruptPdfFile = AbstractContentTransformerTest.loadNamedQuickTestFile("quickCorrupt.pdf");
+        assertNotNull("Failed to load required test file.", corruptPdfFile);
 
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, "corrupt.pdf");
+        NodeRef node = this.nodeService.createNode(parentFolder, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "quickCorrupt.pdf"),
+                ContentModel.TYPE_CONTENT, props).getChildRef();
+
+        nodeService.setProperty(node, ContentModel.PROP_CONTENT, new ContentData(null,
+                    MimetypeMap.MIMETYPE_PDF, 0L, null));
+        ContentWriter writer = contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        writer.setEncoding("UTF-8");
+        writer.putContent(corruptPdfFile);
+        
+        return node;
+    }
+    
     @SuppressWarnings("deprecation")
     public void testAutoUpdate() throws Exception
     {
@@ -550,5 +679,37 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/thumbnail/script/test_thumbnailAPI.js");
         this.scriptService.executeScript(location, model);
+    }
+
+    /**
+     * This test method tests the thumbnail placeholders which are handled in the {@link ScriptThumbnailService}.
+     * See ALF-6566.
+     */
+    public void testPlaceHoldersByMimeType() throws Exception
+    {
+        // Retrieve the classpath paths for all the standard icon resources for doclib.
+        
+        final String standardDoclibIcon = "alfresco/thumbnail/thumbnail_placeholder_doclib.png";
+        
+        // This used to be the cogs, but as of ALF-6566 is a generic document icon.
+        String doclibIcon = scriptThumbnailService.getPlaceHolderResourcePath("doclib");
+        assertEquals(standardDoclibIcon, doclibIcon);
+        
+        // The same but with explicit null mimetype.
+        doclibIcon = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath("doclib", null);
+        assertEquals(standardDoclibIcon, doclibIcon);
+
+        // The icon for a .doc mime type - a sample, recognised mime type.
+        String docxDoclibIcon = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath("doclib", MimetypeMap.MIMETYPE_WORD);
+        assertEquals("alfresco/thumbnail/thumbnail_placeholder_doclib_doc.png", docxDoclibIcon);
+
+        // The icon for an unrecognised mime type.
+        String fallbackDoclibIcon = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath("doclib", "application/wibble");
+        assertEquals(standardDoclibIcon, fallbackDoclibIcon);
+        
+        // And one from the 'medium' set.
+        String mediumIcon = scriptThumbnailService.getPlaceHolderResourcePath("medium");
+        final String standardMediumIcon = "alfresco/thumbnail/thumbnail_placeholder_medium.jpg"; // This one jpg, not png
+        assertEquals(standardMediumIcon, mediumIcon);
     }
 }

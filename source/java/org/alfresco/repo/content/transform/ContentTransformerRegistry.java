@@ -20,7 +20,10 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
@@ -70,18 +73,34 @@ public class ContentTransformerRegistry
     /**
      * Gets the best transformer possible.  This is a combination of the most reliable
      * and the most performant transformer.
-     *
-     * TODO
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        // Get the sorted list of transformers
+        List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, targetMimetype, options);
+
+        // select the most performant transformer
+        ContentTransformer bestTransformer = null;
+        if(transformers.size() > 0)
+        {
+            bestTransformer = transformers.get(0);
+        }
+        // done
+        return bestTransformer;
+    }
+    
+    /**
+     * @since 3.5
+     */
+    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // Get the list of transformers
         List<ContentTransformer> transformers = findTransformers(sourceMimetype, targetMimetype, options);
 
-        // select the most performant transformer
-        long bestTime = -1L;
-        ContentTransformer bestTransformer = null;
-        for (ContentTransformer transformer : transformers)
+        final Map<ContentTransformer,Long> activeTransformers = new HashMap<ContentTransformer, Long>();
+        
+        // identify the performance of all the transformers
+         for (ContentTransformer transformer : transformers)
         {
             // Transformability can be dynamic, i.e. it may have become unusable
             if (transformer.isTransformable(sourceMimetype, targetMimetype, options) == false)
@@ -91,15 +110,23 @@ public class ContentTransformerRegistry
             }
             
             long transformationTime = transformer.getTransformationTime();
-            // is it better?
-            if (bestTransformer == null || transformationTime < bestTime)
-            {
-                bestTransformer = transformer;
-                bestTime = transformationTime;
-            }
+            activeTransformers.put(transformer, transformationTime);
         }
-        // done
-        return bestTransformer;
+         
+        // sort by performance (quicker is "better")
+        List<ContentTransformer> sorted = new ArrayList<ContentTransformer>(activeTransformers.keySet());
+        Collections.sort(sorted, new Comparator<ContentTransformer>() {
+
+            @Override
+            public int compare(ContentTransformer a, ContentTransformer b)
+            {
+                return activeTransformers.get(a).compareTo(activeTransformers.get(b));
+            }
+            
+        });
+        
+        // All done
+        return sorted;
     }
     
     /**

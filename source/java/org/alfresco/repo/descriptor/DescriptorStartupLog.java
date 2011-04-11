@@ -20,16 +20,19 @@ package org.alfresco.repo.descriptor;
 
 import java.security.Principal;
 import java.util.Date;
-import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -45,6 +48,10 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     // Dependencies
     private DescriptorService descriptorService;
     private TenantService tenantService;
+    private TransactionService transactionService;
+    
+    private final String SYSTEM_INFO_STARTUP = "system.info.startup";
+    private final String SYSTEM_WARN_READONLY = "system.warn.readonly";
 
     /**
      * @param descriptorService  Descriptor Service
@@ -61,8 +68,15 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     {
         this.tenantService = tenantService;
     }
-    
-    
+
+    /**
+     * @param transactionService        service to tell about read-write mode
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * Get Organisation from Principal
      * 
@@ -99,7 +113,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         //
         // log output of VM stats
         //
-        Map properties = System.getProperties();
+        Properties properties = System.getProperties();
         String version = (properties.get("java.runtime.version") == null) ? "unknown" : (String)properties.get("java.runtime.version");
         long maxHeap = Runtime.getRuntime().maxMemory();
         float maxHeapMB = maxHeap / 1024l;
@@ -124,27 +138,44 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         LicenseDescriptor license = descriptorService.getLicenseDescriptor();
         if (license != null && logger.isInfoEnabled())
         {
-            String subject = license.getSubject();
-            String msg = "Alfresco license: " + subject;
+            LicenseMode licenseMode = license.getLicenseMode();
+            
+            String msg = "Alfresco license: Mode " + licenseMode;
+            
             String holder = getHolderOrganisation(license.getHolder());
             if (holder != null)
             {
                 msg += " granted to " + holder;
             }
+            
             Date validUntil = license.getValidUntil();
+            
             if (validUntil != null)
             {
                 Integer days = license.getDays();
                 Integer remainingDays = license.getRemainingDays();
                 
-                msg += " limited to " + days + " days expiring " + validUntil + " (" + remainingDays + " days remaining)";
+                msg += " limited to " + days + " days expiring " + validUntil + " (" + remainingDays + " days remaining).";
             }
             else
             {
-                msg += " (does not expire)";
+                msg += " (does not expire).";
             }
             
+            Long maxUsers = license.getMaxUsers();
+            if (maxUsers != null)
+            {
+                msg += "  User limit is " + maxUsers + ".";
+            }
+            Long maxDocs = license.getMaxDocs();
+            if (maxDocs != null)
+            {
+                msg += "  Document limit is " + maxDocs + ".";
+            }
             
+            /**
+             * This is an important information logging since it logs the license
+             */
             logger.info(msg);
         }
         
@@ -152,28 +183,39 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         if (logger.isInfoEnabled())
         {
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+            Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
             Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
+            
             String serverEdition = serverDescriptor.getEdition();
             
-            if (tenantService.isEnabled())
-            {
-                serverEdition = serverEdition + " - Multi-Tenant";
-            }
+            String currentVersion = currentDescriptor.getVersion();
+            int currentSchemaVersion = currentDescriptor.getSchema();
+            LicenseMode currentMode = currentDescriptor.getLicenseMode();
             
-            String serverVersion = serverDescriptor.getVersion();
-            int serverSchemaVersion = serverDescriptor.getSchema();
             String installedRepoVersion = installedRepoDescriptor.getVersion();
             int installedSchemaVersion = installedRepoDescriptor.getSchema();
-            logger.info(String.format("Alfresco started (%s): Current version %s schema %d - Originally installed version %s schema %d",
-               serverEdition, serverVersion, serverSchemaVersion, installedRepoVersion, installedSchemaVersion));
+            
+            /**
+             * Alfresco started 
+             */
+            Object[] params = new Object[] {
+                    serverEdition,
+                    currentMode != LicenseMode.TEAM ? "" : (" " + currentMode),     // only append TEAM
+                    !tenantService.isEnabled() ? "" : (" Multi-Tenant"),
+                    currentVersion, currentSchemaVersion, installedRepoVersion, installedSchemaVersion};
+            logger.info(I18NUtil.getMessage(SYSTEM_INFO_STARTUP, params));
+        }
+        
+        // Issue a warning if the system is in read-only mode
+        if (!transactionService.getAllowWrite())
+        {
+            logger.warn(I18NUtil.getMessage(SYSTEM_WARN_READONLY));
         }
     }
-
     
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
         // NOOP
     }
-    
 }

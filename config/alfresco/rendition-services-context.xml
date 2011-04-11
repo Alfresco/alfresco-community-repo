@@ -40,12 +40,12 @@
       class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
    <!-- Rendition Service base bean -->
-	<bean id="renditionService" class="org.alfresco.repo.rendition.RenditionServiceImpl" >
-        <property name="actionService" ref="ActionService"/>
-		<property name="serviceRegistry" ref="ServiceRegistry" />
-		<property name="dictionaryService" ref="dictionaryService" />
-        <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
-	</bean>
+   <bean id="renditionService" class="org.alfresco.repo.rendition.RenditionServiceImpl" >
+      <property name="actionService" ref="ActionService"/>
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
+   </bean>
 
     <!-- From Alfresco 3.4 onwards, this bean is deprecated and should not be used. -->
     <bean id="perform-rendition" class="org.alfresco.repo.rendition.PerformRenditionActionExecuter" parent="action-executer">
@@ -160,11 +160,20 @@
    <!-- Behaviours and policies for Renditions -->
    
    <bean id="renditionedAspect" class="org.alfresco.repo.rendition.RenditionedAspect" init-method="init">
-       <property name="nodeService" ref="NodeService"/>
+       <property name="actionService" ref="ActionService"/>
        <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="nodeService" ref="NodeService"/>
        <property name="policyComponent" ref="policyComponent"/>
        <property name="renditionService" ref="RenditionService"/>
    </bean>
+
+   <!-- This action is used as a compensating action in the event of a failure to update a rendition -->
+   <bean id="delete-rendition" class="org.alfresco.repo.rendition.executer.DeleteRenditionActionExecuter" parent="action-executer">
+      <property name="publicAction" value="false"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="nodeService" ref="NodeService"/>
+      <property name="renditionService" ref="RenditionService"/>
+    </bean>
    
    <!-- JavaScript API support -->
    <bean id="renditionServiceScript" parent="baseJavaScriptExtension"

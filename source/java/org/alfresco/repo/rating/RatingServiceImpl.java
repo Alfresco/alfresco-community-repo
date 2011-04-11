@@ -20,6 +20,7 @@
 package org.alfresco.repo.rating;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
@@ -35,10 +38,8 @@ import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,12 +53,20 @@ public class RatingServiceImpl implements RatingService
     private RatingSchemeRegistry schemeRegistry;
     
     // Injected services
+    private DictionaryService dictionaryService;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
+    
+    private RatingNamingConventionsUtil ratingNamingConventions;
     
     public void setRatingSchemeRegistry(RatingSchemeRegistry schemeRegistry)
     {
         this.schemeRegistry = schemeRegistry;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     public void setNodeService(NodeService nodeService)
@@ -68,6 +77,11 @@ public class RatingServiceImpl implements RatingService
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+    
+    public void setRollupNamingConventions(RatingNamingConventionsUtil namingConventions)
+    {
+        this.ratingNamingConventions = namingConventions;
     }
     
     public Map<String, RatingScheme> getRatingSchemes()
@@ -90,9 +104,9 @@ public class RatingServiceImpl implements RatingService
     {
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         boolean isCreator = isCurrentUserNodeCreator(targetNode);
-        if (isCreator)
+        if (isCreator && this.getRatingScheme(ratingSchemeName).isSelfRatingAllowed() == false)
         {
-            throw new RatingServiceException("Users can't rate their own content.");
+            throw new RatingServiceException("Users can't rate their own content for scheme " + ratingSchemeName);
         }
         
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
@@ -104,10 +118,12 @@ public class RatingServiceImpl implements RatingService
         }, AuthenticationUtil.getSystemUserName());
     }
     
+    /**
+     * This method checks if the current fully authenticated user is the cm:creator of the specified node.
+     */
     private boolean isCurrentUserNodeCreator(NodeRef targetNode)
     {
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        // TODO Is creator the right property to use here?
         Serializable creator = nodeService.getProperty(targetNode, ContentModel.PROP_CREATOR);
         return currentUser.equals(creator);
     }
@@ -135,6 +151,12 @@ public class RatingServiceImpl implements RatingService
         {
             throw new RatingServiceException("Rating " + rating + " violates range for " + ratingScheme);
         }
+        
+        // To support rolling up rating totals, counts etc, we use aspects named by convention.
+        // Before we start writing data into the db, we'll check that an aspect has been defined
+        //   with the expected name.
+        QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(ratingScheme);
+        final boolean rollupAspectIsDefined = dictionaryService.getAspect(rollupAspectName) != null;
 
         
         // Ensure that the application of a rating does not cause updates
@@ -146,6 +168,13 @@ public class RatingServiceImpl implements RatingService
             {
                 // Add the cm:rateable aspect if it's not there already.
                 nodeService.addAspect(targetNode, ContentModel.ASPECT_RATEABLE, null);
+                
+                // We'll also add the rollup aspect specific for this rating scheme - if one has been defined in the content model.
+                if (rollupAspectIsDefined)
+                {
+                    nodeService.addAspect(targetNode, rollupAspectName, null);
+                }
+                
             }
             finally
             {
@@ -153,13 +182,14 @@ public class RatingServiceImpl implements RatingService
             }
         }
 
-        // We're looking for child cm:rating nodes whose qname matches the current user.
-        // i.e. we're looking for previously applied ratings by this user.
-        final QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, userName);
+        // We're looking for child cm:rating nodes whose assoc qname matches the current user & rating scheme.
+        // i.e. we're looking for previously applied ratings by this user in this scheme.
+        // See RatingNamingConventionsUtil.java for details.
+        final QName assocQName = ratingNamingConventions.getRatingAssocNameFor(userName, ratingScheme.getName());
         List<ChildAssociationRef> myRatingChildren = nodeService.getChildAssocs(targetNode, ContentModel.ASSOC_RATINGS, assocQName);
         if (myRatingChildren.isEmpty())
         {
-            // There are no previous ratings from this user, so we create a new cm:rating child node.
+            // There are no previous ratings from this user/scheme combination, so we create a new cm:rating child node.
             
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
             ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
@@ -178,37 +208,62 @@ public class RatingServiceImpl implements RatingService
         }
         else
         {
-            // There are previous ratings by this user.
-            if (myRatingChildren.size() > 1 && log.isDebugEnabled())
-            {
-                log.debug("");
-            }
+            // There are previous ratings by this user/ratingScheme combination.
             NodeRef myPreviousRatingsNode = myRatingChildren.get(0).getChildRef();
             
-            Map<QName, Serializable> existingProps = nodeService.getProperties(myPreviousRatingsNode);
-            String existingRatingScheme = (String)existingProps.get(ContentModel.PROP_RATING_SCHEME);
+            Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
+            ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
+            ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
+            ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
             
-            // If it's a re-rating in the existing scheme, replace.
-            if (ratingScheme.getName().equals(existingRatingScheme))
+            nodeService.setProperties(myPreviousRatingsNode, ratingProps);
+        }
+        
+        // Now that we have applied the rating, we need to recalculate the rollup properties.
+        recalculateRatingRollups(targetNode, ratingScheme);
+    }
+
+    private void recalculateRatingRollups(NodeRef targetNode,
+            final RatingScheme ratingScheme)
+    {
+        QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(ratingScheme);
+        AspectDefinition rollupAspect = dictionaryService.getAspect(rollupAspectName);
+
+        // Only run the rating rollups for this node if the aspect which will hold the results has been defined
+        if ((rollupAspect != null))
+        {
+            behaviourFilter.disableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            try
             {
-                Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
-                ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
-                ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
-                ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
-                
-                nodeService.setProperties(myPreviousRatingsNode, ratingProps);
+                for (AbstractRatingRollupAlgorithm rollupAlgorithm : ratingScheme.getPropertyRollups())
+                {
+                    Serializable s = rollupAlgorithm.recalculate(targetNode);
+                    QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(ratingScheme, rollupAlgorithm.getRollupName());
+                    nodeService.setProperty(targetNode, rollupPropertyName, s);
+                    
+                    if (!rollupAspect.getProperties().containsKey(rollupPropertyName) && log.isDebugEnabled())
+                    {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("Rating property rollup property ").append(rollupPropertyName)
+                           .append(" on aspect " ).append(rollupAspectName)
+                           .append(" is not defined in the content model.");
+                        log.debug(msg.toString());
+                    }
+                }
             }
-            // But if it's a new rating in a different scheme, we don't support this scenario.
-            else
+            finally
+            {
+                behaviourFilter.enableBehaviour(targetNode, ContentModel.ASPECT_AUDITABLE);
+            }
+        }
+        else
+        {
+            if (log.isDebugEnabled())
             {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Cannot apply rating ")
-                   .append(rating).append(" [")
-                   .append(ratingSchemeName).append("] to node ")
-                   .append(targetNode).append(". Already rated in ")
-                   .append(existingRatingScheme);
-                
-                throw new RatingServiceException(msg.toString());
+                msg.append("Rating property rollup aspect ").append(rollupAspectName)
+                   .append(" is not defined in the content model & therefore the rollup was not persisted.");
+                log.debug(msg.toString());
             }
         }
     }
@@ -223,9 +278,34 @@ public class RatingServiceImpl implements RatingService
         return this.getRating(targetNode, ratingSchemeName, currentUser);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingsByCurrentUser(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<Rating> getRatingsByCurrentUser(NodeRef targetNode)
+    {
+        final String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        List<ChildAssociationRef> children = getRatingNodeChildren(targetNode, null, fullyAuthenticatedUser);
+        List<Rating> result = new ArrayList<Rating>(children.size());
+        
+        for (ChildAssociationRef child : children)
+        {
+            result.add(convertNodeRefToRating(fullyAuthenticatedUser, child.getChildRef()));
+        }
+        return result;
+    }
+
+    /**
+     * This method gets the rating for the specified node, in the specified scheme by the specified user.
+     * @param targetNode the node whose rating we are looking for.
+     * @param ratingSchemeName the rating scheme name in which we are looking for a rating.
+     * @param user the user name of the user whose rating we are looking for.
+     * @return the {@link Rating} if there is one.
+     */
     private Rating getRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
-        List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
+        List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, ratingSchemeName, user);
         
         // If there are none, return null
         if (ratingChildren.isEmpty())
@@ -233,28 +313,34 @@ public class RatingServiceImpl implements RatingService
             return null;
         }
         
-        // Take the node pertaining to the current user.
+        // Take the node pertaining to the current user & scheme.
         ChildAssociationRef ratingNodeAssoc = ratingChildren.get(0);
-        Map<QName, Serializable> properties = nodeService.getProperties(ratingNodeAssoc.getChildRef());
         
-        // Find the index of the rating scheme we're interested in.
+        return convertNodeRefToRating(user, ratingNodeAssoc.getChildRef());
+    }
+
+    /**
+     * This method converts a NodeRef (which must be an instance of a cm:rating node)
+     * into a {@link Rating} object.
+     * @param ratingSchemeName
+     * @param user
+     * @param ratingNode
+     * @return
+     */
+    private Rating convertNodeRefToRating(String user, NodeRef ratingNode)
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
+        
         String existingRatingScheme = (String)properties.get(ContentModel.PROP_RATING_SCHEME);
-        if (existingRatingScheme.equals(ratingSchemeName) == false)
-        {
-            // There is no rating in this scheme by the specified user.
-            return null;
-        }
-        else
-        {
-            Float existingRatingScore = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
-            Date existingRatingDate = (Date)properties.get(ContentModel.PROP_RATED_AT);
-            
-            Rating result = new Rating(getRatingScheme(existingRatingScheme),
-                    existingRatingScore,
-                    user,
-                    existingRatingDate);
-            return result;
-        }
+
+        Float existingRatingScore = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
+        Date existingRatingDate = (Date)properties.get(ContentModel.PROP_RATED_AT);
+        
+        Rating result = new Rating(getRatingScheme(existingRatingScheme),
+                existingRatingScore,
+                user,
+                existingRatingDate);
+        return result;
     }
 
     /*
@@ -270,7 +356,7 @@ public class RatingServiceImpl implements RatingService
 
     private Rating removeRating(NodeRef targetNode, String ratingSchemeName, final String user)
     {
-        List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
+        List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, ratingSchemeName, user);
         if (ratingChildren.isEmpty())
         {
             return null;
@@ -287,6 +373,9 @@ public class RatingServiceImpl implements RatingService
             Date date = (Date)properties.get(ContentModel.PROP_RATED_AT);
             
             nodeService.deleteNode(child.getChildRef());
+            
+            recalculateRatingRollups(targetNode, getRatingScheme(ratingSchemeName));
+
             result = new Rating(getRatingScheme(ratingSchemeName), score, user, date);
         }
         
@@ -299,97 +388,73 @@ public class RatingServiceImpl implements RatingService
      */
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
-        //TODO Performance improvement? : put node rating total/count/average into a
-        //                                property in the db.
-        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
-        
-        // It's one node per user so the size of this list is the number of ratings applied.
-        // However not all of these users' ratings need be in the specified scheme.
-        // So we need to go through and check that the rating node contains a rating for the
-        // specified scheme.
-        float result = 0;
-        for (ChildAssociationRef ratingsNode : ratingsNodes)
+        Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingTotalRollupAlgorithm.ROLLUP_NAME);
+        if (result == null)
         {
-            Rating rating = getRatingFrom(ratingsNode.getChildRef());
-            if (rating.getScheme().getName().equals(ratingSchemeName))
-            {
-                result += rating.getScore();
-            }
+            result = new Float(0f);
         }
-        return result;
+        
+        return (Float)result;
     }
     
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
-        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
+        float totalRating = getTotalRating(targetNode, ratingSchemeName);
+        int ratingCount = getRatingsCount(targetNode, ratingSchemeName);
         
-        // It's one node per user so the size of this list is the number of ratings applied.
-        // However not all of these users' ratings need be in the specified scheme.
-        // So we need to go through and check that the rating node contains a rating for the
-        // specified scheme.
-        int ratingCount = 0;
-        float ratingTotal = 0;
-        for (ChildAssociationRef ratingsNode : ratingsNodes)
-        {
-            Rating rating = getRatingFrom(ratingsNode.getChildRef());
-            if (rating.getScheme().getName().equals(ratingSchemeName))
-            {
-                ratingCount++;
-                ratingTotal += rating.getScore();
-            }
-        }
-        if (ratingCount == 0)
-        {
-            return -1;
-        }
-        else
-        {
-            return (float)ratingTotal / (float)ratingCount;
-        }
+        return ratingCount == 0 ? -1f : totalRating / (float)ratingCount;
     }
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
-        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
-        
-        // It's one node per user so the size of this list is the number of ratings applied.
-        // However not all of these users' ratings need be in the specified scheme.
-        // So we need to go through and check that the rating node contains a rating for the
-        // specified scheme.
-        int result = 0;
-        for (ChildAssociationRef ratingsNode : ratingsNodes)
+        Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingCountRollupAlgorithm.ROLLUP_NAME);
+        if (result == null)
         {
-            Rating rating = getRatingFrom(ratingsNode.getChildRef());
-            if (rating.getScheme().getName().equals(ratingSchemeName))
-            {
-                result++;
-            }
+            result = new Integer(0);
         }
+        
+        return (Integer)result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingRollup(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
+     */
+    public Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName)
+    {
+        RatingScheme scheme = schemeRegistry.getRatingSchemes().get(ratingSchemeName);
+        if (scheme == null)
+        {
+            throw new RatingServiceException("Cannot retrieve rollup. Unrecognized rating scheme " + ratingSchemeName);
+        }
+        
+        QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(ratingSchemeName);
+
+        Serializable result = null;
+        // If the rated node has the rollup aspect applied
+        if (nodeService.hasAspect(targetNode, rollupAspectName))
+        {
+            QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(ratingSchemeName, ratingRollupName);
+            result = nodeService.getProperty(targetNode, rollupPropertyName);
+        }
+        
         return result;
     }
 
-
     /**
      * This method gets all the cm:rating child nodes of the specified targetNode that
-     * have been applied by the specified user.
+     * have been applied by the specified user in the specified rating scheme.
      * 
      * @param targetNode the target node under which the cm:rating nodes reside.
      * @param user the user name of the user whose ratings are sought, <code>null</code>
      *             for all users.
+     * @param ratingSchemeName the name of the rating scheme, <code>null</code> for all schemes.
      * @return
      */
-    private List<ChildAssociationRef> getRatingNodeChildren(NodeRef targetNode,
-            String user)
+    List<ChildAssociationRef> getRatingNodeChildren(NodeRef targetNode,
+            String ratingSchemeName, String user)
     {
-        QNamePattern qnamePattern = null;
-        if (user != null)
-        {
-            qnamePattern = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, user);
-        }
-        else
-        {
-            qnamePattern = RegexQNamePattern.MATCH_ALL;
-        }
+        QNamePattern qnamePattern = ratingNamingConventions.getRatingAssocPatternForUser(user, ratingSchemeName);
         List<ChildAssociationRef> results = nodeService.getChildAssocs(targetNode, ContentModel.ASSOC_RATINGS, qnamePattern);
 
         return results;
@@ -400,7 +465,7 @@ public class RatingServiceImpl implements RatingService
      * @param ratingNode
      * @return
      */
-    private Rating getRatingFrom(NodeRef ratingNode)
+    Rating getRatingFrom(NodeRef ratingNode)
     {
         // The appliedBy is encoded in the parent assoc qname.
         // It will be the same user for all ratings in this node.

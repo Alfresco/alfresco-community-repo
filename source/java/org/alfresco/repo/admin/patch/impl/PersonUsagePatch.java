@@ -18,13 +18,8 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.alfresco.repo.domain.patch.PatchDAO.StringHandler;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -43,25 +38,12 @@ public class PersonUsagePatch extends AbstractPatch
     private static final String MSG_SUCCESS2 = "patch.personUsagePatch.result2";
     
     private PatchDAO patchDAO;
-    private StoreRef personStoreRef;
-    private TenantService tenantService;
     
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
     }
 
-    public void setPersonStoreUrl(String storeUrl)
-    {
-        this.personStoreRef = new StoreRef(storeUrl);
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-    
-    
     @Override
     protected String applyInternal() throws Exception
     {
@@ -86,34 +68,6 @@ public class PersonUsagePatch extends AbstractPatch
     
     private int addPersonSizeCurrentProperty()
     {
-        // get people (users) with missing 'cm:sizeCurrent' property
-        
-        CountQueryCallback userHandler = new CountQueryCallback();
-        
-        patchDAO.getUsersWithoutUsageProp(tenantService.getName(personStoreRef), userHandler);
-        
-        return userHandler.getCount();
+        return patchDAO.addSizeCurrentProp();
     }
-    
-    private class CountQueryCallback implements StringHandler
-    {
-        private int count;
-        
-        public CountQueryCallback()
-        {
-            count = 0;
-        }
-        
-        public void handle(String uuid)
-        {
-            nodeService.setProperty(new NodeRef(personStoreRef, uuid), ContentModel.PROP_SIZE_CURRENT, null);
-            
-            count++;
-        }
-        
-        public int getCount()
-        {
-            return count;
-        }
-    };
 }

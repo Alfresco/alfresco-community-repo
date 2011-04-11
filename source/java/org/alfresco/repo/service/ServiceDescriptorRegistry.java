@@ -24,12 +24,14 @@ import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -581,5 +583,18 @@ public class ServiceDescriptorRegistry
     public PublicServiceAccessService getPublicServiceAccessService()
     {
         return (PublicServiceAccessService)getService(PUBLIC_SERVICE_ACCESS_SERVICE);
+    }
+
+    @Override
+    public RepoAdminService getRepoAdminService()
+    {
+        return (RepoAdminService)getService(REPO_ADMIN_SERVICE);
+    }
+    
+    @Override
+    public SysAdminParams getSysAdminParams()
+    {
+        final String beanName = "sysAdminParams";
+        return (SysAdminParams) beanFactory.getBean(beanName);
     }
 }

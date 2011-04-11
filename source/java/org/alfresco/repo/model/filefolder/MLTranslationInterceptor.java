@@ -71,6 +71,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_LIST.add("getNamePath");
         
         METHOD_NAMES_SINGLE = new HashSet<String>(13);
+        METHOD_NAMES_SINGLE.add("getLocalizedSibling");
         METHOD_NAMES_SINGLE.add("searchSimple");
         METHOD_NAMES_SINGLE.add("rename");
         METHOD_NAMES_SINGLE.add("move");

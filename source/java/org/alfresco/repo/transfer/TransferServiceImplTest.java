@@ -118,6 +118,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     private PersonService personService;
     private DescriptorService descriptorService;
     private CopyService copyService;
+    private Descriptor serverDescriptor;
     
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
@@ -153,10 +154,19 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
         this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         
+        this.serverDescriptor = descriptorService.getServerDescriptor();
+        
         REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
         
         authenticationComponent.setSystemUserAsCurrentUser();
         assertNotNull("receiver is null", this.receiver);     
+    }
+    
+    @Override
+    public void runBare() throws Throwable
+    {
+        preventTransaction();
+        super.runBare();
     }
     
     /**
@@ -3234,31 +3244,14 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         TransferTarget target = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
         return target;
     }
-    
-    private void createUser(String userName, String password)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, password.toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            this.personService.createPerson(ppOne);
-        }        
-    }
-    
+        
     private DescriptorService getMockDescriptorService(String repositoryId)
     {
         DescriptorService descriptorService = mock(DescriptorService.class);
         Descriptor descriptor = mock(Descriptor.class);
-        
         when(descriptor.getId()).thenReturn(repositoryId);
         when(descriptorService.getCurrentRepositoryDescriptor()).thenReturn(descriptor);
+        when(descriptorService.getServerDescriptor()).thenReturn(serverDescriptor);
         
         return descriptorService;
     }    

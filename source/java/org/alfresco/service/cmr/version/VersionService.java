@@ -117,7 +117,7 @@ public interface VersionService
      * @param versionProperties     version property values
      * @return                      a collection of newly created versions
      * @throws ReservedVersionNameException
-     *                              thrown if a reserved property name is used int he version properties 
+     *                              thrown if a reserved property name is used in the version properties 
      *                              provided
      * @throws AspectMissingException
      *                              thrown if the version aspect is missing
@@ -292,6 +292,20 @@ public interface VersionService
      */
     @Auditable(parameters = {"nodeRef", "version"})
     public void deleteVersion(NodeRef nodeRef, Version version);
+    
+    /**
+     * Ensures that a node has the versionable aspect applied to it, and has
+     *  at least an initial entry in the version store. 
+     * If any of these requirements are missing, then they will be fixed.
+     *  
+     * @param nodeRef             the node reference
+     * @param  versionProperties  the version properties to apply if versioning
+     *                            isn't currently enabled for the node
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public void ensureVersioningEnabled(
+            NodeRef nodeRef, 
+            Map<QName, Serializable> versionProperties);
     
     /**
      * Register a version label policy

@@ -18,13 +18,23 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.transaction.SpringAwareUserTransaction;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -45,16 +55,31 @@ public class TransactionServiceImpl implements TransactionService
     private int minRetryWaitMs = -1;
     private int maxRetryWaitMs = -1;
     private int retryWaitIncrementMs = -1;
+    
+    private static final Log logger = LogFactory.getLog(TransactionServiceImpl.class);
 
     // SysAdmin cache - used to cluster certain configuration parameters
     private SysAdminParams sysAdminParams;
-    private boolean allowWrite;
+    
+    // Veto for allow write
+    private Set<QName> writeVeto = new HashSet<QName>();
+    private final QName generalVetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "GeneralVeto");
+    
+    private ReadLock vetoReadLock;
+    private WriteLock vetoWriteLock;
+    
+    /**
+     * Construct defaults
+     */
+    public TransactionServiceImpl()
+    {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        vetoReadLock = lock.readLock();
+        vetoWriteLock = lock.writeLock();
+    }
 
     /**
      * Set the transaction manager to use
-     * 
-     * @param transactionManager
-     *            platform transaction manager
      */
     public void setTransactionManager(PlatformTransactionManager transactionManager)
     {
@@ -78,25 +103,100 @@ public class TransactionServiceImpl implements TransactionService
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getAllowWrite()
+    {
+        vetoReadLock.lock();
+        try
+        {
+            return writeVeto.isEmpty();
+        }
+        finally
+        {
+            vetoReadLock.unlock();
+        }
+    }
+    
+    /**
      * Set the read-only mode for all generated transactions.
+     * <p>
+     * Intended for use by spring configuration only.   Alfresco code should call the method which 
+     * specifies a veto name.
      * 
-     * @param allowWrite
-     *            false if all transactions must be read-only
+     * @param allowWrite        false if all transactions must be read-only
      */
     public void setAllowWrite(boolean allowWrite)
     {
-        this.allowWrite = allowWrite;
+        setAllowWrite(allowWrite, generalVetoName);
     }
+    
+    /**
+     * Set the read-only mode for all generated transactions.
+     * <p>
+     * By default read/write transactions are allowed however vetos may be applied that make the 
+     * transactions read only.   
+     * <p>
+     * Prevent writes by calling allowWrite with false and a given veto name.
+     * <p>
+     * The veto is removed by calling allowWrite with true for the given veto name
+     * when all vetos are removed then read/write transactions are allowed.
+     * 
+     * @param allowWrite
+     *            false if all transactions must be read-only
+     * @param nameOfVeto
+     *             the name of the veto           
+     */
+    public void setAllowWrite(boolean allowWrite, QName nameOfVeto)
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("setAllowWrite:" + allowWrite + ", name of veto:" + nameOfVeto);
+        }
+        vetoWriteLock.lock();
+        try
+        {
+            if(allowWrite)
+            {
+                writeVeto.remove(nameOfVeto);
+            }
+            else
+            {
+                writeVeto.add(nameOfVeto);
+            }
+        }
+        finally
+        {
+            vetoWriteLock.unlock();
+        }
+    }   
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isReadOnly()
     {
         if (shutdownListener.isVmShuttingDown())
         {
             return true;
         }
-        // Make the repo writable to the system user, so that e.g. the allow write flag can still be edited by JMX
-        return !this.allowWrite || !this.authenticationContext.isCurrentUserTheSystemUser()
-                && !this.sysAdminParams.getAllowWrite();
+        vetoReadLock.lock();
+        try
+        {
+            if (this.authenticationContext.isCurrentUserTheSystemUser())
+            {
+                return false;
+            }
+            else
+            {
+                return !writeVeto.isEmpty() || !this.sysAdminParams.getAllowWrite();
+            }
+        }
+        finally
+        {
+            vetoReadLock.unlock();
+        }
     }
 
     /**
@@ -136,10 +236,7 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getUserTransaction()
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, isReadOnly(),
-                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
-                TransactionDefinition.TIMEOUT_DEFAULT);
-        return txn;
+        return getUserTransaction(false, false);
     }
 
     /**
@@ -147,10 +244,32 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getUserTransaction(boolean readOnly)
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, (readOnly | isReadOnly()),
-                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
-                TransactionDefinition.TIMEOUT_DEFAULT);
-        return txn;
+        return getUserTransaction(readOnly, false);
+    }
+
+    /**
+     * @see org.springframework.transaction.TransactionDefinition#PROPAGATION_REQUIRED
+     */
+    public UserTransaction getUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly)
+    {
+        if (ignoreSystemReadOnly)
+        {
+            SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
+                    transactionManager,
+                    (readOnly),
+                    TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
+                    TransactionDefinition.TIMEOUT_DEFAULT);
+            return txn;
+        }
+        else
+        {
+            SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
+                    transactionManager,
+                    (readOnly | isReadOnly()),
+                    TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRED,
+                    TransactionDefinition.TIMEOUT_DEFAULT);
+            return txn;
+        }
     }
 
     /**
@@ -158,10 +277,7 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getNonPropagatingUserTransaction()
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, isReadOnly(),
-                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
-                TransactionDefinition.TIMEOUT_DEFAULT);
-        return txn;
+        return getNonPropagatingUserTransaction(false, false);
     }
 
     /**
@@ -169,10 +285,33 @@ public class TransactionServiceImpl implements TransactionService
      */
     public UserTransaction getNonPropagatingUserTransaction(boolean readOnly)
     {
-        SpringAwareUserTransaction txn = new SpringAwareUserTransaction(transactionManager, (readOnly | isReadOnly()),
-                TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
-                TransactionDefinition.TIMEOUT_DEFAULT);
-        return txn;
+        return getNonPropagatingUserTransaction(readOnly, false);
+    }
+
+    /**
+     * @see org.springframework.transaction.TransactionDefinition#PROPAGATION_REQUIRES_NEW
+     */
+    @Override
+    public UserTransaction getNonPropagatingUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly)
+    {
+        if (ignoreSystemReadOnly)
+        {
+            SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
+                    transactionManager,
+                    (readOnly),
+                    TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+                    TransactionDefinition.TIMEOUT_DEFAULT);
+            return txn;
+        }
+        else
+        {
+            SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
+                    transactionManager,
+                    (readOnly | isReadOnly()),
+                    TransactionDefinition.ISOLATION_DEFAULT, TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+                    TransactionDefinition.TIMEOUT_DEFAULT);
+            return txn;
+        }
     }
 
     /**

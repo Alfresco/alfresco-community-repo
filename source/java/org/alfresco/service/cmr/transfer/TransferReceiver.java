@@ -50,10 +50,11 @@ public interface TransferReceiver
      * Asks the receiver to setup a new transfer.
      * @param fromRepositoryId the repositoryId of the sending system
      * @param allowTransferToSelf are transfers to the same repository allowed?
+     * @param fromVersion the version sending
      * @return The identifier of the new transfer
      * @throws TransferException if an error occurred while setting up the transfer
      */
-    String start(String fromRepositoryId, boolean allowTransferToSelf) throws TransferException;
+    String start(String fromRepositoryId, boolean allowTransferToSelf, TransferVersion fromVersion) throws TransferException;
 
     /**
      * Asks the receiver to end (and clean up) the specified transfer
@@ -124,6 +125,11 @@ public interface TransferReceiver
      * @throws TransferException
      */
     TransferProgress getStatus(String transferId) throws TransferException;
+    
+    /**
+     * Get the version that we are transfering to.
+     */
+    TransferVersion getVersion();
     
     /**
      * 

@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
@@ -227,8 +228,8 @@ public interface ContentService
      * Fetch the transformer that is capable of transforming the content in the
      * given source mimetype to the given target mimetype with the provided transformation
      * options.
-     * <p>
-     * The transformation options provide a finer grain way of discoving the correct transformer, 
+     * <p/>
+     * The transformation options provide a finer grain way of discovering the correct transformer, 
      * since the values and type of the options provided are considered by the transformer when
      * deciding whether it can satisfy the transformation request.
      * 
@@ -241,6 +242,30 @@ public interface ContentService
      */
     @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options);
+    
+    /**
+     * Fetch all the transformers that are capable of transforming the content in the
+     * given source mimetype to the given target mimetype with the provided transformation
+     * options.
+     * <p/>
+     * The transformation options provide a finer grain way of discovering the correct transformer, 
+     * since the values and type of the options provided are considered by the transformer when
+     * deciding whether it can satisfy the transformation request.
+     * <p/>
+     * The list will contain all currently active, applicable transformers sorted in repository preference order.
+     * The contents of this list may change depending on such factors as the availability of particular transformers
+     * as well as their current behaviour. For these reasons, this list should not be cached.
+     * 
+     * @param  sourceMimetype       the source mimetype
+     * @param  targetMimetype       the target mimetype
+     * @param  options              the transformation options
+     * @return ContentTransformers  a List of the transformers that can be used, or the empty list if none were available
+     * 
+     * @since 3.5
+     * @see ContentAccessor#getMimetype()
+     */
+    @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
+    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options);
     
     /**
      * Fetch the transformer that is capable of transforming image content.

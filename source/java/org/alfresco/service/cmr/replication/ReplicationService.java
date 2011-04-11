@@ -58,4 +58,9 @@ public interface ReplicationService extends ReplicationDefinitionPersister {
     */
    @NotAuditable
    void disableScheduling(ReplicationDefinition replicationDefinition);
+   
+   /**
+    * Is the replication service enabled?
+    */
+   boolean isEnabled();
 }

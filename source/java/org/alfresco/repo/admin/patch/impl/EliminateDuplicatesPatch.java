@@ -39,6 +39,8 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  * of duplicates to make them unique. This is achieved by appending a unique suffix to
  * duplicate node names.
  * 
+ * @deprecated superceded by "patch.db-V3.4-AVM-rename-dupes"
+ * 
  * @author Dmitry Velichkevich
  */
 public class EliminateDuplicatesPatch extends AbstractPatch

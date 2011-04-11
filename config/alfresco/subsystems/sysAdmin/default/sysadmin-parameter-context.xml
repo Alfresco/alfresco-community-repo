@@ -11,7 +11,7 @@
          <value>${server.allowedusers}</value>
       </property>
       <property name="allowWrite">
-         <value>${server.transaction.allow-writes}</value>
+         <value>${server.allowWrite}</value>
       </property>
       <property name="alfrescoContext">
          <value>${alfresco.context}</value>

@@ -187,7 +187,8 @@
 			</title>
 			<properties>
 				<property name="trx:transferId">
-					<title>Transfer Identifier</title>
+					<title>Transfer Id</title>
+					<description>Transfer Identifier to uniquely identify a particular transfer</description>
 					<type>d:text</type>
 					<mandatory enforced="false">true</mandatory>
 				</property>
@@ -225,7 +226,8 @@
             <description>Nodes with this aspect are either alien nodes or have been invaded by other alien nodes</description>
             <properties>
                 <property name="trx:invadedBy">
-                    <title>The repositories that have invaded this node</title>
+                    <title>Invaded By</title>
+                    <description>The repositories that have invaded this node</description>
                     <type>d:text</type>
                     <mandatory enforced="false">false</mandatory>
                     <multiple>true</multiple>

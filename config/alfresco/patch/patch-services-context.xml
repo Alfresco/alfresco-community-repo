@@ -1723,6 +1723,7 @@
             <list>
                 <ref bean="patch.updateDmPermissions" />
                 <ref bean="patch.authorityMigration" />
+                <ref bean="patch.personUsagePatch" />
             </list>
         </property>
         <property name="authorityService">
@@ -1833,19 +1834,8 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>3004</value></property>
         <property name="targetSchema"><value>3005</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
         <property name="patchDAO">
             <ref bean="patchDAO"/>
-        </property>
-        <property name="personStoreUrl">
-           <value>${spaces.store}</value>
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
         </property>
     </bean>
     
@@ -2087,6 +2077,17 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V3.4-authority-unique-idx" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-authority-unique-idx</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4099</value></property>
+        <property name="targetSchema"><value>4100</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/authority-unique-idx.sql</value>
+        </property>
+    </bean>
+
     <bean id="patch.fixAuthoritiesCrcValues" class="org.alfresco.repo.admin.patch.impl.FixAuthoritiesCrcValuesPatch" parent="basePatch" >
         <property name="id"><value>patch.fixAuthoritiesCrcValues</value></property>
         <property name="description"><value>patch.fixAuthoritiesCrcValues.description</value></property>
@@ -2194,6 +2195,21 @@
             <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/property-unique-ctx-value.sql</value>
         </property>
     </bean>
+    <bean id="patch.db-V3.4-property-unique-ctx-idx" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-property-unique-ctx-idx</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4104</value></property>
+        <property name="targetSchema"><value>4105</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/property-unique-ctx-idx.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
+            </list>
+        </property>
+    </bean>
 
     <bean id="patch.db-V3.4-child-assoc-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-child-assoc-indexes</value></property>
@@ -2273,7 +2289,7 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
-                <ref bean="patch.eliminateDuplicates"/>
+                <ref bean="patch.db-V3.4-AVM-rename-dupes"/>
             </list>
         </property>
     </bean>
@@ -2488,16 +2504,26 @@
         </property>
     </bean>
     
-    <bean id="patch.eliminateDuplicates" class="org.alfresco.repo.admin.patch.impl.EliminateDuplicatesPatch" parent="basePatch" >
+    <!-- note: superceded by "patch.db-V3.4-AVM-rename-dupes" -->
+    <bean id="patch.eliminateDuplicates" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
         <property name="id" value="patch.eliminateDuplicates" />
         <property name="description" value="patch.eliminateDuplicates.description" />
         <property name="fixesFromSchema" value="0" />
         <property name="fixesToSchema" value="4112" />
         <property name="targetSchema" value="4113" />
+        
+        <!--
         <property name="template" ref="avmSqlMapClientTemplate" />
         <property name="temporaryExtension" value="temp" />
+        -->
+        
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.db-V3.4-AVM-rename-dupes" />
+            </list>
+        </property>
     </bean>
-
+    
     <bean id="patch.db-V3.4-RemovingLinkValidationMetadata" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V3.4-RemovingLinkValidationMetadata" />
         <property name="description" value="patch.removingLinkValidationMetadata.description" />
@@ -2544,7 +2570,6 @@
                 <ref bean="patch.fixNameCrcValues-2" />
             </list>
         </property>
-        <!-- helper beans -->
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
         </property>
@@ -2555,5 +2580,183 @@
             <ref bean="userBootstrap" />
         </property>
     </bean>
-   
+    
+    <bean id="patch.db-V3.4-AVM-rename-dupes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-AVM-rename-dupes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4200</value></property>
+        <property name="targetSchema"><value>4201</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-rename-dupes.sql</value>
+        </property>
+        
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.eliminateDuplicates" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="patch.activitiesEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.activitiesEmailTemplate</value></property>
+        <property name="description"><value>patch.activitiesEmailTemplate.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4300</value></property>
+        <property name="targetSchema"><value>4301</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+                <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.activities.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                <prop key="location">alfresco/templates/activities-email-templates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.newUserEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.newUserEmailTemplates</value></property>
+        <property name="description"><value>patch.newUserEmailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4301</value></property>
+        <property name="targetSchema"><value>4302</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                <prop key="location">alfresco/templates/new-user-templates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.inviteEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.inviteEmailTemplates</value></property>
+        <property name="description"><value>patch.inviteEmailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4301</value></property>
+        <property name="targetSchema"><value>4302</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                <prop key="location">alfresco/templates/invite-email-templates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.htmlNotificationMailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.htmlNotificationMailTemplates</value></property>
+        <property name="description"><value>patch.htmlNotificationMailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4301</value></property>
+        <property name="targetSchema"><value>4302</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.notify.childname}</prop>
+                <prop key="location">alfresco/templates/email_templates2.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.imapSpacesLocaleTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
+        <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4302</value></property>
+        <property name="targetSchema"><value>4303</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/bootstrap/imapSpacesLocales.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- For importing whole sites -->
+    <bean id="patch.siteLoadPatch.swsdp" class="org.alfresco.repo.admin.patch.impl.SiteLoadPatch" parent="basePatch">
+        <property name="id"><value>patch.siteLoadPatch.swsdp</value></property>
+        <property name="description"><value>patch.siteLoadPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>${version.schema}</value></property>
+        <property name="targetSchema"><value>10000</value></property>
+        <property name="spacesBootstrap" ref="siteLoadBootstrap-Spaces" />
+        <property name="usersBootstrap" ref="siteLoadBootstrap-Users" />
+        <property name="avmBootstrap" ref="siteLoadBootstrap-AVM" />
+        <property name="siteService" ref="siteService" />
+        <property name="authorityService" ref="authorityService" />
+        <property name="siteName">
+            <value>swsdp</value>
+        </property>
+        <property name="bootstrapViews">
+            <map>
+                <entry key="avm">
+                    <props>
+                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/AVM.zip</prop>
+                    </props>
+                </entry>
+                <entry key="users">
+                    <props>
+                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/Users.acp</prop>
+                    </props>
+                </entry>
+                <entry key="people">
+                    <props>
+                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/People.acp</prop>
+                    </props>
+                </entry>
+                <entry key="groups">
+                    <props>
+                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/Groups.txt</prop>
+                    </props>
+                </entry>
+                <entry key="contents">
+                    <props>
+                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/Contents.acp</prop>
+                    </props>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="patch.exampleJavaScript" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.exampleJavaScript</value></property>
+        <property name="description"><value>patch.exampleJavaScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>${version.schema}</value></property>
+        <property name="targetSchema"><value>10000</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
+                <prop key="location">alfresco/bootstrap/example_javascripts2.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

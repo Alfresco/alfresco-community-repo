@@ -359,8 +359,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testChangeGroupUid()
     {
-        personService.getPerson("andy");
         runAs("admin");
+        personService.getPerson("andy");
         NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         authorityService.createAuthority(AuthorityType.GROUP, "ONE");
         authorityService.addAuthority("GROUP_ONE", "andy");
@@ -2951,7 +2951,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     public void testAclInsertionPerformanceShared()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        for(int i = 0; i < 10000; i++)
+        for(int i = 0; i < 1000; i++)
         {
             nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
         }
@@ -2965,7 +2965,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     public void testAclInsertionPerformanceDefining()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        for(int i = 0; i < 10000; i++)
+        for(int i = 0; i < 1000; i++)
         {
             NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
             permissionService.setPermission(new SimplePermissionEntry(created, getPermission(PermissionService.CONSUMER), "bob", AccessStatus.ALLOWED));
@@ -2980,7 +2980,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     public void testAclInsertionPerformanceMixed()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        for(int i = 0; i < 10000; i++)
+        for(int i = 0; i < 1000; i++)
         {
             NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
             if(i % 2 == 0)

@@ -25,15 +25,19 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import freemarker.template.TemplateDateModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateScalarModel;
 
 /**
  * @author David Caruana
+ * @author Kevin Roast
  * 
  * Custom FreeMarker Template language method.
  * <p>
- * Render Date to ISO8601 format.
+ * Render Date to ISO8601 format.<br>
+ * Or parse ISO6801 format string date to a Date object.
  * <p>
  * Usage: xmldate(Date date)
+ *        xmldate(String date)
  */
 public class ISO8601DateFormatMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
@@ -42,7 +46,7 @@ public class ISO8601DateFormatMethod extends BaseTemplateProcessorExtension impl
      */
     public Object exec(List args) throws TemplateModelException
     {
-        String result = "";
+        Object result = null;
         
         if (args.size() == 1)
         {
@@ -51,8 +55,12 @@ public class ISO8601DateFormatMethod extends BaseTemplateProcessorExtension impl
             {
                 result = ISO8601DateFormat.format(((TemplateDateModel)arg0).getAsDate());
             }
+            else if (arg0 instanceof TemplateScalarModel)
+            {
+                result = ISO8601DateFormat.parse(((TemplateScalarModel)arg0).getAsString());
+            }
         }
         
-        return result;
+        return result != null ? result : "";
     }
 }

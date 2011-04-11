@@ -82,6 +82,7 @@
             <value>{http://www.alfresco.org/model/content/1.0}folder</value>
          </list>
       </property>
+      <property name="trackStatus" value="true" />
       <property name="nodeService" ref="NodeService" />
       <property name="jobLockService" ref="JobLockService" />
       <property name="transferService" ref="TransferService2" />

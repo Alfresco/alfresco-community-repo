@@ -61,7 +61,6 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -468,9 +467,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger
-                                .debug("Evaluating composite condition "
-                                            + simplecondition.getActionConditionDefinitionName());
+                    logger.debug(
+                            "Evaluating composite condition " + simplecondition.getActionConditionDefinitionName());
                 }
 
                 if (compositeCondition.isORCondition())
@@ -571,8 +569,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @param compensatingAction
-     * @param actionedUponNodeRef
+     * Queue a compensating action for execution against a specific node
      */
     private void queueAction(Action compensatingAction, NodeRef actionedUponNodeRef)
     {
@@ -583,6 +580,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         queue.executeAction(this, compensatingAction, actionedUponNodeRef, false, null);
     }
 
+    /**
+     * Get the queue to use for asynchronous execution of the given action.
+     */
     private AsynchronousActionExecutionQueue getQueue(Action action)
     {
         ActionExecuter executer = (ActionExecuter) this.applicationContext.getBean(action.getActionDefinitionName());
@@ -605,12 +605,34 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         return queue;
     }
-
+    
     /**
-     * @see org.alfresco.repo.action.RuntimeActionService#executeActionImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef, boolean,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * Get whether the action should be tracked by the {@link ActionTrackingService} or not.
+     * 
+     * @param action        the action, which may or may not have any say about the status tracking
+     * @return              <tt>true</tt> if the status must be tracked, otherwise <tt>false</tt>
      */
+    private boolean getTrackStatus(Action action)
+    {
+        Boolean trackStatusManual = action.getTrackStatus();
+        if (trackStatusManual != null)
+        {
+            return trackStatusManual.booleanValue();
+        }
+        // The flag has not be changed for the specific action, so use the value from the
+        // action definition.
+        ActionDefinition actionDef = getActionDefinition(action.getActionDefinitionName());
+        if (actionDef == null)
+        {
+            return false;       // default to 'false' if the definition has disappeared
+        }
+        else
+        {
+            return actionDef.getTrackStatus();
+        }
+    }
+
+    @Override
     public void executeActionImpl(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
                 boolean executedAsynchronously, Set<String> actionChain)
     {
@@ -668,14 +690,20 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     // Check and execute now
                     if (checkConditions == false || evaluateAction(action, actionedUponNodeRef) == true)
                     {
-                        // Mark the action as starting
-                        actionTrackingService.recordActionExecuting(action);
+                        if (getTrackStatus(action))
+                        {
+                            // Mark the action as starting
+                            actionTrackingService.recordActionExecuting(action);
+                        }
 
                         // Execute the action
                         directActionExecution(action, actionedUponNodeRef);
                         
-                        // Mark it as having worked
-                        actionTrackingService.recordActionComplete(action);
+                        if (getTrackStatus(action))
+                        {
+                            // Mark it as having worked
+                            actionTrackingService.recordActionComplete(action);
+                        }
                     }
                 }
                 finally
@@ -713,8 +741,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     }
                 }
                 
-                // Have the failure logged on the action
-                actionTrackingService.recordActionFailure(action, exception);
+                if (getTrackStatus(action))
+                {
+                    // Have the failure logged on the action
+                    actionTrackingService.recordActionFailure(action, exception);
+                }
 
                 // Rethrow the exception
                 if (exception instanceof RuntimeException)
@@ -901,6 +932,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         Map<QName, Serializable> props = this.nodeService.getProperties(actionNodeRef);
         props.put(ActionModel.PROP_ACTION_TITLE, action.getTitle());
         props.put(ActionModel.PROP_ACTION_DESCRIPTION, action.getDescription());
+        if (action.getTrackStatus() != null)
+        {
+            props.put(ActionModel.PROP_TRACK_STATUS, action.getTrackStatus());
+        }
         props.put(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY, action.getExecuteAsychronously());
         
         props.put(ActionModel.PROP_EXECUTION_START_DATE, action.getExecutionStartDate());
@@ -1300,13 +1335,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         action.setTitle((String) props.get(ActionModel.PROP_ACTION_TITLE));
         action.setDescription((String) props.get(ActionModel.PROP_ACTION_DESCRIPTION));
 
-        boolean value = false;
-        Boolean executeAsynchronously = (Boolean) props.get(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
-        if (executeAsynchronously != null)
-        {
-            value = executeAsynchronously.booleanValue();
-        }
-        action.setExecuteAsynchronously(value);
+        Boolean trackStatusObj = (Boolean) props.get(ActionModel.PROP_TRACK_STATUS);
+        action.setTrackStatus(trackStatusObj);              // Allowed to be null
+
+        Boolean executeAsynchObj = (Boolean) props.get(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
+        boolean executeAsynch = executeAsynchObj == null ? false : executeAsynchObj.booleanValue();
+        action.setExecuteAsynchronously(executeAsynch);
 
         ((ActionImpl) action).setCreator((String) props.get(ContentModel.PROP_CREATOR));
         ((ActionImpl) action).setCreatedDate((Date) props.get(ContentModel.PROP_CREATED));

@@ -30,7 +30,6 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -39,6 +38,9 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -52,6 +54,8 @@ import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
@@ -59,7 +63,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see org.alfresco.repo.model.filefolder.FileFolderServiceImpl
@@ -88,6 +94,9 @@ public class FileFolderServiceImplTest extends TestCase
     private TransactionService transactionService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
+    private PermissionService permissionService;
+    private MutableAuthenticationService authenticationService;
+    private AuthenticationComponent authenticationComponent;
     private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
@@ -100,9 +109,10 @@ public class FileFolderServiceImplTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
+        permissionService = serviceRegistry.getPermissionService();
+        authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx
-                .getBean("authenticationComponent");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -120,9 +130,11 @@ public class FileFolderServiceImplTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         // create a folder to import into
-        workingRootNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.ALFRESCO_URI, "working root"), ContentModel.TYPE_FOLDER)
-                .getChildRef();
+        workingRootNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "working root"),
+                ContentModel.TYPE_FOLDER).getChildRef();
 
         // import the test data
         ImporterService importerService = serviceRegistry.getImporterService();
@@ -454,6 +466,112 @@ public class FileFolderServiceImplTest extends TestCase
         // Move to a target folder but with a rename to avoid the name clash
         fileFolderService.move(fileA.getNodeRef(), folderB.getNodeRef(), NAME_L1_FILE_B);
     }
+    
+    /**
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-7692">ALF-7692</a>
+     */
+    @SuppressWarnings("deprecation")
+    public void testMovePermissions() throws Exception
+    {
+        txn.commit();
+        
+        // Create a target folder to write to.  Folder owner is 'system'.
+        RunAsWork<NodeRef> createTargetWork = new RunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                // Create folder TARGET
+                return fileFolderService.create(
+                        workingRootNodeRef,
+                        "TARGET",
+                        ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+        };
+        final NodeRef targetNodeRef = AuthenticationUtil.runAs(createTargetWork, AuthenticationUtil.getSystemUserName());
+
+        // Use a specific user
+        String username = "Mover-" + GUID.generate();
+        char[] password = "mover".toCharArray();
+        authenticationService.createAuthentication(username, password);
+        permissionService.setPermission(
+                rootNodeRef,
+                username,
+                PermissionService.ALL_PERMISSIONS,
+                true);
+        AuthenticationUtil.clearCurrentSecurityContext();
+        authenticationComponent.authenticate(username, password);
+
+        // Check that we can write to the target while permissions allow it
+        fileFolderService.create(
+                targetNodeRef,
+                "SOURCE ONE",
+                ContentModel.TYPE_CONTENT).getNodeRef();
+        // Deny anyone access to the target
+        RunAsWork<Void> setPermissionsWork = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                permissionService.setInheritParentPermissions(targetNodeRef, false);
+                permissionService.setPermission(
+                        targetNodeRef,
+                        PermissionService.ALL_AUTHORITIES,
+                        PermissionService.ALL_PERMISSIONS,
+                        false);
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(setPermissionsWork, AuthenticationUtil.getSystemUserName());
+        try
+        {
+            fileFolderService.create(
+                    targetNodeRef,
+                    "SOURCE TWO",
+                    ContentModel.TYPE_CONTENT).getNodeRef();
+            fail("Expected permissions to deny a write");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+
+        // Create source to move
+        NodeRef movingNodeRef = fileFolderService.create(
+                workingRootNodeRef,
+                "SOURCE THREE",
+                ContentModel.TYPE_CONTENT).getNodeRef();
+        // Move it
+        try
+        {
+            fileFolderService.moveFrom(movingNodeRef, workingRootNodeRef, targetNodeRef, "SOURCE THREE");
+            fail("Expected permissions to deny the move");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+        // Move it
+        try
+        {
+            fileFolderService.move(movingNodeRef, targetNodeRef, "SOURCE FOUR");
+            fail("Expected permissions to deny the move");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+        // Copy it
+        try
+        {
+            fileFolderService.copy(movingNodeRef, targetNodeRef, "SOURCE FIVE");
+            fail("Expected permissions to deny the copy");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+    }
 
     public void testCopy() throws Exception
     {
@@ -776,5 +894,48 @@ public class FileFolderServiceImplTest extends TestCase
         
         ContentReader reader = fileFolderService.getReader(fileNodeRef);
         assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
+    }
+    
+    @SuppressWarnings("unused")
+    public void testGetLocalizedSibling() throws Exception
+    {
+        FileInfo base = fileFolderService.create(workingRootNodeRef, "Something.ftl", ContentModel.TYPE_CONTENT);
+        NodeRef node = base.getNodeRef();
+        NodeRef nodeFr = fileFolderService.create(workingRootNodeRef, "Something_fr.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef nodeFrFr = fileFolderService.create(workingRootNodeRef, "Something_fr_FR..ftl", ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef nodeEn = fileFolderService.create(workingRootNodeRef, "Something_en.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef nodeEnUs = fileFolderService.create(workingRootNodeRef, "Something_en_US.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        I18NUtil.setLocale(Locale.US);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), nodeEnUs, fileFolderService.getLocalizedSibling(node));
+        I18NUtil.setLocale(Locale.UK);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), nodeEn, fileFolderService.getLocalizedSibling(node));
+        I18NUtil.setLocale(Locale.CHINESE);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), node, fileFolderService.getLocalizedSibling(node));
+
+        // Now use French as the base and check that the original is returned
+        
+        I18NUtil.setLocale(Locale.US);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
+        I18NUtil.setLocale(Locale.UK);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
+        I18NUtil.setLocale(Locale.CHINESE);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
+        
+        
+        // Check that extensions like .get.html.ftl work
+        FileInfo mbase = fileFolderService.create(workingRootNodeRef, "Another.get.html.ftl", ContentModel.TYPE_CONTENT);
+        NodeRef mnode = mbase.getNodeRef();
+        NodeRef mnodeFr = fileFolderService.create(workingRootNodeRef, "Another_fr.get.html.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        // Should get the base version, except for when French
+        I18NUtil.setLocale(Locale.UK);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), mnode, fileFolderService.getLocalizedSibling(mnode));
+        I18NUtil.setLocale(Locale.FRENCH);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), mnodeFr, fileFolderService.getLocalizedSibling(mnode));
+        I18NUtil.setLocale(Locale.CHINESE);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), mnode, fileFolderService.getLocalizedSibling(mnode));
+        I18NUtil.setLocale(Locale.US);
+        assertEquals("Match fail for " + I18NUtil.getLocale(), mnode, fileFolderService.getLocalizedSibling(mnode));
     }
 }

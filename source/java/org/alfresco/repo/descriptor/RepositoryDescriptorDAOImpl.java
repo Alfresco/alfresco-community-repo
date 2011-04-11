@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -55,29 +56,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RepositoryDescriptorDAOImpl implements DescriptorDAO
 {
-
-    /** The logger. */
     private static Log logger = LogFactory.getLog(RepositoryDescriptorDAOImpl.class);
-
-    /** The name. */
     private String name;
-
-    /** The node service. */
     private NodeService nodeService;
-
-    /** The content service. */
     private ContentService contentService;
-
-    /** The search service. */
     private SearchService searchService;
-
-    /** The namespace service. */
     private NamespaceService namespaceService;
-
-    /** The system bootstrap. */
     private ImporterBootstrap systemBootstrap;
-
-    /** The transaction service. */
     private TransactionService transactionService;
 
     /**
@@ -157,10 +142,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         this.transactionService = transactionService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.descriptor.DescriptorPersistence#getDescriptor()
-     */
+    @Override
     public Descriptor getDescriptor()
     {
         // retrieve system descriptor
@@ -175,12 +157,8 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.descriptor.DescriptorPersistence#updateDescriptor(org.alfresco.service.descriptor.Descriptor)
-     */
-    public Descriptor updateDescriptor(final Descriptor serverDescriptor)
+    @Override
+    public Descriptor updateDescriptor(final Descriptor serverDescriptor, LicenseMode licenseMode)
     {
         final NodeRef currentDescriptorNodeRef = getDescriptorNodeRef(true);
         // if the node is missing but it should have been created
@@ -199,6 +177,8 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             props.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
             props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
             props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
+            props.put(ContentModel.PROP_SYS_LICENSE_MODE, licenseMode);
+            
             this.nodeService.addProperties(currentDescriptorNodeRef, props);
 
             // ALF-726: v3.1.x Content Cleaner Job needs to be ported to v3.2
@@ -227,10 +207,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         return new RepositoryDescriptor(properties);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.descriptor.DescriptorPersistence#getLicenseKey()
-     */
+    @Override
     public byte[] getLicenseKey()
     {
         byte[] key = null;
@@ -242,7 +219,8 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             {
                 throw new LicenseException("Failed to find system descriptor");
             }
-            final ContentReader reader = this.contentService.getReader(descriptorRef,
+            final ContentReader reader = this.contentService.getReader(
+                    descriptorRef,
                     ContentModel.PROP_SYS_VERSION_EDITION);
             if (reader != null && reader.exists())
             {
@@ -253,15 +231,12 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         }
         catch (final Exception e)
         {
-            throw new LicenseException("Failed to load license", e);
+            throw new LicenseException("Failed to load license key: " + e.getMessage(), e);
         }
         return key;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.descriptor.DescriptorPersistence#updateLicenseKey(byte[])
-     */
+    @Override
     public void updateLicenseKey(final byte[] key)
     {
         try
@@ -277,7 +252,8 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             }
             else
             {
-                final ContentWriter writer = this.contentService.getWriter(descriptorRef,
+                final ContentWriter writer = this.contentService.getWriter(
+                        descriptorRef,
                         ContentModel.PROP_SYS_VERSION_EDITION, true);
                 final InputStream is = new ByteArrayInputStream(key);
                 writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
@@ -286,7 +262,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         }
         catch (final Exception e)
         {
-            throw new LicenseException("Failed to save license", e);
+            throw new LicenseException("Failed to save license: " + e.getMessage(), e);
         }
     }
 
@@ -377,91 +353,51 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             this.properties = properties;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getId()
-         */
         public String getId()
         {
             return getDescriptor("sys:node-uuid");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getName()
-         */
         public String getName()
         {
             return getDescriptor("sys:name");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
-         */
         public String getVersionMajor()
         {
             return getDescriptor("sys:versionMajor");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMinor()
-         */
         public String getVersionMinor()
         {
             return getDescriptor("sys:versionMinor");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionRevision()
-         */
         public String getVersionRevision()
         {
             return getDescriptor("sys:versionRevision");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionLabel()
-         */
         public String getVersionLabel()
         {
             return getDescriptor("sys:versionLabel");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
-         */
         public String getVersionBuild()
         {
             return getDescriptor("sys:versionBuild");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getEdition()
-         */
         public String getEdition()
         {
             return getDescriptor("sys:versionEdition");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
-         */
         public int getSchema()
         {
             return getSchema(getDescriptor("sys:versionSchema"));
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
-         */
         public String[] getDescriptorKeys()
         {
             final String[] keys = new String[this.properties.size()];
@@ -469,10 +405,6 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             return keys;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptor(java.lang.String)
-         */
         public String getDescriptor(final String key)
         {
             String strValue = null;
@@ -495,6 +427,12 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             }
             return strValue;
         }
-    }
 
+        @Override
+        public LicenseMode getLicenseMode()
+        {
+            String licenseModeStr = getDescriptor("sys:licenseMode");
+            return licenseModeStr == null ? LicenseMode.UNKNOWN : LicenseMode.valueOf(licenseModeStr);
+        }
+    }
 }

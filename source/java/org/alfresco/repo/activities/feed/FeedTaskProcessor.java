@@ -65,8 +65,21 @@ public abstract class FeedTaskProcessor
 {
     private static final Log logger = LogFactory.getLog(FeedTaskProcessor.class);
     
-    private static final String defaultFormat = "text";
-    private static final String[] formats = {"atomentry", "rss", "json", "html", "xml", defaultFormat};
+    public static final String FEED_FORMAT_JSON = "json";
+    public static final String FEED_FORMAT_ATOMENTRY = "atomentry";
+    public static final String FEED_FORMAT_HTML = "html";
+    public static final String FEED_FORMAT_RSS = "rss";
+    public static final String FEED_FORMAT_TEXT = "text";
+    public static final String FEED_FORMAT_XML = "xml";
+    
+    private static final String defaultFormat = FEED_FORMAT_TEXT;
+    
+    private static final String[] formats = {FEED_FORMAT_ATOMENTRY, 
+                                             FEED_FORMAT_RSS, 
+                                             FEED_FORMAT_JSON, 
+                                             FEED_FORMAT_HTML, 
+                                             FEED_FORMAT_XML, 
+                                             defaultFormat};
     
     private static final String URL_SERVICE_SITES     = "/api/sites";
     private static final String URL_MEMBERSHIPS       = "/memberships";
@@ -74,14 +87,14 @@ public abstract class FeedTaskProcessor
     private static final String URL_SERVICE_TEMPLATES = "/api/activities/templates";
     private static final String URL_SERVICE_TEMPLATE  = "/api/activities/template";
     
-  
+    
     public void process(int jobTaskNode, long minSeq, long maxSeq, RepoCtx ctx) throws Exception
     {
         long startTime = System.currentTimeMillis();
         
         if (logger.isDebugEnabled())
         {
-            logger.debug(">>> Process: jobTaskNode '" + jobTaskNode + "' from seq '" + minSeq + "' to seq '" + maxSeq + "' on this node from grid job.");
+            logger.debug("Process: jobTaskNode '" + jobTaskNode + "' from seq '" + minSeq + "' to seq '" + maxSeq + "' on this node from grid job.");
         }
         
         ActivityPostEntity selector = new ActivityPostEntity();
@@ -99,7 +112,7 @@ public abstract class FeedTaskProcessor
         {
             activityPosts = selectPosts(selector);
             
-            if (logger.isDebugEnabled()) { logger.debug(">>> Process: " + activityPosts.size() + " activity posts"); }
+            if (logger.isDebugEnabled()) { logger.debug("Process: " + activityPosts.size() + " activity posts"); }
             
             Configuration cfg = getFreemarkerConfiguration(ctx);
             
@@ -177,7 +190,7 @@ public abstract class FeedTaskProcessor
                 
                 if (fmTemplates.size() == 0)
                 {
-                    logger.error(">>> Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType );
+                    logger.error("Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType );
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
@@ -189,15 +202,15 @@ public abstract class FeedTaskProcessor
                 }
                 catch(JSONException je)
                 {
-                    logger.error(">>> Skipping activity post " + activityPost.getId() + " due to invalid activity data: " + je);
+                    logger.error("Skipping activity post " + activityPost.getId() + " due to invalid activity data: " + je);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
                 
                 String thisSite = activityPost.getSiteNetwork();
                 
-                model.put("activityType", activityPost.getActivityType());
-                model.put("siteNetwork", thisSite);
+                model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_TYPE, activityPost.getActivityType());
+                model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_SITE, thisSite);
                 model.put("userId", activityPost.getUserId());
                 model.put("id", activityPost.getId());
                 model.put("date", activityPost.getPostDate()); // post date rather than time that feed is generated
@@ -225,7 +238,7 @@ public abstract class FeedTaskProcessor
                         }
                         catch(Exception e)
                         {
-                            logger.error(">>> Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
+                            logger.error("Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
                             updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                             continue;
                         }
@@ -238,7 +251,7 @@ public abstract class FeedTaskProcessor
                     
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace(">>> Process: " + connectedUsers.size() + " candidate connections for activity post " + activityPost.getId());
+                        logger.trace("Process: " + connectedUsers.size() + " candidate connections for activity post " + activityPost.getId());
                     }
                     
                     int excludedConnections = 0;
@@ -291,7 +304,7 @@ public abstract class FeedTaskProcessor
                                 feed.setPostUserId(postingUserId);
                                 feed.setActivityType(activityType);
                                 
-                                if (formatFound.equals("json"))
+                                if (formatFound.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
                                 {
                                     // allows generic JSON template to simply pass straight through
                                     model.put("activityData", activityPost.getActivityData());
@@ -337,7 +350,7 @@ public abstract class FeedTaskProcessor
                     
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug(">>> Processed: " + (connectedUsers.size() - excludedConnections) + " connections for activity post " + activityPost.getId() + " (excluded " + excludedConnections + ")");
+                        logger.debug("Processed: " + (connectedUsers.size() - excludedConnections) + " connections for activity post " + activityPost.getId() + " (excluded " + excludedConnections + ")");
                     }
                 } 
                 finally 
@@ -353,7 +366,13 @@ public abstract class FeedTaskProcessor
         }
         finally
         {
-            logger.info(">>> Generated " + totalGenerated + " activity feed entries for " + (activityPosts == null ? 0 : activityPosts.size()) + " activity posts (in " + (System.currentTimeMillis() - startTime) + " msecs)");
+            int postCnt = activityPosts == null ? 0 : activityPosts.size();
+            
+            // TODO i18n info message
+            StringBuilder sb = new StringBuilder();
+            sb.append("Generated ").append(totalGenerated).append(" activity feed entr").append(totalGenerated == 1 ? "y" : "ies");
+            sb.append(" for ").append(postCnt).append(" activity post").append(postCnt != 1 ? "s" : "").append(" (in ").append(System.currentTimeMillis() - startTime).append(" msecs)");
+            logger.info(sb.toString());
         }
     }
     
@@ -378,7 +397,7 @@ public abstract class FeedTaskProcessor
         
         if (logger.isDebugEnabled())
         {
-            logger.debug(">>> Request URI: " + url.toURI());
+            logger.debug("Request URI: " + url.toURI());
         }
         
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -412,7 +431,7 @@ public abstract class FeedTaskProcessor
             if (logger.isDebugEnabled())
             {
                 int responseCode = conn.getResponseCode();
-                logger.debug(">>> Response code: " + responseCode);
+                logger.debug("Response code: " + responseCode);
             }
         }
         finally
@@ -632,7 +651,7 @@ public abstract class FeedTaskProcessor
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug(">>> Add template '" + templateToAdd + "' for type '" + activityType + "'");
+                            logger.debug("Add template '" + templateToAdd + "' for type '" + activityType + "'");
                         }
                         fmTemplates.add(templateToAdd);
                     }
@@ -676,7 +695,7 @@ public abstract class FeedTaskProcessor
                 
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug(">>> getURL: " + sb.toString());
+                    logger.debug("getURL: " + sb.toString());
                 }
                 
                 return new URL(sb.toString());

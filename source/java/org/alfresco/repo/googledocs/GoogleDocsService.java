@@ -34,6 +34,16 @@ public interface GoogleDocsService
 	 */
 	void initialise() throws GoogleDocsServiceInitException;
 	
+	/**
+	 * Indicates whether the mimetype is supported for creation in google docs.
+	 *   
+	 * NOTE: This method presumes that the account being used is not for a "premium" customer
+	 *  
+	 * @param mimetype	mimetype	
+	 * @return boolean	true if mimetype is supported, false otherwise
+	 */
+	boolean isSupportedMimetype(String mimetype);
+	
     /**
      * Create a google doc from a given node.  The content of the node will be used 
      * as a basis of the associated google doc.  If the node has no content a new, empty google
@@ -44,6 +54,7 @@ public interface GoogleDocsService
      * 
      * @param nodeRef               node reference
      * @param permissionContext     permission context
+     * @throws GoogleDocsUnsupportedMimetypeException 
      */
     void createGoogleDoc(NodeRef nodeRef, GoogleDocsPermissionContext permissionContext);
     

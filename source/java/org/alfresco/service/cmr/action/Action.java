@@ -41,168 +41,188 @@ public interface Action extends ParameterizedItem
      */
     NodeRef getNodeRef();
     
-	/**
-	 * Get the name of the action definition that relates to this action
-	 * 
-	 * @return	the action defintion name
-	 */
-	String getActionDefinitionName();
-	
-	/**
-	 * Get the title of the action
-	 * 
-	 * @return  the title of the action
-	 */
-	String getTitle();
-	
-	/**
-	 * Set the title of the action
-	 * 
-	 * @param title	the title of the action
-	 */
-	void setTitle(String title);
-	
-	/**
-	 * Get the description of the action
-	 * 
-	 * @return	the description of the action
-	 */
-	String getDescription();
-	
-	/**
-	 * Set the description of the action
-	 * 
-	 * @param description  the description of the action
-	 */
-	void setDescription(String description);
-	
-	/**
-	 * Gets a value indicating whether the action should be executed asychronously or not.
-	 * <p>
-	 * The default is to execute the action synchronously.
-	 * 
-	 * @return	true if the action is executed asychronously, false otherwise.  
-	 */
-	boolean getExecuteAsychronously();
-	
-	/**
-	 * Set the value that indicates whether the action should be executed asychronously or not.
-	 * 
-	 * @param executeAsynchronously		true if the action is to be executed asychronously, false otherwise.
-	 */
-	void setExecuteAsynchronously(boolean executeAsynchronously);
-	
-	/**
-	 * Get the compensating action.
-	 * <p>
-	 * This action is executed if the failure behaviour is to compensate and the action being executed 
-	 * fails.
-	 * 
-	 * @return	the compensating action
-	 */
-	Action getCompensatingAction();
-	
-	/**
-	 * Set the compensating action.
-	 * 
-	 * @param action	the compensating action
-	 */
-	void setCompensatingAction(Action action);
-	
-	/**
-	 * Get the date the action was created
-	 * 
-	 * @return	action creation date
-	 */
-	Date getCreatedDate();
-	
-	/**
-	 * Get the name of the user that created the action
-	 * 
-	 * @return	user name
-	 */
-	String getCreator();
-	
-	/**
-	 * Get the date that the action was last modified
-	 * 
-	 * @return	aciton modification date
-	 */
-	Date getModifiedDate();
-	
-	/**
-	 * Get the name of the user that last modified the action
-	 * 
-	 * @return	user name
-	 */
-	String getModifier();
-	
-	/**
-	 * Indicates whether the action has any conditions specified
-	 * 
-	 * @return  true if the action has any conditions specified, flase otherwise
-	 */
-	boolean hasActionConditions();
-	
-	/**
-	 * Gets the index of an action condition
-	 * 
-	 * @param actionCondition	the action condition
-	 * @return					the index
-	 */
-	int indexOfActionCondition(ActionCondition actionCondition);
-	
-	/**
-	 * Gets a list of the action conditions for this action
-	 * 
-	 * @return  list of action conditions
-	 */
-	List<ActionCondition> getActionConditions();
-	
-	/**
-	 * Get the action condition at a given index
-	 * 
-	 * @param index  the index
-	 * @return		 the action condition
-	 */
-	ActionCondition getActionCondition(int index);
-	
-	/**
-	 * Add an action condition to the action
-	 * 
-	 * @param actionCondition  an action condition
-	 */
-	void addActionCondition(ActionCondition actionCondition);
-	
-	/**
-	 * Add an action condition at the given index
-	 * 
-	 * @param index				the index
-	 * @param actionCondition	the action condition
-	 */
-	void addActionCondition(int index, ActionCondition actionCondition);
-	
-	/**
-	 * Replaces the current action condition at the given index with the 
-	 * action condition provided.
-	 * 
-	 * @param index				the index
-	 * @param actionCondition	the action condition
-	 */
-	void setActionCondition(int index, ActionCondition actionCondition);
-	
-	/**
-	 * Removes an action condition
-	 * 
-	 * @param actionCondition  an action condition
-	 */
-	void removeActionCondition(ActionCondition actionCondition);
-	
-	/**
-	 * Removes all action conditions 
-	 */
-	void removeAllActionConditions();
-	
+    /**
+     * Get the name of the action definition that relates to this action
+     * 
+     * @return    the action defintion name
+     */
+    String getActionDefinitionName();
+    
+    /**
+     * Get the title of the action
+     * 
+     * @return  the title of the action
+     */
+    String getTitle();
+    
+    /**
+     * Set the title of the action
+     * 
+     * @param title    the title of the action
+     */
+    void setTitle(String title);
+    
+    /**
+     * Get the description of the action
+     * 
+     * @return    the description of the action
+     */
+    String getDescription();
+    
+    /**
+     * Set the description of the action
+     * 
+     * @param description  the description of the action
+     */
+    void setDescription(String description);
+    
+    /**
+     * @return                  <tt>true</tt> if the action must be tracked by the
+     *                          {@link ActionTrackingService}, <tt>false</tt> if it must NOT be
+     *                          tracked or <tt>null</tt> to use the action definition's default.
+     */
+    Boolean getTrackStatus();
+    
+    /**
+     * Set whether the action should be tracked or not.
+     * <p/>
+     * The option of tracking can be <tt>null</tt> i.e. unset, indicating that the
+     * defaults of the action definition should be used.  This is to allow manual overriding
+     * of the property when it becomes supported by the UI.
+     * 
+     * @param trackStatus       <tt>true</tt> if the action must be tracked by the
+     *                          {@link ActionTrackingService}, <tt>false</tt> if it must NOT be
+     *                          tracked or <tt>null</tt> to use the action definition's default.
+     */
+    void setTrackStatus(Boolean trackStatus);
+    
+    /**
+     * Gets a value indicating whether the action should be executed asychronously or not.
+     * <p>
+     * The default is to execute the action synchronously.
+     * 
+     * @return    true if the action is executed asychronously, false otherwise.  
+     */
+    boolean getExecuteAsychronously();
+    
+    /**
+     * Set the value that indicates whether the action should be executed asychronously or not.
+     * 
+     * @param executeAsynchronously        true if the action is to be executed asychronously, false otherwise.
+     */
+    void setExecuteAsynchronously(boolean executeAsynchronously);
+    
+    /**
+     * Get the compensating action.
+     * <p>
+     * This action is executed if the failure behaviour is to compensate and the action being executed 
+     * fails.
+     * 
+     * @return    the compensating action
+     */
+    Action getCompensatingAction();
+    
+    /**
+     * Set the compensating action.
+     * 
+     * @param action    the compensating action
+     */
+    void setCompensatingAction(Action action);
+    
+    /**
+     * Get the date the action was created
+     * 
+     * @return    action creation date
+     */
+    Date getCreatedDate();
+    
+    /**
+     * Get the name of the user that created the action
+     * 
+     * @return    user name
+     */
+    String getCreator();
+    
+    /**
+     * Get the date that the action was last modified
+     * 
+     * @return    aciton modification date
+     */
+    Date getModifiedDate();
+    
+    /**
+     * Get the name of the user that last modified the action
+     * 
+     * @return    user name
+     */
+    String getModifier();
+    
+    /**
+     * Indicates whether the action has any conditions specified
+     * 
+     * @return  true if the action has any conditions specified, flase otherwise
+     */
+    boolean hasActionConditions();
+    
+    /**
+     * Gets the index of an action condition
+     * 
+     * @param actionCondition    the action condition
+     * @return                    the index
+     */
+    int indexOfActionCondition(ActionCondition actionCondition);
+    
+    /**
+     * Gets a list of the action conditions for this action
+     * 
+     * @return  list of action conditions
+     */
+    List<ActionCondition> getActionConditions();
+    
+    /**
+     * Get the action condition at a given index
+     * 
+     * @param index  the index
+     * @return         the action condition
+     */
+    ActionCondition getActionCondition(int index);
+    
+    /**
+     * Add an action condition to the action
+     * 
+     * @param actionCondition  an action condition
+     */
+    void addActionCondition(ActionCondition actionCondition);
+    
+    /**
+     * Add an action condition at the given index
+     * 
+     * @param index                the index
+     * @param actionCondition    the action condition
+     */
+    void addActionCondition(int index, ActionCondition actionCondition);
+    
+    /**
+     * Replaces the current action condition at the given index with the 
+     * action condition provided.
+     * 
+     * @param index                the index
+     * @param actionCondition    the action condition
+     */
+    void setActionCondition(int index, ActionCondition actionCondition);
+    
+    /**
+     * Removes an action condition
+     * 
+     * @param actionCondition  an action condition
+     */
+    void removeActionCondition(ActionCondition actionCondition);
+    
+    /**
+     * Removes all action conditions 
+     */
+    void removeAllActionConditions();
+    
     /**
      * Adds a {@link Map} of parameter values to the {@link Action}
      * @param values A map of values to be added

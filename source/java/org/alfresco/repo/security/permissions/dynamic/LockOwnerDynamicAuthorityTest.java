@@ -26,10 +26,13 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -97,6 +100,13 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
 
     public void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         nodeService = (NodeService) ctx.getBean("nodeService");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");

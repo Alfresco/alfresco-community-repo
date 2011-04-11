@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -23,6 +23,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -563,8 +565,13 @@ public class AbstractReadPermissionTest extends TestCase
 
 	public void setUp() throws Exception
 	{
-		super.setUp();
-
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
                 .getLocalName());
@@ -598,10 +605,10 @@ public class AbstractReadPermissionTest extends TestCase
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
-        QName children = ContentModel.ASSOC_CHILDREN;
-        QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
-        QName container = ContentModel.TYPE_CONTAINER;
-        QName types = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "people");
+//        QName children = ContentModel.ASSOC_CHILDREN;
+//        QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
+//        QName container = ContentModel.TYPE_CONTAINER;
+//        QName types = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "people");
 
 //        systemNodeRef = nodeService.createNode(rootNodeRef, children, system, container).getChildRef();
 //        NodeRef typesNodeRef = nodeService.createNode(systemNodeRef, children, types, container).getChildRef();
@@ -628,9 +635,7 @@ public class AbstractReadPermissionTest extends TestCase
             authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
         authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
-        
-        authenticationComponent.clearCurrentSecurityContext();
-		
+     
 		fService = (AVMService)applicationContext.getBean("AVMService");
 		fIndexerAndSearcher = (IndexerAndSearcher)applicationContext.getBean("indexerAndSearcherFactory");
 		wpService = (WebProjectService)applicationContext.getBean("WebProjectService");
@@ -662,23 +667,14 @@ public class AbstractReadPermissionTest extends TestCase
 
 	protected void tearDown() throws Exception
 	{
-//		if(fService.getStore(AVMStore) != null)
-//		{
-//			fService.purgeStore(AVMStore);
-//		}
-//		for(String authority : authorities)
-//		{
-//			deleteAuthentication(authority);
-//		}
-//		for(String authority : webAuthorities)
-//		{
-//			deleteAuthentication(authority);
-//		}
-		
-        if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
-        {
+		try
+		{
             testTX.rollback();
         }
+		catch (Throwable e)
+		{
+		    e.printStackTrace();
+		}
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 
 /**
  * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library to
@@ -45,12 +46,17 @@ import org.apache.pdfbox.pdmodel.PDPage;
  */
 public class PdfBoxPdfToImageContentTransformer extends AbstractContentTransformer2
 {
+    /**
+     * The PDF spec allows for a default user password of the empty string.
+     * See PDF Specification section 3.5 "Password Algorithms", specifically algorithms 3.6
+     */
+    private static final String PDF_DEFAULT_PASSWORD = "";
     private static Log logger = LogFactory.getLog(PdfBoxPdfToImageContentTransformer.class);
 
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-    	// only support PDF -> PNG
-    	return  (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
+        // only support PDF -> PNG
+        return  (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
             MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) == true);
     }
 
@@ -70,21 +76,31 @@ public class PdfBoxPdfToImageContentTransformer extends AbstractContentTransform
 
            if (document.isEncrypted())
            {
-               String msg = "PDF document is encrypted.";
-               if (logger.isInfoEnabled())
+               // Encrypted means password-protected, but PDF allows for two passwords: "owner" and "user".
+               // A "user" of a document should be able to read (but not modify) the content.
+               //
+               // We'll attempt to open the document using the common PDF default password.
+               document.openProtection(new StandardDecryptionMaterial(PDF_DEFAULT_PASSWORD));
+           }
+           boolean canExtractContent = document.getCurrentAccessPermission().canExtractContent();
+           if (!canExtractContent)
+           {
+               
+               String msg = "PDF document's intrinsic permissions forbid content extraction.";
+               if (logger.isDebugEnabled())
                {
-                   logger.info(msg);
+                   logger.debug(msg);
                }
                throw new AlfrescoRuntimeException(msg);
            }
            
-           final int resolution = 16; //TODO A rather arbitrary number for resolution (DPI) here.
+           final int resolution = 16; // A rather arbitrary number for resolution (DPI) here.
 
            List pages = document.getDocumentCatalog().getAllPages();
            PDPage page = (PDPage)pages.get(0);
            BufferedImage img = page.convertToImage(BufferedImage.TYPE_INT_ARGB, resolution);
            
-           File outputFile = TempFileProvider.createTempFile("pdfToImageOutput", ".png");
+           File outputFile = TempFileProvider.createTempFile(this.getClass().getSimpleName(), ".png");
            ImageIO.write(img, "png", outputFile);
             
            writer.putContent(outputFile);

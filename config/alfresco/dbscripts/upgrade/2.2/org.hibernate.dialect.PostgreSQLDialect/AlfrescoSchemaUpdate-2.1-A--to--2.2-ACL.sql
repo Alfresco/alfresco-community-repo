@@ -30,8 +30,10 @@ ALTER TABLE alf_access_control_list
 CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
 
+--FOREACH alf_access_control_list.id system.upgrade.alf_access_control_list.batchsize
 UPDATE alf_access_control_list acl
-   SET acl_id = (acl.id);
+   SET acl_id = (acl.id)
+   WHERE acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
 
 ALTER TABLE alf_access_control_list
    ADD UNIQUE (acl_id, latest, acl_version);
@@ -85,13 +87,15 @@ ALTER TABLE alf_access_control_entry DROP CONSTRAINT FKFFF41F99B25A50BF; -- (opt
 
 
 -- migrate data - build equivalent ACL entries
+--FOREACH alf_access_control_list.id system.upgrade.alf_acl_member.batchsize
 INSERT INTO alf_acl_member (id, version, acl_id, ace_id, pos)
     SELECT 
         NEXTVAL ('hibernate_sequence'), 1, ace.acl_id, ace.id, 0 
     FROM 
         alf_access_control_entry ace 
     JOIN 
-        alf_access_control_list acl ON acl.id = ace.acl_id;
+        alf_access_control_list acl ON acl.id = ace.acl_id
+    WHERE acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
 
 -- Create ACE context
 CREATE TABLE alf_ace_context
@@ -148,6 +152,7 @@ CREATE TABLE alf_tmp_min_ace (
   UNIQUE (permission_id, authority_id, allowed, applies)
 );
 
+--FOREACH alf_access_control_entry.authority_id system.upgrade.alf_tmp_min_ace.batchsize
 INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
     SELECT
        MIN(ace1.id),
@@ -157,12 +162,15 @@ INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
        ace1.applies
     FROM
        alf_access_control_entry ace1
+    WHERE
+       ace1.authority_id >= ${LOWERBOUND} AND ace1.authority_id <= ${UPPERBOUND}
     GROUP BY
        ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies
 ;
    
 
 -- Update members to point to the first use of an access control entry
+--FOREACH alf_acl_member.id system.upgrade.alf_acl_member.batchsize
 UPDATE alf_acl_member mem
    SET ace_id = (SELECT help.min FROM alf_access_control_entry ace 
                      JOIN alf_tmp_min_ace help
@@ -170,7 +178,8 @@ UPDATE alf_acl_member mem
                                 help.authority_id = ace.authority_id AND 
                                 help.allowed = ace.allowed AND 
                                 help.applies = ace.applies 
-                     WHERE ace.id = mem.ace_id  );
+                     WHERE ace.id = mem.ace_id  )
+   WHERE mem.id >= ${LOWERBOUND} AND mem.id <= ${UPPERBOUND};
 
 DROP TABLE alf_tmp_min_ace;
 

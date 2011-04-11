@@ -33,6 +33,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
@@ -48,6 +50,7 @@ public class ImporterComponentTest extends BaseSpringTest
 {
     private ImporterService importerService;
     private ImporterBootstrap importerBootstrap;
+    private VersionService versionService;
     private NodeService nodeService;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
@@ -64,6 +67,8 @@ public class ImporterComponentTest extends BaseSpringTest
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        this.versionService = (VersionService)this.applicationContext.getBean("VersionService");
         
         // Create the store
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -134,6 +139,51 @@ public class ImporterComponentTest extends BaseSpringTest
         assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T00:00:00.000+01:00")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
         assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
+    }
+    
+    public void testImportWithVersioning() throws Exception
+    {
+        InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
+        InputStreamReader testReader = new InputStreamReader(test, "UTF-8");
+        Location location = new Location(storeRef);
+        try
+        {
+            importerService.importView(
+                    testReader,
+                    location,
+                    null,
+                    new ImportTimerProgress());
+        }
+        finally
+        {
+            testReader.close();
+        }
+        
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
+                rootNodeRef,
+                RegexQNamePattern.MATCH_ALL,
+                new RegexQNamePattern(NamespaceService.CONTENT_MODEL_1_0_URI, "Version Containing Folder"));
+        assertEquals("'Version Folder' path not found", 1, childAssocs.size());
+        NodeRef versionFolder = childAssocs.get(0).getChildRef();
+        
+        childAssocs = nodeService.getChildAssocs(
+                versionFolder,
+                RegexQNamePattern.MATCH_ALL,
+                new RegexQNamePattern(NamespaceService.CONTENT_MODEL_1_0_URI, "Versioned Node"));
+        assertEquals("'Versioned Node' path not found", 1, childAssocs.size());
+        NodeRef versionedNode = childAssocs.get(0).getChildRef();
+        
+        // Check the version label isn't 1.0, but the 1.15 from the ACP
+        assertEquals("1.15", nodeService.getProperty(versionedNode, ContentModel.PROP_VERSION_LABEL));
+        
+        // Check that there's no history on the (un-versioned) folder
+        assertEquals(null, versionService.getVersionHistory(versionFolder));
+        
+        // Check that there's a single version history entry for the node
+        VersionHistory vh = versionService.getVersionHistory(versionedNode);
+        assertNotNull(vh);
+        assertEquals(1, vh.getAllVersions().size());
     }
     
     public void testImportWithUuidBinding() throws Exception

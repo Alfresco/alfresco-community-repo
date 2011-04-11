@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.admin.SysAdminParamsImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -36,6 +38,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -43,6 +46,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.InputSource;
@@ -554,6 +558,39 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
             qname = QName.createQName(s, this.services.getNamespaceService());
         }
         return qname;
+    }
+    
+    /**
+     * This method returns a URL string which resolves to an Alfresco Share view of this node.
+     * Note that in order for this method to return meaningful data, the {@link SysAdminParams sysAdminParams}
+     * bean must have been configured.
+     * <p/>
+     * Currently this method only produces valid URls for documents and not for folders.
+     * @see SysAdminParamsImpl#setAlfrescoHost(String)
+     * @see SysAdminParamsImpl#setShareHost(String)
+     */
+    public String getShareUrl()
+    {
+        // TODO URLs for the repo server.
+        // TODO URLs for folders
+        
+        SiteInfo siteInfo = services.getSiteService().getSite(getNodeRef());
+        String siteShortName = siteInfo == null ? null : siteInfo.getShortName();
+        
+        String baseUrl = UrlUtil.getShareUrl(services.getSysAdminParams());
+        
+        StringBuilder result = new StringBuilder();
+        result.append(baseUrl)
+              .append("/page/");
+        if (siteShortName != null)
+        {
+            result.append("site/").append(siteShortName).append("/");
+        }
+        
+        result.append("document-details?nodeRef=")
+              .append(getNodeRef());
+        
+        return result.toString();
     }
     
     

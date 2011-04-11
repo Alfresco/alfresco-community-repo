@@ -6,6 +6,7 @@
       <property name="publicAction">
          <value>false</value>
       </property>
+      <property name="trackStatus" value="true" />
       <property name="sleepMs">
          <value>1000</value>
       </property>

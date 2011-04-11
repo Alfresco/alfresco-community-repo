@@ -632,9 +632,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         void reindexedNode(NodeRef nodeRef);
     }
     
-    protected void reindexTransaction(Long txnId)
+    protected void reindexTransaction(Long txnId, boolean isFull)
     {
-        reindexTransaction(txnId, null);
+        reindexTransaction(txnId, null, isFull);
     }
     
     /**
@@ -646,7 +646,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * 
      * @throws ReindexTerminatedException if the VM is shutdown during the reindex
      */
-    protected void reindexTransaction(final long txnId, ReindexNodeCallback callback)
+    protected void reindexTransaction(final long txnId, ReindexNodeCallback callback, boolean isFull)
     {
         ParameterCheck.mandatory("txnId", txnId);
         if (logger.isDebugEnabled())
@@ -672,18 +672,33 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             }
             if (nodeStatus.isDeleted())                                 // node deleted
             {
-                // only the child node ref is relevant
-                ChildAssociationRef assocRef = new ChildAssociationRef(
-                        ContentModel.ASSOC_CHILDREN,
-                        null,
-                        null,
-                        nodeRef);
-                indexer.deleteNode(assocRef);
+                if(isFull == false)
+                {
+                    // only the child node ref is relevant
+                    ChildAssociationRef assocRef = new ChildAssociationRef(
+                            ContentModel.ASSOC_CHILDREN,
+                            null,
+                            null,
+                            nodeRef);
+                    indexer.deleteNode(assocRef);
+                }
             }
             else                                                        // node created
             {
-                // reindex
-                indexer.updateNode(nodeRef);
+                if(isFull)
+                {
+                    ChildAssociationRef assocRef = new ChildAssociationRef(
+                            ContentModel.ASSOC_CHILDREN,
+                            null,
+                            null,
+                            nodeRef);
+                    indexer.createNode(assocRef);
+                }
+                else
+                {
+                    // reindex
+                    indexer.updateNode(nodeRef);
+                }
             }
             // Make the callback
             if (callback != null)
@@ -718,8 +733,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         private final List<Long> txnIds;
         private long lastIndexedTimestamp;
         private boolean atHeadOfQueue;
+        private boolean isFull;
         
-        private ReindexWorkerRunnable(List<Long> txnIds)
+        private ReindexWorkerRunnable(List<Long> txnIds, boolean isFull)
         {
             this.id = ID_GENERATOR.addAndGet(1);
             if (ID_GENERATOR.get() > 1000)
@@ -728,6 +744,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             }
             this.uidHashCode = id * 13 + 11;
             this.txnIds = txnIds;
+            this.isFull = isFull;
             this.atHeadOfQueue = false;
             recordTimestamp();
         }
@@ -807,7 +824,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                                     id, txnId.longValue());
                             loggerOnThread.debug(msg);
                         }
-                        reindexTransaction(txnId, ReindexWorkerRunnable.this);
+                        reindexTransaction(txnId, ReindexWorkerRunnable.this, isFull);
                     }
                     // Done
                     return null;
@@ -1000,7 +1017,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * @see #waitForAsynchronousReindexing()
      * @since 2.1.4
      */
-    protected void reindexTransactionAsynchronously(final List<Long> txnIds)
+    protected void reindexTransactionAsynchronously(final List<Long> txnIds, final boolean isFull)
     {
         // Bypass if there is no thread pool
         if (threadPoolExecutor == null || threadPoolExecutor.getMaximumPoolSize() < 2)
@@ -1025,7 +1042,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                                     txnId.longValue());
                             loggerOnThread.debug(msg);
                         }
-                        reindexTransaction(txnId, null);
+                        reindexTransaction(txnId, null, isFull);
                     }
                     return null;
                 }
@@ -1034,7 +1051,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             return;
         }
         
-        ReindexWorkerRunnable runnable = new ReindexWorkerRunnable(txnIds);
+        ReindexWorkerRunnable runnable = new ReindexWorkerRunnable(txnIds, isFull);
         try
         {
             reindexThreadLock.writeLock().lock();

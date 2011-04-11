@@ -15,6 +15,7 @@
 
     <cacheManagerPeerListenerFactory
         class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+        properties="socketTimeoutMillis=10000"
     />
     <!--
          To control the cache peer URLs, replace the 'cacheManagerPeerListenerFactory' with the following
@@ -335,6 +336,23 @@
 
     <cache
         name="org.alfresco.cache.userToAuthorityCache"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.cache.authenticationCache"
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"

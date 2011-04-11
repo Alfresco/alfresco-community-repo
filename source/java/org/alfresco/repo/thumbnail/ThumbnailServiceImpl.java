@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,13 +20,22 @@ package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
@@ -39,11 +48,13 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +64,9 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Roy Wetherall
  * @author Neil McErlean
  */
-public class ThumbnailServiceImpl implements ThumbnailService
+public class ThumbnailServiceImpl implements ThumbnailService,
+                                             NodeServicePolicies.BeforeCreateNodePolicy,
+                                             NodeServicePolicies.OnCreateNodePolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(ThumbnailServiceImpl.class);
@@ -74,6 +87,13 @@ public class ThumbnailServiceImpl implements ThumbnailService
     
     /** Rendition service */
     private RenditionService renditionService;
+    
+    /**
+     * The policy component.
+     * @since 3.5.0
+     */
+    private PolicyComponent policyComponent;
+
     
     /**
      * Set the rendition service.
@@ -104,6 +124,87 @@ public class ThumbnailServiceImpl implements ThumbnailService
     {
         this.thumbnailRegistry = thumbnailRegistry;
     }
+    
+    /**
+     * Set the policy component to listen for various events
+     * @since 3.5.0
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * Registers to listen for events of interest.
+     * @since 3.5.0
+     */
+    public void init()
+    {
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                ContentModel.TYPE_THUMBNAIL,
+                new JavaBehaviour(this, "onCreateNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeCreateNodePolicy.QNAME,
+                ContentModel.TYPE_FAILED_THUMBNAIL,
+                new JavaBehaviour(this, "beforeCreateNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+    }
+    
+    public void beforeCreateNode(
+            NodeRef parentRef,
+            QName assocTypeQName,
+            QName assocQName,
+            QName nodeTypeQName)
+    {
+        // When a thumbnail has failed, we must delete any existing (successful) thumbnails of that thumbnailDefinition.
+        if (ContentModel.TYPE_FAILED_THUMBNAIL.equals(nodeTypeQName))
+        {
+            // In fact there should only be zero or one such thumbnails
+            Set<QName> childNodeTypes = new HashSet<QName>();
+            childNodeTypes.add(ContentModel.TYPE_THUMBNAIL);
+            List<ChildAssociationRef> existingThumbnails = nodeService.getChildAssocs(parentRef, childNodeTypes);
+            
+            for (ChildAssociationRef chAssRef : existingThumbnails)
+            {
+                if (chAssRef.getQName().equals(assocQName))
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("Deleting thumbnail node ").append(chAssRef.getChildRef());
+                        logger.debug(msg.toString());
+                    }
+                    nodeService.deleteNode(chAssRef.getChildRef());
+                }
+            }
+        }
+        
+        // We can't respond to the creation of a cm:thumbnail node at this point as they are created with
+        // temporary assoc qnames and so cannot be matched to the relevant thumbnail definition.
+        // Instead we must do it "onCreateNode()"
+    }
+    
+    public void onCreateNode(ChildAssociationRef childAssoc)
+    {
+        // When a thumbnail succeeds, we must delete any existing thumbnail failure nodes.
+        String thumbnailName = (String) nodeService.getProperty(childAssoc.getChildRef(), ContentModel.PROP_NAME);
+        
+        // In fact there should only be zero or one such failedThumbnails
+        Map<String, FailedThumbnailInfo> failures = getFailedThumbnails(childAssoc.getParentRef());
+        FailedThumbnailInfo existingFailedThumbnail = failures.get(thumbnailName);
+        
+        if (existingFailedThumbnail != null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Deleting failedThumbnail node ").append(existingFailedThumbnail.getFailedThumbnailNode());
+                logger.debug(msg.toString());
+            }
+            nodeService.deleteNode(existingFailedThumbnail.getFailedThumbnailNode());
+        }
+    }
+
     
     /**
      * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#getThumbnailRegistry()
@@ -223,7 +324,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
      */
     public void updateThumbnail(final NodeRef thumbnail, final TransformationOptions transformationOptions)
     {
-        // Seeing as how this always gives its own options, maybe this should be a delete and recreate?
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Updating thumbnail (thumbnail=" + thumbnail.toString() + ")");
@@ -255,8 +355,17 @@ public class ThumbnailServiceImpl implements ThumbnailService
             transformationOptions.setSourceContentProperty(contentProperty);
             transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
 
-            // Do the thumbnail transformation
-            RenditionDefinition rendDefn = renditionService.loadRenditionDefinition(renditionAssociationName);
+            // Do the thumbnail transformation. Rendition Definitions are persisted underneath the Data Dictionary for which Group ALL
+            // has Consumer access by default. However, we cannot assume that that access level applies for all deployments. See ALF-7334.
+            RenditionDefinition rendDefn = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+                {
+                    @Override
+                    public RenditionDefinition doWork() throws Exception
+                    {
+                        return renditionService.loadRenditionDefinition(renditionAssociationName);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            
             if (rendDefn == null)
             {
                 String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
@@ -354,6 +463,35 @@ public class ThumbnailServiceImpl implements ThumbnailService
         //TODO Ensure this doesn't return non-thumbnail renditions.
         return thumbnails;
     }
+    
+    @Override
+    public Map<String, FailedThumbnailInfo> getFailedThumbnails(NodeRef sourceNode)
+    {
+        Map<String, FailedThumbnailInfo> result = Collections.emptyMap();
+        
+        if (nodeService.hasAspect(sourceNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE))
+        {
+            List<ChildAssociationRef> failedThumbnailChildren = nodeService.getChildAssocs(sourceNode,
+                                                 ContentModel.ASSOC_FAILED_THUMBNAIL, RegexQNamePattern.MATCH_ALL);
+            result = new HashMap<String, FailedThumbnailInfo>();
+            for (ChildAssociationRef chAssRef : failedThumbnailChildren)
+            {
+                final QName failedThumbnailName = chAssRef.getQName();
+                NodeRef failedThumbnailNode = chAssRef.getChildRef();
+                Map<QName, Serializable> props = nodeService.getProperties(failedThumbnailNode);
+                Date failureDateTime = (Date)props.get(ContentModel.PROP_FAILED_THUMBNAIL_TIME);
+                int failureCount = (Integer)props.get(ContentModel.PROP_FAILURE_COUNT);
+                
+                final FailedThumbnailInfo failedThumbnailInfo = new FailedThumbnailInfo(failedThumbnailName.getLocalName(),
+                                                                                failureDateTime, failureCount,
+                                                                                failedThumbnailNode);
+                result.put(failedThumbnailName.getLocalName(), failedThumbnailInfo);
+            }
+        }
+        
+        return result;
+    }
+
     
     /**
      * Determine whether the thumbnail meta-data matches the given mimetype and options

@@ -4,40 +4,33 @@
 <beans>
 
    <bean id="interpreterBase" abstract="true">
-   
       <property name="transactionService" ref="transactionComponent"/>
       <property name="authorityService" ref="AuthorityService"/>
-      
    </bean>
     
    <bean id="repoAdminService" class="org.alfresco.repo.admin.RepoAdminServiceImpl">
-      
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="nodeService" ref="NodeService"/>
-      <property name="contentService" ref="ContentService"/>
+      <property name="searchService" ref="admSearchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="messageService" ref="messageService"/>
+      <property name="repoUsageComponent" ref="repoUsageComponent"/>
       
       <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
       <property name="repositoryMessagesLocation" ref="customMessagesRepositoryLocation"/>
-        
    </bean>
    
    <bean id="repoAdminInterpreter" class="org.alfresco.repo.admin.RepoAdminInterpreter" parent="interpreterBase">
-      
       <property name="repoAdminService" ref="RepoAdminService"/>
-      
    </bean>
 
    <bean id="repoAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      
       <property name="resourceBundles">
          <list>
              <value>alfresco.messages.repoadmin-interpreter-help</value>
          </list>
       </property>
-      
    </bean>
    
     

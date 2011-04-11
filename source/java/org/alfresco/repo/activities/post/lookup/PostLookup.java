@@ -139,7 +139,10 @@ public class PostLookup
             
             if (activityPosts.size() > 0)
             {
-                logger.info("Update: " + activityPosts.size() + " activity posts");
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Update: " + activityPosts.size() + " activity post"+(activityPosts.size() == 1 ? "s" : ""));
+                }
             }
             
             for (final ActivityPostEntity activityPost : activityPosts)

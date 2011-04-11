@@ -10,30 +10,30 @@
        <view:aspects>
        </view:aspects>
        <view:properties>
-         <cm:description>Folder used by the Transfer subsystem.</cm:description>
+         <cm:description>${spaces.transfers.description}</cm:description>
          <app:icon>space-icon-default</app:icon>
-         <cm:title>Transfers</cm:title>
-         <cm:name>Transfers</cm:name>
+         <cm:title>${spaces.transfers.title}</cm:title>
+         <cm:name>${spaces.transfers.name}</cm:name>
         </view:properties>
         <cm:contains>
             <cm:folder view:childName="${spaces.transfer_groups.childname}">
                <view:aspects>
                </view:aspects>
                <view:properties>
-                  <cm:description>Folder containing groups of transfer targets.</cm:description>
+                  <cm:description>${spaces.transfer_groups.description}</cm:description>
                   <app:icon>space-icon-default</app:icon>
-                  <cm:title>Transfer Target Groups</cm:title>
-                  <cm:name>Transfer Target Groups</cm:name>
+                  <cm:title>${spaces.transfer_groups.title}</cm:title>
+                  <cm:name>${spaces.transfer_groups.name}</cm:name>
                </view:properties>
                <cm:contains>
 					<trx:transferGroup view:childName="cm:default">
 					   <view:aspects>
 					   </view:aspects>
 					   <view:properties>
-					      <cm:description>Default Group.</cm:description>
+					      <cm:description>${spaces.transfer_groups_default.description}</cm:description>
 					      <app:icon>space-icon-default</app:icon>
-					      <cm:title>Default Group</cm:title>
-					      <cm:name>Default Group</cm:name>
+					      <cm:title>${spaces.transfer_groups_default.title}</cm:title>
+					      <cm:name>${spaces.transfer_groups_default.name}</cm:name>
 					   </view:properties>
 					</trx:transferGroup>
 			   </cm:contains>
@@ -42,20 +42,20 @@
                <view:aspects>
                </view:aspects>
                <view:properties>
-                  <cm:description>Folder containing records of inbound transfers.</cm:description>
+                  <cm:description>${spaces.inbound_transfer_records.description}</cm:description>
                   <app:icon>space-icon-default</app:icon>
-                  <cm:title>Inbound Transfer Records</cm:title>
-                  <cm:name>Inbound Transfer Records</cm:name>
+                  <cm:title>${spaces.inbound_transfer_records.title}</cm:title>
+                  <cm:name>${spaces.inbound_transfer_records.name}</cm:name>
                </view:properties>
             </cm:folder>
             <cm:folder view:childName="${spaces.transfer_temp.childname}">
                <view:aspects>
                </view:aspects>
                <view:properties>
-                  <cm:description>Folder to store temporary nodes during transfer.</cm:description>
+                  <cm:description>${spaces.transfer_temp.description}</cm:description>
                   <app:icon>space-icon-default</app:icon>
-                  <cm:title>Temp</cm:title>
-                  <cm:name>Temp</cm:name>
+                  <cm:title>${spaces.transfer_temp.title}</cm:title>
+                  <cm:name>${spaces.transfer_temp.name}</cm:name>
                </view:properties>
             </cm:folder>
         </cm:contains>

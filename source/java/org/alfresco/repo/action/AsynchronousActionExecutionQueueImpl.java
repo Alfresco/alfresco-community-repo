@@ -18,13 +18,11 @@
  */
 package org.alfresco.repo.action;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -37,14 +35,12 @@ import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,8 +61,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     private Map<String, AbstractAsynchronousActionFilter>
             actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
 
-	private NodeService nodeService;
-    
 	/**
 	 * We keep a record of ongoing asynchronous actions (this includes those being executed and
 	 * those that are in the queue).
@@ -132,46 +126,12 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         this.policyComponent = policyComponent;
     }
     
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
     private void invokeOnAsyncActionExecutePolicy(Action action, NodeRef actionedUponNodeRef)
     {
         // Execute the policy, passing it all details, firing as a general action case
         AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = 
            onAsyncActionExecuteDelegate.get(actionedUponNodeRef, ActionModel.TYPE_ACTION);
         policy.onAsyncActionExecute(action, actionedUponNodeRef);
-    }
-    
-    /**
-     * Get all aspect and node type qualified names
-     * 
-     * @param nodeRef
-     *            the node we are interested in
-     * @return Returns a set of qualified names containing the node type and all
-     *         the node aspects, or null if the node no longer exists
-     */
-    private Set<QName> getTypeAndAspectQNames(NodeRef nodeRef)
-    {
-        Set<QName> qnames = null;
-        try
-        {
-            Set<QName> aspectQNames = this.nodeService.getAspects(nodeRef);
-            
-            QName typeQName = this.nodeService.getType(nodeRef);
-            
-            qnames = new HashSet<QName>(aspectQNames.size() + 1);
-            qnames.addAll(aspectQNames);
-            qnames.add(typeQName);
-        }
-        catch (InvalidNodeRefException e)
-        {
-            qnames = Collections.emptySet();
-        }
-        // done
-        return qnames;
     }
     
     /**

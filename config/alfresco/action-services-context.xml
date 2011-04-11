@@ -52,9 +52,6 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
-        <property name="nodeService">
-            <ref bean="NodeService"/>
-        </property>       
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
@@ -67,9 +64,6 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
-        <property name="nodeService">
-            <ref bean="NodeService"/>
-        </property>       
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
@@ -210,6 +204,11 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
       <property name="cacheAllowableValues" value="false" />
+      <property name="nodeInclusionFilter">
+         <list>
+            <value>ftl</value>
+         </list>
+      </property>
    </bean>
    
    <bean id="ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
@@ -218,7 +217,12 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
       <property name="cacheAllowableValues" value="false" />
-   </bean>	
+      <property name="nodeInclusionFilter">
+         <list>
+            <value>js</value>
+         </list>
+      </property>
+   </bean>
    
     <!-- Action Conditions -->
 
@@ -310,7 +314,11 @@
         </property>
         <property name="lockService">
         	<ref bean="LockService"/>
+        </property>        
+        <property name="baseNodeService">
+        	<ref bean="nodeService"/>
         </property>
+        <property name="trackStatus" value="false" />
     </bean>
     
     <bean id="composite-action" class="org.alfresco.repo.action.executer.CompositeActionExecuter" parent="action-executer">

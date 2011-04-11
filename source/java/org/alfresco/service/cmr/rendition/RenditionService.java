@@ -210,4 +210,43 @@ public interface RenditionService extends RenditionDefinitionPersister
     @NotAuditable
     void render(NodeRef sourceNode, RenditionDefinition renditionDefinition,
             RenderCallback callback);
+    
+    /**
+     * This method synchronously renders content as specified by the given
+     * {@link RenditionDefinition#getRenditionName() rendition name}.
+     * The content to be rendered is provided by the specified source node.
+     * <p/>
+     * The Rendition Definition will be loaded from the standard location as system
+     * thus allowing rendition definitions to be used even when the Data Dictionary
+     * has restricted read access.
+     * 
+     * @param sourceNode the node from which the content is retrieved.
+     * @param renditionDefinitionQName the rendition definition which is to
+     *            be performed.
+     * @return a child association reference which is the link from the source
+     *         node to the newly rendered content.
+     * @throws RenditionServiceException if there is a problem in rendering the
+     *             given sourceNode
+     * @since 3.4.2
+     */
+    @NotAuditable
+    ChildAssociationRef render(NodeRef sourceNode, QName renditionDefinitionQName);
+
+    /**
+     * This method asynchronously renders content as specified by the given
+     * {@link RenditionDefinition#getRenditionName() rendition definition name}.
+     * The content to be rendered is provided by the specified source node.
+     * <p/>
+     * The Rendition Definition will be loaded from the standard location as system
+     * thus allowing rendition definitions to be used even when the Data Dictionary
+     * has restricted read access.
+     * 
+     * @param sourceNode the node from which the content is retrieved.
+     * @param renditionDefinitionQName the rendition definition which is to
+     *            be performed.
+     * @param callback a callback object to handle the ultimate result of the rendition.
+     * @since 3.4.2
+     */
+    @NotAuditable
+    void render(NodeRef sourceNode, QName renditionDefinitionQName, RenderCallback callback);
 }

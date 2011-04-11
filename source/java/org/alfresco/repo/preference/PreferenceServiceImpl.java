@@ -186,10 +186,10 @@ public class PreferenceServiceImpl implements PreferenceService
         boolean result = true;
         
         // Split strings
-        name = name.replace(".", "-");
-        String[] nameArr = name.split("-");
-        matchTo = matchTo.replace(".", "-");
-        String[] matchToArr = matchTo.split("-");
+        name = name.replace(".", "+");
+        String[] nameArr = name.split("\\+");
+        matchTo = matchTo.replace(".", "+");
+        String[] matchToArr = matchTo.split("\\+");
         
         int index = 0;
         for (String matchToElement : matchToArr)

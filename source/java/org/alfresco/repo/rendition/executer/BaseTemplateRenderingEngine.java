@@ -239,6 +239,8 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
                 DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE_NODE));
         ParameterDefinitionImpl templatePathParamDef = new ParameterDefinitionImpl(PARAM_TEMPLATE_PATH,
                 DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TEMPLATE_PATH));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MIME_TYPE, DataTypeDefinition.TEXT, false,
+                getParamDisplayLabel(PARAM_MIME_TYPE)));
         paramList.add(modelParamDef);
         paramList.add(templateParamDef);
         paramList.add(templateNodeParamDef);

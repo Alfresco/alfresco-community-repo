@@ -852,6 +852,223 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ResultSet results = serviceRegistry.getSearchService().query(sp);
         results.close();
     }
+    
+    public void test_ALF_8007() throws Exception
+    {
+        // Check that updates before and after queries do not produce duplicates
+        
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        this.authenticationComponent.setCurrentUser("admin");
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+       
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+
+        properties.put(ContentModel.PROP_NAME, "ALF-8007");
+        NodeRef one = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007"), ContentModel.TYPE_CONTENT, properties).getChildRef();
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        
+        MLText desc1 = new MLText();
+        desc1.addValue(Locale.ENGLISH, "ALF 8007");
+        desc1.addValue(Locale.US, "ALF 8007");
+    
+        nodeService.setProperty(one, ContentModel.PROP_DESCRIPTION, desc1);
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        // check delete after update does delete from the index
+        // ALF-8007
+        // Already seen the delete in the TX and it is skipped (should only skip deletes in the same flush)
+        
+        nodeService.deleteNode(one);
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        // Check unreported ... create, query, update, delete
+        //                  ... create, query, move, delete 
+        
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-2\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_NAME, "ALF-8007-2");
+        NodeRef two = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-2"), ContentModel.TYPE_CONTENT, properties).getChildRef();
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-2\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        desc1 = new MLText();
+        desc1.addValue(Locale.ENGLISH, "ALF 8007 2");
+        desc1.addValue(Locale.US, "ALF 8007 2");
+    
+        nodeService.setProperty(two, ContentModel.PROP_DESCRIPTION, desc1);
+        nodeService.deleteNode(two);
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-2\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        //                  ... create, query, move, delete 
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-3\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_NAME, "ALF-8007-3");
+        NodeRef three = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-3"), ContentModel.TYPE_CONTENT, properties).getChildRef();
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-3\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        desc1 = new MLText();
+        desc1.addValue(Locale.ENGLISH, "ALF 8007 3");
+        desc1.addValue(Locale.US, "ALF 8007 3");
+    
+        nodeService.moveNode(three, n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-3"));
+        nodeService.deleteNode(three);
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-3\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        //                  ... create, move, query, delete 
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-4\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+        properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_NAME, "ALF-8007-4");
+        NodeRef four = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-4"), ContentModel.TYPE_CONTENT, properties).getChildRef();
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-4\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        desc1 = new MLText();
+        desc1.addValue(Locale.ENGLISH, "ALF 8007 4");
+        desc1.addValue(Locale.US, "ALF 8007 4");
+    
+        nodeService.moveNode(four, n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-4"));
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-4\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        nodeService.deleteNode(four);
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("cm:name:\"ALF-8007-4\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+        
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+        
+    }
+
 
     public void testPublicServiceSearchServicePaging() throws Exception
     {
@@ -4763,6 +4980,75 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
         // Test wildcards in text
 
+        //ALF-2389
+        //results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":*en*", null);
+        //assertEquals(0, results.length());
+        //results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":*a*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":*A*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":\"*a*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":\"*A\"*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":*s*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":*S*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":\"*s*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"))+":\"*S\"*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*A*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"*a*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"*A*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*a*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*Z*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:*z*", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"*Z*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:\"*z*\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TEXT:laz*", null);
         assertEquals(1, results.length());
         results.close();

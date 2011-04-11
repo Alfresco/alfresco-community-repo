@@ -810,17 +810,22 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     protected long getUidNextInternal()
     {
-        return getUidValidity();
+        /**
+         * Can't used cached value since it may be out of date.
+         */
+        return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName()) + 1;
     }
     
     public boolean isStale()
     {
         if(uidValidity == generateUidValidity())
         {
+            logger.debug("folder is not stale");
             return false;
         }
         else
         {
+            logger.debug("folder is stale");
             return true;
         }
     }
@@ -833,8 +838,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     protected long getUidValidityInternal()
     {
-        return uidValidity;
-        //return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
+        /**
+         * Can't used cached value uidValidity since it may be out of date.
+         */
+        //return uidValidity;
+        return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -846,7 +854,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     {
         if(folderInfo != null)
         {
-            return (Long) AuthenticationUtil.runAs(new GetUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
+            return (Long) AuthenticationUtil.runAs(new GenerateUidValidityWork(folderInfo.getNodeRef(), serviceRegistry.getNodeService()), AuthenticationUtil.getSystemUserName());
         }
         else
         {
@@ -1205,13 +1213,20 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         }
     }
     
-    public class GetUidValidityWork implements RunAsWork<Long>
+    /**
+     * Generate UID validity
+     * 
+     * In general this class will return a long UID value but if there is no
+     * ASPECT_IMAP_FOLDER then running this method will add the aspect and add 
+     * initial values.    Needs to be run in a read/write transaction
+     */
+    public class GenerateUidValidityWork implements RunAsWork<Long>
     {
 
         private NodeService nodeService;
         private NodeRef folderNodeRef;
         
-        public GetUidValidityWork(NodeRef folderNodeRef, NodeService nodeService)
+        public GenerateUidValidityWork(NodeRef folderNodeRef, NodeService nodeService)
         {
             this.folderNodeRef = folderNodeRef;
             this.nodeService = nodeService;
@@ -1244,6 +1259,37 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         }
         
     }
+    
+    /**
+     * Read only transaction to get uidvalidity
+     * @author mrogers
+     */
+    public class GetUidValidityWork implements RunAsWork<Long>
+    {
 
+        private NodeService nodeService;
+        private NodeRef folderNodeRef;
+        
+        public GetUidValidityWork(NodeRef folderNodeRef, NodeService nodeService)
+        {
+            this.folderNodeRef = folderNodeRef;
+            this.nodeService = nodeService;
+        }
 
+        @Override
+        public Long doWork() throws Exception
+        {
+            if(nodeService.exists(folderNodeRef))
+            {
+                long modifDate = 0L;
+                if (nodeService.hasAspect(folderNodeRef, ImapModel.ASPECT_IMAP_FOLDER))
+                {
+                    modifDate = ((Long) nodeService.getProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY));
+                    return (modifDate - YEAR_2005) / 1000;
+                }  
+            }
+            return new Long(0);
+        }
+        
+    }
 }

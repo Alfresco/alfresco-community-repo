@@ -342,6 +342,11 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return null;
     }
 
+    public NodeRef getAuthorityNodeRef(String name)
+    {
+        return null;
+    }
+
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
             String displayNamePattern, String zoneName)
     {

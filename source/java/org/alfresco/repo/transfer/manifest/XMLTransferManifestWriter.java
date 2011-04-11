@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.io.OutputFormat;
@@ -178,6 +179,25 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_HEADER_RONLY, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_RONLY);
+        }
+        
+        TransferVersion version = header.getTransferVersion();
+        if(version != null)
+        {
+            
+            AttributesImpl attributes = new AttributesImpl();
+            attributes.addAttribute("uri", "versionMajor", "versionMajor", "String", version.getVersionMajor());
+            attributes.addAttribute("uri", "versionMinor", "versionMinor", "String", version.getVersionMinor());
+            attributes.addAttribute("uri", "versionRevision", "versionRevision", "String", version.getVersionRevision());
+            attributes.addAttribute("uri", "edition", "edition", "String", version.getEdition());
+            
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_VERSION, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_VERSION, attributes);
+            
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_VERSION, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_VERSION);
         }
 
 

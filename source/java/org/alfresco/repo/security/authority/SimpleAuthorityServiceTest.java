@@ -23,9 +23,12 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -62,6 +65,13 @@ public class SimpleAuthorityServiceTest extends TestCase
 
     public void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
@@ -118,7 +128,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
-        assertEquals(4, authorityService.getAuthorities().size());
+        assertEquals(6, authorityService.getAuthorities().size());
     }
 
     public void testAuthorities()
@@ -130,7 +140,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).contains(
                 PermissionService.ALL_AUTHORITIES));
-        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).contains(PermissionService.GUEST_AUTHORITY));
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.OWNER).size());

@@ -48,6 +48,18 @@ public interface ActionExecuter
 	 */
 	boolean getIgnoreLock();
 	
+    /**
+     * Get whether the basic action definition supports action tracking
+     * or not.  This can be overridden for each {@link Action#getTrackStatus() action}
+     * but if not, this value is used.  Defaults to <tt>false</tt>.
+     * 
+     * @return      <tt>true</tt> to track action execution status or <tt>false</tt> (default)
+     *              to do no action tracking
+     * 
+     * @since 3.4.1
+     */
+	boolean getTrackStatus();
+	
 	/**
 	 * Get the action definition for the action
 	 * 
@@ -61,7 +73,5 @@ public interface ActionExecuter
      * @param action				the action
      * @param actionedUponNodeRef	the actioned upon node reference
      */
-    void execute(Action action,
-                 NodeRef actionedUponNodeRef);
-
+    void execute(Action action, NodeRef actionedUponNodeRef);
 }

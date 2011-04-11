@@ -32,9 +32,11 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -386,20 +388,8 @@ public class NodeMonitor extends TransactionListenerAdapter
     	
     	if ( fType != FileFolderServiceType.INVALID) {
     		
-    		// Get the full path to the file/folder node
-    		
-    		Path nodePath = m_nodeService.getPath( nodeRef);
-    		String fName = (String) m_nodeService.getProperty( nodeRef, ContentModel.PROP_NAME);
-    		
-    		// Build the share relative path to the node
-    		
-    		StringBuilder pathStr = new StringBuilder();
-    		pathStr.append( nodePath.toDisplayPath(m_nodeService, m_permissionService));
-    		if ( pathStr.length() == 0 || (pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\'))
-    			pathStr.append("\\");
-    		pathStr.append( fName);
-
-    		String relPath = pathStr.toString();
+            StringBuilder pathStr = calculateDisplayPath(nodeRef);
+            String relPath = (null != pathStr) ? (pathStr.toString()):("");
     		
     		// Create an event to process the node deletion
     		
@@ -421,6 +411,29 @@ public class NodeMonitor extends TransactionListenerAdapter
     	 	}
     	}
 	}
+
+    private StringBuilder calculateDisplayPath(final NodeRef nodeRef)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<StringBuilder>()
+        {
+            @Override
+            public StringBuilder doWork() throws Exception
+            {
+                // Get the full path to the file/folder node
+                Path nodePath = m_nodeService.getPath(nodeRef);
+                String fName = (String) m_nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
+                // Build the share relative path to the node
+                StringBuilder result = new StringBuilder();
+                result.append(nodePath.toDisplayPath(m_nodeService, m_permissionService));
+                if ((0 == result.length()) || ('/' != (result.charAt(result.length() - 1)) && ('\\' != result.charAt(result.length() - 1))))
+                {
+                    result.append("\\");
+                }
+                return result.append(fName);
+            }
+        }, AuthenticationUtil.SYSTEM_USER_NAME);
+    }
 
 	/**
 	 * The relative path of a renamed/moved node

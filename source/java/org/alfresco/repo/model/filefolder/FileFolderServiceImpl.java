@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
@@ -58,12 +60,15 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the file/folder-specific service.
@@ -103,9 +108,6 @@ public class FileFolderServiceImpl implements FileFolderService
         " and (subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
         " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
        
-    /** empty parameters */
-    private static final QueryParameterDefinition[] PARAMS_ANY_NAME = new QueryParameterDefinition[1];
-    
     private static Log logger = LogFactory.getLog(FileFolderServiceImpl.class);
 
     private NamespaceService namespaceService;
@@ -366,6 +368,37 @@ public class FileFolderServiceImpl implements FileFolderService
         
     }
     
+    @Override
+    public NodeRef getLocalizedSibling(NodeRef nodeRef)
+    {
+        Locale userLocale = I18NUtil.getLocale();
+        
+        String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        // Work out the base name we are working with
+        Pair<String, String> split = getExtension(name, false);
+        String base = split.getFirst();
+        String ext = split.getSecond();
+        
+        NodeRef resultNodeRef = nodeRef;
+        // Search for siblings with the same name
+        Control resourceHelper = Control.getControl(Control.FORMAT_DEFAULT);
+        List<Locale> candidateLocales = resourceHelper.getCandidateLocales(base, userLocale);
+        for (Locale candidateLocale : candidateLocales)
+        {
+            String filename = resourceHelper.toBundleName(base, candidateLocale) + "." + ext;
+            // Attempt to find the file
+            NodeRef foundNodeRef = searchSimple(parentNodeRef, filename);
+            if (foundNodeRef != null)   // TODO: Check for read permissions
+            {
+                resultNodeRef = foundNodeRef;
+                break;
+            }
+        }
+        // Done
+        return resultNodeRef;
+    }
+
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
@@ -489,11 +522,6 @@ public class FileFolderServiceImpl implements FileFolderService
                         dictionaryService.getDataType(DataTypeDefinition.TEXT),
                         true,
                         namePattern);
-            }
-            else
-            {
-                // name pattern is null so search for ANY_NAME
-                params = PARAMS_ANY_NAME;
             }
             // determine the correct query to use
             String query = null;
@@ -702,6 +730,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /**
      * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
      */
+    @Override
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
     {
         return moveOrCopy(sourceNodeRef, null, targetParentRef, newName, true);
@@ -710,11 +739,21 @@ public class FileFolderServiceImpl implements FileFolderService
     /**
      * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
      */
-    public FileInfo move(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
+    @Override
+    public FileInfo moveFrom(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
     {
         return moveOrCopy(sourceNodeRef, sourceParentRef, targetParentRef, newName, true);
     }
     
+    /**
+     * @deprecated
+     */
+    @Override
+    public FileInfo move(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
+    {
+        return moveOrCopy(sourceNodeRef, sourceParentRef, targetParentRef, newName, true);
+    }
+
     /**
      * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
      */
@@ -908,8 +947,8 @@ public class FileFolderServiceImpl implements FileFolderService
                 //      3. extension was not changed,
                 // 
                 // It fixes the ETWOTWO-16 issue.
-                String oldExt = getExtension(beforeFileInfo.getName());
-                String newExt = getExtension(newName);
+                String oldExt = getExtension(beforeFileInfo.getName(), true).getSecond();
+                String newExt = getExtension(newName, true).getSecond();
                 if (contentData != null &&
                         newExt.length() != 0 &&
                         !"tmp".equalsIgnoreCase(newExt) &&
@@ -1192,19 +1231,24 @@ public class FileFolderServiceImpl implements FileFolderService
         // Done
         return writer;
     }
-        
-    private String getExtension(String name)
+    
+    /**
+     * Split a filename into the base (part before the '.') and the extension (part after the '.')
+     */
+    private Pair<String, String> getExtension(String name, boolean useLastDot)
     {
-        String result = "";
+        String ext = "";
+        String base = name;
         if (name != null)
         {
             name = name.trim();
-            int index = name.lastIndexOf('.');
+            int index = useLastDot ? name.lastIndexOf('.') : name.indexOf('.');
             if (index > -1 && (index < name.length() - 1))
             {
-                result = name.substring(index + 1);
+                base = name.substring(0, index);
+                ext = name.substring(index + 1);
             }
         }
-        return result;
+        return new Pair<String, String>(base, ext);
     }
 }

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -400,8 +401,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 	                    }
 	                    
 	                    // Create the auto-version
-	                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+	                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(4);
 	                    versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION_PROPS));
+	                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
 	                    
 	                    createVersionImpl(nodeRef, versionProperties);
 	                }

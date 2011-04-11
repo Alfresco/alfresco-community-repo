@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 
 /**
  * @author brian
@@ -47,10 +48,11 @@ public interface TransferTransmitter
      * 
      * @param target definition of where to transfer to.
      * @param fromRepositoryId the repositoryID of the sending system
+     * @param fromVersion the version of the repository sending
      * @return the transfer object or null if the target cannot be locked.
      * @throws TransferException
      */
-    Transfer begin(TransferTarget target, String fromRepositoryId) throws TransferException;
+    Transfer begin(TransferTarget target, String fromRepositoryId, TransferVersion fromVersion) throws TransferException;
     
     /**
      * @param manifest, the transfer manifest file

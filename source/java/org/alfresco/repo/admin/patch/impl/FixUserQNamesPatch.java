@@ -33,7 +33,6 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -41,7 +40,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -59,7 +57,6 @@ public class FixUserQNamesPatch extends AbstractPatch implements ApplicationEven
     private QNameDAO qnameDAO;
     private RuleService ruleService;
     private ImporterBootstrap userBootstrap;
-    private ApplicationEventPublisher applicationEventPublisher;
 
     public FixUserQNamesPatch()
     {
@@ -87,16 +84,6 @@ public class FixUserQNamesPatch extends AbstractPatch implements ApplicationEven
     {
         this.userBootstrap = userBootstrap;
     }
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context
-     * .ApplicationEventPublisher)
-     */
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
-    {
-        this.applicationEventPublisher = applicationEventPublisher;
-    }
 
     @Override
     protected void checkProperties()
@@ -104,17 +91,23 @@ public class FixUserQNamesPatch extends AbstractPatch implements ApplicationEven
         super.checkProperties();
         checkPropertyNotNull(qnameDAO, "qnameDAO");
         checkPropertyNotNull(userBootstrap, "userBootstrap");
-        checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
     }
 
     @Override
     protected String applyInternal() throws Exception
     {
         // Get the ChildAssociationRefs
-        List<ChildAssociationRef> toProcess = nodeService.getChildAssocs(getUserFolderLocation(), ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER,
-                    false);
+        List<ChildAssociationRef> toProcess = nodeService.getChildAssocs(
+                getUserFolderLocation(),
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_USER,
+                false);
         BatchProcessor<ChildAssociationRef> batchProcessor = new BatchProcessor<ChildAssociationRef>(
-                "FixUserQNamesPatch", this.transactionService.getRetryingTransactionHelper(), toProcess, 2, 20,
+                "FixUserQNamesPatch",
+                transactionHelper,
+                toProcess,
+                2,
+                20,
                 this.applicationEventPublisher, logger, 1000);
 
         int updated = batchProcessor.process(new BatchProcessWorker<ChildAssociationRef>()
@@ -138,8 +131,9 @@ public class FixUserQNamesPatch extends AbstractPatch implements ApplicationEven
 
             public void process(ChildAssociationRef entry) throws Throwable
             {
-                QName userQName = QName.createQName(ContentModel.USER_MODEL_URI, (String) nodeService.getProperty(entry
-                        .getChildRef(), ContentModel.PROP_USER_USERNAME));
+                QName userQName = QName.createQName(
+                        ContentModel.USER_MODEL_URI,
+                        (String) nodeService.getProperty(entry.getChildRef(), ContentModel.PROP_USER_USERNAME));
 
                 // Only a user called "user" will stay in place
                 if (!userQName.equals(ContentModel.TYPE_USER))

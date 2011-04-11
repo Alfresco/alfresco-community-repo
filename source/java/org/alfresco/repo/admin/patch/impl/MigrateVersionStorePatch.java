@@ -186,7 +186,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
                         }
                     }
                 };
-                return transactionService.getRetryingTransactionHelper().doInTransaction(patchTxn);
+                return transactionHelper.doInTransaction(patchTxn);
             }
         };
         String report = AuthenticationUtil.runAs(patchRunAs, AuthenticationUtil.getSystemUserName());
@@ -291,7 +291,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
                     return true;
                 }
             };
-            Boolean doMigration = transactionService.getRetryingTransactionHelper().doInTransaction(preMigrate);
+            Boolean doMigration = transactionHelper.doInTransaction(preMigrate);
             if(!doMigration.booleanValue())
             {
             	return null;

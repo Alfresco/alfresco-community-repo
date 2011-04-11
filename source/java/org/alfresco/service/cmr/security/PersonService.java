@@ -178,6 +178,21 @@ public interface PersonService
     public NodeRef createPerson(Map<QName, Serializable> properties, Set<String> zones);
 
     /**
+     * Notifies a user by email that their account has been created, and the details of it.
+     * Normally called after {@link #createPerson(Map)} or {@link #createPerson(Map, Set)}
+     *  where email notifications are required.
+     * 
+     * @param userName
+     *            of the person to notify
+     * @param password
+     *            of the person to notify           
+     * @throws NoSuchPersonException
+     *             if the person doesn't exist
+     */
+    @Auditable(parameters = {"userName"})
+    public void notifyPerson(final String userName, final String password);
+    
+    /**
      * Delete the person identified by the given user name.
      * 
      * @param userName

@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.feed.FeedGenerator;
 import org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
@@ -36,12 +37,12 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Simple Activity Service unit test using site (membership) activities
@@ -52,7 +53,14 @@ public class SiteActivityTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(SiteActivityTest.class);
     
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private static final String[] CONFIG_LOCATIONS =
+    {
+        "classpath:alfresco/application-context.xml"
+        //, "classpath:alfresco/subsystems/ActivitiesFeed/default/activities-feed-context.xml"
+    };
+
+    private static ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+            SiteActivityTest.CONFIG_LOCATIONS);
     
     private SiteService siteService;
     private ActivityService activityService;
@@ -112,10 +120,20 @@ public class SiteActivityTest extends TestCase
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         this.personService = (PersonService)applicationContext.getBean("PersonService");
         
-        this.postLookup = (PostLookup)applicationContext.getBean("postLookup");
-        this.feedGenerator = (FeedGenerator)applicationContext.getBean("feedGenerator");
+        LocalFeedTaskProcessor feedProcessor = null;
         
-        LocalFeedTaskProcessor feedProcessor = (LocalFeedTaskProcessor)applicationContext.getBean("feedTaskProcessor");
+        // alternative: would need to add subsystem context to config location (see above)
+        //this.postLookup = (PostLookup)applicationContext.getBean("postLookup");
+        //this.feedGenerator = (FeedGenerator)applicationContext.getBean("feedGenerator");
+        //feedProcessor = (LocalFeedTaskProcessor)applicationContext.getBean("feedTaskProcessor");
+        
+        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory)applicationContext.getBean("ActivitiesFeed");
+        ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
+        this.postLookup = (PostLookup)activitiesFeedCtx.getBean("postLookup");
+        this.feedGenerator = (FeedGenerator)activitiesFeedCtx.getBean("feedGenerator");
+        feedProcessor = (LocalFeedTaskProcessor)activitiesFeedCtx.getBean("feedTaskProcessor");
+        
+        
         List<String> templateSearchPaths = new ArrayList<String>(1);
         templateSearchPaths.add(TEST_TEMPLATES_LOCATION);
         feedProcessor.setTemplateSearchPaths(templateSearchPaths);

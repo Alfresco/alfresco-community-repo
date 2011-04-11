@@ -42,31 +42,50 @@ public class DummyTransactionService implements TransactionService
         public void setTransactionTimeout(int arg0) {};
     };
 
+    @Override
+    public boolean getAllowWrite()
+    {
+        return true;
+    }
+
+    @Override
     public boolean isReadOnly()
     {
         return false;
     }
 
-    public void setReadOnly(boolean readOnly)
-    {
-    }
-
+    @Override
     public UserTransaction getUserTransaction()
     {
         return txn;
     }
     
+    @Override
     public UserTransaction getUserTransaction(boolean readOnly)
     {
         return txn;
     }
 
+    @Override
+    public UserTransaction getUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly)
+    {
+        return txn;
+    }
+
+    @Override
     public UserTransaction getNonPropagatingUserTransaction()
     {
         return txn;
     }
 
+    @Override
     public UserTransaction getNonPropagatingUserTransaction(boolean readOnly)
+    {
+        return txn;
+    }
+
+    @Override
+    public UserTransaction getNonPropagatingUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly)
     {
         return txn;
     }

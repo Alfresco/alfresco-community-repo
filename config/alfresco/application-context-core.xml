@@ -21,7 +21,6 @@
     <import resource="classpath:alfresco/dao/dao-context.xml" />
     <import resource="classpath:alfresco/hibernate-context.xml" />
     <import resource="classpath:alfresco/ibatis/ibatis-context.xml" />
-    <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
     <import resource="classpath:alfresco/ownable-services-context.xml" />
     <import resource="classpath:alfresco/template-services-context.xml" />
     <import resource="classpath:alfresco/script-services-context.xml" />
@@ -40,6 +39,7 @@
     <import resource="classpath:alfresco/attributes-service-context.xml"/>
     <import resource="classpath:alfresco/deployment-service-context.xml"/>
     <import resource="classpath:alfresco/site-services-context.xml"/>
+    <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
     <import resource="classpath:alfresco/tagging-services-context.xml"/>
     <import resource="classpath:alfresco/invitation-service-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />

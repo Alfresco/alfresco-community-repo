@@ -176,14 +176,14 @@ public class MultiUserRenditionTest
         this.nodesToBeTidiedUp.add(nonAdminPdfNode);
         
         // Now have each user create a rendition (thumbnail) of the other user's content node.
-        final RenditionDefinition doclibRD = renditionService.loadRenditionDefinition(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib"));
+        final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
         
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
         txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
                 {
                     public Void execute() throws Throwable
                     {
-                        renditionService.render(nonAdminPdfNode, doclibRD);
+                        renditionService.render(nonAdminPdfNode, doclibRendDefQName);
                         return null;
                     }
                 });
@@ -193,7 +193,7 @@ public class MultiUserRenditionTest
                 {
                     public Void execute() throws Throwable
                     {
-                        renditionService.render(adminPdfNode, doclibRD);
+                        renditionService.render(adminPdfNode, doclibRendDefQName);
                         return null;
                     }
                 });

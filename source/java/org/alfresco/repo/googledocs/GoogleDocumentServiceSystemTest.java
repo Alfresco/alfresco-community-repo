@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import javax.transaction.UserTransaction;
 
@@ -41,7 +40,6 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -57,18 +55,9 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.apache.axis.wsdl.toJava.NamespaceSelector;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.google.gdata.client.docs.DocsService;
-import com.google.gdata.data.MediaContent;
-import com.google.gdata.data.PlainTextConstruct;
-import com.google.gdata.data.docs.FolderEntry;
-import com.google.gdata.data.docs.SpreadsheetEntry;
-import com.google.gdata.data.docs.DocumentListEntry.MediaType;
-import com.google.gdata.data.media.MediaStreamSource;
-import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 
 public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleDocsModel

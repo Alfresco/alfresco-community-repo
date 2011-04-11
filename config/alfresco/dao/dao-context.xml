@@ -44,6 +44,7 @@
    <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
    </bean>
    
@@ -243,6 +244,11 @@
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="nodeDAO" ref="nodeDAO"/>
+   </bean>
+   
+   <bean id="cannedQueryDAO" class="org.alfresco.repo.domain.query.ibatis.CannedQueryDAOImpl" init-method="init">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="controlDAO" ref="controlDAO"/>
    </bean>
    
 </beans>

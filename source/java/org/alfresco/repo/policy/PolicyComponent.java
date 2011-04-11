@@ -172,10 +172,10 @@ public interface PolicyComponent
      * For example, before a rule folder association is created. 
      * <pre>
      *         policyComponent.bindAssociationBehaviour(
-     *           NodeServicePolicies.BeforeCreateChildAssociationPolicy.QNAME,
+     *           NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
      *           RuleModel.ASPECT_RULES,
      *           RuleModel.ASSOC_RULE_FOLDER,
-     *           new JavaBehaviour(this, "beforeCreateChildAssociation"));
+     *           new JavaBehaviour(this, "OnCreateChildAssociation"));
      * </pre>          
      * 
      * @param policy  the policy name

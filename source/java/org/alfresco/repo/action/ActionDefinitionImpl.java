@@ -28,21 +28,13 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl
-                            implements ActionDefinition
+public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl implements ActionDefinition
 {
-    /**
-     * Serial version UID
-     */
     private static final long serialVersionUID = 4048797883396863026L;    
     
-    /**
-     * The rule action executor
-     */
     private String ruleActionExecutor;
-    
-    /** List of applicable types */
     private List<QName> applicableTypes;
+    private boolean trackStatus;
 
     /**
      * Constructor
@@ -52,6 +44,7 @@ public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl
     public ActionDefinitionImpl(String name)
     {
         super(name);
+        this.trackStatus = false;
     }
         
     /**
@@ -92,5 +85,28 @@ public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl
     public void setApplicableTypes(List<QName> applicableTypes)
     {
         this.applicableTypes = applicableTypes;
+    }
+
+    @Override
+    public boolean getTrackStatus()
+    {
+        return trackStatus;
+    }
+
+    /**
+     * Set whether the basic action definition requires status tracking.
+     * This can be overridden on each action instance but if not, it falls back
+     * to this definition.
+     * <p/>
+     * Setting this to <tt>true</tt> introduces performance problems for concurrently-executing
+     * rules on V3.4: <a href="https://issues.alfresco.com/jira/browse/ALF-7341">ALF-7341</a>.
+     * 
+     * @param trackStatus           <tt>true</tt> to track execution status otherwise <tt>false</tt>
+     * 
+     * @since 3.4.1
+     */
+    public void setTrackStatus(boolean trackStatus)
+    {
+        this.trackStatus = trackStatus;
     }
 }

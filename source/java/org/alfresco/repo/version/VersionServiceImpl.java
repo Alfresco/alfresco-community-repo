@@ -37,7 +37,7 @@ import org.alfresco.repo.version.common.AbstractVersionServiceImpl;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
-import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -881,6 +881,57 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         }
 
         return result;
+    }
+    
+    /**
+     * @see org.alfresco.cms.version.VersionService#ensureVersioningEnabled(NodeRef,Map)
+     */
+    public void ensureVersioningEnabled(NodeRef nodeRef, Map<QName, Serializable> versionProperties)
+    {
+        // Don't alter the auditable aspect!
+        boolean disableAuditable = policyBehaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
+        if(disableAuditable)
+        {
+            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+        
+        // Do we need to apply the aspect?
+        if (! nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            // Only apply new properties that are version ones
+            AspectDefinition versionable =
+                dictionaryService.getAspect(ContentModel.ASPECT_VERSIONABLE);
+            Set<QName> versionAspectProperties = 
+                versionable.getProperties().keySet();
+            
+            Map<QName,Serializable> props = new HashMap<QName, Serializable>();
+            if(versionProperties != null &&! versionProperties.isEmpty())
+            {
+                for(QName prop : versionProperties.keySet())
+                {
+                    if(versionAspectProperties.contains(prop))
+                    {
+                        // This property is one from the versionable aspect
+                        props.put(prop, versionProperties.get(prop));
+                    }
+                }
+            }
+            
+            // Add the aspect
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+        }
+        
+        // Do we need to create the initial version history entry?
+        if(getVersionHistory(nodeRef) == null)
+        {
+            createVersion(nodeRef, null);
+        }
+        
+        // Put Auditable back
+        if(disableAuditable)
+        {
+            policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
     }
 
     /**

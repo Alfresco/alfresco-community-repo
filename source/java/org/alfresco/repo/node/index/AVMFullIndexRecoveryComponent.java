@@ -27,6 +27,8 @@ import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -254,14 +256,15 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
     private void processStore(String store, RecoveryMode mode)
     {
 
+        QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "AVMFullIndexRecoveryComponent");
+        
         // put the server into read-only mode for the duration
-        boolean allowWrite = !transactionService.isReadOnly();
         try
         {
             if (lockServer)
             {
                 // set the server into read-only mode
-                transactionService.setAllowWrite(false);
+                transactionService.setAllowWrite(false, vetoName);
             }
 
             recoverStore(store, mode);
@@ -269,8 +272,8 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
         }
         finally
         {
-            // restore read-only state
-            transactionService.setAllowWrite(allowWrite);
+            // remove veto
+            transactionService.setAllowWrite(true, vetoName);
         }
 
     }

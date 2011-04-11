@@ -66,7 +66,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 public class LockServiceImpl implements LockService,
-                                        NodeServicePolicies.BeforeCreateChildAssociationPolicy,
+                                        NodeServicePolicies.OnCreateChildAssociationPolicy,
                                         NodeServicePolicies.BeforeUpdateNodePolicy,
                                         NodeServicePolicies.BeforeDeleteNodePolicy,
                                         CopyServicePolicies.OnCopyNodePolicy,
@@ -179,31 +179,31 @@ public class LockServiceImpl implements LockService,
     {
         // Register the various class behaviours to enable lock checking
         this.policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
-                new JavaBehaviour(this, "beforeCreateChildAssociation"));
+                new JavaBehaviour(this, "onCreateChildAssociation"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode"),
+                NodeServicePolicies.BeforeUpdateNodePolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "beforeUpdateNode"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "beforeDeleteNode"));
 
         // Register copy class behaviour
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "getCopyCallback"));
 
         // Register the onCreateVersion behavior for the version aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateVersion"),
+                VersionServicePolicies.BeforeCreateVersionPolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "beforeCreateVersion"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion"),
+                VersionServicePolicies.OnCreateVersionPolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "onCreateVersion"));
     }
@@ -548,14 +548,9 @@ public class LockServiceImpl implements LockService,
      * 
      * @see #checkForLock(NodeRef)
      */
-    public void beforeCreateChildAssociation(
-            NodeRef parentNodeRef,
-            NodeRef childNodeRef,
-            QName assocTypeQName,
-            QName assocQName,
-            boolean isNewNode)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        LockType lockType = getLockType(parentNodeRef);
+        LockType lockType = getLockType(childAssocRef.getParentRef());
         if(lockType != null)
         {
         
@@ -563,7 +558,7 @@ public class LockServiceImpl implements LockService,
             {
                 case WRITE_LOCK:
                 case READ_ONLY_LOCK:
-                    checkForLock(parentNodeRef);
+                    checkForLock(childAssocRef.getParentRef());
                     break;
                 case NODE_LOCK:
                 // don't check for lock

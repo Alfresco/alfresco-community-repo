@@ -33,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WebDAVModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -974,6 +975,22 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         });
         
+        //Checking whether VersionModel.PROP_VERSION_TYPE set to MINOR type after update node properties
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "test description");
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                VersionType vType = (VersionType) versionHistory.getHeadVersion().getVersionProperty(VersionModel.PROP_VERSION_TYPE);
+                assertNotNull("Is not setted the version type", vType);
+                assertEquals(vType, VersionType.MINOR);
+                return null;
+            }
+        
+        });
+        
+        
         // test auto-version props off
         
         startNewTransaction();
@@ -1081,6 +1098,20 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 assertNotNull(versionHistory);
                 assertEquals(2, versionHistory.getAllVersions().size());
                 
+                return null;
+            }
+        
+        });
+        
+        //Checking whether VersionModel.PROP_VERSION_TYPE set to MINOR type after update node properties
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                VersionType vType = (VersionType) versionHistory.getHeadVersion().getVersionProperty(VersionModel.PROP_VERSION_TYPE);
+                assertNotNull("Is not setted the version type", vType);
+                assertEquals(vType, VersionType.MINOR);
                 return null;
             }
         
@@ -1320,6 +1351,159 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             String nodeUuidKey = ContentModel.PROP_NODE_UUID.getLocalName();
             assertEquals(oldVersion.getVersionProperty(nodeUuidKey), newVersion.getVersionProperty(nodeUuidKey));
         }
+    }
+    
+    /**
+     * Ensure that versioning actions don't alter the auditable
+     *  aspect properties on the original nodes
+     */
+    public void testVersioningAndAuditable() throws Exception {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        if(!authenticationDAO.userExists(USER_NAME_A))
+        {
+            authenticationService.createAuthentication(USER_NAME_A, PWD_A.toCharArray());
+        }
+        
+        // Create a node as the "A" user
+        NodeRef nodeA = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+           {
+             @Override
+             public NodeRef doWork() throws Exception
+             {
+                 return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                   {
+                      public NodeRef execute() throws Exception
+                      {
+                         AuthenticationUtil.setFullyAuthenticatedUser(USER_NAME_A);
+                         NodeRef a = nodeService.createNode(
+                                 rootNodeRef, 
+                                 ContentModel.ASSOC_CONTAINS, 
+                                 QName.createQName("{test}NodeForA"),
+                                 ContentModel.TYPE_CONTENT
+                         ).getChildRef();
+                         nodeService.addAspect(a, ContentModel.ASPECT_AUDITABLE, null);
+                         return a;
+                      }
+                   }
+                 );
+             }
+           }, USER_NAME_A
+        );
+        
+        // Check that it's owned by A
+        assertEquals(USER_NAME_A, nodeService.getProperty(nodeA, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(nodeA, ContentModel.PROP_MODIFIER));
+        assertEquals(false, nodeService.hasAspect(nodeA, ContentModel.ASPECT_VERSIONABLE));
+        
+        // Now enable it for versioning, as Admin
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        versionService.createVersion(nodeA, null);
+        
+        // Ensure it's still owned by A
+        assertEquals(USER_NAME_A, nodeService.getProperty(nodeA, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(nodeA, ContentModel.PROP_MODIFIER));
+        assertEquals(true, nodeService.hasAspect(nodeA, ContentModel.ASPECT_VERSIONABLE));
+    }
+    
+    public void testEnsureVersioningEnabled() throws Exception 
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        if(!authenticationDAO.userExists(USER_NAME_A))
+        {
+            authenticationService.createAuthentication(USER_NAME_A, PWD_A.toCharArray());
+        }
+        
+        // Create 3 nodes in the 3 different states
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_NAME_A);
+        NodeRef none = nodeService.createNode(
+                rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}None"), 
+                ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.addAspect(none, ContentModel.ASPECT_AUDITABLE, null);
+        
+        NodeRef aspect = nodeService.createNode(
+                rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}None"), 
+                ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.addAspect(aspect, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.addAspect(aspect, ContentModel.ASPECT_VERSIONABLE, null);
+        nodeService.setProperty(aspect, ContentModel.PROP_AUTO_VERSION, Boolean.FALSE); 
+        nodeService.setProperty(aspect, ContentModel.PROP_AUTO_VERSION_PROPS, Boolean.TRUE); 
+        
+        NodeRef versioned = nodeService.createNode(
+                rootNodeRef, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}None"), 
+                ContentModel.TYPE_CONTENT
+        ).getChildRef();
+        nodeService.addAspect(versioned, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.addAspect(versioned, ContentModel.ASPECT_VERSIONABLE, null);
+        nodeService.setProperty(versioned, ContentModel.PROP_AUTO_VERSION, Boolean.TRUE); 
+        nodeService.setProperty(versioned, ContentModel.PROP_AUTO_VERSION_PROPS, Boolean.FALSE); 
+        versionService.createVersion(versioned, null);
+
+        
+        // Check their state
+        assertEquals(false, nodeService.hasAspect(none, ContentModel.ASPECT_VERSIONABLE));
+        assertEquals(true, nodeService.hasAspect(aspect, ContentModel.ASPECT_VERSIONABLE));
+        assertEquals(true, nodeService.hasAspect(versioned, ContentModel.ASPECT_VERSIONABLE));
+        assertNull(versionService.getVersionHistory(none));
+        assertNull(versionService.getVersionHistory(aspect));
+        assertNotNull(versionService.getVersionHistory(versioned));
+        
+        assertEquals(USER_NAME_A, nodeService.getProperty(none, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(none, ContentModel.PROP_MODIFIER));
+        assertEquals(USER_NAME_A, nodeService.getProperty(aspect, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(aspect, ContentModel.PROP_MODIFIER));
+        assertEquals(USER_NAME_A, nodeService.getProperty(versioned, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(versioned, ContentModel.PROP_MODIFIER));
+        
+        
+        // If we turn on the aspect, what with?
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_TITLE, "This shouldn't be set by the method");
+        props.put(ContentModel.PROP_AUTO_VERSION, Boolean.TRUE);
+        
+        
+        // Now call ensureVersioningEnabled for each
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        versionService.ensureVersioningEnabled(none, props);
+        versionService.ensureVersioningEnabled(aspect, props);
+        versionService.ensureVersioningEnabled(versioned, props);
+        
+        // And finally check their state:
+        
+        // None will have the aspect applied, along with both properties
+        assertEquals(true, nodeService.hasAspect(none, ContentModel.ASPECT_VERSIONABLE));
+        assertEquals(Boolean.TRUE, nodeService.getProperty(none, ContentModel.PROP_AUTO_VERSION));
+        assertEquals(Boolean.TRUE, nodeService.getProperty(none, ContentModel.PROP_AUTO_VERSION_PROPS));
+        assertEquals(null, nodeService.getProperty(none, ContentModel.PROP_TITLE));
+        
+        // Aspect won't have altered it's props
+        assertEquals(true, nodeService.hasAspect(aspect, ContentModel.ASPECT_VERSIONABLE));
+        assertEquals(Boolean.FALSE, nodeService.getProperty(aspect, ContentModel.PROP_AUTO_VERSION));
+        assertEquals(Boolean.TRUE,  nodeService.getProperty(aspect, ContentModel.PROP_AUTO_VERSION_PROPS));
+        assertEquals(null, nodeService.getProperty(aspect, ContentModel.PROP_TITLE));
+        
+        // Versioned won't have altered it's props
+        assertEquals(true, nodeService.hasAspect(versioned, ContentModel.ASPECT_VERSIONABLE));
+        assertEquals(Boolean.TRUE,  nodeService.getProperty(versioned, ContentModel.PROP_AUTO_VERSION));
+        assertEquals(Boolean.FALSE, nodeService.getProperty(versioned, ContentModel.PROP_AUTO_VERSION_PROPS));
+        assertEquals(null, nodeService.getProperty(versioned, ContentModel.PROP_TITLE));
+
+        // Alll will have a version history now
+        assertNotNull(versionService.getVersionHistory(none));
+        assertNotNull(versionService.getVersionHistory(aspect));
+        assertNotNull(versionService.getVersionHistory(versioned));
+        
+        // The auditable properties won't have changed
+        assertEquals(USER_NAME_A, nodeService.getProperty(none, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(none, ContentModel.PROP_MODIFIER));
+        assertEquals(USER_NAME_A, nodeService.getProperty(aspect, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(aspect, ContentModel.PROP_MODIFIER));
+        assertEquals(USER_NAME_A, nodeService.getProperty(versioned, ContentModel.PROP_CREATOR));
+        assertEquals(USER_NAME_A, nodeService.getProperty(versioned, ContentModel.PROP_MODIFIER));
     }
 
     public static void main(String ... args)

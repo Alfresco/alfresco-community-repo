@@ -19,16 +19,30 @@
 package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.alfresco.repo.activities.feed.FeedTaskProcessor;
+import org.alfresco.util.JSONtoFmModel;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Activity Feed DAO
  */
 public class ActivityFeedEntity
-{ 
+{
+    // JSON keys
+    public static final String KEY_ACTIVITY_FEED_ID = "id";
+    public static final String KEY_ACTIVITY_FEED_POST_DATE = "postDate";
+    public static final String KEY_ACTIVITY_FEED_POST_USERID = "postUserId";
+    public static final String KEY_ACTIVITY_FEED_USERID = "feedUserId";
+    public static final String KEY_ACTIVITY_FEED_SITE = "siteNetwork";
+    public static final String KEY_ACTIVITY_FEED_TYPE = "activityType";
+    public static final String KEY_ACTIVITY_FEED_SUMMARY = "activitySummary";
+    public static final String KEY_ACTIVITY_FEED_SUMMARY_FORMAT = "activitySummaryFormat";
+    
     private Long id; // internal DB-generated id
     private String activityType;
     private String activitySummary;
@@ -155,15 +169,45 @@ public class ActivityFeedEntity
     {
         JSONObject jo = new JSONObject();
         
-        jo.put("id", id);
-        jo.put("postUserId", postUserId);
-        jo.put("postDate", ISO8601DateFormat.format(postDate));
-        if (feedUserId != null) { jo.put("feedUserId", feedUserId); } // eg. site feed
-        jo.put("siteNetwork", siteNetwork);
-        jo.put("activityType", activityType);
-        jo.put("activitySummary", activitySummary);
-        jo.put("activitySummaryFormat", activitySummaryFormat);
+        jo.put(KEY_ACTIVITY_FEED_ID, id);
+        
+        jo.put(KEY_ACTIVITY_FEED_POST_USERID, postUserId);
+        jo.put(KEY_ACTIVITY_FEED_POST_DATE, ISO8601DateFormat.format(postDate));
+        
+        if (getFeedUserId() != null) { jo.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId()); } // eg. site feed
+        jo.put(KEY_ACTIVITY_FEED_SITE, siteNetwork);
+        jo.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
+        jo.put(KEY_ACTIVITY_FEED_SUMMARY, getActivitySummary());
+        
+        jo.put(KEY_ACTIVITY_FEED_SUMMARY_FORMAT, getActivitySummaryFormat());
         
         return jo.toString();
+    }
+    
+    public Map<String, Object> getModel() throws JSONException
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        
+        map.put(KEY_ACTIVITY_FEED_ID, id);
+        
+        map.put(KEY_ACTIVITY_FEED_POST_USERID, getPostUserId());
+        map.put(KEY_ACTIVITY_FEED_POST_DATE, getPostDate());
+        
+        if (getFeedUserId() != null) { map.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId()); } // eg. site feed
+        map.put(KEY_ACTIVITY_FEED_SITE, getSiteNetwork());
+        map.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
+        
+        map.put(KEY_ACTIVITY_FEED_SUMMARY_FORMAT, getActivitySummaryFormat());
+        
+        if ((getActivitySummary() != null) && getActivitySummaryFormat().equals(FeedTaskProcessor.FEED_FORMAT_JSON))
+        {
+            map.put(KEY_ACTIVITY_FEED_SUMMARY, JSONtoFmModel.convertJSONObjectToMap(getActivitySummary()));
+        }
+        else
+        {
+            map.put(KEY_ACTIVITY_FEED_SUMMARY, getActivitySummary());
+        }
+        
+        return map;
     }
 }

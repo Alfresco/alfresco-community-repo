@@ -117,6 +117,30 @@
       </view:properties>
    </cm:folder>
 
+   <cm:folder view:childName="cm:Version Containing Folder">
+      <view:aspects>
+      </view:aspects>
+      <view:properties>
+         <cm:name>Version Containing Folder</cm:name>
+      </view:properties>
+      <view:associations>
+         <cm:contains>
+            <cm:content view:childName="cm:Versioned Node">
+               <view:aspects>
+                  <cm:versionable></cm:versionable>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>Versioned Node</cm:name>
+                  <cm:autoVersionOnUpdateProps>true</cm:autoVersionOnUpdateProps>
+                  <cm:autoVersion>true</cm:autoVersion>
+                  <cm:versionLabel>1.15</cm:versionLabel>
+                  <cm:initialVersion>true</cm:initialVersion>
+               </view:properties>
+            </cm:content>
+         </cm:contains>
+      </view:associations>
+   </cm:folder>
+   
 
    <view:reference view:idref="the root system folder">
        <view:associations>

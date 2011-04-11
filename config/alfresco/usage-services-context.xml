@@ -42,4 +42,20 @@
       <property name="contentUsageService" ref="contentUsageImpl"/>
    </bean>
    
+   <bean id="repoUsageComponent" class="org.alfresco.repo.usage.RepoUsageComponentImpl" init-method="init">
+      <property name="transactionService" ref="transactionService"/>
+      <property name="authorityService" ref="authorityService"/>
+      <property name="attributeService" ref="attributeService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="jobLockService" ref="jobLockService"/>
+      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+   
+   <bean id="repoUsageMonitor" class="org.alfresco.repo.usage.RepoUsageMonitor" init-method="init">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="transactionService" ref="transactionService"/>
+      <property name="repoUsageComponent" ref="repoUsageComponent"/>
+   </bean>
+   
 </beans>

@@ -321,6 +321,16 @@ public interface AuthorityService
     public void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
     /**
+     * Gets the authority node for the specified name
+     * 
+     * @param name The authority name
+     *  
+     * @return the reference to the authority node
+     */
+    @Auditable(parameters = {"name"})
+    public NodeRef getAuthorityNodeRef(String name);
+    
+    /**
      * Gets or creates an authority zone node with the specified name
      * 
      * @param zoneName

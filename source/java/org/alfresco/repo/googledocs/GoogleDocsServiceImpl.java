@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,32 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     
     /** Permission map */
     private Map<String, String> permissionMap;
+    
+    // TODO: need a way of indicating if a customer is a premium user or not 
+    
+    /** 
+     * List of supported GoogleDoc supported mimetypes.
+     * Taken from list found at http://code.google.com/apis/documents/faq.html#WhatKindOfFilesCanIUpload
+     * NOTE: this restriction only applies to non-premium users.
+     */
+    // TODO make this list configurable
+    private List<String> supportedMimetypes = Arrays.asList(
+    	"text/csv",
+    	"text/tab-separated-values",
+    	"text/html",
+    	"application/msword",
+    	"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    	"application/x-vnd.oasis.opendocument.spreadsheet",
+    	"application/vnd.oasis.opendocument.text",
+    	"application/rtf",
+    	"application/vnd.sun.xml.writer",
+    	"text/plain",
+    	"application/vnd.ms-excel",
+    	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    	"application/pdf",
+    	"application/vnd.ms-powerpoint",
+    	"image/x-wmf"
+    );
 
     /**
      * @param googleDocumentService google document service
@@ -251,7 +278,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             
             if (username == null ||username.length() == 0 || password == null)
             {
-                throw new GoogleDocsServiceInitException("No Goolge Docs credentials found. Please set the Google Docs authentication configuration.");
+                throw new GoogleDocsServiceInitException("No Google Docs credentials found. Please set the Google Docs authentication configuration.");
             }
             
             try
@@ -274,6 +301,16 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     }
 
     /**
+     * @see org.alfresco.repo.googledocs.GoogleDocsService#isSupportedMimetype(java.lang.String)
+     */
+    @Override
+    public boolean isSupportedMimetype(String mimetype) 
+    {
+    	return supportedMimetypes.contains(mimetype);
+    }
+    
+    /**
+     * @throws GoogleDocsUnsupportedMimetypeException 
      * @see org.alfresco.google.docs.GoogleDocsService#upload(org.alfresco.service.cmr.repository.NodeRef)
      */
     public void createGoogleDoc(NodeRef nodeRef, GoogleDocsPermissionContext permissionContext)
@@ -313,6 +350,12 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             {
                 is = contentReader.getContentInputStream();
             }
+        }
+        
+        // Check that we support the mimetype
+        if (isSupportedMimetype(mimetype) == false)
+        {
+        	throw new GoolgeDocsUnsupportedMimetypeException(nodeRef, ContentModel.PROP_CONTENT, mimetype);
         }
         
         // Get the parent folder id
@@ -508,13 +551,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     
                     // Create the folder and set the meta data in Alfresco
                     folder = createGoogleFolder(name, parentFolder);               
-                    setResourceDetails(parentNodeRef, folder);                
-                    
-                    // Set the owner of the document
-                    setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
-                    
-                    // Set the owner of the document
-                    setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
+                    setResourceDetails(parentNodeRef, folder);                                  
                 }
             }
         }

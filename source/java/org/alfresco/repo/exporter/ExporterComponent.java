@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,9 +68,9 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 
 /**
@@ -249,10 +250,7 @@ public class ExporterComponent
      */
     private class DefaultCrawler implements ExporterCrawler
     {
-        private ExporterContext context;
-        private Map<NodeRef, NodeRef> nodesWithSecondaryLinks = new HashMap<NodeRef, NodeRef>();        
-        private Map<NodeRef, NodeRef> nodesWithAssociations = new HashMap<NodeRef, NodeRef>();
-        
+        private ExporterContextImpl context;
         
         /* (non-Javadoc)
          * @see org.alfresco.service.cmr.view.ExporterCrawler#export(org.alfresco.service.cmr.view.Exporter)
@@ -260,8 +258,6 @@ public class ExporterComponent
         public void export(ExporterCrawlerParameters parameters, Exporter exporter)
         {
             // Initialise Crawler
-            nodesWithSecondaryLinks.clear();
-            nodesWithAssociations.clear();
             context = new ExporterContextImpl(parameters);
             exporter.start(context);
 
@@ -293,28 +289,46 @@ public class ExporterComponent
                     }
                 }
 
-                //
-                // Export Secondary Links between Nodes
-                //
-                for (NodeRef nodeWithAssociations : nodesWithSecondaryLinks.keySet())
-                {
-                    walkStartNamespaces(parameters, exporter);
-                    walkNodeSecondaryLinks(nodeWithAssociations, parameters, exporter);
-                    walkEndNamespaces(parameters, exporter);
-                }
-
-                //
-                // Export Associations between Nodes
-                //
-                for (NodeRef nodeWithAssociations : nodesWithAssociations.keySet())
-                {
-                    walkStartNamespaces(parameters, exporter);
-                    walkNodeAssociations(nodeWithAssociations, parameters, exporter);
-                    walkEndNamespaces(parameters, exporter);
-                }
-            
                 context.setNextValue();
             }
+
+            //
+            // Export associations between nodes
+            //
+            context.resetContext();
+            while (context.canRetrieve())
+            {
+                Set<NodeRef> nodesWithSecondaryLinks = context.getNodesWithSecondaryLinks();
+                if (nodesWithSecondaryLinks != null)
+                {
+                    //
+                    // Export Secondary Links between Nodes
+                    //
+                    for (NodeRef nodeWithAssociations : nodesWithSecondaryLinks)
+                    {
+                        walkStartNamespaces(parameters, exporter);
+                        walkNodeSecondaryLinks(nodeWithAssociations, parameters, exporter);
+                        walkEndNamespaces(parameters, exporter);
+                    }
+                }
+
+                Set<NodeRef> nodesWithAssociations = context.getNodesWithAssociations();
+                if (nodesWithAssociations != null)
+                {
+                    //
+                    // Export Associations between Nodes
+                    //
+                    for (NodeRef nodeWithAssociations : nodesWithAssociations)
+                    {
+                        walkStartNamespaces(parameters, exporter);
+                        walkNodeAssociations(nodeWithAssociations, parameters, exporter);
+                        walkEndNamespaces(parameters, exporter);
+                    }
+                }
+                
+                context.setNextValue();
+            }
+
             exporter.end();
         }
         
@@ -515,7 +529,7 @@ public class ExporterComponent
                     }
                     if (childAssoc.isPrimary() == false)
                     {
-                        nodesWithSecondaryLinks.put(nodeRef, nodeRef);
+                        context.recordSecondaryLink(nodeRef);
                         continue;
                     }
                     if (isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
@@ -559,7 +573,7 @@ public class ExporterComponent
                 List<AssociationRef> associations = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
                 if (associations.size() > 0)
                 {
-                    nodesWithAssociations.put(nodeRef, nodeRef);
+                    context.recordAssociation(nodeRef);
                 }
             }
             
@@ -952,7 +966,11 @@ public class ExporterComponent
         private Date exportedDate;
         private String exporterVersion;
         
+        private Map<Integer, Set<NodeRef>> nodesWithSecondaryLinks = new HashMap<Integer, Set<NodeRef>>();
+        private Map<Integer, Set<NodeRef>> nodesWithAssociations = new HashMap<Integer, Set<NodeRef>>();
+        
         private int index;
+        
         
         /**
          * Construct
@@ -1071,6 +1089,67 @@ public class ExporterComponent
             return parentList;
         }
 
+        /**
+         * Record that associations exist for node
+         * 
+         * @param nodeRef
+         */
+        public void recordAssociation(NodeRef nodeRef)
+        {
+            Set<NodeRef> nodes = nodesWithAssociations.get(index);
+            if (nodes == null)
+            {
+                nodes = new HashSet<NodeRef>();
+                nodesWithAssociations.put(index, nodes);
+            }
+            nodes.add(nodeRef);
+        }
+
+        /**
+         * Gets nodes that have been recorded with associations
+         * 
+         * @return
+         */
+        public Set<NodeRef> getNodesWithAssociations()
+        {
+            Set<NodeRef> nodes = nodesWithAssociations.get(index);
+            if (nodes != null)
+            {
+                return nodes;
+            }
+            return null;
+        }
+
+        /**
+         * Record that secondary links exist for node
+         * 
+         * @param nodeRef
+         */
+        public void recordSecondaryLink(NodeRef nodeRef)
+        {
+            Set<NodeRef> nodes = nodesWithSecondaryLinks.get(index);
+            if (nodes == null)
+            {
+                nodes = new HashSet<NodeRef>();
+                nodesWithSecondaryLinks.put(index, nodes);
+            }
+            nodes.add(nodeRef);
+        }
+
+        /**
+         * Gets nodes that have been recorded with secondary links
+         * 
+         * @return
+         */
+        public Set<NodeRef> getNodesWithSecondaryLinks()
+        {
+            Set<NodeRef> nodes = nodesWithSecondaryLinks.get(index);
+            if (nodes != null)
+            {
+                return nodes;
+            }
+            return null;
+        }
         
         /**
          * Get the Node Ref from the specified Location

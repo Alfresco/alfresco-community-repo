@@ -315,6 +315,14 @@
         <property name="homeFolderManager">
             <ref bean="homeFolderManager" />
         </property>
+        <property name="repoAdminService">
+            <ref bean="repoAdminService" />
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        
+        
         <!-- Configurable properties.                                 -->
         <!--                                                          -->
         <!-- TODO:                                                    -->

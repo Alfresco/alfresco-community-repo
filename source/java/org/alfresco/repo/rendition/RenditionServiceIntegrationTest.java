@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,7 @@ package org.alfresco.repo.rendition;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -1659,6 +1660,90 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals(MimetypeMap.MIMETYPE_FLASH, webpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, avatarRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
     }
+    
+    /**
+     * This test checks that for a node with an existing rendition, that if you update its content with content
+     * that cannot be renditioned (thumbnailed), that existing rendition nodes for failed re-renditions are removed.
+     * See ALF-6730.
+     * 
+     * @since 3.4.2
+     */
+    public void testRenderValidContentThenUpdateToInvalidContent() throws Exception
+    {
+        setComplete();
+        endTransaction();
+        
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Need to use one of the standard, persisted rendition definitions, as non-persisted rendition definitions
+                // do not get automatcially updated.
+                RenditionDefinition doclib = loadAndValidateRenditionDefinition("doclib");
+
+                // We want the rendition to be asynchronous, but we don't care about called-back data.
+                RenderCallback dummyCallback = new RenderCallback(){
+                    @Override
+                    public void handleFailedRendition(Throwable t)
+                    {
+                    }
+                    @Override
+                    public void handleSuccessfulRendition(
+                            ChildAssociationRef primaryParentOfNewRendition)
+                    {
+                    }};
+                renditionService.render(nodeWithDocContent, doclib, dummyCallback);
+                return null;
+            }
+        });
+        
+        // Now wait for the actionService thread to complete the rendering.
+        Thread.sleep(5000);
+
+        // The rendition should have succeeded.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeWithDocContent);
+                        assertNotNull("Renditions missing.", renditions);
+                        assertEquals("Wrong rendition count", 1, renditions.size());
+                        return null;
+                    }
+                });
+        
+        // Now update the content to a corrupt PDF file that cannot be rendered.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        ContentWriter writer = contentService.getWriter(nodeWithDocContent, ContentModel.PROP_CONTENT, true);
+                        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+                        writer.setEncoding("UTF-8");
+                        
+                        InputStream corruptIn = applicationContext.getResource("classpath:/quick/quickCorrupt.pdf").getInputStream();
+                        writer.putContent(corruptIn);
+                        corruptIn.close();
+                        
+                        return null;
+                    }
+                });
+        
+        // Now wait for the actionService thread to complete the rendition removal.
+        Thread.sleep(5000);
+
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeWithDocContent);
+                        assertNotNull("Renditions missing.", renditions);
+                        assertEquals("Wrong rendition count", 0, renditions.size());
+                        return null;
+                    }
+                });
+    }
+
     
     public void testALF3733() throws Exception
     {

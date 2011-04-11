@@ -19,6 +19,7 @@
 package org.alfresco.repo.transfer;
 
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 
 /**
  * Information about a transfer which is in progress.
@@ -29,6 +30,8 @@ public class Transfer
 {
     private String transferId;
     private TransferTarget transferTarget;
+    private TransferVersion toVersion;
+    
 
     public void setTransferId(String transferId)
     {
@@ -85,5 +88,15 @@ public class Transfer
     public String toString()
     {
         return "TransferId" + transferId + ", target:" + transferTarget ;
+    }
+
+    public void setToVersion(TransferVersion toVersion)
+    {
+        this.toVersion = toVersion;
+    }
+
+    public TransferVersion getToVersion()
+    {
+        return toVersion;
     }
 }

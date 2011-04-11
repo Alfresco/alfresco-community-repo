@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -145,25 +146,38 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     		}
     		return;
     	}
-    	
-        AuthenticationUtil.runAs(new RunAsWork<Void>() {
-            public Void doWork() throws Exception
+        
+        // Otherwise we should go ahead and persist the thumbnail definitions.
+        // This is done during system startup. It needs to be done as the system user to ensure the thumbnail definitions get saved
+        // and also needs to be done within a transaction in order to support concurrent startup. See ALF-6271 for details.
+        RetryingTransactionHelper transactionHelper = transactionService.getRetryingTransactionHelper();
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
             {
-                for (String thumbnailDefName : thumbnailDefinitions.keySet())
-                {
-                    final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
-                    
-                    // Built-in thumbnailDefinitions do not provide any non-standard values
-                    // for the ThumbnailParentAssociationDetails object. Hence the null
-                    RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
-                    
-                    // Thumbnail definitions are saved into the repository as actions
-                	renditionService.saveRenditionDefinition(renditionDef);
-                }
-
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        for (String thumbnailDefName : thumbnailDefinitions.keySet())
+                        {
+                            final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
+                            
+                            // Built-in thumbnailDefinitions do not provide any non-standard values
+                            // for the ThumbnailParentAssociationDetails object. Hence the null
+                            RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
+                            
+                            // Thumbnail definitions are saved into the repository as actions
+                            renditionService.saveRenditionDefinition(renditionDef);
+                        }
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+                
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
     
     /**

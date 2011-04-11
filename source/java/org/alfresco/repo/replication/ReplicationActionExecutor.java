@@ -252,6 +252,10 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       {
          throw new ReplicationServiceException("Unable to execute a disabled replication definition");
       }
+      if(!replicationParams.isEnabled())
+      {
+          throw new ReplicationServiceException("Unable to replicate. The replication service is not enabled");
+      }
       
       // Lock the service - only one instance of the replication
       //  should occur at a time

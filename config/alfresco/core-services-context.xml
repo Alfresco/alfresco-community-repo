@@ -473,10 +473,10 @@
             <ref bean="namespaceService"/>
         </property>
         <property name="nodeService">
-            <ref bean="NodeService" />
+            <ref bean="nodeService" />
         </property>
         <property name="contentService">
-            <ref bean="ContentService"/>
+            <ref bean="contentService"/>
         </property>
         <property name="resourceBundleBaseNamesCache">
             <ref bean="resourceBundleBaseNamesCache"/>
@@ -1146,6 +1146,7 @@
                 <value>alfresco/messages/forum-model</value>
                 <value>alfresco/messages/email-server-model</value>
                 <value>alfresco/messages/data-list-model</value>
+                 <value>alfresco/messages/transfer-model</value>
             </list>
         </property>
     </bean>
@@ -1483,6 +1484,18 @@
         <property name="defaultRetryWait"><value>20</value></property>
     </bean>
     
+    <bean id="licenseResourceComponent" class="org.alfresco.repo.descriptor.LicenseResourceComponent">
+       <property name="externalLicenseLocation">
+           <value>${location.license.external}</value>
+       </property>
+       <property name="sharedLicenseLocation"> 
+           <value>${location.license.shared}</value>
+       </property>
+       <property name="embeddedLicenseLocation">
+           <value>${location.license.embedded}</value>
+       </property>
+    </bean>
+
    <!-- Import the sys admin params from the sysAdmin subsystem -->
    <bean id="sysAdminParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

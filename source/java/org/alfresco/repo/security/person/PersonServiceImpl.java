@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -42,19 +43,32 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
+import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.invitation.InvitationException;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -72,73 +86,58 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ModelUtil;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService,
                                                                              NodeServicePolicies.BeforeCreateNodePolicy,
                                                                              NodeServicePolicies.OnCreateNodePolicy,
                                                                              NodeServicePolicies.BeforeDeleteNodePolicy,
                                                                              NodeServicePolicies.OnUpdatePropertiesPolicy
+                                                                             
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
 
     private static final String DELETE = "DELETE";
-
     private static final String SPLIT = "SPLIT";
-
     private static final String LEAVE = "LEAVE";
-
     public static final String SYSTEM_FOLDER_SHORT_QNAME = "sys:system";
-
     public static final String PEOPLE_FOLDER_SHORT_QNAME = "sys:people";
+    private static final String SYSTEM_USAGE_WARN_LIMIT_USERS_EXCEEDED_VERBOSE = "system.usage.err.limit_users_exceeded_verbose";
 
-    // IOC
+    private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
+    private static final String KEY_ALLOW_UID_UPDATE = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
+    private static final String KEY_USERS_CREATED = "PersonServiceImpl.KEY_USERS_CREATED";
 
     private StoreRef storeRef;
-
     private TransactionService transactionService;
-
     private NodeService nodeService;
-
     private TenantService tenantService;
-
     private SearchService searchService;
-
     private AuthorityService authorityService;
-    
     private MutableAuthenticationService authenticationService;
-
     private DictionaryService dictionaryService;
-
     private PermissionServiceSPI permissionServiceSPI;
-
     private NamespacePrefixResolver namespacePrefixResolver;
-
     private HomeFolderManager homeFolderManager;
-
     private PolicyComponent policyComponent;
-    
     private BehaviourFilter policyBehaviourFilter;
-
-    private boolean createMissingPeople;
-
-    private static Set<QName> mutableProperties;
-
-    private String defaultHomeFolderProvider;
-
-    private boolean processDuplicates = true;
-
-    private String duplicateMode = LEAVE;
-
-    private boolean lastIsBest = true;
-
-    private boolean includeAutoCreated = false;
-
     private AclDAO aclDao;
-
     private PermissionsManager permissionsManager;
+    private RepoAdminService repoAdminService;
+    private ServiceRegistry serviceRegistry;
+    
+    private boolean createMissingPeople;
+    private static Set<QName> mutableProperties;
+    private String defaultHomeFolderProvider;
+    private boolean processDuplicates = true;
+    private String duplicateMode = LEAVE;
+    private boolean lastIsBest = true;
+    private boolean includeAutoCreated = false;
     
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
@@ -150,7 +149,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     private JavaBehaviour beforeCreateNodeValidationBehaviour;
     private JavaBehaviour beforeDeleteNodeValidationBehaviour;
-    
+   
     static
     {
         Set<QName> props = new HashSet<QName>();
@@ -192,7 +191,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "personCache", personCache);
         PropertyCheck.mandatory(this, "aclDao", aclDao);
         PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
-        
+        PropertyCheck.mandatory(this, "repoAdminService", repoAdminService);
+
         beforeCreateNodeValidationBehaviour = new JavaBehaviour(this, "beforeCreateNodeValidation");
         this.policyComponent.bindClassBehaviour(
                 BeforeCreateNodePolicy.QNAME,
@@ -219,8 +219,91 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "onUpdateProperties"));
+        
+        this.policyComponent.bindClassBehaviour(
+                OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_USER,
+                new JavaBehaviour(this, "onUpdatePropertiesUser"));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void setCreateMissingPeople(boolean createMissingPeople)
+    {
+        this.createMissingPeople = createMissingPeople;
+    }
+
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
+    }
+
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
+    {
+        this.permissionServiceSPI = permissionServiceSPI;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public void setRepoAdminService(RepoAdminService repoAdminService)
+    {
+        this.repoAdminService = repoAdminService;
+    }
+    
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+    {
+        this.policyBehaviourFilter = policyBehaviourFilter;
+    }
+
+    public void setStoreUrl(String storeUrl)
+    {
+        this.storeRef = new StoreRef(storeUrl);
+    }
+    
     public UserNameMatcher getUserNameMatcher()
     {
         return userNameMatcher;
@@ -273,13 +356,30 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     /**
      * Set the username to person cache.
-     * 
-     * @param personCache
-     *            a transactionally safe cache
      */
     public void setPersonCache(SimpleCache<String, Set<NodeRef>> personCache)
     {
         this.personCache = personCache;
+    }
+    
+    /**
+     * You can't inject the {@link FileFolderService} directly,
+     *  otherwise spring gets all confused with cyclic dependencies.
+     * So, look it up from the Service Registry as required
+     */
+    private FileFolderService getFileFolderService()
+    {
+        return serviceRegistry.getFileFolderService();
+    }
+    
+    /**
+     * You can't inject the {@link ActionService} directly,
+     *  otherwise spring gets all confused with cyclic dependencies.
+     * So, look it up from the Service Registry as required
+     */
+    private ActionService getActionService()
+    {
+        return serviceRegistry.getActionService();
     }
     
     /**
@@ -375,16 +475,29 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         
         List<NodeRef> refs = new ArrayList<NodeRef>(allRefs.size());
+        Set<NodeRef> nodesToRemoveFromCache = new HashSet<NodeRef>();
         for (NodeRef nodeRef : allRefs)
         {
-            Serializable value = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            if (userNameMatcher.matches(searchUserName, realUserName))
+            if (nodeService.exists(nodeRef))
             {
-                refs.add(nodeRef);
+                Serializable value = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                if (userNameMatcher.matches(searchUserName, realUserName))
+                {
+                    refs.add(nodeRef);
+                }
+            }
+            else
+            {
+                nodesToRemoveFromCache.add(nodeRef);
             }
         }
-        
+
+        if (!nodesToRemoveFromCache.isEmpty())
+        {
+            allRefs.removeAll(nodesToRemoveFromCache);
+        }
+
         NodeRef returnRef = null;
         if (refs.size() > 1)
         {
@@ -427,9 +540,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
     }
 
-    private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
-    private static final String KEY_ALLOW_UID_UPDATE  = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
-
     /**
      * Get the txn-bound usernames that need cleaning up
      */
@@ -465,6 +575,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         // Get the duplicates in a form that can be read by the transaction work anonymous instance
         final Set<NodeRef> postTxnDuplicates = getPostTxnDuplicates();
+        if (postTxnDuplicates.size() == 0)
+        {
+            // Nothing to do
+            return;
+        }
         
         RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>()
         {
@@ -476,10 +591,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                     
                     if (duplicateMode.equalsIgnoreCase(SPLIT))
                     {
+                        logger.info("Splitting " + postTxnDuplicates.size() + " duplicate person objects.");
                         // Allow UIDs to be updated in this transaction
                         AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
                         split(postTxnDuplicates);
-                        logger.info("Split duplicate person objects");
+                        logger.info("Split " + postTxnDuplicates.size() + " duplicate person objects.");
                     }
                     else if (duplicateMode.equalsIgnoreCase(DELETE))
                     {
@@ -518,8 +634,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         for (NodeRef nodeRef : toSplit)
         {
-            String userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
+            String userName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+            String newUserName = userName + GUID.generate();
             nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, userName + GUID.generate());
+            logger.info("   New person object: " + newUserName);
         }
     }
 
@@ -722,6 +840,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public NodeRef createPerson(Map<QName, Serializable> properties, Set<String> zones)
     {
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
+
+        /**
+         * Check restrictions on the number of users
+         */
+        Long maxUsers = repoAdminService.getRestrictions().getUsers();
+        if (maxUsers != null)
+        {
+            // Get the set of users created in this transaction
+            Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
+            usersCreated.add(userName);
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
         if (authorityType != AuthorityType.USER)
         {
@@ -767,6 +898,115 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         removeFromCache(userName);
         
         return personRef;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void notifyPerson(final String userName, final String password)
+    {
+        // Get the details of our user, or fail trying
+        NodeRef noderef = getPerson(userName, false);
+        Map<QName,Serializable> userProps = nodeService.getProperties(noderef);
+        
+        // Do they have an email set? We can't email them if not...
+        String email = null;
+        if (userProps.containsKey(ContentModel.PROP_EMAIL))
+        {
+            email = (String)userProps.get(ContentModel.PROP_EMAIL);
+        }
+        
+        if (email == null || email.length() == 0)
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Not sending new user notification to " + userName + " as no email address found");
+            }
+            
+            return;
+        }
+        
+        // We need a freemarker model, so turn the QNames into
+        //  something a bit more freemarker friendly
+        Map<String,Serializable> model = buildEmailTemplateModel(userProps);
+        model.put("password", password); // Not stored on the person
+        
+        // Set the details of the person sending the email into the model
+        NodeRef creatorNR = getPerson(AuthenticationUtil.getFullyAuthenticatedUser());
+        Map<QName,Serializable> creatorProps = nodeService.getProperties(creatorNR);
+        Map<String,Serializable> creator = buildEmailTemplateModel(creatorProps);
+        model.put("creator", (Serializable)creator);
+        
+        // Set share information into the model
+        String productName = ModelUtil.getProductName(repoAdminService);
+        model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(serviceRegistry.getSysAdminParams()) + "/");
+        model.put(TemplateService.KEY_PRODUCT_NAME, productName);
+        
+        // Set the details for the action
+        Map<String,Serializable> actionParams = new HashMap<String, Serializable>();
+        actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable)model);
+        actionParams.put(MailActionExecuter.PARAM_TO, email);
+        actionParams.put(MailActionExecuter.PARAM_FROM, creatorProps.get(ContentModel.PROP_EMAIL));
+        actionParams.put(MailActionExecuter.PARAM_SUBJECT, 
+                    I18NUtil.getMessage("invitation.notification.person.email.subject", productName));
+        
+        // Pick the appropriate localised template
+        actionParams.put(MailActionExecuter.PARAM_TEMPLATE, getNotifyEmailTemplateNodeRef());
+        
+        // Ask for the email to be sent asynchronously
+        Action mailAction = getActionService().createAction(MailActionExecuter.NAME, actionParams);
+        getActionService().executeAction(mailAction, noderef, false, true);
+    }
+    
+    private NodeRef getNotifyEmailTemplateNodeRef()
+    {
+        StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+        String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:new-user-email.html.ftl\"";
+
+        SearchParameters searchParams = new SearchParameters();
+        searchParams.addStore(spacesStore);
+        searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+        searchParams.setQuery(query);
+
+        ResultSet results = null;
+        try
+        {
+            results = searchService.query(searchParams);
+            List<NodeRef> nodeRefs = results.getNodeRefs();
+            if (nodeRefs.size() == 1)
+            {
+                // Now localise this
+                NodeRef base = nodeRefs.get(0);
+                NodeRef local = getFileFolderService().getLocalizedSibling(base);
+                return local;
+            }
+            else
+            {
+                throw new InvitationException("Cannot find the email template!");
+            }
+        }
+        catch (SearcherException e)
+        {
+            throw new InvitationException("Cannot find the email template!", e);
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+    }
+    
+    private Map<String,Serializable> buildEmailTemplateModel(Map<QName,Serializable> props)
+    {
+        Map<String,Serializable> model = new HashMap<String, Serializable>((int)(props.size()*1.5));
+        for (QName qname : props.keySet())
+        {
+            model.put(qname.getLocalName(), props.get(qname));
+            model.put(qname.getLocalName().toLowerCase(), props.get(qname));
+        }
+        return model;
     }
     
     /**
@@ -831,7 +1071,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (typeQName.equals(ContentModel.TYPE_PERSON))
         {
             String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            deletePersonImpl(userName, personRef);
+            deletePersonImpl(userName, personRef);  
         }
         else
         {
@@ -881,6 +1121,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 beforeDeleteNodeValidationBehaviour.enable();
             }
         }
+              
+        /*
+         * Kick off the transaction listener for create user.   It has the side-effect of 
+         * recalculating the number of users.
+         */
+        Long maxUsers = repoAdminService.getRestrictions().getUsers();
+        if (maxUsers != null)
+        {    
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+  
     }
     
     /**
@@ -1057,76 +1308,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.personCache.remove(userName.toLowerCase());
     }
 
-    // IOC Setters
-    
-    /**
-     * {@inheritDoc}
-     */
-    public void setCreateMissingPeople(boolean createMissingPeople)
-    {
-        this.createMissingPeople = createMissingPeople;
-    }
-
-    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
-    {
-        this.namespacePrefixResolver = namespacePrefixResolver;
-    }
-
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
-    }
-    
-    public void setAuthenticationService(MutableAuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
-    {
-        this.permissionServiceSPI = permissionServiceSPI;
-    }
-
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-    
-    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
-    {
-        this.policyBehaviourFilter = policyBehaviourFilter;
-    }
-
-    public void setStoreUrl(String storeUrl)
-    {
-        this.storeRef = new StoreRef(storeUrl);
-    }
-    
     /**
      * {@inheritDoc}
      */
@@ -1180,7 +1361,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                     return 0;
                 }
             }
-
         }
     }
     
@@ -1192,14 +1372,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return userNameMatcher.getUserNamesAreCaseSensitive();
     }
 
-    /*
+    /**
      * When a uid is changed we need to create an alias for the old uid so permissions are not broken. This can happen
      * when an already existing user is updated via LDAP e.g. migration to LDAP, or when a user is auto created and then
      * updated by LDAP This is probably less likely after 3.2 and sync on missing person See
      * https://issues.alfresco.com/jira/browse/ETWOTWO-389 (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.util.Map, java.util.Map)
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -1246,5 +1423,141 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 throw new UnsupportedOperationException("The user name on a person can not be changed");
             }
         }
+    }
+    
+    /**
+     * Track the {@link ContentModel#PROP_ENABLED enabled/disabled} flag on {@link ContentModel#TYPE_USER <b>cm:user</b>}.
+     */
+    public void onUpdatePropertiesUser(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String userName = (String) after.get(ContentModel.PROP_USER_USERNAME);
+        if (userName == null)
+        {
+            // Won't find user
+            return;
+        }
+        // Get the person
+        NodeRef personNodeRef = getPersonOrNull(userName);
+        if (personNodeRef == null)
+        {
+            // Don't attempt to maintain enabled/disabled flag
+            return;
+        }
+        
+        // Check the enabled/disabled flag
+        Boolean enabled = (Boolean) after.get(ContentModel.PROP_ENABLED);
+        if (enabled == null || enabled.booleanValue())
+        {
+            nodeService.removeAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED);
+        }
+        else
+        {
+            nodeService.addAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED, null);
+        }
+        
+        // Do post-commit user counting, if required
+        Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
+        usersCreated.add(userName);
+        AlfrescoTransactionSupport.bindListener(this);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void beforeCommit(boolean readOnly)
+    {
+        // check whether max users has been exceeded
+        RunAsWork<Long> getMaxUsersWork = new RunAsWork<Long>()
+        {
+            @Override
+            public Long doWork() throws Exception
+            {
+                return repoAdminService.getRestrictions().getUsers();
+            }
+        };
+        Long maxUsers = AuthenticationUtil.runAs(getMaxUsersWork, AuthenticationUtil.getSystemUserName());
+        if(maxUsers == null)
+        {
+            return;
+        }
+    
+        Long users = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>()
+        {
+            public Long doWork() throws Exception
+            {
+                repoAdminService.updateUsage(UsageType.USAGE_USERS);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Number of users is " + repoAdminService.getUsage().getUsers());
+                }
+                return repoAdminService.getUsage().getUsers();
+            }
+        } , AuthenticationUtil.getSystemUserName());
+
+        // Get the set of users created in this transaction
+        Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
+        
+        // If we exceed the limit, generate decent message about which users were being created, etc.
+        if (users > maxUsers)
+        {
+            List<String> usersMsg = new ArrayList<String>(5);
+            int i = 0;
+            for (String userCreated : usersCreated)
+            {
+                i++;
+                if (i > 5)
+                {
+                    usersMsg.add(" ... more");
+                    break;
+                }
+                else
+                {
+                    usersMsg.add(userCreated);
+                }
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Maximum number of users exceeded: " + usersCreated);
+            }
+            throw AlfrescoRuntimeException.create(SYSTEM_USAGE_WARN_LIMIT_USERS_EXCEEDED_VERBOSE, maxUsers, usersMsg);
+        }
+        
+        // Get the usages and log any warnings
+        RepoUsageStatus usageStatus = repoAdminService.getUsageStatus();
+        usageStatus.logMessages(logger);
+    }
+    
+    /**
+     * Helper for when creating new users and people:
+     * Updates the supplied username with any required tenant
+     *  details, and ensures that the tenant domains match.
+     * If Multi-Tenant is disabled, returns the same username.
+     */
+    public static String updateUsernameForTenancy(String username, TenantService tenantService) 
+            throws TenantDomainMismatchException
+    {
+        if(! tenantService.isEnabled())
+        {
+            // Nothing to do if not using multi tenant
+            return username;
+        }
+        
+        String currentDomain = tenantService.getCurrentUserDomain();
+        if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            if (! tenantService.isTenantUser(username))
+            {
+                // force domain onto the end of the username
+                username = tenantService.getDomainUser(username, currentDomain);
+                logger.warn("Added domain to username: " + username);
+            }
+            else
+            {
+                // Check the user's domain matches the current domain
+                // Throws a TenantDomainMismatchException if they don't match
+                tenantService.checkDomainUser(username);
+            }
+        }
+        return username;
     }
 }

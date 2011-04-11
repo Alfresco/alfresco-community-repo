@@ -24,6 +24,9 @@ import java.util.HashSet;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class ChainingAuthenticationServiceTest extends TestCase
@@ -65,7 +68,12 @@ public class ChainingAuthenticationServiceTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-        super.setUp();
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
         
         AuthenticationUtil authUtil = new AuthenticationUtil();
         authUtil.setDefaultAdminUserName("admin");

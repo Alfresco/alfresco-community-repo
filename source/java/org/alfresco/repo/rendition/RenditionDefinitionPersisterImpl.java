@@ -39,6 +39,12 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * This class provides the implementation of RenditionDefinition persistence.
+ * <p/>
+ * N.B. {@link RenditionDefinition Rendition definitions} are stored within the Data Dictionary in the
+ * Alfresco Repository &amp; therefore calls to load or save definitions will be subject to the normal
+ * authorisation checks for those nodes. In particular this means that if the Data Dictionary has been
+ * given restricted access control (it is Consumer for Group ALL by default), it may not be possible for
+ * normal users to load rendition definitions.
  * 
  * @author Nick Smith
  * @author Neil McErlean

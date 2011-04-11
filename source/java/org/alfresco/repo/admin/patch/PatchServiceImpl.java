@@ -26,22 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.transaction.PlatformTransactionManager;
 
 
 /**
@@ -100,6 +99,9 @@ public class PatchServiceImpl implements PatchService
     {
         patches.add(patch);
     }
+    
+    private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "PatchServiceImpl");
+
 
     public boolean validatePatches()
     {
@@ -117,7 +119,7 @@ public class PatchServiceImpl implements PatchService
         }
         if (!success)
         {
-            this.transactionService.setAllowWrite(false);
+            this.transactionService.setAllowWrite(false, vetoName);
         }
         return success;
     }
@@ -405,7 +407,8 @@ public class PatchServiceImpl implements PatchService
          * 
          * @return true: continue, false: do not apply patch
          */
-    	private void setup() {
+    	private void setup()
+    	{
     		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
     			@Override
     			public Object execute() throws Throwable {
@@ -494,7 +497,8 @@ public class PatchServiceImpl implements PatchService
             }
     	}
     	
-    	private void save() {
+    	private void save()
+    	{
             if(!savePatch())
             {
             	return;
@@ -557,7 +561,8 @@ public class PatchServiceImpl implements PatchService
     		}, false, true);
     	}
     	
-    	public AppliedPatch getAppliedPatch() {
+    	public AppliedPatch getAppliedPatch()
+    	{
     		return appliedPatch;
     	}
     }

@@ -527,7 +527,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
      * @param view  the view location
      * @return  the file
      */
-    private File getFile(String view)
+    public static File getFile(String view)
     {
     	// Try as a file location
         File file = new File(view);
@@ -540,7 +540,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             // Try as a classpath location
         	
 	        // Get input stream
-	        InputStream viewStream = getClass().getClassLoader().getResourceAsStream(view);
+	        InputStream viewStream = ImporterBootstrap.class.getClassLoader().getResourceAsStream(view);
 	        if (viewStream == null)
 	        {
 	            throw new ImporterException("Could not find view file " + view);

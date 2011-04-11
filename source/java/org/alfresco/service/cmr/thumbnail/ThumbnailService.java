@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,7 +19,9 @@
 package org.alfresco.service.cmr.thumbnail;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
@@ -134,4 +136,16 @@ public interface ThumbnailService
     @Auditable(parameters = {"node", "contentProperty", "mimetype", "options"})
     List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype, TransformationOptions options);
     
+    /**
+     * This method returns a {@link Map} of {@link FailedThumbnailInfo failed thumbnails} for the specified source node.
+     * The map is keyed by {@link ThumbnailDefinition#getName() thumbnail definition name}
+     * and the values are the {@link FailedThumbnailInfo failed thumbnails}.
+     * 
+     * @param sourceNode the node whose thumbnails are to be checked.
+     * @return a Map of failed thumbnails, if any. If there
+     *         are no such failures, an empty Map will be returned.
+     * @since 3.5.0
+     */
+    @Auditable(parameters = {"sourceNode"})
+    Map<String, FailedThumbnailInfo> getFailedThumbnails(NodeRef sourceNode);
 }

@@ -151,6 +151,13 @@
         statistics="false"
         />
     <cache 
+        name="org.alfresco.cache.authenticationCache" 
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        />
+    <cache 
         name="org.alfresco.cache.authorityCache" 
         maxElementsInMemory="5000"
         eternal="true"

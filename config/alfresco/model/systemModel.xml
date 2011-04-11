@@ -16,6 +16,11 @@
    </namespaces>
 
    <types>
+   
+      <type name="sys:deleted">
+         <title>Deleted</title>
+         <description>Placeholder type for deleted nodes</description>
+      </type>
 
       <type name="sys:base">
          <title>Base</title>
@@ -45,6 +50,9 @@
                <mandatory enforced="true">true</mandatory>
             </property>
             <property name="sys:versionLabel">
+               <type>d:text</type>
+            </property>
+            <property name="sys:licenseMode">
                <type>d:text</type>
             </property>
             <property name="sys:versionBuild">

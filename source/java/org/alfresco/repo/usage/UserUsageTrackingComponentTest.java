@@ -43,6 +43,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -51,6 +53,8 @@ import org.springframework.context.ApplicationContext;
 public class UserUsageTrackingComponentTest extends TestCase
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    
+    private static Log logger = LogFactory.getLog(UserUsageTrackingComponentTest.class);
 
     private boolean clean = true;
     
@@ -133,6 +137,7 @@ public class UserUsageTrackingComponentTest extends TestCase
                     personService.createPerson(props);
                     
                     authenticationService.createAuthentication(userName, userName.toCharArray());
+                    authenticationService.setAuthenticationEnabled(userName, false);
                     
                     NodeRef homeFolder = getHomeSpaceFolderNode(userName);
                     
@@ -156,17 +161,17 @@ public class UserUsageTrackingComponentTest extends TestCase
                     testTX.commit();
                     count = 0;
                     
-                    //System.out.println("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
+                    //logger.debug("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
                 }
                 
                 if (((i % PROGRESS_SIZE) == 0) && (i != MAX_USERS))
                 {
-                    System.out.println("Progress: "+PROGRESS_SIZE+" users created in "+((System.currentTimeMillis()-progressStart)/1000)+" secs");
+                    logger.debug("Progress: "+PROGRESS_SIZE+" users created in "+((System.currentTimeMillis()-progressStart)/1000)+" secs");
                     progressStart = System.currentTimeMillis();
                 }
             }
             
-            System.out.println("Total: "+MAX_USERS+" users created in "+((System.currentTimeMillis()-start)/1000)+" secs");
+            logger.debug("Total: "+MAX_USERS+" users created in "+((System.currentTimeMillis()-start)/1000)+" secs");
         }
         catch (Throwable t)
         {
@@ -177,18 +182,20 @@ public class UserUsageTrackingComponentTest extends TestCase
     }
     
     public void testEnableDisableCollapse()
-    {         
+    {
+        logger.debug("Test: " + getName());
+        
         userUsageTrackingComponent.setEnabled(false);
         userUsageTrackingComponent.bootstrapInternal(); // false => clear
         
-        System.out.println("Cleared usages");
+        logger.debug("Cleared usages");
         
         checkCleared();
         
         userUsageTrackingComponent.setEnabled(true);
         userUsageTrackingComponent.bootstrapInternal(); // true => recalculate
         
-        System.out.println("Recalculated usages");
+        logger.debug("Recalculated usages");
         
         checkCalculated(2L);
         
@@ -216,13 +223,13 @@ public class UserUsageTrackingComponentTest extends TestCase
             AuthenticationUtil.setRunAsUserSystem();
         }
         
-        System.out.println("Added content");
+        logger.debug("Added content");
 
         checkUsage(4L);
         
         userUsageTrackingComponent.execute(); // collapse usages
         
-        System.out.println("Collapsed usages");
+        logger.debug("Collapsed usages");
         
         checkUsage(4L);
 
@@ -244,20 +251,20 @@ public class UserUsageTrackingComponentTest extends TestCase
             AuthenticationUtil.setRunAsUserSystem();
         }
         
-        System.out.println("Deleted content");
+        logger.debug("Deleted content");
         
         checkUsage(2L);
         
         userUsageTrackingComponent.execute(); // collapse usages
         
-        System.out.println("Collapsed usages");
+        logger.debug("Collapsed usages");
         
         checkUsage(2L);
         
         userUsageTrackingComponent.setEnabled(false);
         userUsageTrackingComponent.bootstrapInternal(); // false => clear
         
-        System.out.println("Cleared usages");
+        logger.debug("Cleared usages");
         checkCleared();
     }
     
@@ -338,11 +345,11 @@ public class UserUsageTrackingComponentTest extends TestCase
                     testTX.commit();
                     count = 0;
                     
-                    //System.out.println("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
+                    //logger.debug("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
                 }
             }
             
-            System.out.println("Total: "+deleteCount+" users deleted in "+((System.currentTimeMillis()-start)/1000)+" secs");
+            logger.debug("Total: "+deleteCount+" users deleted in "+((System.currentTimeMillis()-start)/1000)+" secs");
         }
         catch (Throwable t)
         {

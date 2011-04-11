@@ -24,6 +24,7 @@ import java.util.List;
 import org.alfresco.repo.admin.RepoModelDefinition;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
+import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.namespace.QName;
 
 
@@ -103,4 +104,46 @@ public interface RepoAdminService
     @Auditable(parameters = {"bundleBaseName"})
     public void reloadMessageBundle(String bundleBaseName);
 
+    //
+    // Usage
+    //
+    
+    /**
+     * Get the currently-active restrictions to the repository usage
+     * 
+     * @since 3.5
+     */
+    @Auditable
+    public RepoUsage getRestrictions();
+    
+    /**
+     * Get the repository usage, where known
+     * 
+     * @return          the currently-known repository usage
+     * 
+     * @since 3.5
+     */
+    public RepoUsage getUsage();
+    
+    /**
+     * Force an update of the usages, providing a hint on the specific updates required.
+     * If another client is already performing the update, then the calling code will need
+     * to determine the severity i.e. is an updated value <b>really</b> needed.  Generally
+     * clients should accept that the data might be slightly stale, especially since there
+     * is no way to guarantee visibility of data being put into the database by other
+     * transactions.
+     * 
+     * @param usageType         the type of usage update to perform
+     * @return                  <tt>true</tt> if the update succeeded or <tt>false</tt> if
+     *                          some other client was already performing the same update
+     */
+    public boolean updateUsage(UsageType usageType);
+    
+    /**
+     * Get full information on the state of the usage limits, including errors and warnings
+     * about limits in play.
+     * 
+     * @return                  the object containing all the information
+     */
+    public RepoUsageStatus getUsageStatus();
 }

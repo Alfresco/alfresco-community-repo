@@ -131,8 +131,11 @@
              <ref bean="patch.db-V3.3-JBPM-Extra" />
              <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
              <ref bean="patch.db-V3.4-property-unique-ctx-value" />
+             <ref bean="patch.db-V3.4-property-unique-ctx-idx" />
+             <ref bean="patch.db-V3.4-authority-unique-idx" />
              <ref bean="patch.db-V3.4-child-assoc-indexes" />
              <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
+             <ref bean="patch.db-V3.4-AVM-rename-dupes" />
           </list>
        </property>
     </bean>
@@ -204,6 +207,13 @@
     -->
     <bean id="spacesModelsBootstrap" parent="storeImporter" singleton="true" />
     <bean id="spacesBootstrap" parent="spacesBootstrap-base" singleton="true" />
+
+    <!--
+        NOOP for fresh bootstrap - provides ordering for site imports which occur via bootstrap context extensions
+    -->
+    <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter" singleton="true" />
+    <bean id="siteLoadBootstrap-Users" parent="userStoreImporter" singleton="true" />
+    <bean id="siteLoadBootstrap-AVM" parent="sitesAVMZipBootstrap-base" singleton="true" />
     
     <bean id="siteAVMBootstrap" class="org.alfresco.repo.site.SiteAVMBootstrap">
         <property name="avmService" ref="AVMService" />
@@ -395,7 +405,7 @@
           <ref bean="avmIndexRecoveryComponent"/>
        </property>
     </bean>
-
+    
     <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="serverDescriptorDAO">
@@ -410,6 +420,7 @@
        <property name="transactionService">
            <ref bean="transactionService"/>
        </property>
+       <property name="repoUsageComponent" ref="repoUsageComponent"/>
     </bean>
 
     <!-- This component checks the interconnection between the metadata, indexes and content -->
@@ -451,9 +462,6 @@
     <!-- This component ensures that patches get applied on startup -->
 
     <bean id="patchExecuter" class="org.alfresco.repo.admin.patch.PatchExecuter">
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
         <property name="patchService">
             <ref bean="PatchService" />
         </property>
@@ -614,10 +622,10 @@
             <ref bean="tenantService" />
         </property>
         <property name="clearBatchSize">
-            <value>50</value>
+            <value>${system.usages.clearBatchSize}</value>
         </property>
         <property name="updateBatchSize">
-            <value>50</value>
+            <value>${system.usages.updateBatchSize}</value>
         </property>
         <property name="enabled">
             <value>${system.usages.enabled}</value>
@@ -683,6 +691,9 @@
        </property>
        <property name="tenantService">
            <ref bean="tenantService"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
        </property>
     </bean>
     

@@ -20,9 +20,9 @@ package org.alfresco.service.cmr.activities;
 
 import java.util.List;
 
-import org.alfresco.service.PublicService;
-import org.alfresco.service.Auditable;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.PublicService;
 
 
 /**
@@ -70,6 +70,28 @@ public interface ActivityService extends ActivityPostService
     public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
     
     /**
+     * Retrieve user feed with optional site filter and optional user filters and optional min feed DB id
+     * 
+     * Will return activities for users across all sites, or optionally for users for specified site.
+     * 
+     * User filters are:
+     * - all user activities   (excludeThisUser = false, excludeOtherUsers = false)
+     * - other user activities (excludeThisUser = true,  excludeOtherUsers = false)
+     * - my user activities    (excludeThisUser = false, excludeOtherUsers = true)
+     * note: if both excludes are true then no activities will be returned.
+     * 
+     * @param userId     - required
+     * @param format     - required
+     * @param siteId     - optional, if set then will filter by given siteId else return all sites
+     * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
+     * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
+     * @param minFeedId - inclusive from min feed DB id, if -1 then return all available
+     * @return list of JSON feed entries
+     */
+    @NotAuditable
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId);
+    
+    /**
      * Retrieve site feed
      *
      * @param activityType - required
@@ -79,6 +101,14 @@ public interface ActivityService extends ActivityPostService
     @NotAuditable
     public List<String> getSiteFeedEntries(String siteId, String format);
     
+    
+    /**
+     * Return maximum configured item entries (per feed)
+     * 
+     * @return
+     */
+    @NotAuditable
+    public int getMaxFeedItems();
     
     /*
      * Manage User Feed Controls

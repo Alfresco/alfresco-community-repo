@@ -29,6 +29,7 @@ public interface ActionModel
     static final QName PROP_DEFINITION_NAME         = QName.createQName(ACTION_MODEL_URI, "definitionName");
     static final QName PROP_ACTION_TITLE            = QName.createQName(ACTION_MODEL_URI, "actionTitle");
     static final QName PROP_ACTION_DESCRIPTION      = QName.createQName(ACTION_MODEL_URI, "actionDescription");
+    static final QName PROP_TRACK_STATUS            = QName.createQName(ACTION_MODEL_URI, "trackStatus");
     static final QName PROP_EXECUTE_ASYNCHRONOUSLY  = QName.createQName(ACTION_MODEL_URI, "executeAsynchronously");
     static final QName PROP_EXECUTION_START_DATE    = QName.createQName(ACTION_MODEL_URI, "executionStartDate");
     static final QName PROP_EXECUTION_END_DATE      = QName.createQName(ACTION_MODEL_URI, "executionEndDate");

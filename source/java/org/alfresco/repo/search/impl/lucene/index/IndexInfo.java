@@ -3016,7 +3016,7 @@ public class IndexInfo implements IndexMonitor
             return "Index cleaner";
         }
 
-        ExitState runImpl()
+        void runImpl()
         {
 
             Iterator<IndexReader> i = deletableReaders.iterator();
@@ -3079,7 +3079,6 @@ public class IndexInfo implements IndexMonitor
                     s_logger.warn("Failed to delete file - invalid canonical file", ioe);
                 }
             }
-            return ExitState.DONE;
         }
 
         ExitState recoverImpl()
@@ -3169,29 +3168,13 @@ public class IndexInfo implements IndexMonitor
             }
         }
 
-        private synchronized void done()
+        synchronized void done()
         {
             switch (scheduledState)
             {
             case RECOVERY_SCHEDULED:
             case SCHEDULED:
                 scheduledState = ScheduledState.UN_SCHEDULED;
-                break;
-            case FAILED:
-            case UN_SCHEDULED:
-            default:
-                throw new IllegalStateException();
-            }
-        }
-
-        private synchronized void reschedule()
-        {
-            switch (scheduledState)
-            {
-            case RECOVERY_SCHEDULED:
-                scheduledState = ScheduledState.SCHEDULED;
-            case SCHEDULED:
-                threadPoolExecutor.execute(this);
                 break;
             case FAILED:
             case UN_SCHEDULED:
@@ -3234,11 +3217,10 @@ public class IndexInfo implements IndexMonitor
         {
             try
             {
-                ExitState reschedule;
                 switch (scheduledState)
                 {
                 case RECOVERY_SCHEDULED:
-                    reschedule = recoverImpl();
+                    ExitState reschedule = recoverImpl();
                     s_logger.error(getLogName() + " has recovered - resuming ... ");
                     if (reschedule == ExitState.RESCHEDULE)
                     {
@@ -3250,23 +3232,8 @@ public class IndexInfo implements IndexMonitor
                     {
                         s_logger.debug(getLogName() + " running ... ");
                     }
-                    reschedule = runImpl();
-                    if (reschedule == ExitState.RESCHEDULE)
-                    {
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug(getLogName() + " rescheduling ... ");
-                        }
-                        reschedule();
-                    }
-                    else
-                    {
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug(getLogName() + " done ");
-                        }
-                        done();
-                    }
+                    runImpl();
+                    done();
                     break;
                 case FAILED:
                 case UN_SCHEDULED:
@@ -3297,7 +3264,7 @@ public class IndexInfo implements IndexMonitor
             }
         }
 
-        abstract ExitState runImpl() throws Exception;
+        abstract void runImpl() throws Exception;
 
         abstract ExitState recoverImpl() throws Exception;
 
@@ -3311,12 +3278,57 @@ public class IndexInfo implements IndexMonitor
             return "Index merger";
         }
 
-        ExitState runImpl() throws IOException
+        @Override
+        void done()
+        {
+            // Reschedule if we need to, based on the current index state, that may have changed since we last got the
+            // read lock
+            getReadLock();
+            try
+            {
+                synchronized (this)
+                {
+                    if (decideMergeAction() != MergeAction.NONE)
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug(getLogName() + " rescheduling ... ");
+                        }
+                        switch (scheduledState)
+                        {
+                        case RECOVERY_SCHEDULED:
+                            scheduledState = ScheduledState.SCHEDULED;
+                        case SCHEDULED:
+                            threadPoolExecutor.execute(this);
+                            break;
+                        case FAILED:
+                        case UN_SCHEDULED:
+                        default:
+                            throw new IllegalStateException();
+                        }
+                    }
+                    else
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug(getLogName() + " done ");
+                        }
+                        super.done();
+                    }
+                }
+            }
+            finally
+            {
+                releaseReadLock();
+            }
+        }
+
+        void runImpl() throws IOException
         {
 
-            // Get the read local to decide what to do
+            // Get the read lock to decide what to do
             // Single JVM to start with
-            MergeAction action = MergeAction.NONE;
+            MergeAction action;
 
             getReadLock();
             try
@@ -3348,97 +3360,94 @@ public class IndexInfo implements IndexMonitor
                     }
                 }
 
-                int indexes = 0;
-                boolean mergingIndexes = false;
-                int deltas = 0;
-                boolean applyingDeletions = false;
-
-                for (IndexEntry entry : indexEntries.values())
-                {
-                    if (entry.getType() == IndexType.INDEX)
-                    {
-                        indexes++;
-                        if ((entry.getStatus() == TransactionStatus.MERGE) || (entry.getStatus() == TransactionStatus.MERGE_TARGET))
-                        {
-                            mergingIndexes = true;
-                        }
-
-                    }
-                    else if (entry.getType() == IndexType.DELTA)
-                    {
-                        if (entry.getStatus() == TransactionStatus.COMMITTED)
-                        {
-                            deltas++;
-                        }
-                        if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
-                        {
-                            applyingDeletions = true;
-                            deltas++;
-                        }
-                    }
-                }
-
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("Indexes = " + indexes);
-                    s_logger.debug("Merging = " + mergingIndexes);
-                    s_logger.debug("Deltas = " + deltas);
-                    s_logger.debug("Deleting = " + applyingDeletions);
-                }
-
-                if (!mergingIndexes && !applyingDeletions)
-                {
-
-                    if (indexes > mergerTargetIndexes) 
-                    {
-                        // Try merge
-                        action = MergeAction.MERGE_INDEX;
-                    }
-                    else if (deltas > mergerTargetOverlays)
-                    {
-                        // Try delete
-                        action = MergeAction.APPLY_DELTA_DELETION;
-                    }                    
-                }
+                action = decideMergeAction();
             }
 
             catch (IOException e)
             {
                 s_logger.error("Error reading index file", e);
-                return ExitState.DONE;
+                return;
             }
             finally
             {
                 releaseReadLock();
             }
 
+            if (s_logger.isDebugEnabled())
+            {
+                s_logger.debug(getLogName() + " Merger applying MergeAction." + action.toString());
+            }                
             if (action == MergeAction.APPLY_DELTA_DELETION)
             {
-                action = mergeDeletions();
+                mergeDeletions();
             }
             else if (action == MergeAction.MERGE_INDEX)
             {
-                action = mergeIndexes();
+                mergeIndexes();
+            }
+            if (s_logger.isDebugEnabled())
+            {
+                dumpInfo();
+            }                
+        }
+
+        /**
+         * @param action
+         */
+        private MergeAction decideMergeAction()
+        {
+            MergeAction action = MergeAction.NONE;
+            int indexes = 0;
+            boolean mergingIndexes = false;
+            int deltas = 0;
+            boolean applyingDeletions = false;
+
+            for (IndexEntry entry : indexEntries.values())
+            {
+                if (entry.getType() == IndexType.INDEX)
+                {
+                    indexes++;
+                    if ((entry.getStatus() == TransactionStatus.MERGE) || (entry.getStatus() == TransactionStatus.MERGE_TARGET))
+                    {
+                        mergingIndexes = true;
+                    }
+                }
+                else if (entry.getType() == IndexType.DELTA)
+                {
+                    if (entry.getStatus() == TransactionStatus.COMMITTED)
+                    {
+                        deltas++;
+                    }
+                    if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
+                    {
+                        applyingDeletions = true;
+                        deltas++;
+                    }
+                }
             }
 
-            if (action == MergeAction.NONE)
+            if (s_logger.isDebugEnabled())
             {
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug(getLogName() + " Merger exiting with MergeAction.NONE. DONE. ");
-                    dumpInfo();
-                }                
-                return ExitState.DONE;
+                s_logger.debug("Indexes = " + indexes);
+                s_logger.debug("Merging = " + mergingIndexes);
+                s_logger.debug("Deltas = " + deltas);
+                s_logger.debug("Deleting = " + applyingDeletions);
             }
-            else
+
+            if (!mergingIndexes && !applyingDeletions)
             {
-                if (s_logger.isDebugEnabled())
+                if (indexes > mergerTargetIndexes) 
                 {
-                    s_logger.debug(getLogName() + " Merger exiting with MergeAction." + action.toString() + ". RESCHEDULE. ");
-                    dumpInfo();
-                }                
-                return ExitState.RESCHEDULE;
+                    // Try merge
+                    action = MergeAction.MERGE_INDEX;
+                }
+                else if (deltas > mergerTargetOverlays)
+                {
+                    // Try delete
+                    action = MergeAction.APPLY_DELTA_DELETION;
+                }
             }
+            return action;
         }
 
         ExitState recoverImpl()
@@ -3547,7 +3556,7 @@ public class IndexInfo implements IndexMonitor
             return ExitState.DONE;
         }
 
-        MergeAction mergeDeletions() throws IOException
+        void mergeDeletions() throws IOException
         {
             if (s_logger.isDebugEnabled())
             {
@@ -3641,7 +3650,7 @@ public class IndexInfo implements IndexMonitor
 
             if (toDelete.size() == 0)
             {
-                return MergeAction.NONE;
+                return;
             }
             // Build readers
 
@@ -3855,10 +3864,9 @@ public class IndexInfo implements IndexMonitor
             {
                 releaseWriteLock();
             }
-            return MergeAction.APPLY_DELTA_DELETION;
         }
 
-        MergeAction mergeIndexes() throws IOException
+        void mergeIndexes() throws IOException
         {
 
             if (s_logger.isDebugEnabled())
@@ -3960,7 +3968,7 @@ public class IndexInfo implements IndexMonitor
 
             if (toMerge.size() == 0)
             {
-                return MergeAction.NONE;
+                return;
             }
 
             String mergeTargetId = null;
@@ -4130,7 +4138,6 @@ public class IndexInfo implements IndexMonitor
                 s_logger.debug("..done merging");
             }
 
-            return MergeAction.MERGE_INDEX;
         }
 
         private final int findMergeIndex(long min, long max, int target, List<IndexEntry> entries) throws IOException

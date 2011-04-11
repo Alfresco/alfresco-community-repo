@@ -1251,6 +1251,26 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // retrieve the association that should now be present
         assocs = this.nodeService.getTargetAssocs(everythingNode, duplicateProperty);
         assertEquals(1, assocs.size());
+        
+        // request a form for a type with an underscore in it's name
+        fields = new ArrayList<String>(4);
+        fields.add("cm:name");
+
+        form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "fdk:with_underscore"), fields);
+        assertNotNull(form);
+        
+        // make sure there are 3 fields
+        fieldDefs = form.getFieldDefinitions();
+        assertNotNull(fieldDefs);
+        assertEquals(1, fieldDefs.size());
+        
+        // save the form to ensure persistence works too
+        String nodeName = GUID.generate() + ".txt";
+        data = new FormData();
+        data.addFieldData("prop_cm_name", nodeName);
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "fdk_with_underscore"), data);
+        assertNotNull(newNode);
     }
     
     public void testGetFormForJbpmTask() throws Exception

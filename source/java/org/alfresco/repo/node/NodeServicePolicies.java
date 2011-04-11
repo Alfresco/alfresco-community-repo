@@ -256,29 +256,6 @@ public interface NodeServicePolicies
         public void onCreateNodeAssociation(ChildAssociationRef childAssocRef);
     }
 
-    public interface BeforeCreateChildAssociationPolicy extends AssociationPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation");
-        /**
-         * Called before a node child association is created.
-         * 
-         * @param parentNodeRef         the parent node reference
-         * @param childNodeRef          the child node reference
-         * @param assocTypeQName        the type of the association
-         * @param assocQName            the name of the association
-         * @param isNewNode             <tt>true</tt> if the node is new or <tt>false</tt> if the node is being linked in
-         * 
-         * @deprecated                  This is not necessary and we don't know about the child node until after the
-         *                              association has been created.
-         */
-        public void beforeCreateChildAssociation(
-                NodeRef parentNodeRef,
-                NodeRef childNodeRef,
-                QName assocTypeQName,
-                QName assocQName,
-                boolean isNewNode);
-    }
-    
     public interface OnCreateChildAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation");

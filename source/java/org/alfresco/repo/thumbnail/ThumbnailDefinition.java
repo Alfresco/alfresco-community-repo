@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,8 +36,16 @@ public class ThumbnailDefinition
     /** Transformation options */
     private TransformationOptions options;    
     
-    /** Path to placeholder thumbnail */
+    /** Failure options */
+    private FailureHandlingOptions failureOptions;
+    
+    /** Path to placeholder thumbnail
+     */
     private String placeHolderResourcePath;
+    
+    /** Path to mime aware placeholder thumbnail
+     * */
+    private String mimeAwarePlaceHolderResourcePath;
     
     /** Username to run the thumbnailrendition as */
     private String runAs;
@@ -115,7 +123,7 @@ public class ThumbnailDefinition
     {
         this.options = options;
     }
-    
+
     /**
      * Get the transformation options
      * 
@@ -124,6 +132,28 @@ public class ThumbnailDefinition
     public TransformationOptions getTransformationOptions()
     {
         return options;
+    }
+
+    /**
+     * Set the {@link FailureHandlingOptions failure options}.
+     * 
+     * @param failureOptions the failure options.
+     * @since 3.5.0
+     */
+    public void setFailureHandlingOptions(FailureHandlingOptions failureOptions)
+    {
+        this.failureOptions = failureOptions;
+    }
+    
+    /**
+     * Get the {@link FailureHandlingOptions failure options}.
+     * 
+     * @return the failure options
+     * @since 3.5.0
+     */
+    public FailureHandlingOptions getFailureHandlingOptions()
+    {
+        return failureOptions;
     }
     
     /**
@@ -157,6 +187,7 @@ public class ThumbnailDefinition
     }
     
     /**
+     * This method sets the placeholder resource path.
      * 
      * @param placeHolderResourcePath
      */
@@ -172,5 +203,26 @@ public class ThumbnailDefinition
     public String getPlaceHolderResourcePath()
     {   
         return placeHolderResourcePath;
+    }
+
+    /**
+     * This method sets the mime-aware placeholder resource path template.
+     * 
+     * @param mimeAwarePlaceHolderResourcePath
+     * @since 3.4.1 (Team)
+     */
+    public void setMimeAwarePlaceHolderResourcePath(String mimeAwarePlaceHolderResourcePath)
+    {
+        this.mimeAwarePlaceHolderResourcePath = mimeAwarePlaceHolderResourcePath;
+    }
+    
+    /**
+     * 
+     * @return
+     * @since 3.4.1 (Team)
+     */
+    public String getMimeAwarePlaceHolderResourcePath()
+    {   
+        return mimeAwarePlaceHolderResourcePath;
     }
 }

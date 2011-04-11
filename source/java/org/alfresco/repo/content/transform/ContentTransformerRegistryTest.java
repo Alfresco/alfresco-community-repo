@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -78,10 +79,10 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         new DummyTransformer(mimetypeService, dummyRegistry, B, C, 10L);
         // create some dummy transformers for speed tests
         new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 30L);
         new DummyTransformer(mimetypeService, dummyRegistry, A, D, 10L);  // the fast one
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 25L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 25L);
     }
 
     /**
@@ -135,6 +136,25 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         assertTrue("Incorrect reliability", transformer1.isTransformable(A, D, OPTIONS));
         assertFalse("Incorrect reliability", transformer1.isTransformable(D, A, OPTIONS));
         assertEquals("Incorrect transformation time", 10L, transformer1.getTransformationTime());
+        
+        // A -> D has 10, 20, 25, 25, 30
+        List<ContentTransformer> activeTransformers = dummyRegistry.getActiveTransformers(A, D, OPTIONS);
+        assertEquals("Not all found", 5, activeTransformers.size());
+        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime());
+        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime());
+        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime());
+        assertEquals("Incorrect order", 25L, activeTransformers.get(3).getTransformationTime());
+        assertEquals("Incorrect order", 30L, activeTransformers.get(4).getTransformationTime());
+        
+        // Disable two of them, and re-test
+        ((DummyTransformer)activeTransformers.get(2)).disable();
+        ((DummyTransformer)activeTransformers.get(4)).disable();
+
+        activeTransformers = dummyRegistry.getActiveTransformers(A, D, OPTIONS);
+        assertEquals("Not all found", 3, activeTransformers.size());
+        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime());
+        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime());
+        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime());
     }
     
     public void testScoredRetrieval() throws Exception
@@ -188,6 +208,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         private String sourceMimetype;
         private String targetMimetype;
         private long transformationTime;
+        private boolean disable = false;
         
         public DummyTransformer(
                 MimetypeService mimetypeService,
@@ -203,9 +224,23 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
             // register
             register();
         }
+        
+        protected void enable()
+        {
+            disable = false;
+        }
+        
+        protected void disable()
+        {
+            disable = true;
+        }
 
         public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
         {
+            if (disable) {
+                return false;
+            }
+            
             if (this.sourceMimetype.equals(sourceMimetype)
                     && this.targetMimetype.equals(targetMimetype))
             {

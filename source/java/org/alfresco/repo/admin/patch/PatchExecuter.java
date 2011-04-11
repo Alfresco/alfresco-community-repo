@@ -22,12 +22,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This component is responsible for ensuring that patches are applied
@@ -47,7 +48,6 @@ public class PatchExecuter extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
     
     private PatchService patchService;
-    private TransactionService transactionService;
 
     /**
      * @param patchService the server that actually executes the patches
@@ -58,20 +58,13 @@ public class PatchExecuter extends AbstractLifecycleBean
     }
 
     /**
-     * @param transactionService provides the system read-only state
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
-    /**
      * Ensures that all outstanding patches are applied.
      */
     public void applyOutstandingPatches()
     {
-        // Avoid read-only systems
-        if (!patchService.validatePatches() || transactionService.isReadOnly())
+        // Apply patches even if we are in read only mode.   The system may not work safely otherwise.
+        
+        if (!patchService.validatePatches())
         {
             logger.warn(I18NUtil.getMessage(MSG_SYSTEM_READ_ONLY));
             return;
@@ -123,7 +116,16 @@ public class PatchExecuter extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        applyOutstandingPatches();
+        RunAsWork<Void> runPatches = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                applyOutstandingPatches();
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(runPatches, AuthenticationUtil.getSystemUserName());
     }
 
     @Override
@@ -131,5 +133,4 @@ public class PatchExecuter extends AbstractLifecycleBean
     {
         // NOOP
     }
-
 }

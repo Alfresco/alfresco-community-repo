@@ -81,6 +81,8 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.BeforeStartInboundTransferPolicy;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.OnEndInboundTransferPolicy;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.OnStartInboundTransferPolicy;
+import org.alfresco.service.cmr.transfer.TransferVersion;
+import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -168,6 +170,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private static final String MSG_LOCK_TIMED_OUT = "transfer_service.receiver.lock_timed_out";
     private static final String MSG_LOCK_NOT_FOUND = "transfer_service.receiver.lock_not_found";
     private static final String MSG_TRANSFER_TO_SELF = "transfer_service.receiver.error.transfer_to_self";
+    private static final String MSG_INCOMPATIBLE_VERSIONS = "transfer_service.incompatible_versions";
     
     private static final String SNAPSHOT_FILE_NAME = "snapshot.xml";
 
@@ -188,6 +191,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private DescriptorService descriptorService;
     private AlienProcessor alienProcessor;
     private JobLockService jobLockService;
+    private TransferVersionChecker transferVersionChecker;
     
     /**
      * Where the temporary files are stored.    Tenant Domain Name, NodeRef 
@@ -247,6 +251,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
         PropertyCheck.mandatory(this, "alienProcessor", alienProcessor);
         PropertyCheck.mandatory(this, "jobLockService", getJobLockService());
+        PropertyCheck.mandatory(this, "transferVersionChecker", getTransferVersionChecker());
 
         beforeStartInboundTransferDelegate = policyComponent.registerClassPolicy(TransferServicePolicies.BeforeStartInboundTransferPolicy.class);
         onStartInboundTransferDelegate = policyComponent.registerClassPolicy(TransferServicePolicies.OnStartInboundTransferPolicy.class);
@@ -399,7 +404,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
      * 
      * @see org.alfresco.repo.web.scripts.transfer.TransferReceiver#start()
      */
-    public String start(String fromRepositoryId, boolean transferToSelf)
+    public String start(String fromRepositoryId, boolean transferToSelf, TransferVersion fromVersion)
     {
         log.debug("Start transfer");
         
@@ -407,6 +412,16 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          * Check that transfer is allowed to this repository
          */
         checkTransfer(fromRepositoryId, transferToSelf);
+        
+        /**
+         * Check that the versions are compatible
+         */
+        TransferVersion toVersion = getVersion();
+        
+        if(!getTransferVersionChecker().checkTransferVersions(fromVersion, toVersion))
+        {
+            throw new TransferException(MSG_INCOMPATIBLE_VERSIONS, new Object[] {"None", fromVersion, toVersion});
+        }
         
         /**
          * First get the transfer lock for this domain
@@ -485,6 +500,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
      */
     private NodeRef createTransferRecord()
     {
+        log.debug("Receiver createTransferRecord");
         String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
         NodeRef inboundTransferRecordsFolder = inboundTransferRecordsFolderMap.get(tenantDomain);
 
@@ -1641,5 +1657,23 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 throw new TransferException("from repository id is missing");
             }
         }
+    }
+    
+    public void setTransferVersionChecker(TransferVersionChecker transferVersionChecker)
+    {
+        this.transferVersionChecker = transferVersionChecker;
+    }
+
+    public TransferVersionChecker getTransferVersionChecker()
+    {
+        return transferVersionChecker;
+    }
+
+    @Override
+    public TransferVersion getVersion()
+    {
+        Descriptor d = descriptorService.getServerDescriptor();
+        // needs to be serverDescriptor to pick up versionEdition
+        return new TransferVersionImpl(d);
     }    
 }

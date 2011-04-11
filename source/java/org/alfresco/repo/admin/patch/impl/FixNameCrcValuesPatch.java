@@ -254,7 +254,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
             // get the association types to check
             BatchProcessor<Map<String, Object>> batchProcessor = new BatchProcessor<Map<String, Object>>(
                     "FixNameCrcValuesPatch",
-                    transactionService.getRetryingTransactionHelper(),
+                    transactionHelper,
                     workProvider,
                     batchThreads, batchSize,
                     applicationEventPublisher,

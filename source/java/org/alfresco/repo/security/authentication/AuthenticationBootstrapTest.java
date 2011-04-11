@@ -35,7 +35,7 @@ public class AuthenticationBootstrapTest extends TestCase
      * Creates the application context in the context of the test (not statically) and checks
      * that no residual authentication is left hanging around.
      */
-    public void testBoostrap()
+    public void testBootstrap()
     {
         // Start the context
         ApplicationContextHelper.getApplicationContext();

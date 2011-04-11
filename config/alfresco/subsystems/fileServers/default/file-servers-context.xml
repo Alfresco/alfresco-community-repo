@@ -342,10 +342,13 @@
                   <value>${filesystem.name}</value>
                </property>
                <property name="storeName">
-                  <value>${spaces.store}</value>
+                  <value>${protocols.storeName}</value>
                </property>
                <property name="rootPath">
-                  <value>/${spaces.company_home.childname}</value>
+                  <value>${filesystem.rootPath}</value>
+               </property>
+               <property name="renameShufflePattern">
+                  <value>${filesystem.renameShufflePattern}</value>
                </property>
                <!-- Add a URL file to each folder that links back to the web client -->
                <property name="URLFileName">

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.activities.feed.cleanup.FeedCleaner;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.FeedControlDAO;
@@ -38,22 +39,24 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Activity Service Implementation
  * 
  * @author janv
  */
-public class ActivityServiceImpl implements ActivityService
+public class ActivityServiceImpl implements ActivityService, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(ActivityServiceImpl.class);
     
     private ActivityFeedDAO feedDAO;
     private FeedControlDAO feedControlDAO;
+    private FeedCleaner feedCleaner;
     private AuthorityService authorityService;
     private TenantService tenantService;
     private SiteService siteService;
@@ -83,6 +86,11 @@ public class ActivityServiceImpl implements ActivityService
         this.feedControlDAO = feedControlDAO;
     }
     
+    public void setFeedCleaner(FeedCleaner feedCleaner)
+    {
+        this.feedCleaner = feedCleaner;
+    }
+    
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
@@ -101,6 +109,20 @@ public class ActivityServiceImpl implements ActivityService
     public void setActivityPostService(ActivityPostService activityPostService)
     {
         this.activityPostService = activityPostService;
+    }
+    
+    
+    /*(non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        int feedCleanerMaxFeedItems = feedCleaner.getMaxFeedSize();
+        if (maxFeedItems > feedCleanerMaxFeedItems)
+        {
+            logger.warn("Cannot retrieve more items than feed cleaner max items (overriding "+maxFeedItems+" to "+feedCleanerMaxFeedItems+")");
+            maxFeedItems = feedCleanerMaxFeedItems;
+        }
     }
     
     
@@ -153,11 +175,35 @@ public class ActivityServiceImpl implements ActivityService
      */
     public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers)
     {
+        List<String> activityFeedEntries = new ArrayList<String>();
+        
+        try
+        {
+            List<ActivityFeedEntity> activityFeeds = getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, -1);
+            
+            if (activityFeeds != null)
+            {
+                for (ActivityFeedEntity activityFeed : activityFeeds)
+                {
+                    activityFeedEntries.add(activityFeed.getJSONString());
+                }
+            }
+        }
+        catch (JSONException je)
+        {    
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+            logger.error(are);
+            throw are;
+        }
+        
+        return activityFeedEntries;
+    }
+    
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId)
+    {
         // NOTE: siteId is optional
         ParameterCheck.mandatoryString("feedUserId", feedUserId);
         ParameterCheck.mandatoryString("format", format);
-        
-        List<String> activityFeedEntries = new ArrayList<String>();
         
         if (! userNamesAreCaseSensitive)
         {
@@ -173,27 +219,21 @@ public class ActivityServiceImpl implements ActivityService
             throw new AccessDeniedException("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
         }
         
+        List<ActivityFeedEntity> result = new ArrayList<ActivityFeedEntity>();
+        
         try
         {
-            List<ActivityFeedEntity> activityFeeds = null;
             if (siteId != null)
             {
                 siteId = tenantService.getName(siteId);
             }
             
-            activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers);
+            List<ActivityFeedEntity> activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, maxFeedItems);
             
-            int count = 0;
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
-                count++;
-                if (count > maxFeedItems)
-                {
-                    break;
-                }
-                
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
-                activityFeedEntries.add(activityFeed.getJSONString());
+                result.add(activityFeed);
             }
         }
         catch (SQLException se)
@@ -202,14 +242,8 @@ public class ActivityServiceImpl implements ActivityService
             logger.error(are);
             throw are;
         }
-        catch (JSONException je)
-        {    
-            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
-            logger.error(are);
-            throw are;
-        }
         
-        return activityFeedEntries;
+        return result;
     }
     
     /* (non-Javadoc)
@@ -235,17 +269,10 @@ public class ActivityServiceImpl implements ActivityService
             
             siteId = tenantService.getName(siteId);
             
-            List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format);
+            List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format, maxFeedItems);
             
-            int count = 0;
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
-                count++;
-                if (count > maxFeedItems)
-                {
-                    break;
-                }
-                
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 activityFeedEntries.add(activityFeed.getJSONString());
             }
@@ -264,6 +291,14 @@ public class ActivityServiceImpl implements ActivityService
         }
         
         return activityFeedEntries;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#getMaxFeedItems()
+     */
+    public int getMaxFeedItems()
+    {
+        return this.maxFeedItems;
     }
     
     /* (non-Javadoc)
@@ -409,6 +444,7 @@ public class ActivityServiceImpl implements ActivityService
         return userId;
     }
     
+    /*
     private FeedControl getTenantFeedControl(FeedControl feedControl)
     {
         // TODO
@@ -420,4 +456,5 @@ public class ActivityServiceImpl implements ActivityService
         // TODO
         return null;
     }
+    */
 }

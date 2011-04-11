@@ -43,6 +43,31 @@ public class TransferCommons
     public final static String PARAM_ALLOW_TRANSFER_TO_SELF = "allowTransferToSelf";
     
     /**
+     * TransferId 
+     */
+    public final static String PARAM_TRANSFER_ID = "transferId";
+    
+    /**
+     * Major version 
+     */
+    public final static String PARAM_VERSION_MAJOR = "versionMajor";
+    
+    /**
+     * Minor version
+     */ 
+    public final static String PARAM_VERSION_MINOR = "versionMinor";
+    
+    /**
+     * Revision version 
+     */
+    public final static String PARAM_VERSION_REVISION = "versionRevision";
+    
+    /**
+     * Edition
+     */
+    public final static String PARAM_VERSION_EDITION = "versionEdition";
+
+    /**
      * Mapping between contentUrl and part name.
      * 
      * @param URL

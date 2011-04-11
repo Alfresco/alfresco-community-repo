@@ -35,38 +35,38 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RuntimeActionService
 {
-	/**
-	 * Post commit method
-	 */
-	void postCommit();
-	
+    /**
+     * Post commit method
+     */
+    void postCommit();
+    
     /**
      * Register an action condition evaluator
      * 
      * @param actionConditionEvaluator  action condition evaluator
      */
-	void registerActionConditionEvaluator(ActionConditionEvaluator actionConditionEvaluator);
-	
+    void registerActionConditionEvaluator(ActionConditionEvaluator actionConditionEvaluator);
+    
     /**
      * Register an action executer
      * 
      * @param actionExecuter    action executer
      */
-	void registerActionExecuter(ActionExecuter actionExecuter);
-	
-	/**
-	 * Register parameter constraint
-	 *     
-	 * @param parameterConstraint  parameter constraint
-	 */
+    void registerActionExecuter(ActionExecuter actionExecuter);
+    
+    /**
+     * Register parameter constraint
+     *     
+     * @param parameterConstraint  parameter constraint
+     */
     void registerParameterConstraint(ParameterConstraint parameterConstraint);
-	
-	/**
-	 * Create a new action based on an action node reference
-	 * 
-	 * @param actionNodeRef    action node reference
-	 * @return Action          action object
-	 */
+    
+    /**
+     * Create a new action based on an action node reference
+     * 
+     * @param actionNodeRef    action node reference
+     * @return Action          action object
+     */
     Action createAction(NodeRef actionNodeRef);
     
     /**
@@ -79,33 +79,30 @@ public interface RuntimeActionService
      * @return NodeRef          created node reference
      */
     NodeRef createActionNodeRef(Action action, NodeRef parentNodeRef, QName assocTypeName, QName assocName);
-	
-	/**
-	 * Save action, used internally to store the details of an action on the aciton node.
-	 * 
-	 * @param actionNodeRef	the action node reference
-	 * @param action		the action 
-	 */
-	void saveActionImpl(NodeRef actionNodeRef, Action action);
-	
-	/**
-	 * 
-	 * @param action
-	 * @param actionedUponNodeRef
-	 * @param checkConditions
-	 */
-	public void executeActionImpl(
-			Action action, 
-			NodeRef actionedUponNodeRef, 
-			boolean checkConditions, 
-			boolean executedAsynchronously,
+    
+    /**
+     * Save action, used internally to store the details of an action on the aciton node.
+     * 
+     * @param actionNodeRef    the action node reference
+     * @param action        the action 
+     */
+    void saveActionImpl(NodeRef actionNodeRef, Action action);
+    
+    /**
+     * Perform low-level action execution
+     */
+    public void executeActionImpl(
+            Action action, 
+            NodeRef actionedUponNodeRef, 
+            boolean checkConditions, 
+            boolean executedAsynchronously,
             Set<String> actionChain);
-	
+    
     /**
      * Execute an action directly
      * 
      * @param action                the action 
      * @param actionedUponNodeRef   the actioned upon node reference
      */
-	public void directActionExecution(Action action, NodeRef actionedUponNodeRef);
+    public void directActionExecution(Action action, NodeRef actionedUponNodeRef);
 }

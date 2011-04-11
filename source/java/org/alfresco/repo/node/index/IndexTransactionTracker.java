@@ -655,7 +655,7 @@ found:
                 try
                 {
                     // We try the reindex, but for the sake of continuity, have to let it run on
-                    reindexTransactionAsynchronously(txnIdBuffer);
+                    reindexTransactionAsynchronously(txnIdBuffer, false);
                 }
                 catch (Throwable e)
                 {

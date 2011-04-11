@@ -44,6 +44,10 @@ public class RatingPost extends AbstractRatingWebScript
     // Url format
     private final static String NODE_RATINGS_URL_FORMAT = "/api/node/{0}/ratings";
 
+    private final static String AVERAGE_RATING = "averageRating";
+    private final static String RATINGS_TOTAL = "ratingsTotal";
+    private final static String RATINGS_COUNT = "ratingsCount";
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -87,6 +91,9 @@ public class RatingPost extends AbstractRatingWebScript
             model.put(RATED_NODE, ratedNodeUrl);
             model.put(RATING, rating);
             model.put(RATING_SCHEME, schemeName);
+            model.put(AVERAGE_RATING, ratingService.getAverageRating(nodeRefToBeRated, schemeName));
+            model.put(RATINGS_TOTAL, ratingService.getTotalRating(nodeRefToBeRated, schemeName));
+            model.put(RATINGS_COUNT, ratingService.getRatingsCount(nodeRefToBeRated, schemeName));
         }
         catch (IOException iox)
         {

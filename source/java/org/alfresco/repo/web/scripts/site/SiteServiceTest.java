@@ -171,7 +171,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(URL_SITES), 200);        
         JSONArray result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals("Sites exist prior to running test", 0, result.length());
+        int sitesBefore = result.length();
+        assertTrue("There should be at least one site present", sitesBefore > 0);
         
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
@@ -182,7 +183,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(URL_SITES), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(5, result.length());
+        assertEquals(5 + sitesBefore, result.length());
         
         response = sendRequest(new GetRequest(URL_SITES + "?size=3"), 200);        
         result = new JSONArray(response.getContentAsString());        
@@ -192,7 +193,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(URL_SITES + "?size=13"), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(5, result.length());
+        assertEquals(5 + sitesBefore, result.length());
     }
     
     /**
@@ -390,7 +391,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Update the role by returning the data.
         newMember.put("role", SiteModel.SITE_COLLABORATOR);
-        response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, newMember.toString(), "application/json"), 200);
+        response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, newMember.toString(), "application/json"), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
@@ -446,7 +447,7 @@ public class SiteServiceTest extends BaseWebScriptTest
 
         	// Now send the returned value back with a new role (COLLABORATOR)
         	newMember.put("role", SiteModel.SITE_COLLABORATOR);
-        	response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, newMember.toString(), "application/json"), 200);
+        	response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, newMember.toString(), "application/json"), 200);
         	JSONObject updateResult = new JSONObject(response.getContentAsString());
         	assertEquals("role not correct", SiteModel.SITE_COLLABORATOR, updateResult.getString("role"));
         	

@@ -38,6 +38,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RatingDelete extends AbstractRatingWebScript
 {
+    private final static String AVERAGE_RATING = "averageRating";
+    private final static String RATINGS_TOTAL = "ratingsTotal";
+    private final static String RATINGS_COUNT = "ratingsCount";
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -55,7 +59,9 @@ public class RatingDelete extends AbstractRatingWebScript
         }
         
         model.put(NODE_REF, nodeRef.toString());
-        model.put("rating", deletedRating);
+        model.put(AVERAGE_RATING, ratingService.getAverageRating(nodeRef, ratingSchemeName));
+        model.put(RATINGS_TOTAL, ratingService.getTotalRating(nodeRef, ratingSchemeName));
+        model.put(RATINGS_COUNT, ratingService.getRatingsCount(nodeRef, ratingSchemeName));
       
         return model;
     }

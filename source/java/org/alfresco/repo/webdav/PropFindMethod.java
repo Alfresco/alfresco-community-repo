@@ -164,6 +164,15 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
+     * @return          Returns <tt>true</tt> always
+     */
+    @Override
+    protected boolean isReadOnly()
+    {
+        return true;
+    }
+    
+    /**
      * Execute the main WebDAV request processing
      * 
      * @exception WebDAVServerException

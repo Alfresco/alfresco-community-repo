@@ -4,7 +4,7 @@
   Update the membership role for a user or group.
   
   <br />
-  'shortname' is the shortname of the Web site,  'authorityname' is the full authority name for the membership.
+  'shortname' is the shortname of the web site
   <br />
   Required parameters,
   <br />
@@ -23,7 +23,7 @@
   
   ]]>
   </description>
-  <url>/api/sites/{shortname}/memberships/{authorityname}</url>
+  <url>/api/sites/{shortname}/memberships</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>

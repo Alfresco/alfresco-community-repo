@@ -85,7 +85,7 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
                     {
                         NodeRef forumFolder = assocs.get(0).getChildRef();
                         
-                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
                         props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
                         commentsFolder = nodeService.createNode(
                                 forumFolder,
@@ -103,10 +103,8 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
                 return commentsFolder;
             }
     
-        }, AuthenticationUtil.getAdminUserName()); 
+        }, AuthenticationUtil.getSystemUserName()); 
         
         return new ScriptNode(commentsFolder, serviceRegistry, getScope());
     }
-    
-   
 }

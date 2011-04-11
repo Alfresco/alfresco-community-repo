@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Alfresco Repo Usage Update</shortname>
+  <description>Update and retrieve repository usage</description>
+  <url>/api/admin/usage</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+  <family>Admin</family>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -322,6 +322,9 @@
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
 
+   <!-- CMIS Web Script Kind -->
+   <bean id="webscript.org.alfresco.cmiskind" class="org.alfresco.repo.cmis.rest.CMISWebScript" parent="webscript" scope="prototype" />
+
    <!-- CMIS Test Runner Web Script -->
    <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
 
@@ -599,10 +602,41 @@
       <property name="tenantService" ref="tenantService"/>
    </bean>
 
+   <!--                         -->
+   <!-- Site Service REST API -->
+   <!--                         -->
+   
+   <!-- Exports a site's contents as ACP+AVM dumps -->
+   <bean id="webscript.org.alfresco.repository.site.site-export.get" class="org.alfresco.repo.web.scripts.site.SiteExportGet" parent="webscript">
+      <property name="authorityService" ref="AuthorityService"/>
+      <property name="mimetypeService" ref="MimetypeService"/>
+      <property name="exporterService" ref="ExporterService"/>
+      <property name="siteService" ref="SiteService"/>
+      <property name="avmService" ref="AVMService"/>
+      <property name="avmZipExporterService" ref="avmZipExporterService"/>
+      <property name="authenticationContextManager" ref="Authentication"/>
+   </bean>
 
    <!--                         -->
    <!-- Person Service REST API -->
    <!--                         -->
+
+   <bean id="webscript.org.alfresco.repository.person.user-csv-upload.get"
+         class="org.alfresco.repo.web.scripts.person.UserCSVUploadGet"
+         parent="webscript">
+      <property name="dictionaryService" ref="DictionaryService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.person.user-csv-upload.post"
+         class="org.alfresco.repo.web.scripts.person.UserCSVUploadPost"
+         parent="webscript">
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authorityService" ref="AuthorityService" />
+      <property name="personService" ref="PersonService" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="transactionHelper" ref="web.retryingTransactionHelper" />
+   </bean>
    
    <!--                                                                                                       -->
    <!-- changepassword.post Web Script - updates a user password                                              -->
@@ -815,6 +849,52 @@
           parent="abstractRatingWebScript">
     </bean>
     
+    <!--                                     -->
+    <!--    Node Archive Service REST API    -->
+    <!--  (for management of deleted items)  -->
+    <!--                                     -->
+    
+    <!-- abstract node archive web script -->
+    <bean id="baseArchivedNodeWebScript"
+          class="org.alfresco.repo.web.scripts.archive.AbstractArchivedNodeWebScript"
+          parent="webscript" abstract="true">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <!-- The nodeArchiveService (small 'n') wraps the NodeService (big 'N') and adds
+             archive/deletion-related services. There is no NodeArchiveService (big 'N'). -->
+        <property name="nodeArchiveService" ref="nodeArchiveService"/>
+    </bean>
+   
+    <bean id="webscript.org.alfresco.repository.archive.archivednodes.get"
+          class="org.alfresco.repo.web.scripts.archive.ArchivedNodesGet"
+          parent="baseArchivedNodeWebScript">
+          
+          <!-- For Swift, we might add a filter that selects archivednodes based on the user that deleted them -->
+          <!-- Follow the pattern below, replacing this code. -->
+          <!--
+          <property name="archivedNodeFilters">
+              <list>
+                  <bean class="org.alfresco.repo.web.scripts.archive.NodeTypeFilter">
+                      <property name="namespaceService" ref="namespaceService"/>
+                      <property name="nodeService" ref="nodeService"/>
+                      <property name="excludedTypes">
+                          <list><value>cm:thumbnail</value></list>
+                      </property>
+                  </bean>
+              </list>
+          </property>
+          -->
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.archive.archivednode.put"
+          class="org.alfresco.repo.web.scripts.archive.ArchivedNodePut"
+          parent="baseArchivedNodeWebScript">
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.archive.archivednodes.delete"
+          class="org.alfresco.repo.web.scripts.archive.ArchivedNodesDelete"
+          parent="baseArchivedNodeWebScript">
+    </bean>
+    
     <!--                                   -->
     <!--      Workflow Service REST API    -->
     <!--                                   -->
@@ -913,9 +993,45 @@
           parent="abstractAuditWebScript">
     </bean>
 
+    <!--                                   -->
+    <!--      Admin Service REST API    -->
+    <!--                                   -->
+
+    <!-- abstract admin web script -->
+    <bean id="abstractAdminWebScript"
+          class="org.alfresco.repo.web.scripts.admin.AbstractAdminWebscript"
+          parent="webscript" abstract="true">
+        <property name="repoAdminService" ref="RepoAdminService" />
+    </bean>
+
+    <!-- Gets the current usage restrictions -->
+    <bean id="webscript.org.alfresco.repository.admin.restrictions.get"
+          class="org.alfresco.repo.web.scripts.admin.RepoRestrictionsGet"
+          parent="abstractAdminWebScript">
+    </bean>
+
+    <!-- Gets the current usage -->
+    <bean id="webscript.org.alfresco.repository.admin.usage.get"
+          class="org.alfresco.repo.web.scripts.admin.RepoUsageGet"
+          parent="abstractAdminWebScript">
+    </bean>
+
+    <!-- Gets the current usage -->
+    <bean id="webscript.org.alfresco.repository.admin.usage.post"
+          class="org.alfresco.repo.web.scripts.admin.RepoUsagePost"
+          parent="abstractAdminWebScript">
+    </bean>
+
     <!--                                      -->
     <!--      Replication Service REST API    -->
     <!--                                      -->
+
+    <!-- Gets high-level status information about the replication service -->
+    <bean id="webscript.org.alfresco.repository.replication.replication-service-status.get"
+          class="org.alfresco.repo.web.scripts.replication.ReplicationServiceStatusGet"
+          parent="webscript">
+        <property name="replicationService" ref="ReplicationService" />
+    </bean>
 
     <!-- abstract replication web script -->
     <bean id="abstractReplicationWebScript"

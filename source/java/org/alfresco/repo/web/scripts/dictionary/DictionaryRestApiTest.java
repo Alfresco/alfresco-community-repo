@@ -107,8 +107,8 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	private void validateAssociationDef(JSONObject result) throws Exception
 	{
 		assertEquals("cm:avatar", result.get("name"));
-		assertEquals("", result.get("title"));
-		assertEquals("", result.get("description"));
+		assertEquals("Avatar", result.get("title"));
+		assertEquals("The person's avatar image", result.get("description"));
 		assertEquals(false, result.get("isChildAssociation"));
 		assertEquals(false, result.get("protected"));
 		
@@ -714,7 +714,7 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		
 	}
 	
-	public void testGetAssociatoinDef() throws Exception
+	public void testGetAssociationDef() throws Exception
 	{
 		GetRequest req = new GetRequest(URL_SITES + "/cm_person/association/cm_avatar");
 		Response response = sendRequest(req, 200);
@@ -745,7 +745,7 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(200,response.getStatus());
 	}
 	
-	public void testGetAssociatoinDefs() throws Exception
+	public void testGetAssociationDefs() throws Exception
 	{
 		//validate with associationfilter=>all  and classname=>wca_form
 		GetRequest req = new GetRequest(URL_SITES + "/wca_form/associations");

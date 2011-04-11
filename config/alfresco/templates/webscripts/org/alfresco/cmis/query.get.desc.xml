@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Issue Query (query)</shortname>
   <description>
   <![CDATA[

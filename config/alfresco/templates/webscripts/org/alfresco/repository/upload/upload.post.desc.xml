@@ -6,17 +6,16 @@
   <br />
   HTML form data
   <ul>
-	 <li>filedata, (mandatory) HTML type file</li>
-	 <li>siteid</li>
-	 <li>containerid</li>
-	 <li>uploaddirectory</li>	
-	 <li>updatenoderef</li>
-	 <li>filename</li>    
-	 <li>description</li>
-	 <li>contenttype</li>
-     <li>majorversion</li>
-     <li>overwrite</li>
-     <li>thumbnails</li>
+    <li>filedata, (mandatory) HTML type file</li>
+    <li>siteid</li>
+    <li>containerid</li>
+    <li>uploaddirectory</li>
+    <li>updatenoderef</li>
+    <li>description</li>
+    <li>contenttype</li>
+    <li>majorversion</li>
+    <li>overwrite</li>
+    <li>thumbnails</li>
   </ul> 
   
   <br />
@@ -27,7 +26,6 @@
 
   <br />
   Return status: STATUS_OK (200)
-
   ]]>
   </description>
   <url>/api/upload</url>

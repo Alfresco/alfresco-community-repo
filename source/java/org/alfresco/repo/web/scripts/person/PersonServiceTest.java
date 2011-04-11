@@ -102,15 +102,8 @@ public class PersonServiceTest extends BaseWebScriptTest
         String adminUser = this.authenticationComponent.getSystemUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
         
-        /*
-         * TODO: glen.johnson at alfresco dot com -
-         * When DELETE /people/{userid} becomes a requirement and is subsequently implemented,
-         * include this section to tidy-up people's resources created during the execution of the test
-         *
-         */ 
         for (String userName : this.createdPeople)
         {
-            // deleteRequest(URL_PEOPLE + "/" + userName, 0);
             personService.deletePerson(userName);
         }
         
@@ -192,14 +185,14 @@ public class PersonServiceTest extends BaseWebScriptTest
         return new JSONObject(response.getContentAsString());
     }
     
+    @SuppressWarnings("unused")
     public void testGetPeople() throws Exception
     {
         // Test basic GET people with no filters ==
-        
         Response response = sendRequest(new GetRequest(URL_PEOPLE), 200);        
-        System.out.println(response.getContentAsString());
     }
     
+    @SuppressWarnings("unused")
     public void testGetPerson() throws Exception
     {
         // Get a person that doesn't exist

@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Checkin Private Working Copy (checkin)</shortname>
   <description>
   <![CDATA[

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,6 +46,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.ScriptProcessor;
@@ -64,7 +66,7 @@ import de.schlichtherle.io.FileOutputStream;
  * 
  * @author Roy Wetherall
  */
-public class StreamContent extends AbstractWebScript
+public class StreamContent extends AbstractWebScript implements ResourceLoaderAware
 {
     // Logger
     private static final Log logger = LogFactory.getLog(StreamContent.class);
@@ -78,8 +80,14 @@ public class StreamContent extends AbstractWebScript
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected ContentService contentService;
-    protected MimetypeService mimetypeService;    
-
+    protected MimetypeService mimetypeService;
+    protected ResourceLoader resourceLoader;
+    
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader)
+    {
+        this.resourceLoader = resourceLoader;
+    }
 
     /**
      * @param mimetypeService
@@ -173,7 +181,9 @@ public class StreamContent extends AbstractWebScript
                     NodeRef nodeRef = (NodeRef)model.get("contentNode");
                     if (nodeRef == null)
                     {
-                        throw new WebScriptException("The content node was not specified so the content cannot be streamed to the client");
+                        throw new WebScriptException(
+                                "The content node was not specified so the content cannot be streamed to the client: " +
+                                executeScript.getContent().getPathDescription());
                     }
                     QName propertyQName = null;
                     String contentProperty = (String)model.get("contentProperty");
@@ -377,7 +387,7 @@ public class StreamContent extends AbstractWebScript
      * 
      * @param req               The request
      * @param res               The response
-     * @param resourcePath      The resource path the content is required for
+     * @param resourcePath      The classpath resource path the content is required for
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
@@ -392,7 +402,7 @@ public class StreamContent extends AbstractWebScript
      * 
      * @param req               The request
      * @param res               The response
-     * @param resourcePath      The resource path the content is required for
+     * @param resourcePath      The classpath resource path the content is required for.
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
@@ -411,14 +421,21 @@ public class StreamContent extends AbstractWebScript
             ext = resourcePath.substring(extIndex);
         }
         
+        // We need to retrieve the modification date/time from the resource itself.
+        StringBuilder sb = new StringBuilder("classpath:").append(resourcePath);
+        final String classpathResource = sb.toString();
+        
+        long resourceLastModified = resourceLoader.getResource(classpathResource).lastModified();
+        
         // create temporary file 
         File file = TempFileProvider.createTempFile("streamContent-", ext);
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
-        OutputStream os = new FileOutputStream(file);        
-        FileCopyUtils.copy(is, os);        
+
+        InputStream is = resourceLoader.getResource(classpathResource).getInputStream();
+        OutputStream os = new FileOutputStream(file);
+        FileCopyUtils.copy(is, os);
         
-        // stream the contents of the file
-        streamContent(req, res, file, attach, attachFileName);
+        // stream the contents of the file, but using the modifiedDate of the original resource.
+        streamContent(req, res, file, resourceLastModified, attach, attachFileName);
     }
     
     /**
@@ -437,17 +454,36 @@ public class StreamContent extends AbstractWebScript
     }
     
     /**
-     * Streams content back to client from a given resource path.
+     * Streams content back to client from a given File. The Last-Modified header will reflect the
+     * given file's modification timestamp.
      * 
      * @param req               The request
      * @param res               The response
-     * @param resourcePath      The resource path the content is required for
+     * @param file              The file whose content is to be streamed.
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
     protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach, 
                 String attachFileName) throws IOException
+    {
+        streamContent(req, res, file, null, attach, attachFileName);
+    }
+
+    /**
+     * Streams content back to client from a given File.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param file              The file whose content is to be streamed.
+     * @param modifiedTime      The modified datetime to use for the streamed content. If <tt>null</tt> the
+     *                          file's timestamp will be used.
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, Long modifiedTime,
+            boolean attach, String attachFileName) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from file " + file.getAbsolutePath() + " (attach: " + attach + ")");
@@ -466,12 +502,13 @@ public class StreamContent extends AbstractWebScript
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        Date lastModified = new Date(file.lastModified());
+        long lastModified = modifiedTime == null ? file.lastModified() : modifiedTime;
+        Date lastModifiedDate = new Date(lastModified);
         
-        streamContentImpl(req, res, reader, attach, lastModified, 
-                    String.valueOf(lastModified.getTime()), attachFileName);
+        streamContentImpl(req, res, reader, attach, lastModifiedDate, 
+                    String.valueOf(lastModifiedDate.getTime()), attachFileName);
     }
-    
+
     /**
      * Stream content implementation
      * 

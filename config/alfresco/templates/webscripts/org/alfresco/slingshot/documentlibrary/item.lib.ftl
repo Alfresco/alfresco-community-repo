@@ -55,9 +55,16 @@
    "webdavUrl": "${node.webdavUrl}",
    "actionSet": "${item.actionSet}",
    "tags": <#noescape>[${tags}]</#noescape>,
+   <#if node.hasAspect("cm:generalclassifiable")>
    "categories": [<#list node.properties.categories![] as c>["${c.name}", "${c.displayPath?replace("/categories/General","")}"]<#if c_has_next>,</#if></#list>],
+   </#if>
    <#if item.activeWorkflows??>"activeWorkflows": "<#list item.activeWorkflows as aw>${aw}<#if aw_has_next>,</#if></#list>",</#if>
    <#if item.isFavourite??>"isFavourite": ${item.isFavourite?string},</#if>
+   "likes":<#if item.likes??>
+   {
+      "isLiked": ${item.likes.isLiked?string},
+      "totalLikes": ${item.likes.totalLikes?c}
+   }<#else>null</#if>,
    "location":
    {
       "repositoryId": "${(node.properties["trx:repositoryId"])!(server.id)}",
@@ -72,7 +79,7 @@
          <#if item.location.parent.nodeRef??>
          "nodeRef": "${item.location.parent.nodeRef!""}"
          </#if>
-      </#if>      
+      </#if>
       }
    },
    <#if node.hasAspect("cm:geographic")>"geolocation":

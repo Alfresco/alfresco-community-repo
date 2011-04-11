@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
@@ -258,12 +257,21 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
     }
     
-    public void testClearAuditRepo() throws Exception
+    public synchronized void testClearAuditRepo() throws Exception
     {
-        long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis() - 10L;        // Accuracy can be a problem
         long future = Long.MAX_VALUE;
         
         loginWithFailure(getName());
+        
+        // Wait for the background thread to run
+        try
+        {
+            this.wait(100);
+        }
+        catch (Throwable e)
+        {
+        }
         
         // Delete audit entries that could not have happened
         String url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + future;
@@ -273,14 +281,25 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
         assertEquals("Could not have cleared more than 0", 0, cleared);
         
-        // Delete the entry (at least)
-        url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&toTime=" + future;
-        req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-        response = sendRequest(req, Status.STATUS_OK, admin);
-        json = new JSONObject(response.getContentAsString());
-        cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
+        // 1 second sleep to ensure that the audit is processed
+        for(int i = 0; i < 60; i++)
+        {
+            // Delete the entry (at least)
+            url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&toTime=" + future;
+            req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+            response = sendRequest(req, Status.STATUS_OK, admin);
+            json = new JSONObject(response.getContentAsString());
+            cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
+            if (cleared > 0)
+            {
+                break;
+            }
+            
+            Thread.sleep(1000);
+        }
         assertTrue("Should have cleared at least 1 entry", cleared > 0);
-        
+
         // Delete all entries
         url = "/api/audit/clear/" + APP_REPOTEST_NAME;;
         req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);

@@ -1,7 +1,8 @@
 const THUMBNAIL_NAME = "doclib",
    TYPE_SITES = "st:sites",
    PREF_DOCUMENT_FAVOURITES = "org.alfresco.share.documents.favourites",
-   PREF_FOLDER_FAVOURITES = "org.alfresco.share.folders.favourites";
+   PREF_FOLDER_FAVOURITES = "org.alfresco.share.folders.favourites",
+   LIKES_SCHEME = "likesRatingScheme";
 
 var Common =
 {
@@ -201,29 +202,18 @@ var Common =
 
       if (libraryRoot)
       {
-         if (node.isContainer && String(node.nodeRef) != String(libraryRoot.nodeRef))
-         {
-            // We want the path to include the parent folder name
-            displayPaths = displayPaths.concat([node.name]);
-         }
-
          // Generate the path from the supplied library root
          location =
          {
             site: null,
             siteTitle: null,
             container: null,
-            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/")
+            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
+            file: node.name
          };
       }
       else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
       {
-         if (node.isContainer)
-         {
-            // We want the path to include the parent folder name
-            displayPaths = displayPaths.concat([node.name]);
-         }
-
          var siteId = displayPaths[3],
             siteNode = Common.getSite(siteId),
             containerId = qnamePaths[4].substr(3);
@@ -237,7 +227,8 @@ var Common =
                siteTitle: siteNode.title,
                container: containerId,
                containerNode: siteNode.getContainer(containerId),
-               path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+               path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
+               file: node.name
             };
          }
       }
@@ -249,11 +240,38 @@ var Common =
             site: null,
             siteTitle: null,
             container: null,
-            path: "/" + displayPaths.slice(2, displayPaths.length).join("/")
+            path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
+            file: node.name
          };
       }
       
       return location;
+   },
+
+   /**
+    * Returns an object literal representing the current "likes" rating for a node
+    *
+    * @method getLikes
+    * @param node {ScriptNode} Node to query
+    * @return {object} Likes object literal.
+    */
+   getLikes: function Common_getLikes(node)
+   {
+      var isLiked = false,
+         totalLikes = 0;
+
+      try
+      {
+         isLiked = ratingService.getRating(node, LIKES_SCHEME) !== -1;
+         totalLikes = ratingService.getRatingsCount(node, LIKES_SCHEME);
+      }
+      catch (e) {}
+      
+      return (
+      {
+         isLiked: isLiked,
+         totalLikes: totalLikes
+      });
    }
 };
 
@@ -272,13 +290,15 @@ var ParseArgs =
          rootNode = null,
          pathNode = null,
          nodeRef = null,
-         path = "";
+         path = "",
+         location = null;
 
       // Is this library rooted from a non-site nodeRef?
       if (libraryRoot !== null)
       {
          libraryRoot = ParseArgs.resolveNode(libraryRoot);
       }
+
 
       if (url.templateArgs.store_type !== null)
       {
@@ -354,12 +374,23 @@ var ParseArgs =
          return null;
       }
 
+      // Parent location parameter adjustment
+      location = Common.getLocation(pathNode, libraryRoot);
+      if (path !== "")
+      {
+         location.path = ParseArgs.combinePaths(location.path, location.file);
+      }
+      if (args.filter !== "node" && !pathNode.isContainer)
+      {
+         location.file = "";
+      }
+
       var objRet =
       {
          rootNode: rootNode,
          pathNode: pathNode,
          libraryRoot: libraryRoot,
-         location: Common.getLocation(pathNode, libraryRoot),
+         location: location,
          path: path,
          nodeRef: nodeRef,
          type: type
@@ -465,5 +496,29 @@ var ParseArgs =
 
       // Return the values array, or the error string if it was set
       return (error !== null ? error : values);
+   },
+
+   /**
+    * Append multiple parts of a path, ensuring duplicate path separators are removed.
+    *
+    * @method combinePaths
+    * @param path1 {string} First path
+    * @param path2 {string} Second path
+    * @param ...
+    * @param pathN {string} Nth path
+    * @return {string} A string containing the combined paths
+    */
+   combinePaths: function ParseArgs_combinePaths()
+   {
+      var path = "", i, ii;
+      for (i = 0, ii = arguments.length; i < ii; i++)
+      {
+         if (arguments[i] !== null)
+         {
+            path += arguments[i] + (arguments[i] !== "/" ? "/" : "");
+         }
+      }
+
+      return path.replace(/\/{2,}/g, "/").replace(/(.)\/$/g, "$1");
    }
 };

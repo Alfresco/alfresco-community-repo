@@ -57,6 +57,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class ReplicationRestApiTest extends BaseWebScriptTest
 {
+    private static final String URL_REPLICATION_SERVICE_STATUS = "/api/replication-service-status";
     private static final String URL_DEFINITION = "api/replication-definition/";
     private static final String URL_DEFINITIONS = "api/replication-definitions";
     private static final String URL_RUNNING_ACTION = "api/running-action/";
@@ -73,6 +74,23 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
     
     private Repository repositoryHelper;
     private NodeRef dataDictionary;
+    
+    /**
+     * @since 3.5
+     */
+    public void testReplicationServiceIsEnabled() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        Response response = sendRequest(new GetRequest(URL_REPLICATION_SERVICE_STATUS), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONObject data = json.getJSONObject("data");
+        assertNotNull(data);
+        assertTrue("ReplicationService was unexpectedly disabled.", data.getBoolean(ReplicationServiceStatusGet.ENABLED));
+    }
     
     public void testReplicationDefinitionsGet() throws Exception
     {

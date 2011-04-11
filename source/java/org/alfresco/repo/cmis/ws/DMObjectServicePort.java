@@ -176,7 +176,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             }
             catch (FileExistsException e)
             {
-                throw ExceptionUtil.createCmisException("Document already exists", EnumServiceException.CONTENT_ALREADY_EXISTS);
+                throw ExceptionUtil.createCmisException("Document already exists", EnumServiceException.NAME_CONSTRAINT_VIOLATION);
             }
             catch (FileNotFoundException e)
             {
@@ -222,18 +222,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 throw ExceptionUtil.createCmisException("Name property not found", EnumServiceException.INVALID_ARGUMENT);
             }
 
-            try
-            {
-                NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, type.getTypeId().getQName()).getNodeRef();
-                propertiesUtil.setProperties(newFolderNodeRef, properties, createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME,
-                        CMISDictionaryModel.PROP_OBJECT_TYPE_ID })));
-                applyAclCarefully(newFolderNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE, policies);
-                objectId.value = propertiesUtil.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, null);
-            }
-            catch (FileExistsException e)
-            {
-                throw ExceptionUtil.createCmisException("Folder already exists", EnumServiceException.CONTENT_ALREADY_EXISTS);
-            }
+            NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, type.getTypeId().getQName()).getNodeRef();
+            propertiesUtil.setProperties(newFolderNodeRef, properties, createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME,
+                    CMISDictionaryModel.PROP_OBJECT_TYPE_ID })));
+            applyAclCarefully(newFolderNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE, policies);
+            objectId.value = propertiesUtil.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, null);
         }
         catch (CMISServiceException e)
         {
@@ -470,7 +463,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         NodeRef objectNodeRef = resolvePathInfo(path);
         if (null == objectNodeRef)
         {
-            throw ExceptionUtil.createCmisException("Path to Folder was not specified or Folder Path is invalid", EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException("Path to Folder was not specified or Folder Path is invalid", EnumServiceException.OBJECT_NOT_FOUND);
         }
         PropertyFilter propertyFilter = createPropertyFilter(filter);
         CmisObjectType object = createCmisObject(objectNodeRef, propertyFilter, includeRelationships,

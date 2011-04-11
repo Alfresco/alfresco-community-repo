@@ -174,6 +174,7 @@ function getUserEvents(user, siteId, range)
          title: e.properties["ia:whatEvent"],
          where: e.properties["ia:whereEvent"] == null ? "" : e.properties["ia:whereEvent"],
          when: e.properties["ia:fromDate"],
+         description: e.properties["ia:descriptionEvent"],
          start: eStart,
          end: eEnd,
          site: eSite,

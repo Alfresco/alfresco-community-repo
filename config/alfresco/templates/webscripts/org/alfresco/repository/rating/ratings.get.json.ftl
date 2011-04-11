@@ -1,20 +1,19 @@
-<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "data":
    {
       "nodeRef": "${nodeRef}",
       "ratings":
-      [
+      {
          <#list ratings as rating>
+         "${rating.scheme.name!""}":
          {
-            "ratingScheme": "${rating.scheme.name!""}",
             "rating": ${rating.score?c},
-            "appliedAt": "<@dateFormat rating.appliedAt />",
+            "appliedAt": "${xmldate(rating.appliedAt)}",
             "appliedBy": "${rating.appliedBy!""}"
          }<#if rating_has_next>,</#if>
          </#list>
-      ],
+      },
       "nodeStatistics":
       {
          <#list averageRatings?keys as schemeName>

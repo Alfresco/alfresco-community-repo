@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -125,7 +126,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         {
             List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
             
-            if (format.equals("json"))
+            if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
             { 
                 model.put("feedEntries", feedEntries);
                 model.put("siteId", siteId);

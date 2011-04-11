@@ -4,7 +4,8 @@
    {
       "nodeRef": "${node.nodeRef}",
       "type": "${node.typeShort}",
-      "isContainer": ${node.isContainer?string}
+      "isContainer": ${node.isContainer?string},
+      "fileName": "${node.name}"
    }
 </#escape>
 </#macro>

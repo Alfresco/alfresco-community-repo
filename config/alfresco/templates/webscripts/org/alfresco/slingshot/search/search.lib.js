@@ -614,6 +614,40 @@ function processResults(nodes, maxResults)
 }
 
 /**
+ * Helper to escape the localname part of a QName string so it is valid inside an fts-alfresco query.
+ * The language supports the SQL92 identifier standard.
+ * 
+ * @param qname   The QName string to escape
+ * @return escaped string
+ */
+function escapeQName(qname)
+{
+   var separator = qname.indexOf(':'),
+       result = qname.substring(0, separator + 1),
+       localname = qname.substring(separator + 1);
+   for (var i=0,c; i<localname.length; i++)
+   {
+      c = localname.charAt(i);
+      if (i == 0)
+      {
+         if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'))
+         {
+            result += '\\';
+         }
+      }
+      else
+      {
+         if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '$' || c == '#'))
+         {
+            result += '\\';
+         }
+      }
+      result += c;
+   }
+   return result;
+}
+
+/**
  * Return Search results with the given search terms.
  * 
  * "or" is the default operator, AND and NOT are also supported - as is any other valid fts-alfresco
@@ -632,7 +666,7 @@ function getSearchResults(params)
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
-      ftsQuery = "(" + term + ") PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\" ";
+      ftsQuery = "(" + term + " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\") ";
    }
    else if (tag !== null && tag.length !== 0)
    {
@@ -699,12 +733,12 @@ function getSearchResults(params)
                            from = (sepindex === 0 ? "MIN" : propValue.substr(0, sepindex));
                            to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
                         }
-                        formQuery += (first ? '' : ' AND ') + propName + ':"' + from + '".."' + to + '"';
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + from + '".."' + to + '"';
                      }
                   }
                   else
                   {
-                     formQuery += (first ? '' : ' AND ') + propName + ':"' + propValue + '"';
+                     formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + propValue + '"';
                   }
                }
                else

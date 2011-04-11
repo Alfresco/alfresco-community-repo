@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Apply Policy (applyPolicy)</shortname>
   <description>
   <![CDATA[

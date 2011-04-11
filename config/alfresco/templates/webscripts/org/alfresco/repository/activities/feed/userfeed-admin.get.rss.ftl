@@ -6,8 +6,8 @@
       <link></link>
       <description>Alfresco Activities User Feed for ${feedUserId?xml}</description>
       <language>en-us</language>
-      <lastBuildDate></lastBuildDate>
-      <pubDate></pubDate>
+      <lastBuildDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</lastBuildDate>
+      <pubDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
       <ttl>120</ttl>
       <generator>Alfresco (0.1)</generator>
 <#if feedEntries??>

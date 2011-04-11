@@ -57,13 +57,20 @@ function tagQuery()
       
       for each (taggedNode in taggedNodes)
       {
-         for each (tag in taggedNode.properties["cm:taggable"])
+         try
          {
-            if (tag !== null)
+            for each (tag in taggedNode.properties["cm:taggable"])
             {
-               count = tagHash[tag.name];
-               tagHash[tag.name] = count ? count+1 : 1;
+               if (tag !== null)
+               {
+                  count = tagHash[tag.name];
+                  tagHash[tag.name] = count ? count+1 : 1;
+               }
             }
+         }
+         catch (e)
+         {
+            continue;
          }
       }
       

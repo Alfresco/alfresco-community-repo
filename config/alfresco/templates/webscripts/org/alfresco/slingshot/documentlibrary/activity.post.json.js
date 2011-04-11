@@ -40,6 +40,8 @@ function postActivity()
    {
       case "file-added":
       case "file-updated":
+      case "file-liked":
+      case "folder-liked":
       case "google-docs-checkout":
       case "google-docs-checkin":
       case "inline-edit":

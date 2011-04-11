@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -69,6 +71,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
     private ContentService contentService;
     private Repository repositoryHelper;
     protected NodeRef containerNodeRef;
+    protected TransactionService transactionService;
 
     @Override
     protected void setUp() throws Exception
@@ -81,103 +84,119 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         this.repositoryHelper = (Repository) getServer().getApplicationContext().getBean(
                 "repositoryHelper");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+        this.transactionService = (TransactionService) getServer().getApplicationContext()
+                .getBean("transactionService");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
 
-        NodeRef companyHomeNodeRef = this.repositoryHelper.getCompanyHome();
+            @Override
+            public Void execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
-        String guid = GUID.generate();
+                NodeRef companyHomeNodeRef = AbstractTestFormRestApi.this.repositoryHelper.getCompanyHome();
 
-        // Create a test file (not a folder)
-        FileInfo referencingDoc = this.fileFolderService.create(companyHomeNodeRef,
-                "referencingDoc" + guid + ".txt", ContentModel.TYPE_CONTENT);
-        referencingDocNodeRef = referencingDoc.getNodeRef();
+                String guid = GUID.generate();
 
-        // Add an aspect.
-        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
-        aspectProps.put(ContentModel.PROP_TITLE, TEST_FORM_TITLE);
-        aspectProps.put(ContentModel.PROP_DESCRIPTION, TEST_FORM_DESCRIPTION);
-        nodeService.addAspect(referencingDocNodeRef, ContentModel.ASPECT_TITLED, aspectProps);
+                // Create a test file (not a folder)
+                FileInfo referencingDoc = AbstractTestFormRestApi.this.fileFolderService.create(companyHomeNodeRef,
+                        "referencingDoc" + guid + ".txt", ContentModel.TYPE_CONTENT);
+                referencingDocNodeRef = referencingDoc.getNodeRef();
 
-        // Write some content into the node.
-        ContentWriter contentWriter = this.contentService.getWriter(referencingDoc.getNodeRef(),
-                ContentModel.PROP_CONTENT, true);
-        contentWriter.setEncoding("UTF-8");
-        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        contentWriter.putContent("The quick brown fox jumped over the lazy dog.");
-        
-        // Create a folder - will use this for child-association testing
-        FileInfo associatedDocsFolder =
-            this.fileFolderService.create(companyHomeNodeRef, "testFolder" + guid, ContentModel.TYPE_FOLDER);
-        
-        testFolderNodeRef = associatedDocsFolder.getNodeRef();
-        
-        this.associatedDoc_A = createTestNode("associatedDoc_A" + guid);
-        this.associatedDoc_B = createTestNode("associatedDoc_B" + guid);
-        this.associatedDoc_C = createTestNode("associatedDoc_C" + guid);
-        this.associatedDoc_D = createTestNode("associatedDoc_D" + guid);
-        this.associatedDoc_E = createTestNode("associatedDoc_E" + guid);
+                // Add an aspect.
+                Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
+                aspectProps.put(ContentModel.PROP_TITLE, TEST_FORM_TITLE);
+                aspectProps.put(ContentModel.PROP_DESCRIPTION, TEST_FORM_DESCRIPTION);
+                nodeService.addAspect(referencingDocNodeRef, ContentModel.ASPECT_TITLED, aspectProps);
 
-        // Now create associations between the referencing and the two node refs.
-        aspectProps.clear();
-        this.nodeService.addAspect(this.referencingDocNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
-        this.nodeService.createAssociation(this.referencingDocNodeRef, associatedDoc_A, ContentModel.ASSOC_REFERENCES);
-        this.nodeService.createAssociation(this.referencingDocNodeRef, associatedDoc_B, ContentModel.ASSOC_REFERENCES);
-        // Leave the 3rd, 4th and 5th nodes without associations as they may be created in
-        // other test code.
+                // Write some content into the node.
+                ContentWriter contentWriter = AbstractTestFormRestApi.this.contentService.getWriter(referencingDoc.getNodeRef(),
+                        ContentModel.PROP_CONTENT, true);
+                contentWriter.setEncoding("UTF-8");
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                contentWriter.putContent("The quick brown fox jumped over the lazy dog.");
+                
+                // Create a folder - will use this for child-association testing
+                FileInfo associatedDocsFolder =
+                    AbstractTestFormRestApi.this.fileFolderService.create(companyHomeNodeRef, "testFolder" + guid, ContentModel.TYPE_FOLDER);
+                
+                testFolderNodeRef = associatedDocsFolder.getNodeRef();
+                
+                AbstractTestFormRestApi.this.associatedDoc_A = createTestNode("associatedDoc_A" + guid);
+                AbstractTestFormRestApi.this.associatedDoc_B = createTestNode("associatedDoc_B" + guid);
+                AbstractTestFormRestApi.this.associatedDoc_C = createTestNode("associatedDoc_C" + guid);
+                AbstractTestFormRestApi.this.associatedDoc_D = createTestNode("associatedDoc_D" + guid);
+                AbstractTestFormRestApi.this.associatedDoc_E = createTestNode("associatedDoc_E" + guid);
 
-        // Create a container for the children.
-        HashMap<QName, Serializable> containerProps = new HashMap<QName, Serializable>();
-        this.containerNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testContainer" + guid),
-                ContentModel.TYPE_CONTAINER,
-                containerProps).getChildRef();
-        
-        this.childDoc_A = createTestNode("childDoc_A" + guid);
-        this.childDoc_B = createTestNode("childDoc_B" + guid);
-        this.childDoc_C = createTestNode("childDoc_C" + guid);
-        this.childDoc_D = createTestNode("childDoc_D" + guid);
-        this.childDoc_E = createTestNode("childDoc_E" + guid);
-        
-        // Now create the pre-test child-associations.
-        this.nodeService.addChild(containerNodeRef, childDoc_A, ContentModel.ASSOC_CHILDREN, QName.createQName("childA"));
-        this.nodeService.addChild(containerNodeRef, childDoc_B, ContentModel.ASSOC_CHILDREN, QName.createQName("childB"));
-        // The other childDoc nodes will be added as children over the REST API as part
-        // of later test code.
+                // Now create associations between the referencing and the two node refs.
+                aspectProps.clear();
+                AbstractTestFormRestApi.this.nodeService.addAspect(AbstractTestFormRestApi.this.referencingDocNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
+                AbstractTestFormRestApi.this.nodeService.createAssociation(AbstractTestFormRestApi.this.referencingDocNodeRef, associatedDoc_A, ContentModel.ASSOC_REFERENCES);
+                AbstractTestFormRestApi.this.nodeService.createAssociation(AbstractTestFormRestApi.this.referencingDocNodeRef, associatedDoc_B, ContentModel.ASSOC_REFERENCES);
+                // Leave the 3rd, 4th and 5th nodes without associations as they may be created in
+                // other test code.
 
-        // Create and store the urls to the referencingNode
-        StringBuilder builder = new StringBuilder();
-        builder.append("/api/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(referencingDocNodeRef.getId()).append("/formprocessor");
-        this.referencingNodeUpdateUrl = builder.toString();
-        
-        builder = new StringBuilder();
-        builder.append("/api/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(containerNodeRef.getId()).append("/formprocessor");
-        this.containingNodeUpdateUrl = builder.toString();
-        
-        // Store the original properties of this node
-        this.refNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);
-        
-        refNodePropertiesAfterCreation.toString();
+                // Create a container for the children.
+                HashMap<QName, Serializable> containerProps = new HashMap<QName, Serializable>();
+                AbstractTestFormRestApi.this.containerNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testContainer" + guid),
+                        ContentModel.TYPE_CONTAINER,
+                        containerProps).getChildRef();
+                
+                AbstractTestFormRestApi.this.childDoc_A = createTestNode("childDoc_A" + guid);
+                AbstractTestFormRestApi.this.childDoc_B = createTestNode("childDoc_B" + guid);
+                AbstractTestFormRestApi.this.childDoc_C = createTestNode("childDoc_C" + guid);
+                AbstractTestFormRestApi.this.childDoc_D = createTestNode("childDoc_D" + guid);
+                AbstractTestFormRestApi.this.childDoc_E = createTestNode("childDoc_E" + guid);
+                
+                // Now create the pre-test child-associations.
+                AbstractTestFormRestApi.this.nodeService.addChild(containerNodeRef, childDoc_A, ContentModel.ASSOC_CHILDREN, QName.createQName("childA"));
+                AbstractTestFormRestApi.this.nodeService.addChild(containerNodeRef, childDoc_B, ContentModel.ASSOC_CHILDREN, QName.createQName("childB"));
+                // The other childDoc nodes will be added as children over the REST API as part
+                // of later test code.
+
+                // Create and store the urls to the referencingNode
+                StringBuilder builder = new StringBuilder();
+                builder.append("/api/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
+                        .append("/").append(referencingDocNodeRef.getId()).append("/formprocessor");
+                AbstractTestFormRestApi.this.referencingNodeUpdateUrl = builder.toString();
+                
+                builder = new StringBuilder();
+                builder.append("/api/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
+                        .append("/").append(containerNodeRef.getId()).append("/formprocessor");
+                AbstractTestFormRestApi.this.containingNodeUpdateUrl = builder.toString();
+                
+                // Store the original properties of this node
+                AbstractTestFormRestApi.this.refNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);
+                
+                refNodePropertiesAfterCreation.toString();
+                return null;
+            }});
     }
 
     @Override
     public void tearDown()
     {
-        nodeService.deleteNode(this.referencingDocNodeRef);
-        nodeService.deleteNode(this.associatedDoc_A);
-        nodeService.deleteNode(this.associatedDoc_B);
-        nodeService.deleteNode(this.associatedDoc_C);
-        nodeService.deleteNode(this.associatedDoc_D);
-        nodeService.deleteNode(this.associatedDoc_E);
-        nodeService.deleteNode(this.childDoc_A);
-        nodeService.deleteNode(this.childDoc_B);
-        nodeService.deleteNode(this.childDoc_C);
-        nodeService.deleteNode(this.childDoc_D);
-        nodeService.deleteNode(this.childDoc_E);
-        nodeService.deleteNode(this.testFolderNodeRef);
-        nodeService.deleteNode(this.containerNodeRef);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.deleteNode(AbstractTestFormRestApi.this.referencingDocNodeRef);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.associatedDoc_A);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.associatedDoc_B);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.associatedDoc_C);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.associatedDoc_D);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.associatedDoc_E);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.childDoc_A);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.childDoc_B);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.childDoc_C);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.childDoc_D);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.childDoc_E);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.testFolderNodeRef);
+                nodeService.deleteNode(AbstractTestFormRestApi.this.containerNodeRef);
+                return null;
+            }});
     }
 
     protected Response sendGetReq(String url, int expectedStatusCode)

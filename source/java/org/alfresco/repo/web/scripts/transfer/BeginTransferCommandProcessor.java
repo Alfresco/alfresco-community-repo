@@ -23,8 +23,10 @@ import java.io.StringWriter;
 
 import org.alfresco.repo.transfer.RepoTransferReceiverImpl;
 import org.alfresco.repo.transfer.TransferCommons;
+import org.alfresco.repo.transfer.TransferVersionImpl;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -60,15 +62,19 @@ public class BeginTransferCommandProcessor implements CommandProcessor
         {
             String [] fromRepositoryIdValues = req.getParameterValues(TransferCommons.PARAM_FROM_REPOSITORYID);
             String [] transferToSelfValues = req.getParameterValues(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF);
-            
+            String [] editionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_EDITION);
+            String [] majorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MAJOR);
+            String [] minorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MINOR); 
+            String [] revisionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_REVISION);
+                          
             String fromRepositoryId = null;
-            if(fromRepositoryIdValues.length > 0)
+            if(fromRepositoryIdValues != null && fromRepositoryIdValues.length > 0)
             {
                 fromRepositoryId = fromRepositoryIdValues[0];
             }
             
             boolean transferToSelf = false;
-            if(transferToSelfValues.length > 0)
+            if(transferToSelfValues != null && transferToSelfValues.length > 0)
             {
                 if(transferToSelfValues[0].equalsIgnoreCase("true"))
                 {
@@ -76,18 +82,53 @@ public class BeginTransferCommandProcessor implements CommandProcessor
                 }
             }
             
+            String edition = "Unknown";
+            if(editionValues != null && editionValues.length > 0)
+            {
+                edition = editionValues[0];
+            }
+            String major = "0";
+            if(majorValues != null && majorValues.length > 0)
+            {
+                major = majorValues[0];
+            }
+            String minor = "0";
+            if(minorValues != null && minorValues.length > 0)
+            {
+                minor = minorValues[0];
+            }
+            String revision = "0";
+            if(revisionValues != null && revisionValues.length > 0)
+            {
+                revision = revisionValues[0];
+            }
+            
+            TransferVersion fromVersion = new TransferVersionImpl(major, minor, revision, edition);
+            
             // attempt to start the transfer
-            transferId = receiver.start(fromRepositoryId, transferToSelf);
+            transferId = receiver.start(fromRepositoryId, transferToSelf, fromVersion);
 
             // Create a temporary folder into which we can place transferred files
             receiver.getStagingFolder(transferId);
+            
+            TransferVersion version = receiver.getVersion();
 
             // return the unique transfer id (the lock id)
-            StringWriter stringWriter = new StringWriter(300);
+            StringWriter stringWriter = new StringWriter(1000);
             JSONWriter jsonWriter = new JSONWriter(stringWriter);
             jsonWriter.startObject();
-            jsonWriter.writeValue("transferId", transferId);
+            
+            jsonWriter.writeValue(TransferCommons.PARAM_TRANSFER_ID, transferId);
+            
+            if(version != null)
+            {
+                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_EDITION, version.getEdition());
+                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MAJOR, version.getVersionMajor());
+                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MINOR, version.getVersionMinor()); 
+                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_REVISION, version.getVersionRevision());
+            }
             jsonWriter.endObject();
+            
             String response = stringWriter.toString();
             
             resp.setContentType("application/json");

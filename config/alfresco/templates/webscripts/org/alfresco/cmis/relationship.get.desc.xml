@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Get a Relationship (getRelationship)</shortname>
   <description>
   <![CDATA[

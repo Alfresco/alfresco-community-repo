@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Unfiled Documents (getUnfiled)</shortname>
   <description>Gets all unfiled documents in the Repository.</description>
   <url>/cmis/unfiled</url>

@@ -3,8 +3,8 @@
 <channel rdf:about="http://www.alfresco.com/">
    <title>Alfresco - Wiki Page</title>
    <description>Alfresco Wiki Page - Recent Changes</description>
-   <lastBuildDate>${xmldate(date)}</lastBuildDate>
-   <pubDate>${xmldate(date)}</pubDate>
+   <lastBuildDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</lastBuildDate>
+   <pubDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
    <generator>Alfresco ${server.edition} v${server.version}</generator>
    <image>
       <title>Alfresco - Wiki Page Recent Changes</title>
@@ -13,9 +13,9 @@
    <#list wiki.pages?sort_by(['modified'])?reverse as p>
    <#assign page = p.page>
    <item>
-      <title>${page.properties.title!""?html}</title>
+      <title>${(page.properties.title!"")?html}</title>
       <link>${absurl(url.context)?replace("alfresco", "share/page/site/${siteId}/wiki-page?title=${page.name}")}</link>
-      <pubDate>${xmldate(page.properties.modified)}</pubDate>
+      <pubDate>${page.properties.modified?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
       <guid isPermaLink="false">${page.id}</guid>
    </item>
 </#list>

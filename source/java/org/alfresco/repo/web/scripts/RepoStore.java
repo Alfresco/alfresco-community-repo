@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
@@ -331,7 +332,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                             org.alfresco.service.cmr.repository.Path repoScriptPath = nodeService.getPath(scriptNodeRef);
                             String id = script.getDescription().getId().substring(scriptPath.length() + (scriptPath.length() > 0 ? 1 : 0));
                             String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) +
-                                           "//*\" +QNAME:" + id + "*";
+                                           "//*\" +QNAME:" + lucenifyNamePattern(id) + "*";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                             try
                             {
@@ -380,7 +381,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
              .append(encPath.length() != 0 ? ('/' + encPath) : "")
              .append((includeSubPaths ? '/' : ""))
              .append("/*\" +QNAME:")
-             .append(documentPattern);
+             .append(lucenifyNamePattern(documentPattern));
         
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
         {
@@ -442,6 +443,52 @@ public class RepoStore extends AbstractStore implements TenantDeployer
             if (t.hasMoreTokens())
             {
                 result.append('/');
+            }
+        }
+        return result.toString();
+    }
+    
+    /**
+     * ALF-7059: Because we can't quote QNAME patterns, and because characters like minus have special meaning, we have
+     * to pass the document 'pattern' though the Lucene escaper, preserving the wildcard parts. Also, because you can't
+     * search for whitespace in a QNAME, we have to replace whitespace with the ? wildcard
+     * 
+     * @param pattern
+     * @return
+     */
+    private static String lucenifyNamePattern(String pattern)
+    {
+        // Assume already escaped if the pattern includes a backslash
+        if (pattern.indexOf('\\') != -1)
+        {
+            return pattern;
+        }
+        StringBuilder result = new StringBuilder(pattern.length() * 2);
+        StringTokenizer tkn = new StringTokenizer(pattern, "\t\r\n *", true);
+        while (tkn.hasMoreTokens())
+        {
+            String token = tkn.nextToken();
+            if (token.length() == 1)
+            {
+                char c = token.charAt(0);
+                if (Character.isWhitespace(c))
+                {
+                    // We can't include whitespace in a QNAME expression so we will have to use a wildcard character and
+                    // filter the results later
+                    result.append('?');
+                }
+                else if (c == '*')
+                {
+                    result.append(c);
+                }
+                else
+                {
+                    result.append(LuceneQueryParser.escape(token));
+                }
+            }
+            else
+            {
+                result.append(LuceneQueryParser.escape(token));
             }
         }
         return result.toString();

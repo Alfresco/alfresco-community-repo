@@ -152,9 +152,11 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertEquals(LIKES_RATING_SCHEME, scheme1.getString(NAME));
         assertEquals(1.0, scheme1.getDouble(MIN_RATING));
         assertEquals(1.0, scheme1.getDouble(MAX_RATING));
+        assertTrue(scheme1.getBoolean("selfRatingAllowed"));
         assertEquals(FIVE_STAR_RATING_SCHEME, scheme2.getString(NAME));
         assertEquals(1.0, scheme2.getDouble(MIN_RATING));
         assertEquals(5.0, scheme2.getDouble(MAX_RATING));
+        assertFalse(scheme2.getBoolean("selfRatingAllowed"));
     }
     
     public void testGetRatingsFromUnratedNodeRef() throws Exception
@@ -171,8 +173,8 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertNotNull("JSON 'data' object was null", dataObj);
         
         assertEquals(testNode.toString(), dataObj.getString(NODE_REF));
-        final JSONArray ratingsArray = dataObj.getJSONArray(RATINGS);
-        assertEquals(0, ratingsArray.length());
+        final JSONObject ratingsObject = dataObj.getJSONObject(RATINGS);
+        assertEquals(0, ratingsObject.length());
 
         // Unrated content
         JSONObject statsObject = dataObj.getJSONObject(NODE_STATISTICS);
@@ -180,6 +182,11 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertEquals("Average rating was wrong.", -1.0, likesStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 0, likesStats.getInt(RATINGS_COUNT));
         assertEquals("Ratings total was wrong.", 0.0, likesStats.getDouble(RATINGS_TOTAL));
+
+        JSONObject fiveStarStats = statsObject.getJSONObject(FIVE_STAR_RATING_SCHEME);
+        assertEquals("Average rating was wrong.", -1.0, fiveStarStats.getDouble(AVERAGE_RATING));
+        assertEquals("Ratings count rating was wrong.", 0, fiveStarStats.getInt(RATINGS_COUNT));
+        assertEquals("Ratings total was wrong.", 0.0, fiveStarStats.getDouble(RATINGS_TOTAL));
     }
 
     /**
@@ -201,13 +208,13 @@ public class RatingRestApiTest extends BaseWebScriptTest
         .endObject()
         .toString();
         
-        Response rsp = sendRequest(new PostRequest(testNodeRatingUrl,
+        Response postRsp = sendRequest(new PostRequest(testNodeRatingUrl,
                                  jsonString, APPLICATION_JSON), 200);
         
-        String rspContent = rsp.getContentAsString();
+        String postRspString = postRsp.getContentAsString();
         
         // Get the returned URL and validate
-        JSONObject jsonRsp = new JSONObject(new JSONTokener(rspContent));
+        JSONObject jsonRsp = new JSONObject(new JSONTokener(postRspString));
         
         JSONObject dataObj = (JSONObject)jsonRsp.get(DATA);
         assertNotNull("JSON 'data' object was null", dataObj);
@@ -215,21 +222,34 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertEquals(testNodeRatingUrl, returnedUrl);
         assertEquals(FIVE_STAR_RATING_SCHEME, dataObj.getString("ratingScheme"));
         assertEquals(userOneRatingValue, (float)dataObj.getDouble("rating"));
+        assertEquals(userOneRatingValue, (float)dataObj.getDouble("averageRating"));
+        assertEquals(userOneRatingValue, (float)dataObj.getDouble("ratingsTotal"));
+        assertEquals(1, dataObj.getInt("ratingsCount"));
+
+        // And a second rating
+        jsonString = new JSONStringer().object()
+            .key("rating").value(1)
+            .key("ratingScheme").value(LIKES_RATING_SCHEME)
+        .endObject()
+        .toString();
+        
+        sendRequest(new PostRequest(testNodeRatingUrl, jsonString, APPLICATION_JSON), 200);
+
         
         // Now GET the ratings via that returned URL
-        rsp = sendRequest(new GetRequest(testNodeRatingUrl), 200);
+        Response getRsp = sendRequest(new GetRequest(testNodeRatingUrl), 200);
+        String getRspString = getRsp.getContentAsString();
 
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        jsonRsp = new JSONObject(new JSONTokener(getRspString));
         
         dataObj = (JSONObject)jsonRsp.get(DATA);
         assertNotNull("JSON 'data' object was null", dataObj);
         
-        // There should only be the one rating in there.
-        final JSONArray ratingsArray = dataObj.getJSONArray(RATINGS);
-        assertEquals(1, ratingsArray.length());
-        JSONObject recoveredRating = (JSONObject)ratingsArray.get(0);
+        // There should be two ratings in there.
+        final JSONObject ratingsObject = dataObj.getJSONObject(RATINGS);
+        assertEquals(2, ratingsObject.length());
+        JSONObject recoveredRating = ratingsObject.getJSONObject(FIVE_STAR_RATING_SCHEME);
         assertEquals(userOneRatingValue, (float)recoveredRating.getDouble("rating"));
-        assertEquals(FIVE_STAR_RATING_SCHEME, recoveredRating.getString("ratingScheme"));
 
         // As well as the average, total ratings.
         JSONObject statsObject = dataObj.getJSONObject(NODE_STATISTICS);
@@ -237,6 +257,11 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertEquals("Average rating was wrong.", userOneRatingValue, (float)fiveStarStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 1, fiveStarStats.getInt(RATINGS_COUNT));
         assertEquals("Ratings total was wrong.", userOneRatingValue, (float)fiveStarStats.getDouble(RATINGS_TOTAL));
+
+        JSONObject likesStats = statsObject.getJSONObject(LIKES_RATING_SCHEME);
+        assertEquals("Average rating was wrong.", 1f, (float)likesStats.getDouble(AVERAGE_RATING));
+        assertEquals("Ratings count rating was wrong.", 1, likesStats.getInt(RATINGS_COUNT));
+        assertEquals("Ratings total was wrong.", 1f, (float)likesStats.getDouble(RATINGS_TOTAL));
         
 
         // Now POST a second new rating to the testNode - as User Two.
@@ -249,32 +274,36 @@ public class RatingRestApiTest extends BaseWebScriptTest
         .endObject()
         .toString();
         
-        rsp = sendRequest(new PostRequest(testNodeRatingUrl,
+        postRsp = sendRequest(new PostRequest(testNodeRatingUrl,
                                  jsonString, APPLICATION_JSON), 200);
-        rspContent = rsp.getContentAsString();
+        postRspString = postRsp.getContentAsString();
         
         // Get the returned URL and validate
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        jsonRsp = new JSONObject(new JSONTokener(postRspString));
         
         dataObj = (JSONObject)jsonRsp.get(DATA);
         assertNotNull("JSON 'data' object was null", dataObj);
         returnedUrl =  dataObj.getString("ratedNodeUrl");
 
-        // Again GET the ratings via that returned URL
-        rsp = sendRequest(new GetRequest(returnedUrl), 200);
+        assertEquals((userOneRatingValue + userTwoRatingValue) / 2, (float)dataObj.getDouble("averageRating"));
+        assertEquals(userOneRatingValue + userTwoRatingValue,       (float)dataObj.getDouble("ratingsTotal"));
+        assertEquals(2, dataObj.getInt("ratingsCount"));
 
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        // Again GET the ratings via that returned URL
+        getRsp = sendRequest(new GetRequest(returnedUrl), 200);
+        getRspString = getRsp.getContentAsString();
+
+        jsonRsp = new JSONObject(new JSONTokener(getRspString));
         
         dataObj = (JSONObject)jsonRsp.get(DATA);
         assertNotNull("JSON 'data' object was null", dataObj);
 
         // There should still only be the one rating in the results - because we're running
         // as UserTwo and should not see UserOne's rating.
-        final JSONArray userTwoRatingsArray = dataObj.getJSONArray(RATINGS);
-        assertEquals(1, userTwoRatingsArray.length());
-        JSONObject secondRating = (JSONObject)userTwoRatingsArray.get(0);
+        final JSONObject userTwoRatings = dataObj.getJSONObject(RATINGS);
+        assertEquals(1, userTwoRatings.length());
+        JSONObject secondRating = (JSONObject)userTwoRatings.getJSONObject(FIVE_STAR_RATING_SCHEME);
         assertEquals(userTwoRatingValue, (float)secondRating.getDouble("rating"));
-        assertEquals(FIVE_STAR_RATING_SCHEME, secondRating.getString("ratingScheme"));
 
         // Now the average should have changed.
         statsObject = dataObj.getJSONObject(NODE_STATISTICS);
@@ -287,22 +316,20 @@ public class RatingRestApiTest extends BaseWebScriptTest
         
         
         // Now DELETE user two's rating.
-        // Now POST a second new rating to the testNode - as User Two.
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
-
-        rsp = sendRequest(new DeleteRequest(testNodeRatingUrl + "/" + FIVE_STAR_RATING_SCHEME), 200);
-        rspContent = rsp.getContentAsString();
+        sendRequest(new DeleteRequest(testNodeRatingUrl + "/" + FIVE_STAR_RATING_SCHEME), 200);
         
         // GET the ratings again. Although user_one's rating will still be there,
         // user two can't see it and so we should see zero ratings.
-        rsp = sendRequest(new GetRequest(returnedUrl), 200);
+        getRsp = sendRequest(new GetRequest(returnedUrl), 200);
+        getRspString = getRsp.getContentAsString();
 
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        jsonRsp = new JSONObject(new JSONTokener(getRspString));
         
         dataObj = (JSONObject)jsonRsp.get(DATA);
         assertNotNull("JSON 'data' object was null", dataObj);
 
-        final JSONArray remainingRatings = dataObj.getJSONArray(RATINGS);
+        final JSONObject remainingRatings = dataObj.getJSONObject(RATINGS);
         assertEquals(0, remainingRatings.length());
 
         // Now the average should have changed.

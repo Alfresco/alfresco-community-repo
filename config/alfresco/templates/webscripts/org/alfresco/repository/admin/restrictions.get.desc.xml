@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Alfresco Repo Restrictions</shortname>
+  <description>Get repository restrictions</description>
+  <url>/api/admin/restrictions</url>
+  <format default="json" />
+  <authentication>guest</authentication>
+  <transaction allow="readonly">required</transaction>
+  <family>Admin</family>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Checkout Document (checkOut)</shortname>
   <description>
   <![CDATA[

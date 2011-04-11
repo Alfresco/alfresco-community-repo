@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Get Folder and Document Hierarchy (getDescendants)</shortname>
   <description>
   <![CDATA[

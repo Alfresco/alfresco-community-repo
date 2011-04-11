@@ -20,6 +20,7 @@ package org.alfresco.repo.webdav;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -112,7 +113,9 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         try
         {
             destInfo = getDAVHelper().getNodeForPath(rootNodeRef, destPath, servletPath);
-            if (!hasOverWrite())
+            // ALF-7079 fix, if destInfo is working copy then content will be updated later
+			boolean isDestWorkingCopy = getNodeService().hasAspect(destInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY);
+            if (!hasOverWrite() && !isDestWorkingCopy)
             {
                 if (logger.isDebugEnabled())
                 {
@@ -121,8 +124,8 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
                 // it exists and we may not overwrite
                 throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
             }
-            // delete the destination node if it is not the same as the source node
-            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
+            // delete the destination node if it is not the same as the source node and not a working copy
+            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()) && !isDestWorkingCopy)
             {
                 checkNode(destInfo);
 

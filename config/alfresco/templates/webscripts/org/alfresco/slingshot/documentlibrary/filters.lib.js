@@ -55,6 +55,19 @@ var Filters =
 
       optional = optional || {};
 
+      // Sorting parameters specified?
+      var sortAscending = args.sortAsc,
+         sortField = args.sortField;
+
+      if (sortAscending == "false")
+      {
+         filterParams.sort[0].ascending = false;
+      }
+      if (sortField !== null)
+      {
+         filterParams.sort[0].column = (sortField.indexOf(":") != -1 ? "@" : "") + sortField;
+      }
+
       // Max returned results specified?
       var argMax = args.max;
       if ((argMax !== null) && !isNaN(argMax))
@@ -67,15 +80,17 @@ var Filters =
       {
          favourites = [];
       }
-
+      
       // Create query based on passed-in arguments
       var filterData = String(args.filterData),
          filterQuery = "";
 
       // Common types and aspects to filter from the UI - known subtypes of cm:content and cm:folder
       var filterQueryDefaults =
-         " -TYPE:\"thumbnail\"" +
-         " -TYPE:\"systemfolder\"" +
+         " -TYPE:\"cm:thumbnail\"" +
+         " -TYPE:\"cm:failedThumbnail\"" +
+         " -TYPE:\"cm:systemfolder\"" +
+         " -TYPE:\"rating\"" +
          " -TYPE:\"fm:forums\"" +
          " -TYPE:\"fm:forum\"" +
          " -TYPE:\"fm:topic\"" +

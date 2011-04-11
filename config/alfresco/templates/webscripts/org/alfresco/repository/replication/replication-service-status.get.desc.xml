@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Gets status information on the Replication Service</shortname>
+  <description>
+  Returns high-level information on the Replication Service status.
+  </description>
+  <url>/api/replication-service-status</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

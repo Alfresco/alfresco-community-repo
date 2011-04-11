@@ -34,6 +34,8 @@
    </#if>
    "createdOn": "${item.node.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn": "${item.node.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "createdOnISO": "${xmldate(item.node.properties.created)}",
+   "modifiedOnISO": "${xmldate(item.node.properties.modified)}",
    "isUpdated": ${item.isUpdated?string},
    "permissions":
    {

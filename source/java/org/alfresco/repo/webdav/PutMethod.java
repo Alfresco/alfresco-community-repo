@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Implements the WebDAV PUT method
@@ -135,8 +136,8 @@ public class PutMethod extends WebDAVMethod
             }
             catch (FileExistsException ee)
             {
-                // bad path
-                throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
+                // ALF-7079 fix, retry: it looks like concurrent access (file not found but file exists) 
+                throw new ConcurrencyFailureException("Concurrent access was detected.",  ee);
             }
         }
         

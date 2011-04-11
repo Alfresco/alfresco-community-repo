@@ -22,8 +22,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.alfresco.repo.web.scripts.action.RunningActionRestApiTest;
-import org.alfresco.repo.web.scripts.activities.SiteActivitySystemTest;
 import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
+import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
 import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
 import org.alfresco.repo.web.scripts.blog.BlogServiceTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
@@ -45,7 +45,6 @@ import org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest;
 import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
 import org.alfresco.repo.web.scripts.wcm.WebProjectTest;
 import org.alfresco.repo.web.scripts.wcm.membership.WebProjectMembershipTest;
-import org.alfresco.repo.web.scripts.wcm.sandbox.AssetTest;
 import org.alfresco.repo.web.scripts.wcm.sandbox.SandboxTest;
 import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
@@ -65,6 +64,7 @@ public class WebScriptTestSuite extends TestSuite
         TestWebScriptRepoServer.getTestServer();
         
         // Add the tests
+        suite.addTestSuite( AdminWebScriptTest.class );
         suite.addTestSuite( AuditWebScriptTest.class );
         suite.addTestSuite( BlogServiceTest.class );
         suite.addTestSuite( DictionaryRestApiTest.class );

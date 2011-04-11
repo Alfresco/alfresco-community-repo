@@ -22,7 +22,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.web.util.auth.Authorization;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -30,8 +33,6 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * HTTP Basic Authentication
@@ -153,27 +154,26 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                     {
                         throw new WebScriptException("Authorization '" + authorizationParts[0] + "' not supported.");
                     }
-                    String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
-                    String[] parts = decodedAuthorisation.split(":");
                     
-                    if (parts.length == 1)
+                    String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
+                    Authorization auth = new Authorization(decodedAuthorisation);
+                    if (auth.isTicket())
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("Authenticating (BASIC HTTP) ticket " + parts[0]);
+                            logger.debug("Authenticating (BASIC HTTP) ticket " + auth.getTicket());
     
                         // assume a ticket has been passed
-                        authenticationService.validate(parts[0]);
+                        authenticationService.validate(auth.getTicket());
                         authorized = true;
                     }
                     else
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("Authenticating (BASIC HTTP) user " + parts[0]);
+                            logger.debug("Authenticating (BASIC HTTP) user " + auth.getUserName());
     
-                        String username = parts[0];
                         // No longer need a special call to authenticate as guest
                         // Leave guest name resolution up to the services
-                        authenticationService.authenticate(username, parts[1].toCharArray());
+                        authenticationService.authenticate(auth.getUserName(), auth.getPassword().toCharArray());
                         authorized = true;
                     }
                 }

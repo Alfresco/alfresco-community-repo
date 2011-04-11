@@ -8,7 +8,8 @@
          {
             "name": "${schemeDefs[key].name!""}",
             "minRating": ${schemeDefs[key].minRating?c},
-            "maxRating": ${schemeDefs[key].maxRating?c}
+            "maxRating": ${schemeDefs[key].maxRating?c},
+            "selfRatingAllowed": ${schemeDefs[key].selfRatingAllowed?string}
          }<#if key_has_next>,</#if>
          </#list>
       ]

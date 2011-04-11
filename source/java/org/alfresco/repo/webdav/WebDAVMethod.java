@@ -28,8 +28,12 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +48,7 @@ import org.alfresco.model.WebDAVModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -86,6 +91,16 @@ public abstract class WebDAVMethod
     // Output formatted XML in the response
 
     private static final boolean XMLPrettyPrint = true;
+    
+    // Mapping of User-Agent pattern to response status code
+    // used to determine which status code should be returned for AccessDeniedException
+
+    private static final Map<String, Integer> accessDeniedStatusCodes = new LinkedHashMap<String, Integer>();
+    static
+    {
+        accessDeniedStatusCodes.put("(darwin)|(macintosh)", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        accessDeniedStatusCodes.put(".*", HttpServletResponse.SC_FORBIDDEN);
+    }
 
     // Servlet request/response
 
@@ -253,7 +268,14 @@ public abstract class WebDAVMethod
         {
             this.m_requestBody = TempFileProvider.createTempFile("webdav_" + req.getMethod() + "_", ".bin");
             OutputStream out = new FileOutputStream(this.m_requestBody);
-            FileCopyUtils.copy(req.getInputStream(), out);
+            int bytesRead = FileCopyUtils.copy(req.getInputStream(), out);
+            
+            // ALF-7377: check for corrupt request
+            int contentLength = req.getIntHeader(WebDAV.HEADER_CONTENT_LENGTH);
+            if (contentLength >= 0 && contentLength != bytesRead)
+            {
+                throw new IOException("Request body does not have specified Content Length");
+            }
         }
         return this.m_requestBody;
     }
@@ -314,7 +336,7 @@ public abstract class WebDAVMethod
         catch (AccessDeniedException e)
         {
             // Return a forbidden status
-            throw new WebDAVServerException(HttpServletResponse.SC_FORBIDDEN, e);
+            throw new WebDAVServerException(getStatusForAccessDeniedException(), e);
         }
         catch (Throwable e)
         {
@@ -838,7 +860,8 @@ public abstract class WebDAVMethod
         {
             if (nodeLockInfo.getToken() == null)
             {
-                if (nodeLockInfo.getSharedLockTokens() == null)
+                CheckOutCheckInService checkOutCheckInService = m_davHelper.getServiceRegistry().getCheckOutCheckInService();
+                if (nodeLockInfo.getSharedLockTokens() == null && checkOutCheckInService.getWorkingCopy(fileInfo.getNodeRef()) == null)
                 {
                     return nodeLockInfo;
                 }
@@ -1202,7 +1225,29 @@ public abstract class WebDAVMethod
         }
         return result;
     }
-    
+
+    /**
+     * Determines status code for AccessDeniedException based on client's HTTP headers.
+     * 
+     * @return Returns status code
+     */
+    protected int getStatusForAccessDeniedException()
+    {
+        if (m_request != null && m_request.getHeader(WebDAV.HEADER_USER_AGENT) != null)
+        {
+            String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT).toLowerCase();
+
+            for (Entry<String, Integer> entry : accessDeniedStatusCodes.entrySet())
+            {
+                if (Pattern.compile(entry.getKey()).matcher(userAgent).find())
+                {
+                    return entry.getValue();
+                }
+            }
+        }
+        return HttpServletResponse.SC_UNAUTHORIZED;
+    }
+
     /**
      * Class used for storing conditions which comes with "If" header of the request
      * 

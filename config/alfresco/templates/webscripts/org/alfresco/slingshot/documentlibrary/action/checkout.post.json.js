@@ -22,19 +22,8 @@ function runAction(p_params)
    {
       var assetNode = p_params.destNode;
 
-      // Ensure the file is versionable
-      if (!assetNode.hasAspect("cm:versionable"))
-      {
-         var props = new Array(1);
-         props["cm:autoVersionOnUpdateProps"] = false;
-         assetNode.addAspect("cm:versionable", props);
-      }
- 
-      if (assetNode.versionHistory == null)
-      {
-         // Create the first version manually so we have 1.0 before checkout
-         assetNode.createVersion("", true);
-      }
+      // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
+      assetNode.ensureVersioningEnabled(true, false);
 
       // Checkout the asset
       var workingCopy = assetNode.checkout();
@@ -65,8 +54,9 @@ function runAction(p_params)
    }
    catch(e)
    {
-      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
-      return;
+      e.code = status.STATUS_INTERNAL_SERVER_ERROR;
+      e.message = e.toString();      
+      throw e;
    }
 
    return results;

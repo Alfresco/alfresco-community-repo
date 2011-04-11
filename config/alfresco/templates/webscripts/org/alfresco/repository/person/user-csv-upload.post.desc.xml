@@ -1,0 +1,17 @@
+<webscript>
+   <shortname>Create Users via uploading of a CSV</shortname>
+   <description>
+      Allows an administrator to upload a CSV describing new users,
+      who will then have accounts created for them.
+
+      Note - if the CSV is uploaded OK, but there was a problem with
+      the contents or creating the users, you will receive a 200 status
+      code along with details of the problem.
+   </description>
+   <url>/api/people/upload</url>
+   <format default="json"></format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <!-- Transactions are handled inside the webscript itself -->
+   <transaction>none</transaction>
+</webscript>

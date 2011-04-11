@@ -43,7 +43,16 @@ public class PropPatchMethod extends PropFindMethod
 
     // Properties to patch
     protected ArrayList<PropertyAction> m_propertyActions = null;
-
+    
+    /**
+     * @return          Returns <tt>false</tt> always
+     */
+    @Override
+    protected boolean isReadOnly()
+    {
+        return false;
+    }
+    
     @Override
     protected void executeImpl() throws WebDAVServerException, Exception
     {

@@ -1,4 +1,4 @@
-<webscript>
+<webscript kind="org.alfresco.cmiskind">
   <shortname>Delete a Relationship (deleteRelationship)</shortname>
   <description>
   <![CDATA[

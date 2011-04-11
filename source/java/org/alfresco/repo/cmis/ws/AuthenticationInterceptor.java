@@ -21,6 +21,7 @@ package org.alfresco.repo.cmis.ws;
 import java.util.List;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.util.auth.Authorization;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.cxf.binding.soap.SoapMessage;
@@ -59,7 +60,15 @@ public class AuthenticationInterceptor extends AbstractSoapInterceptor
             {
                 try
                 {
-                    authenticationService.authenticate(principal.getName(), principal.getPassword().toCharArray());
+                    Authorization auth = new Authorization(principal.getName(), principal.getPassword());
+                    if (auth.isTicket())
+                    {
+                        authenticationService.validate(auth.getTicket());
+                    }
+                    else
+                    {
+                        authenticationService.authenticate(auth.getUserName(), auth.getPassword().toCharArray());
+                    }
                 }
                 catch (Throwable e)
                 {

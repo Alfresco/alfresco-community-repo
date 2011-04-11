@@ -15,13 +15,13 @@ function getContents(user, type, maxResults)
    var userType = (type == 'created') ? 'creator' : 'modifier';
    
    var query = "+PATH:\"/app:company_home/st:sites/*//*\"" +
-               " +TYPE:\"content\"" +
-               " -TYPE:\"dl:dataListItem\"" +
                " +@cm\\:" + userType + ":\"" + user + "\"" +
                " +@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
-               " -TYPE:\"thumbnail\"";
+               " +TYPE:\"cm:content\"" +
+               " -TYPE:\"dl:dataListItem\"" +
+               " -TYPE:\"cm:thumbnail\"";
    
-   var nodes = search.luceneSearch(query, "cm:" + type, false, maxResults);
+   var nodes = search.luceneSearch(query, "@cm:" + type, false, maxResults);
    //reset processed results (in search.lib.js)
    processedCache = {}
    return processResults(nodes, maxResults);

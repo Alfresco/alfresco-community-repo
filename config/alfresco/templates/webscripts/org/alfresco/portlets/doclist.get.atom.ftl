@@ -24,8 +24,8 @@
    <title>Alfresco - My Documents</title>
    <link>${absurl(url.context)}/</link>
    <description>Alfresco - My Documents</description>
-   <lastBuildDate>${xmldate(date)}</lastBuildDate>
-   <pubDate>${xmldate(date)}</pubDate>
+   <lastBuildDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</lastBuildDate>
+   <pubDate>${date?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
    <generator>Alfresco ${server.edition} v${server.version}</generator>
    <image>
       <title>Alfresco - My Documents</title>
@@ -62,7 +62,7 @@
          <#if isImage>&lt;img src=&quot;${absurl(url.context)}${d.url}?ticket=${session.ticket}&quot;&gt;&lt;br&gt;</#if>
          <#if d.properties.description?exists>${d.properties.description?html}</#if>
       </description>
-      <pubDate>${xmldate(d.properties.modified)?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
+      <pubDate>${d.properties.modified?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
       <guid isPermaLink="false">${d.id}</guid>
    </item>
       </#if>

@@ -41,8 +41,9 @@ function runAction(p_params)
    }
    catch(e)
    {
-      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
-      return;
+      e.code = status.STATUS_INTERNAL_SERVER_ERROR;
+      e.message = e.toString();      
+      throw e;
    }
 
    return results;

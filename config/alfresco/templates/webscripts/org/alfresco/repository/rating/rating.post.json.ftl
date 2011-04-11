@@ -4,7 +4,10 @@
    {
       "ratedNodeUrl": "${ratedNode!""}",
       "rating": ${rating?c},
-      "ratingScheme": "${ratingScheme!""}"
+      "ratingScheme": "${ratingScheme!""}",
+      "averageRating": ${averageRating?c},
+      "ratingsTotal": ${ratingsTotal?c},
+      "ratingsCount": ${ratingsCount?c}
    }
 }
 </#escape>

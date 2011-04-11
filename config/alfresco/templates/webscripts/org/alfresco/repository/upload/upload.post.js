@@ -14,7 +14,6 @@ function main()
 
       // Upload specific
       var uploadDirectory = null,
-         title = "",
          contentType = null,
          aspects = [],
          overwrite = true; // If a filename clashes for a versionable file
@@ -78,10 +77,6 @@ function main()
                updateNodeRef = fnFieldValue(field);
                break;
 
-            case "filename":
-               title = fnFieldValue(field);
-               break;
-
             case "description":
                description = field.value;
                break;
@@ -120,7 +115,7 @@ function main()
       /**
        * Site or Non-site?
        */
-      if (siteId !== null)
+      if (siteId !== null && siteId.length() > 0)
       {
          /**
           * Site mode.
@@ -210,20 +205,8 @@ function main()
 
          if (!updateNode.hasAspect("cm:workingcopy"))
          {
-            // Ensure the original file is versionable - may have been uploaded via different route
-            if (!updateNode.hasAspect("cm:versionable"))
-            {
-               // Ensure the file is versionable
-               var props = new Array(1);
-               props["cm:autoVersionOnUpdateProps"] = false;
-               updateNode.addAspect("cm:versionable", props);
-            }
-
-            if (updateNode.versionHistory == null)
-            {
-               // Create the first version manually so we have 1.0 before checkout
-               updateNode.createVersion("", true);
-            }
+            // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
+            updateNode.ensureVersioningEnabled(true, false);
 
             // It's not a working copy, do a check out to get the actual working copy
             updateNode = updateNode.checkoutForUpload();
@@ -322,7 +305,7 @@ function main()
          // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
          newFile.properties.content.guessMimetype(filename);
          newFile.properties.content.guessEncoding();
-         newFile.save();         
+         newFile.save();
 
          // Create thumbnail?
          if (thumbnailNames != null)
@@ -340,23 +323,6 @@ function main()
             }
          }
 
-         // Extract metadata - via repository action for now.
-         // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
-         var emAction = actions.create("extract-metadata");
-         if (emAction != null)
-         {
-            // Call using readOnly = false, newTransaction = false
-            emAction.execute(newFile, false, false);
-         }
-
-         // Set the title if none set during meta-data extract
-         newFile.reset();
-         if (newFile.properties.title == null)
-         {
-            newFile.properties.title = title;
-            newFile.save();
-         }
-         
          // Additional aspects?
          if (aspects.length > 0)
          {
@@ -364,6 +330,15 @@ function main()
             {
                newFile.addAspect(aspects[i]);
             }
+         }
+
+         // Extract metadata - via repository action for now.
+         // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
+         var emAction = actions.create("extract-metadata");
+         if (emAction != null)
+         {
+            // Call using readOnly = false, newTransaction = false
+            emAction.execute(newFile, false, false);
          }
 
          model.document = newFile;

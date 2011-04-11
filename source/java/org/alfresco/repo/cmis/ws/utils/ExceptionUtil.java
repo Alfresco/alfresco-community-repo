@@ -28,6 +28,7 @@ import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.CmisFaultType;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 
@@ -46,6 +47,7 @@ public abstract class ExceptionUtil
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(InvalidNodeRefException.class.getName(), EnumServiceException.INVALID_ARGUMENT);
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(ContentIOException.class.getName(), EnumServiceException.NOT_SUPPORTED);
         CLASS_TO_ENUM_EXCEPTION_MAPPING.put(CMISQueryException.class.getName(), EnumServiceException.INVALID_ARGUMENT);
+        CLASS_TO_ENUM_EXCEPTION_MAPPING.put(FileExistsException.class.getName(), EnumServiceException.NAME_CONSTRAINT_VIOLATION);
     }
 
     public static CmisException createCmisException(String message, EnumServiceException exceptionType)

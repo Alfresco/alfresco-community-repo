@@ -79,6 +79,7 @@ function getDoclist()
    }
    else
    {
+      // TODO: Sorting with folders at end -- swap order of concat()
       nodes = folderNodes.concat(documentNodes);
    }
    totalRecords = nodes.length;
@@ -117,7 +118,8 @@ function getDoclist()
       if (item !== null)
       {
          item.isFavourite = (favourites[item.node.nodeRef] === true);
-   
+         item.likes = Common.getLikes(node);
+
          // Does this collection of nodes have potentially differering paths?
          if (filterParams.variablePath || item.isLink)
          {
@@ -145,7 +147,7 @@ function getDoclist()
          item.location = location;
          
          // Is our thumbnail type registered?
-         if (isThumbnailNameRegistered)
+         if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
          {
             // Make sure we have a thumbnail.
             thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
@@ -187,6 +189,7 @@ function getDoclist()
             if (String(items[i].node.nodeRef) == workingCopyOriginal)
             {
                fnArrayRemove(items, i);
+               --totalRecords;
                break;
             }
          }

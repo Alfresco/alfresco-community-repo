@@ -1,8 +1,16 @@
 <webscript kind="org.alfresco.repository.content.stream">
-  <shortname>Get thumbnail</shortname>
-  <description>Gets a named thumbnail for a content resource.</description>
+  <shortname>Thumbnails</shortname>
+  <description>
+  Get a named thumbnail for a content resource.<br/>
+  The two URL templates which support a 'filename' template-arg are made available in order to
+  support scenarios (e.g. with third party libraries) where the repo URL being called includes an explicit filename suffix.<br/>
+  Please note that Alfresco does not currently use the filename template-arg and that it will be ignored.
+  Therefore a GET to these URLs will return the same resource as to the equivalent URLs without it.
+  </description>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}/{filename}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  
+  <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}/{filename}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
   <format default="">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>

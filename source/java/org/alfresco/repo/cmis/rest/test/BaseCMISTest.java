@@ -76,6 +76,7 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
 
         // Create a dummy client. We won't / can't use it to make requests.
         cmisClient = new CMISClient(null, null, null, null);
+        cmisClient.setValidate(false);
     }
 
     protected CMISClient cmisClient;

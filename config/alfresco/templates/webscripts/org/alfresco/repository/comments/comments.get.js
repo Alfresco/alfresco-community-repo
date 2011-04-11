@@ -5,11 +5,17 @@
 /**
  * Get all comments for a node
  */
-function getCommentsList(node, index, count)
+function getCommentsList(node, index, count, reverse)
 {
    var nodes = getComments(node);
+   var result = getPagedResultsData(nodes, index, count, getCommentData);
 
-   return getPagedResultsData(nodes, index, count, getCommentData);
+   if (reverse == "true" && result.items.length > 0)
+   {
+      // Don't want to mutate the result.items array. Therefore we use slice(0) to get a (shallow) copy of it.
+      result.items = result.items.slice(0).reverse();
+   }
+   return result;
 }
 
 function main()
@@ -22,10 +28,11 @@ function main()
    }
 
    // process additional parameters
+   var reverse = args["reverse"] != undefined ? args["reverse"] : "false";
    var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
 
-   model.data = getCommentsList(node, index, count);
+   model.data = getCommentsList(node, index, count, reverse);
    model.node = node;
 }
 

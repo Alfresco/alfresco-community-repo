@@ -141,14 +141,16 @@ public class UnlockMethod extends WebDAVMethod
         LockStatus lockSts = lockService.getLockStatus(lockNodeInfo.getNodeRef());
         if (lockSts == LockStatus.LOCK_OWNER)
         {
-            // Unlock the node if it is not a Working Copy (ALF-4479)
-            if (!nodeService.hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
-            {
-                lockService.unlock(lockNodeInfo.getNodeRef());
-            }
+            lockService.unlock(lockNodeInfo.getNodeRef());
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_DEPTH);
             nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE);
+
+            // Return the cm:lockable aspect to working copy (ALF-4479, ALF-7079)
+            if (nodeService.hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+            {
+                nodeService.addAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_LOCKABLE, null);
+            }
 
             // Indicate that the unlock was successful
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);

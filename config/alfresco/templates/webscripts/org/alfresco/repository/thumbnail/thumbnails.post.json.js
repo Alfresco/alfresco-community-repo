@@ -9,7 +9,14 @@ function main()
    if (node == null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "The thumbnail source node could not be found");
-	  return;
+      return;
+   }
+
+   // 400 if the node is not a subtype of cm:content
+   if (!node.isSubType("cm:content"))
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "The thumbnail source node is not a subtype of cm:content");
+      return;
    }
    
    // Get the thumbnail name from the JSON content 
@@ -23,6 +30,7 @@ function main()
    if (thumbnailName == null)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Thumbnail name was not provided");
+      return;
    }  
    
    // TODO double check that the thumbnail name is valid

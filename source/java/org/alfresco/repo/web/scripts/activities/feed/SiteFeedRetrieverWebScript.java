@@ -24,16 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.util.JSONtoFmModel;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Java-backed WebScript to retrieve Activity Site Feed
@@ -90,7 +91,7 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
             List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
             
             
-            if (format.equals("json"))
+            if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
             { 
                 model.put("feedEntries", feedEntries);
                 model.put("siteId", siteId);

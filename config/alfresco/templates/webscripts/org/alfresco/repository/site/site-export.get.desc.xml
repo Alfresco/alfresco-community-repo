@@ -1,0 +1,15 @@
+<webscript>
+  <shortname>Export Web Site</shortname>
+  <description>
+  <![CDATA[
+  Exports the details and contents of a site.
+
+  Returns a single zip file containing ACP and AVM exports of
+  the various parts of the site.
+  ]]></description>
+  <url>/api/sites/{shortname}/export</url>
+  <format default="html">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

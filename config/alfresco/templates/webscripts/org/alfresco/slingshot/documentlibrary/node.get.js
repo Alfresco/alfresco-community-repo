@@ -35,6 +35,7 @@ function getDoclist()
       item = Evaluator.run(node);
 
    item.isFavourite = (favourites[node.nodeRef] === true);
+   item.likes = Common.getLikes(node);
 
    item.location =
    {
@@ -57,22 +58,16 @@ function getDoclist()
    {
       item.location.file = "";
    }
-   else if (node.isContainer)
-   {
-      // Strip off the extra path that will have been added by default
-      var paths = item.location.path.split("/");
-      item.location.path = "/" + paths.slice(1, paths.length - 1).join("/");
-   }
       
    // Is our thumbnail type registered?
-   if (isThumbnailNameRegistered)
+   if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
    {
       // Make sure we have a thumbnail.
-      thumbnail = node.getThumbnail(THUMBNAIL_NAME);
+      thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
       if (thumbnail === null)
       {
          // No thumbnail, so queue creation
-         node.createThumbnail(THUMBNAIL_NAME, true);
+         item.node.createThumbnail(THUMBNAIL_NAME, true);
       }
    }
       

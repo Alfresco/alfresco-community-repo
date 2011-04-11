@@ -1,3 +1,4 @@
+
 var Evaluator =
 {
    /**
@@ -278,7 +279,7 @@ var Evaluator =
             }
          }
          catch (e) {}
-   
+
          return(
          {
             node: node,
@@ -295,7 +296,8 @@ var Evaluator =
             activeWorkflows: activeWorkflows,
             custom: jsonUtils.toJSONString(custom),
             customObj: custom,
-            actionLabels: actionLabels
+            actionLabels: actionLabels,
+            
          });
       }
       else

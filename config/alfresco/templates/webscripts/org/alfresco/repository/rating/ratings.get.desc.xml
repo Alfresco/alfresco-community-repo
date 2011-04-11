@@ -9,14 +9,14 @@
    {<br/>
    &nbsp;&nbsp;"nodeRef": "workspace:\/\/SpacesStore\/d0b163fe-050d-43f5-88e4-db1794a3e5cd",<br/>
    &nbsp;&nbsp;"ratings":<br/>
-   &nbsp;&nbsp;[<br/>
+   &nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;"fiveStarRatingScheme":<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingScheme": "fiveStarRatingScheme",<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rating": 5,<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"appliedAt": "12 Jul 2010 16:38:05 GMT+0100 (BST)",<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"appliedBy": "UserOne"<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-   &nbsp;&nbsp;],<br/>
+   &nbsp;&nbsp;},<br/>
    &nbsp;&nbsp;"nodeStatistics":<br/>
    &nbsp;&nbsp;{<br/>
    &nbsp;&nbsp;&nbsp;&nbsp;"likesRatingScheme":<br/>

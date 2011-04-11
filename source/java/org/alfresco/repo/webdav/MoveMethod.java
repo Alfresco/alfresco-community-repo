@@ -22,10 +22,15 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Implements the WebDAV MOVE method
@@ -50,13 +55,21 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
     {
         NodeRef rootNodeRef = getRootNodeRef();
 
-        String path = getPath();
-        List<String> pathElements = getDAVHelper().splitAllPaths(path);
-        FileInfo fileInfo = null;
+        String sourcePath = getPath();
+        List<String> sourcePathElements = getDAVHelper().splitAllPaths(sourcePath);
+        FileInfo sourceFileInfo = null;
+        
+        String destPath = getDestinationPath();
+        List<String> destPathElements = getDAVHelper().splitAllPaths(destPath);
+        FileInfo destFileInfo = null;
+        
+        NodeService nodeService = getNodeService();
+        
         try
         {
             // get the node to move
-            fileInfo = fileFolderService.resolveNamePath(rootNodeRef, pathElements);
+            sourceFileInfo = fileFolderService.resolveNamePath(rootNodeRef, sourcePathElements);
+            destFileInfo = fileFolderService.resolveNamePath(rootNodeRef, destPathElements);
         }
         catch (FileNotFoundException e)
         {
@@ -64,12 +77,46 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
             {
                 logger.debug("Node not found: " + getPath());
             }
-            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+            
+            if (sourceFileInfo == null)
+            {
+                // nothing to move
+                throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+            }
         }
 
-        checkNode(fileInfo);
+        checkNode(sourceFileInfo);
 
-        // It is move operation
-        fileFolderService.move(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);        
+        // ALF-7079 fix, if source is working copy then it is just copied to destination
+        if (nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            // replace move with copy action for working copies
+            fileFolderService.copy(sourceNodeRef, destParentNodeRef, name);
+        }
+        // ALF-7079 fix, if destination exists and is working copy then its content is updated with
+        // source content and source is deleted
+        else if (destFileInfo != null && nodeService.hasAspect(destFileInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+        {
+            // copy only content for working copy destination
+            ContentService contentService = getContentService();
+            ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+            ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            contentWriter.putContent(reader);
+
+            fileFolderService.delete(sourceNodeRef);
+        }
+        else
+        {
+            if (sourceParentNodeRef.equals(destParentNodeRef)) 
+            { 
+               // It is rename method 
+               fileFolderService.rename(sourceNodeRef, name); 
+            } 
+            else 
+            { 
+                // It is move operation 
+                fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name); 
+            } 
+        }
     }
 }

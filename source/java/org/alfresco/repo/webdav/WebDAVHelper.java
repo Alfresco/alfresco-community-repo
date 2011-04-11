@@ -61,7 +61,7 @@ public class WebDAVHelper
     public static final char PathSeperatorChar = '/';
     
     // Logging
-    private static Log logger = LogFactory.getLog("org.alfresco.protocol.webdav");
+    private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
     // Service registry
     private ServiceRegistry m_serviceRegistry;

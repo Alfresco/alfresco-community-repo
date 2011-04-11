@@ -11,6 +11,13 @@ function main()
       status.setCode(status.STATUS_NOT_FOUND, "The thumbnail source node could not be found");
       return;
    }
+
+   // 400 if the node is not a subtype of cm:content
+   if (!node.isSubType("cm:content"))
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "The thumbnail source node is not a subtype of cm:content");
+      return;
+   }
    
    // Get the thumbnail name from the JSON content 
    var thumbnailName = url.templateArgs.thumbnailname; 
@@ -69,12 +76,13 @@ function main()
          
          if (ph == true)
          {
-            // Try and get the place holder resource
-            var phPath = thumbnailService.getPlaceHolderResourcePath(thumbnailName);
+            // Try and get the place holder resource. We use a method in the thumbnail service
+            // that by default gives us a resource based on the content's mime type.
+            var phPath = thumbnailService.getMimeAwarePlaceHolderResourcePath(thumbnailName, node.mimetype);
             if (phPath == null)
             {
                // 404 since no thumbnail was found
-               status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holde resource set for '" + thumbnailName + "'");
+               status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holder resource set for '" + thumbnailName + "'");
                return;
             }
             else

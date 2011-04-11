@@ -154,79 +154,86 @@ public class InviteServiceTest extends BaseWebScriptTest
         
         // Create new invitee email address list
         this.inviteeEmailAddrs = new ArrayList<String>();
-        
-        //
-        // various setup operations which need to be run as system user
-        //
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
+
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+
+            @Override
+            public Void execute() throws Throwable
             {
-                // Create inviter person
-                createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER, INVITER_EMAIL);
+                //
+                // various setup operations which need to be run as system user
+                //
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        // Create inviter person
+                        createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER, INVITER_EMAIL);
+                        
+                        // Create inviter2 person
+                        createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER_2, INVITER_EMAIL_2);
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
                 
-                // Create inviter2 person
-                createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER_2, INVITER_EMAIL_2);
-                
+                // The creation of sites is heavily dependent on the authenticated user.  We must ensure that,
+                // when doing the runAs below, the user both 'runAs' and 'fullyAuthenticated'.  In order for
+                // this to be the case, the security context MUST BE EMPTY now.  We could do the old
+                // "defensive clear", but really there should not be any lurking authentications on this thread
+                // after the context starts up.  If there are, that is a bug, and we fail explicitly here.
+                String residuallyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                assertNull(
+                        "Residual authentication on context-initiating thread (this thread):" + residuallyAuthenticatedUser,
+                        residuallyAuthenticatedUser);
+
+                //
+                // various setup operations which need to be run as inviter user
+                //
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        // Create first site for Inviter to invite Invitee to
+                        SiteInfo siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_1);
+                        if (siteInfo == null)
+                        {
+                            siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
+                                    "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
+                        }
+                        
+                        // Create second site for inviter to invite invitee to
+                        siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_2);
+                        if (siteInfo == null)
+                        {
+                            siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
+                                    "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
+                        }
+
+                        // Create third site for inviter to invite invitee to
+                        siteInfo = InviteServiceTest.this.siteService.getSite(SITE_SHORT_NAME_INVITE_3);
+                        if (siteInfo == null)
+                        {
+                            siteService.createSite(
+                                "InviteSitePreset", SITE_SHORT_NAME_INVITE_3,
+                                "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
+                        }
+                        
+                        // set inviter2's role on third site to collaborator
+                        String inviterSiteRole = siteService.getMembersRole(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2);
+                        if ((inviterSiteRole == null) || (inviterSiteRole.equals(SiteModel.SITE_COLLABORATOR) == false))
+                        {
+                            siteService.setMembership(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2, SiteModel.SITE_COLLABORATOR);
+                        }
+
+                        return null;
+                    }
+                }, USER_INVITER);
+
+                // Do tests as inviter user
+                InviteServiceTest.this.authenticationComponent.setCurrentUser(USER_INVITER);
                 return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-        
-        // The creation of sites is heavily dependent on the authenticated user.  We must ensure that,
-        // when doing the runAs below, the user both 'runAs' and 'fullyAuthenticated'.  In order for
-        // this to be the case, the security context MUST BE EMPTY now.  We could do the old
-        // "defensive clear", but really there should not be any lurking authentications on this thread
-        // after the context starts up.  If there are, that is a bug, and we fail explicitly here.
-        String residuallyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        assertNull(
-                "Residual authentication on context-initiating thread (this thread):" + residuallyAuthenticatedUser,
-                residuallyAuthenticatedUser);
-
-        //
-        // various setup operations which need to be run as inviter user
-        //
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                // Create first site for Inviter to invite Invitee to
-                SiteInfo siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_1);
-                if (siteInfo == null)
-                {
-                    siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
-                            "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
-                }
-                
-                // Create second site for inviter to invite invitee to
-                siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_2);
-                if (siteInfo == null)
-                {
-                    siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
-                            "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
-                }
-
-                // Create third site for inviter to invite invitee to
-                siteInfo = InviteServiceTest.this.siteService.getSite(SITE_SHORT_NAME_INVITE_3);
-                if (siteInfo == null)
-                {
-                    siteService.createSite(
-                        "InviteSitePreset", SITE_SHORT_NAME_INVITE_3,
-                        "InviteSiteTitle", "InviteSiteDescription", SiteVisibility.PUBLIC);
-                }
-                
-                // set inviter2's role on third site to collaborator
-                String inviterSiteRole = siteService.getMembersRole(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2);
-                if ((inviterSiteRole == null) || (inviterSiteRole.equals(SiteModel.SITE_COLLABORATOR) == false))
-                {
-                    siteService.setMembership(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2, SiteModel.SITE_COLLABORATOR);
-                }
-
-                return null;
-            }
-        }, USER_INVITER);
-
-        // Do tests as inviter user
-        this.authenticationComponent.setCurrentUser(USER_INVITER);
+            }});
     }
 
     /**
@@ -275,53 +282,56 @@ public class InviteServiceTest extends BaseWebScriptTest
         //
         // run various teardown operations which need to be run as 'admin'
         //
-        RunAsWork<Object> runAsWork = new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+
+            @Override
+            public Void execute() throws Throwable
             {
-                // delete the inviter
-                deletePersonByUserName(USER_INVITER);
-
-                // delete all invitee people
-                for (String inviteeEmail : InviteServiceTest.this.inviteeEmailAddrs)
+                RunAsWork<Object> runAsWork = new RunAsWork<Object>()
                 {
-                    //
-                    // delete all people with given email address
-                    //
-
-                    Set<NodeRef> people = InviteServiceTest.this.personService
-                            .getPeopleFilteredByProperty(
-                                    ContentModel.PROP_EMAIL, inviteeEmail);
-                    for (NodeRef person : people)
+                    public Object doWork() throws Exception
                     {
-                        String userName = DefaultTypeConverter.INSTANCE
-                                .convert(String.class, InviteServiceTest.this.nodeService.getProperty(
-                                        person, ContentModel.PROP_USERNAME));
+                        // delete the inviter
+                        deletePersonByUserName(USER_INVITER);
 
-                        // delete person
-                        deletePersonByUserName(userName);
+                        // delete all invitee people
+                        for (String inviteeEmail : InviteServiceTest.this.inviteeEmailAddrs)
+                        {
+                            //
+                            // delete all people with given email address
+                            //
+
+                            Set<NodeRef> people = InviteServiceTest.this.personService.getPeopleFilteredByProperty(
+                                    ContentModel.PROP_EMAIL, inviteeEmail);
+                            for (NodeRef person : people)
+                            {
+                                String userName = DefaultTypeConverter.INSTANCE.convert(String.class,
+                                        InviteServiceTest.this.nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+
+                                // delete person
+                                deletePersonByUserName(userName);
+                            }
+                        }
+
+                        // delete invite sites
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_3);
+
+                        return null;
                     }
+                };
+                AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
+
+                // cancel all active invite workflows
+                WorkflowDefinition wfDef = InviteServiceTest.this.workflowService.getDefinitionByName(WF_DEFINITION_INVITE);
+                List<WorkflowInstance> workflowList = InviteServiceTest.this.workflowService.getActiveWorkflows(wfDef.id);
+                for (WorkflowInstance workflow : workflowList)
+                {
+                    InviteServiceTest.this.workflowService.cancelWorkflow(workflow.id);
                 }
-
-                // delete invite sites
-                siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
-                siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
-                siteService.deleteSite(SITE_SHORT_NAME_INVITE_3);
-
                 return null;
-            }
-        };
-        AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
-
-        // cancel all active invite workflows
-        WorkflowDefinition wfDef = InviteServiceTest.this.workflowService
-                .getDefinitionByName(WF_DEFINITION_INVITE);
-        List<WorkflowInstance> workflowList = InviteServiceTest.this.workflowService
-                .getActiveWorkflows(wfDef.id);
-        for (WorkflowInstance workflow : workflowList)
-        {
-            InviteServiceTest.this.workflowService.cancelWorkflow(workflow.id);
-        }
+            }});
     }
 
     private void addUserToGroup(String groupName, String userName)

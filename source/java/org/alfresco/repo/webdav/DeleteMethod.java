@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -96,7 +97,11 @@ public class DeleteMethod extends WebDAVMethod
 
         checkNode(fileInfo);
 
-        // delete it
-        fileFolderService.delete(fileInfo.getNodeRef());
+        // ALF-7079 fix, working copies are not deleted at all
+        if (!getNodeService().hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+        {
+            // delete it
+            fileFolderService.delete(fileInfo.getNodeRef());
+        }
     }
 }

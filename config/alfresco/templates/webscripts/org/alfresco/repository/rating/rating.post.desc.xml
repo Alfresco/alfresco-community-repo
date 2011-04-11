@@ -9,8 +9,21 @@
    The rating will be applied using the fully authenticated user who makes the POST call.<br/>
    The body of the post should be in the form, e.g.<br/>
    {<br/>
-   &nbsp;&nbsp;&nbsp;"rating": 5,<br/>
+   &nbsp;&nbsp;&nbsp;"rating": 4.5,<br/>
    &nbsp;&nbsp;&nbsp;"ratingScheme": "fiveStarRatingScheme"<br/>
+   }<br/>
+   <br/>
+   The response will be of the form, e.g.<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"data":<br/>
+   &nbsp;&nbsp;&nbsp;{<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratedNodeUrl": "\/api\/node\/workspace\/SpacesStore\/eb25f870-2e58-487a-aba1-fa5f8ae04c52\/ratings",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rating": 4.5,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingScheme": "fiveStarRatingScheme",<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"averageRating": 3,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsTotal": 55.5,<br/>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ratingsCount": 9<br/>
+   &nbsp;&nbsp;&nbsp;}<br/>
    }<br/>
    ]]>
    </description>

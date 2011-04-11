@@ -396,9 +396,22 @@ public class WebDAVHelper
      */
     public final static String encodeURL(String s)
     {
+        return encodeURL(s, null);
+    }
+    
+    public final static String encodeURL(String s, String userAgent)
+    {
         try
         {
-            return replace(URLEncoder.encode(s, "UTF-8"), "+", "%20");
+            if (userAgent != null && (userAgent.startsWith(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV) 
+                    || userAgent.contains(WebDAV.AGENT_INTERNET_EXPLORER)))
+            {
+                return encodeUrlReservedSymbols(s);
+            }
+            else
+            {
+                return replace(URLEncoder.encode(s, "UTF-8"), "+", "%20");
+            }
         }
         catch (UnsupportedEncodingException err)
         {
@@ -473,6 +486,78 @@ public class WebDAVHelper
                         enc = "&#" + ((int)c) + ";";
                     }
                 break;
+            }
+            
+            if (enc != null)
+            {
+                if (sb == null)
+                {
+                    String soFar = string.substring(0, i);
+                    sb = new StringBuilder(i + 8);
+                    sb.append(soFar);
+                }
+                sb.append(enc);
+            }
+            else
+            {
+                if (sb != null)
+                {
+                    sb.append(c);
+                }
+            }
+        }
+        
+        if (sb == null)
+        {
+            return string;
+        }
+        else
+        {
+            return sb.toString();
+        }
+    }
+    
+    /**
+     * ALF-5333: Microsoft clients use ISO-8859-1 to decode WebDAV responses
+     * so this method should only be used for Microsoft user agents.
+     * 
+     * @param string
+     * @return The encoded string for Microsoft clients
+     * @throws UnsupportedEncodingException
+     */
+    public final static String encodeUrlReservedSymbols(String string) throws UnsupportedEncodingException
+    {
+        if (string == null)
+        {
+            return "";
+        }
+        
+        StringBuilder sb = null;      // create on demand
+        String enc;
+        char c;
+        for (int i = 0; i < string.length(); i++)
+        {
+            enc = null;
+            c = string.charAt(i);
+            switch (c)
+            {
+                // reserved
+                case ';': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '/': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '?': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case ':': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '@': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '&': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '=': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '+': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                
+                // unsafe
+                case '\"': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '#': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '%': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '>': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '<': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                default: break;
             }
             
             if (enc != null)

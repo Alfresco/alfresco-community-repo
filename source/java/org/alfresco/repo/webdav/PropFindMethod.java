@@ -376,7 +376,7 @@ public class PropFindMethod extends WebDAVMethod
                 getDAVHelper().getNullAttributes());
 
         // Build the href string for the current node
-        String strHRef = WebDAV.getURLForPath(m_request, path, isFolder);
+        String strHRef = getURLForPath(m_request, path, isFolder);
 
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
         xml.write(strHRef);

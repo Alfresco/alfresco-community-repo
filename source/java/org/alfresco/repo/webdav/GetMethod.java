@@ -362,7 +362,7 @@ public class GetMethod extends WebDAVMethod
             writer.write("</tr>\n");
 
             // Get the URL for the root path
-            String rootURL = WebDAV.getURLForPath(m_request, getPath(), true);
+            String rootURL = getURLForPath(m_request, getPath(), true);
             if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
             {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;
@@ -407,7 +407,7 @@ public class GetMethod extends WebDAVMethod
                 // name field
                 String fname = childNodeInfo.getName();
 
-                writer.write(WebDAVHelper.encodeURL(fname));
+                writer.write(WebDAVHelper.encodeURL(fname, m_userAgent));
                 writer.write("\">");
                 writer.write(WebDAVHelper.encodeHTML(fname));
                 writer.write("</a>");

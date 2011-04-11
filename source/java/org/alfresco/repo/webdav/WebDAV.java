@@ -124,7 +124,9 @@ public class WebDAV
     // If header keyword
     
     public static final String HEADER_KEY_NOT = "Not";
-    
+
+    public static final String AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV = "Microsoft Data Access Internet Publishing Provider DAV";
+    public static final String AGENT_INTERNET_EXPLORER = "MSIE";
     // User agents
     
     public static final  String AGENT_MS_6_1_7600 = "Microsoft-WebDAV-MiniRedir/6.1.7600";
@@ -432,6 +434,20 @@ public class WebDAV
      */
     public static String getURLForPath(HttpServletRequest request, String path, boolean isCollection)
     {
+        return getURLForPath(request, path, isCollection, null);
+    }
+    
+    /**
+     * Returns a URL that could be used to access the given path.
+     * 
+     * @param request HttpServletRequest
+     * @param path String
+     * @param isCollection boolean
+     * @param userAgent String
+     * @return String
+     */
+    public static String getURLForPath(HttpServletRequest request, String path, boolean isCollection, String userAgent)
+    {
         StringBuilder urlStr = new StringBuilder(request.getRequestURI());
         String servletPath = request.getServletPath();
         
@@ -451,7 +467,7 @@ public class WebDAV
             // split the path and URL encode each path element
             for (StringTokenizer t = new StringTokenizer(path, PathSeperator); t.hasMoreTokens(); /**/)
             {
-                urlStr.append( WebDAVHelper.encodeURL(t.nextToken()) );
+                urlStr.append( WebDAVHelper.encodeURL(t.nextToken(), userAgent) );
                 if (t.hasMoreTokens())
                 {
                     urlStr.append(PathSeperator);

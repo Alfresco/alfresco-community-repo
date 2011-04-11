@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
@@ -301,11 +302,27 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         
         // Query for audit entries that could not have happened
         String url = "/api/audit/query/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&verbose=true";
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        JSONObject json = new JSONObject(response.getContentAsString());
-        Long entryCount = json.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_COUNT);
-        JSONArray jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        JSONArray jsonEntries = null;
+        TestWebScriptServer.GetRequest req = null;
+        Response response = null;
+        JSONObject json = null;
+        Long entryCount = null;
+        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
+        // 1 second sleep to ensure that the audit is processed
+        for(int i = 0; i < 60; i++)
+        {
+	        req = new TestWebScriptServer.GetRequest(url);
+	        response = sendRequest(req, Status.STATUS_OK, admin);
+	        json = new JSONObject(response.getContentAsString());
+	        entryCount = json.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_COUNT);
+	        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+
+	        if(jsonEntries.length() > 0)
+	        {
+	        	break;
+	        }
+        	Thread.sleep(1000);
+        }
         assertTrue("Expected at least one entry", jsonEntries.length() > 0);
         assertEquals("Entry count and physical count don't match", new Long(jsonEntries.length()), entryCount);
         JSONObject jsonEntry = jsonEntries.getJSONObject(0);
@@ -359,10 +376,20 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         
         // Query for event that has happened once
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser;
-        req = new TestWebScriptServer.GetRequest(url);
-        response = sendRequest(req, Status.STATUS_OK, admin);
-        json = new JSONObject(response.getContentAsString());
-        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
+        // 1 second sleep to ensure that the audit is processed
+        for(int i = 0; i < 60; i++)
+        {
+	        req = new TestWebScriptServer.GetRequest(url);
+	        response = sendRequest(req, Status.STATUS_OK, admin);
+	        json = new JSONObject(response.getContentAsString());
+	        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+	        if(jsonEntries.length() == 1)
+	        {
+	        	break;
+	        }
+        	Thread.sleep(1000);
+        }
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
         
         // Query for event, but casting the value to the incorrect type
@@ -374,16 +401,29 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertEquals("Incorrect number of search results", 0, jsonEntries.length());
         
         // Test what happens when the target data needs encoding
+        now = System.currentTimeMillis();
+        
         String oddUser = "%$£\\\"\'";
         loginWithFailure(oddUser);
         
         // Query for the event limiting to one by count and descending (i.e. get last)
-        url = "/api/audit/query/" + APP_REPOTEST_NAME + "?forward=false&limit=1&verbose=true";
-        req = new TestWebScriptServer.GetRequest(url);
-        response = sendRequest(req, Status.STATUS_OK, admin);
-        json = new JSONObject(response.getContentAsString());
-        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        url = "/api/audit/query/" + APP_REPOTEST_NAME + "?forward=false&limit=1&verbose=true&fromTime=" + now;
+        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
+        // 1 second sleep to ensure that the audit is processed
+        for(int i = 0; i < 60; i++)
+        {
+            req = new TestWebScriptServer.GetRequest(url);
+            response = sendRequest(req, Status.STATUS_OK, admin);
+            json = new JSONObject(response.getContentAsString());
+            jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+	        if(jsonEntries.length() == 1)
+	        {
+	        	break;
+	        }
+        	Thread.sleep(1000);
+        }
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
+
         jsonEntry = jsonEntries.getJSONObject(0);
         entryId = jsonEntry.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_ID);
         assertNotNull("No entry ID", entryId);

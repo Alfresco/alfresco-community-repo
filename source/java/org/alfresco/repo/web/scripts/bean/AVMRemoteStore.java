@@ -18,12 +18,23 @@
  */
 package org.alfresco.repo.web.scripts.bean;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -38,12 +49,16 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.search.SearchService;
+import org.apache.axis.utils.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * AVM Remote Store service.
@@ -55,7 +70,26 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 public class AVMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(AVMRemoteStore.class);
-    
+    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
+    private static ThreadLocal<Transformer> transformer = new ThreadLocal<Transformer>(){
+
+        /* (non-Javadoc)
+         * @see java.lang.ThreadLocal#initialValue()
+         */
+        @Override
+        protected Transformer initialValue()
+        {
+            try
+            {
+                return TRANSFORMER_FACTORY.newTransformer();
+            }
+            catch (TransformerConfigurationException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }        
+        
+    };
     private String rootPath = "/"; 
     private AVMService avmService;
     private SearchService searchService;
@@ -248,6 +282,84 @@ public class AVMRemoteStore extends BaseRemoteStore
                     
                     if (logger.isDebugEnabled())
                         logger.debug("AVMRemoteStore.createDocument() " + avmPath + " of size: " + avmService.lookup(-1, avmPath).getLength());
+                }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                }
+                catch (AVMExistsException avmErr)
+                {
+                    res.setStatus(Status.STATUS_CONFLICT);
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#createDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.io.InputStream)
+     */
+    @Override
+    protected void createDocuments(final WebScriptResponse res, final String store, final InputStream in)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+                try
+                {
+                    Set<String> checkedPaths = new HashSet<String>(19);
+                    DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
+                    Document document = documentBuilder.parse(in);
+                    Element docEl = document.getDocumentElement();
+                    Transformer transformer = AVMRemoteStore.this.transformer.get();
+                    for (Node n = docEl.getFirstChild(); n != null; n = n.getNextSibling())
+                    {
+                        if (!(n instanceof Element))
+                        {
+                            continue;
+                        }
+                        String avmPath = buildAVMPath(store, ((Element) n).getAttribute("path"));
+                        String[] parts = AVMNodeConverter.SplitBase(avmPath);
+                        String[] dirs = parts[0].split("/");
+                        String parentPath = dirs[0] + "/" + dirs[1];
+                        int index = 2;
+                        while (index < dirs.length)
+                        {
+                            String dirPath = parentPath + "/" + dirs[index];
+                            if (!checkedPaths.contains(dirPath))
+                            {
+                               if (avmService.lookup(-1, dirPath) == null)
+                               {
+                                   avmService.createDirectory(parentPath, dirs[index]);
+                               }
+                               checkedPaths.add(dirPath);
+                            }
+                            parentPath = dirPath;
+                            index++;
+                        }
+
+                        // Turn the first element child into a document
+                        Document content = documentBuilder.newDocument();
+                        Node child;
+                        for (child = n.getFirstChild(); child != null ; child=child.getNextSibling())
+                        {
+                           if (child instanceof Element)
+                           {
+                               content.appendChild(content.importNode(child, true));
+                               break;
+                           }
+                        }
+                        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+                        transformer.transform(new DOMSource(content), new StreamResult(out));
+                        out.close();
+                        avmService.createFile(parts[0], parts[1], new ByteArrayInputStream(out.toByteArray()));
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("AVMRemoteStore.createDocument() " + avmPath + " of size: "
+                                    + avmService.lookup(-1, avmPath).getLength());
+                    }
                 }
                 catch (AccessDeniedException ae)
                 {

@@ -291,6 +291,8 @@ public abstract class WebDAVMethod
         // Parse the HTTP body
         parseRequestBody();
         
+        m_userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
+
         RetryingTransactionCallback<Object> executeImplCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -1167,7 +1169,7 @@ public abstract class WebDAVMethod
      */
     protected String getURLForPath(HttpServletRequest request, String path, boolean isFolder)
     {
-        return WebDAV.getURLForPath(request, path, isFolder);
+        return WebDAV.getURLForPath(request, path, isFolder, m_userAgent);
     }
 
     /**

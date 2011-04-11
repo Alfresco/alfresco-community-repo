@@ -87,7 +87,8 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     }
     
     /**
-     * @param cacheSize the size of the MRU template cache, default is 256
+     * @deprecated
+     * @param cacheSize not used anymore
      */
     @Deprecated
     public void setCacheSize(int cacheSize)

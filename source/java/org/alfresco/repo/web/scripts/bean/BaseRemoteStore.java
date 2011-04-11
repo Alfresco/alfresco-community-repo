@@ -262,6 +262,12 @@ public abstract class BaseRemoteStore extends AbstractWebScript
                     createDocument(res, store, path, httpReq.getInputStream());
                     break;
                 
+                case CREATEMULTI:
+                    if (logger.isDebugEnabled())
+                        logger.debug("CREATEMULTI: content length=" + httpReq.getContentLength());
+                    createDocuments(res, store, httpReq.getInputStream());
+                    break;
+
                 case UPDATE:
                     validatePath(path);
                     if (logger.isDebugEnabled())
@@ -393,6 +399,17 @@ public abstract class BaseRemoteStore extends AbstractWebScript
     protected abstract void createDocument(WebScriptResponse res, String store, String path, InputStream content);
     
     /**
+     * Creates multiple XML documents encapsulated in a single one. 
+     * 
+     * @param store         the store id
+     * @param path          document path
+     * @param content       content of the document to write
+     * 
+     * @throws IOException if the create fails
+     */
+    protected abstract void createDocuments(WebScriptResponse res, String store, InputStream content);
+
+    /**
      * Updates an existing document.
      * 
      * @param store the store id
@@ -426,6 +443,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         LISTALL,
         LISTPATTERN,
         CREATE,
+        CREATEMULTI,
         UPDATE,
         DELETE
     };

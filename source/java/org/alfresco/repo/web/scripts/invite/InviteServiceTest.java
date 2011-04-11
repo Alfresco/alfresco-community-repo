@@ -809,13 +809,20 @@ public class InviteServiceTest extends BaseWebScriptTest
         
         rejectInvite(inviteId, inviteTicket, Status.STATUS_OK);
         
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
-                assertEquals(false, mutableAuthenticationDao.userExists(inviteeUserName));
-                assertEquals(false, personService.personExists(inviteeUserName));
-                
+                transactionService.getRetryingTransactionHelper().doInTransaction(
+                        new RetryingTransactionCallback<Void>()
+                        {
+                            public Void execute() throws Throwable
+                            {
+                                assertEquals(false, mutableAuthenticationDao.userExists(inviteeUserName));
+                                assertEquals(false, personService.personExists(inviteeUserName));
+                                return null;
+                            }
+                        });
                 return null;
             }
     

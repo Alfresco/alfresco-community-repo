@@ -127,10 +127,6 @@ public class WebDAV
 
     public static final String AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV = "Microsoft Data Access Internet Publishing Provider DAV";
     public static final String AGENT_INTERNET_EXPLORER = "MSIE";
-    // User agents
-    
-    public static final  String AGENT_MS_6_1_7600 = "Microsoft-WebDAV-MiniRedir/6.1.7600";
-
     // General string constants
     
     public static final String ASTERISK = "*";

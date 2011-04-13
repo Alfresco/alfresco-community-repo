@@ -20,6 +20,13 @@
 	   <parameter name="action" value="UsernameToken Timestamp"/>
 	</handler>
 
+   <!-- Security headers for response to support .NET (ALF-5689) -->
+   <handler name="WSSecureResponse" type="java:org.apache.ws.axis.security.WSDoAllSender">
+      <parameter name="action" value="Timestamp"/>
+      <parameter name="mustUnderstand" value="false" />
+      <parameter name="enableSignatureConfirmation" value="false" />
+   </handler>
+
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:ParentReference"
@@ -424,6 +431,12 @@
       	<handler type="WSSecurity"/>
       	<handler type="QueryConfigHandler"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->
 	  <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/repository/1.0"/>
       <parameter name="wsdlServiceElement" value="RepositoryService"/>
@@ -878,6 +891,12 @@
 	      <handler type="CreateSpringTicketCallback"/>
       	<handler type="WSSecurity"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->
 	   <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/content/1.0"/>
       <parameter name="wsdlServiceElement" value="ContentService"/>
@@ -1177,6 +1196,12 @@
 	      <handler type="CreateSpringTicketCallback"/>
       	<handler type="WSSecurity"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->
        <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/authoring/1.0"/>
       <parameter name="wsdlServiceElement" value="AuthoringService"/>
@@ -1542,6 +1567,12 @@
 	      <handler type="CreateSpringTicketCallback"/>
       	<handler type="WSSecurity"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->
    	<parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/classification/1.0"/>
       <parameter name="wsdlServiceElement" value="ClassificationService"/>
@@ -1839,6 +1870,12 @@
 	      <handler type="CreateSpringTicketCallback"/>
       	  <handler type="WSSecurity"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->
         <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/action/1.0"/>
       <parameter name="wsdlServiceElement" value="ActionService"/>
@@ -2232,6 +2269,12 @@
 	      <handler type="CreateSpringTicketCallback"/>
       	  <handler type="WSSecurity"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->    
       <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/accesscontrol/1.0"/>
       <parameter name="wsdlServiceElement" value="AccessControlService"/>
@@ -2643,6 +2686,12 @@
       	  <handler type="WSSecurity"/>
       	  <handler type="QueryConfigHandler"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
 	   <!-- generated below here -->   
       <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/administration/1.0"/>
       <parameter name="wsdlServiceElement" value="AdministrationService"/>
@@ -2966,6 +3015,12 @@
       	  <handler type="WSSecurity"/>
       	  <handler type="QueryConfigHandler"/>
   		</requestFlow>
+
+      <!-- Security headers which should contain TIMESTAMP to support .NET -->
+      <responseFlow>
+         <handler type="WSSecureResponse" />
+      </responseFlow>
+
       <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/dictionary/1.0"/>
       <parameter name="wsdlServiceElement" value="DictionaryService"/>
       <parameter name="schemaQualified" value="http://www.alfresco.org/ws/model/content/1.0,http://www.alfresco.org/ws/service/dictionary/1.0"/>

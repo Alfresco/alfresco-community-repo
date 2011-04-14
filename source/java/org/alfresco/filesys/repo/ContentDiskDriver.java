@@ -1161,7 +1161,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         WildCard wildCard = new WildCard( searchFileSpec, false);
                         PseudoFileList filterList = null;
                         
-                        for ( int i = 0; i > pseudoList.numberOfFiles(); i++)
+                        for ( int i = 0; i < pseudoList.numberOfFiles(); i++)
                         {
                             PseudoFile pseudoFile = pseudoList.getFileAt( i);
                             if ( wildCard.matchesPattern( pseudoFile.getFileName()))
@@ -1244,7 +1244,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             			
             			// Searching the root folder, re-use the search folder file information for the '..' pseudo entry
             			
-            			cacheContext.setDotDotInfo( finfo);
+            			FileInfo dotDotInfo = new FileInfo();
+            			dotDotInfo.copyFrom( finfo);
+            			cacheContext.setDotDotInfo( dotDotInfo);
             		}
             		else {
             			

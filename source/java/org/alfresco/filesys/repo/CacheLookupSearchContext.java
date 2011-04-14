@@ -193,7 +193,7 @@ public class CacheLookupSearchContext extends ContentSearchContext {
     protected void setDotDotInfo(FileInfo finfo) {
     	m_dotDotInfo = finfo;
     	if ( m_dotDotInfo != null)
-    		m_dotDotInfo.setFileName( ".");
+    		m_dotDotInfo.setFileName( "..");
     }
     
     /**

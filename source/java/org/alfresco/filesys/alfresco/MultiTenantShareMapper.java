@@ -38,6 +38,7 @@ import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
+import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.factory.InitializingBean;
@@ -68,6 +69,10 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	
 	private Hashtable<String, SharedDeviceList> m_tenantShareLists;
 	
+	//	Quota manager to use when creating multi-tenant shares
+	
+	private QuotaManager m_quotaManager;
+	
 	//	Debug enable flag
 	
 	private boolean m_debug;
@@ -94,7 +99,15 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         this.m_debug = debug;
     }
 
-
+    /**
+     * Set the quota manager to be used by multi-tenant shares
+     * 
+     * @param quotaManager QuotaManager
+     */
+    public void setQuotaManager( QuotaManager quotaManager) {
+    	m_quotaManager = quotaManager;
+    }
+    
     /**
 	 * Initialize the share mapper
 	 * 
@@ -417,6 +430,11 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 
         ContentDiskDriver diskDrv = (ContentDiskDriver) m_alfrescoConfig.getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext(m_tenantShareName, "", m_rootPath, rootNodeRef);
+        
+        // Set a quota manager for the share, if enabled
+        
+        if ( m_quotaManager != null)
+        	diskCtx.setQuotaManager( m_quotaManager);
         
         // Enable file state caching
         

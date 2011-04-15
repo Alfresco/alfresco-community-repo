@@ -466,10 +466,20 @@
       </property>
 
       <!-- Custom share mapper when multi-tenancy is enabled -->
-      <!--
-         <property name="shareMapper"> <bean class="org.alfresco.filesys.alfresco.MultiTenantShareMapper"> <property
-         name="serverConfiguration"> <ref bean="fileServerConfiguration" /> </property> <property name="debug">
-         <value>true</value> </property> </bean> </property>
+	  <!--      
+      <property name="shareMapper">
+        <bean class="org.alfresco.filesys.alfresco.MultiTenantShareMapper">
+          <property name="serverConfiguration">
+            <ref bean="fileServerConfiguration" />
+          </property>
+          <property name="quotaManager">
+            <ref bean="filesystemQuotaManager"/>
+          </property>
+          <property name="debug">
+            <value>true</value>
+          </property>
+        </bean>
+      </property>
       -->
 
       <!-- Global access control list                                                                    -->

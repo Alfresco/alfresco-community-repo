@@ -381,4 +381,9 @@ public class WorkflowObjectFactory
     {
         return qNameConverter.mapNameToQName(name);
     }
+    
+    public void clearQNameCache()
+    {
+        qNameConverter.clearCache();
+    }
 }

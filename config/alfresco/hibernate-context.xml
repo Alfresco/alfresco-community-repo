@@ -135,6 +135,8 @@
                 <value>org/jbpm/taskmgmt/log/SwimlaneCreateLog.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/log/SwimlaneAssignLog.hbm.xml</value>
                 <value>org/jbpm/job/CleanUpProcessJob.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.ext.queries.hbm.xml</value>
+                
             </list>
         </property>
         <property name="hibernateProperties" ref="hibernateConfigProperties" />

@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNameCache;
 
 /**
  * @since 3.4.e
@@ -30,6 +31,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class WorkflowQNameConverter
 {
+    private static final int MAX_QNAME_CACHE_SIZE = 5000;
+    private final QNameCache cache = new QNameCache(MAX_QNAME_CACHE_SIZE);
     private final NamespacePrefixResolver prefixResolver;
     
     public WorkflowQNameConverter(NamespacePrefixResolver prefixResolver)
@@ -40,21 +43,21 @@ public class WorkflowQNameConverter
     /**
      * Map QName to jBPM variable name
      * 
-     * @param name  QName
+     * @param qName  QName
      * @return  jBPM variable name
      */
-    public String mapQNameToName(QName name)
+    public String mapQNameToName(QName qName)
     {
-        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
-        // NOTE: Use new scheme 
-        String nameStr = name.toPrefixString(prefixResolver);
-        if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
+        String name = cache.getName(qName);
+        if(name == null)
         {
-            return nameStr.replace(':', '}');
+            name = convertQNameToName(qName);
+            cache.putQNameToName(qName, name);
+            cache.putNameToQName(name, qName);
         }
-        return nameStr.replace(':', '_');
+        return name;
     }
-    
+
     /**
      * Map QName to jBPM variable name
      * 
@@ -62,6 +65,23 @@ public class WorkflowQNameConverter
      * @return  jBPM variable name
      */
     public QName mapNameToQName(String name)
+    {
+        QName qName = cache.getQName(name);
+        if (qName == null)
+        {
+            qName = convertNameToQName(name);
+            cache.putNameToQName(name, qName);
+            cache.putQNameToName(qName, name);
+        }
+        return qName;
+    }
+
+    public void clearCache()
+    {
+        cache.clear();
+    }
+    
+    private QName convertNameToQName(String name)
     {
         if(name.indexOf(QName.NAMESPACE_BEGIN)==0)
         {
@@ -77,6 +97,20 @@ public class WorkflowQNameConverter
             qName = name.replaceFirst("_", ":");
         }
         return QName.createQName(qName, prefixResolver);
+    }
+
+    private String convertQNameToName(QName name)
+    {
+        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
+        // NOTE: Use new scheme 
+        String nameStr = name.toPrefixString(prefixResolver);
+        if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
+        {
+            // Return full QName string.
+            return name.toString();
+        }
+        // Return prefixed QName string.
+        return nameStr.replace(':', '_');
     }
     
 }

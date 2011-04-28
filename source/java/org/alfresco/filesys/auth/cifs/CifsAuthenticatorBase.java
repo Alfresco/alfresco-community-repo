@@ -39,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -407,24 +408,26 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     /**
      * Set the current authenticated user context for this thread.
      * 
-     * @param client
-     *            ClientInfo
+     * @param client ClientInfo or null to clear the context
      */
     public void setCurrentUser(final ClientInfo client) {
 
         // Check the account type and setup the authentication context
+        
+        // No need for a transaction to clear the context
+        if (client == null || client.isNullSession())
+        {
+            // Clear the authentication, null user should not be allowed to do any service calls
+
+            getAuthenticationComponent().clearCurrentSecurityContext();
+            return;
+        }
 
         doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
-                if (client == null || client.isNullSession())
-                {
-                    // Clear the authentication, null user should not be allowed to do any service calls
-        
-                    getAuthenticationComponent().clearCurrentSecurityContext();
-                }
-                else if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
+                if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
                 {
                     // Set the authentication context for the request
         
@@ -577,9 +580,21 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         // DEBUG
 
         if (logger.isDebugEnabled())
+        {
             logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+        }
+	    //
+	    // the repository is read-only, we settle for a read-only transaction
+	    if (txService.isReadOnly())
+	    {
+	        return txService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+	    }
+	
+	    // otherwise we want force a writable transaction 
+        return txService.getRetryingTransactionHelper().doInTransaction(callback, 
+                false, 
+                false);
 
-        return txService.getRetryingTransactionHelper().doInTransaction(callback, txService.isReadOnly());
     }
 
     /**

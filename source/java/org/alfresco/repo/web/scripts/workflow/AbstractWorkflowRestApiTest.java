@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -66,7 +67,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-import com.ibm.icu.util.Calendar;
 
 /**
  * @author Nick Smith
@@ -582,6 +582,10 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        
+        Calendar dueDate = Calendar.getInstance();
+        dueDate.set(Calendar.MILLISECOND, 0);
+        
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
         params.put(WorkflowModel.PROP_PRIORITY, 2);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
@@ -604,7 +608,11 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         // make some changes in existing properties
         jsonProperties.remove(qnameToString(WorkflowModel.ASSOC_PACKAGE));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_COMMENT), "Edited comment");
-        jsonProperties.put(qnameToString(WorkflowModel.PROP_DUE_DATE), ISO8601DateFormat.format(new Date()));
+        
+        Calendar newDueDate = Calendar.getInstance();
+        newDueDate.set(Calendar.MILLISECOND, 0);
+        
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_DUE_DATE), ISO8601DateFormat.format(newDueDate.getTime()));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_PRIORITY), 1);
 

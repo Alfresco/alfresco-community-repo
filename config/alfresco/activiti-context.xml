@@ -143,6 +143,11 @@
     <bean id="activitiPriorityPropertyHandler"
         class="org.alfresco.repo.workflow.activiti.properties.ActivitiPriorityPropertyHandler"
         parent="activitiPropertyHandler" />
+        
+    <!-- Activiti Due Date Property Handler -->
+    <bean id="activitiDueDatePropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiDueDatePropertyHandler"
+        parent="activitiPropertyHandler" />
 
     <!-- Listeners for all activiti-tasks in alfresco -->
     <bean id="activitiCompleteTaskListener" 

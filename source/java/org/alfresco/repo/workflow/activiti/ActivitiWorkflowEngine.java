@@ -51,11 +51,11 @@ import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
 import org.activiti.engine.impl.form.DefaultTaskFormHandler;
 import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.identity.Authentication;
+import org.activiti.engine.impl.persistence.entity.TimerEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.runtime.TimerEntity;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -1369,7 +1369,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      @Override
      public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
      {
-         // TODO: complete, only small part is implemented
          ArrayList<WorkflowTask> result = new ArrayList<WorkflowTask>();
          WorkflowTaskState taskState = query.getTaskState();
          if(WorkflowTaskState.COMPLETED.equals(taskState) == false)
@@ -1407,9 +1406,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
              if(query.getProcessName() != null)
              {
-                  // String processName = getProcessNameMTSafe(query.getProcessName());
-                  // TODO: Method added in http://jira.codehaus.org/browse/ACT-459
-                  // taskQuery.processDefinitionName(processName);
+                  String processName = getProcessNameMTSafe(query.getProcessName());
+                  taskQuery.processDefinitionKey(processName);
              }
              
              
@@ -1447,7 +1445,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      
      private void addProcessPropertiesToQuery(
              Map<QName, Object> processCustomProps, TaskQuery taskQuery) {
-         // TODO: implement
+    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+         {
+             String name =factory.mapQNameToName(customProperty.getKey());
+             taskQuery.processVariableValueEquals(name, customProperty.getValue());
+         }
      }
      
      protected String getProcessNameMTSafe(QName processNameQName)
@@ -1517,13 +1519,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          {
              if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
              {
-                 // TODO: add in activiti
-                 // taskQuery.orderByTaskAssignee().asc();
+                 taskQuery.orderByTaskAssignee().asc();
              }
              else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
              {
-                 // TODO: add in activiti
-                 // taskQuery.orderByTaskAssignee().desc();
+                 taskQuery.orderByTaskAssignee().desc();
              }
              else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
              {
@@ -1543,13 +1543,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
              }
              else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
              {
-                 // TODO: add in activiti
-                 // taskQuery.orderByTaskId().asc();
+                 taskQuery.orderByTaskId().asc();
              }
              else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
              {
-                 // TODO: add in activiti
-                 // taskQuery.orderByTaskId().desc();
+                 taskQuery.orderByTaskId().desc();
              }
              else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
              {
@@ -1581,7 +1579,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
      private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
      {
-         // TODO: Implement complete query
          HistoricTaskInstanceQuery historicQuery = historyService
              .createHistoricTaskInstanceQuery()
              .finished();
@@ -1609,12 +1606,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          
          if(query.getProcessName() != null)
          {
-             // String processName = getProcessNameMTSafe(query.getProcessName());
-             // TODO: add to query
+             String processName = getProcessNameMTSafe(query.getProcessName());
+             historicQuery.processDefinitionKey(processName);
          }
          
-         // TODO: task properties from history query
-         // TODO: process properties
+         if(query.getTaskCustomProps() != null) 
+         {
+        	 addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
+         }
+         
+         if(query.getProcessCustomProps() != null) 
+         {
+        	 addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
+         }
+         
+         if(query.isActive() != null) 
+         {
+        	 if(query.isActive()) {
+        		 historicQuery.processUnfinished();
+        	 }
+        	 else 
+        	 {
+        		 historicQuery.processFinished();
+        	 }
+         }
          
          // Order query
          if(query.getOrderBy() != null)
@@ -1638,10 +1653,26 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
        
      }
      
+     private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, 
+    	HistoricTaskInstanceQuery taskQuery) {
+    	 for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
+    	 {
+    		 String name =factory.mapQNameToName(customProperty.getKey());
+    		 taskQuery.taskVariableValueEquals(name, customProperty.getValue());
+    	 }
+     }
+     
+     private void addProcessPropertiesToQuery(Map<QName, Object> processCustomProps, 
+    	HistoricTaskInstanceQuery taskQuery) {
+    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+    	 {
+    		 String name =factory.mapQNameToName(customProperty.getKey());
+    		 taskQuery.processVariableValueEquals(name, customProperty.getValue());
+    	 }
+     }
+     
      private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
      {
-         
-         // TODO: implement further
          List<WorkflowTask> startTasks =  new ArrayList<WorkflowTask>();
 
          String processInstanceId = null;
@@ -1683,6 +1714,18 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private boolean isStartTaskMatching(WorkflowTask workflowTask,
 			WorkflowTaskQuery query) {
 	
+    	if(query.isActive() != null)
+    	{
+    		if(query.isActive() && !workflowTask.getPath().isActive()) 
+    		{
+    			return false;
+    		}
+    		if(!query.isActive() && workflowTask.getPath().isActive()) 
+    		{
+    			return false;
+    		}
+    	}
+    	
     	if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
     	{
     		return false;
@@ -1755,7 +1798,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
     	for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
 		{
-			if(props.containsKey(entry.getValue())) 
+			if(props.containsKey(entry.getKey())) 
 			{
 				Object requiredValue = entry.getValue();
 				Object actualValue = props.get(entry.getKey());
@@ -1766,6 +1809,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 					{
 						return false;
 					}
+					break;
 				}
 				else
 				{
@@ -1773,6 +1817,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 					{
 						return false;
 					}
+					break;
 				}
 			}
 			if(entry.getValue() != null)

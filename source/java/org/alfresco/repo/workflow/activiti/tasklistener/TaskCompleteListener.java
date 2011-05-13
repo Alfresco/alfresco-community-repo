@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateTask;
-import org.activiti.engine.impl.pvm.delegate.TaskListener;
-import org.activiti.engine.impl.task.IdentityLinkEntity;
-import org.activiti.engine.impl.task.TaskEntity;
+import org.activiti.engine.delegate.TaskListener;
+import org.activiti.engine.impl.persistence.entity.IdentityLinkEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.IdentityLink;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;

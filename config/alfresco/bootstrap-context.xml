@@ -235,7 +235,7 @@
                     <prop key="engineId">jbpm</prop>
                     <prop key="location">alfresco/workflow/adhoc_processdefinition.xml</prop>
                     <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
+                    <prop key="redeploy">true</prop>
                 </props>
                 
                 <!-- Review and Approve workflow definitions -->

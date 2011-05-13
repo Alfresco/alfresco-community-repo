@@ -24,18 +24,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.activiti.engine.delegate.DelegateTask;
-import org.activiti.engine.impl.pvm.delegate.TaskListener;
+import org.activiti.engine.delegate.TaskListener;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.script.ActivitiScriptBase;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptService;
 
 /**
- * A {@link TaskListener} that runs the script in property 'script'
- * using scripting-language specified by 'language'
- *
+ * A {@link TaskListener} that runs the script against the {@link ScriptService}. 
+ * 
+ * The script that is executed can be set using field 'script'. A non-default 
+ * script-processor can be set in the field 'scriptProcessor'. Optionally, you can run 
+ * the script as a different user than the default by setting the field 'runAs'. 
+ * By default, the user this script is executed with is the task's assignee. If no 
+ * assignee is set, the current logged-in user is used. If no user is currently logged in
+ * (eg. flow triggered by timer) the system user will be used instead.
+ * 
  * @author Frederik Heremans
  * @since 3.4.e
  */

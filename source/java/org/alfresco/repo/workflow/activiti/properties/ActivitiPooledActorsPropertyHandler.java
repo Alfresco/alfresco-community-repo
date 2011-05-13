@@ -28,8 +28,8 @@ import java.util.List;
 
 import org.activiti.engine.TaskService;
 import org.activiti.engine.delegate.DelegateTask;
-import org.activiti.engine.impl.task.IdentityLinkEntity;
-import org.activiti.engine.impl.task.TaskEntity;
+import org.activiti.engine.impl.persistence.entity.IdentityLinkEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.Task;

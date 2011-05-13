@@ -20,6 +20,7 @@
 package org.alfresco.repo.workflow.activiti;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -78,11 +81,63 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         Serializable outcome = result.getProperties().get(WorkflowModel.PROP_OUTCOME);
         assertEquals("Approve", outcome);
     }
+
+    protected void testTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
+    {
+    	// In activiti, start-tasks only show up when the workflowInstanceId or taskId is passed
+		List<String> expectedTasks = Arrays.asList(startTask.getId());
+		
+		checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
+	    checkTaskIdQuery(startTask.getId(), WorkflowTaskState.COMPLETED);
+	    
+	    // Check additional filtering, when workflowInstanceId is passed
+	    QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
+	    checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+	    checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+	    checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+	    checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+	}
     
-    @Override
-    public void testQueryTasks() {
-    	// TODO: Revive test once all pieces of queryTasks() are finished on ActivitiWorkflowEngine
-    }
+    protected void testTaskQueryTaskCompleted(String workflowInstanceId,
+			WorkflowTask theTask, WorkflowTask startTask) 
+	{
+		List<String> bothTasks = Arrays.asList(theTask.getId(), startTask.getId());
+		List<String> withoutStartTask = Arrays.asList(theTask.getId());
+		
+        checkProcessIdQuery(workflowInstanceId, bothTasks, WorkflowTaskState.COMPLETED);
+        
+        // Adhoc task should only be returned
+        QName taskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhocTask");
+        checkTaskNameQuery(taskName, withoutStartTask, WorkflowTaskState.COMPLETED, null);
+
+        // Completed adhocTask is assigned to USER2
+        checkActorIdQuery(USER2, withoutStartTask, WorkflowTaskState.COMPLETED, null);
+        
+        // Workflow is still active, but in activiti, active start-task is not returned when
+        // no process-instance ID is provided
+        checkIsActiveQuery(withoutStartTask, WorkflowTaskState.COMPLETED, null);
+       
+        // Task has custom property set
+        checkTaskPropsQuery(withoutStartTask, WorkflowTaskState.COMPLETED, null);
+        
+        // Process properties
+        checkProcessPropsQuery(withoutStartTask, WorkflowTaskState.COMPLETED);
+	}
+    
+    protected void testQueryTasksInactiveWorkflow(String workflowInstanceId) {
+		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+		taskQuery.setActive(false);
+		
+		List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        
+        // Activiti doesn't return start-task when no process/task id is set in query, so only 2 tasks will be returned
+        assertEquals(2, tasks.size());
+        
+        taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+		taskQuery.setActive(true);
+		checkNoTasksFoundUsingQuery(taskQuery);
+	}
     
     @Override
     protected String getEngine()

@@ -20,10 +20,10 @@
 package org.alfresco.repo.workflow.activiti.tasklistener;
 
 import org.activiti.engine.delegate.DelegateTask;
+import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.impl.form.TaskFormHandler;
-import org.activiti.engine.impl.pvm.delegate.TaskListener;
-import org.activiti.engine.impl.task.TaskEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 

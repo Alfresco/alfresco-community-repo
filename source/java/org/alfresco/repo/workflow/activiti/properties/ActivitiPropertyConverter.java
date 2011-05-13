@@ -38,8 +38,8 @@ import org.activiti.engine.history.HistoricDetailQuery;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableUpdate;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
-import org.activiti.engine.impl.task.TaskEntity;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
@@ -148,8 +148,7 @@ public class ActivitiPropertyConverter
         properties.put(WorkflowModel.PROP_START_DATE, task.getCreateTime());
         
         // Due date is present on the process instance
-        String dueDateKey = factory.mapQNameToName(WorkflowModel.PROP_DUE_DATE);
-        properties.put(WorkflowModel.PROP_DUE_DATE, (Serializable) variables.get(dueDateKey));
+        properties.put(WorkflowModel.PROP_DUE_DATE, task.getDueDate());
         
         // Since this is a runtime-task, it's not completed yet
         properties.put(WorkflowModel.PROP_COMPLETION_DATE, null);
@@ -260,12 +259,8 @@ public class ActivitiPropertyConverter
         // Since the task is never started explicitally, we use the create time
         properties.put(WorkflowModel.PROP_START_DATE, task.getCreateTime());
         
-        // Due date is present on the process instance
-        String dueDateKey = factory.mapQNameToName(WorkflowModel.PROP_DUE_DATE);
-        if(properties.containsKey(WorkflowModel.PROP_DUE_DATE)==false)
-        {
-            properties.put(WorkflowModel.PROP_DUE_DATE, (Serializable) variables.get(dueDateKey));
-        }
+        // Due date
+        properties.put(WorkflowModel.PROP_DUE_DATE, task.getDueDate());
         
         // Since this is a runtime-task, it's not completed yet
         properties.put(WorkflowModel.PROP_COMPLETION_DATE, null);
@@ -302,12 +297,10 @@ public class ActivitiPropertyConverter
         // Since the task is never started explicitly, we use the create time
         properties.put(WorkflowModel.PROP_START_DATE, historicTask.getStartTime());
         
-        Object dueDateKey = factory.mapQNameToName(WorkflowModel.PROP_DUE_DATE);
-        properties.put(WorkflowModel.PROP_DUE_DATE, (Serializable) variables.get(dueDateKey));
+        properties.put(WorkflowModel.PROP_DUE_DATE, historicTask.getDueDate());
         properties.put(WorkflowModel.PROP_COMPLETION_DATE, historicTask.getEndTime());
         
-        // TODO: Put task priority in history - http://jira.codehaus.org/browse/ACT-484
-        // properties.put(WorkflowModel.PROP_PRIORITY, historicTask.getPriority());
+        properties.put(WorkflowModel.PROP_PRIORITY, historicTask.getPriority());
         
         properties.put(ContentModel.PROP_CREATED, historicTask.getStartTime());
         properties.put(ContentModel.PROP_OWNER, historicTask.getAssignee());
@@ -447,7 +440,6 @@ public class ActivitiPropertyConverter
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, ActivitiConstants.START_TASK_PREFIX + historicProcessInstance.getId());
-      //  properties.put(WorkflowModel.PROP_DESCRIPTION, historicTask.getDescription());
         
         properties.put(WorkflowModel.PROP_START_DATE, historicProcessInstance.getStartTime());
         

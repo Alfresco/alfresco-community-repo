@@ -240,8 +240,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         WorkflowTask finishedTask = workflowEngine.getTaskById(finishedTaskId);
         assertNotNull(finishedTask);
 
-        // TODO: revive once http://jira.codehaus.org/browse/ACT-485 is fixed
-        // Assert.assertEquals("Task description", finishedTask.getDescription());
+        Assert.assertEquals("Task description", finishedTask.getDescription());
         
         Assert.assertEquals(finishedTaskId, finishedTask.getId());
         Assert.assertEquals("bpm_foo_task", finishedTask.getName());
@@ -446,8 +445,31 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         Assert.assertNotNull(tasks);
         Assert.assertEquals(0, tasks.size());
         
-        // TODO: test using process-name, not yet implemented now
-        // TODO: test using task-name
+        // Test query by process-name
+        taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
+        taskQuery.setProcessName(QName.createQName("testTask"));
+        tasks = workflowEngine.queryTasks(taskQuery);
+        
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(1, tasks.size());
+        
+        taskQuery.setProcessName(QName.createQName("unexistingTaskName"));
+        tasks = workflowEngine.queryTasks(taskQuery);
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(0, tasks.size());
+        
+        // Test query by task-name
+        taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
+        taskQuery.setTaskName(QName.createQName("bpm_foo_task"));
+        tasks = workflowEngine.queryTasks(taskQuery);
+        
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(1, tasks.size());
+        
+        taskQuery.setTaskName(QName.createQName("unexisting_task_name"));
+        tasks = workflowEngine.queryTasks(taskQuery);
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(0, tasks.size());
         
         // Test querying task variables, using all possible (and allowed) types of variables
         Map<String, Object> variables = new HashMap<String, Object>();
@@ -499,29 +521,51 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         ActivitiScriptNode otherNode = new ActivitiScriptNode(testUserNode, serviceRegistry);
         checkTaskVariableNoMatch(WorkflowTaskState.IN_PROGRESS, QName.createQName("scriptNodeVar"), otherNode);
         
-        // TODO: test using process variables
+        
+        // Query task based on process variable
+        runtime.setVariable(task.getExecutionId(), "processVar", "testing");
+        taskQuery = createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
+        Map<QName, Object> props = new HashMap<QName, Object>();
+        props.put(QName.createQName("processVar"), "testing");
+        taskQuery.setProcessCustomProps(props);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
+        
+        props.put(QName.createQName("processVar"), "notmatching");
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(0, tasks.size());
     }
     
     
     @Test
     public void testQueryTasksCompleted() throws Exception {
-        // Testing all query functionality for WorkflowTaskState.IN_PROGRESS
+        // Testing all query functionality for WorkflowTaskState.COMPLETED
         WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), new HashMap<QName, Serializable>());
         
         Task task = taskService.createTaskQuery()
 	        .executionId(BPMEngineRegistry.getLocalId(path.getId()))
 	        .singleResult();
+        
+        taskService.setVariableLocal(task.getId(), "taskVar", "theValue");
 	    assertNotNull("Task should exist!", task);
 	    String globalTaskId = createGlobalId(task.getId());
 	    
 	    // Set the actor
 	    taskService.setAssignee(task.getId(), TEST_USER);
 	    
+	    // Set process prop
+	    runtime.setVariable(task.getExecutionId(), "processVar", "testing");
+	    
 	    // End the task
 	    workflowEngine.endTask(globalTaskId, null);
 
 	    // Test query by taskId
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        taskQuery.setActive(Boolean.FALSE); // Set to false, since workflow this task is in, has finished
         taskQuery.setTaskId(globalTaskId);
         
         List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
@@ -540,6 +584,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         // Test query by process ID, this should also return the start-task
         taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
         taskQuery.setProcessId(createGlobalId(task.getProcessInstanceId()));
+        taskQuery.setActive(Boolean.FALSE);
         
         tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
@@ -572,6 +617,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         // Test query by actor
         taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
         taskQuery.setActorId(TEST_USER);
+        taskQuery.setActive(Boolean.FALSE);
         
         tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
@@ -585,11 +631,53 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         Assert.assertNotNull(tasks);
         Assert.assertEquals(0, tasks.size());
         
-        // TODO: test using process-name, not yet implemented now
-        // TODO: test using task-name
+        // Test query by process-name
+        taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        taskQuery.setProcessName(QName.createQName("testTask"));
+        taskQuery.setActive(Boolean.FALSE);
+        tasks = workflowEngine.queryTasks(taskQuery);
         
-        // TODO: test using task variables
-        // TODO: test using process variables
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(1, tasks.size());
+        
+        taskQuery.setProcessName(QName.createQName("unexistingTaskName"));
+        tasks = workflowEngine.queryTasks(taskQuery);
+        Assert.assertNotNull(tasks);
+        Assert.assertEquals(0, tasks.size());
+        
+        // Query task based on task variable
+        taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        Map<QName, Object> props = new HashMap<QName, Object>();
+        props.put(QName.createQName("taskVar"), "theValue");
+        taskQuery.setActive(false);
+        taskQuery.setTaskCustomProps(props);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
+        
+        props.put(QName.createQName("processVar"), "notmatching");
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(0, tasks.size());
+        
+        // Query task based on process variable
+        taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        props = new HashMap<QName, Object>();
+        props.put(QName.createQName("processVar"), "testing");
+        taskQuery.setActive(false);
+        taskQuery.setProcessCustomProps(props);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
+        
+        props.put(QName.createQName("processVar"), "notmatching");
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(0, tasks.size());
         
     }
     

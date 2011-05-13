@@ -19,115 +19,55 @@
 
 package org.alfresco.repo.workflow.activiti.listener;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.impl.pvm.delegate.ExecutionListener;
+import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.impl.pvm.delegate.ExecutionListenerExecution;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
-import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
-import org.alfresco.repo.workflow.activiti.script.ActivitiScriptBase;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.repo.workflow.activiti.script.DelegateExecutionScriptBase;
+import org.alfresco.service.cmr.repository.ScriptService;
 
 /**
+ * An {@link ExecutionListener} that runs a script against the {@link ScriptService}.
+ * 
+ * The script that is executed can be set using field 'script'. A non-default 
+ * script-processor can be set in the field 'scriptProcessor'. Optionally, you can run 
+ * the script as a different user than the default by setting the field 'runAs'. 
+ * By default, the user this script as the current logged-in user. If no user is 
+ * currently logged in (eg. flow triggered by timer) the system user will be used instead.
  * 
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 3.4.e
  */
-public class ScriptExecutionListener extends ActivitiScriptBase implements ExecutionListener
+public class ScriptExecutionListener extends DelegateExecutionScriptBase implements ExecutionListener
 {
+
 	private static final String DELETED_FLAG = "deleted";
 	private static final String CANCELLED_FLAG = "cancelled";
-
+	
 	@Override
-	public void notify(ExecutionListenerExecution execution) throws Exception {
-		if(script != null)
-        {
-        	String scriptString = getStringValue(script, execution);
-        	String scriptProcessorName = getStringValue(scriptProcessor, execution);
-        	String runAsUser = getStringValue(runAs, execution);
-        	
- 			// Make sure there is an authenticated user for the current thread, so when
-        	// the script is executed using no 'runAs' from a job-executor thread, the workflow
-        	// owner us used
-        	boolean clearAuthenticationContext = checkFullyAuthenticatedUser(execution);
-        	
-        	// Get all activiti-defined objects
-        	Map<String, Object> scriptModel = getInputMap(execution, runAsUser);
-        	
-        	// Add core alfresco objects to the input-map 
-        	getServiceRegistry().getScriptService().buildCoreModel(scriptModel);
-        	
-        	try
-        	{
-        		Object scriptOutput = executeScript(scriptString, scriptModel, scriptProcessorName, runAsUser);
-        		
-        		// TODO: What to do with the script-output?
-        		if(scriptOutput != null)
-        		{
-        			// delegateTask.setVariableLocal("scriptOutput", scriptOutput);
-        		}
-        	}
-        	finally
-        	{
-        		if(clearAuthenticationContext)
-        		{
-        			// If the current user has been set to the Task's assignee, we should clear it agian
-        			AuthenticationUtil.clearCurrentSecurityContext();
-        		}
-        	}
-        }
-        else
-        {
-        	throw new IllegalArgumentException("The field 'script' should be set on the TaskListener");
-        }
+	public void notify(DelegateExecution execution) throws Exception {
+		runScript(execution);
 	}
 	
-	protected Map<String, Object> getInputMap(ExecutionListenerExecution execution, String runAsUser) 
-	{
-		HashMap<String, Object> scriptModel = new HashMap<String, Object>(1);
-        
-        // Add current logged-in user and it's user home
-        ActivitiScriptNode personNode = getPersonNode(runAsUser);
-        if(personNode != null)
-        {
-        	ServiceRegistry registry = getServiceRegistry();
-        	scriptModel.put(PERSON_BINDING_NAME, personNode);
-        	NodeRef userHomeNode = (NodeRef) registry.getNodeService().getProperty(personNode.getNodeRef(), ContentModel.PROP_HOMEFOLDER);
-            if (userHomeNode != null)
-            {
-            	scriptModel.put(USERHOME_BINDING_NAME, new ActivitiScriptNode(userHomeNode, registry));
-            }
-        }
-        
-        // Add activiti-specific objects
-        scriptModel.put(EXECUTION_BINDING_NAME, execution);
-
-        // Add all workflow variables to model
-        Map<String, Object> variables = execution.getVariables();
-        
-        for(Entry<String, Object> varEntry : variables.entrySet())
-        {
-        	scriptModel.put(varEntry.getKey(), varEntry.getValue());
-        }
-        
-        // Add deleted/cancelled flags
+	@Override
+	protected Map<String, Object> getInputMap(DelegateExecution execution,
+			String runAsUser) {
+		Map<String, Object> scriptModel =  super.getInputMap(execution, runAsUser);
+		
+		ExecutionListenerExecution listenerExecution = (ExecutionListenerExecution) execution;
+		
+		// Add deleted/cancelled flags
         boolean cancelled = false;
         boolean deleted = false;
         
-        if(ActivitiConstants.DELETE_REASON_DELETED.equals(execution.getDeleteReason()))
+        if(ActivitiConstants.DELETE_REASON_DELETED.equals(listenerExecution.getDeleteReason()))
         {
         	deleted = true;
         } 
-        else if(ActivitiConstants.DELETE_REASON_CANCELLED.equals(execution.getDeleteReason()))
+        else if(ActivitiConstants.DELETE_REASON_CANCELLED.equals(listenerExecution.getDeleteReason()))
         {
         	cancelled = true;
         }
@@ -136,28 +76,4 @@ public class ScriptExecutionListener extends ActivitiScriptBase implements Execu
         
 	    return scriptModel;
 	}
-	
-	/**
-	 * Checks a valid Fully Authenticated User is set.
-	 * If none is set then attempts to set the workflow owner
-	 * @param execution the execution
-	 * @return <code>true</code> if the Fully Authenticated User was changed, otherwise <code>false</code>.
-	 */
-	private boolean checkFullyAuthenticatedUser(final DelegateExecution execution) {
-		if(AuthenticationUtil.getFullyAuthenticatedUser() == null)
-		{
-			NamespaceService namespaceService = getServiceRegistry().getNamespaceService();
-			WorkflowQNameConverter qNameConverter = new WorkflowQNameConverter(namespaceService);
-            String ownerVariableName = qNameConverter.mapQNameToName(ContentModel.PROP_OWNER);
-			
-			String userName = (String) execution.getVariable(ownerVariableName);
-			if (userName != null)
-			{
-				AuthenticationUtil.setFullyAuthenticatedUser(userName);
-				return true;
-			}
-		}
-		return false;
-	}
-
 }

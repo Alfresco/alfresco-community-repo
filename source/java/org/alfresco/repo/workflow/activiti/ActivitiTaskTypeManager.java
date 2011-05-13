@@ -24,7 +24,7 @@ import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.impl.form.TaskFormHandler;
-import org.activiti.engine.impl.task.TaskEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.Task;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;

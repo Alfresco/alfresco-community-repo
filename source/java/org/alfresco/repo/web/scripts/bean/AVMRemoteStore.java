@@ -71,8 +71,8 @@ public class AVMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(AVMRemoteStore.class);
     private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
-    private static ThreadLocal<Transformer> transformer = new ThreadLocal<Transformer>(){
-
+    private static ThreadLocal<Transformer> transformer = new ThreadLocal<Transformer>()
+    {
         /* (non-Javadoc)
          * @see java.lang.ThreadLocal#initialValue()
          */
@@ -88,7 +88,6 @@ public class AVMRemoteStore extends BaseRemoteStore
                 throw new RuntimeException(e);
             }
         }        
-        
     };
     private String rootPath = "/"; 
     private AVMService avmService;
@@ -451,6 +450,8 @@ public class AVMRemoteStore extends BaseRemoteStore
     @Override
     protected void listDocuments(WebScriptResponse res, String store, String path, boolean recurse) throws IOException
     {
+        res.setContentType("text/plain;charset=UTF-8");
+        
         String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
         if (node == null)
@@ -481,6 +482,8 @@ public class AVMRemoteStore extends BaseRemoteStore
     @Override
     protected void listDocuments(WebScriptResponse res, final String store, String path, String pattern) throws IOException
     {
+        res.setContentType("text/plain;charset=UTF-8");
+        
         String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
         if (node == null)

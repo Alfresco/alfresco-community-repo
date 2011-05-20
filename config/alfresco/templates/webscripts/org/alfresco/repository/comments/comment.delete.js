@@ -39,8 +39,8 @@ function main()
       }
       var data =
       {
-         title: decodeURIComponent(args["itemTitle"]),
-         page: decodeURIComponent(args["page"]) + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : "")
+         title: args["itemTitle"],
+         page: args["page"] + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : "")
       }
       activities.postActivity("org.alfresco.comments.comment-deleted", args["site"], "comments", jsonUtils.toJSONString(data));
    }

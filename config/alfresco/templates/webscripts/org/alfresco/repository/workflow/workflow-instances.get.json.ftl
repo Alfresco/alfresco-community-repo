@@ -1,6 +1,7 @@
 <#-- Workflow Instances collection -->
 
 <#import "workflow.lib.ftl" as workflowLib />
+<#import "../generic-paged-results.lib.ftl" as genericPaging />
 {
    "data": 
    [
@@ -9,8 +10,6 @@
       <#if workflowInstance_has_next>,</#if>
       </#list>
    ]
-   <#if paging??>,
-   "paging": 
-   <@workflowLib.pagingJSON paging=paging />
-   </#if>
+
+   <@genericPaging.pagingJSON pagingVar="paging" />
 }

@@ -140,10 +140,6 @@ public class WorkflowModelBuilder
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE = "startTaskDefinitionType";
     public static final String WORKFLOW_DEFINITION_TASK_DEFINITIONS = "taskDefinitions";
 
-    public static final String PAGING_TOTAL_ITEMS = "totalItems";
-    public static final String PAGING_MAX_ITEMS = "maxItems";
-    public static final String PAGING_SKIP_COUNT = "skipCount";
-
     private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
 
     private final NamespaceService namespaceService;
@@ -379,25 +375,6 @@ public class WorkflowModelBuilder
         return model;
     }
     
-    /**
-     * Returns representation of paging object
-     * 
-     * @param totalItems all count of object
-     * @param maxItems max count of object that should be returned
-     * @param skipCount count of skipped objects
-     * @return
-     */
-    public Map<String, Object> buildPaging(int totalItems, int maxItems, int skipCount)
-    {
-        HashMap<String, Object> model = new HashMap<String, Object>();
-
-        model.put(PAGING_TOTAL_ITEMS, totalItems);
-        model.put(PAGING_MAX_ITEMS, maxItems);
-        model.put(PAGING_SKIP_COUNT, skipCount);
-        
-        return model;
-    }
-
     private Object isPooled(Map<QName, Serializable> properties)
     {
         Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);

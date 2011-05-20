@@ -29,3 +29,20 @@ Usage:
    </#list>
    ]
 </#macro>
+
+<#--
+   Renders information on the paging of results.
+   This version is paging information only, without the data.
+-->
+<#macro pagingJSON pagingVar="paging">
+<#escape x as jsonUtils.encodeJSONString(x)>
+  <#if .vars[pagingVar]??>,
+    "paging": 
+    {
+      "totalItems": ${.vars[pagingVar].totalItems?c},
+      "maxItems": ${.vars[pagingVar].maxItems?c},
+      "skipCount": ${.vars[pagingVar].skipCount?c}
+    }
+  </#if>
+</#escape>
+</#macro>

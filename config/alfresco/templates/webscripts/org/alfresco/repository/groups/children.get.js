@@ -8,17 +8,14 @@ function main()
    var shortName = urlElements[0];
    
    var authorityType = args["authorityType"];
-   var maxItems = args["maxItems"];
-   var skipCount= args["skipCount"];
+   var sortBy = args["sortBy"];
+   var paging = utils.createPaging(args);
 
-   if(maxItems == null)
+   if(sortBy == null)
    {
-      maxItems = -1;
+      sortBy = "authorityName";
    }
-   if(skipCount == null)
-   {
-      skipCount = -1;
-   }
+
    var group = groups.getGroup(shortName);
    if (group == null)
    {
@@ -38,16 +35,19 @@ function main()
       }
       if (authorityType == "GROUP")
       {
-         model.children = group.getChildGroups(maxItems, skipCount);
+         model.children = group.getChildGroups(paging, sortBy);
+         model.paging = paging;
       }
       if (authorityType == "USER")
       {
-         model.children = group.getChildUsers();
+         model.children = group.getChildUsers(paging, sortBy);
+         model.paging = paging;
       }
    }
    else
    {
-      model.children = group.getChildAuthorities();
+      model.children = group.getChildAuthorities(paging, sortBy);
+      model.paging = paging;
    }
 }
 

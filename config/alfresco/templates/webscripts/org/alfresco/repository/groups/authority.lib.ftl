@@ -19,3 +19,6 @@
 }
 </#escape>
 </#macro>
+
+<#-- Renders paging objects. -->
+<#import "../generic-paged-results.lib.ftl" as genericPaging />

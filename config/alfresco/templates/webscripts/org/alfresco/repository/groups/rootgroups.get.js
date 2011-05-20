@@ -7,27 +7,24 @@ function main ()
    // Get the args
    var shortNameFilter = args["shortNameFilter"];
    var zone = args["zone"];
-   var maxItems= args["maxItems"];
-   var skipCount= args["skipCount"];
+   var sortBy = args["sortBy"];
+   var paging = utils.createPaging(args);
      
-     if(maxItems == null)
-     {
-         maxItems = -1;
-     }
-     
-     if(skipCount == null)
-     {
-         skipCount = -1;
-     }
-     
+   if(sortBy == null)
+   {
+      sortBy = "authorityName";
+   }
+	
    if(shortNameFilter == null)
    {
-      model.groups = groups.getAllRootGroupsInZone(zone, maxItems, skipCount);
+      model.groups = groups.getAllRootGroupsInZone(zone, paging, sortBy);
+      model.paging = paging;
    }
    else
    {
       // Do the search
-      model.groups = groups.searchRootGroupsInZone(shortNameFilter, zone, maxItems, skipCount);
+      model.groups = groups.searchRootGroupsInZone(shortNameFilter, zone, paging, sortBy);
+      model.paging = paging;
    }
 }
 

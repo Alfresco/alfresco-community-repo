@@ -27,6 +27,8 @@ import java.util.SortedSet;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.ModelUtil;
+import org.alfresco.util.PagingDetails;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -41,9 +43,6 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
 {
     private static final String MAX_ITEMS          = "maxItems";
     private static final String SKIP_COUNT         = "skipCount";
-    
-    private static final String PAGING_TOTAL_ITEMS = "totalItems";
-
     
     List<ArchivedNodesFilter> nodeFilters = new ArrayList<ArchivedNodesFilter>();
 
@@ -89,25 +88,16 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
             }
         }
         
-        // Paging parameters.
-        int maxItems = getIntParameter(req, MAX_ITEMS, deletedNodes.size());
-        int skipCount = getIntParameter(req, SKIP_COUNT, 0);
+        // Grab the paging parameters
+        PagingDetails paging = new PagingDetails(
+                    getIntParameter(req, MAX_ITEMS, deletedNodes.size()),
+                    getIntParameter(req, SKIP_COUNT, 0)
+        );
         
-        // Paging was required
-        Map<String, Object> pagingModel = new HashMap<String, Object>();
-        pagingModel.put(PAGING_TOTAL_ITEMS, deletedNodes.size());
-        pagingModel.put(MAX_ITEMS, maxItems);
-        pagingModel.put(SKIP_COUNT, skipCount);
-        
-        int endIndex = skipCount + maxItems;
-        if (endIndex > deletedNodes.size())
-        {
-            endIndex = deletedNodes.size();
-        }
-        // from skipCount (inclusive) to endIndex (exclusive)
-        model.put(DELETED_NODES, deletedNodes.subList(skipCount, endIndex));
-        model.put("paging", pagingModel);
-        
+        // Now do the paging
+        model.put(DELETED_NODES, ModelUtil.page(deletedNodes, paging)); 
+        model.put("paging", ModelUtil.buildPaging(paging));
+
         return model;
     }
 }

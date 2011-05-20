@@ -17,7 +17,8 @@ function runAction(p_params)
    var results = [],
       destNode = p_params.destNode,
       files = p_params.files,
-      file, fileNode, result, nodeRef;
+      file, fileNode, result, nodeRef,
+      fromSite, copiedNode;
 
    // Must have array of files
    if (!files || files.length === 0)
@@ -48,17 +49,33 @@ function runAction(p_params)
          else
          {
             result.id = fileNode.name;
-            result.type = fileNode.isContainer ? "folder" : "document";
+            result.type = fileNode.isContainer ? "folder" : "document"
+            
+            // Retain the name of the site the node is currently in. Null if it's not in a site.
+            fromSite = fileNode.siteShortName;
+            
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
             {
-               result.nodeRef = fileNode.copy(destNode, true).nodeRef.toString();
+               copiedNode = fileNode.copy(destNode, true).nodeRef;
+               result.nodeRef = copiedNode.toString();
             }
             else
             {
-               result.nodeRef = fileNode.copy(destNode).nodeRef.toString();
+               copiedNode = fileNode.copy(destNode).nodeRef;
+               result.nodeRef = copiedNode.toString();
             }
+            
             result.success = (result.nodeRef !== null);
+            
+            if (result.success)
+            {
+                // If this was an inter-site copy, we'll need to clean up the permissions on the node
+                if (fromSite !== copiedNode.siteShortName)
+                {
+                    siteService.cleanSitePermissions(copiedNode);
+                }
+            }
          }
       }
       catch (e)

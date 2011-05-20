@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ModelUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -237,7 +238,7 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
         if (maxItems != DEFAULT_MAX_ITEMS || skipCount != DEFAULT_SKIP_COUNT)
         {
             // maxItems or skipCount parameter was provided so we need to include paging into response
-            model.put("paging", modelBuilder.buildPaging(totalItems, maxItems == DEFAULT_MAX_ITEMS ? totalItems : maxItems, skipCount));
+            model.put("paging", ModelUtil.buildPaging(totalItems, maxItems == DEFAULT_MAX_ITEMS ? totalItems : maxItems, skipCount));
         }
         
         return model;
@@ -259,20 +260,8 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
             return results;
         }
         
-        List<Map<String, Object>> pagingResults = new ArrayList<Map<String,Object>>(results.size());
-        
-        int endPosition = results.size();
-        if (skipCount + maxItems <= endPosition)
-        {
-            endPosition = skipCount + maxItems;
-        }
-        
-        for (int i = skipCount; i < endPosition; i++)
-        {
-            pagingResults.add(results.get(i));
-        }
-        
-        return pagingResults;
+        // Do the paging
+        return ModelUtil.page(results, maxItems, skipCount);
     }
     
     /**

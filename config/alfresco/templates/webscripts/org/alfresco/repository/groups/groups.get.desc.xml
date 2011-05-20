@@ -7,12 +7,13 @@
       <ul>
       <li>shortNameFilter - returns those groups with a partial match on shortName.  You can use the pattern matching characters * to match zero or more characters or ? to match one character.</li>
       <li>zone - returns only groups that are in the specified zone, otherwise it returns groups from all zones.</li>
+      <li>If the optional sortBy parameter is given, then the results may be sorted. Possible values are "authorityName" (default), "shortName" and "displayName"</li>
       </ul>
       <br />
       Returns an Array of groups in JSON format.
    ]]>
    </description>
-   <url>/api/groups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}</url>
+   <url>/api/groups?shortNameFilter={shortNameFilter?}&amp;zone={zone?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;sortBy={sortBy?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

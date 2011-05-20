@@ -7,14 +7,21 @@
  */
 function getCommentsList(node, index, count, reverse)
 {
+   // Get all the comments on the node. These should be in date order,
+   //  oldest to newest, as they're in repo order
    var nodes = getComments(node);
-   var result = getPagedResultsData(nodes, index, count, getCommentData);
 
-   if (reverse == "true" && result.items.length > 0)
+   // If they want newest first, sort that before we page it
+   if (reverse == "true" && nodes.length > 0)
    {
       // Don't want to mutate the result.items array. Therefore we use slice(0) to get a (shallow) copy of it.
-      result.items = result.items.slice(0).reverse();
+      nodes = nodes.slice(0).reverse();
    }
+
+   // Now do any paging that's required
+   var result = getPagedResultsData(nodes, index, count, getCommentData);
+
+   // All done!
    return result;
 }
 

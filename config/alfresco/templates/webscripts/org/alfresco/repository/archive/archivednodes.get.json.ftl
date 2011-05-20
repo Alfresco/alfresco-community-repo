@@ -1,3 +1,4 @@
+<#import "../generic-paged-results.lib.ftl" as genericPaging />
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "data":
@@ -20,13 +21,7 @@
          </#list>
       ]
    }
-   <#if paging??>,
-   "paging": 
-   {
-      "totalItems": ${paging.totalItems?c},
-      "maxItems": ${paging.maxItems?c},
-      "skipCount": ${paging.skipCount?c}
-   }
-   </#if>
+
+   <@genericPaging.pagingJSON />
 }
 </#escape>

@@ -1,11 +1,12 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if result.error??>
    "error": "${result.error}"
 <#else>
    "data": {
-       "summary" : "${result.summary}",
-       "location" : "${result.location}",
-       "description" : "${result.description}",
+       "summary" : "${result.summary?js_string}",
+       "location" : "${result.location?js_string}",
+       "description" : "${result.description?js_string}",
        "dtstart" : "${result.dtstart}",
        "dtend" : "${result.dtend}",
        "uri" : "${result.uri}",       
@@ -16,3 +17,4 @@
    
 </#if>
 }
+</#escape>

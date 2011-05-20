@@ -18,7 +18,8 @@ function runAction(p_params)
       destNode = p_params.destNode,
       files = p_params.files,
       parent = null,
-      file, fileNode, result, nodeRef;
+      file, fileNode, result, nodeRef,
+      fromSite;
 
    // Must have array of files
    if (!files || files.length == 0)
@@ -54,8 +55,21 @@ function runAction(p_params)
             }
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
+            
+            // Retain the name of the site the node is currently in. Null if it's not in a site.
+            fromSite = fileNode.siteShortName;
+            
             // move the node
             result.success = fileNode.move(parent, destNode);
+            
+            if (result.success)
+            {
+                // If this was an inter-site move, we'll need to clean up the permissions on the node
+                if (fromSite !== fileNode.siteShortName)
+                {
+                    siteService.cleanSitePermissions(fileNode);
+                }
+            }
          }
       }
       catch (e)

@@ -358,7 +358,7 @@
             <value>audio/x-aiff</value>
           </property>
           <property name="targetMimetype">
-            <value>audio/x-mpeg</value>
+            <value>audio/mpeg</value>
           </property>
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
@@ -366,7 +366,7 @@
             <value>audio/basic</value>
           </property>
           <property name="targetMimetype">
-            <value>audio/x-mpeg</value>
+            <value>audio/mpeg</value>
           </property>
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
@@ -374,7 +374,7 @@
             <value>audio/x-wav</value>
           </property>
           <property name="targetMimetype">
-            <value>audio/x-mpeg</value>
+            <value>audio/mpeg</value>
           </property>
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
@@ -382,7 +382,7 @@
             <value>audio/ogg</value>
           </property>
           <property name="targetMimetype">
-            <value>audio/x-mpeg</value>
+            <value>audio/mpeg</value>
           </property>
         </bean>
       </list>

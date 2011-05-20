@@ -61,7 +61,7 @@ public class PdfBoxPdfToImageContentTransformerTest extends AbstractContentTrans
     }
     
     /**
-     * This test method checks that the PDFBox-based transformer is able to extract text content from a secured PDF file.
+     * This test method checks that the PDFBox-based transformer is able to extract image content from a secured PDF file.
      * See ALF-6650.
      * 
      * @since 3.4.2
@@ -85,5 +85,34 @@ public class PdfBoxPdfToImageContentTransformerTest extends AbstractContentTrans
         ContentReader checkReader = writer.getReader();
         checkReader.setMimetype(MimetypeMap.MIMETYPE_IMAGE_PNG);
         assertTrue("PNG output was empty", checkReader.getContentData().getSize() != 0l);
+    }
+
+    /**
+     * This test method checks that the PDFBox-based transformer is able to transform an Adobe Illustrator file to image.
+     * Adobe Illustrator files (.ai) have been PostScript files in the past, but are now just pdf files.
+     * 
+     * @since 3.5.0
+     */
+    public void testTransformAdobeIllustrator() throws Exception
+    {
+        for (String quickFile : new String[]{"quickCS3.ai", "quickCS5.ai"})
+        {
+            File aiFile = loadNamedQuickTestFile(quickFile);
+            assertNotNull("test file was null.", aiFile);
+            ContentReader reader = new FileContentReader(aiFile);
+            reader.setMimetype(MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR);
+            reader.setEncoding("UTF-8");
+            ContentWriter writer = new FileContentWriter(TempFileProvider
+                    .createTempFile(this.getClass().getSimpleName()
+                            + System.currentTimeMillis(), "txt"));
+            writer.setMimetype(MimetypeMap.MIMETYPE_IMAGE_PNG);
+            writer.setEncoding("UTF-8");
+            transformer.transform(reader, writer);
+            // get a reader onto the transformed content and check - although the real test here is that exceptions weren't thrown during transformation.
+            ContentReader checkReader = writer.getReader();
+            checkReader.setMimetype(MimetypeMap.MIMETYPE_IMAGE_PNG);
+            assertTrue("PNG output was empty", checkReader.getContentData()
+                    .getSize() != 0l);
+        }
     }
 }

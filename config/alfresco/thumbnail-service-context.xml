@@ -263,6 +263,7 @@
    
    <bean id="failedThumbnailAspect" class="org.alfresco.repo.thumbnail.FailedThumbnailSourceAspect" init-method="init">
        <property name="nodeService" ref="NodeService"/>
+       <property name="lockService" ref="LockService"/>
        <property name="thumbnailService" ref="ThumbnailService"/>
        <property name="policyComponent" ref="policyComponent"/>
        <property name="behaviourFilter" ref="policyBehaviourFilter"/>

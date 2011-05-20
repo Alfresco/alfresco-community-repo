@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * 
  * @author Nick Burch
  */
-public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy 
+public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy
 {
    /** Services */
    private PolicyComponent policyComponent;

@@ -131,8 +131,9 @@ public class InviteSenderTest extends TestCase
         // Check the model
         Map model = modelC.getValue();
         assertNotNull(model);
+        assertEquals(false, model.isEmpty());
         assertEquals(null, model.get("userhome"));
-        assertNotNull(model.get("shareUrl"));
+        assertNotNull(model.get("productName"));
         
         // And the args within it
         Map<String, String> argsMap = (Map)model.get("args");
@@ -184,8 +185,9 @@ public class InviteSenderTest extends TestCase
         // Check the model
         Map model = modelC.getValue();
         assertNotNull(model);
+        assertEquals(false, model.isEmpty());
         assertEquals(null, model.get("userhome"));
-        assertNotNull(model.get("shareUrl"));
+        assertNotNull(model.get("productName"));
         
         // And the args within it
         Map<String, String> argsMap = (Map)model.get("args");
@@ -211,8 +213,9 @@ public class InviteSenderTest extends TestCase
         // Check the model
         Map model = modelC.getValue();
         assertNotNull(model);
+        assertEquals(false, model.isEmpty());
         assertEquals(null, model.get("userhome"));
-        assertNotNull(model.get("shareUrl"));
+        assertNotNull(model.get("productName"));
         
         // And the args within it
         Map<String, String> argsMap = (Map)model.get("args");

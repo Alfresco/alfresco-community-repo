@@ -137,12 +137,17 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
      */
     public static boolean isSupported(String mimetype)
     {
-        // ImageMagick supports the transformation of Encapsulated PostScript images,
-        // whose MIME type is defined in mimetype-map.xml as "application/eps".
+        // There are a few mimetypes in the system that do not start with "image/" but which
+        // nevertheless are supported by this transformer.
         if (mimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_EPS))
         {
-            return true; // This is an image although it doesn't start with "image/"
+            return true;
         }
+        else if (mimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_PHOTOSHOP))
+        {
+            return true;
+        }
+        
         else if (!mimetype.startsWith(MIMETYPE_IMAGE_PREFIX))
         {
             return false;   // not an image

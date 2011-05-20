@@ -77,7 +77,7 @@
       <type name="bpm:package">
          <title>Package Folder</title>
          <parent>cm:systemfolder</parent>
-         <archive>true</archive>
+         <archive>false</archive>
          <associations>
             <child-association name="bpm:packageContains">
                <source>

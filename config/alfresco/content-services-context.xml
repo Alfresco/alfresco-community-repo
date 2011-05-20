@@ -325,6 +325,38 @@
       </property>
    </bean>
    
+   <!-- Recent Adobe Illustrator files are, in fact, PDF files -->
+   <bean id="transformer.complex.AdobeIllustrator.Image" class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+         parent="baseContentTransformer">
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/jpeg</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/gif</value></property>
+            </bean>
+         </list>
+      </property>  
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.PdfToImage" />
+            <ref bean="transformer.ImageMagick" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>image/png</value>
+         </list>
+      </property>
+   </bean>
+   
    <bean id="transformer.complex.OpenOffice.Image"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
         parent="baseContentTransformer" >

@@ -163,7 +163,6 @@ public class InviteSender
         Map<String, Serializable> model = new HashMap<String, Serializable>();
         model.put(TemplateService.KEY_COMPANY_HOME, repository.getCompanyHome());
         model.put(TemplateService.KEY_USER_HOME, repository.getUserHome(repository.getPerson()));
-        model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams) + "/");
         model.put(TemplateService.KEY_PRODUCT_NAME, ModelUtil.getProductName(repoAdminService));
 
         // Build up the args for rendering inside the template

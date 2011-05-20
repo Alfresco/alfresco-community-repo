@@ -2708,6 +2708,7 @@
         <property name="avmBootstrap" ref="siteLoadBootstrap-AVM" />
         <property name="siteService" ref="siteService" />
         <property name="authorityService" ref="authorityService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="siteName">
             <value>swsdp</value>
         </property>

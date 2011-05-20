@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,11 +22,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.Auditable;
-import org.alfresco.service.NotAuditable;
 
 /**
  * Site service fundamental API.
@@ -277,4 +277,14 @@ public interface SiteService
     @NotAuditable
     String getSiteRoleGroup(String shortName, String role);
     
+    /**
+     * This method cleans the permissions on the specified node. It is intended to be used after a
+     * node is moved or copied from one site to another. Permissions relating to the former site are
+     * removed and the node is given the default permissions for its new site.
+     * 
+     * @param relocatedNode
+     * @param containingSite
+     * @since 3.4.2
+     */
+    public void cleanSitePermissions(NodeRef relocatedNode, SiteInfo containingSite);
 }

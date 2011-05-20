@@ -27,6 +27,8 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.util.PagingDetails;
+
 /**
  * Script object representing the authority service.
  * 
@@ -61,9 +63,23 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     /**
      * Search the root groups, those without a parent group.
      * 
+     * @param maxItems Maximum number of items returned.
+     * @param skipCount number of items to skip.
      * @return The root groups (empty if there are no root groups)
      */
     public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, int maxItems, int skipCount)
+    {
+        return searchRootGroupsInZone(displayNamePattern, zone, new PagingDetails(maxItems, skipCount), null);
+    }
+	
+    /**
+     * Search the root groups, those without a parent group.
+     * 
+     * @param paging Paging object with max number to return, and items to skip
+     * @param sortBy What to sort on (authorityName, shortName or displayName)
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, PagingDetails paging, String sortBy)
     {
         Set<String> authorities;
         try {
@@ -74,9 +90,9 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
         {
             authorities = Collections.emptySet();
         }
-        return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
+        return makeScriptGroups(authorities, paging, sortBy, authorityService);
     }
-	
+    
 	/**
 	 * Search the root groups, those without a parent group.
 	 * @return The root groups (empty if there are no root groups)
@@ -101,16 +117,26 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] getAllRootGroups(int maxItems, int skipCount)
 	{
-		Set<String> authorities;
-		try{
-		    authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
-		}
+	    return getAllRootGroups(new PagingDetails(maxItems, skipCount));
+	}
+	
+    /**
+     * Search the root groups, those without a parent group.   Searches in all zones.
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] getAllRootGroups(PagingDetails paging)
+    {
+        Set<String> authorities;
+        try{
+            authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
+        }
         catch(UnknownAuthorityException e)
         {
             authorities = Collections.emptySet();
         }
-		return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
-	}
+        return makeScriptGroups(authorities, paging, authorityService);
+    }
+    
     /**
      * Get the root groups, those without a parent group.
      * @param zone zone to search in.
@@ -124,6 +150,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	/**
 	 * Get the root groups, those without a parent group.
 	 * @param zone zone to search in.
+     * @param maxItems Maximum number of items returned.
+     * @param skipCount number of items to skip.
 	 * @return The root groups (empty if there are no root groups)
 	 */
 	public ScriptGroup[] getAllRootGroupsInZone(String zone, int maxItems, int skipCount)
@@ -138,8 +166,30 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             authorities = Collections.emptySet();
         }
 
-		return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
+		return makeScriptGroups(authorities, new PagingDetails(maxItems, skipCount), null, authorityService);
 	}
+    
+    /**
+     * Get the root groups, those without a parent group.
+     * @param zone zone to search in.
+     * @param paging Paging object with max number to return, and items to skip
+     * @param sortBy What to sort on (authorityName, shortName or displayName)
+     * @return The root groups (empty if there are no root groups)
+     */
+    public ScriptGroup[] getAllRootGroupsInZone(String zone, PagingDetails paging, String sortBy)
+    {
+        Set<String> authorities;
+        try
+        {
+            authorities= authorityService.getAllRootAuthoritiesInZone(zone, AuthorityType.GROUP);
+        }
+        catch(UnknownAuthorityException e)
+        {
+            authorities = Collections.emptySet();
+        }
+
+        return makeScriptGroups(authorities, paging, sortBy, authorityService);
+    }
     
 	/**
 	 * Get a group given its short name
@@ -208,7 +258,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	{
 		return searchGroupsInZone(shortNameFilter, zone, -1, -1);
 	}
-	
+    
     /**
      * Search for groups in a specific zone
      * Includes paging parameters to limit size of results returned.
@@ -220,6 +270,21 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @return the groups matching the query
      */
     public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, int maxItems, int skipCount)
+    {
+        return searchGroupsInZone(shortNameFilter, zone, new PagingDetails(maxItems, skipCount), null);
+    }
+	
+    /**
+     * Search for groups in a specific zone
+     * Includes paging parameters to limit size of results returned.
+     * 
+     * @param shortNameFilter partial match on shortName (* and ?) work.  If empty then matches everything.
+     * @param zone zone to search in.
+     * @param paging Paging object with max number to return, and items to skip
+     * @param sortBy What to sort on (authorityName, shortName or displayName)
+     * @return the groups matching the query
+     */
+    public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, PagingDetails paging, String sortBy)
     {
         String filter = shortNameFilter;
         
@@ -240,8 +305,6 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             // Return an empty set if unrecognised authority.
             authorities = Collections.emptySet();
         }
-        return makeScriptGroups(authorities, maxItems, skipCount, authorityService);
+        return makeScriptGroups(authorities, paging, sortBy, authorityService);
     }
-
-	
 }

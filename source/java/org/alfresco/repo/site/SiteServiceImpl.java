@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -134,6 +135,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private RetryingTransactionHelper retryingTransactionHelper;
     private Comparator<String> roleComparator;
     private SysAdminParams sysAdminParams;
+    private BehaviourFilter behaviourFilter;
+    private SitesPermissionCleaner sitesPermissionsCleaner;
 
 
     /**
@@ -274,6 +277,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
     	this.sysAdminParams = sysAdminParams;
     }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setSitesPermissionsCleaner(SitesPermissionCleaner sitesPermissionsCleaner)
+    {
+        this.sitesPermissionsCleaner = sitesPermissionsCleaner;
+    }
+
 
     public Comparator<String> getRoleComparator()
     {
@@ -1081,10 +1095,23 @@ public class SiteServiceImpl implements SiteService, SiteModel
         String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         this.siteNodeRefs.remove(cacheKey);
         
-        // Delete the site node, marking it as "not to be archived" on the way.
-        // The site node will be permanently deleted immediately. See ALF-7888 for info on why
-        this.nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
-        this.nodeService.deleteNode(siteNodeRef);
+        // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
+        // in order to allow site deletion only via this service. Share calls this service for deletion.
+        //
+        // See ALF-7888 for some background on this issue
+        behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        try
+        {
+            // Delete the site node, marking it as "not to be archived" on the way.
+            // The site node will be permanently deleted.
+            
+            this.nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+            this.nodeService.deleteNode(siteNodeRef);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        }
 
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
@@ -1657,6 +1684,23 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
 
         return containerNodeRef;
+    }
+    
+    /**
+     * This method recursively cleans the site permissions on the specified NodeRef and all its primary
+     * descendants. This consists of
+     * <ul>
+     * <li>the removal of all site permissions pertaining to a site other than the containingSite</li>
+     * </ul>
+     * If the containingSite is <code>null</code> then the targetNode's current containing site is used.
+     * 
+     * @param targetNode
+     * @param containingSite the site which the site is a member of. If <code>null</code>, it will be calculated.
+     */
+    @Override
+    public void cleanSitePermissions(final NodeRef targetNode, SiteInfo containingSite)
+    {
+        this.sitesPermissionsCleaner.cleanSitePermissions(targetNode, containingSite);
     }
     
     /**

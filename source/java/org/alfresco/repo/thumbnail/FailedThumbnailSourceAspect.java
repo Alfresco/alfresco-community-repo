@@ -18,24 +18,25 @@
  */
 package org.alfresco.repo.thumbnail;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 3.5.0
  */
 public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                    NodeServicePolicies.OnUpdatePropertiesPolicy
+                                                    ContentServicePolicies.OnContentUpdatePolicy
 {
     private static final Log log = LogFactory.getLog(FailedThumbnailSourceAspect.class);
 
@@ -60,6 +61,7 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     private BehaviourFilter behaviourFilter;
     private NodeService nodeService;
     private PolicyComponent policyComponent;
+    private LockService lockService;
     private ThumbnailService thumbnailService;
     
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -77,6 +79,11 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
         this.thumbnailService = thumbnailService;
     }
     
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+    
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -92,9 +99,9 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
                 ContentModel.TYPE_FAILED_THUMBNAIL, 
                 new JavaBehaviour(this, "onDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+                OnContentUpdatePolicy.QNAME, 
                 ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE, 
-                new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+                new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
     }
     
     @Override
@@ -129,12 +136,9 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     }
     
     @Override
-    public void onUpdateProperties(
-            NodeRef nodeRef,
-            Map<QName, Serializable> before,
-            Map<QName, Serializable> after)
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (this.nodeService.exists(nodeRef))
+        if (nodeService.exists(nodeRef) && lockService.getLockStatus(nodeRef) != LockStatus.LOCKED)
         {
             deleteFailedThumbnailChildren(nodeRef);
         }

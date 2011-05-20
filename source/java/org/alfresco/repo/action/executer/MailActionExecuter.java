@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.EmailValidator;
@@ -566,7 +567,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       model.put("hasAspect", new HasAspectMethod());
       model.put("message", new I18NMessageMethod());
       model.put("dateCompare", new DateCompareMethod());
+      
+      // add URLs
       model.put("url", new URLHelper(repoRemoteUrl));
+      model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(this.serviceRegistry.getSysAdminParams()));
       
       // if the caller specified a model, use it without overriding
       if(suppliedModel != null && suppliedModel.size() > 0)

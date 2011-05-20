@@ -96,7 +96,12 @@ public class RuleServiceImplTest extends BaseRuleTest
      */
     public void testAddRule()
     {
-        Rule newRule = createTestRule();        
+        Rule newRule = createTestRule();
+        
+        // The node it's going on won't have the aspect yet
+        assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        // Attach the rule to the node
         this.ruleService.saveRule(this.nodeRef, newRule);
         assertNotNull(newRule.getNodeRef());
         
@@ -104,6 +109,10 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertNotNull(this.ruleService.getOwningNodeRef(newRule));
         assertEquals(this.nodeRef, this.ruleService.getOwningNodeRef(newRule));
         
+        // Check the aspect was applied to the owning node
+        assertEquals(true, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        // Check we can retrieve it
         Rule savedRule = this.ruleService.getRule(newRule.getNodeRef());
         assertNotNull(savedRule);
         assertFalse(savedRule.isAppliedToChildren());
@@ -114,6 +123,64 @@ public class RuleServiceImplTest extends BaseRuleTest
         Rule savedRule2 = this.ruleService.getRule(savedRule.getNodeRef());
         assertNotNull(savedRule2);
         assertTrue(savedRule2.isAppliedToChildren());
+    }
+    
+    public void testRemoveRule()
+    {
+        this.ruleService.removeAllRules(this.nodeRef);
+        List<Rule> rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(0, rules.size());
+        assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        
+        // Add a rule + check
+        Rule newRule = createTestRule(); //this.ruleService.createRule(ruleType.getName());        
+        this.ruleService.saveRule(this.nodeRef, newRule);
+        
+        rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(1, rules.size());
+        assertEquals(true, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        
+        // Remove it
+        this.ruleService.removeRule(nodeRef, newRule);
+        
+        // And check
+        rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(0, rules.size());
+        assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        
+        // Add two rules
+        Rule newRule2 = createTestRule(); //this.ruleService.createRule(ruleType.getName());
+        this.ruleService.saveRule(this.nodeRef, newRule2); 
+        Rule newRule3 = createTestRule(); //this.ruleService.createRule(ruleType.getName());
+        this.ruleService.saveRule(this.nodeRef, newRule3); 
+        
+        rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(2, rules.size());
+        assertEquals(true, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        
+        // Remove each in turn
+        this.ruleService.removeRule(nodeRef, newRule3);
+        
+        rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(1, rules.size());
+        assertEquals(true, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+        
+        
+        this.ruleService.removeRule(nodeRef, newRule2);
+        
+        rules = this.ruleService.getRules(this.nodeRef);
+        assertNotNull(rules);
+        assertEquals(0, rules.size());
+        assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
     }
     
     public void testRemoveAllRules()
@@ -128,15 +195,22 @@ public class RuleServiceImplTest extends BaseRuleTest
         Rule newRule2 = createTestRule(); //this.ruleService.createRule(ruleType.getName());
         this.ruleService.saveRule(this.nodeRef, newRule2); 
         
+        // Check the rules are showing up as expected
         List<Rule> rules2 = this.ruleService.getRules(this.nodeRef);
         assertNotNull(rules2);
         assertEquals(2, rules2.size());
-        
+        assertEquals(true, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
+
+        // Remove all the rules from the node
         this.ruleService.removeAllRules(this.nodeRef);
         
+        // Check they've gone
         List<Rule> rules3 = this.ruleService.getRules(this.nodeRef);
         assertNotNull(rules3);
         assertEquals(0, rules3.size());        
+        
+        // Removing the rules will have removed the aspect from the node
+        assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
     }
     
     /**

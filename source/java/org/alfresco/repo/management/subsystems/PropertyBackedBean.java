@@ -19,6 +19,7 @@
 package org.alfresco.repo.management.subsystems;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A <code>PropertyBackedBean</code> is a reconfigurable sub-component or subsystem in the Alfresco server. It exposes
@@ -60,4 +61,14 @@ public interface PropertyBackedBean extends PropertyBackedBeanState
      * Reverts this component to its original default start state, removing any previously persisted state changes.
      */
     public void revert();
+    
+    /**
+     * Tries setting the given properties on this component. Will leave the component in a started state consisting of
+     * the new properties if they are valid, or the previous state otherwise. Note that the new state still has to be
+     * confirmed to the entire cluster with {@link #start()}, presumably after persistence of the new state has been
+     * completed.
+     * 
+     * @param properties
+     */
+    public void setProperties(Map<String, String> properties);
 }

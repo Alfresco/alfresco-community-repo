@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -164,7 +166,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         {
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
-        return (Site[])sites.toArray(new Site[sites.size()]);
+        return sites.toArray(new Site[sites.size()]);
     }
     
     /**
@@ -181,7 +183,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         {
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
-        return (Site[])sites.toArray(new Site[sites.size()]);
+        return sites.toArray(new Site[sites.size()]);
     }
     
     /**
@@ -211,6 +213,32 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     public String[] listSiteRoles()
     {
         List<String> roles = this.siteService.getSiteRoles();
-        return (String[])roles.toArray(new String[roles.size()]);
+        return roles.toArray(new String[roles.size()]);
+    }
+    
+    /**
+     * This method cleans up the permissions on the specified node and all its primary children.
+     * It removes permissions which pertain to sites other than the node's current site.
+     * 
+     * @param targetNode the root node which is to have its permissions cleaned.
+     * @since 3.4.2
+     * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
+     */
+    public void cleanSitePermissions(NodeRef targetNode)
+    {
+        this.siteService.cleanSitePermissions(targetNode, null);
+    }
+
+    /**
+     * This method cleans up the permissions on the specified node and all its primary children.
+     * It removes permissions which pertain to sites other than the node's current site.
+     * 
+     * @param targetNode the root node which is to have its permissions cleaned.
+     * @since 3.4.2
+     * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
+     */
+    public void cleanSitePermissions(ScriptNode targetNode)
+    {
+        this.cleanSitePermissions(targetNode.getNodeRef());
     }
 }

@@ -121,7 +121,9 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
 	{
 		if (ruleService.isEnabled() == true && 
         	nodeService.exists(actionedUponNodeRef) == true && 
-        	nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
+            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
+            // Temporary workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
+            ContentModel.TYPE_RATING.equals(nodeService.getType(actionedUponNodeRef)) == false &&
         	ruleService.isRuleTypeEnabled(this.getName()) == true)
         {
 			List<Rule> rules = ruleService.getRules(

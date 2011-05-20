@@ -939,7 +939,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         // Set share information into the model
         String productName = ModelUtil.getProductName(repoAdminService);
-        model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(serviceRegistry.getSysAdminParams()) + "/");
         model.put(TemplateService.KEY_PRODUCT_NAME, productName);
         
         // Set the details for the action

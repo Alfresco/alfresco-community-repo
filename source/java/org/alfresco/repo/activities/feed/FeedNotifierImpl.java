@@ -440,7 +440,6 @@ public class FeedNotifierImpl implements FeedNotifier
                 model.put("feedItemsCount", activityFeedModels.size());
                 
                 // add Share info to model
-                model.put(TemplateService.KEY_SHARE_URL, shareUrl);
                 model.put(TemplateService.KEY_PRODUCT_NAME, ModelUtil.getProductName(repoAdminService));
                 
                 Map<String, Serializable> personPrefixProps = new HashMap<String, Serializable>(personProps.size());

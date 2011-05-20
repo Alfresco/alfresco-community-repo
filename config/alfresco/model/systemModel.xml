@@ -155,6 +155,11 @@
          <archive>false</archive>
       </aspect>
       
+      <!-- aspect to tag nodes which are, by default, undeletable -->
+      <aspect name="sys:undeletable">
+         <title>Undeletable</title>
+      </aspect>
+      
       <!-- aspect to tag nodes being formed and without any content yet -->
       <aspect name="sys:noContent">
          <title>NoContent</title>

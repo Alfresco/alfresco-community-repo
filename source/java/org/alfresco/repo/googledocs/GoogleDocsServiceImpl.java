@@ -352,6 +352,12 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             }
         }
         
+        // Hack to modify the mimetype of ods file so GDoc upload works
+        if ("application/vnd.oasis.opendocument.spreadsheet".equals(mimetype) == true)
+        {
+        	mimetype = "application/x-vnd.oasis.opendocument.spreadsheet";        	            
+        }
+        
         // Check that we support the mimetype
         if (isSupportedMimetype(mimetype) == false)
         {
@@ -534,25 +540,22 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             {
             	// Get the parent folder
                 DocumentListEntry parentFolder = getParentFolder(parentNodeRef);
-                
-                if (parentFolder != null)
+
+                // Determine the name of the new google folder
+                String name = null;
+                QName parentNodeType = nodeService.getType(parentNodeRef);
+                if (dictionaryService.isSubClass(parentNodeType, ContentModel.TYPE_STOREROOT) == true)
                 {
-                    // Determine the name of the new google folder
-                    String name = null;
-                    QName parentNodeType = nodeService.getType(parentNodeRef);
-                    if (dictionaryService.isSubClass(parentNodeType, ContentModel.TYPE_STOREROOT) == true)
-                    {
-                    	name = parentNodeRef.getStoreRef().getIdentifier();
-                    }
-                    else
-                	{
-                    	name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
-                	}
-                    
-                    // Create the folder and set the meta data in Alfresco
-                    folder = createGoogleFolder(name, parentFolder);               
-                    setResourceDetails(parentNodeRef, folder);                                  
+                	name = parentNodeRef.getStoreRef().getIdentifier();
                 }
+                else
+            	{
+                	name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
+            	}
+                
+                // Create the folder and set the meta data in Alfresco
+                folder = createGoogleFolder(name, parentFolder);               
+                setResourceDetails(parentNodeRef, folder);                                  
             }
         }
         
@@ -622,6 +625,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     if (fileExtension.equals("docx"))
                     {
                         fileExtension = "doc";
+                    }
+                    else if (fileExtension.equals("xlsx"))
+                    {
+                    	fileExtension = "xls";
                     }
                 
                     if (docType.equals(TYPE_DOCUMENT) || docType.equals(TYPE_PRESENTATION))

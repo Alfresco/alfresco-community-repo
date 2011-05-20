@@ -237,7 +237,7 @@
     <property name="thumbnailDefinition">
         <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
           <property name="name" value="mp3preview"/>
-          <property name="mimetype" value="audio/x-mpeg"/>
+          <property name="mimetype" value="audio/mpeg"/>
           <property name="transformationOptions">
             <bean class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions">
               <property name="propertyValues">

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.site;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.alfresco.service.namespace.QName;
 
@@ -48,4 +52,13 @@ public interface SiteModel
     public static final String SITE_COLLABORATOR = "SiteCollaborator";
     public static final String SITE_CONTRIBUTOR = "SiteContributor";
     public static final String SITE_CONSUMER = "SiteConsumer";
+
+    /**
+     * Convenience collection of default site permissions
+     * @since 3.5.0
+     */
+    public static final List<String> STANDARD_PERMISSIONS =
+            Collections.unmodifiableList(
+                    Arrays.asList(
+                            new String[] {SITE_MANAGER, SITE_COLLABORATOR, SITE_CONTRIBUTOR, SITE_CONSUMER} ));
 }

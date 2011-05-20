@@ -46,7 +46,7 @@ public class PdfBoxMetadataExtracter extends TikaPoweredMetadataExtracter
     protected static Log pdfLogger = LogFactory.getLog(PdfBoxMetadataExtracter.class);
 
     public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes(
-             new String[] { MimetypeMap.MIMETYPE_PDF },
+             new String[] { MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR },
              new PDFParser()
     );
 

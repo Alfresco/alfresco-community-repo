@@ -55,9 +55,11 @@ public class PdfBoxPdfToImageContentTransformer extends AbstractContentTransform
 
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        // only support PDF -> PNG
-        return  (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
-            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) == true);
+        // only support PDF -> PNG  OR Adobe Illustrator -> PNG.
+        // Recent .ai file format is  a .pdf file.
+        return ( (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) ||
+                  MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR.equals(sourceMimetype))
+             && MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype));
     }
 
     @SuppressWarnings("unchecked")

@@ -443,6 +443,7 @@
 
       <type name="cm:rating">
          <title>Rating</title>
+         <parent>sys:base</parent>
          <properties>
             <property name="cm:ratingScore">
                <title>Rating</title>

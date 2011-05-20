@@ -67,7 +67,16 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_PDF);
     }
-
+    
+    /**
+     * This test method extracts metadata from an Adobe Illustrator file (which in recent versions is a pdf file).
+     * @since 3.5.0
+     */
+    public void testAiExtraction() throws Exception
+    {
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR);
+    }
+    
     /**
      * We can also return a created date
      */

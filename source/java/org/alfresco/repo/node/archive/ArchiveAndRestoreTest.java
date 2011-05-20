@@ -20,6 +20,7 @@ package org.alfresco.repo.node.archive;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -168,6 +170,7 @@ public class ArchiveAndRestoreTest extends TestCase
         {
             e.printStackTrace();
         }
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     /**
@@ -673,7 +676,6 @@ public class ArchiveAndRestoreTest extends TestCase
      * Check that the existence of the node in the archive store doesn't prevent archival.
      * It is possible to restore a node to the SpacesStore from some other source.  When
      * that node is archived, the currently archived node must be overwritten.
-     * @throws Exception
      */
     public void testAR1519ArchiveCleansDuplicateUuid() throws Exception
     {
@@ -716,5 +718,43 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyNodeExistence(b, false);
         verifyNodeExistence(a_, true);
         verifyNodeExistence(b_, true);
+    }
+    
+    /**
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-7889">ALF-7889</a>
+     */
+    public synchronized void testAR7889ArchiveAndRestoreMustNotModifyAuditable() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_A);
+        nodeService.addAspect(b, ContentModel.ASPECT_AUDITABLE, null);
+        
+        // Do a little wait to ensure that the cm:auditable modified date is at least 1s old
+        wait(2000L);
+        
+        // Get the cm:auditable modified time
+        String modifierOriginal = (String) nodeService.getProperty(b, ContentModel.PROP_MODIFIER);
+        Date modifiedOriginal = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
+        
+        nodeService.deleteNode(b);
+        verifyNodeExistence(b_, true);
+        
+        // Check that the cm:auditable modified did not change
+        String modifierArchived = (String) nodeService.getProperty(b_, ContentModel.PROP_MODIFIER);
+        Date modifiedArchived = (Date) nodeService.getProperty(b_, ContentModel.PROP_MODIFIED);
+        assertEquals("cm:modifier should not have changed", modifierOriginal, modifierArchived);
+        assertEquals("cm:modified should not have changed", modifiedOriginal, modifiedArchived);
+
+        // Restore is done using clean txn
+        commitAndBeginNewTransaction();
+        
+        // Restore and check cm:auditable
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(b_);
+        assertEquals("Restore failed", RestoreStatus.SUCCESS, report.getStatus());
+        
+        // Check that the cm:auditable modified did not change
+        String modifierRestored = (String) nodeService.getProperty(b, ContentModel.PROP_MODIFIER);
+        Date modifiedRestored = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
+        assertEquals("cm:modifier should not have changed", modifierOriginal, modifierRestored);
+        assertEquals("cm:modified should not have changed", modifiedOriginal, modifiedRestored);
     }
 }

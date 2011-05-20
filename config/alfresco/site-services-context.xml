@@ -90,7 +90,9 @@
        </property>
        <property name="tenantService" ref="tenantService"/>
        <property name="roleComparator" ref="siteRoleComparator" />
-        <property name="sysAdminParams" ref="sysAdminParams"/>
+       <property name="sysAdminParams" ref="sysAdminParams"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="sitesPermissionsCleaner" ref="sitesPermissionsCleaner"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">
@@ -107,5 +109,13 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
-   
+    
+    <bean id="sitesPermissionsCleaner" class="org.alfresco.repo.site.SitesPermissionCleaner">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="siteServiceImpl" ref="siteService"/>
+       <property name="publicServiceAccessService" ref="PublicServiceAccessService"/>
+       <property name="aclDAO" ref="aclDAO"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+    </bean>
 </beans>

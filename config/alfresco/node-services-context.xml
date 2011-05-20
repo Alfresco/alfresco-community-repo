@@ -216,33 +216,16 @@
 
    <alias name="dbNodeService" alias="dbNodeServiceImpl" />
    <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-      <property name="transactionService">
-         <ref bean="transactionService" />
-      </property>
-      <property name="qnameDAO">
-         <ref bean="qnameDAO" />
-      </property>
-      <property name="nodeDAO">
-         <ref bean="nodeDAO" />
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
-      <property name="storeArchiveMap">
-         <ref bean="storeArchiveMap"/>
-      </property>
-      <property name="avmNodeService">
-         <ref bean="avmNodeService"/>
-      </property>
-      <property name="nodeIndexer">
-         <ref bean="nodeIndexer"/>
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService"/>
-      </property>
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="qnameDAO" ref="qnameDAO" />
+      <property name="nodeDAO" ref="nodeDAO" />
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="storeArchiveMap" ref="storeArchiveMap"/>
+      <property name="avmNodeService" ref="avmNodeService"/>
+      <property name="nodeIndexer" ref="nodeIndexer"/>
+      <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
+      <property name="tenantService" ref="tenantService"/>
       <property name="storesToIgnorePolicies">
          <list>
             <value>${spaces.archive.store}</value>
@@ -260,4 +243,9 @@
       </property>
    </bean>
    
+    <!-- The undeletable aspect -->
+    <bean id="undeletableAspect" class="org.alfresco.repo.node.UndeletableAspect" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+    </bean>
 </beans>

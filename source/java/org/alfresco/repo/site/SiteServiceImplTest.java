@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,13 +27,16 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -73,7 +76,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String GROUP_THREE = "GrpThree_SiteServiceImplTest";
     private static final String GROUP_FOUR = "GrpFour_SiteServiceImplTest";
     
-    private SiteService siteService;    
+    private CopyService copyService;
     private ScriptService scriptService;
     private NodeService nodeService;
     private AuthenticationComponent authenticationComponent;
@@ -81,7 +84,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private PersonService personService;
     private AuthorityService authorityService;
     private FileFolderService fileFolderService;
+    private NodeArchiveService nodeArchiveService;
     private PermissionService permissionService;
+    private SiteService siteService;
+    /**
+     * There are some tests which need access to the unproxied SiteServiceImpl
+     */
+    private SiteServiceImpl siteServiceImpl;
+    private SysAdminParams sysAdminParams;
+
 
     private String groupOne;
     private String groupTwo;
@@ -97,7 +108,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         super.onSetUpInTransaction();
         
         // Get the required services
-        this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
+        this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
@@ -105,7 +116,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.authorityService = (AuthorityService)this.applicationContext.getBean("AuthorityService");
         this.fileFolderService = (FileFolderService)this.applicationContext.getBean("FileFolderService");
+        this.nodeArchiveService = (NodeArchiveService)this.applicationContext.getBean("nodeArchiveService");
         this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
+        this.siteService = (SiteService)this.applicationContext.getBean("SiteService"); // Big 'S'
+        this.siteServiceImpl = (SiteServiceImpl) applicationContext.getBean("siteService"); // Small 's'
+        this.sysAdminParams = (SysAdminParams)this.applicationContext.getBean("sysAdminParams");
+
         
         // Create the test users
         createUser(USER_ONE, "UserOne");
@@ -639,14 +655,29 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Create a test site
         String siteShortName = "testUpdateSite";
         this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        assertNotNull(this.siteService.getSite(siteShortName));
+        SiteInfo siteInfo = this.siteService.getSite(siteShortName);
+        assertNotNull(siteInfo);
         
         // Add the test group as a member of the site
         this.siteService.setMembership(siteShortName, testGroup, SiteModel.SITE_CONTRIBUTOR);
         
+        // delete a site through the nodeService - not allowed
+        try
+        {
+            nodeService.deleteNode(siteInfo.getNodeRef());
+            fail("Shouldn't be able to delete a site via the nodeService");
+        }
+        catch (AlfrescoRuntimeException expected)
+        {
+            // Intentionally empty
+        }
+        
         // Delete the site
         this.siteService.deleteSite(siteShortName);
         assertNull(this.siteService.getSite(siteShortName));
+        // See ALF-7888. Deleted sites should go straight to /dev/null (via the SiteService)
+        NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(siteInfo.getNodeRef());
+        assertFalse("Deleted sites should not appear in the Trash.", nodeService.exists(archivedNodeRef));
         
         // Ensure that all the related site groups are deleted
         assertFalse(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
@@ -1241,20 +1272,62 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, true);
     }
     
-    private SiteInfo createTestSiteWithContent(String shortName, String compName, SiteVisibility visibility)
+    private SiteInfo createTestSiteWithContent(String siteShortName, String componentId, SiteVisibility visibility)
     {
-        // Create a public site
-        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
-                                                        shortName, 
-                                                        TEST_TITLE, 
-                                                        TEST_DESCRIPTION, 
-                                                        visibility);
-        NodeRef foldeRef = this.siteService.createContainer(shortName, compName, ContentModel.TYPE_FOLDER, null);
-        FileInfo fileInfo = this.fileFolderService.create(foldeRef, "test.txt", ContentModel.TYPE_CONTENT);
-        ContentWriter writer = this.fileFolderService.getWriter(fileInfo.getNodeRef());
-        writer.putContent("Just some old content that doesn't mean anything");
+        return this.createTestSiteWithContent(siteShortName, componentId, visibility, "");
+    }
+    
+    /**
+     * Creates a site with a simple content tree within it.
+     * The content looks like
+     * <pre>
+     * [site] {siteShortName}
+     *    |
+     *    --- [siteContainer] {componentId}
+     *          |
+     *          --- [cm:content] fileFolderPrefix + "file.txt"
+     *          |
+     *          |-- [folder] fileFolderPrefix + "folder"
+     *                  |
+     *                  |-- [cm:content] fileFolderPrefix + "fileInFolder.txt"
+     *                  |
+     *                  |-- [folder] fileFolderPrefix + "subfolder"
+     *                         |
+     *                         |-- [cm:content] fileFolderPrefix + "fileInSubfolder.txt"
+     * </pre>
+     * 
+     * @param siteShortName short name for the site
+     * @param componentId the component id for the container
+     * @param visibility visibility for the site.
+     * @param fileFolderPrefix a prefix String to put on all folders/files created.
+     */
+    private SiteInfo createTestSiteWithContent(String siteShortName, String componentId, SiteVisibility visibility, String fileFolderPrefix)
+    {
+             // Create a public site
+             SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
+                                                        siteShortName, 
+                                                             TEST_TITLE, 
+                                                             TEST_DESCRIPTION, 
+                                                             visibility);
         
-        return siteInfo;
+        NodeRef siteContainer = this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
+        FileInfo fileInfo = this.fileFolderService.create(siteContainer, fileFolderPrefix + "file.txt", ContentModel.TYPE_CONTENT);
+             ContentWriter writer = this.fileFolderService.getWriter(fileInfo.getNodeRef());
+             writer.putContent("Just some old content that doesn't mean anything");
+             
+        FileInfo folder1Info = this.fileFolderService.create(siteContainer, fileFolderPrefix + "folder", ContentModel.TYPE_FOLDER);
+
+        FileInfo fileInfo2 = this.fileFolderService.create(folder1Info.getNodeRef(), fileFolderPrefix + "fileInFolder.txt", ContentModel.TYPE_CONTENT);
+        ContentWriter writer2 = this.fileFolderService.getWriter(fileInfo2.getNodeRef());
+        writer2.putContent("Just some old content that doesn't mean anything");
+        
+        FileInfo folder2Info = this.fileFolderService.create(folder1Info.getNodeRef(), fileFolderPrefix + "subfolder", ContentModel.TYPE_FOLDER);
+
+        FileInfo fileInfo3 = this.fileFolderService.create(folder2Info.getNodeRef(), fileFolderPrefix + "fileInSubfolder.txt", ContentModel.TYPE_CONTENT);
+        ContentWriter writer3 = this.fileFolderService.getWriter(fileInfo3.getNodeRef());
+        writer3.putContent("Just some old content that doesn't mean anything");
+        
+         return siteInfo;
     }
     
     private void testVisibilityPermissions(String message, String userName, SiteInfo siteInfo, boolean listSite, boolean readSite)
@@ -1530,7 +1603,109 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             // expected
         }
     }
+
+    public void testALF8036_PermissionsAfterCopyingFolderBetweenSites() throws Exception
+    {
+        alf8036Impl(true);
+    }
+
+    private void alf8036Impl(boolean copyNotMove)
+    {
+        // Create two test sites
+        SiteInfo fromSite = this.createTestSiteWithContent("fromSite", "doclib", SiteVisibility.PUBLIC, "FROM");
+        SiteInfo toSite = this.createTestSiteWithContent("toSite", "doclib", SiteVisibility.PUBLIC, "TO");
+        
+        // Find the folder to be copied/moved.
+        NodeRef fromDoclibContainer = nodeService.getChildByName(fromSite.getNodeRef(), ContentModel.ASSOC_CONTAINS, "doclib");
+        assertNotNull(fromDoclibContainer);
+        NodeRef fromFolder = nodeService.getChildByName(fromDoclibContainer, ContentModel.ASSOC_CONTAINS, "FROMfolder");
+        assertNotNull(fromFolder);
+        NodeRef fromSubFolder = nodeService.getChildByName(fromFolder, ContentModel.ASSOC_CONTAINS, "FROMsubfolder");
+        assertNotNull(fromSubFolder);
+        
+        // The bug is only observed if we set some specific permissions on the folder.
+        // We'll demote contributors to consumer-level permissions.
+        permissionService.setPermission(fromFolder, siteServiceImpl.getSiteRoleGroup(fromSite.getShortName(), SiteModel.SITE_CONTRIBUTOR, true), SiteModel.SITE_CONSUMER, false);
+        
+        // And we'll change permissions on a subfolder too
+        permissionService.setPermission(fromSubFolder, siteServiceImpl.getSiteRoleGroup(fromSite.getShortName(), SiteModel.SITE_COLLABORATOR, true), SiteModel.SITE_CONSUMER, false);
+               
+        // Find the folder to copy/move it to.
+        NodeRef toDoclibContainer = nodeService.getChildByName(toSite.getNodeRef(), ContentModel.ASSOC_CONTAINS, "doclib");
+        assertNotNull(toDoclibContainer);
+        NodeRef toFolder = nodeService.getChildByName(toDoclibContainer, ContentModel.ASSOC_CONTAINS, "TOfolder");
+        assertNotNull(toFolder);
+
+        // Copy/move it
+        NodeRef relocatedNode;
+        if (copyNotMove)
+        {
+            relocatedNode = copyService.copy(fromFolder, toFolder, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, true);
+        }
+        else
+        {
+            relocatedNode = nodeService.moveNode(fromFolder, toDoclibContainer, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS).getChildRef();
+        }
+        siteService.cleanSitePermissions(relocatedNode, null);
+        
+        // Ensure the permissions on the copied/moved node are those of the target site and not those of the source site.
+        Map<String, String> expectedPermissions = new HashMap<String, String>();
+        expectedPermissions.put(siteService.getSiteRoleGroup(toSite.getShortName(), SiteModel.SITE_MANAGER), SiteModel.SITE_MANAGER);
+        expectedPermissions.put(siteService.getSiteRoleGroup(toSite.getShortName(), SiteModel.SITE_COLLABORATOR), SiteModel.SITE_COLLABORATOR);
+        expectedPermissions.put(siteService.getSiteRoleGroup(toSite.getShortName(), SiteModel.SITE_CONTRIBUTOR), SiteModel.SITE_CONTRIBUTOR);
+        expectedPermissions.put(siteService.getSiteRoleGroup(toSite.getShortName(), SiteModel.SITE_CONSUMER), SiteModel.SITE_CONSUMER);
+
+        validatePermissionsOnRelocatedNode(fromSite, toSite, relocatedNode, expectedPermissions);
+        
+        // Get the subfolder and check its permissions too.
+        NodeRef copyOfSubFolder = nodeService.getChildByName(relocatedNode, ContentModel.ASSOC_CONTAINS, "FROMsubfolder");
+        assertNotNull(copyOfSubFolder);
+        validatePermissionsOnRelocatedNode(fromSite, toSite, copyOfSubFolder, expectedPermissions);
+    }
+
+    private void validatePermissionsOnRelocatedNode(SiteInfo fromSite,
+            SiteInfo toSite, NodeRef relocatedNode, Map<String, String> expectedPermissions)
+    {
+        Set<AccessPermission> permissions = permissionService.getAllSetPermissions(relocatedNode);
+        
+        // None of the 'from' site permissions should be there.
+        for (String sitePermission : SiteModel.STANDARD_PERMISSIONS)
+        {
+            String siteRoleGroup = siteServiceImpl.getSiteRoleGroup(fromSite.getShortName(), sitePermission, true);
+            AccessPermission ap = getPermission(permissions, siteRoleGroup);
+            assertNull("Permission " + siteRoleGroup + " was unexpectedly present", ap);
+        }
+
+        // All of the 'to' site permissions should be there.
+        for (String authority : expectedPermissions.keySet())
+        {
+            AccessPermission ap = getPermission(permissions, authority);
+            assertNotNull("Permission " + authority + " missing", ap);
+            
+            assertEquals(authority, ap.getAuthority());
+            assertEquals("Wrong permission for " + authority, expectedPermissions.get(authority), ap.getPermission());
+            assertTrue(ap.isInherited());
+        }
+    }
     
+    private AccessPermission getPermission(Set<AccessPermission> permissions, String expectedAuthority)
+    {
+        AccessPermission result = null;
+        for (AccessPermission ap : permissions)
+        {
+            if (expectedAuthority.equals(ap.getAuthority()))
+            {
+                result = ap;
+            }
+        }
+        return result;
+    }
+
+    public void testPermissionsAfterMovingFolderBetweenSites() throws Exception
+    {
+        alf8036Impl(false);
+    }
+
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception

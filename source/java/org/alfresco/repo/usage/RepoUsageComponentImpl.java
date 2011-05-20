@@ -495,15 +495,15 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
                 warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", (int)remainingDays));
                 if (level.ordinal() < RepoUsageLevel.WARN_ADMIN.ordinal())
                 {
-                    level = RepoUsageLevel.WARN_ADMIN;
+                    level = RepoUsageLevel.WARN_ALL;
                 }
             }
-            else if (remainingDays <= 30.0)
+            else if (remainingDays <= 21.0)
             {
                 warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", (int)remainingDays));
                 if (level.ordinal() < RepoUsageLevel.WARN_ALL.ordinal())
                 {
-                    level = RepoUsageLevel.WARN_ALL;
+                    level = RepoUsageLevel.WARN_ADMIN;
                 }
             }
         }

@@ -19,6 +19,7 @@
 package org.alfresco.repo.jscript;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -26,6 +27,7 @@ import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PagingDetails;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
@@ -165,6 +167,46 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     public String longQName(String s)
     {
         return createQName(s).toString();
+    }
+    
+    /**
+     * Builds a paging object, from the supplied
+     *  Max Items and Skip Count
+     */
+    public PagingDetails createPaging(int maxItems, int skipCount)
+    {
+        return new PagingDetails(maxItems, skipCount);
+    }
+
+    /**
+     * Builds a paging object, from the supplied Args object.
+     * Requires that the parameters have their standard names,
+     *  i.e. "maxItems" and "skipCount"
+     */
+    public PagingDetails createPaging(Map<String, String> args)
+    {
+        int maxItems = -1;
+        int skipCount = -1;
+        if(args.containsKey("maxItems"))
+        {
+            try
+            {
+                maxItems = Integer.parseInt(args.get("maxItems"));
+            }
+            catch(NumberFormatException e)
+            {}
+        }
+        if(args.containsKey("skipCount"))
+        {
+            try
+            {
+                skipCount = Integer.parseInt(args.get("skipCount"));
+            }
+            catch(NumberFormatException e)
+            {}
+        }
+        
+        return new PagingDetails(maxItems, skipCount);
     }
 
     /**

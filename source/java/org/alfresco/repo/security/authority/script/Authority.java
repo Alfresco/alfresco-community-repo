@@ -18,6 +18,10 @@
  */
 package org.alfresco.repo.security.authority.script;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 public interface Authority 
 {
     public enum ScriptAuthorityType { GROUP, USER }; 
@@ -26,4 +30,51 @@ public interface Authority
     public String getFullName();
     public String getDisplayName();
 
+    
+    /**
+     * Does case insensitive sorting of ScriptGroups and ScriptUsers.
+     */
+    public static class AuthorityComparator implements Comparator<Authority>
+    {
+        private Map<Authority,String> nameCache;
+        private String sortBy;
+        
+        public AuthorityComparator(String sortBy)
+        {
+            this.sortBy = sortBy;
+            this.nameCache = new HashMap<Authority, String>();
+        }
+
+        @Override
+        public int compare(Authority g1, Authority g2)
+        {
+            return get(g1).compareTo( get(g2) );
+        }
+        
+        private String get(Authority g)
+        {
+            String v = nameCache.get(g);
+            if(v == null)
+            {
+                // Get the value from the group
+                if("displayName".equals(sortBy))
+                {
+                    v = g.getDisplayName(); 
+                }
+                else if("shortName".equals(sortBy))
+                {
+                    v = g.getShortName();
+                }
+                else
+                {
+                    v = g.getFullName(); 
+                }
+                // Lower case it for case insensitive search
+                v = v.toLowerCase();
+                // Cache it
+                nameCache.put(g, v);
+            }
+            return v;
+        }
+    }
 }

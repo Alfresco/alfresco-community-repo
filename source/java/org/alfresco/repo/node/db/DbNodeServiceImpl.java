@@ -42,6 +42,7 @@ import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.index.NodeIndexer;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -87,7 +88,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private NodeDAO nodeDAO;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
-    private NodeIndexer nodeIndexer; 
+    private NodeIndexer nodeIndexer;
+    private BehaviourFilter policyBehaviourFilter;
     private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
     private final static String KEY_DELETED_NODES = "DbNodeServiceImpl.DeletedNodes";
     
@@ -123,6 +125,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void setNodeIndexer(NodeIndexer nodeIndexer)
     {
         this.nodeIndexer = nodeIndexer;
+    }
+
+    /**
+     * 
+     * @param policyBehaviourFilter     component used to enable and disable behaviours
+     */
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+    {
+        this.policyBehaviourFilter = policyBehaviourFilter;
     }
 
     /**
@@ -1984,7 +1995,26 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return nodeDAO.getPaths(nodePair, primaryOnly);
     }
     
+    /**
+     * Archives the node without the <b>cm:auditable</b> aspect behaviour
+     */
     private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
+    {
+        boolean wasDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+            archiveNodeImpl(nodeRef, archiveStoreRef);
+        }
+        finally
+        {
+            if (!wasDisabled)
+            {
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            }
+        }
+    }
+    
+    private void archiveNodeImpl(NodeRef nodeRef, StoreRef archiveStoreRef)
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -2024,7 +2054,28 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 NodeArchiveService.QNAME_ARCHIVED_ITEM);
     }
     
+    /**
+     * {@inheritDoc}
+     * 
+     * Archives the node without the <b>cm:auditable</b> aspect behaviour
+     */
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
+    {
+        boolean wasDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+            return restoreNodeImpl(archivedNodeRef, destinationParentNodeRef, assocTypeQName, assocQName);
+        }
+        finally
+        {
+            if (!wasDisabled)
+            {
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            }
+        }
+    }
+    
+    private NodeRef restoreNodeImpl(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         Pair<Long, NodeRef> archivedNodePair = getNodePairNotNull(archivedNodeRef);
         Long archivedNodeId = archivedNodePair.getFirst();

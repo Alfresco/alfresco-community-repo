@@ -55,16 +55,11 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) == true &&
-            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) == true)
-        {
-            // only support PDF -> PNG
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        // only support PDF -> PNG  OR Adobe Illustrator -> PNG.
+        // .ai is really just a .pdf file anyway
+        return ( (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) ||
+                  MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR.equals(sourceMimetype))
+               && MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype));
     }
 
     protected void transformInternal(

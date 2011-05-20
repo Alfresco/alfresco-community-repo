@@ -926,6 +926,12 @@ public class RuleServiceImpl
                 {
                     enableRules(nodeRef);
                 }
+                
+                // If this was the last rule on the node, remove the aspect
+                if(countRules(nodeRef) == 0)
+                {
+                    this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
+                }
             }
             // Drop the rules from the cache
             nodeRulesCache.remove(nodeRef);
@@ -972,6 +978,9 @@ public class RuleServiceImpl
                         this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
                     }
                 }
+                
+                // As this was the last rule on the node, remove the aspect
+                this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
             }
             // Drop the rules from the cache
             nodeRulesCache.remove(nodeRef);

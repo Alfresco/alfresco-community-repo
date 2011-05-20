@@ -35,7 +35,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.AVMZipBootstrap;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -77,6 +79,7 @@ public class SiteLoadPatch extends AbstractPatch
     private static final Log logger = LogFactory.getLog(SiteLoadPatch.class);
 
     private AuthorityService authorityService;
+    private BehaviourFilter behaviourFilter;
     private SiteService siteService;
     
     private String siteName;
@@ -142,6 +145,11 @@ public class SiteLoadPatch extends AbstractPatch
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     @Override
@@ -284,11 +292,21 @@ public class SiteLoadPatch extends AbstractPatch
         // Load the Main (ACP) Contents
         if(bootstrapViews.containsKey(PROPERTIES_CONTENTS))
         {
-            // Clear up the stub content that createSite gave us, first
-            // apply the temporary aspect though to prevent the node from
-            // being archived
-            nodeService.addAspect(site.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
-            nodeService.deleteNode(site.getNodeRef());
+            // Disable the behaviour which prevents site deletion.
+            behaviourFilter.disableBehaviour(site.getNodeRef(), ContentModel.ASPECT_UNDELETABLE);
+            try
+            {
+                // Clear up the stub content that createSite gave us, first
+                // apply the temporary aspect though to prevent the node from
+                // being archived
+                nodeService.addAspect(site.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
+                nodeService.deleteNode(site.getNodeRef());
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(site.getNodeRef(), ContentModel.ASPECT_UNDELETABLE);
+            }
+            
             
             // Now load in the real content from the ACP
             List<Properties> views = new ArrayList<Properties>(1);

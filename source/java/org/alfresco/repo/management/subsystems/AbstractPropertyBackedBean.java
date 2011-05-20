@@ -21,11 +21,15 @@ package org.alfresco.repo.management.subsystems;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -89,6 +93,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     
     /** Lock for concurrent access. */
     protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    /** The logger. */
+    private static Log logger = LogFactory.getLog(AbstractPropertyBackedBean.class);
 
     /*
      * (non-Javadoc)
@@ -461,6 +468,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 start(false);
             }
+            catch (Exception e)
+            {
+                // Let's log and swallow auto-start exceptions so that they are non-fatal. This means that the system
+                // can hopefully be brought up to a level where its configuration can be edited and corrected
+                logger.error("Error auto-starting subsystem", e);
+            }
             finally
             {
                 this.lock.writeLock().unlock();
@@ -551,6 +564,55 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
+    public void setProperties(Map<String, String> properties)
+    {
+        this.lock.writeLock().lock();
+        try
+        {
+            // Bring down the bean across the cluster
+            stop(true);
+            doInit();
+            
+            Map<String, String> previousValues = new HashMap<String, String>(properties.size() * 2);
+            try
+            {
+                // Set each of the properties and back up their previous values just in case
+                for (Map.Entry<String, String> entry : properties.entrySet())
+                {
+                    String property = entry.getKey();
+                    String previousValue = this.state.getProperty(property);
+                    this.state.setProperty(property, entry.getValue());
+                    previousValues.put(property, previousValue);
+                }
+                
+                // Attempt to start locally
+                 start(false);
+                
+                // We still haven't broadcast the start - a persist is required first
+            }
+            catch (Exception e)
+            {
+                // Oh dear - something went wrong. So restore previous state before rethrowing
+                for (Map.Entry<String, String> entry : previousValues.entrySet())
+                {
+                    this.state.setProperty(entry.getKey(), entry.getValue());
+                }
+                
+                // Bring the bean back up across the cluster
+                start(true);
+                if (e instanceof RuntimeException)
+                {
+                    throw (RuntimeException) e;
+                }
+                throw new IllegalStateException(e);
+            }
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
+       
+    }
     /**
      * {@inheritDoc}
      */
@@ -575,6 +637,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected void start(boolean broadcast)
     {
+        if (broadcast)
+        {
+            this.registry.broadcastStart(this);
+        }
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (!this.isStarted)
         {
@@ -588,10 +654,6 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 if (!this.isStarted)
                 {
                     doInit();
-                    if (broadcast)
-                    {
-                        this.registry.broadcastStart(this);
-                    }
                     this.state.start();
                     this.isStarted = true;
                 }
@@ -631,6 +693,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected void stop(boolean broadcast)
     {
+        if (broadcast)
+        {
+            this.registry.broadcastStop(this);
+        }
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (this.isStarted)
         {
@@ -643,10 +709,6 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 if (this.isStarted)
                 {
-                    if (broadcast)
-                    {
-                        this.registry.broadcastStop(this);
-                    }
                     this.state.stop();
                     this.isStarted = false;
                 }

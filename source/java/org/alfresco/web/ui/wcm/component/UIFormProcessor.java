@@ -101,7 +101,8 @@ public class UIFormProcessor
       {
          if (fps != null && 
              fps.getForm().equals(form) && 
-             fps.getFormInstanceData().equals(fid))
+             fps.getFormInstanceData().equals(fid) &&
+             fps.getFormInstanceDataName().equals(formInstanceDataName))
          {
             LOGGER.debug("reusing form processor session " + fps);
             fp.process(this.formProcessorSession, out);

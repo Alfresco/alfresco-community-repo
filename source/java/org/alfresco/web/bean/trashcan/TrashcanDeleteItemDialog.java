@@ -65,11 +65,15 @@ public class TrashcanDeleteItemDialog extends TrashcanDialog
     }
 
     @Override
+    protected String getDefaultFinishOutcome()
+    {
+       return "dialog:close[2]";
+    }
+
+    @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
-        deleteItem(context, outcome);
-        return "dialog:close";
-
+        return deleteItem(context, outcome);
     }
 
     @Override

@@ -186,7 +186,7 @@ if (Application.getDialogManager().getState() == null)
                         <tr>
                            <td width="100%" valign="top">
                            
-                              <a:errors message="#{DialogManager.errorMessage}" styleClass="errorMessage" />
+                              <a:errors message="#{DialogManager.errorMessage}" infoClass="statusWarningText" errorClass="statusErrorText" styleClass="errorMessage"  />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <f:subview id="dialog-body">

@@ -4,7 +4,7 @@ var MySpaces = {
    ANIM_LENGTH: 300,
    DETAIL_MARGIN: 56,
    TITLE_FONT_SIZE: 18,
-   RESOURCE_PANEL_HEIGHT: 150,
+   RESOURCE_PANEL_HEIGHT: 180,
    OVERLAY_OPACITY: 0.8,
    fileInput: null,
    Path: null,

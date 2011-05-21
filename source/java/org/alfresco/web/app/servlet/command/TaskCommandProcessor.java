@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -52,7 +53,7 @@ public final class TaskCommandProcessor implements CommandProcessor
    /* (non-Javadoc)
     * @see org.alfresco.web.app.servlet.command.CommandProcessor#validateArguments(javax.servlet.ServletContext, java.lang.String, java.util.Map, java.lang.String[])
     */
-   public boolean validateArguments(ServletContext sc, String command, Map<String, String> args, String[] urlElements)
+   public boolean validateArguments(ServletContext sc, String cmd, Map<String, String> args, String[] urlElements)
    {
        if (urlElements.length == 0)
        {
@@ -63,13 +64,13 @@ public final class TaskCommandProcessor implements CommandProcessor
        {
            transition = urlElements[1];
        }
-       return true;
+       return WorkflowUtil.isTaskEditable(cmd, sc);
    }
    
    /**
     * @see org.alfresco.web.app.servlet.command.CommandProcessor#process(org.alfresco.service.ServiceRegistry, javax.servlet.http.HttpServletRequest, java.lang.String)
     */
-   public void process(ServiceRegistry serviceRegistry, HttpServletRequest request, String command)
+   public void process(ServiceRegistry serviceRegistry, HttpServletRequest request, String commandName)
    {
       Map<String, Object> properties = new HashMap<String, Object>(1, 1.0f);
       // all workflow commands use a "target" Node property as an argument
@@ -78,13 +79,13 @@ public final class TaskCommandProcessor implements CommandProcessor
       {
           properties.put(EndTaskCommand.PROP_TRANSITION, transition);
       }
-      Command cmd = CommandFactory.getInstance().createCommand(command);
+      Command cmd = CommandFactory.getInstance().createCommand(commandName);
       if (cmd == null)
       {
-         throw new AlfrescoRuntimeException("Unregistered workflow command specified: " + command);
+         throw new AlfrescoRuntimeException("Unregistered workflow command specified: " + commandName);
       }
       cmd.execute(serviceRegistry, properties);
-      this.command = command;
+      this.command = commandName;
    }
 
    /**

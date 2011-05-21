@@ -24,7 +24,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -58,7 +57,7 @@ public class CancelWorkflowEvaluator extends BaseActionEvaluator
          {
             // find the current username
             User user = Application.getCurrentUser(context);
-            String currentUserName = ISO9075.encode(user.getUserName());
+            String currentUserName = user.getUserName();
    
             // get the username of the initiator
             NodeService nodeSvc = Repository.getServiceRegistry(

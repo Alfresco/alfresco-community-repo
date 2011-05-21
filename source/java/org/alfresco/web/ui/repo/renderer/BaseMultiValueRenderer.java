@@ -28,6 +28,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.convert.Converter;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
@@ -254,9 +255,18 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
       }
       out.write("'>");
       
-      if (value instanceof NodeRef)
-      {
-         out.write(Utils.encode(Repository.getNameForNode(nodeService, (NodeRef)value)));
+      if (value instanceof NodeRef) 
+      { 
+          String name; 
+          if (ContentModel.TYPE_CATEGORY.equals(nodeService.getType((NodeRef)value))) 
+          { 
+              name = Repository.getNameForCategoryNode(nodeService, (NodeRef)value); 
+          } 
+          else 
+          { 
+              name = Repository.getNameForNode(nodeService, (NodeRef)value); 
+          } 
+          out.write(Utils.encode(name)); 
       }
       else if (value instanceof Date)
       {

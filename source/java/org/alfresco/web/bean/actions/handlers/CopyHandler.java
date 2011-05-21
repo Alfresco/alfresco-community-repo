@@ -24,11 +24,8 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.IWizardBean;
@@ -54,12 +51,6 @@ public class CopyHandler extends BaseActionHandler
       NodeRef destNodeRef = (NodeRef)actionProps.get(PROP_DESTINATION);
       repoProps.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
       
-      // add the type and name of the association to create when the copy
-      // is performed
-      repoProps.put(CopyActionExecuter.PARAM_ASSOC_TYPE_QNAME, 
-            ContentModel.ASSOC_CONTAINS);
-      repoProps.put(CopyActionExecuter.PARAM_ASSOC_QNAME, 
-            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
    }
 
    public void prepareForEdit(Map<String, Serializable> actionProps,

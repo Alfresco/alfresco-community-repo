@@ -31,6 +31,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -48,7 +49,12 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class UIActionCommandProcessor implements ExtCommandProcessor
 {
-   public static final String PARAM_CONTAINER = "container";
+   /**
+     * 
+     */
+    private static final String MANAGE_TASK = "managetask";
+
+public static final String PARAM_CONTAINER = "container";
    
    private ServletContext sc = null;
    private String command = null;
@@ -59,7 +65,7 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
       // add our commands to the command registry
       CommandFactory.getInstance().registerCommand("createwebcontent", CreateWebContentCommand.class);
       CommandFactory.getInstance().registerCommand("editwebcontent", EditWebContentCommand.class);
-      CommandFactory.getInstance().registerCommand("managetask", ManageTaskDialogCommand.class);
+      CommandFactory.getInstance().registerCommand(MANAGE_TASK, ManageTaskDialogCommand.class);
       CommandFactory.getInstance().registerCommand("editcontentprops", EditContentPropertiesCommand.class);
       CommandFactory.getInstance().registerCommand("userprofile", UserProfileDialogCommand.class);
       CommandFactory.getInstance().registerCommand("editspace", EditSpaceCommand.class);
@@ -75,6 +81,11 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
       if (args.size() != 0)
       {
          this.args = new HashMap<String, String>(args);
+      }
+      if(MANAGE_TASK.equals(command))
+      {
+          String taskId = args.get(ManageTaskDialogCommand.PROP_TASKID);
+          return WorkflowUtil.isTaskEditable(taskId, sc);
       }
       return true;
    }

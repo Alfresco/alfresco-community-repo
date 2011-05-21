@@ -539,7 +539,7 @@ public class NavigationBean implements Serializable
             do
             {
                value = serverDescriptor.getDescriptor(m.group(1));
-               m.appendReplacement(sb, value != null ? value.toLowerCase() : m.group(1));
+               m.appendReplacement(sb, value != null ? value : m.group(1));
                result = m.find();
             } while (result);
             m.appendTail(sb);

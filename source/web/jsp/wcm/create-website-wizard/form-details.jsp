@@ -43,7 +43,7 @@
       var additionalConditionInput = document.getElementById('dialog:dialog-body:title');
       var description = document.getElementById("dialog:dialog-body:description");
       validateOutputPathPattern(disabledElement, outputPathInput, additionalConditionInput);
-      disabledElement.disabled = (disabledElement.disabled || description.value.length > 1024 || !validateName(name, "", false));
+      disabledElement.disabled = (disabledElement.disabled || description.value.length > 1024 || !validateName(additionalConditionInput, "", false));
    }
 </script>
 </f:verbatim>

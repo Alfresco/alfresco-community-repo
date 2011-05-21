@@ -527,7 +527,7 @@
          
          <dialog name="itemDetails" page="/jsp/trashcan/item-details.jsp" managed-bean="TrashcanItemDetailsDialog"
                  icon="/images/icons/details_large.gif" description-id="deleteditem_details_description" 
-                 show-ok-button="false" actions-config-id="deleteditem_actions" error-message-id="empty_message" />
+                 show-ok-button="false" error-message-id="empty_message" />
          
          <dialog name="recoverItem" page="/jsp/trashcan/recover-item.jsp" managed-bean="TrashcanRecoverItemDialog"
                  icon="/images/icons/recover_large.gif" title-id="recover_item"
@@ -678,7 +678,7 @@
          <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
                  managed-bean="ManageReviewTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
+                 description-id="manage_task_desc" error-message-id="empty_message" />
       </dialogs>
    </config>
    

@@ -121,15 +121,16 @@ alfresco.xforms.Widget = new Class({
   /** Sets the widget's modified state, as indicated by an XFormsEvent. */
   setModified: function(b)
   {
-    if (this._modified != b)
-    {
       this._modified = b;
       this._updateDisplay(false);
       if (this.isValidForSubmit())
       {
         this.hideAlert();
       }
-    }
+      else
+      {
+        this.showAlert();
+      }
   },
 
   /** Sets the widget's valid state, as indicated by an XFormsEvent */
@@ -281,13 +282,21 @@ alfresco.xforms.Widget = new Class({
   /** Commits the changed value to the server */
   _commitValueChange: function(value)
   {
-    if (this._compositeParent)
+    if (this.isRequired() && this.domNode.type == "select-one" && this.domNode.selectedIndex == 0) 
+    { 
+      this.xform.setXFormsValue(this.id, null); 
+      this.setValue(null);
+    } 
+    else 
     {
-      this._compositeParent._commitValueChange(value);
-    }
-    else
-    {
-      this.xform.setXFormsValue(this.id, value || this.getValue());
+      if (this._compositeParent)
+      {
+        this._compositeParent._commitValueChange(value);
+      }
+      else
+      {
+        this.xform.setXFormsValue(this.id, value || this.getValue());
+      }
     }
   },
 
@@ -813,7 +822,7 @@ alfresco.xforms.NumericalRange = alfresco.xforms.Widget.extend({
                                       this.currentValueDiv.firstChild);
     if (!this.widget._isDragInProgress)
     {
-      this._commitValueChange();
+      this._commitValueChange(value);
     }
   }
 });
@@ -977,6 +986,8 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     this.widget.style.border = "2px inset #f0f0f0";
     this.widget.style.marginRight = "2px";
     this.widget.style.overflow = "auto";
+    this.widget.style.position = "absolute";
+   
     this._oldValue = this.getInitialValue() || "";
     this.widget.innerHTML = this._oldValue;
     this.widget.id = this.id+'-editorWidget';
@@ -1196,8 +1207,8 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
   {
     alfresco.xforms.RichTextEditor.clickMask.style.display='none'
     document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
-    if (alfresco.xforms.RichTextEditor.currentInstance &&
-        alfresco.xforms.RichTextEditor.currentInstance != this)
+    if (alfresco.xforms.RichTextEditor.currentInstance && document.getElementById(alfresco.xforms.RichTextEditor.currentInstance.domNode.id)
+        && alfresco.xforms.RichTextEditor.currentInstance != this)
     {
         alfresco.xforms.RichTextEditor.currentInstance._removeTinyMCE();
     }
@@ -3524,9 +3535,6 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     var toChild = this.getChildAt(toIndex);
     this.xform.swapRepeatItems(fromChild, toChild);
     
-    // set tinymce current instance to null
-    alfresco.xforms.RichTextEditor.currentInstance = null;
-    
     var anim = dojo.lfx.html.fadeOut(fromChild.domContainer, 500);
     anim.onEnd = function()
       {
@@ -3775,9 +3783,6 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
       event.stopPropagation();
       if (this.isInsertRepeatItemEnabled())
       {
-        // set tinymce current instance to null
-        alfresco.xforms.RichTextEditor.currentInstance = null;
-        
         this.setFocusedChild(null);
         var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
         trigger.fire();
@@ -3795,9 +3800,6 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     event.stopPropagation();
     if (this.isRemoveRepeatItemEnabled())
     {
-      // set tinymce current instance to null
-      alfresco.xforms.RichTextEditor.currentInstance = null;
-
       var index = this._repeatControls.indexOf(event.target.parentNode);
       var repeatItem = this.getChildAt(index);
       this.setFocusedChild(repeatItem);
@@ -4487,12 +4489,11 @@ alfresco.xforms.XForm = new Class({
       case "chiba-state-changed":
       {
         alfresco.log("handleStateChanged(" + xfe.targetId + ")");
-        var isModified = false;
         
         if ("valid" in xfe.properties)
         {
           xfe.getTarget().setValid(xfe.properties["valid"] == "true");
-          isModified= true;
+          xfe.getTarget().setModified(true);
         }
         if ("required" in xfe.properties)
         {
@@ -4510,9 +4511,8 @@ alfresco.xforms.XForm = new Class({
         {
           alfresco.log("setting " + xfe.getTarget().id + " = " + xfe.properties["value"]);
           xfe.getTarget().setValue(xfe.properties["value"]);
-          isModified= true;
+          xfe.getTarget().setModified(true);
         }
-        xfe.getTarget().setModified(isModified);
         break;
       }
       case "chiba-prototype-cloned":

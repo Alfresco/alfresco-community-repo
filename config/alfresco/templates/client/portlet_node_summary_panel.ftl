@@ -54,9 +54,9 @@
 	            <#if node.properties.description?exists>
 	               <tr><td>&nbsp;${msg("description")}:</td><td>${node.properties.description?html}</td></tr>
 	            </#if>
-	            <tr><td>&nbsp;${msg("created")}:</td><td>${node.properties.created?datetime}</td></tr>
+	            <tr><td>&nbsp;${msg("created")}:</td><td>${node.properties.created?string(msg("date_time_pattern"))}</td></tr>
 	            <tr><td>&nbsp;${msg("creator")}:</td><td>${node.properties.creator}</td></tr>
-	            <tr><td>&nbsp;${msg("modified")}:</td><td>${node.properties.modified?datetime}</td></tr>
+	            <tr><td>&nbsp;${msg("modified")}:</td><td>${node.properties.modified?string(msg("date_time_pattern"))}</td></tr>
 	            <tr><td>&nbsp;${msg("modifier")}:</td><td>${node.properties.modifier}</td></tr>
 	            <#if node.properties.owner?exists>
 	               <tr><td>&nbsp;${msg("owner")}:</td><td>${node.properties.owner}</td></tr>

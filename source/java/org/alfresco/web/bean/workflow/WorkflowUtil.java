@@ -24,14 +24,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
@@ -265,7 +270,7 @@ public class WorkflowUtil
       
       // TODO: Deal with child associations if and when we need to support
       //       them for workflow tasks, for now warn that they are being used
-      Map childAssocs = node.getAddedChildAssociations();
+      Map<?, ?> childAssocs = node.getAddedChildAssociations();
       if (childAssocs.size() > 0)
       {
          if (logger.isWarnEnabled())
@@ -273,5 +278,18 @@ public class WorkflowUtil
       }
       
       return params;
+   }
+   
+   public static boolean isTaskEditable(String taskId, ServletContext sc)
+   {
+       if(taskId ==null|| taskId.isEmpty())
+       {
+           return false;
+       }
+        ServiceRegistry serviceRegistry = Repository.getServiceRegistry(sc);
+        String username = serviceRegistry.getAuthenticationService().getCurrentUserName();
+        WorkflowService workflowService = serviceRegistry.getWorkflowService();
+        WorkflowTask task = workflowService.getTaskById(taskId);
+        return workflowService.isTaskEditable(task, username);
    }
 }

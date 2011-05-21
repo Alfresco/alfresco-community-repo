@@ -16,7 +16,7 @@
 	         <table cellpadding='2' cellspacing='0' class='taskPopupData'>
 	            <tr><td>${msg("task_summary_panel.type")}:</td><td>${task.type?html}</td></tr>
 	            <tr><td>${msg("task_summary_panel.name")}:</td><td>${task.name?html}</td></tr>
-	            <tr><td>${msg("task_summary_panel.start_date")}:</td><td>${task.startDate?date}</td></tr>
+	            <tr><td>${msg("task_summary_panel.start_date")}:</td><td>${task.startDate?string(msg("date_pattern"))}</td></tr>
 	            <tr><td>${msg("task_summary_panel.due_date")}:</td><td>
 	            <#if task.properties["bpm:dueDate"]?exists>
 	               ${task.properties["bpm:dueDate"]?date}

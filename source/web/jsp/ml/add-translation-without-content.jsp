@@ -27,11 +27,11 @@
 
 <h:panelGrid columns="3" cellpadding="3" cellspacing="3" border="0">
 
-   <h:graphicImage/>
+   <h:outputText/>
    <h:outputText value="#{msg.title}:"/>
    <h:inputText id="title" value="#{DialogManager.bean.title}"  maxlength="1024" size="35" immediate="false"/>
 
-   <h:graphicImage/>
+   <h:outputText/>
    <h:outputText value="#{msg.description}:"/>
    <h:inputTextarea id="description" value="#{DialogManager.bean.description}" cols="35" rows="5" immediate="false"/>
 

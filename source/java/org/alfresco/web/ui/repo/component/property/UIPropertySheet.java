@@ -526,10 +526,11 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       // output variable to hold flag for which submit button was pressed
       out.write("var finishButtonPressed = false;\n");
       out.write("var nextButtonPressed = false;\n");
+      out.write("var transitionButtonPressed = false;\n");
       
       // output the validate() function
       out.write("function validate()\n{\n   var result = true;\n   ");
-      out.write("if ((finishButtonPressed || nextButtonPressed) && (");
+      out.write("if ((transitionButtonPressed || finishButtonPressed || nextButtonPressed) && (");
       
       int numberValidations = this.validations.size();
       List<ClientValidation> realTimeValidations = 
@@ -549,7 +550,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       
       // return false if validation failed to stop the form submitting
       out.write(")\n   { result = false; }\n\n");
-      out.write("   finishButtonPressed = false;\n   nextButtonPressed = false;\n");
+      out.write("   finishButtonPressed = false;\n   nextButtonPressed = false;\n   transitionButtonPressed = false;\n");
       out.write("   return result;\n}\n\n");
       
       // output the processButtonState() function (if necessary)
@@ -616,7 +617,18 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       out.write(getFinishButtonId());
       out.write("').onclick = function() { finishButtonPressed = true; }\n");
       
-      // set the flag when the finish button is clicked
+      // transition buttons on the workflow page also need to handle validation
+      // so look for submit buttons with ":transition_" in the id
+      out.write("   var inputItems = document.getElementsByTagName('input');\n");
+      out.write("   for (i in inputItems)\n");
+      out.write("   {\n");
+      out.write("      if (inputItems[i].type == 'submit' && inputItems[i].id !== undefined && inputItems[i].id.indexOf(':transition_') != -1)\n");
+      out.write("      {\n");
+      out.write("         inputItems[i].onclick = function() { transitionButtonPressed = true; }\n");
+      out.write("      }\n");
+      out.write("   }\n");
+      
+      // set the flag when the next button is clicked
       if (this.nextButtonId != null && this.nextButtonId.length() > 0)
       {
          out.write("   document.getElementById('");

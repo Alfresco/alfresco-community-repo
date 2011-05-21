@@ -120,8 +120,6 @@ Alfresco.checkDeployConfigButtonState = function()
    var port = document.getElementById('wizard:wizard-body:deployServerPort');
    var button = document.getElementById('wizard:wizard-body:deployActionButton');
    
-   console.log(button);
-   
    if (button != null)
    {
 	  var buttonState = false;

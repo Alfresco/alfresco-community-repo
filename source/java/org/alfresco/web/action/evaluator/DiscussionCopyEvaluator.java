@@ -24,6 +24,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -65,6 +66,11 @@ public class DiscussionCopyEvaluator extends BaseActionEvaluator
       {
          result = false;
       }
+      
+      if (!node.hasPermission(PermissionService.READ)) 
+      { 
+          result = false; 
+      } 
       
       return result;
    }

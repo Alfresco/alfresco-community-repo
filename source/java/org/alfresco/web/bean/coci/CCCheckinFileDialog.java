@@ -57,4 +57,9 @@ public class CCCheckinFileDialog extends CheckinCheckoutDialog
       return false;
    }
    
+   @Override
+   protected String getErrorOutcome(Throwable exception)
+   {
+      return "dialog:close";
+   }
 }

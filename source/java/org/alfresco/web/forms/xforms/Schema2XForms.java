@@ -486,11 +486,11 @@ public class Schema2XForms implements Serializable
                   }
                }
 
-               // Check the nil attribute
-               if (oldEl.getAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS, "nil").equals("true"))
+               // Populate the nil attribute. It may be true or false
+               if (proto.hasAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS, "nil"))
                {
                   clone.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
-                        NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil", "true");
+                        NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil", String.valueOf(isEmpty));
                }
                
                // Copy over attributes present in the prototype
@@ -2679,8 +2679,23 @@ public class Schema2XForms implements Serializable
       final Map<String, XSAnnotation> enumValues =
          new LinkedHashMap<String, XSAnnotation>(enumFacets.getLength());
       
-      final String nullValue = Application.getMessage(FacesContext.getCurrentInstance(), "please_select");
-      enumValues.put(nullValue, null);
+      String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
+                  "appearance",
+                  this.getAnnotation(owner),
+                  resourceBundle);
+      if (appearance == null || appearance.length() == 0)
+      {
+         appearance = enumFacets.getLength() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
+      }
+      
+      // if appearance is "full" a radio button control is used, in this case we don't want the
+      // please select option available
+      if (!"full".equals(appearance))
+      {
+         final String nullValue = Application.getMessage(FacesContext.getCurrentInstance(), "please_select");
+         enumValues.put(nullValue, null);
+      }
+      
       for (int i = 0; i < enumFacets.getLength(); i++)
       {
          enumValues.put(enumFacets.item(i),
@@ -2689,14 +2704,6 @@ public class Schema2XForms implements Serializable
                          : null));
       }
 
-      String appearance = extractPropertyFromAnnotation(NamespaceService.ALFRESCO_URI,
-                                                        "appearance",
-                                                        this.getAnnotation(owner),
-                                                        resourceBundle);
-      if (appearance == null || appearance.length() == 0)
-      {
-         appearance = enumFacets.getLength() < Schema2XForms.LONG_LIST_SIZE ? "full" : "compact";
-      }
       control.setAttributeNS(NamespaceConstants.XFORMS_NS,
                              NamespaceConstants.XFORMS_PREFIX + ":appearance",
                              appearance);

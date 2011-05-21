@@ -529,7 +529,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
                if (this.getNodeService().exists(ref))
                {
                   builder.append("<li>");
-                  builder.append(Utils.encode(Repository.getNameForNode(this.getNodeService(), ref)));
+                  builder.append(Utils.encode(Repository.getNameForCategoryNode(this.getNodeService(), ref)));
                   builder.append("</li>");
                }
             }

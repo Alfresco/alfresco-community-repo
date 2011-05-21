@@ -229,6 +229,27 @@ public final class Repository
       return name;
    }
 
+   /** 
+    * Helper to get the display name path for a category node. 
+    * 
+    * @param nodeService 
+    * @param ref the category node ref
+    * @return display name string for the specified category node.
+    */ 
+   public static String getNameForCategoryNode(NodeService nodeService, NodeRef ref) 
+   { 
+      String name = null; 
+       
+      // Check that node reference still exists 
+      if (nodeService.exists(ref) == true) 
+      { 
+          Path path = nodeService.getPath(ref); 
+          name = Repository.getNamePath(nodeService, path, null, "/", null); 
+      } 
+       
+      return name; 
+   } 
+
    /**
     * Escape a QName value so it can be used in lucene search strings
     * 

@@ -664,7 +664,8 @@ public class BrowseBean implements IContextListener, Serializable
          QName currentNodeType = currentNode.getType();
          
          if (SiteModel.TYPE_SITES.isMatch(currentNodeType) ||
-             SiteModel.TYPE_SITE.isMatch(currentNodeType))
+             SiteModel.TYPE_SITE.isMatch(currentNodeType) ||
+             getDictionaryService().isSubClass(currentNodeType, SiteModel.TYPE_SITE))
          {
             siteSpace = true;
          }

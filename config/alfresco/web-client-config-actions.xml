@@ -1188,7 +1188,6 @@
          </action-group>
          
          <action-group id="deleteditem_actions">
-            <style-class>inlineAction</style-class>
             <action idref="recover_item" />
             <action idref="delete_item" />
          </action-group>

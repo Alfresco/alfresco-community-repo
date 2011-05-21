@@ -118,14 +118,19 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
             }
         }
 
-        return "dialog:close";
+        return outcome;
+    }
+    
+    @Override    
+    protected String getDefaultFinishOutcome()
+    {
+       return "dialog:close[2]";
     }
 
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
         return recoverItem(context, outcome);
-
     }
 
     @Override

@@ -953,7 +953,7 @@ public abstract class BaseAssociationEditor extends UIInput
                
                // get all available groups
                AuthorityService authorityService = Repository.getServiceRegistry(context).getAuthorityService();
-               Set<String> groups = authorityService.getAllAuthorities(AuthorityType.GROUP);
+               Set<String> groups = authorityService.getAllAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
                this.availableOptions = new ArrayList<NodeRef>(groups.size());
                
                // get the NodeRef for each matching group

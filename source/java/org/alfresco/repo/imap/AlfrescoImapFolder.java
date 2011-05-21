@@ -131,11 +131,6 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     private boolean selectable;
 
     /**
-     * Defines whether the folder is read-only for user or not.
-     */
-    private Boolean readOnly;
-    
-    /**
      * The UIDValidity
      */
     private long uidValidity = 0;
@@ -282,18 +277,6 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             {
                 setSelectable(selectable);
             }
-            
-            AccessStatus status = serviceRegistry.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "createNode", folderInfo.getNodeRef(), null, null, null);
-            //serviceRegistry.getPermissionService().hasPermission(folderInfo.getNodeRef(), PermissionService.WRITE);
-            if (status == AccessStatus.DENIED)
-            {
-                readOnly = true;
-            }
-            else
-            {
-                readOnly = false;
-            }
-            
         }
         else
         {
@@ -368,7 +351,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     public void deleteAllMessagesInternal() throws FolderException
     {
-        if (this.readOnly)
+        if (isReadOnly())
         {
             throw new FolderException("Can't delete all - Permission denied");
         }
@@ -390,7 +373,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     protected void expungeInternal() throws FolderException
     {
-        if (this.readOnly)
+        if (isReadOnly())
         {
             throw new FolderException("Can't expunge - Permission denied");
         }
@@ -1047,7 +1030,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     protected boolean isReadOnly()
     {
-        return readOnly;
+        AccessStatus status = serviceRegistry.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "createNode", folderInfo.getNodeRef(), null, null, null);
+        //serviceRegistry.getPermissionService().hasPermission(folderInfo.getNodeRef(), PermissionService.WRITE);
+        return  status == AccessStatus.DENIED;
     }
 
     public ImapViewMode getViewMode()

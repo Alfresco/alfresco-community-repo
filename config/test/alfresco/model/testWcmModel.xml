@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="twcm:testwcmmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/testwcmmodel/1.0" prefix="twcm"/>
+   </namespaces>
+
+   <aspects>
+       <aspect name="twcm:authored">
+           <properties>
+               <property name="twcm:dateAuthored">
+                   <type>d:date</type>
+                   <multiple>true</multiple>
+               </property>
+           </properties>
+       </aspect>
+   </aspects>
+
+</model>

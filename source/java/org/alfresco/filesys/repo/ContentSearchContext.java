@@ -134,7 +134,7 @@ public class ContentSearchContext extends SearchContext
      */
     public int getResumeId()
     {
-        return resumeId - 1;
+        return resumeId;
     }
 
     /**
@@ -467,6 +467,10 @@ public class ContentSearchContext extends SearchContext
      */
     public boolean restartAt(int resumeId)
     {
+        // Resume ids are one based as zero has special meaning for some protocols, adjust the resume id
+        
+        resumeId--;
+        
         //  Check if the resume point is in the pseudo file list
 
         if (pseudoList != null)

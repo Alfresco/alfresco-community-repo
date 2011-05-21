@@ -268,7 +268,18 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         Map<QName, Serializable> copyProperties = new HashMap<QName, Serializable>(properties);
         for (CopyBehaviourCallback callback : callbacks)
         {
-            copyProperties = callback.getCopyProperties(classQName, copyDetails, properties);
+            Map<QName, Serializable> propsToCopy = callback.getCopyProperties(classQName,
+                copyDetails,
+                copyProperties);
+
+            if(propsToCopy != copyProperties)
+            {
+                /*
+                 * Collections.emptyMap() is a valid return from the callback so we need to ensure it
+                 * is still mutable for the next iteration
+                 */
+                copyProperties = new HashMap<QName, Serializable>(propsToCopy);
+            }
         }
         // Done
         if (logger.isDebugEnabled())

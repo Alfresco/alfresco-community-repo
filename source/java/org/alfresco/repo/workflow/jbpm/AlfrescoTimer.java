@@ -33,6 +33,7 @@ import org.jbpm.taskmgmt.exe.TaskInstance;
  *       task, the timer is executed unauthenticated.
  *       
  * @author davidc
+ * @author Nick Smith
  */
 public class AlfrescoTimer extends Timer
 {
@@ -56,35 +57,23 @@ public class AlfrescoTimer extends Timer
         super(token);
     }
 
-    /* (non-Javadoc)
-     * @see org.jbpm.job.Job#execute(org.jbpm.JbpmContext)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public boolean execute(final JbpmContext jbpmContext)
         throws Exception
     {
-        boolean executeResult = false;
-        
         // establish authentication context
-        String username = null;
         final TaskInstance taskInstance = getTaskInstance();
-        if (taskInstance != null)
-        {
-            String actorId = taskInstance.getActorId();
-            if (actorId != null && actorId.length() > 0)
-            {
-                username = actorId;
-            }
-        }
+        String username = getActorId(taskInstance);
         
         // execute timer
-        executeResult = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
         {
-            @SuppressWarnings("synthetic-access")
             public Boolean doWork() throws Exception
             {
                 boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
-                
                 // End the task if timer does not repeat.
                 // Note the order is a little odd here as the task will be ended
                 // after the token has been signalled to move to the next node.
@@ -97,9 +86,20 @@ public class AlfrescoTimer extends Timer
                 }
                 return deleteTimer;
             }
-        }, (username == null) ? "system" : username);
-        
-        return executeResult;
+        }, username);
+    }
+
+    private String getActorId(TaskInstance taskInstance)
+    {
+        if (taskInstance != null)
+        {
+            String actorId = taskInstance.getActorId();
+            if (actorId != null && actorId.length() > 0)
+            {
+                return actorId;
+            }
+        }
+        return AuthenticationUtil.getSystemUserName();
     }
 
 }

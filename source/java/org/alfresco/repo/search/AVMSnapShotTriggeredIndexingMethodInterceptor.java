@@ -271,6 +271,8 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 if ((last == -1) && (! hasIndexBeenCreated(store)))
                 {
                     createIndex(store);
+                    // ALF-7845
+                    last = getLastIndexedSnapshot(avmIndexer, store);
                 }
                 
                 int from = before != -1 ? before : last;

@@ -10,6 +10,7 @@
         <property name="authenticationService" ref="AuthenticationService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="namespaceService" ref="NamespaceService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="userNameGenerator" ref="userNameGenerator"/>
         <property name="passwordGenerator" ref="passwordGenerator"/> 

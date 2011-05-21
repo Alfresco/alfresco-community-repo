@@ -1000,31 +1000,47 @@ public class WorkflowServiceImpl implements WorkflowService
      * @param username The username to check
      * @return true if the user is a pooled actor, false otherwise
      */
+    @SuppressWarnings("unchecked")
     private boolean isUserInPooledActors(WorkflowTask task, String username)
     {
-        // get groups that the current user has to belong (at least one of them)
-        final Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
-        if (actors != null && !actors.isEmpty())
+        // Get the pooled actors
+        Collection<NodeRef> actors = (Collection<NodeRef>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        if (actors != null)
         {
-            for (Object actor : actors)
+            for (NodeRef actor : actors)
             {
-                // retrieve the name of the group
-                Map<QName, Serializable> props = nodeService.getProperties((NodeRef)actor);
-                String name = (String)props.get(ContentModel.PROP_AUTHORITY_NAME);
-                
-                // retrieve the users of the group
-                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, name, false);
-                
-                // see if the user is one of the users in the group
-                if (users != null && !users.isEmpty() && users.contains(username))
+                QName type = nodeService.getType(actor);
+                if (dictionaryService.isSubClass(type, ContentModel.TYPE_PERSON))
                 {
-                    // they are a member of the group so stop looking!
-                    return true;
+                    Serializable name = nodeService.getProperty(actor, ContentModel.PROP_USERNAME);
+                    if(name!=null && name.equals(username))
+                    {
+                        return true;
+                    }
+                }
+                else if (dictionaryService.isSubClass(type, ContentModel.TYPE_AUTHORITY_CONTAINER))
+                {
+                    if (isUserInGroup(username, actor))
+                    {
+                        // The user is a member of the group
+                        return true;
+                    }
                 }
             }
         }
-        
         return false;
+    }
+
+    private boolean isUserInGroup(String username, NodeRef group)
+    {
+        // Get the group name
+        String name = (String)nodeService.getProperty(group, ContentModel.PROP_AUTHORITY_NAME);
+
+        // Get all group members
+        Set<String> groupMembers = authorityService.getContainedAuthorities(AuthorityType.USER, name, false);
+
+        // Chekc if the user is a group member.
+        return groupMembers != null && groupMembers.contains(username);
     }
     
     /**

@@ -262,4 +262,5 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     }
     
     protected abstract void deleteAllOldAttrsImpl();
+    
 }

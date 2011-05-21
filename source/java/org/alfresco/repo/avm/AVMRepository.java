@@ -229,7 +229,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             OutputStream out = store.createFile(pathParts[1], name);
@@ -260,7 +260,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.createFile(pathParts[1], name, data, aspects, properties);
@@ -288,7 +288,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.createDirectory(pathParts[1], name, aspects, properties);
@@ -329,7 +329,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(pathParts[0]);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+pathParts[0]);
         }
         DirectoryNode dir = (DirectoryNode) node;
         DirectoryNode child = null;
@@ -384,7 +384,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.createLayeredDirectory(srcPath, pathParts[1], name);
@@ -414,7 +414,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.createLayeredFile(srcPath, pathParts[1], name);
@@ -489,7 +489,7 @@ public class AVMRepository
             AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
             if (srcRepo == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             if (version < 0)
             {
@@ -516,7 +516,7 @@ public class AVMRepository
             AVMStore dstRepo = getAVMStoreByName(pathParts[0]);
             if (dstRepo == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
@@ -601,7 +601,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             OutputStream out = store.getOutputStream(pathParts[1]);
@@ -631,7 +631,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getContentReader(version, pathParts[1]);
         }
@@ -660,7 +660,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             ContentWriter writer = store.createContentWriter(pathParts[1], update);
@@ -703,7 +703,7 @@ public class AVMRepository
             AVMStore srcRepo = getAVMStoreByName(pathParts[0]);
             if (srcRepo == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             sPath = srcRepo.lookupDirectory(-1, pathParts[1], true);
             if (sPath == null)
@@ -736,7 +736,7 @@ public class AVMRepository
             AVMStore dstRepo = getAVMStoreByName(pathParts[0]);
             if (dstRepo == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             Lookup dPath = dstRepo.lookupDirectory(-1, pathParts[1], true);
             if (dPath == null)
@@ -916,7 +916,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.uncover(pathParts[1], name);
@@ -944,7 +944,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+storeName);
         }
         Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
         for (Map.Entry<String, Integer> entry : result.entrySet())
@@ -972,7 +972,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onDelete(pathParts[0]);
             store.removeNode(pathParts[1], name);
@@ -995,7 +995,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         fLookupCache.onDelete(name);
         AVMNode root = store.getRoot();
@@ -1051,7 +1051,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         fLookupCache.onDelete(name);
         store.purgeVersion(version);
@@ -1081,7 +1081,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getInputStream(version, pathParts[1]);
         }
@@ -1132,7 +1132,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getListing(version, pathParts[1], includeDeleted);
         }
@@ -1160,7 +1160,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getListingDirect(version, pathParts[1], includeDeleted);
         }
@@ -1291,7 +1291,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getDeleted(version, pathParts[1]);
         }
@@ -1351,7 +1351,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getVersions();
     }
@@ -1372,7 +1372,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getVersions(from, to);
     }
@@ -1395,7 +1395,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getIndirectionPath(version, pathParts[1]);
         }
@@ -1417,7 +1417,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getNextVersionID();
     }
@@ -1433,7 +1433,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getLastVersionID();
     }
@@ -1681,7 +1681,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found: " + store);
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         AVMNode node = fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
@@ -1934,7 +1934,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             Lookup lookup = store.lookup(version, pathParts[1], false, true);
             if (lookup == null)
@@ -2020,7 +2020,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.makePrimary(pathParts[1]);
@@ -2048,7 +2048,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.retargetLayeredDirectory(pathParts[1], target);
@@ -2122,7 +2122,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setOpacity(pathParts[1], opacity);
@@ -2152,7 +2152,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setNodeProperty(pathParts[1], name, value);
@@ -2180,7 +2180,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setNodeProperties(pathParts[1], properties);
@@ -2211,7 +2211,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getNodeProperty(version, pathParts[1], name);
         }
@@ -2239,7 +2239,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getNodeProperties(version, pathParts[1]);
         }
@@ -2266,7 +2266,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.deleteNodeProperty(pathParts[1], name);
@@ -2292,7 +2292,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.deleteNodeProperties(pathParts[1]);
@@ -2318,7 +2318,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         st.setProperty(name, value);
     }
@@ -2336,7 +2336,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         st.setProperties(props);
     }
@@ -2359,7 +2359,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         return st.getProperty(name);
     }
@@ -2378,7 +2378,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         
         return fAVMStorePropertyDAO.queryByKeyPattern(st, keyPattern);
@@ -2412,7 +2412,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         return st.getProperties();
     }
@@ -2430,7 +2430,7 @@ public class AVMRepository
         AVMStore st = getAVMStoreByName(store);
         if (st == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+store);
         }
         st.deleteProperty(name);
     }
@@ -2550,7 +2550,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             ContentData result = store.getContentDataForWrite(pathParts[1]);
@@ -2579,7 +2579,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setContentData(pathParts[1], data);
@@ -2609,7 +2609,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             AVMNode fromNode = fAVMNodeDAO.getByID(from.getId());
             if (fromNode == null)
@@ -2642,7 +2642,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.addAspect(pathParts[1], aspectName);
@@ -2671,7 +2671,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getAspects(version, pathParts[1]);
         }
@@ -2698,7 +2698,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.removeAspect(pathParts[1], aspectName);
@@ -2729,7 +2729,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.hasAspect(version, pathParts[1], aspectName);
         }
@@ -2756,7 +2756,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setACL(pathParts[1], acl);
@@ -2785,7 +2785,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             return store.getACL(version, pathParts[1]);
         }
@@ -2814,7 +2814,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             store.link(pathParts[1], name, toLink);
             fLookupCache.onWrite(pathParts[0]);
@@ -2844,7 +2844,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             store.updateLink(pathParts[1], name, toLink);
             fLookupCache.onWrite(pathParts[0]);
@@ -2902,7 +2902,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onDelete(pathParts[0]);
             Lookup lPath = store.lookup(-1, pathParts[1], true, false);
@@ -2943,7 +2943,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found.");
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             // Just force a copy if needed by looking up in write mode.
@@ -2979,7 +2979,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(sourceName);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store Not Found: " + sourceName);
+            throw new AVMNotFoundException("Store Not Found: "+sourceName);
         }
         if (getAVMStoreByName(destName) != null)
         {
@@ -3020,7 +3020,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store not found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.revert(pathParts[1], name, toRevertTo);
@@ -3046,7 +3046,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store not found:" + pathParts[0]);
+                throw new AVMNotFoundException("Store not found:"+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setGuid(pathParts[1], guid);
@@ -3072,7 +3072,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store Not Found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store Not Found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setEncoding(pathParts[1], encoding);
@@ -3098,7 +3098,7 @@ public class AVMRepository
             AVMStore store = getAVMStoreByName(pathParts[0]);
             if (store == null)
             {
-                throw new AVMNotFoundException("Store Not Found: " + pathParts[0]);
+                throw new AVMNotFoundException("Store Not Found: "+pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
             store.setMimeType(pathParts[1], mimeType);
@@ -3401,7 +3401,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found: " + storeName);
+            throw new AVMNotFoundException("Store not found: "+storeName);
         }
         store.setStoreAcl(acl);
         
@@ -3419,7 +3419,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found: " + storeName);
+            throw new AVMNotFoundException("Store not found: "+storeName);
         }
         return store.getStoreAcl();
     }
@@ -3434,7 +3434,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getVersionsTo(version);
     }
@@ -3449,7 +3449,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getVersionsFrom(version);
     }
@@ -3465,7 +3465,7 @@ public class AVMRepository
         AVMStore store = getAVMStoreByName(name);
         if (store == null)
         {
-            throw new AVMNotFoundException("Store not found.");
+            throw new AVMNotFoundException("Store not found: "+name);
         }
         return store.getVersionsBetween(startVersion, endVersion);
     }

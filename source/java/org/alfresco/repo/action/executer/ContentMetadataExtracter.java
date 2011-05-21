@@ -124,6 +124,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         // The reader may be null, e.g. for folders and the like
         if (reader == null || reader.getMimetype() == null)
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("no content or mimetype - do nothing");
+            }
             // No content to extract data from
             return;
         }
@@ -131,6 +135,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         MetadataExtracter extracter = metadataExtracterRegistry.getExtracter(mimetype);
         if (extracter == null)
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("no extracter for mimetype:" + mimetype);
+            }
             // There is no extracter to use
             return;
         }

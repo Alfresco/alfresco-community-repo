@@ -515,6 +515,12 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     
     public static class DummyProtocol extends LOOPBACK
     {
+        public DummyProtocol()        
+        {
+            super();
+            enable_diagnostics = false;
+        }
+        
         @Override
         public String getName()
         {

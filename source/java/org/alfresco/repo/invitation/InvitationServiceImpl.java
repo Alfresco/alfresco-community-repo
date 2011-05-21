@@ -20,7 +20,6 @@
 package org.alfresco.repo.invitation;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +37,7 @@ import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
@@ -66,9 +66,9 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.util.PropertyCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -89,6 +89,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private SiteService siteService;
     private MutableAuthenticationService authenticationService;
     private PermissionService permissionService;
+    private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
     // user name and password generation beans
@@ -890,6 +891,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         return passwordGenerator;
     }
 
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
@@ -1415,7 +1421,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             public Object doWork() throws Exception
             {
                 QName type = nodeService.getType(siteRef);
-                if (type.equals(SiteModel.TYPE_SITE))
+                if (dictionaryService.isSubClass(type, SiteModel.TYPE_SITE))
                 {
                     // this is a web site being deleted.
                     String siteName = (String) nodeService.getProperty(siteRef, ContentModel.PROP_NAME);

@@ -733,8 +733,16 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         for (int i = 0; i < returnedObject.length(); i++)
         {
             long currentTimeMillis = System.currentTimeMillis();
-            if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
+            if (i >= maxChecks)
             {
+                log.warn("maxChecks exceeded (" + maxChecks + ")", new Exception("Back Trace"));
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
+                        .getResultSetMetaData().getSearchParameters()));
+                break;
+            }
+            else if ((currentTimeMillis - startTimeMillis) > maxCheckTime)
+            {
+                log.warn("maxCheckTime exceeded (" + (currentTimeMillis - startTimeMillis) + " milliseconds)", new Exception("Back Trace"));
                 filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
                         .getResultSetMetaData().getSearchParameters()));
                 break;

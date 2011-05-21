@@ -21,10 +21,8 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -32,6 +30,8 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch's the site permission model to use groups to contain users.
@@ -96,7 +96,8 @@ public class SitePermissionRefactorPatch extends AbstractPatch
 	                    AuthorityType.GROUP, 
 	                    ((SiteServiceImpl)this.siteService).getSiteGroup(siteInfo.getShortName(), 
 	                    false));
-	            Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+	            QName siteType = nodeService.getType(siteInfo.getNodeRef());
+	            Set<String> permissions = permissionService.getSettablePermissions(siteType);
 	            for (String permission : permissions)
 	            {
 	                // Create a group for the permission

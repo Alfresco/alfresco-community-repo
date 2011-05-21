@@ -93,6 +93,9 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     
     /** What's the largest number of updates we should claim for a tag scope in one transaction? */
     private static final int tagUpdateBatchSize = 100;
+    
+    /** How long to lock a tag scope for */
+    private static final int tagScopeLockTime = 2500;
 
     // For searching
     private static final String noderefPath =
@@ -540,9 +543,13 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     protected String lockTagScope(NodeRef tagScope)
     {
        String lock = jobLockService.getLock(
-             tagScopeToLockQName(tagScope), 2500, 0, 0
+             tagScopeToLockQName(tagScope), tagScopeLockTime, 0, 0
        );
        return lock;
+    }
+    protected void updateTagScopeLock(NodeRef tagScope, String lockToken)
+    {
+        jobLockService.refreshLock(lockToken, tagScopeToLockQName(tagScope), tagScopeLockTime); 
     }
     protected void unlockTagScope(NodeRef tagScope, String lockToken)
     {

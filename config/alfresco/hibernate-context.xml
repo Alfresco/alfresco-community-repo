@@ -67,6 +67,7 @@
                 <value>org/alfresco/repo/workflow/jbpm/jbpm.Join.hbm.xml</value>
                 <value>org/jbpm/graph/node/State.hbm.xml</value>
                 <value>org/jbpm/graph/node/TaskNode.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.TaskNode.hbm.xml</value>
                 <value>org/jbpm/context/def/ContextDefinition.hbm.xml</value>
                 <value>org/jbpm/context/def/VariableAccess.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/def/TaskMgmtDefinition.hbm.xml</value>
@@ -98,6 +99,7 @@
                 <value>org/jbpm/job/Timer.hbm.xml</value>
                 <value>org/alfresco/repo/workflow/jbpm/jbpm.Timer.hbm.xml</value>
                 <value>org/jbpm/job/ExecuteNodeJob.hbm.xml</value>
+                <value>org/alfresco/repo/workflow/jbpm/jbpm.ExecuteNodeJob.hbm.xml</value>
                 <value>org/jbpm/job/ExecuteActionJob.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskMgmtInstance.hbm.xml</value>
                 <value>org/jbpm/taskmgmt/exe/TaskInstance.hbm.xml</value>

@@ -24,6 +24,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -80,31 +81,26 @@ public class OnCreateChildAssociationRuleTrigger
 
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
+        // Avoid new nodes
         if (isNewNode)
         {
             return;
         }
+
+        NodeRef childNodeRef = childAssocRef.getChildRef();
+
+        // Avoid renamed nodes
+        Set<NodeRef> renamedNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_RENAMED_NODES);
+        if (renamedNodeRefSet.contains(childNodeRef))
+        {
+            return;
+        }
+        
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Single child assoc trigger (policy = " + POLICY_NAME + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
         
-        // NOTE:
-        //
-        // We check for the presence of this resource in the transaction to determine whether a rename has been issued.  If that is the case 
-        // then we don't want to trigger any associated rules.
-        //
-        // See http://issues.alfresco.com/browse/AR-1544
-        Set<String> nodeRefRenameSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NODESET);
-        String marker = childAssocRef.getChildRef().toString()+"rename";
-        if (!nodeRefRenameSet.contains(marker))
-        {
-        	triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
-        }
-        else
-        {
-        	// Remove the marker
-            nodeRefRenameSet.remove(marker);
-        }
+    	triggerRules(childAssocRef.getParentRef(), childNodeRef);
     }
 }

@@ -18,7 +18,19 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -30,6 +42,72 @@ import org.alfresco.service.namespace.QName;
  */
 public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
+
+    @SuppressWarnings("deprecation")
+    public void disabledTestAsynchronousTaskExecutes() throws Exception
+    {
+        setComplete();
+        endTransaction();
+        
+        String defId = null;
+        String instanceId = null;
+        try 
+        {
+            WorkflowDefinition def = deployDefinition(getAsyncAdhocPath());
+            defId = def.getId();
+            
+            // Create workflow parameters
+            Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+            Serializable wfPackage = workflowService.createPackage(null);
+            params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+            Date dueDate = new Date();
+            params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+            params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+            NodeRef assignee = personManager.get(USER2);
+            params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
+
+            WorkflowPath path = workflowService.startWorkflow(defId, params);
+            instanceId = path.getInstance().getId();
+            
+            // End the Start Task.
+            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
+            assertEquals(1, tasks.size());
+            WorkflowTask startTask = tasks.get(0);
+            workflowService.endTask(startTask.getId(), null);
+
+            // Wait for async execution to occur.
+            Thread.sleep(1000);
+
+            // Should move past the asynchronous adhoc task.
+            tasks = workflowService.getTasksForWorkflowPath(path.getId());
+            assertEquals(1, tasks.size());
+            WorkflowTask endTask = tasks.get(0);
+            assertEquals("wf:completedAdhocTask", endTask.getName());
+
+            // Check async task assigned to USER2
+            tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
+            assertEquals(1, tasks.size());
+            WorkflowTask adhocTask = tasks.get(0);
+            assertEquals("wf:adhocTask", adhocTask.getName());
+        }
+        finally
+        {
+            if(instanceId != null)
+            {
+                workflowService.cancelWorkflow(instanceId);
+            }
+            if(defId != null)
+            {
+                workflowService.undeployDefinition(defId);
+            }
+            
+        }
+    }
+    
+    private String getAsyncAdhocPath()
+    {
+        return "jbpmresources/async_adhoc_processdefinition.xml";
+    }
 
     @Override
     protected String getEngine()

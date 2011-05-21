@@ -297,8 +297,11 @@ public class JCRDocumentXMLExporter implements Exporter
      */
     public void value(NodeRef nodeRef, QName property, Object value, int index)
     {
-        currentProperties.add(property);
-        currentValues.add(value);
+        if (value != null)
+        {
+            currentProperties.add(property);
+            currentValues.add(value);
+        }
     }
 
     /* (non-Javadoc)

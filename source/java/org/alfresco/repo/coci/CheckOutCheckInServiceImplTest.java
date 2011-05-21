@@ -631,4 +631,149 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
         assertEquals("The modifier should change to Admin after checkin!", adminUser, modifieer);
     }
+    
+    public void testCheckOutPermissions_ALF7680_ALF535()
+    {
+        /*
+         * Testing working copy creation in folder of source node. 
+         * User has no permissions to create children in this folder. 
+         * User has permissions to edit document.
+         * Expected result: working copy should be created.
+         */
+        
+        NodeRef folder1 = createFolderWithPermission(rootNodeRef, userName, PermissionService.CONSUMER);
+        NodeRef node = createNodeWithPermission(folder1, userName, PermissionService.EDITOR);
+
+        // Check out the node
+        NodeRef workingCopy = this.cociService.checkout(
+                node, 
+                folder1, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+
+        // Ensure that the working copy was created and current user was set as owner
+        assertNotNull(workingCopy);
+        assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
+        assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+
+        this.cociService.cancelCheckout(workingCopy);
+
+        /*
+         * Testing working copy creation in a different folder. 
+         * User has permissions to create children in this folder. 
+         * User has permissions to edit document.
+         * Expected result: working copy should be created.
+         */
+        
+        NodeRef folder2 = createFolderWithPermission(rootNodeRef, userName, PermissionService.ALL_PERMISSIONS);
+
+        // Check out the node
+        workingCopy = this.cociService.checkout(
+                node, 
+                folder2, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+
+        // Ensure that the working copy was created and current user was set as owner
+        assertNotNull(workingCopy);
+        assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
+        assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+
+        this.cociService.cancelCheckout(workingCopy);
+
+        /*
+         * Testing working copy creation in a different folder. 
+         * User has no permissions to create children in this folder. 
+         * User has permissions to edit document.
+         * Expected result: exception.
+         */
+        
+        NodeRef folder3 = createFolderWithPermission(rootNodeRef, userName, PermissionService.CONSUMER);
+        try
+        {
+            // Check out the node
+            workingCopy = this.cociService.checkout(
+                    node, 
+                    folder3, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    QName.createQName("workingCopy"));
+
+            // Ensure that the working copy was not created and exception occurs
+            fail("Node can't be checked out to folder where user has no permissions to create children");
+        }
+        catch (Exception e)
+        {
+            // Exception is expected
+        }
+        
+        /*
+         * Testing working copy creation in a different folder. 
+         * User has permissions to create children in this folder. 
+         * User has no permissions to edit document. 
+         * Expected result: exception.
+         */
+        
+        NodeRef node2 = createNodeWithPermission(folder3, userName, PermissionService.CONSUMER);
+        try
+        {
+            // Check out the node
+            workingCopy = this.cociService.checkout(
+                    node2, 
+                    folder3, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    QName.createQName("workingCopy"));
+
+            // Ensure that the working copy was not created and exception occurs
+            fail("Node can't be checked out if user has no permissions to edit document");
+        }
+        catch (Exception e)
+        {
+            // Exception is expected
+        }
+    }
+
+    private NodeRef createFolderWithPermission(NodeRef parent, String username, String permission)
+    {
+        // Authenticate as system user because the current user should not be node owner
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        // Create the folder
+        NodeRef folder = this.nodeService.createNode(
+                parent, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("TestFolder" + GUID.generate()), 
+                ContentModel.TYPE_CONTENT).getChildRef();
+
+        // Apply permissions to folder
+        permissionService.deletePermissions(folder);
+        permissionService.setInheritParentPermissions(folder, false);
+        permissionService.setPermission(folder, userName, permission, true);
+
+        // Authenticate test user
+        TestWithUserUtils.authenticateUser(this.userName, PWD, this.rootNodeRef, this.authenticationService);
+
+        return folder;
+    }
+
+    private NodeRef createNodeWithPermission(NodeRef parent, String username, String permission)
+    {
+        // Authenticate as system user because the current user should not be node owner
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        // Create the node as a copy of prepared
+        NodeRef node = copyService.copy(nodeRef, parent, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT);
+
+        // Apply permissions to node
+        permissionService.deletePermissions(node);
+        permissionService.setInheritParentPermissions(node, false);
+        permissionService.setPermission(node, userName, permission, true);
+
+        // Authenticate test user
+        TestWithUserUtils.authenticateUser(this.userName, PWD, this.rootNodeRef, this.authenticationService);
+
+        return node;
+    }
+    
 }

@@ -106,8 +106,7 @@ public interface CopyServicePolicies
          * @param classRef                the type or aspect qualified name
          * @param copyDetails             the details of the impending copy
          * @return                        Return the callback that will be used to modify the copy behaviour for this
-         *                                dictionary class.  Return <tt>null</tt> to assume the default copy  the helper to carry information back to the Copy Service.  If this is not used, then
-         *                                neither the aspect nor any of its properties will be copied.
+         *                                dictionary class.  Return <tt>null</tt> to assume the default.
          * 
          * @see CopyServicePolicies
          * 

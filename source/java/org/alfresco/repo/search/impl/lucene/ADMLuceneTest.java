@@ -103,6 +103,10 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.context.ApplicationContext;
@@ -216,9 +220,9 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     private QueryEngine queryEngine;
 
     private NodeRef n15;
-    
+
     private M2Model model;
-    
+
     // TODO: pending replacement
     private Dialect dialect;
 
@@ -238,16 +242,13 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         super(arg0);
     }
 
-    
     public void afterDictionaryDestroy()
     {
     }
 
-
     public void afterDictionaryInit()
     {
     }
-
 
     public void onDictionaryInit()
     {
@@ -256,11 +257,10 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         namespaceDao.addPrefix("test", TEST_NAMESPACE);
     }
 
-
     public void setUp() throws Exception
     {
         dialect = (Dialect) ctx.getBean("dialect");
-        
+
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
@@ -297,11 +297,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
         assertNotNull(modelStream);
-        model = M2Model.createModel(modelStream);        
+        model = M2Model.createModel(modelStream);
         dictionaryDAO.register(this);
         dictionaryDAO.reset();
         assertNotNull(dictionaryDAO.getClass(testSuperType));
-        
+
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
@@ -482,7 +482,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         
         // note: cm:thumbnail - hence auditable aspect will be applied with mandatory properties (cm:created, cm:modified, cm:creator, cm:modifier)
         n15 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fifteen"), ContentModel.TYPE_THUMBNAIL, getOrderProperties()).getChildRef();
-        
+
         ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
         writer.setEncoding("UTF-8");
         // InputStream is =
@@ -837,6 +837,168 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     }
 
+    private IndexReader getIndexReader()
+    {
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        return searcher.getSearcher().getIndexReader();
+    }
+
+    public void testMaskDeletes() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
+        int initialCount = results.length();
+        results.close();
+
+        for (int j = 0; j < 20; j++)
+        {
+            ArrayList<NodeRef> added = new ArrayList<NodeRef>();
+            for (int i = 0; i < 50; i++)
+            {
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_NAME, "Mask " + i);
+                added.add(nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mask-" + i), testSuperType,
+                        properties).getChildRef());
+            }
+            testTX.commit();
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+
+            int count = 0;
+            IndexReader indexReader = getIndexReader();
+            TermDocs termDocs = indexReader.termDocs(new Term("@{http://www.alfresco.org/model/content/1.0}name", "mask"));
+            if (termDocs.next())
+            {
+                count++;
+                while (termDocs.skipTo(termDocs.doc()))
+                {
+                    count++;
+                }
+            }
+            termDocs.close();
+            assertEquals(added.size() + j, count);
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("PATH:\"//cm:*\" AND @cm\\:name:(0 1 2 3 4 5 6 7 8 9) AND ISNOTNULL:\"cm:name\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("@cm\\:name:\"mask 1\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+
+            for (int i = 0; i < added.size() - 1; i++)
+            {
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_NAME, "Mask " + i);
+                nodeService.setProperties(added.get(i), properties);
+            }
+
+            testTX.commit();
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("PATH:\"//cm:*\" AND @cm\\:name:(0 1 2 3 4 5 6 7 8 9) AND ISNOTNULL:\"cm:name\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+
+            count = 0;
+            indexReader = getIndexReader();
+            termDocs = indexReader.termDocs(new Term("@{http://www.alfresco.org/model/content/1.0}name", "mask"));
+            if (termDocs.next())
+            {
+                count++;
+                while (termDocs.skipTo(termDocs.doc()))
+                {
+                    count++;
+                }
+            }
+            termDocs.close();
+            assertEquals(added.size() + j, count);
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("@cm\\:name:\"mask 1\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+
+            for (int i = 0; i < added.size() - 1; i++)
+            {
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_NAME, "Mask " + i);
+                nodeService.deleteNode(added.get(i));
+            }
+            testTX.commit();
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+
+            count = 0;
+            indexReader = getIndexReader();
+            termDocs = indexReader.termDocs(new Term("@{http://www.alfresco.org/model/content/1.0}name", "mask"));
+            if (termDocs.next())
+            {
+                count++;
+                while (termDocs.skipTo(termDocs.doc()))
+                {
+                    count++;
+                }
+            }
+            termDocs.close();
+            assertEquals(j+1, count);
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("PATH:\"//cm:*\" AND @cm\\:name:(0 1 2 3 4 5 6 7 8 9) AND ISNOTNULL:\"cm:name\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+
+            sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery("@cm\\:name:\"mask 1\"");
+            sp.addStore(rootNodeRef.getStoreRef());
+            sp.excludeDataInTheCurrentTransaction(true);
+
+            results = serviceRegistry.getSearchService().query(sp);
+            results.close();
+        }
+
+    }
+
     public void testQuoting() throws Exception
     {
         testTX.commit();
@@ -852,11 +1014,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ResultSet results = serviceRegistry.getSearchService().query(sp);
         results.close();
     }
-    
+
     public void test_ALF_8007() throws Exception
     {
         // Check that updates before and after queries do not produce duplicates
-        
+
         testTX.commit();
         testTX = transactionService.getUserTransaction();
         testTX.begin();
@@ -875,60 +1037,57 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-       
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
 
         properties.put(ContentModel.PROP_NAME, "ALF-8007");
         NodeRef one = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007"), ContentModel.TYPE_CONTENT, properties).getChildRef();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
-        
+
         MLText desc1 = new MLText();
         desc1.addValue(Locale.ENGLISH, "ALF 8007");
         desc1.addValue(Locale.US, "ALF 8007");
-    
+
         nodeService.setProperty(one, ContentModel.PROP_DESCRIPTION, desc1);
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         // check delete after update does delete from the index
         // ALF-8007
         // Already seen the delete in the TX and it is skipped (should only skip deletes in the same flush)
-        
+
         nodeService.deleteNode(one);
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
+
         // Check unreported ... create, query, update, delete
-        //                  ... create, query, move, delete 
-        
-        
+        // ... create, query, move, delete
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-2\"");
@@ -938,11 +1097,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
+
         properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_NAME, "ALF-8007-2");
         NodeRef two = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-2"), ContentModel.TYPE_CONTENT, properties).getChildRef();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-2\"");
@@ -952,26 +1111,26 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         desc1 = new MLText();
         desc1.addValue(Locale.ENGLISH, "ALF 8007 2");
         desc1.addValue(Locale.US, "ALF 8007 2");
-    
+
         nodeService.setProperty(two, ContentModel.PROP_DESCRIPTION, desc1);
         nodeService.deleteNode(two);
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-2\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
-        //                  ... create, query, move, delete 
-        
+
+        // ... create, query, move, delete
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-3\"");
@@ -981,11 +1140,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
+
         properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_NAME, "ALF-8007-3");
         NodeRef three = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-3"), ContentModel.TYPE_CONTENT, properties).getChildRef();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-3\"");
@@ -995,26 +1154,26 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         desc1 = new MLText();
         desc1.addValue(Locale.ENGLISH, "ALF 8007 3");
         desc1.addValue(Locale.US, "ALF 8007 3");
-    
+
         nodeService.moveNode(three, n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-3"));
         nodeService.deleteNode(three);
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-3\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
-        //                  ... create, move, query, delete 
-        
+
+        // ... create, move, query, delete
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-4\"");
@@ -1024,11 +1183,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
+
         properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_NAME, "ALF-8007-4");
         NodeRef four = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-4"), ContentModel.TYPE_CONTENT, properties).getChildRef();
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-4\"");
@@ -1038,13 +1197,13 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         desc1 = new MLText();
         desc1.addValue(Locale.ENGLISH, "ALF 8007 4");
         desc1.addValue(Locale.US, "ALF 8007 4");
-    
+
         nodeService.moveNode(four, n1, ASSOC_TYPE_QNAME, QName.createQName("{namespace}ALF-8007-4"));
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-4\"");
@@ -1054,21 +1213,20 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         nodeService.deleteNode(four);
-        
+
         sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery("cm:name:\"ALF-8007-4\"");
         sp.addStore(rootNodeRef.getStoreRef());
         sp.excludeDataInTheCurrentTransaction(false);
-        
+
         results = serviceRegistry.getSearchService().query(sp);
         assertEquals(0, results.length());
         results.close();
-        
-    }
 
+    }
 
     public void testPublicServiceSearchServicePaging() throws Exception
     {
@@ -1498,29 +1656,29 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
             fail("Range query should not be supported against type d:content");
         }
-        catch(UnsupportedOperationException e)
+        catch (UnsupportedOperationException e)
         {
-            
+
         }
-        
+
         try
         {
             ftsQueryWithCount(searcher, "TEXT:brown..dog", 1);
             fail("Range query should not be supported against type d:content");
         }
-        catch(UnsupportedOperationException e)
+        catch (UnsupportedOperationException e)
         {
-            
+
         }
-        
+
         try
         {
             ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
             fail("Range query should not be supported against type d:content");
         }
-        catch(UnsupportedOperationException e)
+        catch (UnsupportedOperationException e)
         {
-            
+
         }
 
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
@@ -1695,7 +1853,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(count, results.length());
         results.close();
     }
-    
+
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String defaultFieldName, String query, int count)
     {
         SearchParameters sp = new SearchParameters();
@@ -2654,7 +2812,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         {
             public Object execute() throws Throwable
             {
-                for (int i = 0; i < 100; i+=10)
+                for (int i = 0; i < 100; i += 10)
                 {
                     HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
                     for (int j = 0; j < i; j++)
@@ -3425,7 +3583,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         
         // sort by ML text
 
-        //Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
+        // Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
         Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH };
         for (Locale testLocale : testLocales)
         {
@@ -3493,7 +3651,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         // test sort on unkown properties ALF-4193
-        
+
         spN = new SearchParameters();
         spN.addStore(rootNodeRef.getStoreRef());
         spN.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -3501,7 +3659,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         spN.addSort("PARENT", false);
         results = searcher.query(spN);
         results.close();
-        
+
         spN = new SearchParameters();
         spN.addStore(rootNodeRef.getStoreRef());
         spN.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -3510,7 +3668,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = searcher.query(spN);
         results.close();
 
-        
         luceneFTS.resume();
         
 
@@ -4462,7 +4619,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                 continue;
             }
             System.out.println("Date format: "+df.getSimpleDateFormat());
-            
+
 //            if(usesDateTimeAnalyser && (df.getSimpleDateFormat().format(date).length() < 22))
 //            {
 //                continue;
@@ -4508,7 +4665,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));
             assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
             results.close();
-            
+
           
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
             assertEquals(2, results.length());           
@@ -4889,39 +5046,40 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null);
         assertEquals(13, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"cm:content\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"cm:CONTENT\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"CM:CONTENT\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"CONTENT\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"content\"", null);
         assertEquals(1, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\"", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\""
+                + ContentModel.TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
         assertEquals(2, results.length());
         results.close();
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toString() + "\"", null);
         assertEquals(12, results.length());
         results.close();
@@ -6610,7 +6768,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             // http://archives.postgresql.org/pgsql-jdbc/2007-02/msg00115.php
             COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
         }
-        
+
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();

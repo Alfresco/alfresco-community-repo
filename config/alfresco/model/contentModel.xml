@@ -18,6 +18,7 @@
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
       <namespace uri="http://www.alfresco.org/model/rendition/1.0" prefix="rn"/>
       <namespace uri="http://www.alfresco.org/model/exif/1.0" prefix="exif"/>
+      <namespace uri="http://www.alfresco.org/model/webdav/1.0" prefix="webdav"/>
    </namespaces>
 
    <constraints>

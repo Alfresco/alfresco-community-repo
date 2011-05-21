@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 
 
 /**
@@ -95,7 +96,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         {
             creatable = true;
             displayName = (assocDef.getTitle() != null) ? assocDef.getTitle() : typeId.getId();
-            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
+            objectTypeQueryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(typeId.getQName()));
             parentTypeId = CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
             description = assocDef.getDescription() != null ? assocDef.getDescription() : displayName;
 

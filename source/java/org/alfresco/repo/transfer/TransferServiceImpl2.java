@@ -237,14 +237,7 @@ public class TransferServiceImpl2 implements TransferService2
         // enableable aspect
         properties.put(TransferModel.PROP_ENABLED, Boolean.TRUE);
 
-        NodeRef home = getTransferHome();
-
-        /**
-         * Work out which group the transfer target is for, in this case the
-         * default group.
-         */
-        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS,
-                    defaultTransferGroup);
+        NodeRef defaultGroup = getDefaultGroup();
 
         /**
          * Go ahead and create the new node
@@ -260,6 +253,14 @@ public class TransferServiceImpl2 implements TransferService2
         mapTransferTarget(ref.getChildRef(), retVal);
 
         return retVal;
+    }
+
+    private NodeRef getDefaultGroup()
+    {
+        NodeRef home = getTransferHome();
+        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS,
+                    defaultTransferGroup);
+        return defaultGroup;
     }
 
     /**
@@ -1184,18 +1185,28 @@ public class TransferServiceImpl2 implements TransferService2
         {
             String query = transferSpaceQuery;
     
-            ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 
-                    SearchService.LANGUAGE_XPATH, query);
-    
-            if(result.length() == 0)
+            ResultSet result = null;
+            try
             {
-                // No transfer home.
-                throw new TransferException(MSG_NO_HOME, new Object[]{query});
+                result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, query);
+
+                if (result.length() == 0)
+                {
+                    // No transfer home.
+                    throw new TransferException(MSG_NO_HOME, new Object[] { query });
+                }
+                if (result.getNodeRefs().size() != 0)
+                {
+                    transferHome = result.getNodeRef(0);
+                    transferHomeMap.put(tenantDomain, transferHome);
+                }
             }
-            if (result.getNodeRefs().size() != 0)
+            finally
             {
-                transferHome = result.getNodeRef(0);
-                transferHomeMap.put(tenantDomain, transferHome);
+                if (result != null)
+                {
+                    result.close();
+                }
             }
         }
         return transferHome;
@@ -1225,16 +1236,8 @@ public class TransferServiceImpl2 implements TransferService2
      */
     private NodeRef lookupTransferTarget(String name)
     {
-        String query = "+TYPE:\"trx:transferTarget\" +@cm\\:name:\"" +name + "\"";
-        
-        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 
-                SearchService.LANGUAGE_LUCENE, query);
-        
-        if(result.length() == 1)
-        {
-            return result.getNodeRef(0);
-        }        
-        return null;
+        NodeRef defaultGroup = getDefaultGroup();
+        return nodeService.getChildByName(defaultGroup, ContentModel.ASSOC_CONTAINS, name);
     }
     
     private void mapTransferTarget(NodeRef nodeRef, TransferTargetImpl def)

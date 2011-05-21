@@ -86,7 +86,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexCreateNode", new Exception("Stack Trace"));
+                logger.debug("indexCreateNode: " + childAssocRef, new Exception("Stack Trace"));
             }
             indexer.createNode(childAssocRef);
         }
@@ -98,7 +98,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexUpdateNode", new Exception("Stack Trace"));
+                logger.debug("indexUpdateNode: " + nodeRef, new Exception("Stack Trace"));
             }
             indexer.updateNode(nodeRef);
         }
@@ -110,7 +110,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexDeleteNode", new Exception("Stack Trace"));
+                logger.debug("indexDeleteNode: " + childAssocRef, new Exception("Stack Trace"));
             }
             indexer.deleteNode(childAssocRef);
         }
@@ -122,7 +122,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexCreateChildAssociation", new Exception("Stack Trace"));
+                logger.debug("indexCreateChildAssociation: " + childAssocRef, new Exception("Stack Trace"));
             }
             indexer.createChildRelationship(childAssocRef);
         }
@@ -134,7 +134,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexDeleteChildAssociation", new Exception("Stack Trace"));
+                logger.debug("indexDeleteChildAssociation: " + childAssocRef, new Exception("Stack Trace"));
             }
             indexer.deleteChildRelationship(childAssocRef);
         } 
@@ -146,7 +146,7 @@ public class NodeIndexer
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("indexUpdateChildAssociation", new Exception("Stack Trace"));
+                logger.debug("indexUpdateChildAssociation: " + oldChildAssocRef + " -> " + newChildAssocRef, new Exception("Stack Trace"));
             }
             indexer.updateChildRelationship(oldChildAssocRef, newChildAssocRef);
         }

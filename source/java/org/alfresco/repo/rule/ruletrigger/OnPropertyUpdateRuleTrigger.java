@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -120,37 +121,54 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
     }
     
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     * Triggers rules if properties have been updated
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (logger.isDebugEnabled() == true)
+        // Do not fire if the node has been created in this transaction
+        Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
+        boolean wasCreatedInTxn = newNodeRefSet.contains(nodeRef);
+        if (logger.isDebugEnabled() && wasCreatedInTxn)
         {
-            logger.debug("OnPropertyUpdate rule triggered fired; nodeRef=" + nodeRef.toString() + "; triggerParentRules=" + this.triggerParentRules);
+            logger.debug("Receiving property update for node created in transaction: " + nodeRef);
         }
         
-        Set<String> nodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NODESET);
-        
         // Only try and trigger the rules if a non protected property has been modified
-        if (!nodeRefSet.contains(nodeRef.toString()) &&
+        if (!wasCreatedInTxn &&
         	before.size() != 0 &&  // ALF-4846: Do not trigger for newly created nodes	
         	havePropertiesBeenModified(nodeRef, before, after) == true)
         {
+            // Keep track of name changes explicitly.  This prevents the later association change from
+            // triggering 'inbound' rules
+            if (!EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_NAME), after.get(ContentModel.PROP_NAME)))
+            {
+                // Name has changed
+                Set<NodeRef> renamedNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_RENAMED_NODES);
+                renamedNodeRefSet.add(nodeRef);
+            }
+            
             if (triggerParentRules == true)
             {            
                 List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
                 {
                     triggerRules(parentAssocRef.getParentRef(), nodeRef);
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(
+                                "OnPropertyUpdate rule triggered (parent); " +
+                        	    "nodeRef=" + parentAssocRef.getParentRef());
+                    }
                 }
             }
             else
             {
                 triggerRules(nodeRef, nodeRef);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("OnPropertyUpdate rule triggered; nodeRef=" + nodeRef);
+                }
             }
         }
     }
-
-
-
 }

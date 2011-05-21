@@ -255,7 +255,9 @@ public class Site implements Serializable
     {
         if (this.siteRoleGroups == null)
         {
-            List<String> roles = this.siteService.getSiteRoles();
+            List<String> roles = this.siteService.getSiteRoles(
+                    this.siteInfo.getShortName()
+            );
             this.siteRoleGroups = new ScriptableHashMap<String, String>();
             for (String role : roles)
             {

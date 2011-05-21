@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
@@ -69,6 +70,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -362,8 +364,7 @@ public class RuleServiceCoverageTest extends TestCase
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));        
     }   
     
-    public void testModifyNameTriggersInboundRule()
-    	throws Exception
+    public void testCheckThatModifyNameDoesNotTriggerInboundRule() throws Exception
     {
         //this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);
     	Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -402,7 +403,115 @@ public class RuleServiceCoverageTest extends TestCase
         // Use the file folder to change the name of the node
         this.fileFolderService.rename(newNodeRef, "myNewName.txt");
         assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+    }
+    
+    public void testCheckThatModifyNameDoesNotTriggerOutboundRule() throws Exception
+    {
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "myTestFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_FOLDER,
+                folderProps).getChildRef();  
         
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);        
+        
+        Rule rule = createRule(
+                RuleType.OUTBOUND,
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        
+        this.ruleService.saveRule(folder, rule);
+
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(1);
+        contentProps.put(ContentModel.PROP_NAME, "myTestDocument.txt");
+        NodeRef newNodeRef = fileFolderService.create(folder, "abc.txt", ContentModel.TYPE_CONTENT).getNodeRef();         
+        assertFalse("Should not be versionable", nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+        // Use the file folder to change the name of the node
+        fileFolderService.rename(newNodeRef, "myNewName.txt");
+        assertFalse("Should not be versionable", nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+    }
+    
+    /**
+     * ALF-4926: Incorrect behavior of update and move rule for the same folder
+     * <p/>
+     * Two rules:<br/><ul>
+     *    <li>When items are deleted, copy to another folder.</li>
+     *    <li>In addition, when items are updated, add an aspect (or any other rule).</li></ul>
+     * Ensure that the first copy does not result in rules being fired on the target.
+     */
+    public void testUpdateAndMoveRuleOnSameFolder() throws Exception
+    {
+        NodeRef sourceFolder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}sourceFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef targetFolder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}targetFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+        // Create UPDATE rule to add lockable aspect
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_LOCKABLE);
+        Rule rule = createRule(
+                RuleType.UPDATE,
+                AddFeaturesActionExecuter.NAME,
+                params,
+                NoConditionEvaluator.NAME,
+                null);
+        this.ruleService.saveRule(sourceFolder, rule);
+        
+        // Check that the UPDATE rule works
+        NodeRef testNodeOneRef = fileFolderService.create(sourceFolder, "one.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        assertFalse(
+                "Node should not have lockable aspect",
+                nodeService.hasAspect(testNodeOneRef, ContentModel.ASPECT_LOCKABLE));
+        nodeService.setProperty(testNodeOneRef, ContentModel.PROP_LOCALE, Locale.CANADA);
+        assertTrue(
+                "Node should have lockable aspect",
+                nodeService.hasAspect(testNodeOneRef, ContentModel.ASPECT_LOCKABLE));
+        fileFolderService.delete(testNodeOneRef);
+
+        // Create OUTBOUND rule to copy node being deleted
+        params = new HashMap<String, Serializable>(1);
+        params.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, targetFolder);
+        Rule copyRule = createRule(
+                RuleType.OUTBOUND,
+                CopyActionExecuter.NAME, 
+                params,
+                NoConditionEvaluator.NAME,
+                null);
+        copyRule.applyToChildren(true);
+        this.ruleService.saveRule(sourceFolder, copyRule);
+        
+        // Check that this OUTBOUND rule works
+        NodeRef testNodeTwoRef = fileFolderService.create(sourceFolder, "two.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        assertFalse(
+                "Node should not have lockable aspect",
+                nodeService.hasAspect(testNodeTwoRef, ContentModel.ASPECT_LOCKABLE));
+        fileFolderService.delete(testNodeTwoRef);
+        assertFalse("Node was not deleted", fileFolderService.exists(testNodeTwoRef));
+        assertEquals(
+                "There should not be any children in source folder",
+                0,
+                fileFolderService.listFiles(sourceFolder).size());
+        List<FileInfo> targetFolderFileList = fileFolderService.listFiles(targetFolder);
+        assertEquals(
+                "Node should have been copied to target folder",
+                1,
+                targetFolderFileList.size());
+        assertFalse(
+                "The node copy should not be lockable",
+                nodeService.hasAspect(targetFolderFileList.get(0).getNodeRef(), ContentModel.ASPECT_LOCKABLE));
     }
     
     public void testDisableIndividualRules()
@@ -531,7 +640,7 @@ public class RuleServiceCoverageTest extends TestCase
         addContentToNode(contentToCopy);
         
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_TEMPLATABLE);        
+        params.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_TEMPLATABLE);        
         
         Rule rule = createRule(
                 RuleType.INBOUND, 
@@ -795,8 +904,6 @@ public class RuleServiceCoverageTest extends TestCase
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, this.rootNodeRef);
-        params.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CHILDREN);
-        params.put(MoveActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "copy"));
         
         Rule rule = createRule(
         		RuleType.INBOUND, 
@@ -830,7 +937,7 @@ public class RuleServiceCoverageTest extends TestCase
         // Check that the created node has been copied
         List<ChildAssociationRef> copyChildAssocRefs = this.nodeService.getChildAssocs(
                                                     this.rootNodeRef, 
-                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "copy"));
+                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "origional"));
         assertNotNull(copyChildAssocRefs);
         
         // **********************************
@@ -1014,8 +1121,6 @@ public class RuleServiceCoverageTest extends TestCase
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, this.rootNodeRef);
-        params.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CHILDREN);
-        params.put(MoveActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "copy"));
         
         Rule rule = createRule(
         		RuleType.INBOUND, 
@@ -1046,7 +1151,7 @@ public class RuleServiceCoverageTest extends TestCase
         // Check that the created node is in the new location
         List<ChildAssociationRef> copyChildAssocRefs = this.nodeService.getChildAssocs(
                                                     this.rootNodeRef, 
-                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "copy"));
+                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "origional"));
         assertNotNull(copyChildAssocRefs);
         assertEquals(1, copyChildAssocRefs.size());
         NodeRef movedNodeRef = copyChildAssocRefs.get(0).getChildRef();
@@ -1122,7 +1227,6 @@ public class RuleServiceCoverageTest extends TestCase
      *          condition:  no-condition()
      *          action:     checkin()
      */
-    @SuppressWarnings("unchecked")
 	public void testCheckInAction()
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);

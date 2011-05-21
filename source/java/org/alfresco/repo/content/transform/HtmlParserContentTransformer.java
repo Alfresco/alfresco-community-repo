@@ -33,6 +33,10 @@ import org.htmlparser.beans.StringBean;
  * @see http://htmlparser.sourceforge.net/
  * @see org.htmlparser.beans.StringBean
  * 
+ * Tika Note - could be convered to use the Tika HTML parser,
+ *  but we'd potentially need a custom text handler to replicate
+ *  the current settings around links and non-breaking spaces.
+ * 
  * @author Derek Hulley
  */
 public class HtmlParserContentTransformer extends AbstractContentTransformer2

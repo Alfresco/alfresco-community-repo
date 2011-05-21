@@ -48,6 +48,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -115,6 +117,8 @@ public class AVMServicePermissionsTest extends TestCase
 
     private AVMSyncService avmSyncService;
 
+    private ContentService contentService;
+
     public AVMServicePermissionsTest()
     {
         super();
@@ -141,6 +145,7 @@ public class AVMServicePermissionsTest extends TestCase
         permissionModelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");
         personService = (PersonService) applicationContext.getBean("personService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
+        contentService = (ContentService) applicationContext.getBean("contentService");
 
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
@@ -402,6 +407,93 @@ public class AVMServicePermissionsTest extends TestCase
     {
         // test setUp & tearDown
     }
+    
+    
+    public void test_ETWOTWO_457_NPE1() throws Exception
+    {
+        try
+        {
+            // run as system (null)
+            authenticationService.clearCurrentSecurityContext();
+            
+            avmService.createStore("main");
+            avmService.createDirectory("main:/", "a");
+
+            // java.lang.NullPointerException - at org.alfresco.service.cmr.security.AuthorityType.getAuthorityType(AuthorityType.java:254)
+            Set<AccessPermission> perms = permissionService.getPermissions(AVMNodeConverter.ToNodeRef(-1, "main:/a"));
+            for (AccessPermission permission : perms)
+            {
+                System.out.println(permission);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            avmService.purgeStore("main");
+        }
+    }
+    
+    public void test_ETWOTWO_457_NPE2() throws Exception
+    {
+        try
+        {
+            // run as admin
+            authenticationService.authenticate("admin", "admin".toCharArray());
+            
+            avmService.createStore("main");
+            avmService.createDirectory("main:/", "a");
+
+            Set<AccessPermission> perms = permissionService.getPermissions(AVMNodeConverter.ToNodeRef(-1, "main:/a"));
+            for (AccessPermission permission : perms)
+            {
+                System.out.println(permission);
+            }
+            
+            // java.lang.NullPointerException - at org.alfresco.repo.domain.hibernate.AbstractPermissionsDaoComponentImpl.deletePermission(AbstractPermissionsDaoComponentImpl.java:383)
+            permissionService.deletePermission(AVMNodeConverter.ToNodeRef(-1, "main:/a"), PermissionService.ADMINISTRATOR_AUTHORITY, PermissionService.ALL_PERMISSIONS);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            avmService.purgeStore("main");
+        }
+    }
+    
+    public void test_ETWOTWO_457_NPE3() throws Exception
+    {
+        try
+        {
+            // run as system (null)
+            authenticationService.clearCurrentSecurityContext();
+            authenticationComponent.setSystemUserAsCurrentUser();
+            
+            avmService.createStore("main");
+            avmService.createFile("main:/", "foo").close();
+            
+            permissionService.setPermission(AVMNodeConverter.ToNodeRef(-1, "main:/").getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+            
+            // java.lang.NullPointerException - at org.alfresco.repo.security.permissions.impl.PermissionServiceImpl.hasPermission(PermissionServiceImpl.java:494)
+            ContentReader cr = contentService.getReader(AVMNodeConverter.ToNodeRef(-1, "main:/foo"), ContentModel.PROP_CONTENT);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            avmService.purgeStore("main");
+        }
+    }
+
     
     public void testStoreAcls() throws Exception
     {

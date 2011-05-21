@@ -53,7 +53,7 @@ public class UsageServiceImpl implements UsageService
     {
         return usageDAO.getTotalDeltaSize(usageNodeRef, true);
     }
-    
+
     public Set<NodeRef> getUsageDeltaNodes()
     {
         return usageDAO.getUsageDeltaNodes();

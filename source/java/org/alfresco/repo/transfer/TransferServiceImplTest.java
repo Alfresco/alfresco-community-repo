@@ -343,6 +343,52 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     /**
+     * Test that if someone copies a transfer group using a client app then the getTransferTarget operations still succeed
+     * 
+     * @throws Exception
+     */
+    public void testALF6565() throws Exception
+    {
+        String nameA = GUID.generate();
+        String nameB = GUID.generate();
+        String title = "title";
+        String description = "description";
+        String endpointProtocol = "http";
+        String endpointHost = "localhost";
+        int endpointPort = 8080;
+        String endpointPath = "rhubarb";
+        String username = "admin";
+        char[] password = "password".toCharArray();
+
+        /**
+         * Now go ahead and create our first transfer target
+         */
+        TransferTarget targetA = transferService.createAndSaveTransferTarget(nameA, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+        TransferTarget targetB = transferService.createAndSaveTransferTarget(nameB, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+
+        NodeRef transferHome = transferServiceImpl.getTransferHome();
+        NodeRef defaultGroup = nodeService.getChildByName(transferHome, ContentModel.ASSOC_CONTAINS, 
+                transferServiceImpl.getDefaultTransferGroup());
+        assertNotNull(defaultGroup);
+        copyService.copyAndRename(defaultGroup, transferHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), true);
+        
+        Set<TransferTarget> targets = transferService.getTransferTargets();
+
+        int targetACount = 0;
+        int targetBCount = 0;
+        for (TransferTarget target : targets)
+        {
+            if (target.getName().equals(nameA)) ++targetACount;
+            if (target.getName().equals(nameB)) ++targetBCount;
+        }
+        assertEquals(2, targetACount);
+        assertEquals(2, targetBCount);
+
+        assertEquals(targetA.getNodeRef(), transferService.getTransferTarget(nameA).getNodeRef());
+        assertEquals(targetB.getNodeRef(), transferService.getTransferTarget(nameB).getNodeRef());
+    }
+    
+    /**
      * Test of Get All Transfer Targets By Group
      */
     //TODO Test not complete - can't yet put targets in different groups

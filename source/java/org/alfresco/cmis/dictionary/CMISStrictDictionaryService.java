@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -67,6 +68,8 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             CMISTypeId typeId = cmisMapping.getCmisTypeId(classQName);
             if (typeId == null)
                 continue;
+            if (typeId.getScope() == CMISScope.RELATIONSHIP)
+                continue;
             
             // create appropriate kind of type definition
             ClassDefinition classDef = dictionaryService.getClass(cmisMapping.getCmisType(typeId.getQName()));
@@ -79,11 +82,6 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             {
                 boolean isSystem = dictionaryService.isSubClass(classDef.getName(), ContentModel.TYPE_SYSTEM_FOLDER);
                 objectTypeDef = new CMISFolderTypeDefinition(cmisMapping, typeId, classDef, isSystem);
-            }
-            else if (typeId.getScope() == CMISScope.RELATIONSHIP)
-            {
-                AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-                objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, classDef, assocDef);
             }
             else if (typeId.getScope() == CMISScope.POLICY)
             {
@@ -106,15 +104,20 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
      */
     private void createAssocDefs(DictionaryRegistry registry, Collection<QName> classQNames)
     {
+        CMISTypeId typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, CMISMapping.RELATIONSHIP_QNAME);
+        ClassDefinition classDef = dictionaryService.getClass(cmisMapping.getCmisType(typeId.getQName()));
+        CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, classDef, null);
+        registry.registerTypeDefinition(objectTypeDef);
+        
         for (QName classQName : classQNames)
         {
             if (!cmisMapping.isValidCmisRelationship(classQName))
                 continue;
 
             // create appropriate kind of type definition
-            CMISTypeId typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, classQName);
+            typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, classQName);
             AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-            CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, null, assocDef);
+            objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, null, assocDef);
 
             registry.registerTypeDefinition(objectTypeDef);
         }

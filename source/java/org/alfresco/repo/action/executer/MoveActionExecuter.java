@@ -24,9 +24,9 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Copy action executor.
@@ -39,44 +39,37 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "move";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
-    public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
-    public static final String PARAM_ASSOC_QNAME = "assoc-name";
     
     /**
-     * Node service
+     * FileFolder service
      */
-    private NodeService nodeService;
+    private FileFolderService fileFolderService;
 	
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
+    public void setFileFolderService(FileFolderService fileFolderService) 
+    {
+        this.fileFolderService = fileFolderService;
+    }
 
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_QNAME)));
-	}
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.ref.NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-	        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-	        QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
-	        QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
-	        
-	        this.nodeService.moveNode(
-	                actionedUponNodeRef,
-	                destinationParent,
-	                destinationAssocTypeQName,
-	                destinationAssocQName);
-		}
+        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+        try
+        {
+            fileFolderService.move(actionedUponNodeRef, destinationParent, null);
+        }
+        catch (FileNotFoundException e)
+        {
+            // Do nothing
+        }
     }
 
 }

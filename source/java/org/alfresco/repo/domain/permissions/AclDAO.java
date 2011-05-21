@@ -154,4 +154,10 @@ public interface AclDAO
     public void renameAuthority(String before, String after);
     
     public void deleteAclForNode(long aclId, boolean isAVMNode);
+
+    /**
+     * @param inheritedAclId
+     * @param aclId
+     */
+    public void fixSharedAcl(Long shared, Long defining);
 }

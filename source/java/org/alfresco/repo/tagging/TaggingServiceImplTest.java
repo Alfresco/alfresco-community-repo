@@ -43,6 +43,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -63,6 +64,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -75,6 +78,8 @@ public class TaggingServiceImplTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 
       (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
+   
+   private static final Log logger = LogFactory.getLog(TaggingServiceImplTest.class);
    
     /** Services */
     private TaggingService taggingService;
@@ -181,6 +186,11 @@ public class TaggingServiceImplTest extends TestCase
               new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT)
         );
     
+        // We do want action tracking whenever the tag scope updater runs
+        UpdateTagScopesActionExecuter updateTagsAction = 
+            (UpdateTagScopesActionExecuter)ctx.getBean("update-tagscope");
+        updateTagsAction.setTrackStatus(true);
+
         // Create the folders and documents to be tagged
         createTestDocumentsAndFolders();
     }
@@ -1710,6 +1720,12 @@ public class TaggingServiceImplTest extends TestCase
                 assertTrue("Not found in " + pendingScopes, pendingScopes.contains(subFolder));
                 
                 
+                // Ensure that we've still got the lock, eg in case
+                //  of the async execution taking a while to proceed
+                updateTagsAction.updateTagScopeLock(folder, testData.lockF);
+                updateTagsAction.updateTagScopeLock(subFolder, testData.lockSF);
+       
+       
                 // Have the Quartz bean fire now
                 // It won't be able to do anything, as the locks are taken
                 UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
@@ -1775,7 +1791,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
-    public void DISABLEDtestMultiThreaded() throws Exception
+    public void testMultiThreaded() throws Exception
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -1790,6 +1806,7 @@ public class TaggingServiceImplTest extends TestCase
         
         // Reset the action count
         asyncOccurs.wantedActionsCount = 0;
+
 
         // Prepare a bunch of threads to do tagging
         final List<Thread> threads = new ArrayList<Thread>();
@@ -1813,7 +1830,7 @@ public class TaggingServiceImplTest extends TestCase
                     catch (InterruptedException e)
                     {
                     }
-                    System.out.println(Thread.currentThread() + " - About to start tagging for " + tag);
+                    logger.debug(Thread.currentThread() + " - About to start tagging for " + tag);
 
                     // Do the updates
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -1825,12 +1842,12 @@ public class TaggingServiceImplTest extends TestCase
                                     taggingService.addTag(folder, tag);
                                     taggingService.addTag(subFolder, tag);
                                     taggingService.addTag(subDocument, tag);
-                                    System.out.println(Thread.currentThread() + " - Tagging for " + tag);
+                                    logger.debug(Thread.currentThread() + " - Tagging for " + tag);
                                     return null;
                                 }
                             }, false, true
                     );
-                    System.out.println(Thread.currentThread() + " - Done tagging for " + tag);
+                    logger.debug(Thread.currentThread() + " - Done tagging for " + tag);
                     
                     // Wait briefly for thing to catch up, before we
                     //  declare ourselves to be done
@@ -1844,7 +1861,7 @@ public class TaggingServiceImplTest extends TestCase
         }
 
         // Release the threads
-        System.out.println("Releasing tagging threads");
+        logger.info("Releasing tagging threads");
         for (Thread t : threads)
         {
             t.interrupt();
@@ -1856,7 +1873,7 @@ public class TaggingServiceImplTest extends TestCase
         {
             t.join();
         }
-        System.out.println("All threads should have finished");
+        logger.info("All threads should have finished");
         
         // Have a brief pause, while we wait for their related
         //  async actions to kick off
@@ -1873,11 +1890,20 @@ public class TaggingServiceImplTest extends TestCase
            {
               if(asyncOccurs.wantedActionsCount < tags.length)
               {
+                 if(i%50 == 0)
+                 {
+                     logger.info("Done " + asyncOccurs.wantedActionsCount + " of " + tags.length);
+                 }
                  Thread.sleep(100);
                  continue;
               }
               if (actionTrackingService.getAllExecutingActions().size() > 0)
               {
+                 if(i%50 == 0)
+                 {
+                     List<ExecutionSummary> actions = actionTrackingService.getAllExecutingActions();
+                     logger.info("Waiting on " + actions.size() + " actions: " + actions);
+                 }
                  Thread.sleep(100);
                  continue;
               }

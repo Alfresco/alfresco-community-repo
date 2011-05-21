@@ -61,6 +61,7 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -445,10 +446,10 @@ public class WorkflowFormProcessorTest extends TestCase
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
                     dictionaryService);
         DefaultFieldProcessor defaultProcessor = makeDefaultFieldProcessor(dictionaryService);
-        processor = makeTaskFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
+        processor = makeWorkflowFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
     }
 
-    private WorkflowFormProcessor makeTaskFormProcessor(DictionaryService dictionaryService,
+    private WorkflowFormProcessor makeWorkflowFormProcessor(DictionaryService dictionaryService,
                 MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
     {
         WorkflowFormProcessor processor1 = new WorkflowFormProcessor();
@@ -457,6 +458,7 @@ public class WorkflowFormProcessorTest extends TestCase
         processor1.setNamespaceService(namespaceService);
         processor1.setDictionaryService(dictionaryService);
         processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
+        processor1.setBehaviourFilter(mock(BehaviourFilter.class));
         return processor1;
     }
 

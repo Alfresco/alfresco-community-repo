@@ -83,6 +83,10 @@
         <property name="systemPropertiesModeName">
             <value>SYSTEM_PROPERTIES_MODE_NEVER</value>
         </property>
+        <!-- Order before shared-properties to give you a chance to override its parameters here -->
+        <property name="order">
+            <value>6</value>
+        </property>
     </bean>
 
 
@@ -112,7 +116,7 @@
                 <entry key="jgroups.bind_addr">
                     <value>${alfresco.jgroups.bind_address}</value>
                 </entry>
-                <entry key="jgroups.bind_interface">
+                <entry key="alfresco.jgroups.bind_interface">
                     <value>${alfresco.jgroups.bind_interface}</value>
                 </entry>
                 <entry key="alfresco.ehcache.rmi.hostname">
@@ -459,6 +463,7 @@
                 <value>alfresco.messages.content-filter-languages</value>
                 <value>alfresco.messages.jbpm-engine-messages</value>
                 <value>alfresco.messages.activiti-engine-messages</value>
+                <value>alfresco.messages.wdr-messages</value>
             </list>
         </property>
     </bean>
@@ -1033,12 +1038,18 @@
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
+        <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO"/>
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
         <property name="excludedOnUpdateProps">
             <list>
-                <value>opaquelocktoken</value>
-                <value>sharedLockTokens</value>
-                <value>lockDepth</value>
-                <value>lockScope</value>
+                <value>webdav:opaquelocktoken</value>
+                <value>webdav:sharedLockTokens</value>
+                <value>webdav:lockDepth</value>
+                <value>webdav:lockScope</value>
             </list>
         </property>
     </bean>

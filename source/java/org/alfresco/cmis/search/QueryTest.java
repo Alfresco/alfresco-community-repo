@@ -96,6 +96,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -105,6 +106,14 @@ public class QueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";
 
+    
+    
+    QName typeThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "type-that-requires-encoding");
+    
+    QName aspectThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "aspect-that-requires-encoding");
+    
+    QName propertyThatRequiresEncoding = QName.createQName(TEST_NAMESPACE, "property-that-requires-encoding");
+    
     QName extendedContent = QName.createQName(TEST_NAMESPACE, "extendedContent");
 
     QName singleTextBoth = QName.createQName(TEST_NAMESPACE, "singleTextBoth");
@@ -583,6 +592,15 @@ public class QueryTest extends BaseCMISTest
 
     }
 
+    public void testEncodingOfTypeAndPropertyNames()
+    {
+        addTypeTestDataModel();
+        assertNotNull("Type not found by query name "+ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService))));
+        assertNotNull("Aspect not found by query name "+ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService))));
+        assertNotNull("Prpo not found by query name "+ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findPropertyByQueryName(ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService))));
+       
+    }
+    
     public void test_ALLOWED_CHILD_OBJECT_TYPES() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Folder", rootNodeRef.getStoreRef());
@@ -3290,6 +3308,9 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'quick\\'')", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS(D, 'cmis:name:\\'Tutorial\\'')", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT cmis:name as BOO FROM cmis:document D WHERE CONTAINS('BOO:\\'Tutorial\\'')", 1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('TEXT:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('ALL:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('d:content:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
     }
 
     public void testScoreValues()
@@ -3823,6 +3844,23 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM test:extendedContent WHERE 'Un tokenised' =  ANY test:singleTextBoth ", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextBoth IN ('Un tokenised', 'Monkey')", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextBoth NOT IN ('Un tokenized')", 1, false, "cmis:name", new String(), true);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth < 'tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth < 'Un tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth < 'V'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth < 'U'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth <= 'tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth <= 'Un tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth <= 'V'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth <= 'U'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth > 'tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth > 'Un tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth > 'V'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth > 'U'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'Un tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'V'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextBoth >= 'U'", 1, false, "cmis:name", new String(), false);
+        
 
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised = 'Un tokenised'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <> 'tokenised'", 1, false, "cmis:name", new String(), false);
@@ -3833,6 +3871,22 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM test:extendedContent WHERE 'Un tokenised' =  ANY test:singleTextUntokenised ", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextUntokenised IN ('Un tokenised', 'Monkey')", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextUntokenised NOT IN ('Un tokenized')", 1, false, "cmis:name", new String(), true);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised < 'tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised < 'Un tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised < 'V'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised < 'U'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <= 'tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <= 'Un tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <= 'V'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised <= 'U'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised > 'tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised > 'Un tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised > 'V'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised > 'U'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised >= 'tokenised'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised >= 'Un tokenised'", 1, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised >= 'V'", 0, false, "cmis:name", new String(), false);
+        testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextUntokenised >= 'U'", 1, false, "cmis:name", new String(), false);
 
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextTokenised = 'tokenised'", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM test:extendedContent WHERE test:singleTextTokenised <> 'tokenized'", 1, false, "cmis:name", new String(), false);
@@ -3843,6 +3897,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM test:extendedContent WHERE 'tokenised' =  ANY test:singleTextTokenised ", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextTokenised IN ('tokenised', 'Monkey')", 1, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM test:extendedContent WHERE ANY test:singleTextTokenised NOT IN ('tokenized')", 1, false, "cmis:name", new String(), true);
+        // Ranges do not make a lot of sense for tokenized fields
 
         // d:text single by alias
 

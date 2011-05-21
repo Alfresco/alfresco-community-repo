@@ -300,6 +300,6 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     {
         ContentModelItemData<WorkflowTask> itemData = makeItemData(item);
         return new TaskFormPersister(itemData, namespaceService, dictionaryService, 
-                    workflowService, nodeService, authenticationService, LOGGER);
+                    workflowService, nodeService, authenticationService, behaviourFilter, LOGGER);
     }
 }

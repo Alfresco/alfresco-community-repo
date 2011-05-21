@@ -65,13 +65,13 @@ import org.apache.commons.logging.LogFactory;
 public class AclDAOImpl implements AclDAO
 {
     private static Log logger = LogFactory.getLog(AclDAOImpl.class);
-    
+
     /** Access to QName entities */
     private QNameDAO qnameDAO;
-    
+
     /** Access to ACL entities */
     private AclCrudDAO aclCrudDAO;
-    
+
     /** Access to Nodes entities */
     private NodeDAO nodeDAO;
 
@@ -79,7 +79,7 @@ public class AclDAOImpl implements AclDAO
 
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
-    
+
     private SimpleCache<Serializable, Set<String>> readersCache;
 
     private enum WriteMode
@@ -113,12 +113,12 @@ public class AclDAOImpl implements AclDAO
          */
         COPY_ONLY, CREATE_AND_INHERIT;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -128,7 +128,7 @@ public class AclDAOImpl implements AclDAO
     {
         this.aclCrudDAO = aclCrudDAO;
     }
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
@@ -159,7 +159,7 @@ public class AclDAOImpl implements AclDAO
     {
         return createAccessControlList(getDefaultProperties()).getId();
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#getDefaultProperties()
      */
@@ -171,7 +171,7 @@ public class AclDAOImpl implements AclDAO
         properties.setVersioned(false);
         return properties;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties)
      */
@@ -181,7 +181,7 @@ public class AclDAOImpl implements AclDAO
         {
             throw new IllegalArgumentException("Properties cannot be null");
         }
-        
+
         if (properties.getAclType() == null)
         {
             throw new IllegalArgumentException("ACL Type must be defined");
@@ -214,7 +214,7 @@ public class AclDAOImpl implements AclDAO
         }
         return createAccessControlList(properties, null, null);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties, java.util.List, java.lang.Long)
      */
@@ -224,7 +224,7 @@ public class AclDAOImpl implements AclDAO
         {
             throw new IllegalArgumentException("Properties cannot be null");
         }
-        
+
         AclEntity acl = new AclEntity();
         if (properties.getAclId() != null)
         {
@@ -236,7 +236,7 @@ public class AclDAOImpl implements AclDAO
         }
         acl.setAclType(properties.getAclType());
         acl.setAclVersion(Long.valueOf(1l));
-        
+
         switch (properties.getAclType())
         {
         case FIXED:
@@ -258,7 +258,7 @@ public class AclDAOImpl implements AclDAO
             break;
         }
         acl.setLatest(Boolean.TRUE);
-        
+
         switch (properties.getAclType())
         {
         case OLD:
@@ -289,82 +289,90 @@ public class AclDAOImpl implements AclDAO
             }
             break;
         }
-        
+
         acl.setAclChangeSetId(getCurrentChangeSetId());
         acl.setRequiresVersion(false);
-        
+
         Acl createdAcl = (AclEntity)aclCrudDAO.createAcl(acl);
         long created = createdAcl.getId();
-        
+
+        List<Ace> toAdd = new ArrayList<Ace>();
+        List<AccessControlEntry> excluded = new ArrayList<AccessControlEntry>();
+        List<AclChange> changes = new ArrayList<AclChange>();
         if ((aces != null) && aces.size() > 0)
         {
-            List<AclChange> changes = new ArrayList<AclChange>();
-            
-            List<Ace> toAdd = new ArrayList<Ace>(aces.size());
-            List<AccessControlEntry> excluded = new ArrayList<AccessControlEntry>(aces.size());
             for (AccessControlEntry ace : aces)
             {
                 if ((ace.getPosition() != null) && (ace.getPosition() != 0))
                 {
                     throw new IllegalArgumentException("Invalid position");
                 }
-                
+
                 // Find authority
                 Authority authority = aclCrudDAO.getOrCreateAuthority(ace.getAuthority());
                 Permission permission = aclCrudDAO.getOrCreatePermission(ace.getPermission());
-                
+
                 // Find context
                 if (ace.getContext() != null)
                 {
                     throw new UnsupportedOperationException();
                 }
-                
+
                 // Find ACE
                 Ace entry = aclCrudDAO.getOrCreateAce(permission, authority, ace.getAceType(), ace.getAccessStatus());
-                
+
                 // Wire up
                 // COW and remove any existing matches
-                
+
                 SimpleAccessControlEntry exclude = new SimpleAccessControlEntry();
                 // match any access status
                 exclude.setAceType(ace.getAceType());
                 exclude.setAuthority(ace.getAuthority());
                 exclude.setPermission(ace.getPermission());
                 exclude.setPosition(0);
-                
+
                 toAdd.add(entry);
                 excluded.add(exclude);
                 // Will remove from the cache
             }
-            Long toInherit = null;
-            if (inherited != null)
-            {
-                toInherit = getInheritedAccessControlList(inherited);
-            }
-            getWritable(created, toInherit, excluded, toAdd, toInherit, false, changes, WriteMode.CREATE_AND_INHERIT);
         }
-        
+        Long toInherit = null;
+        if (inherited != null)
+        {
+            toInherit = getInheritedAccessControlList(inherited);
+        }
+        getWritable(created, toInherit, excluded, toAdd, toInherit, false, changes, WriteMode.CREATE_AND_INHERIT);
+
+
         return createdAcl;
     }
-    
+
     private void getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<Ace> toAdd, Long inheritsFrom, boolean cascade,
             List<AclChange> changes, WriteMode mode)
     {
         List<Ace> inherited = null;
         List<Integer> positions = null;
-        
-        if ((mode == WriteMode.ADD_INHERITED) || (mode == WriteMode.INSERT_INHERITED) || (mode == WriteMode.CHANGE_INHERITED))
+
+        if ((mode == WriteMode.ADD_INHERITED) || (mode == WriteMode.INSERT_INHERITED) || (mode == WriteMode.CHANGE_INHERITED) || (mode == WriteMode.CREATE_AND_INHERIT ))
         {
             inherited = new ArrayList<Ace>();
             positions = new ArrayList<Integer>();
-            
+
             // get aces for acl (via acl member)
-            List<AclMember> members = aclCrudDAO.getAclMembersByAcl(parent);
-            
+            List<AclMember> members;
+            if(parent != null)
+            {
+                members = aclCrudDAO.getAclMembersByAcl(parent);
+            }
+            else
+            {
+                members = Collections.<AclMember>emptyList(); 
+            }
+
             for (AclMember member : members)
             {
                 Ace aceEntity = aclCrudDAO.getAce(member.getAceId());
-                
+
                 if ((mode == WriteMode.INSERT_INHERITED) && (member.getPos() == 0))
                 {
                     inherited.add(aceEntity);
@@ -377,10 +385,10 @@ public class AclDAOImpl implements AclDAO
                 }
             }
         }
-        
+
         getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, cascade, 0, changes, mode, false);
     }
-    
+
     /**
      * Make a whole tree of ACLs copy on write if required Includes adding and removing ACEs which can be optimised
      * slightly for copy on write (no need to add and then remove)
@@ -399,27 +407,27 @@ public class AclDAOImpl implements AclDAO
     {
         AclChange current = getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, depth, mode, requiresVersion);
         changes.add(current);
-        
+
         boolean cascadeVersion = requiresVersion;
         if (!cascadeVersion)
         {
             cascadeVersion = !current.getBefore().equals(current.getAfter());
         }
-        
+
         if (cascade)
         {
             List<Long> inheritors = aclCrudDAO.getAclsThatInheritFromAcl(id);
             for (Long nextId : inheritors)
             {
                 // Check for those that inherit themselves to other nodes ...
-                if (nextId != id)
+                if (!nextId.equals(id))
                 {
                     getWritable(nextId, current.getAfter(), exclude, toAdd, current.getAfter(), inherited, positions, cascade, depth + 1, changes, mode, cascadeVersion);
                 }
             }
         }
     }
-    
+
     /**
      * COW for an individual ACL
      * 
@@ -441,7 +449,7 @@ public class AclDAOImpl implements AclDAO
             readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
-        
+
         List<Long> toAdd = new ArrayList<Long>(0);
         if (acesToAdd != null)
         {
@@ -450,7 +458,7 @@ public class AclDAOImpl implements AclDAO
                 toAdd.add(ace.getId());
             }
         }
-        
+
         if (!acl.isVersioned())
         {
             switch (mode)
@@ -484,8 +492,8 @@ public class AclDAOImpl implements AclDAO
             if (inheritsFrom != null)
             {
                 acl.setInheritsFrom(inheritsFrom);
-                aclCrudDAO.updateAcl(acl);
             }
+            aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
             readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
@@ -523,8 +531,8 @@ public class AclDAOImpl implements AclDAO
             if (inheritsFrom != null)
             {
                 acl.setInheritsFrom(inheritsFrom);
-                aclCrudDAO.updateAcl(acl);
             }
+            aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
             readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
@@ -542,32 +550,32 @@ public class AclDAOImpl implements AclDAO
             newAcl.setLatest(Boolean.TRUE);
             newAcl.setVersioned(Boolean.TRUE);
             newAcl.setRequiresVersion(Boolean.FALSE);
-            
+
             AclEntity createdAcl = (AclEntity)aclCrudDAO.createAcl(newAcl);
             long created = createdAcl.getId();
-            
+
             // Create new membership entries - excluding those in the given pattern
-            
+
             // AcePatternMatcher excluder = new AcePatternMatcher(exclude);
-            
+
             // get aces for acl (via acl member)
             List<AclMember> members = aclCrudDAO.getAclMembersByAcl(id);
-            
+
             if (members.size() > 0)
             {
                 List<Pair<Long,Integer>> aceIdsWithDepths = new ArrayList<Pair<Long,Integer>>(members.size());
-                
+
                 for (AclMember member : members)
                 {
                     aceIdsWithDepths.add(new Pair<Long, Integer>(member.getAceId(), member.getPos()));
                 }
-                
+
                 // copy acl members to new acl
                 aclCrudDAO.addAclMembersToAcl(newAcl.getId(), aceIdsWithDepths);
             }
-            
+
             // add new
-            
+
             switch (mode)
             {
             case COPY_UPDATE_AND_INHERIT:
@@ -597,7 +605,7 @@ public class AclDAOImpl implements AclDAO
             default:
                 break;
             }
-            
+
             // Fix up inherited ACL if required
             if (newAcl.getAclType() == ACLType.SHARED)
             {
@@ -609,7 +617,7 @@ public class AclDAOImpl implements AclDAO
                     aclCrudDAO.updateAcl(parentAcl);
                 }
             }
-            
+
             // fix up old version
             acl.setLatest(Boolean.FALSE);
             acl.setRequiresVersion(Boolean.FALSE);
@@ -619,7 +627,7 @@ public class AclDAOImpl implements AclDAO
             return new AclChangeImpl(id, created, acl.getAclType(), newAcl.getAclType());
         }
     }
-    
+
     /**
      * Helper to remove ACEs from an ACL
      * 
@@ -637,35 +645,35 @@ public class AclDAOImpl implements AclDAO
         else
         {
             AcePatternMatcher excluder = new AcePatternMatcher(exclude);
-            
+
             List<Map<String, Object>> results = aclCrudDAO.getAcesAndAuthoritiesByAcl(id);
             List<Long> memberIds = new ArrayList<Long>(results.size());
-            
+
             for (Map<String, Object> result : results)
             {
                 Long result_aclmemId = (Long) result.get("aclmemId");
-                
+
                 if ((exclude != null) && excluder.matches(aclCrudDAO, result, depth))
                 {
                     memberIds.add(result_aclmemId);
                 }
             }
-            
+
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(memberIds);
         }
     }
-    
+
     private void replaceInherited(Long id, Acl acl, List<Ace> inherited, List<Integer> positions, int depth)
     {
         truncateInherited(id, depth);
         addInherited(acl, inherited, positions, depth);
     }
-    
+
     private void truncateInherited(final Long id, int depth)
     {
         List<AclMember> members = aclCrudDAO.getAclMembersByAcl(id);
-        
+
         List<Long> membersToDelete = new ArrayList<Long>(members.size());
         for (AclMember member : members)
         {
@@ -674,18 +682,18 @@ public class AclDAOImpl implements AclDAO
                 membersToDelete.add(member.getId());
             }
         }
-        
+
         if (membersToDelete.size() > 0)
         {
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(membersToDelete);
         }
     }
-    
+
     private void removeInherited(final Long id, int depth)
     {
         List<AclMemberEntity> members = aclCrudDAO.getAclMembersByAclForUpdate(id);
-        
+
         List<Long> membersToDelete = new ArrayList<Long>(members.size());
         for (AclMemberEntity member : members)
         {
@@ -699,14 +707,14 @@ public class AclDAOImpl implements AclDAO
                 aclCrudDAO.updateAclMember(member);
             }
         }
-        
+
         if (membersToDelete.size() > 0)
         {
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(membersToDelete);
         }
     }
-    
+
     private void addInherited(Acl acl, List<Ace> inherited, List<Integer> positions, int depth)
     {
         if ((inherited != null) && (inherited.size() > 0))
@@ -721,12 +729,12 @@ public class AclDAOImpl implements AclDAO
             aclCrudDAO.addAclMembersToAcl(acl.getId(), aceIdsWithDepths);
         }
     }
-    
+
     private void insertInherited(final Long id, AclEntity acl, List<Ace> inherited, List<Integer> positions, int depth)
     {
         // get aces for acl (via acl member)
         List<AclMemberEntity> members = aclCrudDAO.getAclMembersByAclForUpdate(id);
-        
+
         for (AclMemberEntity member : members)
         {
             if (member.getPos() > depth)
@@ -735,33 +743,33 @@ public class AclDAOImpl implements AclDAO
                 aclCrudDAO.updateAclMember(member);
             }
         }
-        
+
         addInherited(acl, inherited, positions, depth);
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAccessControlEntries(java.lang.String)
      */
     public List<AclChange> deleteAccessControlEntries(final String authority)
     {
         List<AclChange> acls = new ArrayList<AclChange>();
-        
+
         // get authority
         Authority authEntity = aclCrudDAO.getAuthority(authority);
         if (authEntity == null)
         {
             return acls;
         }
-        
+
         List<Long> aces = new ArrayList<Long>();
-        
+
         List<AclMember> members = aclCrudDAO.getAclMembersByAuthority(authority);
-        
+
         boolean leaveAuthority = false;
         if (members.size() > 0)
         {
             List<Long> membersToDelete = new ArrayList<Long>(members.size());
-            
+
             // fix up members and extract acls and aces
             for (AclMember member : members)
             {
@@ -769,16 +777,16 @@ public class AclDAOImpl implements AclDAO
                 Long aclMemberId = member.getId();
                 Long aclId = member.getAclId();
                 Long aceId = member.getAceId();
-                
+
                 boolean hasAnotherTenantNodes = false;
                 if (AuthenticationUtil.isMtEnabled())
                 {
                     // ALF-3563
-                    
+
                     // Retrieve dependent nodes
                     List<Long> nodeIds = aclCrudDAO.getADMNodesByAcl(aclId, -1);
                     nodeIds.addAll(aclCrudDAO.getAVMNodesByAcl(aclId, -1));
-                    
+
                     if (nodeIds.size() > 0)
                     {
                         for (Long nodeId : nodeIds)
@@ -789,7 +797,7 @@ public class AclDAOImpl implements AclDAO
                                 logger.warn("Node does not exist: " + nodeId);
                             }
                             NodeRef nodeRef = nodePair.getSecond();
-                            
+
                             try
                             {
                                 // Throws AlfrescoRuntimeException in case of domain mismatch
@@ -804,33 +812,33 @@ public class AclDAOImpl implements AclDAO
                         }
                     }
                 }
-                
+
                 if (!hasAnotherTenantNodes)
                 {
                     aclCache.remove(aclId);
                     readersCache.remove(aclId);
-                
+
                     Acl list = aclCrudDAO.getAcl(aclId);
                     acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
                     membersToDelete.add(aclMemberId);
                     aces.add((Long)aceId);
                 }
             }
-            
+
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(membersToDelete);
         }
-        
+
         if (!leaveAuthority)
         {
             // remove ACEs
             aclCrudDAO.deleteAces(aces);
-        
+
             // Tidy up any unreferenced ACEs
-        
+
             // get aces by authority
             List<Ace> unreferenced = aclCrudDAO.getAcesByAuthority(authEntity.getId());
-        
+
             if (unreferenced.size() > 0)
             {
                 List<Long> unrefencedAcesToDelete = new ArrayList<Long>(unreferenced.size());
@@ -840,17 +848,17 @@ public class AclDAOImpl implements AclDAO
                 }
                 aclCrudDAO.deleteAces(unrefencedAcesToDelete);
             }
-        
+
             // remove authority
             if (authEntity != null)
             {
                 aclCrudDAO.deleteAuthority(authEntity.getId());
             }
         }
-        
+
         return acls;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAclForNode(long, boolean)
      */
@@ -862,7 +870,7 @@ public class AclDAOImpl implements AclDAO
             // delete acl members & acl
             aclCrudDAO.deleteAclMembersByAcl(aclId);
             aclCrudDAO.deleteAcl(aclId);
-            
+
             aclCache.remove(aclId);
             readersCache.remove(aclId);
         }
@@ -880,7 +888,7 @@ public class AclDAOImpl implements AclDAO
                         // delete acl members & acl
                         aclCrudDAO.deleteAclMembersByAcl(aclId);
                         aclCrudDAO.deleteAcl(aclId);
-                        
+
                         aclCache.remove(aclId);
                         readersCache.remove(aclId);
                     }
@@ -892,7 +900,7 @@ public class AclDAOImpl implements AclDAO
             }
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAccessControlList(java.lang.Long)
      */
@@ -903,15 +911,15 @@ public class AclDAOImpl implements AclDAO
             // debug only
             int maxForDebug = 11;
             List<Long> nodeIds = getADMNodesByAcl(id, maxForDebug);
-            
+
             for (Long nodeId : nodeIds)
             {
                 logger.debug("deleteAccessControlList: Found nodeId=" + nodeId + ", aclId=" + id);
             }
         }
-        
+
         List<AclChange> acls = new ArrayList<AclChange>();
-        
+
         final AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (!acl.isLatest())
         {
@@ -921,13 +929,13 @@ public class AclDAOImpl implements AclDAO
         {
             throw new UnsupportedOperationException("Delete is not supported for shared acls - they are deleted with the defining acl");
         }
-        
+
         if ((acl.getAclType() == ACLType.DEFINING) || (acl.getAclType() == ACLType.LAYERED))
         {
             if ((acl.getInheritedAcl() != null) && (acl.getInheritedAcl() != -1))
             {
                 final Acl inherited = aclCrudDAO.getAcl(acl.getInheritedAcl());
-                
+
                 // Will remove from the cache
                 getWritable(inherited.getId(), acl.getInheritsFrom(), null, null, null, true, acls, WriteMode.REMOVE_INHERITED);
                 Acl unusedInherited = null;
@@ -938,7 +946,7 @@ public class AclDAOImpl implements AclDAO
                         unusedInherited = aclCrudDAO.getAcl(change.getAfter());
                     }
                 }
-                
+
                 final Long newId = unusedInherited.getId();
                 List<Long> inheritors = aclCrudDAO.getAclsThatInheritFromAcl(newId);
                 for (Long nextId : inheritors)
@@ -946,13 +954,13 @@ public class AclDAOImpl implements AclDAO
                     // Will remove from the cache
                     getWritable(nextId, acl.getInheritsFrom(), null, null, acl.getInheritsFrom(), true, acls, WriteMode.REMOVE_INHERITED);
                 }
-                
+
                 // delete acl members
                 aclCrudDAO.deleteAclMembersByAcl(newId);
-                
+
                 // delete 'unusedInherited' acl
                 aclCrudDAO.deleteAcl(unusedInherited.getId());
-                
+
                 if (inherited.isVersioned())
                 {
                     AclUpdateEntity inheritedForUpdate = aclCrudDAO.getAclForUpdate(inherited.getId());
@@ -978,7 +986,7 @@ public class AclDAOImpl implements AclDAO
                 getWritable(nextId, acl.getInheritsFrom(), null, null, null, true, acls, WriteMode.REMOVE_INHERITED);
             }
         }
-        
+
         // delete
         if (acl.isVersioned())
         {
@@ -991,14 +999,14 @@ public class AclDAOImpl implements AclDAO
             aclCrudDAO.deleteAclMembersByAcl(id);
             aclCrudDAO.deleteAcl(acl.getId());
         }
-        
+
         // remove the deleted acl from the cache
         aclCache.remove(id);
         readersCache.remove(id);
         acls.add(new AclChangeImpl(id, null, acl.getAclType(), null));
         return acls;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1011,7 +1019,7 @@ public class AclDAOImpl implements AclDAO
         getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1024,7 +1032,7 @@ public class AclDAOImpl implements AclDAO
         getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1035,7 +1043,7 @@ public class AclDAOImpl implements AclDAO
         getWritable(id, null, Collections.singletonList(pattern), null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1043,7 +1051,7 @@ public class AclDAOImpl implements AclDAO
     {
         return aclCrudDAO.getAcl(id);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1052,7 +1060,7 @@ public class AclDAOImpl implements AclDAO
         ParameterCheck.mandatory("id", id);                 // Prevent unboxing failures
         return aclCrudDAO.getAcl(id);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1070,7 +1078,7 @@ public class AclDAOImpl implements AclDAO
         }
         return acl;
     }
-    
+
     /**
      * @return the access control list
      */
@@ -1082,14 +1090,14 @@ public class AclDAOImpl implements AclDAO
         {
             return null;
         }
-        
+
         acl.setProperties(properties);
-        
+
         List<Map<String, Object>> results = aclCrudDAO.getAcesAndAuthoritiesByAcl(id);
-        
+
         List<AccessControlEntry> entries = new ArrayList<AccessControlEntry>(results.size());
         for (Map<String, Object> result : results)
-        // for (AclMemberEntity member : members)
+            // for (AclMemberEntity member : members)
         {
             Boolean aceIsAllowed = (Boolean) result.get("allowed");
             Integer aceType = (Integer) result.get("applies");
@@ -1097,7 +1105,7 @@ public class AclDAOImpl implements AclDAO
             Long permissionId = (Long) result.get("permissionId");
             Integer position = (Integer) result.get("pos");
             //Long result_aclmemId = (Long) result.get("aclmemId"); // not used here
-            
+
             SimpleAccessControlEntry sacEntry = new SimpleAccessControlEntry();
             sacEntry.setAccessStatus(aceIsAllowed ? AccessStatus.ALLOWED : AccessStatus.DENIED);
             sacEntry.setAceType(ACEType.getACETypeFromId(aceType));
@@ -1117,18 +1125,19 @@ public class AclDAOImpl implements AclDAO
             sacEntry.setPosition(position);
             entries.add(sacEntry);
         }
-        
+
         Collections.sort(entries);
         acl.setEntries(entries);
-        
+
         return acl;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#getInheritedAccessControlList(java.lang.Long)
      */
     public Long getInheritedAccessControlList(Long id)
     {
+        aclCache.remove(id);
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (acl.getAclType() == ACLType.OLD)
         {
@@ -1138,9 +1147,9 @@ public class AclDAOImpl implements AclDAO
         {
             return acl.getInheritedAcl();
         }
-        
+
         Long inheritedAclId = null;
-        
+
         if ((acl.getAclType() == ACLType.DEFINING) || (acl.getAclType() == ACLType.LAYERED))
         {
             List<AclChange> changes = new ArrayList<AclChange>();
@@ -1159,22 +1168,22 @@ public class AclDAOImpl implements AclDAO
             acl.setInheritedAcl(acl.getId());
             inheritedAclId = acl.getId();
         }
-        
+
         aclCrudDAO.updateAcl(acl);
         return inheritedAclId;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#mergeInheritedAccessControlList(java.lang.Long, java.lang.Long)
      */
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target)
     {
         // TODO: For now we do a replace - we could do an insert if both inherit from the same acl
-        
+
         List<AclChange> changes = new ArrayList<AclChange>();
-        
+
         Acl targetAcl = aclCrudDAO.getAcl(target);
-        
+
         Acl inheritedAcl = null;
         if (inherited != null)
         {
@@ -1197,9 +1206,9 @@ public class AclDAOImpl implements AclDAO
                     if (!inheritedAcl.isLatest())
                     {
                         final String searchAclId = inheritedAcl.getAclId();
-                        
+
                         Long actualInheritor = (Long)aclCrudDAO.getLatestAclByGuid(searchAclId);
-                        
+
                         inheritedAcl = aclCrudDAO.getAcl(actualInheritor);
                         if (inheritedAcl == null)
                         {
@@ -1215,10 +1224,10 @@ public class AclDAOImpl implements AclDAO
                 return changes;
             }
         }
-        
+
         // recursion test
         // if inherited already inherits from the target
-        
+
         Acl test = inheritedAcl;
         while (test != null)
         {
@@ -1236,29 +1245,29 @@ public class AclDAOImpl implements AclDAO
                 test = aclCrudDAO.getAcl(test.getInheritsFrom());
             }
         }
-        
+
         if ((targetAcl.getAclType() != ACLType.DEFINING) && (targetAcl.getAclType() != ACLType.LAYERED))
         {
             throw new IllegalArgumentException("Only defining ACLs can have their inheritance set");
         }
-        
+
         if (!targetAcl.getInherits())
         {
             return changes;
         }
-        
+
         Long actualInheritedId = inheritedAcl.getId();
-        
+
         if ((inheritedAcl.getAclType() == ACLType.DEFINING) || (inheritedAcl.getAclType() == ACLType.LAYERED))
         {
             actualInheritedId = getInheritedAccessControlList(actualInheritedId);
         }
         // Will remove from the cache
         getWritable(target, actualInheritedId, null, null, actualInheritedId, true, changes, WriteMode.CHANGE_INHERITED);
-        
+
         return changes;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#setAccessControlEntry(java.lang.Long, org.alfresco.repo.security.permissions.AccessControlEntry)
      */
@@ -1269,30 +1278,30 @@ public class AclDAOImpl implements AclDAO
         {
             throw new IllegalArgumentException("Shared ACLs are immutable");
         }
-        
+
         List<AclChange> changes = new ArrayList<AclChange>();
-        
+
         if ((ace.getPosition() != null) && (ace.getPosition() != 0))
         {
             throw new IllegalArgumentException("Invalid position");
         }
-        
+
         // Find authority
         Authority authority = aclCrudDAO.getOrCreateAuthority(ace.getAuthority());
         Permission permission = aclCrudDAO.getOrCreatePermission(ace.getPermission());
-        
+
         // Find context
         if (ace.getContext() != null)
         {
             throw new UnsupportedOperationException();
         }
-        
+
         // Find ACE
         Ace entry = aclCrudDAO.getOrCreateAce(permission, authority, ace.getAceType(), ace.getAccessStatus());
-        
+
         // Wire up
         // COW and remove any existing matches
-        
+
         SimpleAccessControlEntry exclude = new SimpleAccessControlEntry();
         // match any access status
         exclude.setAceType(ace.getAceType());
@@ -1303,19 +1312,19 @@ public class AclDAOImpl implements AclDAO
         toAdd.add(entry);
         // Will remove from the cache
         getWritable(id, null, Collections.singletonList(exclude), toAdd, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
-        
+
         return changes;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#enableInheritance(java.lang.Long, java.lang.Long)
      */
     public List<AclChange> enableInheritance(Long id, Long parent)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        
+
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
-        
+
         switch (acl.getAclType())
         {
         case FIXED:
@@ -1331,7 +1340,7 @@ public class AclDAOImpl implements AclDAO
         case SHARED:
             // TODO support a list of children and casacade if given
             throw new IllegalArgumentException(
-                    "Shared acls should be replace by creating a definig ACL, wiring it up for inhertitance, and then applying inheritance to any children. It can not be done by magic ");
+            "Shared acls should be replace by creating a definig ACL, wiring it up for inhertitance, and then applying inheritance to any children. It can not be done by magic ");
         case DEFINING:
         case LAYERED:
         default:
@@ -1348,18 +1357,19 @@ public class AclDAOImpl implements AclDAO
                 // Will remove from the cache
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
             }
-            
+
             List<AclChange> merged = mergeInheritedAccessControlList(parent, changes.get(0).getAfter());
             changes.addAll(merged);
             return changes;
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#disableInheritance(java.lang.Long, boolean)
      */
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl)
     {
+        aclCache.remove(id);
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         List<AclChange> changes = new ArrayList<AclChange>(1);
         switch (acl.getAclType())
@@ -1383,7 +1393,7 @@ public class AclDAOImpl implements AclDAO
             return disableInheritanceImpl(id, setInheritedOnAcl, acl);
         }
     }
-    
+
     private Long getCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
         AclUpdateEntity aclToCopy;
@@ -1427,7 +1437,7 @@ public class AclDAOImpl implements AclDAO
             {
                 aclToInheritFrom = aclCrudDAO.getAcl(toInheritFrom);
             }
-            
+
             switch (aclToCopy.getAclType())
             {
             case DEFINING:
@@ -1471,7 +1481,7 @@ public class AclDAOImpl implements AclDAO
             {
                 aclToInheritFrom = aclCrudDAO.getAcl(toInheritFrom);
             }
-            
+
             switch (aclToCopy.getAclType())
             {
             case DEFINING:
@@ -1479,9 +1489,9 @@ public class AclDAOImpl implements AclDAO
                 properties.setAclType(ACLType.DEFINING);
                 properties.setInherits(aclToCopy.getInherits());
                 properties.setVersioned(true);
-                
+
                 Long id = createAccessControlList(properties).getId();
-                
+
                 AccessControlList indirectAcl = getAccessControlList(toCopy);
                 for (AccessControlEntry entry : indirectAcl.getEntries())
                 {
@@ -1516,7 +1526,7 @@ public class AclDAOImpl implements AclDAO
             throw new UnsupportedOperationException();
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#getDbAccessControlListCopy(java.lang.Long, java.lang.Long, org.alfresco.repo.security.permissions.ACLCopyMode)
      */
@@ -1524,7 +1534,7 @@ public class AclDAOImpl implements AclDAO
     {
         return getAclEntityCopy(toCopy, toInheritFrom, mode);
     }
-    
+
     private Acl getAclEntityCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
         Long id = getCopy(toCopy, toInheritFrom, mode);
@@ -1534,99 +1544,99 @@ public class AclDAOImpl implements AclDAO
         }
         return aclCrudDAO.getAcl(id);
     }
-    
+
     public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults)
     {
         return aclCrudDAO.getAVMNodesByAcl(aclEntityId, maxResults);
     }
-    
+
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults)
     {
         return aclCrudDAO.getADMNodesByAcl(aclEntityId, maxResults);
     }
-    
+
     public Acl createLayeredAcl(Long indirectedAcl)
     {
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.LAYERED);
-        
+
         Acl acl = createAccessControlList(properties);
         long id = acl.getId();
-        
+
         if (indirectedAcl != null)
         {
             mergeInheritedAccessControlList(indirectedAcl, id);
         }
         return acl;
     }
-    
+
     private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, AclEntity aclIn)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        
+
         if (!aclIn.getInherits())
         {
             return Collections.<AclChange> emptyList();
         }
-        
+
         // Manages caching
         getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(changes.get(0).getAfter());
         final Long inheritsFrom = acl.getInheritsFrom();
         acl.setInherits(Boolean.FALSE);
         aclCrudDAO.updateAcl(acl);
-        
+
         // Keep inherits from so we can reinstate if required
         // acl.setInheritsFrom(-1l);
-        
+
         // Manages caching
         getWritable(acl.getId(), null, null, null, null, true, changes, WriteMode.TRUNCATE_INHERITED);
-        
+
         // set Inherited - TODO: UNTESTED
-        
+
         if ((inheritsFrom != null) && (inheritsFrom != -1) && setInheritedOnAcl)
         {
             // get aces for acl (via acl member)
             List<AclMember> members = aclCrudDAO.getAclMembersByAcl(inheritsFrom);
-            
+
             for (AclMember member : members)
             {
                 // TODO optimise
                 Ace ace = aclCrudDAO.getAce(member.getAceId());
                 Authority authority = aclCrudDAO.getAuthority(ace.getAuthorityId());
-                
+
                 SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
                 entry.setAccessStatus(ace.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED);
                 entry.setAceType(ace.getAceType());
                 entry.setAuthority(authority.getAuthority());
-                
+
                 /* NOTE: currently unused - intended for possible future enhancement
                 if (ace.getContextId() != null)
                 {
                     AceContext aceContext = aclCrudDAO.getAceContext(ace.getContextId());
-                    
+
                     SimpleAccessControlEntryContext context = new SimpleAccessControlEntryContext();
                     context.setClassContext(aceContext.getClassContext());
                     context.setKVPContext(aceContext.getKvpContext());
                     context.setPropertyContext(aceContext.getPropertyContext());
                     entry.setContext(context);
                 }
-                */
-                
+                 */
+
                 Permission perm = aclCrudDAO.getPermission(ace.getPermissionId());
                 QName permTypeQName = qnameDAO.getQName(perm.getTypeQNameId()).getSecond(); // Has an ID so must exist
                 SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(permTypeQName, perm.getName());
                 entry.setPermission(permissionRefernce);
                 entry.setPosition(Integer.valueOf(0));
-                
+
                 setAccessControlEntry(id, entry);
             }
         }
         return changes;
     }
-    
+
     private static final String RESOURCE_KEY_ACL_CHANGE_SET_ID = "acl.change.set.id";
-    
+
     /**
      * Support to get the current ACL change set and bind this to the transaction. So we only make one new version of an
      * ACL per change set. If something is in the current change set we can update it.
@@ -1637,7 +1647,7 @@ public class AclDAOImpl implements AclDAO
         if (changeSetId == null)
         {
             changeSetId = aclCrudDAO.createAclChangeSet();
-            
+
             // bind the id
             AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_ACL_CHANGE_SET_ID, changeSetId);
             if (logger.isDebugEnabled())
@@ -1653,32 +1663,32 @@ public class AclDAOImpl implements AclDAO
             {
                 throw new AlfrescoRuntimeException("Unexpected: missing change set "+changeSetId);
             }
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Existing change set = " + changeSetId);
             }
-            */
+             */
         }
         return changeSetId;
     }
-    
+
     private static class AcePatternMatcher
     {
         private List<? extends AccessControlEntry> patterns;
-        
+
         AcePatternMatcher(List<? extends AccessControlEntry> patterns)
         {
             this.patterns = patterns;
         }
-        
+
         boolean matches(AclCrudDAO aclCrudDAO, Map<String, Object> result, int position)
         {
             if (patterns == null)
             {
                 return true;
             }
-            
+
             for (AccessControlEntry pattern : patterns)
             {
                 if (checkPattern(aclCrudDAO, result, position, pattern))
@@ -1688,7 +1698,7 @@ public class AclDAOImpl implements AclDAO
             }
             return false;
         }
-        
+
         private boolean checkPattern(AclCrudDAO aclCrudDAO, Map<String, Object> result, int position, AccessControlEntry pattern)
         {
             Boolean result_aceIsAllowed = (Boolean) result.get("allowed");
@@ -1697,7 +1707,7 @@ public class AclDAOImpl implements AclDAO
             Long result_permissionId = (Long) result.get("permissionId");
             Integer result_position = (Integer) result.get("pos");
             //Long result_aclmemId = (Long) result.get("aclmemId"); // not used
-            
+
             if (pattern.getAccessStatus() != null)
             {
                 if (pattern.getAccessStatus() != (result_aceIsAllowed ? AccessStatus.ALLOWED : AccessStatus.DENIED))
@@ -1705,7 +1715,7 @@ public class AclDAOImpl implements AclDAO
                     return false;
                 }
             }
-            
+
             if (pattern.getAceType() != null)
             {
                 if (pattern.getAceType() != ACEType.getACETypeFromId(result_aceType))
@@ -1713,7 +1723,7 @@ public class AclDAOImpl implements AclDAO
                     return false;
                 }
             }
-            
+
             if (pattern.getAuthority() != null)
             {
                 if ((pattern.getAuthorityType() != AuthorityType.WILDCARD) && !pattern.getAuthority().equals(result_authority))
@@ -1721,12 +1731,12 @@ public class AclDAOImpl implements AclDAO
                     return false;
                 }
             }
-            
+
             if (pattern.getContext() != null)
             {
                 throw new IllegalArgumentException("Context not yet supported");
             }
-            
+
             if (pattern.getPermission() != null)
             {
                 Long permId = aclCrudDAO.getPermission(pattern.getPermission()).getId();
@@ -1735,7 +1745,7 @@ public class AclDAOImpl implements AclDAO
                     return false;
                 }
             }
-            
+
             if (pattern.getPosition() != null)
             {
                 if (pattern.getPosition().intValue() >= 0)
@@ -1753,18 +1763,18 @@ public class AclDAOImpl implements AclDAO
                     }
                 }
             }
-            
+
             return true;
         }
     }
-    
+
     static class AclChangeImpl implements AclChange
     {
         private Long before;
         private Long after;
         private ACLType typeBefore;
         private ACLType typeAfter;
-        
+
         public AclChangeImpl(Long before, Long after, ACLType typeBefore, ACLType typeAfter)
         {
             this.before = before;
@@ -1772,17 +1782,17 @@ public class AclDAOImpl implements AclDAO
             this.typeAfter = typeAfter;
             this.typeBefore = typeBefore;
         }
-        
+
         public Long getAfter()
         {
             return after;
         }
-        
+
         public Long getBefore()
         {
             return before;
         }
-        
+
         /**
          * @param after
          */
@@ -1798,12 +1808,12 @@ public class AclDAOImpl implements AclDAO
         {
             this.before = before;
         }
-        
+
         public ACLType getTypeAfter()
         {
             return typeAfter;
         }
-        
+
         /**
          * @param typeAfter
          */
@@ -1811,12 +1821,12 @@ public class AclDAOImpl implements AclDAO
         {
             this.typeAfter = typeAfter;
         }
-        
+
         public ACLType getTypeBefore()
         {
             return typeBefore;
         }
-        
+
         /**
          * @param typeBefore
          */
@@ -1824,7 +1834,7 @@ public class AclDAOImpl implements AclDAO
         {
             this.typeBefore = typeBefore;
         }
-        
+
         @Override
         public String toString()
         {
@@ -1835,7 +1845,7 @@ public class AclDAOImpl implements AclDAO
             return builder.toString();
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#renameAuthority(java.lang.String, java.lang.String)
      */
@@ -1843,5 +1853,34 @@ public class AclDAOImpl implements AclDAO
     {
         aclCrudDAO.renameAuthority(before, after);
         aclCache.clear();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AclDAO#fixSharedAcl(java.lang.Long, java.lang.Long)
+     */
+    @Override
+    public void fixSharedAcl(Long shared, Long defining)
+    {
+        Acl definingAcl = null;
+        if (defining != null)
+        {
+            definingAcl = aclCrudDAO.getAcl(defining);
+        }
+        else
+        {
+            throw new IllegalStateException("Null defining acl");
+        }
+        
+        Acl sharedAcl = null;
+        if (shared != null)
+        {
+            sharedAcl = aclCrudDAO.getAcl(defining);
+        }
+        else
+        {
+            throw new IllegalStateException("Null shared acl");
+        }
+        List<AclChange> changes = new ArrayList<AclChange>();
+        getWritable(shared, defining, null, null, defining, true, changes, WriteMode.CHANGE_INHERITED);
     }
 }

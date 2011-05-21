@@ -214,7 +214,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * is called, this may not be relevant, i.e an empty map of existing properties may be passed
      * in by the client code, which may follow its own overwrite strategy.
      * 
-     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @param overwritePolicy       the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(OverwritePolicy overwritePolicy)
@@ -227,7 +226,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * is called, this may not be relevant, i.e an empty map of existing properties may be passed
      * in by the client code, which may follow its own overwrite strategy.
      * 
-     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @param overwritePolicyStr    the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(String overwritePolicyStr)
@@ -428,12 +426,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * 
      * @see #setMappingProperties(Properties)
      */
-    @SuppressWarnings("unchecked")
     protected Map<String, Set<QName>> readMappingProperties(Properties mappingProperties)
     {
         Map<String, String> namespacesByPrefix = new HashMap<String, String>(5);
         // Get the namespaces
-        for (Map.Entry entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
         {
             String propertyName = (String) entry.getKey();
             if (propertyName.startsWith(NAMESPACE_PROPERTY_PREFIX))
@@ -445,7 +442,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         // Create the mapping
         Map<String, Set<QName>> convertedMapping = new HashMap<String, Set<QName>>(17);
-        for (Map.Entry entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
         {
             String documentProperty = (String) entry.getKey();
             String qnamesStr = (String) entry.getValue();
@@ -805,7 +802,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     }
                     else if (propertyValue instanceof Collection)
                     {
-                        convertedPropertyValue = (Serializable) makeDates((Collection) propertyValue);
+                        convertedPropertyValue = (Serializable) makeDates((Collection<String>) propertyValue);
                     }
                     else if (propertyValue instanceof String)
                     {
@@ -828,7 +825,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
                                 propertyTypeDef,
-                                (Collection) propertyValue);
+                                (Collection<?>) propertyValue);
                     }
                     else if (propertyValue instanceof Object[])
                     {
@@ -847,6 +844,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
             catch (TypeConversionException e)
             {
+                logger.warn(
+                        "Type conversion failed during metadata extraction: \n" + 
+                        "   Failure:   " + e.getMessage() + "\n" +
+                        "   Type:      " + propertyTypeDef + "\n" +
+                        "   Value:     " + propertyValue);
                 // Do we just absorb this or is it a problem?
                 if (failOnTypeConversion)
                 {
@@ -933,7 +935,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @param destination   the map to put values into
      * @return              Returns <tt>true</tt> if set, otherwise <tt>false</tt>
      */
-    @SuppressWarnings("unchecked")
     protected boolean putRawValue(String key, Serializable value, Map<String, Serializable> destination)
     {
         if (value == null)
@@ -955,7 +956,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         else if (value instanceof Collection)
         {
-            Collection valueCollection = (Collection) value;
+            Collection<?> valueCollection = (Collection<?>) value;
             if (valueCollection.isEmpty())
             {
                 value = null;

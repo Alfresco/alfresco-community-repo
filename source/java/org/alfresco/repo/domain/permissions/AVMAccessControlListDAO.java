@@ -1203,4 +1203,14 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
        throw new UnsupportedOperationException();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AccessControlListDAO#setFixedAcls(java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.util.List, boolean)
+     */
+    @Override
+    public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set)
+    {
+        throw new UnsupportedOperationException();
+        
+    }
+
 }

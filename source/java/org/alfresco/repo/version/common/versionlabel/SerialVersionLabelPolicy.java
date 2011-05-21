@@ -69,28 +69,30 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
     {
         SerialVersionLabel serialVersionNumber = null;
         
+        VersionType versionType = null;
+        if (versionProperties != null)
+        {
+            versionType = (VersionType)versionProperties.get(VersionModel.PROP_VERSION_TYPE);
+        }
+        
         if (preceedingVersion != null)
         {
+            // There is a preceeding version
             serialVersionNumber = new SerialVersionLabel(preceedingVersion.getVersionLabel());
-            
-            VersionType versionType = null;
-            if (versionProperties != null)
-            {
-                versionType = (VersionType)versionProperties.get(VersionModel.PROP_VERSION_TYPE);
-            }
-            
-            if (VersionType.MAJOR.equals(versionType) == true)
-            {
-                serialVersionNumber.majorIncrement();
-            }
-            else
-            {
-                serialVersionNumber.minorIncrement();
-            }
         }
         else
         {
+            // This is the first version
             serialVersionNumber = new SerialVersionLabel(null);
+        }
+        
+        if (VersionType.MAJOR.equals(versionType) == true)
+        {
+            serialVersionNumber.majorIncrement();
+        }
+        else
+        {
+            serialVersionNumber.minorIncrement();
         }
         
         return serialVersionNumber.toString();
@@ -133,7 +135,7 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
             }
             else
             {
-                majorRevisionNumber = 1;
+                majorRevisionNumber = 0;
                 minorRevisionNumber = 0;
             }
         }

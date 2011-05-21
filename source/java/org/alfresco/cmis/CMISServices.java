@@ -673,7 +673,7 @@ public interface CMISServices
      */
     public void deleteObject(String objectId, boolean allVersions) throws CMISConstraintException,
             CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
-            CMISPermissionDeniedException, CMISRuntimeException;
+            CMISPermissionDeniedException, CMISRuntimeException, CMISServiceException;
 
     /**
      * Adds a secondary child association to an object from a folder.

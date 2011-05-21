@@ -186,7 +186,7 @@ public class ItemTest extends BaseJCRTest
                 assertEquals(i+1, vi.getSize());
                 
                 Version v = content.getBaseVersion();
-                assertEquals("1."+i, v.getName());
+                assertEquals("", "0."+ (i + 1), v.getName());
                 
                 org.alfresco.service.cmr.version.VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 
@@ -197,7 +197,7 @@ public class ItemTest extends BaseJCRTest
                 
                 long beforeDuration = System.currentTimeMillis() - startTime;
                 
-                assertEquals("1."+i, version.getVersionLabel());
+                assertEquals("0."+(i + 1), version.getVersionLabel());
                 
                 // After
                 
@@ -211,7 +211,7 @@ public class ItemTest extends BaseJCRTest
                 
                 long afterDuration = System.currentTimeMillis() - startTime;
                 
-                assertEquals("1."+i, version.getVersionLabel());
+                assertEquals("0."+(i + 1), version.getVersionLabel());
                 
                 System.out.println("getBaseVersion - get current version (BEFORE: " + beforeDuration + "ms, AFTER: " + afterDuration + "ms) ");
             }

@@ -1256,10 +1256,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                 ftpConfig.setFTPDebug(ftpDbg);
             }
 
-            // Check if IPv6 support should be enabled
-            
-            ftpConfig.setIPv6Enabled(ftpConfigBean.getIpv6Enabled());
-
             // Check if a character set has been specified
 
             String charSet = ftpConfigBean.getCharSet();

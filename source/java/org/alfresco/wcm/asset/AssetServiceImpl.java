@@ -55,7 +55,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.util.WCMUtil;
-import org.apache.tools.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -589,7 +589,8 @@ public class AssetServiceImpl implements AssetService
        {
           // NOTE: This encoding allows us to workaround bug:
           //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-          ZipFile zipFile = new ZipFile(file, isHighByteZip ? "Cp437" : null);
+          // We also try to use the extra encoding information if present
+          ZipFile zipFile = new ZipFile(file, isHighByteZip ? "Cp437" : null, true);
           File alfTempDir = TempFileProvider.getTempDir();
           // build a temp dir name based on the name of the file we are importing
           File tempDir = new File(alfTempDir.getPath() + File.separatorChar + file.getName() + "_unpack");

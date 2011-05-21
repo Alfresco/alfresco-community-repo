@@ -45,6 +45,7 @@
 	
     <bean id="webProjectService" class="org.alfresco.wcm.webproject.WebProjectServiceImpl">
        <property name="nodeService" ref="NodeService"/>
+       <property name="namespaceService" ref="NamespaceService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="avmService" ref="AVMService"/>
        <property name="authorityService" ref="AuthorityService"/>

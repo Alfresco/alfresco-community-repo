@@ -204,17 +204,6 @@ public class PatchServiceImpl implements PatchService
     private boolean applyPatchAndDependencies(final Patch patch, Map<String, AppliedPatch> appliedPatchesById)
     {
         String id = patch.getId();
-        // check if it has already been done
-        AppliedPatch appliedPatch = appliedPatchesById.get(id); 
-        if (appliedPatch != null && appliedPatch.getSucceeded())
-        {
-            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
-            {
-                // It was sucessfully executed
-                return true;
-            }
-            // We give the patch another chance
-        }
         
         // ensure that dependencies have been done
         List<Patch> dependencies = patch.getDependsOn();
@@ -227,6 +216,20 @@ public class PatchServiceImpl implements PatchService
                 return false;
             }
         }
+
+        // check if it has already been done
+        AppliedPatch appliedPatch = appliedPatchesById.get(id); 
+        if (appliedPatch != null && appliedPatch.getSucceeded())
+        {
+            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
+            {
+                // It was sucessfully executed
+                return true;
+            }
+            // We give the patch another chance
+        }
+
+        
         // all the dependencies were successful
         
         appliedPatch = applyPatch(patch);
@@ -402,16 +405,17 @@ public class PatchServiceImpl implements PatchService
         }
         
         /**
-         * Perform some setup before applying the patch e.g. check whether the patch needs
-         * to be applied.
+         * Perform some setup before applying the patch e.g. check whether the patch needs to be applied.
          * 
          * @return true: continue, false: do not apply patch
          */
     	private void setup()
     	{
-    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+    		{
     			@Override
-    			public Object execute() throws Throwable {
+    			public Object execute() throws Throwable
+    			{
     	            final boolean forcePatch = patch.isForce();
     	            if (forcePatch)
     	            {
@@ -504,7 +508,8 @@ public class PatchServiceImpl implements PatchService
             	return;
             }
 
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+            {
     			@Override
     			public Object execute() throws Throwable {
     		        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
@@ -581,6 +586,5 @@ public class PatchServiceImpl implements PatchService
             Integer i2 = new Integer(p2.getTargetSchema());
             return i1.compareTo(i2);
         }
-        
     }
 }

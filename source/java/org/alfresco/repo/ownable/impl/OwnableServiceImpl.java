@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -49,15 +50,16 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Andy Hind
  */
-public class OwnableServiceImpl implements OwnableService, InitializingBean, NodeServicePolicies.OnAddAspectPolicy, NodeServicePolicies.OnUpdatePropertiesPolicy,
-        NodeServicePolicies.OnRemoveAspectPolicy, NodeServicePolicies.OnDeleteNodePolicy
+public class OwnableServiceImpl implements
+        OwnableService, InitializingBean,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnDeleteNodePolicy
 {
     private NodeService nodeService;
-
     private AuthenticationService authenticationService;
-
     private SimpleCache<NodeRef, String> nodeOwnerCache;
-
     private PolicyComponent policyComponent;
 
     public OwnableServiceImpl()
@@ -93,41 +95,55 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean, Nod
 
     public void afterPropertiesSet() throws Exception
     {
-        if (nodeService == null)
-        {
-            throw new IllegalArgumentException("Property 'nodeService' has not been set");
-        }
-        if (authenticationService == null)
-        {
-            throw new IllegalArgumentException("Property 'authenticationService' has not been set");
-        }
-        if (nodeOwnerCache == null)
-        {
-            throw new IllegalArgumentException("Property 'nodeOwnerCache' has not been set");
-        }
-        if (policyComponent == null)
-        {
-            throw new IllegalArgumentException("Property 'policyComponent' has not been set");
-        }
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "authenticationService", authenticationService);
+        PropertyCheck.mandatory(this, "nodeOwnerCache", nodeOwnerCache);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
     }
     
     public void init()
     {
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this, "onAddAspect"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this, "onUpdateProperties"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this,
-                "onRemoveAspect"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this, "onDeleteNode"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnAddAspectPolicy.QNAME,
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onAddAspect"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onUpdateProperties"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onRemoveAspect"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnDeleteNodePolicy.QNAME,
+                ContentModel.ASPECT_OWNABLE,
+                new JavaBehaviour(this, "onDeleteNode"));
         
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onAddAspect"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onUpdateProperties"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this,
-                "onRemoveAspect"));
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onDeleteNode"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnAddAspectPolicy.QNAME,
+                ContentModel.ASPECT_AUDITABLE,
+                new JavaBehaviour(this, "onAddAspect"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.ASPECT_AUDITABLE,
+                new JavaBehaviour(this, "onUpdateProperties"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
+                ContentModel.ASPECT_AUDITABLE,
+                new JavaBehaviour(this, "onRemoveAspect"));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnDeleteNodePolicy.QNAME,
+                ContentModel.ASPECT_AUDITABLE,
+                new JavaBehaviour(this, "onDeleteNode"));
         
-        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ContentModel.ASPECT_OWNABLE, 
+        policyComponent.bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                ContentModel.ASPECT_OWNABLE, 
                 new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
-        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ContentModel.ASPECT_AUDITABLE, 
+        policyComponent.bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                ContentModel.ASPECT_AUDITABLE, 
                 new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
     }
 

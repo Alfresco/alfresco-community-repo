@@ -10,6 +10,7 @@
 -->
 <config>
     <TCP bind_port="${alfresco.tcp.start_port:7800}"
+         bind_interface="${alfresco.jgroups.bind_interface:}"
          loopback="true"
          recv_buf_size="20000000"
          send_buf_size="640000"

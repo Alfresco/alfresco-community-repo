@@ -66,4 +66,8 @@ public class ExecutionSummary {
     public int getExecutionInstance() {
        return executionInstance;
     }
+    
+    public String toString() {
+       return "Execution of " + actionType + " as " + executionInstance + " : " + actionId; 
+    }
  }

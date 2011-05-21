@@ -807,9 +807,16 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             sess.removeSetupObject( client.getProcessId());
             
-            //  Convert to an access denied exception
+            // Convert to an access denied exception if necessary
             
-            throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+            if (ex instanceof AlfrescoRuntimeException && ex.getCause() instanceof SMBSrvException)
+            {
+                throw (SMBSrvException) ex.getCause();
+            }
+            else
+            {
+                throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+            }
         }
 
         // Debug

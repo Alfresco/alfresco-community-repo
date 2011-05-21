@@ -35,6 +35,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
@@ -472,40 +473,47 @@ public class RuleServiceImpl
     /**
      * @see org.alfresco.repo.rule.RuleService#getRulesByRuleType(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.rule.RuleType)
      */
-    public List<Rule> getRules(NodeRef nodeRef, boolean includeInherited, String ruleTypeName)
+    public List<Rule> getRules(final NodeRef nodeRef, final boolean includeInherited, final String ruleTypeName)
     {
-        List<Rule> rules = new ArrayList<Rule>();
+        //Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<Rule>>()
+        {
 
-        if (!this.runtimeNodeService.exists(nodeRef) || !checkNodeType(nodeRef))
-        {
-            // Node has gone or is not the correct type
-            return rules;
-        }
-        if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
-        {
-            // Get any inherited rules
-            for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
+            public List<Rule> doWork() throws Exception
             {
-                // Ensure rules are not duplicated in the list
-                if (rules.contains(rule) == false)
+                List<Rule> rules = new ArrayList<Rule>();
+
+                if (!runtimeNodeService.exists(nodeRef) || !checkNodeType(nodeRef))
                 {
-                    rules.add(rule);
+                    // Node has gone or is not the correct type
+                    return rules;
                 }
-            }
-        }
+                if (includeInherited == true && runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+                {
+                    // Get any inherited rules
+                    for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
+                    {
+                        // Ensure rules are not duplicated in the list
+                        if (rules.contains(rule) == false)
+                        {
+                            rules.add(rule);
+                        }
+                    }
+                }
             
-        // Get the node's own rules and add them to the list
-        List<Rule> nodeRules = getRulesForNode(nodeRef);
-        for (Rule rule : nodeRules)
-        {                   
-            if ((rules.contains(rule) == false) &&
-                    (ruleTypeName == null || rule.getRuleTypes().contains(ruleTypeName) == true))
-            {
-                rules.add(rule);                        
-            }
-        }
+                // Get the node's own rules and add them to the list
+                List<Rule> nodeRules = getRulesForNode(nodeRef);
+                for (Rule rule : nodeRules)
+                {                   
+                    if ((rules.contains(rule) == false) && (ruleTypeName == null || rule.getRuleTypes().contains(ruleTypeName) == true))
+                    {
+                        rules.add(rule);                        
+                    }
+                }
         
-        return rules;
+                return rules;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     private List<Rule> getRulesForNode(NodeRef nodeRef)
@@ -1162,9 +1170,17 @@ public class RuleServiceImpl
             }
             
         }
-        //update all associations and actions
-        rule = getRule(ruleNodeRef);
-        if (executedRules == null || canExecuteRule(executedRules, actionedUponNodeRef, rule) == true) 
+        final NodeRef finalRuleNodeRef = ruleNodeRef;
+        // update all associations and actions
+        rule = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Rule>()
+        {
+            public Rule doWork() throws Exception
+            {
+                return getRule(finalRuleNodeRef);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        if (executedRules == null || canExecuteRule(executedRules, actionedUponNodeRef, rule) == true)
         {
             executeRule(rule, actionedUponNodeRef, executedRules);
         }
@@ -1423,17 +1439,26 @@ public class RuleServiceImpl
     /**
      * @see org.alfresco.service.cmr.rule.RuleService#getOwningNodeRef(org.alfresco.service.cmr.rule.Rule)
      */
-    public NodeRef getOwningNodeRef(Rule rule)
+    public NodeRef getOwningNodeRef(final Rule rule)
     {
-        NodeRef result = null;
-        
-        NodeRef ruleNodeRef = rule.getNodeRef();
-        if (ruleNodeRef != null)
+        // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            result = getOwningNodeRefRuleImpl(ruleNodeRef);
-        }
+
+            public NodeRef doWork() throws Exception
+            {
+
+                NodeRef result = null;
         
-        return result;
+                NodeRef ruleNodeRef = rule.getNodeRef();
+                if (ruleNodeRef != null)
+                {
+                    result = getOwningNodeRefRuleImpl(ruleNodeRef);
+                }
+        
+                return result;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -1452,16 +1477,25 @@ public class RuleServiceImpl
     /**
      * @see org.alfresco.service.cmr.rule.RuleService#getOwningNodeRef(org.alfresco.service.cmr.action.Action)
      */
-    public NodeRef getOwningNodeRef(Action action)
+    public NodeRef getOwningNodeRef(final Action action)
     {
-        NodeRef result = null;
-        NodeRef actionNodeRef = action.getNodeRef();
-        if (actionNodeRef != null)
+        // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            result = getOwningNodeRefActionImpl(actionNodeRef);
-        }
+
+            public NodeRef doWork() throws Exception
+            {
+
+                NodeRef result = null;
+                NodeRef actionNodeRef = action.getNodeRef();
+                if (actionNodeRef != null)
+                {
+                    result = getOwningNodeRefActionImpl(actionNodeRef);
+                }
         
-        return result;
+                return result;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**

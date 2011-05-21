@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
@@ -90,17 +91,37 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testSupports() throws Exception
     {
+        TikaConfig config = TikaConfig.getDefaultConfig();
+        
         ArrayList<String> mimeTypes = new ArrayList<String>();
         for (Parser p : new Parser[] {
                  new OfficeParser(), new OpenDocumentParser(),
                  new Mp3Parser(), new OOXMLParser()
         }) {
            Set<MediaType> mts = p.getSupportedTypes(new ParseContext());
-           for (MediaType mt : mts) {
-              mimeTypes.add(mt.toString());
+           for (MediaType mt : mts) 
+           {
+              MediaType canonical = config.getMediaTypeRegistry().normalize(mt);
+              mimeTypes.add( canonical.toString() );
            }
         }
         
+        // Check Tika handles it properly
+        AutoDetectParser p = new AutoDetectParser();
+        Set<String> amts = new HashSet<String>();
+        for (MediaType mt : p.getSupportedTypes(new ParseContext()))
+        {
+            amts.add(mt.toString());
+        }
+        for (String mimetype : mimeTypes)
+        {
+            assertTrue(
+                    "Tika doesn't support expected mimetype: " + mimetype,
+                    amts.contains(mimetype)
+            );
+        }
+        
+        // Now check the extractor does too
         for (String mimetype : mimeTypes)
         {
             boolean supports = extracter.isSupported(mimetype);
@@ -207,7 +228,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       assertEquals("8 8 8", p.get("Data BitsPerSample"));
       assertEquals("none", p.get("Transparency Alpha"));
       
-      p = openAndCheck(".bmp", "image/bmp");
+      //p = openAndCheck(".bmp", "image/bmp"); // TODO Fixed in Swift, 
+      p = openAndCheck(".bmp", "image/x-ms-bmp"); // TODO Pre-swift workaround 
       assertEquals("409", p.get("width"));
       assertEquals("92", p.get("height"));
       assertEquals("8 8 8", p.get("Data BitsPerSample"));

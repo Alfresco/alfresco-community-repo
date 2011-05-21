@@ -108,6 +108,7 @@
     <bean id="siteAspect" class="org.alfresco.repo.site.SiteAspect" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
     </bean>
     
     <bean id="sitesPermissionsCleaner" class="org.alfresco.repo.site.SitesPermissionCleaner">

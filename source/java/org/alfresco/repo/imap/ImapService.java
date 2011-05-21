@@ -74,7 +74,7 @@ public interface ImapService
      * Returns an collection of mailboxes. This method serves LIST command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailboxPattern String name of a mailbox possible including a wildcard.
+     * @param mailboxPattern String name of a mailbox encoded in MUTF-7, possible including a wildcard.
      * @return Collection of mailboxes matching the pattern.
      */
     public List<AlfrescoImapFolder> listMailboxes(AlfrescoImapUser user, String mailboxPattern);
@@ -83,7 +83,7 @@ public interface ImapService
      * Returns an collection of subscribed mailboxes. This method serves LSUB command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailboxPattern String name of a mailbox possible including a wildcard.
+     * @param mailboxPattern String name of a mailbox encoded in MUTF-7, possible including a wildcard.
      * @return Collection of mailboxes matching the pattern.
      */
     public List<AlfrescoImapFolder> listSubscribedMailboxes(AlfrescoImapUser user, String mailboxPattern);
@@ -93,7 +93,7 @@ public interface ImapService
      * user has rights to create. This method serves CREATE command of the IMAP protocol.
      * 
      * @param user User making the request.
-     * @param mailboxName String name of the target
+     * @param mailboxName String name of the target encoded in MUTF-7,
      * @return an Mailbox reference.
      */
     public AlfrescoImapFolder createMailbox(AlfrescoImapUser user, String mailboxName);
@@ -103,7 +103,7 @@ public interface ImapService
      * protocol.
      * 
      * @param user User making the request.
-     * @param mailboxName String name of the target
+     * @param mailboxName String name of the target encoded in MUTF-7,
      * @throws com.icegreen.greenmail.store.FolderException if mailbox has a non-selectable store with children
      */
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName);
@@ -115,8 +115,8 @@ public interface ImapService
      * protocol.
      * 
      * @param user User making the request.
-     * @param oldMailboxName String name of the existing folder
-     * @param newMailboxName String target new name
+     * @param oldMailboxName String name of the existing folder encoded in MUTF-7,
+     * @param newMailboxName String target new name encoded in MUTF-7,
      */
     public void renameMailbox(AlfrescoImapUser user, String oldMailboxName, String newMailboxName);
 
@@ -125,7 +125,7 @@ public interface ImapService
      * also can be used by to obtain hierarchy delimiter by the LIST command: <p/> C: 2 list "" "" <p/> S: * LIST () "." "" <p/> S: 2 OK LIST completed.
      * 
      * @param user User making the request.
-     * @param mailboxName String name of the target.
+     * @param mailboxName String name of the target encoded in MUTF-7,.
      * @return an Mailbox reference.
      */
     public AlfrescoImapFolder getFolder(AlfrescoImapUser user, String mailboxName);
@@ -143,7 +143,7 @@ public interface ImapService
      * Subscribes a user to a mailbox. The mailbox must exist locally and the user must have rights to modify it. <p/> This method serves SUBSCRIBE command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailbox String representation of a mailbox name.
+     * @param mailbox String representation of a mailbox name encoded in MUTF-7,.
      */
     public void subscribe(AlfrescoImapUser user, String mailbox);
 
@@ -151,7 +151,7 @@ public interface ImapService
      * Unsubscribes from a given mailbox. <p/> This method serves UNSUBSCRIBE command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailbox String representation of a mailbox name.
+     * @param mailbox String representation of a mailbox name encoded in MUTF-7,.
      */
     public void unsubscribe(AlfrescoImapUser user, String mailbox);
 

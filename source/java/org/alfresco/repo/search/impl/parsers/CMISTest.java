@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.antlr.gunit.GrammarInfo;
-import org.antlr.gunit.gUnitExecutor;
 import org.antlr.gunit.gUnitLexer;
 import org.antlr.gunit.gUnitParser;
 import org.antlr.runtime.ANTLRInputStream;

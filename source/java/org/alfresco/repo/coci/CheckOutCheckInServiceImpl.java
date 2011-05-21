@@ -482,25 +482,42 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         NodeRef workingCopy = null;
         ruleService.disableRuleType(RuleType.UPDATE);
         try
-        {            
+        {           
             // Make the working copy
             final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
-            workingCopy = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+         
+            // Find the primary parent
+            ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(nodeRef);
+            
+            // If destination parent for working copy is the same as the parent of the source node
+            // then working copy should be created even if the user has no permissions to create children in 
+            // the parent of the source node 
+            if (destinationParentNodeRef.equals(childAssocRef.getParentRef()))
             {
-                public NodeRef doWork() throws Exception
+                workingCopy = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
                 {
-                    NodeRef copy = copyService.copy(
-                                nodeRef,
-                                destinationParentNodeRef,
-                                destinationAssocTypeQName,
+                    public NodeRef doWork() throws Exception
+                    {
+                        NodeRef copy = copyService.copy(
+                                nodeRef, 
+                                destinationParentNodeRef, 
+                                destinationAssocTypeQName, 
                                 copyQName);
-    
-                    // Set the owner of the working copy to be the current user
-                    ownableService.setOwner(copy, userName);
-                    return copy;
-                }
-            }, AuthenticationUtil.getSystemUserName());
-        
+
+                        // Set the owner of the working copy to be the current user
+                        ownableService.setOwner(copy, userName);
+                        return copy;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                workingCopy = copyService.copy(
+                        nodeRef, 
+                        destinationParentNodeRef, 
+                        destinationAssocTypeQName, 
+                        copyQName);
+            }
         
         
             // Update the working copy name        

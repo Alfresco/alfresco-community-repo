@@ -35,6 +35,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService.LockState;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -371,7 +372,13 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
                 Map<QName, PropertyValue> props = this.services.getAVMService().getNodeProperties(this.version, this.path);
                 for (QName qname: props.keySet())
                 {
-                    Serializable propValue = props.get(qname).getValue(DataTypeDefinition.ANY);
+                    PropertyDefinition propertyDefinition = services.getDictionaryService().getProperty(qname);
+                    QName currentPropertyType = DataTypeDefinition.ANY;
+                    if (null != propertyDefinition)
+                    {
+                        currentPropertyType = propertyDefinition.getDataType().getName();
+                    }
+                    Serializable propValue = props.get(qname).getValue(currentPropertyType);
                     if (propValue instanceof NodeRef)
                     {
                         // NodeRef object properties are converted to new TemplateNode objects

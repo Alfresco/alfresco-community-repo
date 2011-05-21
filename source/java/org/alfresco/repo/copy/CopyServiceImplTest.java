@@ -724,8 +724,6 @@ public class CopyServiceImplTest extends BaseSpringTest
         // Make node one actionable with a rule to copy nodes into node two
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, nodeTwo);
-        params.put(MoveActionExecuter.PARAM_ASSOC_TYPE_QNAME, TEST_CHILD_ASSOC_TYPE_QNAME);
-        params.put(MoveActionExecuter.PARAM_ASSOC_QNAME, QName.createQName("{test}ruleCopy"));
         Rule rule = new Rule();
         rule.setRuleType(RuleType.INBOUND);        
         Action action = this.actionService.createAction(CopyActionExecuter.NAME, params);

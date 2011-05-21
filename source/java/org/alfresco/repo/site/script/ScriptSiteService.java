@@ -217,11 +217,9 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
-     * This method cleans up the permissions on the specified node and all its primary children.
      * It removes permissions which pertain to sites other than the node's current site.
      * 
      * @param targetNode the root node which is to have its permissions cleaned.
-     * @since 3.4.2
      * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
      */
     public void cleanSitePermissions(NodeRef targetNode)
@@ -233,12 +231,23 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * This method cleans up the permissions on the specified node and all its primary children.
      * It removes permissions which pertain to sites other than the node's current site.
      * 
-     * @param targetNode the root node which is to have its permissions cleaned.
      * @since 3.4.2
      * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
      */
     public void cleanSitePermissions(ScriptNode targetNode)
     {
         this.cleanSitePermissions(targetNode.getNodeRef());
+    }
+
+    /**
+     * Returns an array of all the roles that can be assigned to a member of a 
+     *  specific site.
+     * 
+     * @return  String[]    roles available to assign to a member of a site
+     */
+    public String[] listSiteRoles(String shortName)
+    {
+        List<String> roles = this.siteService.getSiteRoles(shortName);
+        return (String[])roles.toArray(new String[roles.size()]);
     }
 }

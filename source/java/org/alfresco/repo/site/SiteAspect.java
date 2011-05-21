@@ -23,9 +23,11 @@ import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Site aspect behaviour bean.
@@ -38,8 +40,19 @@ import org.alfresco.service.cmr.repository.NodeService;
 public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy
 {
    /** Services */
+   private DictionaryService dictionaryService;
    private PolicyComponent policyComponent;
    private NodeService nodeService;
+   
+   /**
+    * Set the dictionary service
+    * 
+    * @param dictionaryService   dictionary service
+    */
+   public void setDictionaryService(DictionaryService dictionaryService)
+   {
+       this.dictionaryService = dictionaryService;
+   }
    
    /**
     * Set the policy component
@@ -88,7 +101,8 @@ public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy
       // Deny renames
       if (oldParent.equals(newParent))
       {
-          if (nodeService.getType((oldChildAssocRef.getChildRef())).equals(SiteModel.TYPE_SITE))
+          QName type = nodeService.getType((oldChildAssocRef.getChildRef()));
+          if (dictionaryService.isSubClass(type, SiteModel.TYPE_SITE))
           {
               throw new SiteServiceException("Sites can not be renamed.");
           }

@@ -27,17 +27,17 @@ FROM
     LOWER(ce.name) = entities.lname AND
     ce.child_id != entities.max_child_id;
 
-UPDATE avm_child_entries
-    SET name = name || '-renamed.duplicate.mark-' || child_id || '.temp'
+UPDATE avm_child_entries ce
+    SET name = ce.name || '-renamed.duplicate.mark-' || ce.child_id || '.temp'
 WHERE EXISTS
     (SELECT 
          1
      FROM
          avm_tmp_child_entries tmp
      WHERE
-         parent_id = tmp.parent_id AND
-         name = tmp.name AND
-         child_id = tmp.child_id);
+         ce.parent_id = tmp.parent_id AND
+         ce.name = tmp.name AND
+         ce.child_id = tmp.child_id);
 
 --ASSIGN:update_count=value
 SELECT 

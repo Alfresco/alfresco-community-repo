@@ -29,8 +29,8 @@ import java.util.Enumeration;
 
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterException;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 
 /**
@@ -86,7 +86,7 @@ public class ACPImportPackageHandler
         try
         {
             // find xml meta-data file
-            ZipEntry xmlMetaDataEntry = null;
+            ZipArchiveEntry xmlMetaDataEntry = null;
             
             // TODO: First, locate xml meta-data file by name
             
@@ -94,7 +94,7 @@ public class ACPImportPackageHandler
             Enumeration entries = zipFile.getEntries();
             while(entries.hasMoreElements())
             {
-                ZipEntry entry = (ZipEntry)entries.nextElement();
+                ZipArchiveEntry entry = (ZipArchiveEntry)entries.nextElement();
                 if (!entry.isDirectory())
                 {
                     // Locate xml file in root of .acp
@@ -136,7 +136,7 @@ public class ACPImportPackageHandler
      */
     public InputStream importStream(String content)
     {
-        ZipEntry zipEntry = zipFile.getEntry(content);
+        ZipArchiveEntry zipEntry = zipFile.getEntry(content);
         if (zipEntry == null)
         {
             // Note: for some reason, when modifying a zip archive the path seperator changes

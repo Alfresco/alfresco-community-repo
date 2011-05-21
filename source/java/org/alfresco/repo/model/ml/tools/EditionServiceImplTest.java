@@ -66,7 +66,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         Version rootEdition = editionService.getEditions(mlContainerNodeRef).getAllVersions().iterator().next();
         // Ensure that the version label is 1.0
-        assertTrue("The edition label would be 1.0 and not " + rootEdition.getVersionLabel(), rootEdition.getVersionLabel().equals("1.0"));
+        assertTrue("The edition label would be 0.1 and not " + rootEdition.getVersionLabel(), rootEdition.getVersionLabel().equals("0.1"));
 
         /*
          * default (1.1)
@@ -76,7 +76,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version firstEdition = editions.get(0);
         // Ensure that the version label is 1.1
-        assertTrue("The edition label would be 1.1 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("1.1"));
+        assertTrue("The edition label would be 0.2 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("0.2"));
 
         /*
          * major (2.0)
@@ -87,8 +87,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         pivot = editionService.createEdition(pivot, versionProperties);
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version secondEdition = editions.get(0);
-        // Ensure that the version label is 2.0
-        assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("2.0"));
+        // Ensure that the version label is 1.0
+        assertTrue("The edition label would be 1.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("1.0"));
 
         /*
          * minor (2.1)
@@ -100,7 +100,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version thirdEdition = editions.get(0);
         // Ensure that the version label is 2.1
-        assertTrue("The edition label would be 2.1 and not " + thirdEdition.getVersionLabel(), thirdEdition.getVersionLabel().equals("2.1"));
+        assertTrue("The edition label would be 1.1 and not " + thirdEdition.getVersionLabel(), thirdEdition.getVersionLabel().equals("1.1"));
     }
 
     public void testCreateEdition() throws Exception
@@ -124,8 +124,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         assertTrue("The locale of the conatiner should be changed", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE).equals(Locale.FRENCH));
 
         // get the two editions
-        Version rootEdition = editionHistory.getVersion("1.0");
-        Version actualEdition = editionHistory.getVersion("1.1");
+        Version rootEdition = editionHistory.getVersion("0.1");
+        Version actualEdition = editionHistory.getVersion("0.2");
 
         // get the translations of the root versions
         List<VersionHistory> rootVersionTranslations = editionService.getVersionedTranslations(rootEdition);

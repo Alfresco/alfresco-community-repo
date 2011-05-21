@@ -22,9 +22,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -36,6 +38,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -152,7 +155,10 @@ public class FileFolderServiceImplTest extends TestCase
     {
         try
         {
-            txn.rollback();
+            if (txn.getStatus() != Status.STATUS_ROLLEDBACK && txn.getStatus() != Status.STATUS_COMMITTED)
+            {
+                txn.rollback();
+            }
         }
         catch (Throwable e)
         {
@@ -895,7 +901,7 @@ public class FileFolderServiceImplTest extends TestCase
         ContentReader reader = fileFolderService.getReader(fileNodeRef);
         assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
     }
-    
+
     @SuppressWarnings("unused")
     public void testGetLocalizedSibling() throws Exception
     {
@@ -938,4 +944,147 @@ public class FileFolderServiceImplTest extends TestCase
         I18NUtil.setLocale(Locale.US);
         assertEquals("Match fail for " + I18NUtil.getLocale(), mnode, fileFolderService.getLocalizedSibling(mnode));
     }
+
+    /**
+     * Ensures that timestamp propagation can be successfully enabled.<br/>
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-7421">ALF-7421</a>
+     */
+    public synchronized void testAlf7421TimestampPropagation() throws Exception
+    {
+        // Terminate the transaction
+        txn.commit();
+        
+        nodeService.addAspect(workingRootNodeRef, ContentModel.ASPECT_AUDITABLE, null);
+
+        // Get the current dates for the parent folder (one level up)
+        String creatorTooHigh = (String) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATOR);
+        Date createdTooHigh = (Date) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATED);
+        String modifierTooHigh = (String) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIER);
+        Date modifiedTooHigh = (Date) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIED);
+        
+        FileInfo folderInfo = fileFolderService.create(workingRootNodeRef, "SomeFolder", ContentModel.TYPE_FOLDER);
+        NodeRef folderNodeRef = folderInfo.getNodeRef();
+        // Get the dates for the folder we are using
+        String creatorExpected = (String) nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR);
+        Date createdExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED);
+        String modifierExpected = (String) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER);
+        Date modifiedExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED);
+        
+        // Create a new file and check the parent (expect no changes)
+        FileInfo fileInfo = fileFolderService.create(folderNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
+        NodeRef fileNodeRef = fileInfo.getNodeRef();
+        nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUDITABLE, null);
+        
+        assertEquals("cm:creator should not have changed",
+                creatorExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+        assertEquals("cm:created should not have changed",
+                createdExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+        assertEquals("cm:modifier should not have changed",
+                modifierExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+        assertEquals("cm:modified should not have changed",
+                modifiedExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+        // Update the child and check parent (expect no changes)
+        fileFolderService.rename(fileNodeRef, "something.html");
+        assertEquals("cm:creator should not have changed",
+                creatorExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+        assertEquals("cm:created should not have changed",
+                createdExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+        assertEquals("cm:modifier should not have changed",
+                modifierExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+        assertEquals("cm:modified should not have changed",
+                modifiedExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+        // Delete node and check parent (expect no changes)
+        fileFolderService.delete(fileNodeRef);
+        assertEquals("cm:creator should not have changed",
+                creatorExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+        assertEquals("cm:created should not have changed",
+                createdExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+        assertEquals("cm:modifier should not have changed",
+                modifierExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+        assertEquals("cm:modified should not have changed",
+                modifiedExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+        
+        // Force timestamp propagation
+        AbstractNodeDAOImpl nodeDAO = (AbstractNodeDAOImpl) ctx.getBean("nodeDAO");
+        nodeDAO.setEnableTimestampPropagation(true);
+        try
+        {
+            // Create a new file and check the parent (expect modifier changes)
+            fileInfo = fileFolderService.create(folderNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
+            fileNodeRef = fileInfo.getNodeRef();
+            nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUDITABLE, null);
+            
+            assertEquals("cm:creator should not have changed",
+                    creatorExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+            assertEquals("cm:created should not have changed",
+                    createdExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+            assertEquals("cm:modifier should have changed",
+                    nodeService.getProperty(fileNodeRef, ContentModel.PROP_MODIFIER),
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+            assertEquals("cm:modified should have changed",
+                    nodeService.getProperty(fileNodeRef, ContentModel.PROP_MODIFIED),
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+            // Update the child and check parent (expect modifier changes)
+            fileFolderService.rename(fileNodeRef, "something.html");
+            assertEquals("cm:creator should not have changed",
+                    creatorExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+            assertEquals("cm:created should not have changed",
+                    createdExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+            assertEquals("cm:modifier should have changed",
+                    nodeService.getProperty(fileNodeRef, ContentModel.PROP_MODIFIER),
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+            assertEquals("cm:modified should have changed",
+                    nodeService.getProperty(fileNodeRef, ContentModel.PROP_MODIFIED),
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+            // Delete node and check parent (expect modifier changes)
+            modifiedExpected = (Date) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIED);
+            fileFolderService.delete(fileNodeRef);
+            assertEquals("cm:creator should not have changed",
+                    creatorExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
+            assertEquals("cm:created should not have changed",
+                    createdExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
+            assertSame("cm:modifier should have changed",
+                    modifierExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+            assertNotSame("cm:modified should have changed",
+                    modifiedExpected,
+                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
+        }
+        finally
+        {
+            nodeDAO.setEnableTimestampPropagation(false);
+        }
+        
+        // Finally check that the second level up was NOT modified
+        assertEquals("cm:creator should not have changed (level too high)",
+                creatorTooHigh,
+                nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATOR));
+        assertEquals("cm:created should not have changed (level too high)",
+                createdTooHigh,
+                nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATED));
+        assertEquals("cm:modifier should not have changed (level too high)",
+                modifierTooHigh,
+                nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIER));
+        assertEquals("cm:modified should not have changed (level too high)",
+                modifiedTooHigh,
+                nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIED));
+    }	
 }

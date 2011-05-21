@@ -49,6 +49,18 @@
       <constructor-arg>
          <ref local="fileServerConfiguration" />
       </constructor-arg>
+      <property name="nodeMonitor" ref="nfsServerNodeMonitor" />
+   </bean>
+
+   <bean id="nfsServerNodeMonitor" class="org.alfresco.filesys.NfsServerNodeMonitor">
+      <property name="enabled" value="${nfs.nodeMinitor.enabled}" />
+
+      <property name="targetDeviceName" value="${filesystem.name}" />
+
+      <property name="filesystemContexts" ref="filesystemContexts" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="permissionService" ref="permissionService" />
    </bean>
 
    <!--  JMX Monitoring -->
@@ -196,11 +208,6 @@
 
       <property name="port">
          <value>${ftp.port}</value>
-      </property>
-
-      <!-- IPv6 support -->
-      <property name="ipv6Enabled">
-         <value>${ftp.ipv6.enabled}</value>
       </property>
 
       <!-- FTP authentication -->

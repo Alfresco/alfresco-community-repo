@@ -50,8 +50,7 @@ public interface UsageService
      */
     @NotAuditable
     public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef);
-
-    /**
+    
     /**
      * Get distinct set of usage delta nodes
      */

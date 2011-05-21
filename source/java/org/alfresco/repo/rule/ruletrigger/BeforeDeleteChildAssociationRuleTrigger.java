@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Set;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -78,11 +82,20 @@ public class BeforeDeleteChildAssociationRuleTrigger
 
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
+        NodeRef childNodeRef = childAssocRef.getChildRef();
+
+        // Avoid renamed nodes
+        Set<NodeRef> renamedNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_RENAMED_NODES);
+        if (renamedNodeRefSet.contains(childNodeRef))
+        {
+            return;
+        }
+        
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Single child assoc trigger (policy = " + POLICY + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
         
-        triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        triggerRules(childAssocRef.getParentRef(), childNodeRef);
     }
 }

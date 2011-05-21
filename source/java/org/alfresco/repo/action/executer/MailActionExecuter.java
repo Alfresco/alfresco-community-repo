@@ -50,9 +50,10 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.validator.EmailValidator;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -357,10 +358,19 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                     }
                                 }
                             }
-                            else if (authType.equals(AuthorityType.GROUP))
+                            else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
                             {
-                                // else notify all members of the group
-                                Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                                // Notify all members of the group
+                                Set<String> users;
+                                if (authType.equals(AuthorityType.GROUP))
+                                {        
+                                    users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                                }
+                                else
+                                {
+                                    users = authorityService.getAllAuthorities(AuthorityType.USER);
+                                }
+                                
                                 for (String userAuth : users)
                                 {
                                     if (personService.personExists(userAuth) == true)
@@ -376,12 +386,24 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                             }
                         }
                         
-                        message.setTo(recipients.toArray(new String[recipients.size()]));
+                        if(recipients.size() > 0)
+                        {
+                            message.setTo(recipients.toArray(new String[recipients.size()]));
+                        }
+                        else
+                        {
+                            // All recipients were invalid
+                            throw new MailPreparationException(
+                                    "All recipients for the mail action were invalid"
+                            );
+                        }
                     }
                     else
                     {
-                        // No recipiants have been specified
-                        logger.error("No recipiant has been specified for the mail action");
+                        // No recipients have been specified
+                        throw new MailPreparationException(
+                                "No recipient has been specified for the mail action"
+                        );
                     }
                 }
                 

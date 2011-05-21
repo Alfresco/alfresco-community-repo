@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.site;
 
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,12 +31,18 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -50,6 +60,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
@@ -79,6 +90,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private CopyService copyService;
     private ScriptService scriptService;
     private NodeService nodeService;
+    private NamespaceService namespaceService;
+    private DictionaryService dictionaryService;
     private AuthenticationComponent authenticationComponent;
     private TaggingService taggingService;
     private PersonService personService;
@@ -118,6 +131,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.fileFolderService = (FileFolderService)this.applicationContext.getBean("FileFolderService");
         this.nodeArchiveService = (NodeArchiveService)this.applicationContext.getBean("nodeArchiveService");
         this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
+        this.dictionaryService = (DictionaryService)this.applicationContext.getBean("DictionaryService");
+        this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.siteService = (SiteService)this.applicationContext.getBean("SiteService"); // Big 'S'
         this.siteServiceImpl = (SiteServiceImpl) applicationContext.getBean("siteService"); // Small 's'
         this.sysAdminParams = (SysAdminParams)this.applicationContext.getBean("sysAdminParams");
@@ -984,11 +999,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         List<String> roles = this.siteService.getSiteRoles();
         assertNotNull(roles);
         assertFalse(roles.isEmpty());
+
+        // By default there are just the 4 roles
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
         
-//        for (String role : roles)
-//        {
-//            System.out.println("Role: " + role);
-//        }
+        // For custom roles, see testCustomSiteType()
     }
     
     public void testCustomSiteProperties()
@@ -1016,7 +1035,137 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertFalse(siteInfo.getCustomProperties().isEmpty());
         assertEquals(1, siteInfo.getCustomProperties().size());
         assertEquals("information", siteInfo.getCustomProperties().get(additionalInformationQName));
+    }
+    
+    /**
+     * Creates a site with a custom type, and ensures that
+     *  it behaves correctly.
+     */
+    public void testCustomSiteType()
+    {
+        final String CS_URI = "http://example.com/site";
+        final String CS_PFX = "cs";
         
+        // Setup our custom site type
+        DictionaryDAO dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
+        M2Model model = M2Model.createModel("cm:CustomSiteModel");
+        model.createNamespace(CS_URI, CS_PFX);
+        
+        // Import the usual suspects too
+        model.createImport(
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                NamespaceService.CONTENT_MODEL_PREFIX
+        );
+        model.createImport(
+                NamespaceService.DICTIONARY_MODEL_1_0_URI,
+                NamespaceService.DICTIONARY_MODEL_PREFIX
+        );
+        model.createImport(
+                SiteModel.SITE_MODEL_URL,
+                SiteModel.SITE_MODEL_PREFIX
+        );
+        
+        // Custom type
+        M2Type customType = model.createType("cs:customSite");
+        customType.setTitle("customSite");
+        customType.setParentName( 
+                SiteModel.SITE_MODEL_PREFIX + ":" +
+                SiteModel.TYPE_SITE.getLocalName()
+        );
+        
+        M2Property customProp = customType.createProperty("cs:customSiteProp");
+        customProp.setTitle("customSiteProp");
+        customProp.setType("d:text");
+        dictionaryDAO.putModel(model);
+        
+        // Get our custom type, to check it's in there properly
+        final QName customTypeQ = QName.createQName("cs", "customSite", namespaceService);
+        TypeDefinition td = dictionaryService.getType(customTypeQ); 
+        assertNotNull(td);
+        
+        // Create a site
+        SiteInfo site = siteService.createSite(
+                "custom", "custom", "Custom", "Custom",
+                SiteVisibility.PUBLIC
+        );
+        
+        // Check the roles on it
+        List<String> roles = siteService.getSiteRoles();
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+        
+        roles = siteService.getSiteRoles(site.getShortName());
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+
+        
+        // Swap the type
+        nodeService.setType(site.getNodeRef(), customTypeQ); 
+        
+        // Check again 
+        roles = siteService.getSiteRoles();
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+        
+        roles = siteService.getSiteRoles(site.getShortName());
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+
+        
+        // Alter the permissions for the custom site
+        PermissionService testPermissionService = spy(
+             (PermissionService)this.applicationContext.getBean("permissionServiceImpl")
+        );
+        Set<String> customPerms = new HashSet<String>();
+        customPerms.add(SiteServiceImpl.SITE_MANAGER);
+        customPerms.add("CUSTOM");
+        when(testPermissionService.getSettablePermissions(customTypeQ)).
+            thenReturn(customPerms);
+        
+        // Check it changed for the custom site, but not normal
+        SiteServiceImpl siteServiceImpl = (SiteServiceImpl)
+            this.applicationContext.getBean("siteService");
+        siteServiceImpl.setPermissionService(testPermissionService);
+        roles = siteService.getSiteRoles();
+        
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+        
+        roles = siteService.getSiteRoles(site.getShortName());
+        assertEquals(2, roles.size());
+        assertEquals(true, roles.contains("CUSTOM"));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+        
+        // Put the permissions back
+        siteServiceImpl.setPermissionService(permissionService);
+        roles = siteService.getSiteRoles();
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
+        
+        roles = siteService.getSiteRoles(site.getShortName());
+        assertEquals(4, roles.size());
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
+        assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
     }
    
     public void testGroupMembership()

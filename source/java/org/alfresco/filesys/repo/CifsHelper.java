@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -68,10 +70,13 @@ public class CifsHelper
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
     private boolean isReadOnly;
+    private boolean setReadOnlyFlagOnFolders;
     
     // Mark locked files as offline
     
     private boolean lockedFilesAsOffline;
+    
+    private Set<QName> excludedTypes = new HashSet<QName>();
     
     /**
      * Class constructor
@@ -115,6 +120,14 @@ public class CifsHelper
         return nodeService;
     }
     
+    public void setExcludedTypes(List<String> excludedTypes)
+    {
+        for(String exType:excludedTypes)
+        {
+            this.excludedTypes.add(QName.createQName(exType));
+        }
+    }
+    
     /**
      * @return Returns true if all files/folders should be treated as read-only
      */
@@ -153,6 +166,19 @@ public class CifsHelper
         return lockedFilesAsOffline;
     }
     
+    /**
+     * Controls whether the read only flag is set on folders. This flag, when set, may cause problematic # behaviour in
+     * Windows clients and doesn't necessarily mean a folder can't be written to. See ALF-6727. Should we ever set the
+     * read only flag on folders?
+     * 
+     * @param setReadOnlyFlagOnFolders
+     *            the setReadOnlyFlagOnFolders to set
+     */
+    public void setSetReadOnlyFlagOnFolders(boolean setReadOnlyFlagOnFolders)
+    {
+        this.setReadOnlyFlagOnFolders = setReadOnlyFlagOnFolders;
+    }
+
     /**
      * @param serviceRegistry for repo connection
      * @param nodeRef
@@ -292,14 +318,17 @@ public class CifsHelper
         
         // Read/write access
         
-        boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
-        if (isReadOnly || deniedPermission)
+        if (!fileFolderInfo.isFolder() || setReadOnlyFlagOnFolders)
         {
-            int attr = fileInfo.getFileAttributes();
-            if (( attr & FileAttribute.ReadOnly) == 0)
+            boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
+            if (isReadOnly || deniedPermission)
             {
-                attr += FileAttribute.ReadOnly;
-                fileInfo.setFileAttributes(attr);
+                int attr = fileInfo.getFileAttributes();
+                if (( attr & FileAttribute.ReadOnly) == 0)
+                {
+                    attr += FileAttribute.ReadOnly;
+                    fileInfo.setFileAttributes(attr);
+                }
             }
         }
 
@@ -498,9 +527,19 @@ public class CifsHelper
         
         // result storage
         List<NodeRef> results = new ArrayList<NodeRef>(5);
+        List<NodeRef> rubeResults = new ArrayList<NodeRef>(5);
         
         // kick off the path walking
-        addDescendents(pathRootNodeRefs, pathElements, results); 
+        addDescendents(pathRootNodeRefs, pathElements, rubeResults); 
+        
+        for (NodeRef nodeRef : rubeResults)
+        {
+            QName nodeType = nodeService.getType(nodeRef);
+            if (!excludedTypes.contains(nodeType))
+            {
+                results.add(nodeRef);
+            }
+        }
         
         // done
         if (logger.isDebugEnabled())

@@ -14,23 +14,34 @@ activities.postActivity("test activity type 7", "my site", "my app tool", '{ inv
 
 // user feed controls
 var feedControls = activities.getFeedControls();
+
+for(var i=0; i < feedControls.length; i++) 
+{
+   var feedControl = feedControls[i];
+   activities.unsetFeedControl(feedControl.getSiteId(), feedControl.getAppToolId());
+}
+
+feedControls = activities.getFeedControls();
 test.assertEquals(0, feedControls.length);
 
 activities.setFeedControl("my site", "my app tool");
 
 feedControls = activities.getFeedControls();
 test.assertEquals(1, feedControls.length);
+test.assertEquals("my site", feedControls[0].getSiteId());
+test.assertEquals("my app tool", feedControls[0].getAppToolId());
 
 activities.setFeedControl("my site", null);
 
 feedControls = activities.getFeedControls();
 test.assertEquals(2, feedControls.length);
+// TODO check all - undefined order
 
 activities.setFeedControl("", "my app tool");
 
 feedControls = activities.getFeedControls();
 test.assertEquals(3, feedControls.length);
-
+//TODO check all - undefined order
 
 activities.unsetFeedControl("my site", "my app tool");
 activities.unsetFeedControl("my site", "");

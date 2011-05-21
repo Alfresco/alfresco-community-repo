@@ -153,7 +153,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     protected ContentModelFormPersister<WorkflowInstance> makeFormPersister(WorkflowDefinition item)
     {
         ContentModelItemData<WorkflowDefinition> itemData = makeItemData(item);
-        return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, logger);
+        return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, behaviourFilter, logger);
     }
 
     /*

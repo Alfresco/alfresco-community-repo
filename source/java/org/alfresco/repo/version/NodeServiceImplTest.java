@@ -132,7 +132,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         //assertEquals(origProps.size(), versionedProperties.size());
         
         // check version label
-        assertEquals("1.0", versionedProperties.get(ContentModel.PROP_VERSION_LABEL));
+        assertEquals("first version label", "0.1", versionedProperties.get(ContentModel.PROP_VERSION_LABEL));
         
         // TODO do futher versioning and check by changing values
     }
@@ -622,8 +622,8 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         
         
         // Now French
-        String frProp = "C'est une propri\u00e9t\u00e9 en fran\u00e7ais"; // C'est une propriété en français
-        QName frQName = QName.createQName("NameSpace", "En Fran\u00e7ais"); // En Français
+        String frProp = "C'est une propri\u00e9t\u00e9 en fran\u00e7ais"; // C'est une propriÃ©tÃ© en franÃ§ais
+        QName frQName = QName.createQName("NameSpace", "En Fran\u00e7ais"); // En FranÃ§ais
         NodeRef frNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
                 frQName, ContentModel.TYPE_CONTENT
@@ -645,8 +645,8 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         
         
         // Next Spanish
-        String esProp = "Esta es una propiedad en Espa\u00f1ol"; // Esta es una propiedad en Español
-        QName esQName = QName.createQName("NameSpace", "En Espa\u00f1ol"); // En Español
+        String esProp = "Esta es una propiedad en Espa\u00f1ol"; // Esta es una propiedad en EspaÃ±ol
+        QName esQName = QName.createQName("NameSpace", "En Espa\u00f1ol"); // En EspaÃ±ol
         NodeRef esNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
                 esQName, ContentModel.TYPE_CONTENT
@@ -666,8 +666,8 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
 
         
         // Finally Japanese
-        String jpProp = "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f\u3060\u3055\u3044\u3002"; //  をクリックしてください。
-        QName jpQName = QName.createQName("NameSpace", "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f"); //  をクリックしてく
+        String jpProp = "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f\u3060\u3055\u3044\u3002"; //  ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��ã� ã�•ã�„ã€‚
+        QName jpQName = QName.createQName("NameSpace", "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f"); //  ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��
         NodeRef jpNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
                 jpQName, ContentModel.TYPE_CONTENT

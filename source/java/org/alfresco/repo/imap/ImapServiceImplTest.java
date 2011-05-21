@@ -55,6 +55,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.Utf7;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -510,4 +511,19 @@ public class ImapServiceImplTest extends TestCase
             assertTrue(fl.contains(flags));
         }
     }
+    
+    public void testRenameAccentedMailbox() throws Exception
+    {
+        String MAILBOX_ACCENTED_NAME_A = "Hôtel";
+        String MAILBOX_ACCENTED_NAME_B = "HôtelXX";
+        
+        imapService.createMailbox(user, MAILBOX_ACCENTED_NAME_A);
+        imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_A);
+        
+        imapService.createMailbox(user, MAILBOX_ACCENTED_NAME_A);
+        imapService.renameMailbox(user, MAILBOX_ACCENTED_NAME_A, MAILBOX_ACCENTED_NAME_B);
+        assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_A));
+        assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_B));
+        imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_B);
+    } 
 }

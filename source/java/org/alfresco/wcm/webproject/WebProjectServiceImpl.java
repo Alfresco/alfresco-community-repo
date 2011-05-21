@@ -91,9 +91,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     /** The web projects root node reference */
     private NodeRef webProjectsRootNodeRef; // note: WCM is not currently MT-enabled (so this is OK)
+    private boolean isSetWebProjectsRootNodeRef;
     
     /** Services */
     private NodeService nodeService;
+    private NamespaceService namespaceService;
     private SearchService searchService;
     private AVMService avmService;
     private AuthorityService authorityService;
@@ -109,7 +111,12 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     {
         this.nodeService = nodeService;
     }
-    
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
@@ -453,31 +460,30 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean hasWebProjectsRoot()
     {
-        boolean hasRoot = false;
-        
-        // Get the root 'web projects' folder
-        ResultSet resultSet = null;
-        try
+        return getWebProjectsRootOrNull() != null;
+    }
+
+    private NodeRef getWebProjectsRootOrNull()
+    {
+        if (!this.isSetWebProjectsRootNodeRef)
         {
-            resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+getWebProjectsPath()+"\"");
-            if (resultSet.length() == 1)
+            // Get the root 'web projects' folder
+            List<NodeRef> results = this.searchService.selectNodes(this.nodeService.getRootNode(WEBPROJECT_STORE),
+                    getWebProjectsPath(), null, this.namespaceService, false);
+            int size = results.size();
+            if (size > 1)
             {
-                hasRoot = true;
+                // More than one root web projects folder exits
+                throw new AlfrescoRuntimeException("More than one root 'Web Projects' folder exists");
             }
-            else if (resultSet.length() > 1 && logger.isWarnEnabled())
+            if (size > 0)
             {
-                logger.warn("More than one root 'Web Projects' folder exists");
+                this.webProjectsRootNodeRef = results.get(0);
             }
+            this.isSetWebProjectsRootNodeRef = true;
         }
-        finally
-        {
-            if (resultSet != null)
-            {
-                resultSet.close();
-            }
-        } 
         
-        return hasRoot;
+        return this.webProjectsRootNodeRef;
     }
 
     /**
@@ -487,35 +493,13 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public NodeRef getWebProjectsRoot()
     {
-        if (this.webProjectsRootNodeRef == null)
+        NodeRef result = getWebProjectsRootOrNull();
+        if (result == null)
         {
-            // Get the root 'web projects' folder
-            ResultSet resultSet = null;
-            try
-            {
-                resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+getWebProjectsPath()+"\"");
-                if (resultSet.length() == 0)
-                {
-                    // No root web projects folder exists
-                    throw new AlfrescoRuntimeException("No root 'Web Projects' folder exists (is WCM enabled ?)");
-                }
-                else if (resultSet.length() != 1)
-                {
-                    // More than one root web projects folder exits
-                    throw new AlfrescoRuntimeException("More than one root 'Web Projects' folder exists");
-                }
-                this.webProjectsRootNodeRef = resultSet.getNodeRef(0);
-            }
-            finally
-            {
-                if (resultSet != null)
-                {
-                    resultSet.close();
-                }
-            }            
+            // No root web projects folder exists
+            throw new AlfrescoRuntimeException("No root 'Web Projects' folder exists (is WCM enabled ?)");
         }
-        
-        return this.webProjectsRootNodeRef;
+        return result;
     }
     
     /* (non-Javadoc)

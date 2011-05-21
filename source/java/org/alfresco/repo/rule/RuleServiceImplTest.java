@@ -21,12 +21,15 @@ package org.alfresco.repo.rule;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -48,6 +51,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
 
 
 /**
@@ -999,5 +1003,70 @@ public class RuleServiceImplTest extends BaseRuleTest
                 return null;
             }
         }, false, true);
+    }
+
+    public void testPermissionsForPropagatedRules_ALF_8408() throws Exception
+    {
+        // Create parent and child folders
+        NodeRef parentNodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
+        NodeRef childNodeRef = this.nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("childnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
+        // Remove all permissions for parent
+        permissionService.deletePermissions(parentNodeRef);
+        permissionService.setInheritParentPermissions(parentNodeRef, false);
+
+        // Create test user
+        String username = "ruleTestUser" + GUID.generate();
+        this.authenticationService.createAuthentication(username, "password".toCharArray());
+
+        // Set user permissions for child node
+        permissionService.deletePermissions(childNodeRef);
+        permissionService.setInheritParentPermissions(childNodeRef, false);
+        permissionService.setPermission(childNodeRef, username, PermissionService.CONTRIBUTOR, true);
+
+        // Create rule for child node
+        Rule testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+        testRule.setAction(action);
+        this.ruleService.saveRule(parentNodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        // Authenticate as test user
+        this.authenticationService.authenticate(username, "password".toCharArray());
+        authenticationComponent.setCurrentUser(username);
+
+        // Search rules
+        List<Rule> rules = this.ruleService.getRules(childNodeRef, true, testRule.getRuleTypes().get(0));
+        assertNotNull("No rules found", rules);
+        assertTrue("Created rule is not found", new HashSet<Rule>(rules).contains(testRule));
+
+        // New node
+        NodeRef actionedUponNodeRef = this.nodeService.createNode(childNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("actioneduponnode" + GUID.generate()),
+                ContentModel.TYPE_CONTENT).getChildRef();
+
+        // Testing immediate rule execution
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            this.nodeService.removeAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+        ((RuntimeRuleService) ruleService).executeRule(testRule, actionedUponNodeRef, null);
+        assertTrue("Rule was not executed", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+        // Queue the rule to be executed later and execute pending rules
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            this.nodeService.removeAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+        ((RuntimeRuleService) ruleService).addRulePendingExecution(parentNodeRef, actionedUponNodeRef, testRule);
+        ((RuntimeRuleService) ruleService).executePendingRules();
+        assertTrue("Pending rule was not executed", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
     }
 }

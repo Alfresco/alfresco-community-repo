@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -381,7 +382,12 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertEquals(1, tasks.size());
         WorkflowTask currentTask = tasks.get(0);
         assertEquals(currentTask.getState(), WorkflowTaskState.IN_PROGRESS);
-        assertNull(currentTask.getProperties().get(ContentModel.PROP_OWNER));
+        Map<QName, Serializable> taskProperties = currentTask.getProperties();
+        assertNull(taskProperties.get(ContentModel.PROP_OWNER));
+        
+        Serializable pooledActors = taskProperties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        assertNotNull(pooledActors);
+        assertTrue(((Collection<?>)pooledActors).contains(group));
         
         // ensure the task is not reassignable by any user
         assertFalse(workflowService.isTaskReassignable(currentTask, USER1));
@@ -419,6 +425,74 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertFalse(workflowService.isTaskClaimable(currentTask, USER2));
         assertFalse(workflowService.isTaskEditable(currentTask, USER2));
         
+        // Release the task
+        properties.clear();
+        properties.put(ContentModel.PROP_OWNER, null);
+        workflowService.updateTask(currentTask.getId(), properties, null, null);
+        currentTask = workflowService.getTaskById(currentTask.getId());
+        assertTrue(workflowService.isTaskClaimable(currentTask, USER1));
+
+        // Set the Pooled actors to USer2 and User3
+        properties.clear();
+        NodeRef person2 = personManager.get(USER2);
+        NodeRef person3 = personManager.get(USER3);
+        List<NodeRef> actors = Arrays.asList(person2, person3);
+        properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable) actors);
+        currentTask = workflowService.updateTask(currentTask.getId(), properties, null, null);
+        taskProperties = currentTask.getProperties();
+        Collection<?> newActors = (Collection<?>) taskProperties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        assertEquals(2, newActors.size());
+        assertTrue(newActors.contains(person2));
+        assertTrue(newActors.contains(person3));
+        
+        // ensure the task is not reassignable by any user
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER1));
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER2));
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER3));
+        
+        // ensure the task is not releasable by any user
+        assertFalse(workflowService.isTaskReleasable(currentTask, USER1));
+        assertFalse(workflowService.isTaskReleasable(currentTask, USER2));
+        assertFalse(workflowService.isTaskReleasable(currentTask, USER3));
+        
+        // ensure the task is claimable by the pooled actors
+        assertTrue(workflowService.isTaskClaimable(currentTask, USER2));
+        assertTrue(workflowService.isTaskClaimable(currentTask, USER3));
+        
+        // ensure the task is not claimable by users who are not pooled actors
+        assertFalse(workflowService.isTaskClaimable(currentTask, USER1));
+        
+        // ensure the task can be edited 
+        assertFalse(workflowService.isTaskEditable(currentTask, USER1));
+        assertTrue(workflowService.isTaskEditable(currentTask, USER2));
+        assertTrue(workflowService.isTaskEditable(currentTask, USER3));
+        
+        // Claim task for User3
+        properties.clear();
+        properties.put(ContentModel.PROP_OWNER, USER3);
+        currentTask = workflowService.updateTask(currentTask.getId(), properties, null, null);
+        taskProperties = currentTask.getProperties();
+        
+        // Check if task is claimable
+        assertFalse(workflowService.isTaskClaimable(currentTask, USER1));
+        assertFalse(workflowService.isTaskClaimable(currentTask, USER2));
+        assertFalse(workflowService.isTaskClaimable(currentTask, USER3));
+        
+        // Check if task is releasable
+        assertFalse(workflowService.isTaskReleasable(currentTask, USER1));
+        assertFalse(workflowService.isTaskReleasable(currentTask, USER2));
+        assertTrue(workflowService.isTaskReleasable(currentTask, USER3));
+        
+        // Check if task is Editable
+        assertFalse(workflowService.isTaskEditable(currentTask, USER1));
+        assertFalse(workflowService.isTaskEditable(currentTask, USER2));
+        assertTrue(workflowService.isTaskEditable(currentTask, USER3));
+        
+        // Check task cannot be Reassignable
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER1));
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER2));
+        assertFalse(workflowService.isTaskReassignable(currentTask, USER3));
+
         // cancel the workflow
         workflowService.cancelWorkflow(workflowInstanceId);
     }

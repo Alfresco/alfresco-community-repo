@@ -20,6 +20,8 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,14 +55,23 @@ public class RuleTriggerTest extends BaseSpringTest
 	@Override
 	protected void onSetUpInTransaction() throws Exception
 	{
-		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-		this.contentService = (ContentService)this.applicationContext.getBean("contentService");
+	    ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+		this.nodeService = serviceRegistry.getNodeService();
+		this.contentService = serviceRegistry.getContentService();
+        
+        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
 		
 		this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
 	}
 	
-	public void testOnCreateNodeTrigger()
+	@Override
+    protected void onTearDownInTransaction() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    public void testOnCreateNodeTrigger()
 	{
 		TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
 		assertFalse(ruleType.rulesTriggered);
@@ -233,6 +244,17 @@ public class RuleTriggerTest extends BaseSpringTest
         
         // Check to see if the rule type has been triggered
         assertTrue(contentCreate.rulesTriggered);
+        
+        // Try and trigger the type (again)
+        contentCreate.rulesTriggered = false;
+        assertFalse(contentCreate.rulesTriggered);
+        ContentWriter contentWriter2 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter2.setEncoding("UTF-8");
+        contentWriter2.putContent("some content");
+        
+        // Check to see if the rule type has been triggered
+        assertFalse(contentCreate.rulesTriggered);
     }
     
 	public void testOnContentUpdateTrigger()
@@ -243,7 +265,9 @@ public class RuleTriggerTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
 		
+        TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
 		TestRuleType contentUpdate = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
+        assertFalse(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
 		
 		// Try and trigger the type
@@ -252,17 +276,41 @@ public class RuleTriggerTest extends BaseSpringTest
         contentWriter.setEncoding("UTF-8");
 		contentWriter.putContent("some content");
 		
-		// Check to see if the rule type has been triggered
+        // Check to see if the rule type has been triggered
+        assertTrue(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
         
-        // Try and trigger the type
+        // Try and trigger the type (again)
+        contentCreate.rulesTriggered = false;
+        assertFalse(contentCreate.rulesTriggered);
         ContentWriter contentWriter2 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter2.setEncoding("UTF-8");
         contentWriter2.putContent("more content some content");
         
         // Check to see if the rule type has been triggered
-        assertTrue(contentUpdate.rulesTriggered);
+        assertFalse(contentCreate.rulesTriggered);
+        assertFalse(
+                "Content update must not fire if the content was created in the same txn.",
+                contentUpdate.rulesTriggered);
+        
+        // Terminate the transaction
+        setComplete();
+        endTransaction();
+        
+        // Try and trigger the type (again)
+        ContentWriter contentWriter3 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter3.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        contentWriter3.setEncoding("UTF-8");
+        contentWriter3.putContent("Yet content some content");
+        
+        // Check to see if the rule type has been triggered
+        assertFalse(
+                "Content create should not be fired on an update in a new txn",
+                contentCreate.rulesTriggered);
+        assertTrue(
+                "Content update must not fire if the content was created in the same txn.",
+                contentUpdate.rulesTriggered);
 	}
 	
 	private TestRuleType createTestRuleType(String ruleTriggerName)

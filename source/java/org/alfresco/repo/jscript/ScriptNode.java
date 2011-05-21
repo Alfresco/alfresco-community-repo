@@ -1529,10 +1529,25 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public ScriptNode createFile(String name)
     {
+        return createFile(name, null);
+    }
+    
+    /**
+     * Create a new File (cm:content) node as a child of this node.
+     * <p>
+     * Once created the file should have content set using the <code>content</code> property.
+     * 
+     * @param name Name of the file to create
+     * @param type Type of the file to create (if null, defaults to ContentModel.TYPE_CONTENT) 
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public ScriptNode createFile(String name, String type)
+    {
         ParameterCheck.mandatoryString("Node Name", name);
         
         FileInfo fileInfo = this.services.getFileFolderService().create(
-                this.nodeRef, name, ContentModel.TYPE_CONTENT);
+                this.nodeRef, name, type == null ? ContentModel.TYPE_CONTENT : createQName(type));
         
         reset();
         
@@ -1551,16 +1566,29 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public ScriptNode createFolder(String name)
     {
+        return createFolder(name, null);
+    }
+
+    /**
+     * Create a new folder (cm:folder) node as a child of this node.
+     * 
+     * @param name Name of the folder to create
+     * @param type Type of the folder to create (if null, defaults to ContentModel.TYPE_FOLDER)
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public ScriptNode createFolder(String name, String type)
+    {
         ParameterCheck.mandatoryString("Node Name", name);
         
         FileInfo fileInfo = this.services.getFileFolderService().create(
-                this.nodeRef, name, ContentModel.TYPE_FOLDER);
+                this.nodeRef, name, type == null ? ContentModel.TYPE_FOLDER : createQName(type));
         
         reset();
         
         return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
     }
-    
+
     /**
      * Create a new Node of the specified type as a child of this node.
      * 

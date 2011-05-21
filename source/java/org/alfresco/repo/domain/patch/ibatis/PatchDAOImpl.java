@@ -94,7 +94,13 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String  DELETE_OLD_ATTR_MAP = "alfresco.patch.delete_oldAttrAlfMapAttributeEntries";
     private static final String  DELETE_OLD_ATTR_GLOBAL = "alfresco.patch.delete_oldAttrAlfGlobalAttributes";
     private static final String  DELETE_OLD_ATTR = "alfresco.patch.delete_oldAttrAlfAttributes";
-    
+
+    private static final String SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT = "alfresco.patch.select_aclsThatInheritFromNonPrimaryParent";
+    private static final String SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET = "alfresco.patch.select_aclsThatInheritWithInheritanceUnset";
+    private static final String SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
+    private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
+    private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl";
+   
     private SqlMapClientTemplate template;
     private QNameDAO qnameDAO;
     private LocaleDAO localeDAO;
@@ -533,5 +539,55 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         
         deleted = template.delete(DELETE_OLD_ATTR);
         logger.info("Deleted "+deleted+" rows from alf_attributes");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent()
+    {
+        List<Map<String, Object>> rows = template.queryForList(
+                SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT,
+                Boolean.TRUE);
+        return rows;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Map<String, Object>> getAclsThatInheritWithInheritanceUnset()
+    {
+        List<Map<String, Object>> rows = template.queryForList(
+                SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET,
+                Boolean.TRUE);
+        return rows;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Map<String, Object>> getDefiningAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
+    {
+        List<Map<String, Object>> rows = template.queryForList(
+                SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
+                Boolean.TRUE);
+        return rows;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
+    {
+        List<Map<String, Object>> rows = template.queryForList(
+                SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
+                Boolean.TRUE);
+        return rows;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl()
+    {
+        List<Map<String, Object>> rows = template.queryForList(
+                SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL,
+                Boolean.TRUE);
+        return rows;
     }
 }

@@ -502,7 +502,7 @@ public class ContentUsageImpl implements ContentUsageService,
         }
     }
     
-    private long getUserStoredUsage(NodeRef personNodeRef)
+    public long getUserStoredUsage(NodeRef personNodeRef)
     {
         Long currentUsage = null;
         if (personNodeRef != null)
@@ -516,10 +516,10 @@ public class ContentUsageImpl implements ContentUsageService,
     public long getUserUsage(String userName)
     {
         ParameterCheck.mandatoryString("userName", userName);
-        return getUserUsage(getPerson(userName));
+        return getUserUsage(getPerson(userName), false);
     }
     
-    public long getUserUsage(NodeRef personNodeRef)
+    public long getUserUsage(NodeRef personNodeRef, boolean removeDeltas)
     {
         long currentUsage = -1;
         
@@ -530,8 +530,10 @@ public class ContentUsageImpl implements ContentUsageService,
         
         if (currentUsage != -1)
         {
-            // add any deltas
-            currentUsage = currentUsage + usageService.getTotalDeltaSize(personNodeRef);
+            long deltaSize = removeDeltas ? usageService.getAndRemoveTotalDeltaSize(personNodeRef) :
+                usageService.getTotalDeltaSize(personNodeRef);
+            // add any deltas to the currentUsage, removing them if required
+            currentUsage = currentUsage + deltaSize;
             
             if (currentUsage < 0)
             {

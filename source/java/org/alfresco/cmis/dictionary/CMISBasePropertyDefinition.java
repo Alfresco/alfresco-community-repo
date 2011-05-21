@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.util.ISO9075;
 
 /**
  * CMIS Property Definition
@@ -109,7 +110,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     {
         this.propertyId = propertyId;
         this.typeDef = typeDef;
-        queryName = cmisMapping.buildPrefixEncodedString(propertyId.getQName());
+        queryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(propertyId.getQName()));
         displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getId();
         description = propDef.getDescription() != null ? propDef.getDescription() : displayName;
         propertyType = cmisMapping.getDataType(propDef.getDataType());

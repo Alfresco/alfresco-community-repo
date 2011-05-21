@@ -25,6 +25,7 @@ import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 
 
 /**
@@ -69,7 +70,7 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
         }
         else
         {
-            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
+            objectTypeQueryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(typeId.getQName()));
             if (cmisMapping.isValidCmisDocument(parentQName))
             {
                 parentTypeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, parentQName);

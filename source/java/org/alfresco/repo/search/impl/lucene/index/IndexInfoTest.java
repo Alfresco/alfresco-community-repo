@@ -127,6 +127,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -144,6 +145,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -164,6 +166,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -229,6 +232,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -246,6 +250,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -266,6 +271,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -304,6 +310,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -323,6 +330,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
 
             reader.close();
@@ -346,6 +354,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
 
             reader.close();
@@ -418,6 +427,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -435,6 +445,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -455,6 +466,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -503,6 +515,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             for (int j = 0; j < UPDATE_LIST.length; j++)
             {
@@ -517,6 +530,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -536,6 +550,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             for (int j = 0; j < UPDATE_LIST.length; j++)
             {
@@ -550,6 +565,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
 
             reader.close();
@@ -573,6 +589,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             for (int j = 0; j < UPDATE_LIST.length; j++)
             {
@@ -587,6 +604,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                 {
                     assertFalse(tds.next());
                 }
+                tds.close();
             }
             reader.close();
 
@@ -687,6 +705,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     reader.close();
 
@@ -705,6 +724,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     reader.close();
 
@@ -726,6 +746,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     reader.close();
 
@@ -774,6 +795,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     for (int j = 0; j < update.length; j++)
                     {
@@ -788,6 +810,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     reader.close();
 
@@ -807,6 +830,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     for (int j = 0; j < update.length; j++)
                     {
@@ -821,6 +845,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
 
                     reader.close();
@@ -844,6 +869,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     for (int j = 0; j < update.length; j++)
                     {
@@ -858,6 +884,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                         {
                             assertFalse(tds.next());
                         }
+                        tds.close();
                     }
                     reader.close();
 

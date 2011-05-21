@@ -60,6 +60,8 @@
    
    <bean id="nodeDAO" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" init-method="init">
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
+      <property name="transactionService" ref="transactionService" />
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="aclDAO" ref="aclDAO"/>

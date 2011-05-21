@@ -413,7 +413,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 // Create the site's groups
                 String siteGroup = authorityService
                         .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
-                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+                QName siteType = nodeService.getType(siteNodeRef);
+                Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
@@ -431,7 +432,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 // - give all authorities read permission on permissions so
                 // memberships can be calculated
                 // - add the current user to the site manager group
-                if (SiteVisibility.PUBLIC.equals(visibility) == true)
+                if (SiteVisibility.PUBLIC.equals(visibility) == true &&
+                    permissions.contains(SITE_CONSUMER))
                 {
                 	// From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
                 	// GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4 admins
@@ -449,7 +451,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 	
                     permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
                 }
-                else if (SiteVisibility.MODERATED.equals(visibility) == true)
+                else if (SiteVisibility.MODERATED.equals(visibility) == true &&
+                         permissions.contains(SITE_CONSUMER))
                 {
                     // for moderated site EVERYONE has consumer access but site components do not.
                     permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
@@ -615,7 +618,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 }
             }, AuthenticationUtil.getSystemUserName());
             
-            siteHomeRefs.put(tenantDomain, siteHomeRef);
+            // There may be domains with no sites (e.g. JSF-only clients).
+            if (siteHomeRef != null)
+            {
+                siteHomeRefs.put(tenantDomain, siteHomeRef);
+            }
         }
         return siteHomeRef;
     }
@@ -1085,11 +1092,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
     public void deleteSite(final String shortName)
     {
         logger.debug("delete site :" + shortName);
-        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
+        final QName siteType = nodeService.getType(siteNodeRef);
 
         // Delete the cached reference
         String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
@@ -1122,7 +1130,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 authorityService.deleteAuthority(getSiteGroup(shortName, true), false);
                 
                 // Iterate over the role related groups and delete then
-                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+                Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
                 {
                     String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
@@ -1190,8 +1198,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
         
         Map<String, String> members = new HashMap<String, String>(32);
-        
-        Set<String> permissions = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+
+        QName siteType = nodeService.getType(siteNodeRef);
+        Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
         for (String permission : permissions)
         {
             if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
@@ -1373,8 +1382,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private List<String> getPermissionGroups(String siteShortName, String authorityName)
     {
+        NodeRef siteNodeRef = getSiteNodeRef(siteShortName);
+        if (siteNodeRef == null) 
+        { 
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { siteShortName });
+        }
+        
         List<String> fullResult = new ArrayList<String>(5);
-        Set<String> roles = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        QName siteType = nodeService.getType(siteNodeRef);
+        Set<String> roles = this.permissionService.getSettablePermissions(siteType);
 
         // First use the authority's cached recursive group memberships to answer the question quickly
         Set<String> authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
@@ -1416,8 +1432,30 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     public List<String> getSiteRoles()
     {
-        Set<String> permissions = permissionService
-                .getSettablePermissions(SiteModel.TYPE_SITE);
+        return getSiteRoles(SiteModel.TYPE_SITE);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteRoles(String)
+     */
+    public List<String> getSiteRoles(String shortName)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null) 
+        { 
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
+        }
+        QName siteType = nodeService.getType(siteNodeRef);
+        return getSiteRoles(siteType);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteRoles()
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteRoles(String)
+     */
+    public List<String> getSiteRoles(QName type)
+    {
+        Set<String> permissions = permissionService.getSettablePermissions(type);
         return new ArrayList<String>(permissions);
     }
 
@@ -1709,7 +1747,14 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */    
     private void setModeratedPermissions(String shortName, NodeRef containerNodeRef)   
     {
-        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null) 
+        { 
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
+        }
+        
+        QName siteType = nodeService.getType(siteNodeRef);
+        Set<String> permissions = permissionService.getSettablePermissions(siteType);
         for (String permission : permissions)
         {
             String permissionGroup = getSiteRoleGroup(shortName, permission, true);

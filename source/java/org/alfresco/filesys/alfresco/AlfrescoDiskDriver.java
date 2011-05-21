@@ -158,6 +158,9 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     
     /**
      * Perform a retryable operation in a write transaction
+     * <p>
+     * WARNING : side effect - that the current transaction, if any, is ended.
+     * 
      * 
      * @param sess
      *            the server session

@@ -1878,7 +1878,7 @@
         </property>
         <property name="batchThreads" value="2"/>
         <property name="batchSize" value="1000"/>
-        <property name="batchMaxQueryRange" value="9223372036854775807"/>
+        <property name="batchMaxQueryRange" value="5000"/>
         <property name="batchQuerySize" value="2000"/>
     </bean>
     
@@ -2760,4 +2760,48 @@
             </props>
         </property>
     </bean>
+
+    <bean id="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
+        <property name="description" value="patch.varcharFieldSizesQuadrupleIncreasing.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="4303" />
+        <property name="targetSchema" value="4304" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/varchar-field-sizes-quadruple-increasing.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.fixAclInheritance" class="org.alfresco.repo.admin.patch.impl.FixAclInheritancePatch" parent="basePatch">
+        <property name="id"><value>patch.fixAclInheritance</value></property>
+        <property name="description"><value>patch.fixAclInheritance.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4304</value></property>
+        <property name="targetSchema"><value>4305</value></property>
+        <!-- helper beans -->
+        <property name="patchDAO">
+            <ref bean="patchDAO" />
+        </property>
+        <property name="aclDAO">
+            <ref bean="aclDAO" />
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper" />
+        </property>
+        <property name="accessControlListDao">
+            <ref bean="admNodeACLDAO"/>
+        </property>
+     </bean>
+   
+     <bean id="patch.db-V3.4-JBPM-FK-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-JBPM-FK-indexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4305</value></property>
+        <property name="targetSchema"><value>4306</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
+        </property>
+    </bean>
+       
 </beans>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:asyncAdhoc">
+
+   <swimlane name="initiator"/>
+
+   <start-state name="start">
+      <task name="wf:submitAdhocTask" swimlane="initiator"/>
+      <transition name="" to="adhoc"/>
+   </start-state>
+
+   <swimlane name="assignee">
+      <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+         <actor>#{bpm_assignee}</actor>
+      </assignment>
+   </swimlane>
+   
+   <task-node name="adhoc" async="true" >
+      <task name="wf:adhocTask" swimlane="assignee">
+	      <event type="task-create">
+	         <script>
+	            if (bpm_workflowDueDate != void) taskInstance.dueDate = bpm_workflowDueDate;
+	            if (bpm_workflowPriority != void) taskInstance.priority = bpm_workflowPriority;
+	         </script>
+	      </event>
+      </task>
+      <transition name="" to="completed">
+         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+           <script>
+              if (wf_notifyMe)
+              {
+                 var mail = actions.create("mail");
+                 mail.parameters.to = initiator.properties.email;
+                 mail.parameters.subject = "Adhoc Task " + bpm_workflowDescription;
+                 mail.parameters.from = bpm_assignee.properties.email;
+                 mail.parameters.text = "It's done";
+                 mail.execute(bpm_package);
+              }
+           </script>
+         </action>
+      </transition>
+   </task-node>
+   
+   <task-node name="completed">
+      <task name="wf:completedAdhocTask" swimlane="initiator"/>
+      <transition name="" to="end"/>
+   </task-node>
+      
+   <end-state name="end"/>
+   
+</process-definition>

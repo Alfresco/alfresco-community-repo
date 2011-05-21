@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Set;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.rule.RuntimeRuleService;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -109,8 +112,13 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      * {@inheritDoc}
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
-    {    
+    {
         NodeRef nodeRef = childAssocRef.getChildRef();
+
+        // Keep track of new nodes to prevent firing of updates in the same transaction
+        Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
+        newNodeRefSet.add(nodeRef);
+        
         if (nodeRef != null && 
             nodeService.exists(nodeRef) == true &&
             nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)

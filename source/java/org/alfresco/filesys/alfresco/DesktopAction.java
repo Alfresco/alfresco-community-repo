@@ -19,15 +19,15 @@
 
 package org.alfresco.filesys.alfresco;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
-import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
+import org.alfresco.jlan.server.filesys.pseudo.MemoryPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.ResourceFinder;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -108,7 +108,7 @@ public abstract class DesktopAction {
 	
 	// Filesystem driver and context
 	
-	private AlfrescoDiskDriver m_filesysDriver;
+	protected AlfrescoDiskDriver m_filesysDriver;
 	private AlfrescoContext m_filesysContext;
 
 	// Webapp URL
@@ -400,35 +400,23 @@ public abstract class DesktopAction {
                 throw new DesktopActionException("Desktop action executable path not specified");
             
             // Check that the application exists on the local filesystem
+            
             Resource resource = new ResourceFinder().getResource(m_path);
             if (!resource.exists())
             {
                 throw new DesktopActionException("Failed to find drag and drop application, " + m_path);
             }
             
-            // Decode the URL path, it might contain escaped characters
-            
-
-            // Check that the drag/drop file exists
-            File appFile;
+            PseudoFile pseudoFile = null;
             try
             {
-                appFile = resource.getFile();
-
-                if (!appFile.exists())
-                {
-                    throw new DesktopActionException("Drag and drop application not found, " + appFile);
-                }
+                pseudoFile = new MemoryPseudoFile(m_filename, IOUtils.toByteArray(resource.getInputStream()));
             }
             catch (IOException e)
             {
-                throw new DesktopActionException("Unable to resolve drag and drop application as a file, "
-                        + resource.getDescription());
+                throw new DesktopActionException("Drag and drop application resource is invalid, " + resource.getDescription());
             }
             
-            // Create the pseudo file for the action
-            
-            PseudoFile pseudoFile = new LocalPseudoFile(m_filename, appFile.getAbsolutePath());
             setPseudoFile(pseudoFile);
         }
         

@@ -96,4 +96,31 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
         reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertTrue(reader2.getContentString().contains(QUICK_CONTENT));
     }
+    
+    /**
+     * Test transforming a chinese non-unicode msg file to
+     *  text
+     */
+    public void testNonUnicodeChineseMsgToText() throws Exception
+    {
+        File msgSourceFile = loadQuickTestFile("chinese.msg");
+        File txtTargetFile = TempFileProvider.createTempFile(getName() + "-target-2", ".txt");
+        ContentReader reader = new FileContentReader(msgSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
+        ContentWriter writer = new FileContentWriter(txtTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        
+        transformer.transform(reader, writer);
+        
+        ContentReader reader2 = new FileContentReader(txtTargetFile);
+        reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        
+        // Check the quick text
+        String text = reader2.getContentString();
+        assertTrue(text.contains(QUICK_CONTENT));
+        
+        // Now check the non quick parts came out ok
+        assertTrue(text.contains("(\u5f35\u6bd3\u502b)"));
+        assertTrue(text.contains("\u683c\u5f0f\u6e2c\u8a66 )"));
+    }
 }

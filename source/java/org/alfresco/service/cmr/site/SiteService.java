@@ -250,12 +250,23 @@ public interface SiteService
     boolean hasContainer(String shortName, String componentId);
     
     /**
-     * Gets a list of all the currently available roles that a user can perform on a site
+     * Gets a list of all the currently available roles that a user can perform on 
+     *  all sites
      * 
      * @return  List<String>    list of available roles
      */
     @NotAuditable
     List<String> getSiteRoles();
+     
+    /**
+     * Gets a list of all the currently available roles that a user can perform on 
+     *  a specific site. This will generally only differ from {@link #getSiteRoles()}
+     *  if your site is of a custom type.
+     * 
+     * @return  List<String>    list of available roles
+     */
+    @NotAuditable
+    List<String> getSiteRoles(String shortName);
      
     /**
      * Gets the sites group.  All members of the site are contained within this group.
@@ -267,7 +278,7 @@ public interface SiteService
     String getSiteGroup(String shortName);
     
     /**
-     * Gets the sites role group.  All members assigned the given role will be memebers of 
+     * Gets the sites role group.  All members assigned the given role will be members of 
      * the returned group.
      * 
      * @param shortName     site short name

@@ -30,9 +30,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.alfresco.error.StackTraceUtil;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -41,6 +38,7 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.AfterReturningAdvice;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provides basic support for content accessors.

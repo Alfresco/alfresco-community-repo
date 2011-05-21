@@ -340,11 +340,14 @@ public class JCRSystemXMLExporter implements Exporter
     {
         try
         {
-            // emit value element
-            contentHandler.startElement(VALUE_QNAME.getNamespaceURI(), VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), EMPTY_ATTRIBUTES);
-            String strValue = session.getTypeConverter().convert(String.class, value);
-            contentHandler.characters(strValue.toCharArray(), 0, strValue.length());
-            contentHandler.endElement(VALUE_QNAME.getNamespaceURI(), VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
+            if (value != null)
+            {
+                // emit value element
+                contentHandler.startElement(VALUE_QNAME.getNamespaceURI(), VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), EMPTY_ATTRIBUTES);
+                String strValue = session.getTypeConverter().convert(String.class, value);
+                contentHandler.characters(strValue.toCharArray(), 0, strValue.length());
+                contentHandler.endElement(VALUE_QNAME.getNamespaceURI(), VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
+            }
         }
         catch (RepositoryException e)
         {

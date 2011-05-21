@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.TaskUpdater;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -53,7 +54,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
                 WorkflowService workflowService,
                 NodeService nodeService,
                 AuthenticationService authenticationService,
-                Log logger)
+                BehaviourFilter behaviourFilter, Log logger)
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowTask item = itemData.getItem();
@@ -64,7 +65,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
             throw new AccessDeniedException("Failed to update task with id '" + item.getId() + "'.");
         }
         
-        this.updater = new TaskUpdater(item.id, workflowService, nodeService);
+        this.updater = new TaskUpdater(item.id, workflowService, nodeService, behaviourFilter);
     }
     
     /**

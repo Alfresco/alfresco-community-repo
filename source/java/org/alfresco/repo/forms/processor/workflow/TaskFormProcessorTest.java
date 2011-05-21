@@ -45,6 +45,7 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -576,6 +577,7 @@ public class TaskFormProcessorTest extends TestCase
         processor1.setAuthenticationService(authenticationService);
         processor1.setPersonService(personService);
         processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
+        processor1.setBehaviourFilter(mock(BehaviourFilter.class));
         return processor1;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,13 +43,13 @@ import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
-import org.springframework.extensions.surf.util.Base64;
 import org.alfresco.util.JSONtoFmModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.Base64;
 
 import freemarker.cache.URLTemplateLoader;
 import freemarker.template.Configuration;
@@ -117,9 +116,8 @@ public abstract class FeedTaskProcessor
             Configuration cfg = getFreemarkerConfiguration(ctx);
             
             Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
-            
             Map<String, Set<String>> siteConnectedUsers = new TreeMap<String, Set<String>>();
-            
+            Map<String, List<FeedControlEntity>> userFeedControls = new HashMap<String, List<FeedControlEntity>>();
             Map<String, Template> templateCache = new TreeMap<String, Template>();
             
             // for each activity post ...
@@ -207,7 +205,16 @@ public abstract class FeedTaskProcessor
                     continue;
                 }
                 
-                String thisSite = activityPost.getSiteNetwork();
+                String thisSite = (activityPost.getSiteNetwork() != null ? activityPost.getSiteNetwork() : "");
+                
+                if (thisSite.length() == 0)
+                {
+                    // note: although we allow posts without site id - we currently require site context to generate feeds for site members (hence skip here with warning)
+                    //       (also Share currently only posts activities within site context)
+                    logger.warn(">>> Skipping activity post " + activityPost.getId() + " since no site");
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.PROCESSED);
+                    continue;
+                }
                 
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_TYPE, activityPost.getActivityType());
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_SITE, thisSite);
@@ -221,28 +228,21 @@ public abstract class FeedTaskProcessor
                 Set<String> connectedUsers = siteConnectedUsers.get(thisSite);
                 if (connectedUsers == null)
                 {
-                    if ((thisSite == null) || (thisSite.length() == 0))
+                    try
                     {
-                        connectedUsers = Collections.singleton(""); // add empty posting userid - to represent site feed !
+                        // Repository callback to get site members
+                        connectedUsers = getSiteMembers(ctx, thisSite);
+                        connectedUsers.add(""); // add empty posting userid - to represent site feed !
                     }
-                    else
+                    catch(Exception e)
                     {
-                        try
-                        {
-                            // Repository callback to get site members
-                            connectedUsers = getSiteMembers(ctx, thisSite);
-                            connectedUsers.add(""); // add empty posting userid - to represent site feed !
-                            
-                            // Cache them for future use in this same invocation
-                            siteConnectedUsers.put(thisSite, connectedUsers);
-                        }
-                        catch(Exception e)
-                        {
                             logger.error("Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
-                            updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
-                            continue;
-                        }
+                        updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                        continue;
                     }
+                    
+                    // Cache them for future use in this same invocation
+                    siteConnectedUsers.put(thisSite, connectedUsers);
                 }
                 
                 try 
@@ -261,7 +261,13 @@ public abstract class FeedTaskProcessor
                         List<FeedControlEntity> feedControls = null;
                         if (! connectedUser.equals(""))
                         {
-                            feedControls = getFeedControls(connectedUser);
+                            // Get user's feed controls
+                            feedControls = userFeedControls.get(connectedUser);
+                            if (feedControls == null)
+                            {
+                                feedControls = getFeedControls(connectedUser);
+                                userFeedControls.put(connectedUser, feedControls);
+                            }
                         }
                         
                         // filter based on opt-out feed controls (if any)
@@ -582,7 +588,6 @@ public abstract class FeedTaskProcessor
     
     protected List<FeedControlEntity> getFeedControls(String connectedUser) throws SQLException
     {
-        // TODO cache for this run
         return selectUserFeedControls(connectedUser);
     }
     

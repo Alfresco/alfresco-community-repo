@@ -67,6 +67,8 @@
 	  <property name="lockService"><ref bean="lockService" /></property>
       <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
 	  <property name="dictionaryService"><ref bean="dictionaryService" /></property>
+	  <property name="ownableService"><ref bean="ownableService" /></property>
+	  <property name="actionService"><ref bean="actionService" /></property>
    </bean>
    
    <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">
@@ -84,6 +86,12 @@
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
       <property name="allowWrites"><value>${server.transaction.allow-writes}</value></property>
+      <property name="setReadOnlyFlagOnFolders"><value>${filesystem.setReadOnlyFlagOnFolders}</value></property>
+      <property name="excludedTypes">
+          <list>
+              <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
+          </list>
+      </property>
    </bean>
    
    <!-- WCM/AVM Filesystem Interface -->

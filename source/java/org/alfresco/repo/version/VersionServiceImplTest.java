@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
@@ -93,6 +94,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
         super.onTearDownAfterTransaction();
         versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
+        versionableAspect.afterDictionaryInit();
     }
 
     public void testSetup()
@@ -585,13 +587,13 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         // Check that the version label is correct on the versionable node
         String versionLabel1 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
-        assertEquals("1.1", versionLabel1);
+        assertEquals("first version label", "0.2", versionLabel1);
         assertEquals(version1.getVersionLabel(), versionLabel1);
         
         // Check the version history
         List<Version> expectedVersions = new ArrayList<Version>(2);
-        expectedVersions.add(version1);
-        expectedVersions.add(version0);
+        expectedVersions.add(version1);    // 0.1
+        expectedVersions.add(version0);    // 0.2
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(2, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
@@ -602,12 +604,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertEquals(currentVersion.getFrozenStateNodeRef(), version1.getFrozenStateNodeRef());
         
         // Create a couple more versions
-        Version version2 = createVersion(versionableNode);
-        Version version3 = createVersion(versionableNode);
+        Version version2 = createVersion(versionableNode);  // 0.3
+        Version version3 = createVersion(versionableNode);  //0.4
         
         // Check that the version label is correct on the versionable node
         String versionLabel3 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
-        assertEquals("1.3", versionLabel3);
+        assertEquals("0.4", versionLabel3);
         assertEquals(version3.getVersionLabel(), versionLabel3);
         
         // Check the version history
@@ -1069,8 +1071,10 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         List<String> excludedOnUpdateProps = new ArrayList<String>(1);
-        excludedOnUpdateProps.add(ContentModel.PROP_AUTHOR.toPrefixString());
+        NamespaceService namespaceService = (NamespaceService) applicationContext.getBean("namespaceService");
+        excludedOnUpdateProps.add(ContentModel.PROP_AUTHOR.toPrefixString(namespaceService));
         versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
+        versionableAspect.afterDictionaryInit();
         
         // test auto-version props on - with an excluded prop change
         

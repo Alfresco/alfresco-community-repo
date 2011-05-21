@@ -542,14 +542,15 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         {
             throw new IllegalArgumentException(ERROR_MAILBOX_NAME_IS_MANDATORY);
         }
+		
+		AlfrescoImapFolder sourceNode = getFolder(user, oldMailboxName);
+			  
         oldMailboxName = Utf7.decode(oldMailboxName, Utf7.UTF7_MODIFIED);
         newMailboxName = Utf7.decode(newMailboxName, Utf7.UTF7_MODIFIED);
         if (logger.isDebugEnabled())
         {
             logger.debug("Renaming folder oldMailboxName=" + oldMailboxName + " newMailboxName=" + newMailboxName);
         }
-
-        AlfrescoImapFolder sourceNode = getFolder(user, oldMailboxName);
 
         NodeRef root = getMailboxRootRef(oldMailboxName, user.getLogin());
         String[] folderNames = getMailPathInRepo(newMailboxName).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER));
@@ -633,11 +634,6 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
     }
 
-    /**
-     * Get Folder
-     * @param user
-     * @param mailboxName
-     */
     public AlfrescoImapFolder getFolder(AlfrescoImapUser user, String mailboxName)
     {
         if (logger.isDebugEnabled())

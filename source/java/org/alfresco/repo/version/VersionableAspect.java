@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,8 +21,10 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -30,6 +32,8 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -41,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -57,7 +62,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                                           NodeServicePolicies.OnDeleteNodePolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
                                           VersionServicePolicies.AfterCreateVersionPolicy,
-                                          CopyServicePolicies.OnCopyNodePolicy
+                                          CopyServicePolicies.OnCopyNodePolicy,
+                                          DictionaryListener
 {
     /** The i18n'ized messages */
     private static final String MSG_INITIAL_VERSION = "create_version.initial_version";
@@ -75,6 +81,12 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     /** The Version service */
     private VersionService versionService;
+
+    /** The dictionary DAO. */
+    private DictionaryDAO dictionaryDAO;
+    
+    /** The Namespace Prefix Resolver. */
+    private NamespacePrefixResolver namespacePrefixResolver;
     
     /** Behaviours */
     JavaBehaviour onUpdatePropertiesBehaviour;
@@ -85,6 +97,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      * - if any one these props changes then "auto version on prop update" does not occur (even if there are other property changes)
      */
     private List<String> excludedOnUpdateProps = Collections.emptyList();
+    
+    private Set<QName> excludedOnUpdatePropQNames = Collections.emptySet();
     
     /**
      * Set the policy component
@@ -115,8 +129,30 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     {
         this.nodeService = nodeService;
     }
+    
+    /**
+     * Sets the dictionary DAO.
+     * 
+     * @param dictionaryDAO
+     *            the dictionary DAO
+     */
+    public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
+    {
+        this.dictionaryDAO = dictionaryDAO;
+    }
 
     /**
+     * Sets the namespace prefix resolver.
+     * 
+     * @param namespacePrefixResolver
+     *            the namespace prefix resolver
+     */
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
+    }
+
+   /**
      * @return              Returns the current list of properties that <b>do not</b> trigger versioning
      */
     public List<String> getExcludedOnUpdateProps()
@@ -172,6 +208,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "getCopyCallback"));
+        
+        this.dictionaryDAO.register(this);
     }
     
     /**
@@ -364,27 +402,16 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 	                if ((autoVersion == true) && (autoVersionProps == true))
 	                {
 	                    // Check for explicitly excluded props - if one or more excluded props changes then do not auto-version on this event (even if other props changed)
-	                    if (excludedOnUpdateProps.size() > 0)
+	                    if (excludedOnUpdatePropQNames.size() > 0)
 	                    {
-	                        Map<String, QName> propNames = new HashMap<String, QName>(after.size());
-	                        for (QName afterProp : after.keySet())
-	                        {
-	                            if (excludedOnUpdateProps.contains(afterProp.getPrefixString()))
-	                            {
-	                                propNames.put(afterProp.getPrefixString(), afterProp);
-	                            }
-	                        }
-	                        for (QName beforeProp : before.keySet())
-	                        {
-	                            if (excludedOnUpdateProps.contains(beforeProp.getPrefixString()))
-	                            {
-	                                propNames.put(beforeProp.getPrefixString(), beforeProp);
-	                            }
-	                        }
-	                        
+	                        Set<QName> propNames = new HashSet<QName>(after.size() * 2);
+	                        propNames.addAll(after.keySet());
+	                        propNames.addAll(before.keySet());
+	                        propNames.retainAll(excludedOnUpdatePropQNames);
+
 	                        if (propNames.size() > 0)
 	                        {
-	                            for (QName prop : propNames.values())
+	                            for (QName prop : propNames)
 	                            {
 	                                Serializable beforeValue = before.get(prop);
 	                                Serializable afterValue = after.get(prop);
@@ -446,5 +473,44 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             AlfrescoTransactionSupport.bindResource(KEY_VERSIONED_NODEREFS, versionedNodeRefs);
         }
         versionedNodeRefs.put(versionableNode, versionableNode);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onDictionaryInit()
+     */
+    @Override
+    public void onDictionaryInit()
+    {
+    }        
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryInit()
+     */
+    @Override
+    public void afterDictionaryInit()
+    {
+        this.excludedOnUpdatePropQNames = new HashSet<QName>(this.excludedOnUpdateProps.size() * 2);
+        for (String prefixString : this.excludedOnUpdateProps)
+        {
+            try
+            {
+                this.excludedOnUpdatePropQNames.add(QName.createQName(prefixString, this.namespacePrefixResolver));
+            }
+            catch (Exception e)
+            {
+                // An unregistered prefix. Ignore and continue
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryDestroy()
+     */
+    @Override
+    public void afterDictionaryDestroy()
+    {
     }
 }

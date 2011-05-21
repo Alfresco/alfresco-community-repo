@@ -27,6 +27,7 @@ import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 
 
 /**
@@ -52,7 +53,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         
         // Object type properties
         objectTypeId = typeId;
-        objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName());
+        objectTypeQueryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(typeId.getQName()));
 
         if (cmisClassDef != null)
         {

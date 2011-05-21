@@ -79,6 +79,21 @@
         <result property="amount" column="cnt" jdbcType="BIGINT" javaType="java.lang.Long" />
     </resultMap>
     
+    <resultMap id="result_aclIneritanceIssue" class="java.util.HashMap">
+        <result property="childAclId" column="child_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childAclType" column="child_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="primaryParentAclId" column="primary_parent_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="primaryParentAclType" column="primary_parent_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNodeId" column="child_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
+    <resultMap id="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" class="java.util.HashMap">
+        <result property="inheritedAclId" column="inherited_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="inheritedAclType" column="inherited_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclType" column="acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -359,6 +374,138 @@
             and (lower(ce.name) = entities.lname)
         order by
             parent_id, lower(name), child_id
+        ]]>
+    </select>
+    
+    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+        <![CDATA[
+        select distinct
+       		childAcl.id as child_acl_id,
+        	childAcl.type as child_acl_type,
+        	acl.id      as primary_parent_acl_id, 
+        	acl.type    as primary_parent_acl_type,
+        	child.id    as child_node_id
+        from 
+        	alf_access_control_list acl 
+      		join alf_acl_member mem on mem.acl_id = acl.id
+			join alf_node node on node.acl_id = acl.id
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_node child on priChild.child_node_id = child.id
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse# AND childAcl.type = 2
+      	where 	   
+      	(
+      	            acl.id = childAcl.inherits_from
+           	 	AND NOT EXISTS (   
+           		 				select 1 
+           		                from alf_acl_member childMem
+           	    	            where 
+           	                     	  	childMem.acl_id = childAcl.id
+           	                    	and childMem.ace_id = mem.ace_id
+           	                    	and childMem.pos  = mem.pos +1
+                   	           )
+      	)
+        ]]>
+    </select>
+   
+    <select id="select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+        <![CDATA[
+        select distinct
+       		childAcl.id as child_acl_id,
+        	childAcl.type as child_acl_type,
+        	acl.id      as primary_parent_acl_id, 
+        	acl.type    as primary_parent_acl_type,
+        	child.id    as child_node_id
+        from 
+        	alf_access_control_list acl 
+      		join alf_acl_member mem on mem.acl_id = acl.id
+			join alf_node node on node.acl_id = acl.id
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_node child on priChild.child_node_id = child.id
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse# AND childAcl.type = 1
+      	where 	   
+      	(
+      	            acl.inherited_acl = childAcl.inherits_from
+            	AND acl.id <> childAcl.inherits_from
+            	AND NOT EXISTS (
+               			    	select 1 from alf_acl_member childMem
+                            	where 
+                              	    	childMem.acl_id = childAcl.id
+                                	and childMem.ace_id = mem.ace_id
+                             		and childMem.pos = mem.pos + 2
+                           	   )
+      	)
+        ]]>
+    </select>
+   
+    <select id="select_aclsThatInheritFromNonPrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+        <![CDATA[
+       select distinct
+       		childAcl.id as child_acl_id,
+        	childAcl.type as child_acl_type,
+        	acl.id      as primary_parent_acl_id, 
+        	acl.type    as primary_parent_acl_type,
+        	child.id    as child_node_id
+        from 
+        	alf_access_control_list acl 
+      		join alf_acl_member mem on mem.acl_id = acl.id
+			join alf_node node on node.acl_id = acl.id
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_node child on priChild.child_node_id = child.id
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse#
+      	where 	   
+      	(
+      	            childAcl.id is not null
+        		AND acl.id <> childAcl.id 
+            	AND acl.id <> childAcl.inherits_from 
+            	AND acl.inherited_acl <> childAcl.inherits_from
+      	)
+        ]]>
+    </select>
+    
+    <select id="select_aclsThatInheritWithInheritanceUnset" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+        <![CDATA[
+        select distinct
+       		childAcl.id as child_acl_id,
+        	childAcl.type as child_acl_type,
+        	acl.id      as primary_parent_acl_id, 
+        	acl.type    as primary_parent_acl_type,
+        	child.id    as child_node_id
+        from 
+        	alf_access_control_list acl 
+      		join alf_acl_member mem on mem.acl_id = acl.id
+			join alf_node node on node.acl_id = acl.id
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_node child on priChild.child_node_id = child.id
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse#
+      	where 	   
+        (
+                    childAcl.id is not null
+            	AND childAcl.inherits_from is null
+            	AND childAcl.id <> acl.id
+        )	
+       ]]>
+    </select>
+    
+    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" parameterClass="boolean" resultMap="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl">
+        <![CDATA[
+        select distinct
+          	inheritedAcl.id as inherited_acl_id,
+        	inheritedAcl.type as inherited_acl_type,
+        	acl.id      as acl_id, 
+          	acl.type    as acl_type
+        from 
+        	alf_access_control_list acl 
+      		join alf_acl_member mem on mem.acl_id = acl.id
+      		join alf_access_control_list inheritedAcl on inheritedAcl.inherits_from = acl.id AND inheritedAcl.inherits = #trueOrFalse# AND inheritedAcl.type = 1
+      	where 	acl.id = inheritedAcl.inherits_from
+                AND NOT EXISTS (
+                				select 1 
+                               	from alf_acl_member childMem
+                               	where 
+                                      childMem.acl_id = inheritedAcl.id
+                                  and childMem.ace_id = mem.ace_id
+                                  and childMem.pos  = mem.pos +1
+                               )
        ]]>
     </select>
     

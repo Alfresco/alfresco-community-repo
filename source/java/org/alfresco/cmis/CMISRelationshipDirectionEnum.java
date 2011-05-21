@@ -27,7 +27,7 @@ public enum CMISRelationshipDirectionEnum implements EnumLabel
 {
     SOURCE("source"),
     TARGET("target"),
-    BOTH("both");
+    EITHER("either");
     
     
     private String label;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,7 +20,12 @@ package org.alfresco.repo.activities.feed;
 
 import org.alfresco.repo.activities.ActivityPostServiceImpl;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -34,6 +39,12 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
 {
     private static Log logger = LogFactory.getLog(AbstractFeedGenerator.class);
     
+    /** The name of the lock used to ensure that feed generator does not run on more than one node at the same time */
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityFeedGenerator");
+    
+    /** The time this lock will persist in the database (30 sec but refreshed at regular intervals) */
+    private static final long LOCK_TTL = 1000 * 30;
+    
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener(AbstractFeedGenerator.class.getName());
     
     private int maxItemsPerCycle = 100;
@@ -42,10 +53,12 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private ActivityPostServiceImpl activityPostServiceImpl;
     private AuthenticationService authenticationService;
     
+    private JobLockService jobLockService;
+    
     private String repoEndPoint; // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
     
     private boolean userNamesAreCaseSensitive = false;
-
+    
     private RepoCtx ctx = null;
     
     private volatile boolean busy;
@@ -84,7 +97,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         return this.maxItemsPerCycle;
     }
-
+    
     public ActivityPostDAO getPostDaoService()
     {
         return this.postDAO;
@@ -94,6 +107,12 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         return this.authenticationService;
     }
+    
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+    
    
     public RepoCtx getWebScriptsCtx()
     {
@@ -120,21 +139,42 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
      
     abstract public int getEstimatedGridSize();
     
+    protected boolean isActive()
+    {
+        return busy;
+    }
+    
     public void execute() throws JobExecutionException
     {
-        if (busy)
-        {
-            logger.warn("Still busy ...");
-            return;
-        }
+        checkProperties();
         
-        busy = true;
+        String lockToken = null;
+        
         try
         {
-            checkProperties();
-
+            JobLockRefreshCallback lockCallback = new LockCallback();
+            lockToken = acquireLock(lockCallback);
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Activities feed generator started");
+            }
+            
             // run one job cycle
             generate();
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Activities feed generator completed");
+            }
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Job being done by another process
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Activities feed generator already underway");
+            }
         }
         catch (Throwable e)
         {
@@ -150,9 +190,66 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
         finally
         {
-            busy = false;
+            releaseLock(lockToken);
         }
     }
-
+    
     protected abstract boolean generate() throws Exception;
+    
+    private class LockCallback implements JobLockRefreshCallback
+    {
+        @Override
+        public boolean isActive()
+        {
+            return busy;
+        }
+        
+        @Override
+        public void lockReleased()
+        {
+            // note: currently the cycle will try to complete (even if refresh failed)
+            synchronized(this)
+            {
+                if (logger.isErrorEnabled())
+                {
+                    logger.error("Lock released (refresh failed): " + LOCK_QNAME);
+                }
+                
+                busy = false;
+            }
+        }
+    }
+    
+    private String acquireLock(JobLockRefreshCallback lockCallback) throws LockAcquisitionException
+    {
+        // Try to get lock
+        String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+        
+        // Got the lock - now register the refresh callback which will keep the lock alive
+        jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
+        
+        busy = true;
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("lock aquired:  " + lockToken);
+        }
+        
+        return lockToken;
+    }
+    
+    private void releaseLock(String lockToken)
+    {
+        if (lockToken != null)
+        {
+            busy = false;
+            
+            jobLockService.releaseLock(lockToken, LOCK_QNAME);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("lock released: " + lockToken);
+            }
+        }
+    }
 }

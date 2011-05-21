@@ -28,11 +28,11 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Copy action executor.
@@ -47,8 +47,6 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     
     public static final String NAME = "copy";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
-    public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
-    public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_DEEP_COPY = "deep-copy";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
     
@@ -90,8 +88,6 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE_QNAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASSOC_TYPE_QNAME)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_QNAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_QNAME)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));		
         paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
 	}
@@ -101,14 +97,12 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-	        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-	        QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
-	        QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
-	        
-	        // Get the deep copy value
-	        boolean deepCopy = false;
+	if (this.nodeService.exists(actionedUponNodeRef) == true)
+	{
+	    NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+	       
+	    // Get the deep copy value
+	    boolean deepCopy = false;
             Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
             if (deepCopyValue != null)
             {
@@ -163,12 +157,13 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
             }
             else
             {
+                ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
                 // Create a new copy of the node
                 this.copyService.copyAndRename(
 	                actionedUponNodeRef, 
 	                destinationParent,
-	                destinationAssocTypeQName,
-	                destinationAssocQName,
+                    originalAssoc.getTypeQName(),
+                    originalAssoc.getQName(),
 	                deepCopy);
             }
 		}

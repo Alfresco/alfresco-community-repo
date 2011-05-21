@@ -34,9 +34,7 @@ import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
 import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -714,16 +712,6 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
-    	// NOTE:  
-    	//
-    	// This information is placed in the transaction to indicate that a rename has taken place.  This information is
-    	// used by the rule trigger to ensure inbound rule is not triggered by a file rename
-    	//
-    	// See http://issues.alfresco.com/browse/AR-1544
-        Set<String> nodeRefRenameSet = TransactionalResourceHelper.getSet(RuleTrigger.RULE_TRIGGER_NODESET);
-        String marker = sourceNodeRef.toString()+"rename";
-        nodeRefRenameSet.add(marker);
-    	
         return moveOrCopy(sourceNodeRef, null, null, newName, true);
     }
 

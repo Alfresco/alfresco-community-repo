@@ -692,11 +692,11 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 
         // retrieve associations
         List<AssociationRef> assocs = new ArrayList<AssociationRef>();
-        if (direction == CMISRelationshipDirectionEnum.SOURCE || direction == CMISRelationshipDirectionEnum.BOTH)
+        if (direction == CMISRelationshipDirectionEnum.SOURCE || direction == CMISRelationshipDirectionEnum.EITHER)
         {
             assocs.addAll(nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL));
         }
-        if (direction == CMISRelationshipDirectionEnum.TARGET || direction == CMISRelationshipDirectionEnum.BOTH)
+        if (direction == CMISRelationshipDirectionEnum.TARGET || direction == CMISRelationshipDirectionEnum.EITHER)
         {
             assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
         }
@@ -709,12 +709,16 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         for (AssociationRef assoc : assocs)
         {
             CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
-            if (assocTypeDef != null)
+            QName sourceTypeDef = nodeService.getType(assoc.getSourceRef());
+            QName targetTypeDef = nodeService.getType(assoc.getTargetRef());
+            if (assocTypeDef == null || cmisDictionaryService.findTypeForClass(sourceTypeDef) == null ||
+                    cmisDictionaryService.findTypeForClass(targetTypeDef) == null)
             {
-                if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
-                {
-                    filteredAssocs.add(assoc);
-                }
+                continue;
+            }
+            if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
+            {
+                filteredAssocs.add(assoc);
             }
         }
 
@@ -1466,7 +1470,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      */
     public void deleteObject(String objectId, boolean allVersions) throws CMISConstraintException,
             CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
-            CMISPermissionDeniedException, CMISRuntimeException
+            CMISPermissionDeniedException, CMISRuntimeException, CMISServiceException
     {
         try
         {
@@ -1532,6 +1536,10 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             }
             // Attempt to delete the node
             nodeService.deleteNode(nodeRef);
+        }
+        catch (CMISServiceException e)
+        {
+            throw e;
         }
         catch (AccessDeniedException e)
         {

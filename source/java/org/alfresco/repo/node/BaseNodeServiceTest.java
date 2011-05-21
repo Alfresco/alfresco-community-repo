@@ -2806,6 +2806,41 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
+     * Create some nodes that have the no <b>cm:name</b> and use associations that enforce uniqueness.
+     * <p/>
+     * ALF-5001: cm:name uniqueness check can fail if the property is not set
+     */
+    public void testDuplicateAssocsWithoutSuppliedName() throws Throwable
+    {
+        Map<QName, Serializable> properties = Collections.emptyMap();
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        ChildAssociationRef pathARef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTENT,
+                properties);
+        // Add the node to the same parent again
+        try
+        {
+            ChildAssociationRef pathBRef = nodeService.addChild(
+                    parentRef,
+                    pathARef.getChildRef(),
+                    ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                    QName.createQName("pathB"));
+            fail("Re-added node to parent when cm:name was not set; it should have failed.");
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            // Expected
+        }
+    }
+    
+    /**
      * Checks that the unique constraint doesn't break delete and create within the same
      * transaction.
      */

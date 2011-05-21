@@ -292,6 +292,30 @@
             <title>Extended Folder</title>
             <parent>cm:folder</parent>
         </type>
+        
+        <type name="test:type-that-requires-encoding">
+            <title>Type that requires encoding</title>
+            <parent>cm:content</parent>
+            <includedInSuperTypeQuery>true</includedInSuperTypeQuery>
+            <properties>
+                <property name="test:property-that-requires-encoding">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true" >
+                        <atomic>true</atomic>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </type>
     </types>
+    
+    <aspects>
+        <aspect name="test:aspect-that-requires-encoding">
+            <title>Type that requires encoding</title>
+            <includedInSuperTypeQuery>true</includedInSuperTypeQuery>
+        </aspect>
+    </aspects>
     
 </model>

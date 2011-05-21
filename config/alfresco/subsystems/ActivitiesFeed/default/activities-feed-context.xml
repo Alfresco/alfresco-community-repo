@@ -63,6 +63,7 @@
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxItemsPerCycle" value="100"/>
       <property name="activityPostServiceImpl" ref="activityPostService"/>
+      <property name="jobLockService" ref="jobLockService"/>
    </bean>
    
    

@@ -33,6 +33,7 @@ import org.alfresco.jlan.server.config.ConfigurationListener;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.ShareMapper;
+import org.alfresco.jlan.server.core.ShareType;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -195,7 +196,8 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		
 		//  Check if this is a tenant user
 		
-		if ( m_alfrescoConfig.getTenantService().isEnabled() && m_alfrescoConfig.getTenantService().isTenantUser())
+		if ( m_alfrescoConfig.getTenantService().isEnabled() && m_alfrescoConfig.getTenantService().isTenantUser() &&
+		        typ != ShareType.ADMINPIPE)
 			return findTenantShare(host, name, typ, sess, create);
 		
 		//	Find the required share by name/type. Use a case sensitive search first, if that fails use a case

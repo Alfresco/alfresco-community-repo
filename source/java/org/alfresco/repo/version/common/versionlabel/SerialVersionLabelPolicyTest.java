@@ -55,7 +55,7 @@ public class SerialVersionLabelPolicyTest extends TestCase
                 null,
                 0,
                 versionProp1);
-        assertEquals("1.0", initialVersion);
+        assertEquals("Minor initial version not 0.1", "0.1", initialVersion);
         
         HashMap<String, Serializable> versionProp2 = new HashMap<String, Serializable>();
         versionProp2.put(VersionModel.PROP_VERSION_LABEL, "1.0");
@@ -66,7 +66,7 @@ public class SerialVersionLabelPolicyTest extends TestCase
                 version1,
                 1,
                 versionProp1);
-        assertEquals("1.1", verisonLabel1);
+        assertEquals("Minor update from 1.0 not correct", "1.1", verisonLabel1);
         
         HashMap<String, Serializable> versionProp3 = new HashMap<String, Serializable>();
         versionProp3.put(VersionModel.PROP_VERSION_LABEL, "1.1");
@@ -80,7 +80,7 @@ public class SerialVersionLabelPolicyTest extends TestCase
                 version2,
                 1,
                 versionProp4);
-        assertEquals("2.0", verisonLabel2);
+        assertEquals("major version update not correct", "2.0", verisonLabel2);
     }
 
 }

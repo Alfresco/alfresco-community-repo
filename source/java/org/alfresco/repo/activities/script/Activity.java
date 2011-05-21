@@ -25,6 +25,8 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Scripted Activity Service for posting activities.
@@ -119,12 +121,17 @@ public final class Activity extends BaseScopableProcessorExtension
    /**
     * For current user, get feed controls
     *
-    * @return array of user feed controls
+    * @return JavaScript array of user feed controls
     */
-   public FeedControl[] getFeedControls()
+   public Scriptable getFeedControls()
    {
        List<FeedControl> feedControls = activityService.getFeedControls();
-       return (FeedControl[])feedControls.toArray(new FeedControl[feedControls.size()]);
+       Object[] results = new Object[feedControls.size()];
+       for (int i=0; i < feedControls.size(); i++)
+       {
+           results[i] = feedControls.get(i);
+       }
+       return Context.getCurrentContext().newArray(getScope(), results);
    }
    
    /**

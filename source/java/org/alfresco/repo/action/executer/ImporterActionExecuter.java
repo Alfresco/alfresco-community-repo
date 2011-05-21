@@ -56,8 +56,8 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 /**
  * Importer action executor
@@ -198,10 +198,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        reader.getContent(tempFile);
                        // NOTE: This encoding allows us to workaround bug:
                        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-                       zipFile = new ZipFile(tempFile, "Cp437");
+                       // We also try to use the extra encoding information if present
+                       zipFile = new ZipFile(tempFile, "Cp437", true);
                        
                        // build a temp dir name based on the ID of the noderef we are importing
-                       File alfTempDir = TempFileProvider.getTempDir();
+                       // also use the long life temp folder as large ZIP files can take a while
+                       File alfTempDir = TempFileProvider.getLongLifeTempDir("import");
                        File tempDir = new File(alfTempDir.getPath() + File.separatorChar + actionedUponNodeRef.getId());
                        try
                        {
@@ -316,7 +318,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 	    {
 	        for (Enumeration e = archive.getEntries(); e.hasMoreElements();)
 	        {
-	            ZipEntry entry = (ZipEntry) e.nextElement();
+	            ZipArchiveEntry entry = (ZipArchiveEntry) e.nextElement();
 	            if (!entry.isDirectory())
 	            {
 	                fileName = entry.getName();
@@ -367,12 +369,24 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 	 */
 	public static void deleteDir(File dir)
 	{
-	    File elenco = new File(dir.getPath());
-	    for (File file : elenco.listFiles())
+	    if (dir != null)
 	    {
-	        if (file.isFile()) file.delete();
-	        else deleteDir(file);
+    	    File elenco = new File(dir.getPath());
+    	    
+    	    // listFiles can return null if the path is invalid i.e. already been deleted,
+    	    // therefore check for null before using in loop
+    	    File[] files = elenco.listFiles();
+    	    if (files != null)
+    	    {
+        	    for (File file : files)
+        	    {
+        	        if (file.isFile()) file.delete();
+        	        else deleteDir(file);
+        	    }
+    	    }
+    	    
+    	    // delete provided directory
+    	    dir.delete();
 	    }
-	    dir.delete();
 	}
 }

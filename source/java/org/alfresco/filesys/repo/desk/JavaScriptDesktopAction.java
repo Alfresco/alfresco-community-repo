@@ -19,9 +19,8 @@
 package org.alfresco.filesys.repo.desk;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -34,7 +33,6 @@ import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver.CallableIO;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.util.ResourceFinder;
@@ -56,8 +54,8 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	
 	// Script file details
 	
-	private String m_scriptPath;
-	private long m_lastModified;
+	private Resource m_scriptResource;
+	private Long m_lastModified;
 	
 	// Script string
 	
@@ -147,34 +145,27 @@ public class JavaScriptDesktopAction extends DesktopAction {
         }
 
         // Check if the script exists on the classpath
-        Resource resource = new ResourceFinder().getResource(m_scriptName);
-        if (!resource.exists())
+        m_scriptResource = new ResourceFinder().getResource(m_scriptName);
+        if (!m_scriptResource.exists())
         {
             throw new DesktopActionException("Failed to find script on classpath, " + getScriptName());
         }
 
-
-        // Check that the script file exists
-        File scriptFile;
+        // Get the script modification date if it can be resolved to a file
         try
         {
-            scriptFile = resource.getFile();
-            if (scriptFile.exists() == false)
-                throw new DesktopActionException("Script file not found, " + m_scriptName);
+            m_lastModified = m_scriptResource.lastModified();
         }
         catch (IOException e)
         {
-            throw new DesktopActionException("Unable to resolve script as a file, " + resource.getDescription());
+            // Don't worry if we can't. Assume it's embedded in a resource.
         }
-        
-        m_scriptPath = scriptFile.getAbsolutePath();
-        m_lastModified =scriptFile.lastModified();
         
         // Load the script
 
         try
         {
-            loadScript( scriptFile);
+            loadScript( m_scriptResource);
         }
         catch ( IOException ex)
         {
@@ -192,25 +183,23 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	public DesktopResponse runAction(DesktopParams params)
 		throws DesktopActionException
 	{		
-		File scriptFile = new File(m_scriptPath);
 		
-		synchronized (this)
+        synchronized (this)
         {
-            if (scriptFile.lastModified() != m_lastModified)
+            try
             {
-                // Reload the script
-
-                m_lastModified = scriptFile.lastModified();
-
-                try
+                if (m_lastModified != null && m_scriptResource.lastModified() != m_lastModified)
                 {
-                    loadScript(scriptFile);
+                    // Reload the script if we can
+
+                    m_lastModified = m_scriptResource.lastModified();
+
+                    loadScript(m_scriptResource);
                 }
-                catch (IOException ex)
-                {
-                    // Check if the script file has been changed
-                    return new DesktopResponse(StsError, "Failed to reload script file, " + getScriptName());
-                }
+            }
+            catch (IOException ex)
+            {
+                logger.warn("Failed to reload script file, " + m_scriptResource.getDescription(), ex);
             }
         }
 			
@@ -444,29 +433,29 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	 * 
 	 * @param scriptFile File
 	 */
-	private final void loadScript(File scriptFile)
-		throws IOException
-	{
-		// Open the script file
-		
-		BufferedReader scriptIn = new BufferedReader(new FileReader( scriptFile));
-		StringBuilder scriptStr = new StringBuilder((int) scriptFile.length() + 256);
-		
-		String inRec = scriptIn.readLine();
-		
-		while ( inRec != null)
-		{
-			scriptStr.append( inRec);
-			scriptStr.append( "\n");
-			inRec = scriptIn.readLine();
-		}
-		
-		// Close the script file
-		
-		scriptIn.close();
-		
-		// Update the script string
-		
-		m_script = scriptStr.toString();
-	}
+    private final void loadScript(Resource scriptResource)
+        throws IOException
+    {
+        // Get resource
+        BufferedReader scriptIn = new BufferedReader(new InputStreamReader(scriptResource.getInputStream()));
+        StringBuilder scriptStr = new StringBuilder(1024);
+        try
+        {
+            String inRec = scriptIn.readLine();
+            while ( inRec != null)
+            {
+                scriptStr.append( inRec);
+                scriptStr.append( "\n");
+                inRec = scriptIn.readLine();
+            }
+        }
+        finally
+        {
+            // Close the script file
+            scriptIn.close();
+        }
+        // Update the script string
+        m_script = scriptStr.toString();
+    }
+
 }

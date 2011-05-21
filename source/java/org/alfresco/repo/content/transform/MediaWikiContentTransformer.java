@@ -39,6 +39,9 @@ import org.htmlcleaner.ContentToken;
  * 
  * @see http://matheclipse.org/en/Java_Wikipedia_API
  * 
+ * Tika Note - Tika doesn't currently support mediawiki markup, so this
+ *  transformer cannot currently be converted to use Tika.
+ * 
  * @author Roy Wetherall
  */
 public class MediaWikiContentTransformer extends AbstractContentTransformer2

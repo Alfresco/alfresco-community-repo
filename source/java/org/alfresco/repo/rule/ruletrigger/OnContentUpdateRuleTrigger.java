@@ -19,11 +19,13 @@
 package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -112,6 +114,18 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
         		}
             }
     	}
+        
+        // Double check for content created in this transaction
+        if (fail == false && !newContent)
+        {
+            Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
+            boolean wasCreatedInTxn = newNodeRefSet.contains(nodeRef);
+            if (logger.isDebugEnabled() && wasCreatedInTxn)
+            {
+                logger.debug("Receiving content property update for node created in transaction: " + nodeRef);
+            }
+            fail = wasCreatedInTxn;
+        }
     	
     	// Trigger the rules in the appropriate way
         if (fail == false && newContent == this.onNewContent)

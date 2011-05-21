@@ -55,6 +55,8 @@ public class NFSServerBean extends AbstractLifecycleBean
     private ServerConfiguration m_filesysConfig;
     private NFSConfigSection m_nfsConfig;
 
+    private NfsServerNodeMonitor nodeMonitor;
+
     // List of NFS server components
     
     private Vector<NetworkServer> m_serverList = new Vector<NetworkServer>();
@@ -77,6 +79,11 @@ public class NFSServerBean extends AbstractLifecycleBean
     public final ServerConfiguration getConfiguration()
     {
         return m_filesysConfig;
+    }
+
+    public void setNodeMonitor(NfsServerNodeMonitor nodeMonitor)
+    {
+        this.nodeMonitor = nodeMonitor;
     }
 
     /**
@@ -113,7 +120,12 @@ public class NFSServerBean extends AbstractLifecycleBean
                 // Create the mount and main NFS servers
                 
                 m_serverList.add(new MountServer(m_filesysConfig));
-                m_serverList.add(new NFSServer(m_filesysConfig));
+                NFSServer nfsServer = new NFSServer(m_filesysConfig);
+                m_serverList.add(nfsServer);
+                if (null != nodeMonitor)
+                {
+                    nodeMonitor.setNfsServer(nfsServer);
+                }
                 
                 // Add the servers to the configuration
                 
@@ -152,6 +164,11 @@ public class NFSServerBean extends AbstractLifecycleBean
      */
     public final void stopServer()
     {
+        if (null != nodeMonitor)
+        {
+            nodeMonitor.setEnabled(false);
+        }
+
         if (m_filesysConfig == null)
         {
             // initialisation failed

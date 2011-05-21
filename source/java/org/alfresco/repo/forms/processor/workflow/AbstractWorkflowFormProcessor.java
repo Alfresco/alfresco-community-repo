@@ -31,6 +31,7 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.ParameterCheck;
@@ -49,6 +50,8 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     /** WorkflowService */
     protected WorkflowService workflowService;
 
+    protected BehaviourFilter behaviourFilter;
+    
     @Override
     protected void populateForm(Form form, List<String> fields, FormCreationData data)
     {
@@ -80,6 +83,14 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
+    }
+    
+    /**
+     * @param behaviourFilter the behaviourFilter to set
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     /*

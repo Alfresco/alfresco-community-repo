@@ -20,6 +20,7 @@ package org.alfresco.cmis.search;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISCardinalityEnum;
@@ -38,6 +39,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Lower;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.lucene.queryParser.ParseException;
@@ -48,6 +50,8 @@ import org.apache.lucene.search.Query;
  */
 public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
 {
+    private static HashSet<String> EXPOSED_FIELDS = new HashSet<String>();
+
     public static CMISScope[] STRICT_SCOPES = new CMISScope[] { CMISScope.DOCUMENT, CMISScope.FOLDER };
 
     public static CMISScope[] ALFRESCO_SCOPES = new CMISScope[] { CMISScope.DOCUMENT, CMISScope.FOLDER, CMISScope.POLICY };
@@ -63,6 +67,54 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     private CMISScope[] validScopes;
 
     private Float score;
+
+    static
+    {
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_PATH);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_TEXT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ID);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ISROOT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ISNODE);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_TX);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_PARENT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_PRIMARYPARENT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_QNAME);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_CLASS);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_TYPE);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_EXACTTYPE);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ASPECT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_EXACTASPECT);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ALL);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ISUNSET);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ISNULL);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ISNOTNULL);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_FTSSTATUS);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_ASSOCTYPEQNAME);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_PRIMARYASSOCTYPEQNAME);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_DBID);
+        EXPOSED_FIELDS.add(LuceneQueryParser.FIELD_TAG);
+        
+        
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.ANY.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.ASSOC_REF.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.BOOLEAN.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.CATEGORY.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.CHILD_ASSOC_REF.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.CONTENT.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.DATE.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.DATETIME.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.DOUBLE.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.FLOAT.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.INT.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.LOCALE.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.LONG.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.MLTEXT.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.NODE_REF.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.PATH.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.PERIOD.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.QNAME.getLocalName());
+        EXPOSED_FIELDS.add("d:"+DataTypeDefinition.TEXT.getLocalName());
+    }
 
     /**
      * @param nodeRefs
@@ -363,7 +415,14 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(propertyName);
         if (propDef == null)
         {
-            throw new CMISQueryException("Unknown column/property " + propertyName);
+            if (EXPOSED_FIELDS.contains(propertyName))
+            {
+                return;
+            }
+            else
+            {
+                throw new CMISQueryException("Unknown column/property " + propertyName);
+            }
         }
         
         CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(selector.getType(), validScopes);

@@ -556,23 +556,28 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
                 if (nodeType.equals(ContentModel.TYPE_PERSON))
                 {
                     NodeRef personNodeRef = usageNodeRef;
-                    // collapse the usage deltas
-                    long currentUsage = contentUsageImpl.getUserUsage(personNodeRef);
+                    String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                    
+                    long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
                     if (currentUsage != -1)
                     {
-                        usageService.deleteDeltas(personNodeRef);
+                        // Collapse the usage deltas
+                        // Calculate and remove deltas in one go to guard against deletion of
+                        // deltas from another transaction that have not been included in the
+                        // calculation
+                        currentUsage = contentUsageImpl.getUserUsage(personNodeRef, true);
                         contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                         
                         if (logger.isTraceEnabled()) 
                         {
-                            logger.trace("Collapsed usage: personNodeRef=" + personNodeRef + ", usage=" + currentUsage);
+                            logger.trace("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
                         }
                     }
                     else
                     {
                         if (logger.isWarnEnabled())
                         {
-                            logger.warn("Initial usage has not yet been calculated: personNodeRef=" + personNodeRef);
+                            logger.warn("Initial usage for user has not yet been calculated: " + userName);
                         }
                     }
                 }

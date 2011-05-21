@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -65,16 +66,19 @@ public class PackageManager
     private final WorkflowService workflowService;
     private final NodeService nodeService;
     private final Log logger;
+    private final BehaviourFilter behaviourFilter;
     
     private final Set<NodeRef> addItems = new HashSet<NodeRef>();
     private final Set<NodeRef> removeItems = new HashSet<NodeRef>();
 
     public PackageManager(WorkflowService workflowService,
                 NodeService nodeService,
+                BehaviourFilter behaviourFilter,
                 Log logger)
     {
         this.workflowService = workflowService;
         this.nodeService = nodeService;
+        this.behaviourFilter =behaviourFilter;
         this.logger = logger ==null ? LOGGER : logger;
     }
     
@@ -207,19 +211,28 @@ public class PackageManager
         }
     }
 
-
     private void addPackageItems(final NodeRef packageRef)
     {
         for (NodeRef item : addItems)
-           {
-               String name = 
-                   (String) nodeService.getProperty(item, ContentModel.PROP_NAME);
-               if(name == null)
-                   name = GUID.generate();
-               String localName = QName.createValidLocalName(name);
-               QName qName = QName.createQName(CM_URL, localName);
-               nodeService.addChild(packageRef, item, PCKG_CONTAINS, qName);
-           }
+        {
+            String name = (String) nodeService.getProperty(item, ContentModel.PROP_NAME);
+            if (name == null)
+            {
+                name = GUID.generate();
+            }
+            String localName = QName.createValidLocalName(name);
+            QName qName = QName.createQName(CM_URL, localName);
+
+            behaviourFilter.disableBehaviour(item, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                nodeService.addChild(packageRef, item, PCKG_CONTAINS, qName);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(item, ContentModel.ASPECT_AUDITABLE);
+            }
+        }
     }
 
     private List<NodeRef> getCurrentItems(NodeRef packageRef)

@@ -80,11 +80,15 @@ import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
@@ -102,6 +106,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -120,7 +125,6 @@ import org.springframework.extensions.config.ConfigElement;
 public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface, DiskSizeInterface
 {
     // Logging
-    
     private static final Log logger = LogFactory.getLog(ContentDiskDriver.class);
     
     // Configuration key names
@@ -143,6 +147,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     // File state attributes
     
     public static final String AttrLinkNode = "ContentLinkNode";
+    public static final String CanDeleteWithoutPerms = "CanDeleteWithoutPerms";
         
     // List of content properties to copy during rename
     
@@ -179,6 +184,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private NodeArchiveService nodeArchiveService;
     private LockService lockService;
     private DictionaryService dictionaryService;
+    private OwnableService ownableService;
+    private ActionService actionService;
     
     private AuthenticationContext authContext;
     private AuthenticationService authService;
@@ -320,6 +327,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
     
     /**
+     * Get the ownable service
+     * 
+     * @return OwnableService
+     */
+    public final OwnableService getOwnableService() {
+        return ownableService;
+    }
+    
+    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -457,24 +473,34 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
     
     /**
+     * Set the ownable servive
+     * 
+     * @param ownableService OwnableService
+     */
+    public void setOwnableService(OwnableService ownableService) {
+        this.ownableService = ownableService;
+    }
+
+    /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
+     * <p>
+     * WARNING: side effect, may commit or roll back current user transaction context.
      * 
-     * @param shareName String
-     * @param args ConfigElement
+     * @param deviceName The name of the device
+     * @param cfg ConfigElement the configuration of the device context.
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(String shareName, ConfigElement cfg) throws DeviceContextException
+    //  MER TODO - transaction handling in registerContext needs changing
+    public DeviceContext createContext(String deviceName, ConfigElement cfg) throws DeviceContextException
     {
         ContentContext context = null;
         
         try
         {
-            
             // Get the store
-            
             ConfigElement storeElement = cfg.getChild(KEY_STORE);
             if (storeElement == null || storeElement.getValue() == null || storeElement.getValue().length() == 0)
             {
@@ -495,7 +521,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Create the context
             
             context = new ContentContext();
-            context.setDeviceName(shareName);
+            context.setDeviceName(deviceName);
             context.setStoreName(storeValue);
             context.setRootPath(rootPath);
             context.setSysAdminParams(this.sysAdminParams);
@@ -511,14 +537,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 String relPath = relativePathElement.getValue().replace( '/', FileName.DOS_SEPERATOR);
                 context.setRelativePath(relPath);
             }
-
-
         }
-        catch (Exception ex)
+        /* 
+         * MER - I changed the code below - resulted in a NPE anyway 
+         * lower down
+         */
+        catch (DeviceContextException ex)
         {
             logger.error("Error during create context", ex);
+            throw ex;
+            
         }
-
+          
         // Check if URL link files are enabled
         
         ConfigElement urlFileElem = cfg.getChild( "urlFile");
@@ -543,6 +573,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
         
         // Install the node service monitor
+        
+        // MER 01/03/2011 - I think one of these is the "wrong way round"
         
         if ( cfg.getChild("disableNodeMonitor") == null) {
         	
@@ -571,9 +603,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares.
      * 
+     * WARNING: side effect, will commit or roll back current user transaction context.
+     * 
      * @param ctx the context
      * @exception DeviceContextException
      */
+    //  MER TODO - transaction handling in registerContext needs changing
     @Override
     public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
@@ -664,6 +699,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Commit the transaction
             
+            // MER 16/03/2010 - Why is this transaction management here?
             tx.commit();
             tx = null;
 
@@ -673,6 +709,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         catch (Exception ex)
         {
             logger.error("Error during create context", ex);
+            
+            // MER BUGBUG Exception swallowed - will result in null pointer errors at best.
+            throw new DeviceContextException("unable to register context", ex);
+            // MER END
         }
         finally
         {
@@ -1333,10 +1373,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     /**
      * Check if the specified file exists, and whether it is a file or directory.
      * 
+     * <p>
+     * WARNING: side effect, commit or roll back current user transaction context.  Current transaction becomes read only.
+     * 
      * @param sess Server session
      * @param tree Tree connection
-     * @param name java.lang.String
-     * @return int
+     * @param name the path of the file 
+     * @return FileStatus (0: NotExist, 1 : FileExist, 2: DirectoryExists) 
      * @see FileStatus
      */
     public int fileExists(SrvSession sess, TreeConnection tree, String name)
@@ -1655,78 +1698,78 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             			logger.debug( "  Fstate=" + fstate);
             		}
         		
-        			throw new AccessDeniedException("Invalid access mode");
-        		}
-        		
-            	if ( fstate.getOpenCount() > 0) {
-            		
-            		// Check for impersonation security level from the original process that opened the file
-            		
-            		if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
-            			nosharing = false;
-
-            		// Check if the caller wants read access, check the sharing mode
-            		
-                	else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
-                		nosharing = false;
-            		
-            		// Check if the caller wants write access, check the sharing mode
-            		
-                	else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
-                	{
-                		// DEBUG
-                		
-                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                			logger.debug("Sharing mode disallows write access path=" + params.getPath());
-                		
-                		// Access not allowed
-                		
-                		throw new AccessDeniedException( "Sharing mode (write)");
-                	}
-                	
-            		// Check if the file has been opened for exclusive access
-            		
-            		else if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
-            			nosharing = true;
-            		
-            		// Check if the required sharing mode is allowed by the current file open
-            		
-            		else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
-            			nosharing = true;
-            		
-            		// Check if the caller wants exclusive access to the file
-            		
-                	else if ( params.getSharedAccess() == SharingMode.NOSHARING)
-                		nosharing = true;
-            		
-            	}
-            	
-            	// Check if the file allows shared access
-            	
-            	if ( nosharing == true)
-                {
-                	if ( params.getPath().equals( "\\") == false) {
-                		
-                		// DEBUG
-                		
-                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                			logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()));
-                	
-                		// File is locked by another user
-                		
-                		throw new FileSharingException("File already open, " + params.getPath());
-                	}
+                    throw new AccessDeniedException("Invalid access mode");
                 }
-            	
-            	// Update the file sharing mode and process id, if this is the first file open
-            	
-            	fstate.setSharedAccess( params.getSharedAccess());
-            	fstate.setProcessId( params.getProcessId());
-            	
-            	// DEBUG
-            	
-            	if ( logger.isDebugEnabled() && fstate.getOpenCount() == 0 && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-            		logger.debug("Path " + params.getPath() + ", sharing=0x" + Integer.toHexString(params.getSharedAccess()) + ", PID=" + params.getProcessId());
+                
+                if ( fstate.getOpenCount() > 0) {
+                    
+                    // Check for impersonation security level from the original process that opened the file
+                    
+                    if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
+                        nosharing = false;
+
+                    // Check if the caller wants read access, check the sharing mode
+                    
+                    else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
+                        nosharing = false;
+                    
+                    // Check if the caller wants write access, check the sharing mode
+                    
+                    else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
+                    {
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Sharing mode disallows write access path=" + params.getPath());
+                        
+                        // Access not allowed
+                        
+                        throw new AccessDeniedException( "Sharing mode (write)");
+                    }
+                    
+                    // Check if the file has been opened for exclusive access
+                    
+                    else if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
+                        nosharing = true;
+                    
+                    // Check if the required sharing mode is allowed by the current file open
+                    
+                    else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
+                        nosharing = true;
+                    
+                    // Check if the caller wants exclusive access to the file
+                    
+                    else if ( params.getSharedAccess() == SharingMode.NOSHARING)
+                        nosharing = true;
+                    
+                }
+                
+                // Check if the file allows shared access
+                
+                if ( nosharing == true)
+                {
+                    if ( params.getPath().equals( "\\") == false) {
+                        
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()));
+                    
+                        // File is locked by another user
+                        
+                        throw new FileSharingException("File already open, " + params.getPath());
+                    }
+                }
+                
+                // Update the file sharing mode and process id, if this is the first file open
+                
+                fstate.setSharedAccess( params.getSharedAccess());
+                fstate.setProcessId( params.getProcessId());
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled() && fstate.getOpenCount() == 0 && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                    logger.debug("Path " + params.getPath() + ", sharing=0x" + Integer.toHexString(params.getSharedAccess()) + ", PID=" + params.getProcessId());
             }
             
             // Check if the node is a link node
@@ -1736,68 +1779,68 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( linkRef == null)
             {
-            	// Check if the file is already opened by this client/process
-            	
-            	if ( tree.openFileCount() > 0) {
-            	
-            		// Search the open file table for this session/virtual circuit
-            		
-            		int idx = 0;
-            		
-            		while ( idx < tree.getFileTableLength() && netFile == null) {
-            			
-            			// Get the current file from the open file table
-            			
-            			NetworkFile curFile = tree.findFile( idx);
-            			if ( curFile != null && curFile instanceof ContentNetworkFile) {
-            				
-            				// Check if the file is the same path and process id
-            				
-            				ContentNetworkFile contentFile = (ContentNetworkFile) curFile;
-            				if ( contentFile.getProcessId() == params.getProcessId() &&
-            						contentFile.getFullName().equalsIgnoreCase( params.getFullPath())) {
-            					
-            					// Check that the access mode is the same
-            					
-            					if (( params.isReadWriteAccess() && contentFile.getGrantedAccess() == NetworkFile.READWRITE) ||
-            							( params.isReadOnlyAccess() && contentFile.getGrantedAccess() == NetworkFile.READONLY)) {
-            						
-	            					// Found a match, re-use the open file
-	            					
-	            					netFile = contentFile;
-	            					
-	            					// Increment the file open count, last file close will actually close the file/stream
-	            					
-	            					contentFile.incrementOpenCount();
-	
-	            					// DEBUG
-	            	            	
-	            	            	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-	            	            		logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId() + ", params=" +
-	            	            		        ( params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" + 
-	            	            		        ( contentFile.getGrantedAccess() == NetworkFile.READONLY ? "ReadOnly" : "Write"));
-            					}
-            					else if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-            					    logger.debug("Not re-using file path=" + params.getPath() + ", readWrite=" + (params.isReadWriteAccess() ? "true" : "false") +
-            					            ", readOnly=" + (params.isReadOnlyAccess() ? "true" : "false") +
-            					            ", grantedAccess=" + contentFile.getGrantedAccessAsString());
-            				}
-            			}
-            			
-            			// Update the file table index
-            			
-            			idx++;
-            		}
-            	}
-            	
-	            // Create the network file, if we could not match an existing file open
-	            
-            	if ( netFile == null) {
-            	    
-            	    // Create a new network file for the open request
-            	
-            		netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params, sess);
-            	}
+                // Check if the file is already opened by this client/process
+                
+                if ( tree.openFileCount() > 0) {
+                
+                    // Search the open file table for this session/virtual circuit
+                    
+                    int idx = 0;
+                    
+                    while ( idx < tree.getFileTableLength() && netFile == null) {
+                        
+                        // Get the current file from the open file table
+                        
+                        NetworkFile curFile = tree.findFile( idx);
+                        if ( curFile != null && curFile instanceof ContentNetworkFile) {
+                            
+                            // Check if the file is the same path and process id
+                            
+                            ContentNetworkFile contentFile = (ContentNetworkFile) curFile;
+                            if ( contentFile.getProcessId() == params.getProcessId() &&
+                                    contentFile.getFullName().equalsIgnoreCase( params.getFullPath())) {
+                                
+                                // Check that the access mode is the same
+                                
+                                if (( params.isReadWriteAccess() && contentFile.getGrantedAccess() == NetworkFile.READWRITE) ||
+                                        ( params.isReadOnlyAccess() && contentFile.getGrantedAccess() == NetworkFile.READONLY)) {
+                                    
+                                    // Found a match, re-use the open file
+                                    
+                                    netFile = contentFile;
+                                    
+                                    // Increment the file open count, last file close will actually close the file/stream
+                                    
+                                    contentFile.incrementOpenCount();
+    
+                                    // DEBUG
+                                    
+                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                        logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId() + ", params=" +
+                                                ( params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" + 
+                                                ( contentFile.getGrantedAccess() == NetworkFile.READONLY ? "ReadOnly" : "Write"));
+                                }
+                                else if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                    logger.debug("Not re-using file path=" + params.getPath() + ", readWrite=" + (params.isReadWriteAccess() ? "true" : "false") +
+                                            ", readOnly=" + (params.isReadOnlyAccess() ? "true" : "false") +
+                                            ", grantedAccess=" + contentFile.getGrantedAccessAsString());
+                            }
+                        }
+                        
+                        // Update the file table index
+                        
+                        idx++;
+                    }
+                }
+                
+                // Create the network file, if we could not match an existing file open
+                
+                if ( netFile == null) {
+                    
+                    // Create a new network file for the open request
+                
+                    netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params, sess);
+                }
             }
             else
             {
@@ -1819,11 +1862,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     srvName = InetAddress.getLocalHost().getHostName();
                 }
                 
-              	// Convert the target node to a path, convert to URL format
-              	
-              	String path = getPathForNode( tree, linkRef);
-              	path = path.replace( FileName.DOS_SEPERATOR, '/');
-            	
+                // Convert the target node to a path, convert to URL format
+                
+                String path = getPathForNode( tree, linkRef);
+                path = path.replace( FileName.DOS_SEPERATOR, '/');
+                
                 // Build the URL file data
                 
                 StringBuilder urlStr = new StringBuilder();
@@ -1890,7 +1933,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Set the file access date/time, if available
                 
                 if ( fstate.hasAccessDateTime())
-                	netFile.setAccessDate( fstate.getAccessDateTime());
+                    netFile.setAccessDate( fstate.getAccessDateTime());
             }
             
             // Debug
@@ -1928,6 +1971,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
     /**
      * Create a new file on the file system.
+     * 
+     * <p>
+     * WARNING : side effect - closes current transaction context.
      * 
      * @param sess Server session
      * @param tree Tree connection
@@ -1983,6 +2029,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     }
                     
                     // Create it - the path will be created, if necessary
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("create new file" + path);
+                    }
             
                     NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
                     nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
@@ -2058,7 +2108,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Update the parent folder file state
                 
                 if ( parentState != null)
-                	parentState.updateModifyDateTime();
+                    parentState.updateModifyDateTime();
             }
             
             // Debug
@@ -2101,14 +2151,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Convert to a general I/O exception
             
-            throw new IOException("Create file " + params.getFullPath());
+            throw new IOException("Create file " + params.getFullPath(), ex);
         }
         
     }
 
     /**
      * Create a new directory on this file system.
-     * 
+     *
+     * <p>
+     * WARNING : side effect - closes current transaction context.
+     *
      * @param sess Server session
      * @param tree Tree connection.
      * @param params Directory create parameters
@@ -2201,7 +2254,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Update the parent folder file state
                 
                 if ( parentState != null)
-                	parentState.updateModifyDateTime();
+                    parentState.updateModifyDateTime();
             }
             
             // Debug
@@ -2255,16 +2308,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 public NodeRef call() throws IOException
                 {
                     // Get the node for the folder                    
-        	
+            
                     NodeRef nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, dir);
                     if (fileFolderService.exists(nodeRef))
                     {
                         // Check if the folder is empty                        
-            	
+                
                         if ( cifsHelper.isFolderEmpty( nodeRef))
                         {                            
                             // Delete the folder node           
-	
+    
                             fileFolderService.delete(nodeRef);
                             return nodeRef;
                         }
@@ -2277,7 +2330,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 }});
             if (nodeRef != null && ctx.hasStateCache())
             {
-            	// Remove the file state
+                // Remove the file state
             
                 ctx.getStateCache().removeFileState(dir);
             
@@ -2289,8 +2342,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Get the file state for the parent folder
                     
                     FileState parentState = getStateForPath(tree, paths[0]);
-	                        if ( parentState == null && ctx.hasStateCache())
-	                        	parentState = ctx.getStateCache().findFileState( paths[0], true);
+                            if ( parentState == null && ctx.hasStateCache())
+                                parentState = ctx.getStateCache().findFileState( paths[0], true);
 
                     // Update the modification timestamp
                     
@@ -2306,7 +2359,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         catch (FileNotFoundException e)
         {
             // Debug
-        	
+            
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory - file not found, " + dir);
         }
@@ -2344,13 +2397,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws IOException
     {
-    	// Debug
-    	
-    	ContentContext ctx = (ContentContext) tree.getContext();
-    	
-    	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
-    		logger.debug("Flush file=" + file.getFullName());
-    	
+        // Debug
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        
+        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+            logger.debug("Flush file=" + file.getFullName());
+        
         // Flush the file data
         
         file.flushFile();
@@ -2365,7 +2418,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @exception java.io.IOException If an error occurs.
      */
     public void closeFile(SrvSession sess, TreeConnection tree, final NetworkFile file) throws IOException
-    {        
+    {  
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Close file: file" + file);
+        }
+        
         // Get the associated file state
         
         final ContentContext ctx = (ContentContext) tree.getContext();
@@ -2374,15 +2432,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Check for a content file
         
         if ( file instanceof ContentNetworkFile) {
-        	
+            
             // Update the file state
             
             if ( ctx.hasStateCache())
             {
                 FileState fstate = ctx.getStateCache().findFileState(file.getFullName());
                 if ( fstate != null) {
-                	
-                	// If the file open count is now zero then reset the stored sharing mode
+                    
+                    // If the file open count is now zero then reset the stored sharing mode
                     
                     if ( fstate.decrementOpenCount() == 0)
                         fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
@@ -2390,7 +2448,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Check if there is a cached modification timestamp to be written out
                     
                     if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject() && fstate.isDirectory() == false) {
-    	            	
+                        
                         // Update the modification date on the file/folder node
                         toUpdate = fstate;
                     }
@@ -2446,6 +2504,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     NodeRef nodeRef = ((NodeRefNetworkFile) file).getNodeRef();
                     if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                     {
+                        logger.debug("No content - delete");
                         fileFolderService.delete(nodeRef);
                     }
                 }
@@ -2519,18 +2578,19 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                     // Defer to the network file to close the stream and remove the content
                        
-                    file.closeFile();
+                    file.close();
                     
                     // Remove the node if marked for delete
                     
                     if (file.hasDeleteOnClose())
                     {
+                        logger.debug("File has delete on close");
                         // Check if the file is a noderef based file
                         
                         if ( file instanceof NodeRefNetworkFile)
                         {
                             NodeRefNetworkFile nodeNetFile = (NodeRefNetworkFile) file;
-                            NodeRef nodeRef = nodeNetFile.getNodeRef();
+                            final NodeRef nodeRef = nodeNetFile.getNodeRef();
                             
                             // We don't know how long the network file has had the reference, so check for existence
                             
@@ -2543,12 +2603,32 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                     try
                                     {
                                         // Delete the file                                    
+                                    	FileState fileState = ctx.getStateCache().findFileState(file.getFullName());
+                                    	if (fileState!= null && fileState.findAttribute(CanDeleteWithoutPerms) != null)
+                                    	{
+                                    	    //Has CanDeleteWithoutPerms attribute, so delete from system user
+                                            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                                            {
+                                                @Override
+                                                public Object doWork() throws Exception 
+                                                {
+                                                    logger.debug("delete as system" + nodeRef);
+                                                    fileFolderService.delete(nodeRef);
+                                                    return null;
+                                                }
+                                			
+                                            }, AuthenticationUtil.getSystemUserName());
                                
-                                        fileFolderService.delete(nodeRef);
-                               
+                                        }
+                                    	else
+                                    	{
+                                    	    logger.debug("delete nodeRef:" + nodeRef);
+                                    		fileFolderService.delete(nodeRef);
+                                    	}
                                     }
                                     catch ( Exception ex)
                                     {
+                                        logger.debug("on delete on close", ex);
                                         // Propagate retryable errors. Log the rest.
                                         if (RetryingTransactionHelper.extractRetryCause(ex) != null)
                                         {
@@ -2693,6 +2773,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Get the device context
         
+        if ( logger.isDebugEnabled())
+        {
+            logger.debug("Delete file - " + name);
+        }
+        
         final ContentContext ctx = (ContentContext) tree.getContext();
         
         try
@@ -2749,6 +2834,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                         final boolean isVersionable = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
 
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("deleted file" + name);
+                        }
                         fileFolderService.delete(nodeRef);
 
                         // Return the operations to perform when the transaction succeeds
@@ -2773,6 +2862,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                                         FileState delState = ctx.getStateCache().findFileState(name, true);
 
+                                        if(logger.isDebugEnabled())
+                                        {
+                                            logger.debug("set delete on close" + name);
+                                        }
                                         delState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
                                         delState.setFileStatus(DeleteOnClose);
                                         delState.setFilesystemObject(nodeRef);
@@ -2946,7 +3039,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 {
                     // Update the file state index to use the new name
 
-                    ctx.getStateCache().renameFileState(newName, oldState, true);
+                    ctx.getStateCache().renameFileState(newName, oldState, isFolder);
                 }
 
                 // DEBUG
@@ -2955,7 +3048,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     logger.debug("  Renamed " + (isFolder ? "folder" : "file") + " using "
                             + (sameFolder ? "rename" : "move"));
             }
-            else {
+            else 
+            {
                 
                 // Rename a file within the same folder
                 //
@@ -2980,12 +3074,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         //                This code will move into the repo layer (or just above it)
                         //                and this complexity removed from here.
                         //          Attempt to detect normal renames.  Hack alert!
-                        String oldNameLower = oldName.toLowerCase();
-                        String newNameLower = newName.toLowerCase();
-                        boolean renameShuffle = false;
                         Pattern renameShufflePattern = ctx.getRenameShufflePattern();
-                        renameShuffle = renameShuffle || renameShufflePattern.matcher(oldNameLower).matches();
-                        renameShuffle = renameShuffle || renameShufflePattern.matcher(newNameLower).matches();
+                        boolean renameShuffle = isRenameShuffle(oldName, newName, renameShufflePattern);
                         if (logger.isDebugEnabled())
                         {
                             logger.debug(
@@ -3010,10 +3100,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         }
                         else if (renameShuffle)
                         {
-                            
+                            logger.debug("is rename shuffle");
                             // Check if the target has a renamed or delete-on-close state
                             
-                            if ( newState.getFileStatus() == FileRenamed) {
+                            if ( newState.getFileStatus() == FileRenamed) 
+                            {
+                                logger.debug("file status == FileRenamed");
+                                
                                 
                                 // DEBUG
                                 
@@ -3026,11 +3119,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 if (oldType.equals(newType)) {
 
                                     // Use the renamed node to clone aspects/state if it is of the correct type
-
+                                    
                                     cloneNode(name, newStateNode, nodeToMoveRef, ctx);
                                 }
                                 else
                                 {
+                                    logger.debug("not renamed, must create new node");
                                     // Otherwise we must create a node of the correct type
                                     targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, newType);
                                     
@@ -3040,14 +3134,25 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                     // DEBUG
                                     
                                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                                        logger.debug("  Created new node for " + newName + " type " + newType);
+                                        logger.debug("  Created new node for " + newName + " type " + newType + ", isFromVersionable=false");
             
                                     // Copy aspects from the original state
                                     
                                     cloneNode( name, newStateNode, targetNodeRef, ctx);
                                 }
+
+                                //Change state for tmp node to allow delete it without special permission
+                                String newStateNodeName = (String) nodeService.getProperty(newStateNode, ContentModel.PROP_NAME);
+                                FileState stateForTmp = ctx.getStateCache().findFileState(newName.substring(0,newName.lastIndexOf("\\")) +"\\"+ newStateNodeName);
+                                stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
+                                stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
+                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                    logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);
+                                
                             }
-                            else if ( newState.getFileStatus() == DeleteOnClose) {
+                            else if ( newState.getFileStatus() == DeleteOnClose) 
+                            {
+                                logger.debug("file state is delete on close");
                                 
                                 // DEBUG
                                 
@@ -3108,7 +3213,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                             // Check if the node being renamed is versionable
 
-                            else if ( isFromVersionable == true) {
+                            else if ( isFromVersionable == true) 
+                            {
+                                logger.debug("from node is versionable");
                                 
                                 // Create a new node for the target
                                 
@@ -3117,11 +3224,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 // DEBUG
                                 
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                                    logger.debug("  Created new node for " + newName);
+                                    logger.debug("  Created new node for " + newName + ", isFromVersionable=true");
         
                                 // Copy aspects from the original file
                                 
                                 cloneNode( name, nodeToMoveRef, targetNodeRef, ctx);
+                                
+                                //Change state for tmp node to allow delete it without special permission
+                                FileState stateForTmp = ctx.getStateCache().findFileState(newName);
+                                stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
+                                stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
+                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                    logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);
                             }
                         }
 
@@ -3131,6 +3245,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                     typesCompatible &&
                                     ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)))
                         {
+                            logger.debug("do simple rename");
 
                             // Rename the file/folder
 
@@ -3162,7 +3277,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                 logger.debug("  Use standard rename for " + name + "(versionable=" + isFromVersionable + ", targetNodeRef=" + targetNodeRef + ")");
                         }
-                        else {
+                        else 
+                        {
                             
                             // Make sure we have a valid target node
                             
@@ -3213,10 +3329,35 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                         logger.debug("  Cached delete state for " + oldName);
                                 }
                             });
+                            
+                            logger.debug("delete the old file");
 
                             // Delete the old file
+                            if (renameShuffle && isFromVersionable && permissionService.hasPermission(nodeToMoveRef, PermissionService.EDITOR) == AccessStatus.ALLOWED)
+                            {
+                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                                {
+                                    @Override
+                                    public Object doWork() throws Exception
+                                    {
+                                        if (logger.isDebugEnabled())
+                                        {
+                                            logger.debug("Rename shuffle for versioning content is assumed. Deleting " + nodeToMoveRef + " as system user");
+                                        }
+                                        nodeService.deleteNode(nodeToMoveRef);
+                                        return null;
+                                    }
 
-                            nodeService.deleteNode(nodeToMoveRef);
+                                }, AuthenticationUtil.getSystemUserName());
+                            }
+                            else
+                            {
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Deleting " + nodeToMoveRef + " as user: " + AuthenticationUtil.getFullyAuthenticatedUser());
+                                }
+                                nodeService.deleteNode(nodeToMoveRef);
+                            }
 
                         }
 
@@ -3224,6 +3365,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     }
                 });
 
+                logger.debug("running post txns");
                 // Run the required state-changing logic once the retrying transaction has completed successfully
                 for (Runnable runnable : postTxn)
                 {
@@ -3275,7 +3417,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @param info FileInfo
      * @exception IOException
      */
-    public void setFileInformation(SrvSession sess, final TreeConnection tree, final String name, final FileInfo info) throws IOException
+    public void setFileInformation(SrvSession sess, final TreeConnection tree, final String name , final FileInfo info) throws IOException
     {
         // Get the device context
         
@@ -3306,10 +3448,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Check permissions on the file/folder node
                     
                     if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
-                        throw new AccessDeniedException("No write access to " + name);
+                        throw new org.alfresco.repo.security.permissions.AccessDeniedException("No write access to " + name);
                     
-                    if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
-                        throw new AccessDeniedException("No delete access to " + name);
+                    if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED && fstate.findAttribute(CanDeleteWithoutPerms) == null)
+                        throw new org.alfresco.repo.security.permissions.AccessDeniedException("No delete access to " + name);
                     
                     // Inhibit versioning for this transaction
                     
@@ -3328,7 +3470,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             String lockTypeStr = (String) nodeService.getProperty( nodeRef, ContentModel.PROP_LOCK_TYPE);
                             
                             if ( lockTypeStr != null)
-                                throw new AccessDeniedException("Node locked, cannot mark for delete");
+                                throw new org.alfresco.repo.security.permissions.AccessDeniedException("Node locked, cannot mark for delete");
                         }
                         
                         // Get the node for the folder
@@ -3404,10 +3546,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                 if (info.hasSetFlag(FileInfo.SetModifyDate))
                 {
-
                     // Update the change date/time, clear the cached modification date/time
                     fstate.updateChangeDateTime();
-                    fstate.updateModifyDateTime(0L);
+                    Date modifyDate = new Date( info.getModifyDateTime());
+                    fstate.updateModifyDateTime(modifyDate.getTime()); 
                 }                
             }
         }
@@ -3416,7 +3558,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Debug
             
             if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-                logger.debug("Set file information - access denied, " + name);
+                logger.debug("Set file information - access denied, " + name, ex);
             
             // Convert to a filesystem access denied status
             
@@ -3553,14 +3695,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         if(file.isDirectory())
             throw new AccessDeniedException();
             
-    	// If the content channel is not open for the file then start a transaction
-    	
+        // If the content channel is not open for the file then start a transaction
+        
         if ( file instanceof ContentNetworkFile)
         {
-	    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
-	    	
-	    	if ( contentFile.hasContent() == false)
-	    		beginReadTransaction( sess);
+            ContentNetworkFile contentFile = (ContentNetworkFile) file;
+            
+            if ( contentFile.hasContent() == false)
+                beginReadTransaction( sess);
         }
         
         // Read a block of data from the file
@@ -3597,21 +3739,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public long seekFile(SrvSession sess, TreeConnection tree, NetworkFile file, long pos, int typ) throws IOException
     {
-  	  	// Check if the file is a directory
-    	
-		if ( file.isDirectory())
-			throw new AccessDeniedException();
+        // Check if the file is a directory
+        
+        if ( file.isDirectory())
+            throw new AccessDeniedException();
       
-    	// If the content channel is not open for the file then start a transaction
-    	
-    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
-    	
-    	if ( contentFile.hasContent() == false)
-    		beginReadTransaction( sess);
-    	
-		// Set the file position
+        // If the content channel is not open for the file then start a transaction
+        
+        ContentNetworkFile contentFile = (ContentNetworkFile) file;
+        
+        if ( contentFile.hasContent() == false)
+            beginReadTransaction( sess);
+        
+        // Set the file position
 
-		return file.seekFile(pos, typ);
+        return file.seekFile(pos, typ);
     }
 
     /**
@@ -3630,15 +3772,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buffer, int bufferOffset, int size, long fileOffset) throws IOException
     {
-    	// If the content channel is not open for the file then start a transaction
-    	
-    	if ( file instanceof ContentNetworkFile)
-    	{
-	    	ContentNetworkFile contentFile = (ContentNetworkFile) file;
-	    	
-	    	if ( contentFile.hasContent() == false)
-	    		beginReadTransaction( sess);
-    	}
+        // If the content channel is not open for the file then start a transaction
+        
+        if ( file instanceof ContentNetworkFile)
+        {
+            ContentNetworkFile contentFile = (ContentNetworkFile) file;
+            
+            if ( contentFile.hasContent() == false)
+                beginReadTransaction( sess);
+        }
 
         //  Check if there is a quota manager
         
@@ -3664,8 +3806,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             quotaMgr.allocateSpace(sess, tree, file, extendSize);
           }
         }
-    	
-    	// Write to the file
+        
+        // Write to the file
         
         file.writeFile(buffer, size, bufferOffset, fileOffset);
 
@@ -3714,11 +3856,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( fstate != null && fstate.hasFilesystemObject() && fstate.exists() )
             {
                 // Check that the node exists
-            	
+                
                 if (fileFolderService.exists((NodeRef) fstate.getFilesystemObject()))
                 {
-                	// Bump the file states expiry time
-                	
+                    // Bump the file states expiry time
+                    
                     fstate.setExpiryTime(System.currentTimeMillis() + FileState.DefTimeout);
                     
                     // Return the cached noderef
@@ -3746,33 +3888,33 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @exception FileNotFoundException
      */
     public String getPathForNode( TreeConnection tree, NodeRef nodeRef)
-    	throws FileNotFoundException
+        throws FileNotFoundException
     {
-    	// Convert the target node to a path
-    	
+        // Convert the target node to a path
+        
         ContentContext ctx = (ContentContext) tree.getContext();
-    	List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
-    	
-    	try {
-    		linkPaths = fileFolderService.getNamePath( ctx.getRootNode(), nodeRef);
-    	}
-    	catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
-    	{
-    		throw new FileNotFoundException();
-    	}
+        List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
+        
+        try {
+            linkPaths = fileFolderService.getNamePath( ctx.getRootNode(), nodeRef);
+        }
+        catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
+        {
+            throw new FileNotFoundException();
+        }
 
-    	// Build the share relative path to the node
-    	
-    	StringBuilder pathStr = new StringBuilder();
-    	
-    	for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) {
-    		pathStr.append( FileName.DOS_SEPERATOR);
-    		pathStr.append( fInfo.getName());
-    	}
-    	
-    	// Return the share relative path
-    	
-    	return pathStr.toString();
+        // Build the share relative path to the node
+        
+        StringBuilder pathStr = new StringBuilder();
+        
+        for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) {
+            pathStr.append( FileName.DOS_SEPERATOR);
+            pathStr.append( fInfo.getName());
+        }
+        
+        // Return the share relative path
+        
+        return pathStr.toString();
     }
     
     /**
@@ -3825,68 +3967,68 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Nothing to do
     }
 
-	/**
-	 * Return the lock manager used by this filesystem
-	 * 
-	 * @param sess SrvSession
-	 * @param tree TreeConnection
-	 * @return LockManager
-	 */
-	public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
-		return _lockManager;
-	}
-	
-	/**
-	 * Return the oplock manager implementation associated with this virtual filesystem
-	 * 
-	 * @param sess SrvSession
-	 * @param tree TreeConnection
-	 * @return OpLockManager
-	 */
-	public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree) {
-		return _lockManager;
-	}
-	
-	/**
-	 * Enable/disable oplock support
-	 * 
-	 * @param sess SrvSession
-	 * @param tree TreeConnection
-	 * @return boolean
-	 */
-	public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree) {
-		
+    /**
+     * Return the lock manager used by this filesystem
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @return LockManager
+     */
+    public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
+        return _lockManager;
+    }
+    
+    /**
+     * Return the oplock manager implementation associated with this virtual filesystem
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @return OpLockManager
+     */
+    public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree) {
+        return _lockManager;
+    }
+    
+    /**
+     * Enable/disable oplock support
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @return boolean
+     */
+    public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree) {
+        
         // Check if oplocks are enabled
         
         ContentContext ctx = (ContentContext) tree.getContext();
         return ctx.getDisableOplocks() ? false : true;
-	}
-	
-	/**
-	 * Copy content data from file to file
-	 * 
-	 * @param sess SrvSession
-	 * @param tree TreeConnection
-	 * @param fromNode NodeRef
-	 * @param toNode NodeRef
-	 * @param newName String
-	 */
-	private void copyContentData( SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode, String newName)
-	{
+    }
+    
+    /**
+     * Copy content data from file to file
+     * 
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param fromNode NodeRef
+     * @param toNode NodeRef
+     * @param newName String
+     */
+    private void copyContentData( SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode, String newName)
+    {
         ContentData content = (ContentData) nodeService.getProperty(fromNode, ContentModel.PROP_CONTENT);
         if ( newName != null)
             content = ContentData.setMimetype( content, mimetypeService.guessMimetype( newName));
         nodeService.setProperty(toNode, ContentModel.PROP_CONTENT, content);
-	}
-	
+    }
+    
     
     /**
      * Clone/move aspects/properties between nodes
      * 
-     * @param newName String
-     * @param fromNode NodeRef
-     * @param toNode NodeRef
-     * @param ctx ContentContext
+     * @param newName new name of the file
+     * @param fromNode NodeRef the node to copy from
+     * @param toNode NodeRef the node to copy to
+     * @param ctx Filesystem Context
      */
     private void cloneNodeAspects( String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx)
     {
@@ -3975,8 +4117,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
 
         // Copy over all other properties from non system namespaces
-
-        for ( Map.Entry<QName, Serializable> entry : nodeService.getProperties(fromNode).entrySet()) {
+        Map<QName, Serializable> fromProps = nodeService.getProperties(fromNode);
+        for ( Map.Entry<QName, Serializable> entry : fromProps.entrySet()) {
             QName propName = entry.getKey();
             if (!_excludedNamespaces.contains(propName.getNamespaceURI()))
             {
@@ -4012,10 +4154,24 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( nodeProp != null)
                 nodeService.setProperty( toNode, propName, nodeProp);
         }
+        
     } 
     
-    private void cloneNode(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx) {
-    	cloneNodeAspects(newName, fromNode, toNode, ctx);
+    /**
+     * Clone node
+     * 
+     * @param newName the new name of the node
+     * @param fromNode the node to copy from
+     * @param toNode the node to copy to
+     * @param ctx
+     */
+    private void cloneNode(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx) 
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("clone node from fromNode:" + fromNode + "toNode:" + toNode);
+        }
+        cloneNodeAspects(newName, fromNode, toNode, ctx);
 
         // copy over the node creator and owner properties
         // need to disable the auditable aspect first to prevent default audit behaviour
@@ -4023,22 +4179,47 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         try
         {
         	nodeService.setProperty(toNode, ContentModel.PROP_CREATOR, nodeService.getProperty(fromNode, ContentModel.PROP_CREATOR));
-        	nodeService.setProperty(toNode, ContentModel.PROP_OWNER, nodeService.getProperty(fromNode, ContentModel.PROP_OWNER));
+        	ownableService.setOwner(toNode, ownableService.getOwner(fromNode));
         }
         finally
         {
-        	if(!alreadyDisabled)
-	        {
-        		policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-	        }
+            if(!alreadyDisabled)
+            {
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            }
         }
         
-    	Set<AccessPermission> permissions = permissionService.getAllSetPermissions(fromNode);
-    	permissionService.deletePermissions(fromNode);
-    	for(AccessPermission permission : permissions)
-    	{
-    		permissionService.setPermission(toNode, permission.getAuthority(), permission.getPermission(), (permission.getAccessStatus() == AccessStatus.ALLOWED));
-    	}
+        Set<AccessPermission> permissions = permissionService.getAllSetPermissions(fromNode);
+        boolean inheritParentPermissions = permissionService.getInheritParentPermissions(fromNode);
+        permissionService.deletePermissions(fromNode);
+        
+        permissionService.setInheritParentPermissions(toNode, inheritParentPermissions);        
+        for(AccessPermission permission : permissions)
+        {
+            permissionService.setPermission(toNode, permission.getAuthority(), permission.getPermission(), (permission.getAccessStatus() == AccessStatus.ALLOWED));
+        }
+        
+        // Need to take a new guess at the mimetype based upon the new file name.
+        ContentData content = (ContentData)nodeService.getProperty(toNode, ContentModel.PROP_CONTENT);
+            
+        // Take a guess at the mimetype (if it has not been set by something already)
+        if (content != null && (content.getMimetype() == null || content.getMimetype().equals(MimetypeMap.MIMETYPE_BINARY)))
+        {
+            String mimetype = mimetypeService.guessMimetype(newName);
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("set new mimetype to:" + mimetype);
+            }
+            ContentData replacement = ContentData.setMimetype(content, mimetype);
+            nodeService.setProperty(toNode, ContentModel.PROP_CONTENT, replacement);
+        }
+
+        // Extract metadata pending change for ALF-5082
+        Action action = getActionService().createAction("extract-metadata");
+        if(action != null)
+        {
+            getActionService().executeAction(action, toNode);
+        }
     }
     
     /**
@@ -4074,37 +4255,58 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         return fstatus;
     }
     
+    private boolean isRenameShuffle(String oldFilename, String newFilename, Pattern renameShufflePattern) 
+    {
+    	boolean renameShuffle = false;
+        String oldNameLower = oldFilename.toLowerCase();
+        String newNameLower = newFilename.toLowerCase();
+        renameShuffle = renameShuffle || renameShufflePattern.matcher(oldNameLower).matches();
+        renameShuffle = renameShuffle || renameShufflePattern.matcher(newNameLower).matches();
+
+    	return renameShuffle;
+    }
+    
     /**
      * Get the disk information for this shared disk device.
      *
-     * @param ctx		DiskDeviceContext
-     * @param diskDev 	SrvDiskInfo
+     * @param ctx       DiskDeviceContext
+     * @param diskDev   SrvDiskInfo
      * @exception IOException
      */
     public void getDiskInformation(DiskDeviceContext ctx, SrvDiskInfo diskDev)
       throws IOException {
-    	
-    	// Set the block size and blocks per allocation unit
-    	
-    	diskDev.setBlockSize( DiskBlockSize);
-    	diskDev.setBlocksPerAllocationUnit( DiskBlocksPerUnit);
-    	
-    	// Get the free and total disk size in bytes from the content store
-    	
-    	long freeSpace = contentService.getStoreFreeSpace();
-    	long totalSpace= contentService.getStoreTotalSpace();
-    	
-    	if ( totalSpace == -1L) {
-    		
-    		// Use a fixed value for the total space, content store does not support size information
-    		
-    		totalSpace = DiskSizeDefault;
-    		freeSpace  = DiskFreeDefault;
-    	}
+        
+        // Set the block size and blocks per allocation unit
+        
+        diskDev.setBlockSize( DiskBlockSize);
+        diskDev.setBlocksPerAllocationUnit( DiskBlocksPerUnit);
+        
+        // Get the free and total disk size in bytes from the content store
+        
+        long freeSpace = contentService.getStoreFreeSpace();
+        long totalSpace= contentService.getStoreTotalSpace();
+        
+        if ( totalSpace == -1L) {
+            
+            // Use a fixed value for the total space, content store does not support size information
+            
+            totalSpace = DiskSizeDefault;
+            freeSpace  = DiskFreeDefault;
+        }
 
-    	// Convert the total/free space values to allocation units
-    	
-    	diskDev.setTotalUnits( totalSpace / DiskAllocationUnit);
-    	diskDev.setFreeUnits( freeSpace / DiskAllocationUnit);
+        // Convert the total/free space values to allocation units
+        
+        diskDev.setTotalUnits( totalSpace / DiskAllocationUnit);
+        diskDev.setFreeUnits( freeSpace / DiskAllocationUnit);
+    }
+
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
+
+    public ActionService getActionService()
+    {
+        return actionService;
     }
 }

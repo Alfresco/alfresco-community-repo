@@ -33,6 +33,17 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
+/**
+ * Uses javax.mail.MimeMessage to generate plain text versions of
+ *  RFC822 email messages.
+ * Searches for all text content parts, and returns them. Any
+ *  attachments are ignored.
+ * 
+ * TIKA Note - could be replaced with the Tika email parser. Would
+ *  require a recursing parser to be specified, but not the full
+ *  Auto one (we don't want attachments), just one containing
+ *  text and html related parsers.
+ */
 public class EMLTransformer extends AbstractContentTransformer2
 {
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)

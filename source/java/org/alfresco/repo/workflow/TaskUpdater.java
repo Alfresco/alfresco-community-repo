@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -56,11 +57,12 @@ public class TaskUpdater
 
     public TaskUpdater(String taskId,
                 WorkflowService workflowService,
-                NodeService nodeService)
+                NodeService nodeService,
+                BehaviourFilter behaviourFilter)
     {
         this.taskId = taskId;
         this.workflowService = workflowService;
-        this.packageMgr = new PackageManager(workflowService, nodeService, LOGGER);
+        this.packageMgr = new PackageManager(workflowService, nodeService, behaviourFilter, LOGGER);
     }
 
 

@@ -42,6 +42,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.util.PropertyCheck;
+import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.TypeNames;
@@ -130,7 +131,7 @@ public class Main
     @SuppressWarnings("unchecked")
     private void init(final Dialect dialect) throws Exception
     {
-        this.scaleCharacters = dialect instanceof Oracle8iDialect;
+        this.scaleCharacters = (dialect instanceof Oracle8iDialect) || (dialect instanceof DB2Dialect);
         final Field typeNamesField = Dialect.class.getDeclaredField("typeNames");
         typeNamesField.setAccessible(true);
         final TypeNames typeNames = (TypeNames) typeNamesField.get(dialect);

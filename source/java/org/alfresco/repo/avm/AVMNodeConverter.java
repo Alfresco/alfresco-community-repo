@@ -50,7 +50,7 @@ public class AVMNodeConverter
         }
         StoreRef storeRef = ToStoreRef(pathParts[0]);
         String translated = version + pathParts[1];
-        translated = translated.replaceAll("/+", ";");
+        translated = translated.replaceAll("/+", "|");
         return new NodeRef(storeRef, translated);
     }
     
@@ -73,7 +73,17 @@ public class AVMNodeConverter
     {
         StoreRef store = nodeRef.getStoreRef();
         String translated = nodeRef.getId();
-        translated = translated.replace(';', AVMUtil.AVM_PATH_SEPARATOR_CHAR);
+        
+        if (translated.indexOf('|') != -1)
+        {
+            // we assume that this is the new style avm path
+            translated = translated.replace('|', AVMUtil.AVM_PATH_SEPARATOR_CHAR);
+        }
+        else
+        {
+            // this is the old style avm path
+            translated = translated.replace(';', AVMUtil.AVM_PATH_SEPARATOR_CHAR);
+        }
         int off = translated.indexOf(AVMUtil.AVM_PATH_SEPARATOR_CHAR);
         if (off == -1)
         {

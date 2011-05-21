@@ -56,8 +56,8 @@ public class AVMStressTestP extends AVMServiceTestBase
                         10,  // create file
                         2,  // create dir
                         2,  // rename
-                        0,  // create layered dir  // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
-                        0,  // create layered file // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
+                        2,  // create layered dir  // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
+                        2,  // create layered file // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
                         5,  // remove node
                         10,  // modify file
                         50,  // read file

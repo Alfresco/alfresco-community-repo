@@ -90,6 +90,7 @@
        <property name="postCreateScriptUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -136,6 +137,8 @@
              <ref bean="patch.db-V3.4-child-assoc-indexes" />
              <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
              <ref bean="patch.db-V3.4-AVM-rename-dupes" />
+             <ref bean="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
+             <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
           </list>
        </property>
     </bean>
@@ -520,6 +523,21 @@
             <value>org.alfresco.filesys.ExtendedServerConfigurationAccessor</value>
             <!-- Allow export as MBean -->
             <value>org.alfresco.filesys.FileServerConfigMBean</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="contentDiskDriver" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="fileServers" />
+      </property>
+      <property name="sourceBeanName">
+         <value>contentDiskDriver</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <!--  Allow authentication subsystem to see content disk driver at runtime -->
+            <value>org.alfresco.jlan.server.filesys.DiskInterface</value>
          </list>
       </property>
    </bean>

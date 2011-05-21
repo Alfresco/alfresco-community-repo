@@ -53,9 +53,14 @@ import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -69,18 +74,19 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.SerializationUtils;
-import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -92,8 +98,6 @@ import org.springframework.util.Assert;
  * <p>
  * This provides basic services such as caching, but defers to the underlying implementation
  * for CRUD operations. 
- * <p>
- * TODO: Timestamp propagation
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -113,8 +117,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private NodePropertyHelper nodePropertyHelper;
     private ServerIdCallback serverIdCallback = new ServerIdCallback();
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
+    private AuditableTransactionListener auditableTransactionListener = new AuditableTransactionListener();
     private RetryingCallbackHelper childAssocRetryingHelper;
+    
+    private boolean enableTimestampPropagation;
 
+    private TransactionService transactionService;
     private DictionaryService dictionaryService;
     private BehaviourFilter policyBehaviourFilter;
     private AclDAO aclDAO;
@@ -175,6 +183,26 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<Long, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
         parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, Serializable>(new ParentAssocsCallbackDAO());
+    }
+
+    /**
+     * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
+     * where the parent-child relationship has been marked using <b>propagateTimestamps<b/>.
+     * 
+     * @param enableTimestampPropagation        <tt>true</tt> to propagate timestamps to the parent
+     *                                          node where appropriate
+     */
+    public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
+    {
+        this.enableTimestampPropagation = enableTimestampPropagation;
+    }
+
+    /**
+     * @param transactionService        the service to start post-txn processes
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -322,6 +350,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     public void init()
     {
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "aclDAO", aclDAO);
         PropertyCheck.mandatory(this, "accessControlListDAO", accessControlListDAO);
@@ -894,6 +923,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
         parentAssocsCache.setValue(nodeId, parentAssocsInfo);
         
+        // Ensure that cm:auditable values are propagated, if required
+        if (enableTimestampPropagation)
+        {
+            propagateTimestamps(nodeId);
+        }
+        
         if (isDebugEnabled)
         {
             logger.debug(
@@ -1037,6 +1072,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             else
             {
                 oldParentNodeId = primaryParentAssoc.getParentNode().getId();
+                
+                // Update the parent node, if required
+                propagateTimestamps(childNodeId);
             }
         }
        
@@ -1402,6 +1440,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             newNodeImpl(oldStore, oldUuid, ContentModel.TYPE_CMOBJECT, null, true, null);
         }
         
+        // Ensure that cm:auditable values are propagated, if required
+        if (enableTimestampPropagation &&
+                nodeUpdate.isUpdateAuditableProperties() &&
+                nodeUpdate.getAuditableProperties() != null)
+        {
+            propagateTimestamps(nodeId);
+        }
+        
         // Update the caches
         nodeUpdate.lock();
         nodesCache.setValue(nodeId, nodeUpdate);
@@ -1420,7 +1466,133 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     "   NEW: " + nodeUpdate);
         }
     }
-
+    
+    private static final String KEY_AUDITABLE_PROPAGATION = "node.auditable.propagation";
+    private static final String KEY_AUDITABLE_PROPAGATION_DISABLE = "node.auditable.propagation.disable";
+    /**
+     * Schedule auditable property propagation for the post-commit phase
+     * 
+     * @param childNodeId           the ID of the node that has auditable properties changed
+     */
+    private void propagateTimestamps(Long childNodeId)
+    {
+        if (!enableTimestampPropagation)
+        {
+            return;                             // Don't propagate
+        }
+        // Get the current timestamp
+        Node childNode = getNodeNotNull(childNodeId);
+        if (childNode.getAuditableProperties() == null)
+        {
+            return;                             // Not auditable
+        }
+        String modified = childNode.getAuditableProperties().getAuditModified();
+        // Check the parent association
+        ChildAssocEntity primaryParentAssoc = getPrimaryParentAssocImpl(childNodeId);
+        if (primaryParentAssoc == null)
+        {
+            return;                             // This is a root
+        }
+        // Check the association type
+        Long assocTypeQNameId = primaryParentAssoc.getTypeQNameId();
+        Pair<Long, QName> assocTypeQNamePair = qnameDAO.getQName(assocTypeQNameId);
+        if (assocTypeQNamePair == null)
+        {
+            return;                             // Unknown association type
+        }
+        AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQNamePair.getSecond());
+        if (!assocDef.isChild() || !((ChildAssociationDefinition)assocDef).getPropagateTimestamps())
+        {
+            return;                             // Don't propagate
+        }
+        
+        // Record the parent node ID for update
+        Long parentNodeId = primaryParentAssoc.getParentNode().getId();
+        Map<Long, String> modifiedDatesById = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION);
+        String existingModified = modifiedDatesById.get(parentNodeId);
+        if (existingModified != null && existingModified.compareTo(modified) > 0)
+        {
+            return;                             // Already have a later date ready to go
+        }
+        modifiedDatesById.put(parentNodeId, modified);
+        
+        // Bind a listener for post-transaction manipulation
+        AlfrescoTransactionSupport.bindListener(auditableTransactionListener);
+    }
+    
+    /**
+     * Wrapper to update the current transaction to get the change time correct
+     * 
+     * @author Derek Hulley
+     * @since 3.4.2
+     */
+    private class AuditableTransactionListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void afterCommit()
+        {
+            // Check if we are already propagating
+            if (AlfrescoTransactionSupport.getResource(KEY_AUDITABLE_PROPAGATION_DISABLE) != null)
+            {
+                // This is a propagating transaction, so do nothing
+                return;
+            }
+            
+            Map<Long, String> modifiedDatesById = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION);
+            if (modifiedDatesById.size() == 0)
+            {
+                return;
+            }
+            // Walk through the IDs, processing groups
+            for (Map.Entry<Long, String> entry: modifiedDatesById.entrySet())
+            {
+                Long parentNodeId = entry.getKey();
+                String modified = entry.getValue();
+                processBatch(parentNodeId, modified);
+            }
+        }
+        
+        private void processBatch(final Long parentNodeId, final String modified)
+        {
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setMaxRetries(1);
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Disable all behaviour.
+                    // This only affects cm:auditable and is discarded at the end of this txn
+                    policyBehaviourFilter.disableAllBehaviours();
+                    // Tag the transaction to prevent further propagation
+                    AlfrescoTransactionSupport.bindResource(KEY_AUDITABLE_PROPAGATION_DISABLE, Boolean.TRUE);
+                    
+                    Pair<Long, NodeRef> parentNodePair = getNodePair(parentNodeId);
+                    if (parentNodePair == null)
+                    {
+                        return null;                            // Parent has gone away
+                    }
+                    // Modify the parent with the new date (if it needs)
+                    // Disable cm:auditable for the parent so that we can set it manually
+                    addNodeProperty(parentNodeId, ContentModel.PROP_MODIFIED, modified);
+                    return null;
+                }
+            };
+            try
+            {
+                txnHelper.doInTransaction(callback, false, true);
+                if (isDebugEnabled)
+                {
+                    logger.debug("Propagated timestamps from node: " + parentNodeId);
+                }
+            }
+            catch (Throwable e)
+            {
+                logger.info("Failed to update auditable properties for nodes: " + parentNodeId);
+            }
+        }
+    }
+    
     public void setNodeAclId(Long nodeId, Long aclId)
     {
         Node oldNode = getNodeNotNull(nodeId);
@@ -1453,6 +1625,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     public void deleteNode(Long nodeId)
     {
+        // Ensure that cm:auditable values are propagated, if required
+        if (enableTimestampPropagation)
+        {
+            propagateTimestamps(nodeId);
+        }
+        
         Node node = getNodeNotNull(nodeId);
         Long aclId = node.getAclId();           // Need this later
         

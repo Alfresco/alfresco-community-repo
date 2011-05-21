@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-access="field">
+
+  <subclass name="org.alfresco.repo.workflow.jbpm.AlfrescoTaskNode"
+            discriminator-value="S"
+            extends="org.jbpm.graph.node.TaskNode">
+
+  </subclass>
+
+</hibernate-mapping>

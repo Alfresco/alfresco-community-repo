@@ -34,8 +34,8 @@ public class DesktopActionException extends Exception {
 	/**
 	 * Class constructor
 	 * 
-	 * @param sts int
-	 * @param msg String
+	 * @param sts numeric status code.
+	 * @param msg readable error message
 	 */
 	public DesktopActionException(int sts, String msg)
 	{

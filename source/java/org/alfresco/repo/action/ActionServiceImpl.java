@@ -682,7 +682,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
                 if (logger.isDebugEnabled() == true)
                 {
-                    logger.debug("Adding " + action.getId() + " to action chain.");
+                    logger.debug("Adding " + action.getActionDefinitionName() + ", " + action.getId() + " to action chain.");
                 }
 
                 try
@@ -1587,7 +1587,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             if (pendingActions.contains(pendingAction) == false)
             {
                 pendingActions.add(pendingAction);
-                actionTrackingService.recordActionPending(action);
+                
+                if (getTrackStatus(action))
+                {
+                    actionTrackingService.recordActionPending(action);
+                }
             }
         }
     }

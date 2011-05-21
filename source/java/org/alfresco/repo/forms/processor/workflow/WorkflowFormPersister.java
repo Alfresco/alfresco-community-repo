@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.workflow.WorkflowBuilder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,11 +50,11 @@ public class WorkflowFormPersister extends ContentModelFormPersister<WorkflowIns
                 DictionaryService dictionaryService,
                 WorkflowService workflowService,
                 NodeService nodeService,
-                Log logger)
+                BehaviourFilter behaviourFilter, Log logger)
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowDefinition definition = (WorkflowDefinition) itemData.getItem();
-        this.builder = new WorkflowBuilder(definition, workflowService, nodeService);
+        this.builder = new WorkflowBuilder(definition, workflowService, nodeService, behaviourFilter);
     }
 
     /* (non-Javadoc)

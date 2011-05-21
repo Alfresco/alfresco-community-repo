@@ -16,9 +16,9 @@
   [@linksLib.linkvia href="${nodeuri}"/]
 [/@feedLib.node]
 
-[#if parent?? && parent.isContainer]
+[#list parents as parent]
   [@entryLib.folder node=parent renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships relativePathSegment=node.name/]
-[/#if]
+[/#list]
 
 </feed>
 

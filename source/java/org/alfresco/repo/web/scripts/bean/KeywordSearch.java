@@ -29,6 +29,7 @@ import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -66,34 +67,28 @@ public class KeywordSearch extends DeclarativeWebScript
     protected ServiceRegistry serviceRegistry;
     protected RepositoryImageResolver imageResolver;
     protected SearchService searchService;
+    protected NodeService nodeService;
 
-    /**
-     * @param searchService
-     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
 
-    /**
-     * @param imageResolver
-     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     public void setRepositoryImageResolver(RepositoryImageResolver imageResolver)
     {
         this.imageResolver = imageResolver;
     }
 
-    /**
-     * @param serviceRegistry
-     */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -148,10 +143,6 @@ public class KeywordSearch extends DeclarativeWebScript
     
     /**
      * Execute the search
-     * 
-     * @param searchTerms
-     * @param startPage
-     * @return
      */
     private SearchResult search(String searchTerms, int startPage, int itemsPerPage, Locale locale, WebScriptRequest req)
     {
@@ -229,6 +220,11 @@ public class KeywordSearch extends DeclarativeWebScript
             for (int i = 0; i < searchResult.getTotalPageItems(); i++)
             {
                 NodeRef node = results.getNodeRef(i + searchResult.getStartIndex() - 1);
+                // Make the search resilient to invalid nodes
+                if (!nodeService.exists(node))
+                {
+                    continue;
+                }
                 float score = results.getScore(i + searchResult.getStartIndex() - 1);
                 nodes[i] = new SearchTemplateNode(node, score);
             }
@@ -383,9 +379,6 @@ public class KeywordSearch extends DeclarativeWebScript
 
         /**
          * Construct
-         * 
-         * @param nodeRef
-         * @param score
          */
         public SearchTemplateNode(NodeRef nodeRef, float score)
         {
@@ -395,17 +388,12 @@ public class KeywordSearch extends DeclarativeWebScript
         
         /**
          * Gets the result row score
-         * 
-         * @return  score
          */
         public float getScore()
         {
             return score;
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.template.BaseContentNode#getUrl()
-         */
         @Override
         public String getUrl()
         {
@@ -416,5 +404,4 @@ public class KeywordSearch extends DeclarativeWebScript
                 URLEncoder.encode(getName()) } );
         }
     }
-    
 }

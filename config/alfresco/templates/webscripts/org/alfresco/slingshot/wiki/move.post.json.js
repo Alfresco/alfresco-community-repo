@@ -58,20 +58,20 @@ function main()
    
    var placeholder = createWikiPage(currentName, wiki,
    {
-      content: "This page has been moved [["  + newName + "|here]]."
+      content: msg.get("page-moved") + " [[" + newName + "|" + msg.get("page-moved-here") + "]]."
    });
-      
+   
    var data =
    {
       title: newName.replace(/_/g, " "),
       page: json.get("page") + "?title=" + newName,
       custom0: currentName.replace(/_/g, " ")
    }
-
+   
    activities.postActivity("org.alfresco.wiki.page-renamed", params.siteId, "wiki", jsonUtils.toJSONString(data));
    
    return (
    {
-      name: newName // Return the new name to the client (?)
+      name: newName // Return the new name to the client
    });
 }

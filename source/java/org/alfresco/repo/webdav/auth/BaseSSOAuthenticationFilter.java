@@ -72,6 +72,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     
     private boolean m_isActive = true;
             
+    protected static final String MIME_HTML_TEXT = "text/html";
+
     /**
      * @param serverConfiguration the serverConfiguration to set
      */
@@ -515,6 +517,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     {
         if ( hasLoginPage())
         {
+            resp.setContentType(MIME_HTML_TEXT);
+
             final PrintWriter out = resp.getWriter();
             out.println("<html><head>");
             out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + 

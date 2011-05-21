@@ -755,8 +755,6 @@ public class RuleServiceTest extends BaseWebScriptTest
         // build parameterValues
         JSONObject parameterValues = new JSONObject();
         parameterValues.put("destination-folder", destination);
-        parameterValues.put("assoc-name", "cm:copy");
-        parameterValues.put("assoc-type", "cm:contains");
 
         // add parameterValues
         result.put("parameterValues", parameterValues);

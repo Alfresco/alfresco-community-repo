@@ -389,8 +389,6 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    width: 87px;
    height: 20px;
    border: 1px solid #ffffff;
-   float: left;
-   display: block;
    padding: 10px 0px 8px 36px;
    cursor: pointer;
 }

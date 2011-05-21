@@ -22,7 +22,7 @@
 
 [#if depth &gt; 0 || depth == -1]
 [#list cmischildren(node, "folders") as child]
-  [@entryLib.foldertree node=child renditionfilter=renditionFilter propfilter=propFilter includeallowableactions=includeAllowableActions includerelationships=includeRelationships maxdepth=depth/]
+  [@entryLib.foldertree node=child renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships maxdepth=depth/]
 [/#list]
 [/#if]
 

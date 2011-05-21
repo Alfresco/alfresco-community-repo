@@ -28,11 +28,11 @@ function createNode(parent, entry, slug, versioningState)
     var baseType = type.typeId.baseTypeId;
     if (baseType == DOCUMENT_TYPE_ID)
     {
-        node = parent.createFile(name);
+        node = parent.createFile(name, type.typeId.QName);
     }
     else if (baseType == FOLDER_TYPE_ID)
     {
-        node = parent.createFolder(name);
+        node = parent.createFolder(name, type.typeId.QName);
     }
     else if (baseType == POLICY_TYPE_ID)
     {
@@ -46,18 +46,6 @@ function createNode(parent, entry, slug, versioningState)
         return null;
     }
 
-    // specialize to required custom type
-    if (type.typeId != DOCUMENT_TYPE_ID && type.typeId != FOLDER_TYPE_ID)
-    {
-        if (!node.specializeType(type.typeId.QName))
-        {
-            status.code = 400;
-            status.message = "Cannot create object of type " + typeId;
-            status.redirect = true;
-            return null;
-        }
-    }
-    
     // update node properties (excluding object type & name)
     var exclude = [ PROP_OBJECT_TYPE_ID, PROP_NAME ];
     var updated = updateNode(node, entry, exclude, function(propDef) {return patchValidator(propDef, true);});

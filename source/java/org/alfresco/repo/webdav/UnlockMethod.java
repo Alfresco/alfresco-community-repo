@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.util.LinkedList;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -166,7 +166,7 @@ public class UnlockMethod extends WebDAVMethod
             String sharedLocks = (String) nodeService.getProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_SHARED_LOCK_TOKENS);
             if (sharedLocks != null)
             {
-                LinkedList<String> locks = LockInfo.parseSharedLockTokens(sharedLocks);
+                Set<String> locks = LockInfo.parseSharedLockTokens(sharedLocks);
                 
                 if (locks != null && locks.contains(m_strLockToken))
                 {

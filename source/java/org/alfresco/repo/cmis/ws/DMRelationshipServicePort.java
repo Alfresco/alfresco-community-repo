@@ -45,7 +45,7 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         RELATIONSHIP_DIRECTION_MAPPING = new HashMap<EnumRelationshipDirection, CMISRelationshipDirectionEnum>(5);
         RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.SOURCE, CMISRelationshipDirectionEnum.SOURCE);
         RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.TARGET, CMISRelationshipDirectionEnum.TARGET);
-        RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.EITHER, CMISRelationshipDirectionEnum.BOTH);
+        RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.EITHER, CMISRelationshipDirectionEnum.EITHER);
     }
 
     /**

@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -57,8 +58,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WebScriptStatus;
 import org.springframework.util.FileCopyUtils;
-
-import de.schlichtherle.io.FileOutputStream;
 
 /**
  * Web script 'type' that can be used when the binary data of a content property needs to be streamed back to the client

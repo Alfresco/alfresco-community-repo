@@ -66,7 +66,7 @@
                      <td>
                         <div class="taskManage">
                            <ul>
-                              <li><a href="#" onclick="event.cancelBubble=true; openWindowCallback('${url.context}/command/ui/managetask?id=${t.id}&amp;type=${t.qnameType}&amp;container=plain', MyTasks.manageTaskCallback);"><span><img src="${url.context}/images/icons/manage_workflow_task.gif" align="top" alt="" border="0"> ${message("portlets.mytaskspanel.manage_task")}</span></a></li>
+                              <li><a href="#" onclick="event.cancelBubble=true; openWindowCallback('${url.context}/command/ui/managetask?id=${t.id}&amp;type=${t.qnameType}&amp;container=plain', MyTasks.manageTaskCallback);"><span style="white-space:nowrap"><img src="${url.context}/images/icons/manage_workflow_task.gif" align="top" alt="" border="0"> ${message("portlets.mytaskspanel.manage_task")}</span></a></li>
                            </ul>
                         </div>
                      </td>

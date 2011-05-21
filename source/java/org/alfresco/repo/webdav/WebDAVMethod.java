@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -656,6 +658,16 @@ public abstract class WebDAVMethod
     }
     
     /**
+     * Convenience method to return the permission service
+     * 
+     * @return PermissionService
+     */
+    protected final PermissionService getPermissionService()
+    {
+        return m_davHelper.getPermissionService();
+    }
+    
+    /**
      * Convenience method to return the authentication service
      * 
      * @return AuthenticationService
@@ -912,7 +924,7 @@ public abstract class WebDAVMethod
     private void checkLockToken(LockInfo lockInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
     {
         String nodeLockToken = lockInfo.getToken();
-        LinkedList<String> sharedLockTokens = lockInfo.getSharedLockTokens();
+        Set<String> sharedLockTokens = lockInfo.getSharedLockTokens();
         
         if (m_conditions != null)
         {

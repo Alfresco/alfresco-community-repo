@@ -9,7 +9,16 @@ script:
         break script;
     }
     model.node = object.node;
-    model.parent = model.node.parent;
+    
+    var parents = [];
+    for each (var parent in model.node.parents)
+    {
+        if (parent.hasPermission("Read") && parent.isContainer)
+        {
+            parents.push(parent);
+        }
+    }
+    model.parents = parents;
  
     // property filter 
     model.filter = args[cmis.ARG_FILTER];

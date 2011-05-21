@@ -87,7 +87,15 @@ public class CMISAssocsMethod implements TemplateMethodModelEx
             arg = args.get(i++);
             if (arg instanceof TemplateScalarModel)
             {
-                direction = CMISRelationshipDirectionEnum.FACTORY.fromLabel(((TemplateScalarModel)arg).getAsString());
+                String strDirection = ((TemplateScalarModel)arg).getAsString();
+                if (strDirection.equalsIgnoreCase(("both")))
+                {
+                    direction = CMISRelationshipDirectionEnum.EITHER;
+                }
+                else
+                {
+                    direction = CMISRelationshipDirectionEnum.FACTORY.fromLabel(strDirection);
+                }
             }
         }
         catch (IndexOutOfBoundsException e)

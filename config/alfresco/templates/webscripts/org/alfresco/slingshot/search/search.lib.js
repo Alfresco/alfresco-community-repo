@@ -21,7 +21,7 @@ const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 const DISCUSSION_QNAMEPATH = "/fm:discussion";
 const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments/";
 const QUERY_TEMPLATES = [
-   {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
+   {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)"}];
 
 /**
  * Returns site information data structure.
@@ -666,11 +666,13 @@ function getSearchResults(params)
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
-      ftsQuery = "(" + term + " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\") ";
+	  // TAG is now part of the default macro
+      ftsQuery = term + " ";
    }
    else if (tag !== null && tag.length !== 0)
    {
-      ftsQuery = "PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
+	  // Just look for tag
+      ftsQuery = "TAG:" + tag +" ";
    }
    
    // Advanced search form data search.
@@ -787,7 +789,7 @@ function getSearchResults(params)
       
       if (path != null)
       {
-         ftsQuery = 'PATH:"' + path + '/*" AND ' + ftsQuery;
+         ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail"';
       

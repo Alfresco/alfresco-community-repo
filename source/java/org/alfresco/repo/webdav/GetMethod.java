@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 
@@ -166,8 +167,13 @@ public class GetMethod extends WebDAVMethod
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
         
+        FileInfo realNodeInfo = nodeInfo;
+        if (nodeInfo.isLink())
+        {
+            realNodeInfo = getFileFolderService().getFileInfo(nodeInfo.getLinkNodeRef());
+        }
         // Check if the node is a folder
-        if (nodeInfo.isFolder())
+        if (realNodeInfo.isFolder())
         {
             // is content required
             if (!m_returnContent)
@@ -182,27 +188,27 @@ public class GetMethod extends WebDAVMethod
         }
         else
         {
-            NodeRef pathNodeRef = nodeInfo.getNodeRef();
+            NodeRef pathNodeRef = realNodeInfo.getNodeRef();
             // Return the node details, and content if requested, check that the node passes the pre-conditions
 
-            checkPreConditions(nodeInfo);
+            checkPreConditions(realNodeInfo);
 
             // Build the response header
             m_response.setHeader(WebDAV.HEADER_ETAG, getDAVHelper().makeQuotedETag(pathNodeRef));
 
-            Date modifiedDate = nodeInfo.getModifiedDate();
+            Date modifiedDate = realNodeInfo.getModifiedDate();
             if (modifiedDate != null)
             {
                 long modDate = DefaultTypeConverter.INSTANCE.longValue(modifiedDate);
                 m_response.setHeader(WebDAV.HEADER_LAST_MODIFIED, WebDAV.formatHeaderDate(modDate));
             }
 
-            ContentReader reader = fileFolderService.getReader(nodeInfo.getNodeRef());
+            ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
             // ensure that we generate something, even if the content is missing
             reader = FileContentReader.getSafeContentReader(
                     (ContentReader) reader,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
-                    nodeInfo.getNodeRef(), reader);
+                    realNodeInfo.getNodeRef(), reader);
             // there is content associated with the node
             m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
             m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
@@ -316,6 +322,12 @@ public class GetMethod extends WebDAVMethod
         {
             writer = m_response.getWriter();
 
+            boolean wasLink = false;
+            if (fileInfo.isLink())
+            {
+                fileInfo = getFileFolderService().getFileInfo(fileInfo.getLinkNodeRef());
+                wasLink = true;
+            }
             // Get the list of child nodes for the parent node
             List<FileInfo> childNodeInfos = fileFolderService.list(fileInfo.getNodeRef());
 
@@ -367,7 +379,22 @@ public class GetMethod extends WebDAVMethod
             {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;
             }
+            if (wasLink)
+            {
+                Path pathToNode = getNodeService().getPath(fileInfo.getNodeRef());
+                if (pathToNode.size() > 2)
+                {
+                    pathToNode = pathToNode.subPath(2, pathToNode.size() - 1);
+                }
 
+                rootURL = getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
+                if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
+                {
+                    rootURL = rootURL + WebDAVHelper.PathSeperator;
+                }
+
+                rootURL = rootURL + WebDAVHelper.encodeURL(fileInfo.getName(), m_userAgent) + WebDAVHelper.PathSeperator;
+            }
             // Start with a link to the parent folder so we can navigate back up, unless we are at the root level
             if (fileInfo.getNodeRef().equals(getRootNodeRef()) == false)
             {

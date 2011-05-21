@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -573,7 +574,7 @@ public class WebDAV
         str.append(WebDAV.OPAQUE_LOCK_TOKEN);
         str.append(lockNode.getId());
         str.append(LOCK_TOKEN_SEPERATOR);
-        str.append(owner);
+        str.append(ISO9075.encode(owner));
         
         return str.toString();
     }

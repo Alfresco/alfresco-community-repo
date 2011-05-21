@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
@@ -75,6 +76,7 @@ public class WebDAVHelper
     private MimetypeService m_mimetypeService;
     private LockService m_lockService;
     private AuthenticationService m_authService;
+    private PermissionService m_permissionService;
     
     //  Empty XML attribute list
     
@@ -94,6 +96,7 @@ public class WebDAVHelper
         m_dictionaryService = m_serviceRegistry.getDictionaryService();
         m_mimetypeService   = m_serviceRegistry.getMimetypeService();
         m_lockService       = m_serviceRegistry.getLockService();
+        m_permissionService = m_serviceRegistry.getPermissionService();
         
         m_authService       = authService;
     }
@@ -165,6 +168,15 @@ public class WebDAVHelper
     public final LockService getLockService()
     {
         return m_lockService;
+    }
+    
+    /**
+     * 
+     * @return          Return the permission service
+     */
+    public final PermissionService getPermissionService()
+    {
+        return m_permissionService;
     }
     
     /**

@@ -30,7 +30,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -59,7 +59,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -117,7 +117,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -146,7 +146,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -175,7 +175,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -204,7 +204,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -232,7 +232,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>
@@ -261,7 +261,7 @@
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
-            <entry key="mtom-enabled" value="false" />
+            <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
 
         <jaxws:features>

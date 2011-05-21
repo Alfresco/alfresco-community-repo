@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -287,24 +288,19 @@ public class PropFindMethod extends WebDAVMethod
                     // Output the child node details
                     for (FileInfo curChildInfo : childNodeInfos)
                     {
-                    	// Do not output link nodes
-                    	
-                    	if ( curChildInfo.isLink() == false)
-                    	{
-	                        // Build the path for the current child node
-	                        baseBuild.setLength(curBaseLen);
+	                // Build the path for the current child node
+	                baseBuild.setLength(curBaseLen);
 	
-	                        baseBuild.append(curChildInfo.getName());
+	                baseBuild.append(curChildInfo.getName());
 	
-	                        // Output the current child node details
-	                        generateResponseForNode(xml, curChildInfo, baseBuild.toString());
+	                // Output the current child node details
+	                generateResponseForNode(xml, curChildInfo, baseBuild.toString());
 	
-	                        // If the child is a folder add it to the list of next level nodes
-	                        if (nextNodeInfos != null && curChildInfo.isFolder())
-	                        {
-	                            nextNodeInfos.add(curChildInfo);
-	                        }
-                    	}
+	                // If the child is a folder add it to the list of next level nodes
+	                if (nextNodeInfos != null && curChildInfo.isFolder())
+	                {
+	                    nextNodeInfos.add(curChildInfo);
+	                }
                     }
                 }
 
@@ -387,6 +383,24 @@ public class PropFindMethod extends WebDAVMethod
         // Build the href string for the current node
         String strHRef = getURLForPath(m_request, path, isFolder);
 
+        if (nodeInfo.isLink())
+        {
+            Path pathToNode = getNodeService().getPath(nodeInfo.getLinkNodeRef());
+            if (pathToNode.size() > 2)
+            {
+                pathToNode = pathToNode.subPath(2, pathToNode.size() - 1);
+            }
+
+            String rootURL = getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
+            if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
+            {
+                rootURL = rootURL + WebDAVHelper.PathSeperator;
+            }
+
+            String fname = (String) getNodeService().getProperty(nodeInfo.getLinkNodeRef(), ContentModel.PROP_NAME);
+            strHRef = rootURL + WebDAVHelper.encodeURL(fname, m_userAgent) + WebDAVHelper.PathSeperator;
+            isFolder = getFileFolderService().getFileInfo(nodeInfo.getLinkNodeRef()).isFolder();
+        }
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
         xml.write(strHRef);
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF);
@@ -394,7 +408,7 @@ public class PropFindMethod extends WebDAVMethod
         switch (m_mode)
         {
         case GET_NAMED_PROPS:
-            generateNamedPropertiesResponse(xml, nodeInfo);
+            generateNamedPropertiesResponse(xml, nodeInfo, isFolder);
             break;
         case GET_ALL_PROPS:
             generateAllPropertiesResponse(xml, nodeRef, isFolder);
@@ -416,10 +430,9 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    private void generateNamedPropertiesResponse(XMLWriter xml, FileInfo nodeInfo) throws Exception
+    private void generateNamedPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
         NodeRef nodeRef = nodeInfo.getNodeRef();
-        boolean isFolder = nodeInfo.isFolder();
         
         // Get the properties for the node
         Map<QName, Serializable> props = getNodeService().getProperties(nodeRef);
@@ -452,7 +465,7 @@ public class PropFindMethod extends WebDAVMethod
                 // Check if the client is requesting lock information
                 if (propName.equals(WebDAV.XML_LOCK_DISCOVERY)) // && metaData.isLocked())
                 {
-                    generateLockDiscoveryResponse(xml, nodeRef, isFolder);
+                    generateLockDiscoveryResponse(xml, nodeRef, isDir);
                 }
                 else if (propName.equals(WebDAV.XML_SUPPORTED_LOCK))
                 {
@@ -467,7 +480,7 @@ public class PropFindMethod extends WebDAVMethod
                     // If the node is a folder then return as a collection type
 
                     xml.startElement(WebDAV.DAV_NS, WebDAV.XML_RESOURCE_TYPE, WebDAV.XML_NS_RESOURCE_TYPE, nullAttr);
-                    if (isFolder)
+                    if (isDir)
                     {
                         xml.write(DocumentHelper.createElement(WebDAV.XML_NS_COLLECTION));
                     }
@@ -521,7 +534,7 @@ public class PropFindMethod extends WebDAVMethod
                         xml.write(WebDAV.formatModifiedDate(typeConv.convert(Date.class, davValue)));
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_GET_LAST_MODIFIED, WebDAV.XML_NS_GET_LAST_MODIFIED);
                 }
-                else if (propName.equals(WebDAV.XML_GET_CONTENT_LANGUAGE) && !isFolder)
+                else if (propName.equals(WebDAV.XML_GET_CONTENT_LANGUAGE) && !isDir)
                 {
                     // Get the content language
                     // TODO:
@@ -532,7 +545,7 @@ public class PropFindMethod extends WebDAVMethod
                     // TODO:
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_GET_CONTENT_LANGUAGE, WebDAV.XML_NS_GET_CONTENT_LANGUAGE);
                 }
-                else if (propName.equals(WebDAV.XML_GET_CONTENT_TYPE) && !isFolder)
+                else if (propName.equals(WebDAV.XML_GET_CONTENT_TYPE) && !isDir)
                 {
                     // Get the content type
                     davValue = WebDAV.getDAVPropertyValue(props, WebDAV.XML_GET_CONTENT_TYPE);
@@ -545,7 +558,7 @@ public class PropFindMethod extends WebDAVMethod
                         xml.write(typeConv.convert(String.class, davValue));
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_GET_CONTENT_TYPE, WebDAV.XML_NS_GET_CONTENT_TYPE);
                 }
-                else if (propName.equals(WebDAV.XML_GET_ETAG) && !isFolder)
+                else if (propName.equals(WebDAV.XML_GET_ETAG) && !isDir)
                 {
                     // Output the etag
 
@@ -558,7 +571,7 @@ public class PropFindMethod extends WebDAVMethod
                     // Get the content length, if it's not a folder
                     long len = 0;
 
-                    if (!isFolder)
+                    if (!isDir)
                     {
                         ContentData contentData = (ContentData) props.get(ContentModel.PROP_CONTENT);
                         if (contentData != null)

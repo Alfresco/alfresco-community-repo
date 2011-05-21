@@ -36,7 +36,7 @@ function getDataLists()
    return (
    {
       container: parsedArgs.rootNode,
-      lists: parsedArgs.rootNode.children
+      lists: parsedArgs.rootNode.childAssocs["cm:contains"] || []
    });
 }
 

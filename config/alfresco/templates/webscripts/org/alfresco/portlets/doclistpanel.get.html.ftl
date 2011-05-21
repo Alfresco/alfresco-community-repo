@@ -11,7 +11,7 @@
 <#list docs as d>
    <#if d.isDocument>
       <#if (filter=0) ||
-           (filter=1 && d.mimetype="application/msword" || d.mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
+           (filter=1 && (d.mimetype="application/msword" || d.mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")) ||
            (filter=2 && d.mimetype="text/html") ||
            (filter=3 && d.mimetype="application/pdf") ||
            (filter=4 && (dateCompare(d.properties["cm:modified"],date,weekms) == 1 || dateCompare(d.properties["cm:created"], date, weekms) == 1))>

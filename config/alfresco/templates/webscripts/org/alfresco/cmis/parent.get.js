@@ -18,6 +18,13 @@ script:
         status.redirect = true;
         break script;
     }
+    if (node.parent == null || !node.hasPermission("Read"))
+    {
+        status.code = 404;
+        status.message = "Object " + object.ref + " parent not found";
+        status.redirect = true;
+        break script;
+    }
     model.node = node.parent;
  
     // property filter 

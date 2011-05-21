@@ -49,7 +49,7 @@ function runAction(p_params)
          }
          else
          {
-	    if (p_params.parent !== null)
+	    if (p_params.parent && p_params.parent !== null)
 	    {
                 parent = search.findNode(p_params.parent);
             }

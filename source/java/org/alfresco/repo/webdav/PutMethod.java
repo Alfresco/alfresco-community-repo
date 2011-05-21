@@ -154,16 +154,8 @@ public class PutMethod extends WebDAVMethod
         // Access the content
         ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         // set content properties
-        String mimetype = null;
-        if (m_strContentType != null)
-        {
-            mimetype = m_strContentType;
-        }
-        else
-        {
-            String guessedMimetype = getMimetypeService().guessMimetype(contentNodeInfo.getName());
-            mimetype = guessedMimetype;
-        }
+        String mimetype = getMimetypeService().guessMimetype(contentNodeInfo.getName());
+
         writer.setMimetype(mimetype);
 
         // Get the input stream from the request data

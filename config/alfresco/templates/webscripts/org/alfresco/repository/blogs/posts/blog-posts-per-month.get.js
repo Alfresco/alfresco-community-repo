@@ -64,7 +64,7 @@ function getBlogPostMonths(node)
       var currData = null;
       for (var x=0; x < nodes.length; x++)
       {
-         var date = nodes[x].properties["cm:created"];
+         var date = nodes[x].properties["cm:published"];
          
          // is this a new month?
          if (currYear != date.getFullYear() || currMonth != date.getMonth())

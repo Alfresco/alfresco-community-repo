@@ -18,7 +18,8 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class to represent a WebDAV lock info
@@ -41,7 +42,7 @@ public class LockInfo
     private boolean shared = false;
 
     // Shared lock tokens
-    private LinkedList<String> sharedLockTokens = null;
+    private Set<String> sharedLockTokens = null;
 
     // Shared lock token separator
     private static final String SHARED_LOCK_TOKEN_SEPARATOR = ",";
@@ -148,15 +149,15 @@ public class LockInfo
      *                         divided with SHARED_LOCK_TOKEN_SEPARATOR value.
      * @return List of shared lock tokens
      */
-    public static LinkedList<String> parseSharedLockTokens(String sharedLockTokens)
+    public static Set<String> parseSharedLockTokens(String sharedLockTokens)
     {
         if (sharedLockTokens == null)
         {
             return null;
         }
         
-        LinkedList<String> result = new LinkedList<String>();
         String[] sl = sharedLockTokens.split(SHARED_LOCK_TOKEN_SEPARATOR);
+        Set<String> result = new HashSet<String>(sl.length * 2);
         for (int i = 0; i < sl.length; i++)
         {
             result.add(sl[i]);
@@ -170,7 +171,7 @@ public class LockInfo
      * 
      * @return LinkedList<String>
      */
-    public LinkedList<String> getSharedLockTokens()
+    public Set<String> getSharedLockTokens()
     {
         return sharedLockTokens;
     }
@@ -180,7 +181,7 @@ public class LockInfo
      * 
      * @param sharedLockTokens
      */
-    public void setSharedLockTokens(LinkedList<String> sharedLockTokens)
+    public void setSharedLockTokens(Set<String> sharedLockTokens)
     {
         this.sharedLockTokens = sharedLockTokens;
     }
@@ -194,7 +195,7 @@ public class LockInfo
     {
         if (sharedLockTokens == null)
         {
-            sharedLockTokens = new LinkedList<String>();
+            sharedLockTokens = new HashSet<String>(3);
         }
         sharedLockTokens.add(token);
     }
@@ -206,7 +207,7 @@ public class LockInfo
      * @param lockTokens list of shared locks
      * @return String
      */
-    public static String makeSharedLockTokensString(LinkedList<String> lockTokens)
+    public static String makeSharedLockTokensString(Set<String> lockTokens)
     {
         StringBuilder str = new StringBuilder();
 

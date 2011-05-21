@@ -97,7 +97,7 @@ public class DMAbstractServicePort
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING = new HashMap<EnumIncludeRelationships, CMISRelationshipDirectionEnum>(5);
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.SOURCE, CMISRelationshipDirectionEnum.SOURCE);
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.TARGET, CMISRelationshipDirectionEnum.TARGET);
-        INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.BOTH, CMISRelationshipDirectionEnum.BOTH);
+        INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.BOTH, CMISRelationshipDirectionEnum.EITHER);
 
         try
         {

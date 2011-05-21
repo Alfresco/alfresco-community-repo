@@ -401,16 +401,13 @@
    <!--  Alfresco Web Client Keyword Search (OpenSearch) -->
    <bean id="webscript.org.alfresco.repository.search.keywordsearch.get" class="org.alfresco.repo.web.scripts.bean.KeywordSearch" parent="webscript">
       <property name="searchService" ref="SearchService" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />     
+      <property name="nodeService" ref="nodeService" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
    </bean>
 
    <!--  Alfresco Web Client Person Search (OpenSearch) -->
-   <bean id="webscript.org.alfresco.repository.search.personsearch.get" class="org.alfresco.repo.web.scripts.bean.KeywordSearch" parent="webscript">
-      <property name="searchService" ref="SearchService" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />     
-      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
-   </bean>
+   <bean id="webscript.org.alfresco.repository.search.personsearch.get" parent="webscript.org.alfresco.repository.search.keywordsearch.get" />
 
    <!--  Alfresco (OpenSearch) Proxy -->
    <bean id="webscript.org.alfresco.repository.search.searchproxy.get" class="org.alfresco.repo.web.scripts.bean.SearchProxy" parent="webscript">

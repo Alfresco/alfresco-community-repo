@@ -115,8 +115,8 @@ public class ContentDiskDriverTest extends TestCase
         applicationContext = ApplicationContextHelper.getApplicationContext();
         repositoryHelper = (Repository)this.applicationContext.getBean("repositoryHelper");
         ApplicationContextFactory fileServers = (ApplicationContextFactory) this.applicationContext.getBean("fileServers");
-        cifsHelper = (CifsHelper) this.applicationContext.getBean("cifsHelper");
-        driver = (ContentDiskDriver)this.applicationContext.getBean("contentDiskDriver");
+        cifsHelper = (CifsHelper) fileServers.getApplicationContext().getBean("cifsHelper");
+        driver = (ContentDiskDriver) fileServers.getApplicationContext().getBean("contentDiskDriver");
         mlAwareNodeService = (NodeService) this.applicationContext.getBean("mlAwareNodeService"); 
         nodeService = (NodeService)applicationContext.getBean("nodeService");
         transactionService = (TransactionService)applicationContext.getBean("transactionService");

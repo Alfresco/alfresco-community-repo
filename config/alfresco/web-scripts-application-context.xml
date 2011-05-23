@@ -1128,4 +1128,52 @@
         <property name="replicationService" ref="ReplicationService" />
     </bean>
 
+
+    <!--                                        -->
+    <!--      Slingshot Data List REST API      -->
+    <!--                                        -->
+
+    <!-- Download a datalist as Excel XLS / XLSX -->
+    <bean id="webscript.org.alfresco.slingshot.datalists.list.get"
+          class="org.alfresco.repo.web.scripts.datalist.DataListDownloadWebScript"
+          parent="webscript">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="modelOrder">
+           <!-- These are taken from the forms config for now -->
+           <map>
+              <entry key="dl:todoList">
+                <value>dl:todoTitle,dl:todoDueDate,dl:todoPriority,dl:todoStatus,dl:todoNotes,dl:assignee,dl:attachments</value>
+              </entry>
+              <entry key="dl:task">
+                <value>cm:title,cm:description,dl:ganttStartDate,dl:ganttEndDate,dl:taskAssignee,dl:taskPriority,dl:taskStatus,dl:ganttPercentComplete,dl:taskComments,cm:attachments</value>
+              </entry>
+              <entry key="dl:simpletask">
+                <value>cm:title,cm:description,dl:simpletaskDueDate,dl:simpletaskPriority,dl:simpletaskStatus,dl:simpletaskComments</value>
+              </entry>
+              <entry key="dl:contact">
+                <value>dl:contactFirstName,dl:contactLastName,dl:contactEmail,dl:contactCompany,dl:contactJobTitle,dl:contactPhoneOffice,dl:contactPhoneMobile,dl:contactNotes</value>
+              </entry>
+              <entry key="dl:issue">
+                <value>dl:issueID,cm:title,dl:issueAssignedTo,dl:issueStatus,dl:issuePriority,cm:description,dl:issueDueDate,dl:issueComments,cm:attachments</value>
+              </entry>
+              <entry key="dl:event">
+                <value>cm:title,cm:description,dl:eventLocation,dl:eventStartDate,dl:eventEndDate,dl:eventRegistrations,cm:attachments,dl:eventNote</value>
+              </entry>
+              <entry key="dl:location">
+                <value>cm:title,dl:locationAddress1,dl:locationAddress2,dl:locationAddress3,dl:locationZip,dl:locationState,dl:locationCountry,cm:description,cm:attachments</value>
+              </entry>
+              <entry key="dl:meetingAgenda">
+                <value>dl:meetingAgendaRef,cm:title,cm:description,dl:meetingAgendaTime,dl:meetingAgendaOwner,cm:attachments</value>
+              </entry>
+              <entry key="dl:eventAgenda">
+                <value>dl:eventAgendaRef,dl:eventAgendaStartTime,dl:eventAgendaEndTime,dl:eventAgendaSessionName,dl:eventAgendaPresenter,dl:eventAgendaAudience,cm:attachments,dl:eventAgendaNotes</value>
+              </entry>
+           </map>
+        </property>
+    </bean>
+
+
 </beans>

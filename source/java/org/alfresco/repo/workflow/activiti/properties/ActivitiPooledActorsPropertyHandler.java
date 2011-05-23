@@ -208,6 +208,14 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         this.taskService = taskService;
     }
     
+    /**
+     * @param authorityManager the authorityManager to set
+     */
+    public void setWorkflowAuthorityManager(WorkflowAuthorityManager authorityManager)
+    {
+        this.authorityManager = authorityManager;
+    }
+    
     private static class UserAndGroupUpdates
     {
         private final List<String> users;
@@ -245,7 +253,6 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         {
             return linksToRemove;
         }
-
     }
 
 }

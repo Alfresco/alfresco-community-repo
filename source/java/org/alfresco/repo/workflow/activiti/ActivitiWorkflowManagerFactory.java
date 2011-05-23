@@ -112,7 +112,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         workflowEngine.setTenantService(tenantService);
         workflowEngine.setTypeConverter(typeConverter);
         workflowEngine.setUnprotectedSearchService(unprotectedSearchService);
-        return new ActivitiWorkflowManager(workflowEngine, propertyConverter, handlerRegistry, nodeConverter);
+        return new ActivitiWorkflowManager(workflowEngine, propertyConverter, handlerRegistry, nodeConverter, authorityManager);
     }
 
     /**

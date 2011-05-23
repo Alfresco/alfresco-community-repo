@@ -99,6 +99,10 @@
     <bean id="activitiNodeConverter" factory-bean="activitiWorkflowManager"
         factory-method="getNodeConverter" />
 
+    <!-- Workflow Authority Manager -->
+    <bean id="workflowAuthorityManager" factory-bean="activitiWorkflowManager"
+        factory-method="getWorkflowAuthorityManager" />
+
     <!-- Activiti Property Handler Registry-->
     <bean id="activitiPropertyHandlerRegistry" factory-bean="activitiWorkflowManager"
         factory-method="getPropertyHandlerRegistry" />
@@ -137,6 +141,7 @@
         class="org.alfresco.repo.workflow.activiti.properties.ActivitiPooledActorsPropertyHandler"
         parent="activitiPropertyHandler" >
         <property name="taskService" ref="activitiTaskService" />
+        <property name="workflowAuthorityManager" ref="workflowAuthorityManager" />
     </bean>
 
     <!-- Activiti Priority Property Handler -->

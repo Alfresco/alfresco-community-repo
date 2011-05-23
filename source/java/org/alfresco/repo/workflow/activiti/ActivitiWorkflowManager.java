@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.workflow.activiti;
 
+import org.alfresco.repo.workflow.WorkflowAuthorityManager;
 import org.alfresco.repo.workflow.WorkflowNodeConverter;
 import org.alfresco.repo.workflow.WorkflowPropertyHandlerRegistry;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
@@ -33,19 +34,19 @@ public class ActivitiWorkflowManager
     private final WorkflowNodeConverter nodeConverter;
     private final WorkflowPropertyHandlerRegistry handlerRegistry;
     private final ActivitiWorkflowEngine workflowEngine;
-    /**
-     * @param workflowEngine
-     * @param propertyConverter
-     * @param handlerRegistry
-     * @param nodeConverter
-     */
-    public ActivitiWorkflowManager(ActivitiWorkflowEngine workflowEngine, ActivitiPropertyConverter propertyConverter,
-            WorkflowPropertyHandlerRegistry handlerRegistry, WorkflowNodeConverter nodeConverter)
+    private final WorkflowAuthorityManager workflowAuthorityManager;
+    
+    public ActivitiWorkflowManager(ActivitiWorkflowEngine workflowEngine,
+            ActivitiPropertyConverter propertyConverter,
+            WorkflowPropertyHandlerRegistry handlerRegistry, 
+            WorkflowNodeConverter nodeConverter,
+            WorkflowAuthorityManager workflowAuthorityManager)
     {
         this.workflowEngine = workflowEngine;
         this.propertyConverter = propertyConverter;
         this.handlerRegistry = handlerRegistry;
         this.nodeConverter = nodeConverter;
+        this.workflowAuthorityManager = workflowAuthorityManager;
     }
 
     /**
@@ -80,5 +81,11 @@ public class ActivitiWorkflowManager
         return workflowEngine;
     }
 
-    
+    /**
+     * @return the workflowAuthorityManager
+     */
+    public WorkflowAuthorityManager getWorkflowAuthorityManager()
+    {
+        return workflowAuthorityManager;
+    }
 }

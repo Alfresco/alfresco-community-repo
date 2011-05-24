@@ -17,6 +17,7 @@
     <import resource="classpath:alfresco/swf-transform-context.xml"/>
     <import resource="classpath:alfresco/form-services-context.xml"/>
     <import resource="classpath:alfresco/cmis-api-context.xml" />
+    <import resource="classpath:alfresco/opencmis-context.xml" />
     <import resource="classpath:alfresco/period-type-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

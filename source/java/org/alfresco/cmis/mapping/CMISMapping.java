@@ -70,6 +70,9 @@ public class CMISMapping implements InitializingBean
     public static String CMIS_MODEL_NS = "cmis";
     public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/1.0/cs01";
 
+    public static String CMIS_EXT_NS = "cmisext";
+    public static String CMIS_EXT_URI = "http://www.alfresco.org/model/cmis/1.0/cs01ext";
+    
     /**
      * The Alfresco CMIS Model name.
      */
@@ -87,7 +90,7 @@ public class CMISMapping implements InitializingBean
     public static QName CMIS_DATATYPE_HTML = QName.createQName(CMIS_MODEL_URI, "html");
 
     // CMIS Types
-    public static QName OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "object");
+    public static QName OBJECT_QNAME = QName.createQName(CMIS_EXT_URI, "object");
     public static QName FILESYSTEM_OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, "filesystemobject");
     public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, "document");
     public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, "folder");

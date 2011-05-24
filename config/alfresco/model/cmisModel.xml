@@ -11,7 +11,7 @@
   <namespaces>
     <namespace uri="http://www.alfresco.org/model/cmis/1.0/cs01" prefix="cmis" />
     <namespace uri="http://www.alfresco.org/model/cmis/1.0/cs01ext" prefix="cmisext" />
-    <namespace uri="http://www.alfresco.org/" prefix="alf" />
+    <namespace uri="http://www.alfresco.org/model/cmis/1.0/alfcmis" prefix="alfcmis" />
   </namespaces>
 
   <data-types>
@@ -148,7 +148,7 @@
           <multiple>false</multiple>
           <index enabled="false" />
         </property>
-        <property name="alf:nodeRef">
+        <property name="alfcmis:nodeRef">
           <title>Alfresco Node Ref</title>
           <description>Alfresco Node Ref</description>
           <type>cmis:id</type>

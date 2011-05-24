@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>OpenCMIS Browser Binding Demo</title>
+<style type="text/css">
+  body {
+    font-family:Arial,sans-serif;
+    font-size:11pt;
+  }
+  .box {
+    border-width:1px;
+    border-style:solid;
+    width:100%;
+    padding:3px;
+  }
+  td {
+    padding:5px;
+  }
+</style>
+<script type="text/javascript">
+var repositoryUrl;
+
+function printRepositoryInfos(infos) {
+	for(repId in infos) {
+        var ri = infos[repId];		
+        document.getElementById('repositoryInfo').innerHTML = 
+            '<h2>Repsository "' + ri.repositoryName + '" (' + ri.repositoryId + ')</h2>' +
+            '<table>' +
+            '<tr><td>Id:</td><td>' + ri.repositoryId + '</td></tr>' +
+            '<tr><td>Name:</td><td>' + ri.repositoryName + '</td></tr>' +
+            '<tr><td>Description:</td><td>' + ri.repositoryDescription + '</td></tr>' +
+            '<tr><td>Product:</td><td>' + ri.vendorName + ' ' + ri.productName + ' ' + ri.productVersion + '</td></tr>' +
+            '<tr><td>Root folder id:</td><td>' + ri.rootFolderId + '</td></tr>' +
+            '<tr><td>Root folder URL:</td><td>' + ri.rootFolderUrl + '</td></tr>' +
+            '</table>';
+            
+        repositoryUrl = ri.rootFolderUrl; // the InMemory repository has only one repository
+	}
+
+    var rootFolder = "/";
+	
+    var script1 = document.createElement("script");        
+    script1.setAttribute("src", repositoryUrl + rootFolder + "?method=getObject&callback=printObject");
+    script1.setAttribute("type","text/javascript");                
+    document.body.appendChild(script1);
+
+    var script2 = document.createElement("script");        
+    script2.setAttribute("src", repositoryUrl + rootFolder + "?method=getChildren&callback=printChildren");
+    script2.setAttribute("type","text/javascript");                
+    document.body.appendChild(script2);
+}
+
+function printObject(obj) {
+    var id = obj.properties["cmis:objectId"];
+    var name = obj.properties["cmis:name"];
+
+    var s = '<h2>Object "' + name + '" (' + id + ')</h2>';
+
+    s = s + '<h3>Properties</h3>';
+    s = s + '<table>';
+	
+    for(propertyId in obj.properties) {
+        var propertyValue = obj.properties[propertyId];
+        s = s + '<tr><td>' + propertyId + '</td><td>' + propertyValue + '</td></tr>';
+    }
+
+    s = s + '</table>';
+    
+    document.getElementById('objectInfo').innerHTML = s;
+}
+
+function printChildren(children) {
+    var s = '<h2>Children</h2>';
+
+    s = s + '<h3>Properties</h3>';
+
+    s = s + '<table><tr><th>Name</th><th>Type</th><th>MIME Type</th><th>Size</th>' +
+    '<th>Created By</th><th>Created At</th><th>Id</th></tr>';
+
+    for(var id in children.objects) {
+        var object = children.objects[id];
+
+        var name = object.properties["cmis:name"];
+        var type = object.properties["cmis:objectTypeId"];
+        var mimetype = "";
+        var size = "";
+        var createdBy = object.properties["cmis:createdBy"];
+        var creationDate = new Date(object.properties["cmis:creationDate"]);
+        var id = object.properties["cmis:objectId"];
+        var link = "";
+
+        if(object.properties["cmis:baseTypeId"] == "cmis:document") {
+            size = object.properties["cmis:contentStreamLength"];
+            mimetype = object.properties["cmis:contentStreamMimeType"];
+            link = encodeURI(repositoryUrl + '?objectId=' + id + '&method=getContentStream');
+        }
+
+        s = s + '<tr><td>';
+        if(link != "") {
+            s = s + '<a href="' + link + '">' + name + '</a>';
+        }
+        else {
+            s = s + name;
+        }
+        s = s + '</td><td>' + type + '</td><td>' + mimetype + '</td><td style="rext-align:right">' + size +
+         '</td><td>' + createdBy + '</td><td>' + creationDate + '</td><td>' + id + '</td></tr>';
+    }
+    
+    s = s + '</table>';
+    
+    document.getElementById('folderInfo').innerHTML = s;
+}
+</script>
+
+
+</head>
+<body>
+<h1>OpenCMIS Browser Binding - Demo</h1>
+<br/>
+<div id="repositoryInfo" class="box">
+repositoryInfo
+</div>
+<br/>
+<div id="objectInfo" class="box">
+objectInfo
+</div>
+<br/>
+<div id="folderInfo" class="box">
+folderInfo
+</div>
+
+<script type="text/javascript" src="../opencmis-browser?callback=printRepositoryInfos"></script>
+</body>
+</html>

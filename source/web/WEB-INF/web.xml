@@ -317,6 +317,11 @@
       <listener-class>org.alfresco.web.app.ContextListener</listener-class>
    </listener>
 
+   <!-- Web Services context listener for OpenCMIS -->
+   <listener>
+      <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
+   </listener>
+
    <!-- Faces Servlet -->
    <servlet>
       <servlet-name>Faces Servlet</servlet-name>
@@ -488,6 +493,32 @@
          <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
       </init-param>
    </servlet>
+
+   <servlet>
+      <servlet-name>cmisws</servlet-name>
+      <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
+      <load-on-startup>7</load-on-startup>
+   </servlet>
+
+   <servlet>
+      <servlet-name>cmisatom</servlet-name>
+      <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+      <init-param>
+         <param-name>callContextHandler</param-name>
+         <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+      </init-param>
+      <load-on-startup>8</load-on-startup>
+   </servlet>
+
+   <servlet>
+      <servlet-name>cmisbrowser</servlet-name>
+      <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
+      <init-param>
+         <param-name>callContextHandler</param-name>
+         <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+      </init-param>
+      <load-on-startup>8</load-on-startup>
+	</servlet>
 
    <servlet>
       <servlet-name>authenticatorServlet</servlet-name>
@@ -662,6 +693,21 @@
    <servlet-mapping>
       <servlet-name>CMISFileShareServlet</servlet-name>
       <url-pattern>/cmisbrowse</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>cmisws</servlet-name>
+      <url-pattern>/cmisws/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>cmisatom</servlet-name>
+      <url-pattern>/cmisatom/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>cmisbrowser</servlet-name>
+      <url-pattern>/cmisbrowser/*</url-pattern>
    </servlet-mapping>
 
    <session-config>

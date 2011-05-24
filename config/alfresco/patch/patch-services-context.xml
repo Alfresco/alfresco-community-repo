@@ -2511,12 +2511,6 @@
         <property name="fixesFromSchema" value="0" />
         <property name="fixesToSchema" value="4112" />
         <property name="targetSchema" value="4113" />
-        
-        <!--
-        <property name="template" ref="avmSqlMapClientTemplate" />
-        <property name="temporaryExtension" value="temp" />
-        -->
-        
         <property name="alternatives" >
             <list>
                 <ref bean="patch.db-V3.4-AVM-rename-dupes" />

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get the nodes in the given transactions</shortname>
+  <description>Get the nodes updated/deleted in the given transactions.</description>
+  <url>/api/solr/nodes?txnIds={txnIds}&amp;{fromNodeId?}&amp;{toNodeId?}&amp;{count?}</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

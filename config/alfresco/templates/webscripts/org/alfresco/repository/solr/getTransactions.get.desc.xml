@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get transactions</shortname>
+  <description>Get the transactions from the given commit time.</description>
+  <url>/api/solr/transactions?fromCommitTime={fromCommitTime}</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

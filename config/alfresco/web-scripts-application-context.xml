@@ -1176,4 +1176,21 @@
     </bean>
 
 
+   <!--                                                                                                       -->
+   <!-- SOLR                                                                                                  -->
+   <!--                                                                                                       -->
+   <!--                                                                                                       -->
+   
+   <bean id="webscript.org.alfresco.repository.solr.getTransactions.get"
+         class="org.alfresco.repo.web.scripts.solr.GetTransactions"
+         parent="webscript">
+      <property name="solrDAO" ref="solrDAO"/>
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.solr.getNodes.get"
+         class="org.alfresco.repo.web.scripts.solr.GetNodes"
+         parent="webscript">
+      <property name="solrDAO" ref="solrDAO"/>
+   </bean>
+   
 </beans>

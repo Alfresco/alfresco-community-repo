@@ -386,6 +386,8 @@ public abstract class FeedTaskProcessor
     
     public abstract void commitTransaction() throws SQLException;
     
+    public abstract void rollbackTransaction() throws SQLException;
+    
     public abstract void endTransaction() throws SQLException;
     
     public abstract List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException;

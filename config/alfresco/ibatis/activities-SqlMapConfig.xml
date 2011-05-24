@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMapConfig      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 
-<sqlMapConfig>
+<configuration>
 
-    <settings useStatementNamespaces="true"
-    lazyLoadingEnabled="false"
-    enhancementEnabled="false"
-    maxTransactions="500"
-    maxSessions="500"
-    />
+    <typeAliases>
+        <typeAlias alias="ActivityFeedQuery" type="org.alfresco.repo.domain.activities.ActivityFeedQueryEntity"/>
+        <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
+        <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
+        <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
+    </typeAliases>
     
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
-
-</sqlMapConfig>
+    <mappers>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
+    </mappers>
+    
+</configuration>

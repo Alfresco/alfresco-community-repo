@@ -21,35 +21,27 @@ package org.alfresco.repo.domain.activities.ibatis;
 import java.sql.SQLException;
 
 import org.alfresco.repo.domain.activities.ActivitiesDAO;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-
-public class IBatisSqlMapper implements ActivitiesDAO
+public class ActivitiesSqlSessionDaoSupport extends SqlSessionDaoSupport implements ActivitiesDAO
 {
-    private SqlMapClient sqlMapper;
-    
-    public void setSqlMapClient(SqlMapClient sqlMapper)
-    {
-        this.sqlMapper = sqlMapper;
-    }
-    
-    public SqlMapClient getSqlMapClient()
-    {
-        return this.sqlMapper;
-    }
-    
     public void startTransaction() throws SQLException
     {
-        sqlMapper.startTransaction();
+        // NOOP
     }
     
     public void commitTransaction() throws SQLException
     {
-        sqlMapper.commitTransaction();
+        // NOOP
+    }
+    
+    public void rollbackTransaction() throws SQLException
+    {
+        // NOOP
     }
     
     public void endTransaction() throws SQLException
     {
-        sqlMapper.endTransaction();
+        // NOOP
     }
 }

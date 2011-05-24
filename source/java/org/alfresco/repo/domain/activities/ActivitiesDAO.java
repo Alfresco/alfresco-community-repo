@@ -29,5 +29,7 @@ public interface ActivitiesDAO
     
     public void commitTransaction() throws SQLException;
     
+    public void rollbackTransaction() throws SQLException;
+    
     public void endTransaction() throws SQLException;
 }

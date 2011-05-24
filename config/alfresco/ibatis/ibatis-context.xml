@@ -41,21 +41,27 @@
         </property>
     </bean>
 
-    <!-- iBatis config for Activities domain -->
-   	<bean id="activitiesSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
+    
+    <!-- MyBatis config for Activities domain -->
+    
+    <bean id="activitiesSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="activitiesDataSource"/>
-        <property name="resourceLoader" ref="dialectResourceLoader" />
-        <property name="useTransactionAwareDataSource" value="false" />
         <property name="configLocation">
             <value>classpath:alfresco/ibatis/activities-SqlMapConfig.xml</value>
-        </property> 
-    </bean> 
+        </property>
+    </bean>
+    
+    <!-- MyBatis-Spring sqlSessionTemplate -->
+    <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="activitiesSqlSessionFactory"/>
+    </bean>
 
+    
     <!-- iBatis config for Alfresco (using common datasource) -->
     <bean id="alfrescoSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
-        <property name="useTransactionAwareDataSource" value="false" />
         <property name="configLocation">
             <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property> 

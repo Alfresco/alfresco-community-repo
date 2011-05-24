@@ -74,8 +74,6 @@
    </bean>
    
    <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">
-      <!-- NOTE: assumes same sqlMapClient is also configured for postDAO and feedDAO -->
-      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
       <property name="postDAO" ref="postDAO"/>
       <property name="feedDAO" ref="feedDAO"/>
       <property name="feedControlDAO" ref="feedControlDAO"/>

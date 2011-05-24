@@ -26,7 +26,7 @@ import java.util.List;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 
-public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPostDAO
+public class ActivityPostDAOImpl extends ActivitiesSqlSessionDaoSupport implements ActivityPostDAO
 {
     @SuppressWarnings("unchecked")
     public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException 
@@ -36,11 +36,11 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_posts", activityPost);
+            return (List<ActivityPostEntity>)getSqlSession().selectList("alfresco.activities.select_activity_posts", activityPost);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_posts_by_status_only", activityPost);
+            return (List<ActivityPostEntity>)getSqlSession().selectList("alfresco.activities.select_activity_posts_by_status_only", activityPost);
         }
         else
         {
@@ -50,17 +50,17 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
 
     public Long getMaxActivitySeq() throws SQLException 
     {
-        return (Long)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_max_seq");
+        return (Long)getSqlSession().selectOne("alfresco.activities.select_activity_post_max_seq");
     }
     
     public Long getMinActivitySeq() throws SQLException 
     {
-        return (Long)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_min_seq");
+        return (Long)getSqlSession().selectOne("alfresco.activities.select_activity_post_min_seq");
     }
     
     public Integer getMaxNodeHash() throws SQLException 
     {
-        return (Integer)getSqlMapClient().queryForObject("alfresco.activities.select_activity_post_max_jobtasknode");
+        return (Integer)getSqlSession().selectOne("alfresco.activities.select_activity_post_max_jobtasknode");
     }
 
     public int updatePost(long id, String siteNetwork, String activityData, ActivityPostEntity.STATUS status) throws SQLException
@@ -72,7 +72,7 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         post.setStatus(status.toString());
         post.setLastModified(new Date());
         
-        return getSqlMapClient().update("alfresco.activities.update_activity_post_data", post);
+        return getSqlSession().update("alfresco.activities.update_activity_post_data", post);
     }
     
     public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
@@ -82,7 +82,7 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         post.setStatus(status.toString());
         post.setLastModified(new Date());
         
-        return getSqlMapClient().update("alfresco.activities.update_activity_post_status", post);
+        return getSqlSession().update("alfresco.activities.update_activity_post_status", post);
     }
     
     public int deletePosts(Date keepDate, ActivityPostEntity.STATUS status) throws SQLException
@@ -91,12 +91,13 @@ public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPost
         params.setPostDate(keepDate);
         params.setStatus(status.toString());
         
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_posts_older_than_date", params);
+        return getSqlSession().delete("alfresco.activities.delete_activity_posts_older_than_date", params);
     }
     
     public long insertPost(ActivityPostEntity activityPost) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().insert("alfresco.activities.insert_activity_post", activityPost);
+        getSqlSession().insert("alfresco.activities.insert.insert_activity_post", activityPost);
+        Long id = activityPost.getId();
         return (id != null ? id : -1);
     }
 }

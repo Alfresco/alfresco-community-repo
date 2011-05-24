@@ -1,33 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.activities">
+<mapper namespace="alfresco.activities.insert">
 
-   <insert id="insert_activity_feedcontrol" parameterClass="FeedControl">
+   <insert id="insert_activity_feedcontrol" parameterType="FeedControl" useGeneratedKeys="true" keyProperty="id">
       <include refid="alfresco.activities.insert_ActivityFeedControl_AutoIncrement"/>
-      <selectKey resultClass="long" keyProperty="id" type="post">
-         KEY_COLUMN:GENERATED_KEY
-      </selectKey>
       
    </insert>
    
-   <insert id="insert_activity_feed" parameterClass="ActivityFeed">
+   <insert id="insert_activity_feed" parameterType="ActivityFeed" useGeneratedKeys="true" keyProperty="id">
       <include refid="alfresco.activities.insert_ActivityFeed_AutoIncrement"/>
-      <selectKey resultClass="long" keyProperty="id" type="post">
-         KEY_COLUMN:GENERATED_KEY
-      </selectKey>
       
    </insert>
    
-   <insert id="insert_activity_post" parameterClass="ActivityPost">
+   <insert id="insert_activity_post" parameterType="ActivityPost" useGeneratedKeys="true" keyProperty="id">
       <include refid="alfresco.activities.insert_ActivityPost_AutoIncrement"/>
-      <selectKey resultClass="long" keyProperty="id" type="post">
-         KEY_COLUMN:GENERATED_KEY
-      </selectKey>
       
    </insert>
    
-</sqlMap>
+</mapper>

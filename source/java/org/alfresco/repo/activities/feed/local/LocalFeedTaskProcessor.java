@@ -55,8 +55,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -80,12 +78,8 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     private String defaultEncoding;
     private List<String> templateSearchPaths;
     private boolean useRemoteCallbacks;
-    private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();    
+    private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     
-    // used to start/end/commit transaction
-    // note: currently assumes that all dao services are configured with this mapper / data source
-    private SqlMapClient sqlMapper;
-
     public void setPostDAO(ActivityPostDAO postDAO)
     {
         this.postDAO = postDAO;
@@ -136,29 +130,29 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         this.useRemoteCallbacks = useRemoteCallbacks;
     }
     
-    public void setSqlMapClient(SqlMapClient sqlMapper)
-    {
-        this.sqlMapper = sqlMapper;
-    }
-            
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.resolver = applicationContext;
     }
-
+    
     public void startTransaction() throws SQLException
     {
-        sqlMapper.startTransaction();
+        // NOOP
     }
     
     public void commitTransaction() throws SQLException
     {
-        sqlMapper.commitTransaction();
+        // NOOP
+    }
+    
+    public void rollbackTransaction() throws SQLException
+    {
+        // NOOP
     }
     
     public void endTransaction() throws SQLException
     {
-        sqlMapper.endTransaction();
+         // NOOP
     }
     
     public List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException

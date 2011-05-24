@@ -28,17 +28,17 @@
          class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl$PostgreSQL"
          parent="controlDAO.org.hibernate.dialect.Dialect">
    </bean>
-
+   
    <bean id="postDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityPostDAOImpl">
-      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
    </bean>
    
    <bean id="feedDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityFeedDAOImpl">
-      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
    </bean>
    
    <bean id="feedControlDAO" class="org.alfresco.repo.domain.activities.ibatis.FeedControlDAOImpl">
-      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
    </bean>
    
    <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">

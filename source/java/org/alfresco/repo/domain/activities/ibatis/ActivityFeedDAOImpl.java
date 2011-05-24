@@ -27,20 +27,20 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityFeedQueryEntity;
+import org.apache.ibatis.session.RowBounds;
 
-import com.ibatis.sqlmap.engine.execution.SqlExecutor;
-
-public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeedDAO
+public class ActivityFeedDAOImpl extends ActivitiesSqlSessionDaoSupport implements ActivityFeedDAO
 {
     public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
     {
-        Long id = (Long)getSqlMapClient().insert("alfresco.activities.insert_activity_feed", activityFeed);
+        getSqlSession().insert("alfresco.activities.insert.insert_activity_feed", activityFeed);
+        Long id = activityFeed.getId();
         return (id != null ? id : -1);
     }
     
     public int deleteFeedEntries(Date keepDate) throws SQLException
     {
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_entries_older_than_date", keepDate);
+        return getSqlSession().delete("alfresco.activities.delete_activity_feed_entries_older_than_date", keepDate);
     }
     
     public int deleteSiteFeedEntries(String siteId) throws SQLException
@@ -48,7 +48,7 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
         
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_site_entries", params);
+        return getSqlSession().delete("alfresco.activities.delete_activity_feed_for_site_entries", params);
     }
     
     public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException
@@ -58,7 +58,7 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_site_entries_older_than_date", params);
+        return getSqlSession().delete("alfresco.activities.delete_activity_feed_for_site_entries_older_than_date", params);
     }
     
     
@@ -69,7 +69,7 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_feeduser_entries_older_than_date", params);
+        return getSqlSession().delete("alfresco.activities.delete_activity_feed_for_feeduser_entries_older_than_date", params);
     }
     
     public int deleteUserFeedEntries(String feedUserId) throws SQLException
@@ -77,13 +77,13 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setFeedUserId(feedUserId);
         
-        return getSqlMapClient().delete("alfresco.activities.delete_activity_feed_for_feeduser_entries", params);
+        return getSqlSession().delete("alfresco.activities.delete_activity_feed_for_feeduser_entries", params);
     }
     
     @SuppressWarnings("unchecked")
     public List<ActivityFeedEntity> selectFeedsToClean(int maxFeedSize) throws SQLException
     {
-        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_greater_than_max", maxFeedSize);
+        return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_greater_than_max", maxFeedSize);
     }
     
     @SuppressWarnings("unchecked")
@@ -98,10 +98,8 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
             params.setMinId(minFeedId);
         }
         
-        if (maxFeedSize < 0)
-        {
-            maxFeedSize = SqlExecutor.NO_MAXIMUM_RESULTS;
-        }
+        int rowLimit = maxFeedSize < 0 ? RowBounds.NO_ROW_LIMIT : maxFeedSize;
+        RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);
         
         if (siteId != null)
         {
@@ -116,17 +114,17 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
             if ((!excludeThisUser) && (!excludeOtherUsers))
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_and_site", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser_and_site", params, rowBounds);
             }
             else if ((excludeThisUser) && (!excludeOtherUsers))
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_others_and_site", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser_others_and_site", params, rowBounds);
             }
             else if ((excludeOtherUsers) && (!excludeThisUser))
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_me_and_site", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser_me_and_site", params, rowBounds);
             }
         }
         else
@@ -141,17 +139,17 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
             if (!excludeThisUser && !excludeOtherUsers)
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser", params, rowBounds);
             }
             else if (excludeThisUser)
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_others", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser_others", params, rowBounds);
             }
             else if (excludeOtherUsers)
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_feeduser_me", params, 0, maxFeedSize);
+                return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_feeduser_me", params, rowBounds);
             }
         }
         
@@ -166,12 +164,10 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         params.setSiteNetwork(siteId);
         params.setActivitySummaryFormat(format);
         
-        if (maxFeedSize < 0)
-        {
-            maxFeedSize = SqlExecutor.NO_MAXIMUM_RESULTS;
-        }
+        int rowLimit = maxFeedSize < 0 ? RowBounds.NO_ROW_LIMIT : maxFeedSize;
+        RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);
         
         // for given site
-        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("alfresco.activities.select_activity_feed_for_site", params, 0, maxFeedSize);
+        return (List<ActivityFeedEntity>)getSqlSession().selectList("alfresco.activities.select_activity_feed_for_site", params, rowBounds);
     }
 }

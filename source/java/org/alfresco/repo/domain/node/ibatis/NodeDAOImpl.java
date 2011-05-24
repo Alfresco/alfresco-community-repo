@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.domain.node.ibatis;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,11 +52,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.util.Assert;
 
-import com.ibatis.sqlmap.client.event.RowHandler;
-import com.sun.star.uno.RuntimeException;
 
 /**
  * iBatis-specific extension of the Node abstract DAO 
@@ -68,17 +68,17 @@ import com.sun.star.uno.RuntimeException;
 public class NodeDAOImpl extends AbstractNodeDAOImpl
 {
     private static final String SELECT_SERVER_BY_IPADDRESS = "alfresco.node.select_ServerByIpAddress";
-    private static final String INSERT_SERVER = "alfresco.node.insert_Server";
-    private static final String INSERT_TRANSACTION = "alfresco.node.insert_Transaction";
+    private static final String INSERT_SERVER = "alfresco.node.insert.insert_Server";
+    private static final String INSERT_TRANSACTION = "alfresco.node.insert.insert_Transaction";
     private static final String UPDATE_TRANSACTION_COMMIT_TIME = "alfresco.node.update_TransactionCommitTime";
     private static final String DELETE_TRANSACTION_BY_ID = "alfresco.node.delete_TransactionById";
-    private static final String INSERT_STORE = "alfresco.node.insert_Store";
+    private static final String INSERT_STORE = "alfresco.node.insert.insert_Store";
     private static final String UPDATE_STORE_ROOT = "alfresco.node.update_StoreRoot";
     private static final String UPDATE_STORE = "alfresco.node.update_Store";
     private static final String SELECT_STORE_ALL = "alfresco.node.select_StoreAll";
     private static final String SELECT_STORE_ROOT_NODE_BY_ID = "alfresco.node.select_StoreRootNodeById";
     private static final String SELECT_STORE_ROOT_NODE_BY_REF = "alfresco.node.select_StoreRootNodeByRef";
-    private static final String INSERT_NODE = "alfresco.node.insert_Node";
+    private static final String INSERT_NODE = "alfresco.node.insert.insert_Node";
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
     private static final String UPDATE_NODE_PATCH_ACL = "alfresco.node.update_NodePatchAcl";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
@@ -88,20 +88,20 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
-    private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
-    private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update_PrimaryChildrenSharedAcl";
-    private static final String INSERT_NODE_ASPECT = "alfresco.node.insert_NodeAspect";
+    private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert.insert_NodeProperty";
+    private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update.update_PrimaryChildrenSharedAcl";
+    private static final String INSERT_NODE_ASPECT = "alfresco.node.insert.insert_NodeAspect";
     private static final String DELETE_NODE_ASPECTS = "alfresco.node.delete_NodeAspects";
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
     private static final String SELECT_NODES_WITH_ASPECT_ID = "alfresco.node.select_NodesWithAspectId";
-    private static final String INSERT_NODE_ASSOC = "alfresco.node.insert_NodeAssoc";
+    private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
     private static final String DELETE_NODE_ASSOCS_TO_AND_FROM = "alfresco.node.delete_NodeAssocsToAndFrom";
     private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
     private static final String SELECT_NODE_PRIMARY_CHILD_ACLS = "alfresco.node.select_NodePrimaryChildAcls";
-    private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert_ChildAssoc";
+    private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert.insert_ChildAssoc";
     private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
     private static final String UPDATE_CHILD_ASSOCS_INDEX = "alfresco.node.update_ChildAssocsIndex";
     private static final String UPDATE_CHILD_ASSOCS_UNIQUE_NAME = "alfresco.node.update_ChildAssocsUniqueName";
@@ -122,13 +122,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinCommitTime";
     private static final String SELECT_TXN_MAX_COMMIT_TIME = "alfresco.node.select_TxnMaxCommitTime";
     
-    private SqlMapClientTemplate template;
     private QNameDAO qnameDAO;
     private DictionaryService dictionaryService;
 
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
 
     @Override
@@ -147,6 +148,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     public void startBatch()
     {
+        // TODO
+        /*
         try
         {
             template.getSqlMapClient().startBatch();
@@ -155,10 +158,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             throw new RuntimeException("Failed to start DAO batch.", e);
         }
+        */
     }
 
     public void executeBatch()
     {
+        // TODO
+        /*
         try
         {
             template.getSqlMapClient().executeBatch();
@@ -167,6 +173,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             throw new RuntimeException("Failed to start DAO batch.", e);
         }
+        */
     }
 
     @SuppressWarnings("unchecked")
@@ -176,7 +183,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ServerEntity entity = new ServerEntity();
         entity.setIpAddress(ipAddress);
         // Potentially more results if there is a case issue (unlikely)
-        List<ServerEntity> results = template.queryForList(SELECT_SERVER_BY_IPADDRESS, entity);
+        List<ServerEntity> results = (List<ServerEntity>) template.selectList(SELECT_SERVER_BY_IPADDRESS, entity);
         for (ServerEntity serverEntity : results)
         {
             // Take the first one that matches regardless of case
@@ -195,7 +202,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ServerEntity entity = new ServerEntity();
         entity.setVersion(1L);
         entity.setIpAddress(ipAddress);
-        return (Long) template.insert(INSERT_SERVER, entity);
+        template.insert(INSERT_SERVER, entity);
+        return entity.getId();
     }
 
     @Override
@@ -208,7 +216,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         transaction.setVersion(1L);
         transaction.setChangeTxnId(changeTxnId);
         transaction.setCommitTimeMs(commitTimeMs);
-        return (Long) template.insert(INSERT_TRANSACTION, transaction);
+        template.insert(INSERT_TRANSACTION, transaction);
+        return transaction.getId();
     }
 
     @Override
@@ -232,7 +241,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected List<StoreEntity> selectAllStores()
     {
-        return template.queryForList(SELECT_STORE_ALL);
+        return (List<StoreEntity>) template.selectList(SELECT_STORE_ALL);
     }
 
     @Override
@@ -240,7 +249,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     {
         StoreEntity store = new StoreEntity();
         store.setId(storeId);
-        return (NodeEntity) template.queryForObject(SELECT_STORE_ROOT_NODE_BY_ID, store);
+        return (NodeEntity) template.selectOne(SELECT_STORE_ROOT_NODE_BY_ID, store);
     }
 
     @Override
@@ -249,14 +258,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         StoreEntity store = new StoreEntity();
         store.setProtocol(storeRef.getProtocol());
         store.setIdentifier(storeRef.getIdentifier());
-        return (NodeEntity) template.queryForObject(SELECT_STORE_ROOT_NODE_BY_REF, store);
+        return (NodeEntity) template.selectOne(SELECT_STORE_ROOT_NODE_BY_REF, store);
     }
 
     @Override
     protected Long insertStore(StoreEntity store)
     {
         store.setVersion(1L);
-        return (Long) template.insert(INSERT_STORE, store);
+        template.insert(INSERT_STORE, store);
+        return store.getId();
     }
 
     @Override
@@ -275,7 +285,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected Long insertNode(NodeEntity node)
     {
         node.setVersion(1L);
-        return (Long) template.insert(INSERT_NODE, node);
+        template.insert(INSERT_NODE, node);
+        return node.getId();
     }
 
     @Override
@@ -336,7 +347,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             node.setDeleted(deleted);
         }
         
-        return (NodeEntity) template.queryForObject(SELECT_NODE_BY_ID, node);
+        return (NodeEntity) template.selectOne(SELECT_NODE_BY_ID, node);
     }
 
     @Override
@@ -363,7 +374,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             node.setDeleted(deleted);
         }
         
-        return (NodeEntity) template.queryForObject(SELECT_NODE_BY_NODEREF, node);
+        return (NodeEntity) template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 
     @SuppressWarnings("unchecked")
@@ -374,7 +385,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         nodeBatchLoadEntity.setStoreId(storeId);
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
         
-        return (List<NodeEntity>) template.queryForList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+        return (List<NodeEntity>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }
 
     /**
@@ -431,7 +442,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeAspectsEntity aspects = new NodeAspectsEntity();
         aspects.setNodeIds(new ArrayList<Long>(nodeIds));
 
-        List<NodeAspectsEntity> rows = template.queryForList(SELECT_NODE_ASPECTS, aspects);
+        List<NodeAspectsEntity> rows = (List<NodeAspectsEntity>) template.selectList(SELECT_NODE_ASPECTS, aspects);
         return rows;
     }
     
@@ -446,7 +457,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodePropertyEntity prop = new NodePropertyEntity();
         prop.setNodeIds(new ArrayList<Long>(nodeIds));
 
-        List<NodePropertyEntity> rows = template.queryForList(SELECT_NODE_PROPERTIES, prop);
+        List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
         return makePersistentPropertiesMap(rows);
     }
     @Override
@@ -475,7 +486,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             prop.setQnameIds(new ArrayList<Long>(qnameIds));
         }
         
-        List<NodePropertyEntity> rows = template.queryForList(SELECT_NODE_PROPERTIES, prop);
+        List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
         Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = makePersistentPropertiesMap(rows);
         Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
         if (props == null)
@@ -602,11 +613,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected void selectNodesWithAspect(Long qnameId, Long minNodeId, final NodeRefQueryCallback resultsCallback)
     {
-        RowHandler rowHandler = new RowHandler()
+        ResultHandler resultHandler = new ResultHandler()
         {
-            public void handleRow(Object valueObject)
+            public void handleResult(ResultContext context)
             {
-                NodeEntity entity = (NodeEntity) valueObject;
+                NodeEntity entity = (NodeEntity) context.getResultObject();
                 Pair<Long, NodeRef> nodePair = new Pair<Long, NodeRef>(entity.getId(), entity.getNodeRef());
                 resultsCallback.handle(nodePair);
             }
@@ -615,7 +626,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Map<String, Long> parameters = new HashMap<String, Long>(5);
         parameters.put("minNodeId", minNodeId);
         parameters.put("qnameId", qnameId);
-        template.queryWithRowHandler(SELECT_NODES_WITH_ASPECT_ID, parameters,rowHandler);
+        template.select(SELECT_NODES_WITH_ASPECT_ID, parameters,resultHandler);
     }
 
     @Override
@@ -633,7 +644,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         targetNode.setId(targetNodeId);
         assoc.setTargetNode(targetNode);
         
-        return (Long) template.insert(INSERT_NODE_ASSOC, assoc);
+        template.insert(INSERT_NODE_ASSOC, assoc);
+        return assoc.getId();
     }
 
     @Override
@@ -696,7 +708,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         sourceNode.setId(sourceNodeId);
         assoc.setSourceNode(sourceNode);
         
-        return (List<NodeAssocEntity>) template.queryForList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
+        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
     }
 
     @SuppressWarnings("unchecked")
@@ -709,7 +721,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         targetNode.setId(targetNodeId);
         assoc.setTargetNode(targetNode);
         
-        return (List<NodeAssocEntity>) template.queryForList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
+        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
     }
 
     @Override
@@ -718,14 +730,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeAssocEntity assoc = new NodeAssocEntity();
         assoc.setId(assocId);
         
-        return (NodeAssocEntity) template.queryForObject(SELECT_NODE_ASSOC_BY_ID, assoc);
+        return (NodeAssocEntity) template.selectOne(SELECT_NODE_ASSOC_BY_ID, assoc);
     }
 
     @Override
     protected Long insertChildAssoc(ChildAssocEntity assoc)
     {
         assoc.setVersion(1L);
-        return (Long) template.insert(INSERT_CHILD_ASSOC, assoc);
+        template.insert(INSERT_CHILD_ASSOC, assoc);
+        return assoc.getId();
     }
 
     @Override
@@ -801,7 +814,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ChildAssocEntity assoc = new ChildAssocEntity();
         assoc.setId(assocId);
         
-        return (ChildAssocEntity) template.queryForObject(SELECT_CHILD_ASSOC_BY_ID, assoc);
+        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOC_BY_ID, assoc);
     }
     
     @SuppressWarnings("unchecked")
@@ -816,7 +829,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Primary
         assoc.setPrimary(true);
 
-        return template.queryForList(SELECT_NODE_PRIMARY_CHILD_ACLS, assoc);
+        return (List<NodeIdAndAclId>) template.selectList(SELECT_NODE_PRIMARY_CHILD_ACLS, assoc);
     }
 
     @SuppressWarnings("unchecked")
@@ -847,16 +860,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             return Collections.emptyList();     // Shortcut
         }
         
-        return template.queryForList(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
+        return (List<ChildAssocEntity>) template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
     }
 
     /**
-     * Filter to allow the {@link ChildAssocRowHandler} to filter results.
+     * Filter to allow the {@link ChildAssocResultHandler} to filter results.
      * 
      * @author Derek Hulley
      * @since 3.4
      */
-    private interface ChildAssocRowHandlerFilter
+    private interface ChildAssocResultHandlerFilter
     {
         boolean isResult(ChildAssocEntity assoc);
     }
@@ -867,24 +880,24 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
      * @author Derek Hulley
      * @since 3.4
      */
-    private class ChildAssocRowHandler implements RowHandler
+    private class ChildAssocResultHandler implements ResultHandler
     {
-        private final ChildAssocRowHandlerFilter filter;
+        private final ChildAssocResultHandlerFilter filter;
         private final ChildAssocRefQueryCallback resultsCallback;
         private boolean more = true;
         
-        private ChildAssocRowHandler(ChildAssocRefQueryCallback resultsCallback)
+        private ChildAssocResultHandler(ChildAssocRefQueryCallback resultsCallback)
         {
             this(null, resultsCallback);
         }
         
-        private ChildAssocRowHandler(ChildAssocRowHandlerFilter filter, ChildAssocRefQueryCallback resultsCallback)
+        private ChildAssocResultHandler(ChildAssocResultHandlerFilter filter, ChildAssocRefQueryCallback resultsCallback)
         {
             this.filter = filter;
             this.resultsCallback = resultsCallback;
         }
         
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
             // Do nothing if no further results are required
             // TODO: Use iBatis' new feature (when we upgrade) to kill the resultset walking
@@ -892,7 +905,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             {
                 return;
             }
-            ChildAssocEntity assoc = (ChildAssocEntity) valueObject;
+            ChildAssocEntity assoc = (ChildAssocEntity) context.getResultObject();
             if (filter != null && !filter.isResult(assoc))
             {
                 // Filtered out
@@ -959,8 +972,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             assoc.setSameStore(sameStore);
         }
         
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-        template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
+        
         resultsCallback.done();
     }
 
@@ -983,8 +1000,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         assoc.setTypeQNameIds(new ArrayList<Long>(assocTypeQNameIds));
         
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-        template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
+        
         resultsCallback.done();
     }
 
@@ -1005,7 +1026,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setChildNodeNameAll(null, assocTypeQName, childName);
 
         // Note: This single results was assumed from inception of the original method.  It's correct.
-        return (ChildAssocEntity) template.queryForObject(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
+        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
     }
 
     @Override
@@ -1035,7 +1056,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             childNamesCrc.add(childNameCrc);
         }
         // Create a filter that checks that the name CRC is present
-        ChildAssocRowHandlerFilter filter = new ChildAssocRowHandlerFilter()
+        ChildAssocResultHandlerFilter filter = new ChildAssocResultHandlerFilter()
         {
             public boolean isResult(ChildAssocEntity assoc)
             {
@@ -1059,8 +1080,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Child names
         assoc.setChildNodeNameCrcs(childNamesCrc);
         
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(filter, resultsCallback);
-        template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(filter, resultsCallback);
+        
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
+        
         resultsCallback.done();
     }
 
@@ -1083,8 +1108,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         assoc.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
         
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-        template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
         resultsCallback.done();
     }
     
@@ -1105,8 +1130,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             return;                         // Shortcut
         }
 
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-        template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE, assoc, resultHandler);
         resultsCallback.done();
     }
 
@@ -1122,7 +1147,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Primary
         assoc.setPrimary(Boolean.TRUE);
         
-        return template.queryForList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
+        return (List<ChildAssocEntity>) template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
     }
 
     @Override
@@ -1160,8 +1185,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             assoc.setPrimary(isPrimary);
         }
         
-        ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-        template.queryWithRowHandler(SELECT_PARENT_ASSOCS_OF_CHILD, assoc, rowHandler);
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        template.select(SELECT_PARENT_ASSOCS_OF_CHILD, assoc, resultHandler);
+        
         resultsCallback.done();
     }
 
@@ -1175,7 +1204,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         childNode.setId(childNodeId);
         assoc.setChildNode(childNode);
         
-        return template.queryForList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        return (List<ChildAssocEntity>) template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
     }
 
     @Override
@@ -1222,7 +1253,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setMaxCommitTime(maxCommitTime);
         
-        List<Transaction> txns = template.queryForList(SELECT_TXN_LAST, query, 0, 1);
+        List<Transaction> txns = (List<Transaction>) template.selectList(SELECT_TXN_LAST, query, new RowBounds(0, 1));
         if (txns.size() > 0)
         {
             return txns.get(0);
@@ -1236,7 +1267,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected int selectTransactionCount()
     {
-        return (Integer) template.queryForObject(SELECT_TXN_COUNT);
+        return (Integer) template.selectOne(SELECT_TXN_COUNT);
     }
 
     @Override
@@ -1245,7 +1276,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setId(txnId);
         
-        return (Transaction) template.queryForObject(SELECT_TXNS, query);
+        return (Transaction) template.selectOne(SELECT_TXNS, query);
     }
 
     @SuppressWarnings("unchecked")
@@ -1260,7 +1291,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         
         // TODO: Return List<Node> for quicker node_deleted access
-        return (List<NodeEntity>) template.queryForList(SELECT_TXN_NODES, query);
+        return (List<NodeEntity>) template.selectList(SELECT_TXN_NODES, query);
     }
 
     @Override
@@ -1277,7 +1308,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         transaction.setId(txnId);
         node.setTransaction(transaction);
 
-        return (Integer) template.queryForObject(SELECT_TXN_NODE_COUNT, node);
+        return (Integer) template.selectOne(SELECT_TXN_NODE_COUNT, node);
     }
 
     @SuppressWarnings("unchecked")
@@ -1294,18 +1325,27 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setMinCommitTime(fromTimeInclusive);
         query.setMaxCommitTime(toTimeExclusive);
-        query.setIncludeTxnIds(includeTxnIds);
-        query.setExcludeTxnIds(excludeTxnIds);
+        
+        if ((includeTxnIds != null) && (includeTxnIds.size() > 0))
+        { 
+            query.setIncludeTxnIds(includeTxnIds);
+        }
+        
+        if ((excludeTxnIds != null) && (excludeTxnIds.size() > 0))
+        {
+            query.setExcludeTxnIds(excludeTxnIds);
+        }
+        
         query.setExcludeServerId(excludeServerId);
         query.setAscending(ascending);
         
         if (count == null)
         {
-            return template.queryForList(SELECT_TXNS, query);
+            return (List<Transaction>) template.selectList(SELECT_TXNS, query);
         }
         else
         {
-            return template.queryForList(SELECT_TXNS, query, 0, count);
+            return (List<Transaction>) template.selectList(SELECT_TXNS, query, new RowBounds(0, count));
         }
     }
 
@@ -1318,24 +1358,24 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         query.setMaxCommitTime(maxCommitTime);
         if (count == null)
         {
-            return template.queryForList(SELECT_TXNS_UNUSED, query);
+            return (List<Long>) template.selectList(SELECT_TXNS_UNUSED, query);
         }
         else
         {
-            return template.queryForList(SELECT_TXNS_UNUSED, query, 0, count);
+            return (List<Long>) template.selectList(SELECT_TXNS_UNUSED, query, new RowBounds(0, count));
         }
     }
 
     @Override
     protected Long selectMinTxnCommitTime()
     {
-        return (Long) template.queryForObject(SELECT_TXN_MIN_COMMIT_TIME);
+        return (Long) template.selectOne(SELECT_TXN_MIN_COMMIT_TIME);
     }
 
     @Override
     protected Long selectMaxTxnCommitTime()
     {
-        return (Long) template.queryForObject(SELECT_TXN_MAX_COMMIT_TIME);
+        return (Long) template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
     }
 
     @Override
@@ -1358,8 +1398,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             assocProp.setValue(nodeValue);
             assocProp.setPropertyQNameId(propName.getFirst());
         
-            ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
-            template.queryWithRowHandler(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, rowHandler);
+            ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+            template.select(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, resultHandler);
             resultsCallback.done();
         }
     }

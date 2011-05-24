@@ -28,9 +28,9 @@ import org.alfresco.repo.tenant.MultiTAdminServiceImpl;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * Migrate Tenant attributes (from 'alf_*attribute*' to 'alf_prop_*')
@@ -62,7 +62,7 @@ public class MigrateAttrTenantsPatch extends AbstractPatch
     {
         long startTime = System.currentTimeMillis();
         
-        TenantRowHandler handler = new TenantRowHandler();
+        TenantResultHandler handler = new TenantResultHandler();
         patchDAO.migrateOldAttrTenants(handler);
         
         if (handler.total > 0)
@@ -79,17 +79,17 @@ public class MigrateAttrTenantsPatch extends AbstractPatch
     /**
      * Row handler for migrating tenants
      */
-    private class TenantRowHandler implements RowHandler
+    private class TenantResultHandler implements ResultHandler
     {
         private int total = 0;
         
-        private TenantRowHandler()
+        private TenantResultHandler()
         {
         }
         @SuppressWarnings("unchecked")
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            Map<String, Object> result = (Map<String, Object>)valueObject;
+            Map<String, Object> result = (Map<String, Object>)context.getResultObject();
             
             String tenantDomain = (String)result.get("tenantDomain");
             Boolean isEnabled = (Boolean)result.get("isEnabled");

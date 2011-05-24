@@ -1,58 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.propval">
+<mapper namespace="alfresco.propval.insert">
 
-    <insert id="insert_PropertyClass" parameterClass="PropertyClass" >
+    <insert id="insert_PropertyClass" parameterType="PropertyClass" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyClass_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertyStringValue" parameterClass="PropertyStringValue" >
+    <insert id="insert_PropertyStringValue" parameterType="PropertyStringValue" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyStringValue_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertyDoubleValue" parameterClass="PropertyDoubleValue" >
+    <insert id="insert_PropertyDoubleValue" parameterType="PropertyDoubleValue" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyDoubleValue_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertySerializableValue" parameterMap="parameter_PropertySerializableValue" >
+    <insert id="insert_PropertySerializableValue" parameterMap="parameter_PropertySerializableValue" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertySerializableValue_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertyValue" parameterClass="PropertyValue" >
+    <insert id="insert_PropertyValue" parameterType="PropertyValue" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyValue_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertyRoot" parameterMap="parameter_PropertyRoot" >
+    <insert id="insert_PropertyRoot" parameterMap="parameter_PropertyRoot" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyRoot_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_PropertyUniqueContext" parameterClass="PropertyUniqueContext" >
+    <insert id="insert_PropertyUniqueContext" parameterType="PropertyUniqueContext" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_PropertyUniqueContext_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-</sqlMap>
+</mapper>

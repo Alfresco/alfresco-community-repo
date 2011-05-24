@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.alfresco.repo.domain.locale.AbstractLocaleDAOImpl;
 import org.alfresco.repo.domain.locale.LocaleEntity;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the Locale DAO.
@@ -35,14 +35,16 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
 {
     private static final String SELECT_LOCALE_BY_ID = "alfresco.locale.select_LocaleById";
     private static final String SELECT_LOCALE_BY_NAME = "alfresco.locale.select_LocaleByName";
-    private static final String INSERT_LOCALE = "alfresco.locale.insert_Locale";
+    private static final String INSERT_LOCALE = "alfresco.locale.insert.insert_Locale";
     
-    private SqlMapClientTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
+    
     
     @Override
     protected LocaleEntity getLocaleEntity(Long id)
@@ -50,7 +52,7 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", id);
         
-        return (LocaleEntity) template.queryForObject(SELECT_LOCALE_BY_ID, params);
+        return (LocaleEntity) template.selectOne(SELECT_LOCALE_BY_ID, params);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("str", localeStr);
         
-        return (LocaleEntity) template.queryForObject(SELECT_LOCALE_BY_NAME, params);
+        return (LocaleEntity) template.selectOne(SELECT_LOCALE_BY_NAME, params);
     }
 
     @Override
@@ -69,8 +71,7 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
         localeEntity.setVersion(LocaleEntity.CONST_LONG_ZERO);
         localeEntity.setLocaleStr(localeStr);
         
-        Long id = (Long) template.insert(INSERT_LOCALE, localeEntity);
-        localeEntity.setId(id);
+        template.insert(INSERT_LOCALE, localeEntity);
         return localeEntity;
     }
 }

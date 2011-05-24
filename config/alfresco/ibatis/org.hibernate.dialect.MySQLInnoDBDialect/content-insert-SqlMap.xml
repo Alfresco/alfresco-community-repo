@@ -1,37 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.content">
+<mapper namespace="alfresco.content.insert">
 
-    <insert id="insert_Mimetype" parameterClass="Mimetype" >
+    <insert id="insert_Mimetype" parameterType="Mimetype" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_Mimetype_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_Encoding" parameterClass="Encoding" >
+    <insert id="insert_Encoding" parameterType="Encoding" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_Encoding_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_ContentUrl" parameterMap="parameter_ContentUrl" >
+    <insert id="insert_ContentUrl" parameterMap="parameter_ContentUrl" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_ContentUrl_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_ContentData" parameterMap="parameter_ContentData" >
+    <insert id="insert_ContentData" parameterMap="parameter_ContentData" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_ContentData_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-</sqlMap>
+</mapper>

@@ -28,9 +28,10 @@ import org.alfresco.repo.domain.avm.AVMNodePropertyEntity;
 import org.alfresco.repo.domain.avm.AbstractAVMNodeDAOImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMNode DAO.
@@ -42,7 +43,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
 {
     private static Log logger = LogFactory.getLog(AVMNodeDAOImpl.class);
     
-    private static final String INSERT_AVM_NODE = "alfresco.avm.insert_AVMNode";
+    private static final String INSERT_AVM_NODE = "alfresco.avm.insert.insert_AVMNode";
     private static final String SELECT_AVM_NODE_BY_ID = "alfresco.avm.select_AVMNodeById";
     private static final String UPDATE_AVM_NODE = "alfresco.avm.update_AVMNode";
     private static final String UPDATE_AVM_NODE_MODTIME_AND_GUID = "alfresco.avm.update_AVMNode_modTimeAndGuid";
@@ -60,29 +61,29 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     private static final String SELECT_AVM_CONTENT_URLS_FOR_PLAIN_FILES = "alfresco.avm.select_ContentUrlsForPlainFiles";
     
     private static final String SELECT_AVM_NODE_ASPECTS = "alfresco.avm.select_AVMNodeAspects";
-    private static final String INSERT_AVM_NODE_ASPECT = "alfresco.avm.insert_AVMNodeAspect";
+    private static final String INSERT_AVM_NODE_ASPECT = "alfresco.avm.insert.insert_AVMNodeAspect";
     private static final String DELETE_AVM_NODE_ASPECT = "alfresco.avm.delete_AVMNodeAspect";
     private static final String DELETE_AVM_NODE_ASPECTS = "alfresco.avm.delete_AVMNodeAspects";
     
-    private static final String INSERT_AVM_NODE_PROP = "alfresco.avm.insert_AVMNodeProperty";
+    private static final String INSERT_AVM_NODE_PROP = "alfresco.avm.insert.insert_AVMNodeProperty";
     private static final String UPDATE_AVM_NODE_PROP = "alfresco.avm.update_AVMNodeProperty";
     private static final String SELECT_AVM_NODE_PROP = "alfresco.avm.select_AVMNodeProperty";
     private static final String SELECT_AVM_NODE_PROPS = "alfresco.avm.select_AVMNodeProperties";
     private static final String DELETE_AVM_NODE_PROP = "alfresco.avm.delete_AVMNodeProperty";
     private static final String DELETE_AVM_NODE_PROPS = "alfresco.avm.delete_AVMNodeProperties";
     
-    private SqlMapClientTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
     
     @Override
     protected AVMNodeEntity createNodeEntity(AVMNodeEntity nodeEntity)
     {
-        Long id = (Long) template.insert(INSERT_AVM_NODE, nodeEntity);
-        nodeEntity.setId(id);
+        template.insert(INSERT_AVM_NODE, nodeEntity);
         return nodeEntity;
     }
     
@@ -91,7 +92,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", id);
-        return (AVMNodeEntity) template.queryForObject(SELECT_AVM_NODE_BY_ID, params);
+        return (AVMNodeEntity) template.selectOne(SELECT_AVM_NODE_BY_ID, params);
     }
     
     @Override
@@ -142,7 +143,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_NEW_IN_STORE, params);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODES_NEW_IN_STORE, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -151,7 +152,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_NEW_LAYERED_IN_STORE, params);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODES_NEW_LAYERED_IN_STORE, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -160,7 +161,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
-        return (List<Long>) template.queryForList(SELECT_AVM_NODE_IDS_NEW_LAYERED_IN_STORE, params);
+        return (List<Long>) template.selectList(SELECT_AVM_NODE_IDS_NEW_LAYERED_IN_STORE, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -171,7 +172,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
         params.put("bool", false);
         
         // all nodes with null parent and not a root
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_NULL_PARENT_AND_ISROOT_TF, params, 0, maxSize);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODES_NULL_PARENT_AND_ISROOT_TF, params, new RowBounds(0, maxSize));
     }
     
     @SuppressWarnings("unchecked")
@@ -182,45 +183,45 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
         params.put("bool", true);
         
         // all primary layered directories
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_LAYERED_DIRECTORIES_AND_PRIMARY_TF, params);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODES_LAYERED_DIRECTORIES_AND_PRIMARY_TF, params);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMNodeEntity> getAllLayeredFileNodeEntities()
     {
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_LAYERED_FILES);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODES_LAYERED_FILES);
     }
     
     @Override
     protected void getPlainFileContentUrls(ContentUrlHandler handler)
     {
-        CleanRowHandler rowHandler = new CleanRowHandler(handler);
+        CleanResultHandler resultHandler = new CleanResultHandler(handler);
         
-        template.queryWithRowHandler(SELECT_AVM_CONTENT_URLS_FOR_PLAIN_FILES, rowHandler);
+        template.selectList(SELECT_AVM_CONTENT_URLS_FOR_PLAIN_FILES, resultHandler);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Listed " + rowHandler.total + " content URLs");
+            logger.debug("   Listed " + resultHandler.total + " content URLs");
         }
     }
     
     /**
      * Row handler for cleaning content URLs
      */
-    private static class CleanRowHandler implements RowHandler
+    private static class CleanResultHandler implements ResultHandler
     {
         private final ContentUrlHandler handler;
         
         private int total = 0;
         
-        private CleanRowHandler(ContentUrlHandler handler)
+        private CleanResultHandler(ContentUrlHandler handler)
         {
             this.handler = handler;
         }
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            handler.handle((String)valueObject);
+            handler.handle((String)context.getResultObject());
             total++;
             if (logger.isDebugEnabled() && (total == 0 || (total % 1000 == 0) ))
             {
@@ -235,7 +236,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", nodeId);
-        return (List<Long>) template.queryForList(SELECT_AVM_NODE_ASPECTS, params);
+        return (List<Long>) template.selectList(SELECT_AVM_NODE_ASPECTS, params);
     }
     
     @Override
@@ -279,7 +280,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
         propEntity.setNodeId(nodeId);
         propEntity.setQnameId(qnameId);
         
-        return (AVMNodePropertyEntity) template.queryForObject(SELECT_AVM_NODE_PROP, propEntity);
+        return (AVMNodePropertyEntity) template.selectOne(SELECT_AVM_NODE_PROP, propEntity);
     }
     
     @Override
@@ -289,7 +290,7 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", nodeId);
         
-        return (List<AVMNodePropertyEntity>) template.queryForList(SELECT_AVM_NODE_PROPS, params);
+        return (List<AVMNodePropertyEntity>) template.selectList(SELECT_AVM_NODE_PROPS, params);
     }
     
     @Override

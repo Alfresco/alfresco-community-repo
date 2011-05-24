@@ -1,42 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.audit">
+<mapper namespace="alfresco.audit.insert">
 
-    <insert id="insert_AuditModel" parameterClass="AuditModel" >
+    <insert id="insert_AuditModel" parameterType="AuditModel" >
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_audit_model_seq')
         </selectKey>
         
-        insert into alf_audit_model (id, content_data_id, content_crc) 
-        values (#id#, #contentDataId#, #contentCrc#)
+        <include refid="insert_AuditModel_Sequence"/>
         
     </insert>
-
-    <insert id="insert_AuditApplication" parameterClass="AuditApplication" >
+    
+    <insert id="insert_AuditApplication" parameterType="AuditApplication" >
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_audit_app_seq')
         </selectKey>
         
-        insert into alf_audit_app (id, version, app_name_id, audit_model_id, disabled_paths_id) 
-        values (#id#, #version#, #applicationNameId#, #auditModelId#, #disabledPathsId#)
+        <include refid="insert_AuditApplication_Sequence"/>
         
     </insert>
-
-    <insert id="insert_AuditEntry" parameterClass="AuditEntry" >
+    
+    <insert id="insert_AuditEntry" parameterType="AuditEntry" >
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_audit_entry_seq')
         </selectKey>
         
-        insert into alf_audit_entry (id, audit_app_id, audit_user_id, audit_time, audit_values_id) 
-        values (#id#, #auditApplicationId#, #auditUserId#, #auditTime#, #auditValuesId#)
+        <include refid="insert_AuditEntry_Sequence"/>
         
     </insert>
-
-</sqlMap>
+    
+</mapper>

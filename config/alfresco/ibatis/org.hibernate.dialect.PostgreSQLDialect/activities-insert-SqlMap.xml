@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.activities">
+<mapper namespace="alfresco.activities.insert">
 
-   <insert id="insert_activity_feedcontrol" parameterClass="FeedControl">
+   <insert id="insert_activity_feedcontrol" parameterType="FeedControl">
       
-      <selectKey keyProperty="id" resultClass="long">
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
          select nextVal('alf_activity_feed_control_seq')
       </selectKey>
       
@@ -16,9 +14,9 @@
       
    </insert>
    
-   <insert id="insert_activity_feed" parameterClass="ActivityFeed">
+   <insert id="insert_activity_feed" parameterType="ActivityFeed">
       
-      <selectKey keyProperty="id" resultClass="long">
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
          select nextVal('alf_activity_feed_seq')
       </selectKey>
       
@@ -26,9 +24,9 @@
       
    </insert>
    
-   <insert id="insert_activity_post" parameterClass="ActivityPost">
+   <insert id="insert_activity_post" parameterType="ActivityPost">
       
-      <selectKey keyProperty="id" resultClass="long">
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
          select nextVal('alf_activity_post_seq')
       </selectKey>
       
@@ -36,4 +34,4 @@
       
    </insert>
    
-</sqlMap>
+</mapper>

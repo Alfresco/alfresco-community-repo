@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.patch.AbstractAppliedPatchDAOImpl;
 import org.alfresco.repo.domain.patch.AppliedPatchEntity;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AppliedPatch DAO.
@@ -37,13 +37,15 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     private static final String SELECT_APPLIED_PATCH_BY_ID = "alfresco.appliedpatch.select_AppliedPatchById";
     private static final String SELECT_ALL_APPLIED_PATCH = "alfresco.appliedpatch.select_AllAppliedPatches";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     @Override
     protected void createAppliedPatchEntity(AppliedPatchEntity entity)
     {
@@ -60,7 +62,7 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     {
         AppliedPatchEntity entity = new AppliedPatchEntity();
         entity.setId(id);
-        entity = (AppliedPatchEntity) template.queryForObject(SELECT_APPLIED_PATCH_BY_ID, entity);
+        entity = (AppliedPatchEntity) template.selectOne(SELECT_APPLIED_PATCH_BY_ID, entity);
         // Could be null
         return entity;
     }
@@ -69,9 +71,8 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     @Override
     protected List<AppliedPatchEntity> getAppliedPatchEntities()
     {
-        return (List<AppliedPatchEntity>) template.queryForList(SELECT_ALL_APPLIED_PATCH);
+        return (List<AppliedPatchEntity>) template.selectList(SELECT_ALL_APPLIED_PATCH);
     }
-
     
 //
 //    @Override

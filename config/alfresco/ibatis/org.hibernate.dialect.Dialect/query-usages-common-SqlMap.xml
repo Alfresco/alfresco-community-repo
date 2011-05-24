@@ -1,40 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--
     Queries related to repository usages and restrictions.
 -->
-<sqlMap namespace="alfresco.query.usages">
+<mapper namespace="alfresco.query.usages">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
-    
     <!--                -->
     <!-- Statements     -->
     <!--                -->
     
-    <select id="select_CountPersonsNotDisabled" parameterClass="Ids" resultClass="Long">
+    <select id="select_CountPersonsNotDisabled" parameterType="Ids" resultType="Long">
         <![CDATA[
         select count(*)
         from
             alf_node n
-            left join alf_node_aspects na on (na.node_id = n.id and na.qname_id = #idOne#)
+            left join alf_node_aspects na on (na.node_id = n.id and na.qname_id = #{idOne})
         where
-            n.type_qname_id = #idTwo#
+            n.type_qname_id = #{idTwo}
             and na.qname_id is null
         ]]>
     </select>
 
-    <select id="select_CountDocuments" parameterClass="Ids" resultClass="Long">
+    <select id="select_CountDocuments" parameterType="Ids" resultType="Long">
         select count(*) from alf_node n
         where n.type_qname_id in
-            <iterate property="ids" open="(" close=")" conjunction=",">#ids[]#</iterate>
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
     </select>
 
-</sqlMap>
+</mapper>

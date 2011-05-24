@@ -27,9 +27,9 @@ import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * Migrate Property-Backed Bean attributes (from 'alf_*attribute*' to 'alf_prop_*')
@@ -63,7 +63,7 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
     {
         long startTime = System.currentTimeMillis();
         
-        PBBRowHandler handler = new PBBRowHandler();
+        PBBesultHandler handler = new PBBesultHandler();
         patchDAO.migrateOldAttrPropertyBackedBeans(handler);
         handler.setComponent(handler.currentComponentName, handler.attributeMap); // set last component attribute (if any)
         
@@ -78,7 +78,7 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
         return msg;
     }
     
-    private class PBBRowHandler implements RowHandler
+    private class PBBesultHandler implements ResultHandler
     {
         private int total = 0;
         private int totalProps = 0;
@@ -86,13 +86,13 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
         private Map<String, String> attributeMap = new HashMap<String, String>(10);
         private String currentComponentName = "";
         
-        private PBBRowHandler()
+        private PBBesultHandler()
         {
         }
         @SuppressWarnings("unchecked")
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            Map<String, Object> result = (Map<String, Object>)valueObject;
+            Map<String, Object> result = (Map<String, Object>)context.getResultObject();
             
             String componentName = (String)result.get("componentName");
             String propName = (String)result.get("propName");

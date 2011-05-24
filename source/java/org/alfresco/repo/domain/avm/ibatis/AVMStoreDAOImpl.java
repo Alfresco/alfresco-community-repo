@@ -25,7 +25,7 @@ import java.util.Map;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.domain.avm.AVMStorePropertyEntity;
 import org.alfresco.repo.domain.avm.AbstractAVMStoreDAOImpl;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMStore DAO.
@@ -43,11 +43,11 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     private static final String SELECT_AVM_STORE_BY_ROOT_NODE_ID ="alfresco.avm.select_AVMStoreByRootNodeId";
     private static final String SELECT_AVM_STORE_ALL ="alfresco.avm.select_AVMStoreAll";
     
-    private static final String INSERT_AVM_STORE ="alfresco.avm.insert_AVMStore";
+    private static final String INSERT_AVM_STORE ="alfresco.avm.insert.insert_AVMStore";
     private static final String DELETE_AVM_STORE ="alfresco.avm.delete_AVMStore";
     private static final String UPDATE_AVM_STORE ="alfresco.avm.update_AVMStore";
     
-    private static final String INSERT_AVM_STORE_PROP ="alfresco.avm.insert_AVMStoreProperty";
+    private static final String INSERT_AVM_STORE_PROP ="alfresco.avm.insert.insert_AVMStoreProperty";
     private static final String UPDATE_AVM_STORE_PROP ="alfresco.avm.update_AVMStoreProperty";
     private static final String SELECT_AVM_STORE_PROP ="alfresco.avm.select_AVMStoreProperty";
     private static final String SELECT_AVM_STORE_PROPS ="alfresco.avm.select_AVMStoreProperties";
@@ -62,16 +62,17 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     private static final String DELETE_AVM_STORE_PROPS ="alfresco.avm.delete_AVMStoreProperties";
     
     
-    private SqlMapClientTemplate template;
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    {
+        this.template = sqlSessionTemplate;
+    }
+    
     
     // Initial generic fixes for ALF-2278 (pending SAIL-365) & ALF-498 (pending SAIL-359)
     // Note: in order to override to false, DB must be setup to be case-insensitive (at least on column avm_stores.name)
     private boolean toLower = true;
-    
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
-    {
-        this.template = sqlMapClientTemplate;
-    }
     
     public void setToLower(boolean toLower)
     {
@@ -83,7 +84,7 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", id);
-        return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_ID, params);
+        return (AVMStoreEntity) template.selectOne(SELECT_AVM_STORE_BY_ID, params);
     }
     
     @Override
@@ -94,9 +95,9 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         
         if (toLower)
         {
-            return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_KEY_L, storeEntity);
+            return (AVMStoreEntity) template.selectOne(SELECT_AVM_STORE_BY_KEY_L, storeEntity);
         }
-        return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_KEY, storeEntity);
+        return (AVMStoreEntity) template.selectOne(SELECT_AVM_STORE_BY_KEY, storeEntity);
     }
     
     @Override
@@ -104,21 +105,20 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", rootNodeId);
-        return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_ROOT_NODE_ID, params);
+        return (AVMStoreEntity) template.selectOne(SELECT_AVM_STORE_BY_ROOT_NODE_ID, params);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<AVMStoreEntity> getAllStoreEntities()
     {
-        return (List<AVMStoreEntity>) template.queryForList(SELECT_AVM_STORE_ALL);
+        return (List<AVMStoreEntity>) template.selectList(SELECT_AVM_STORE_ALL);
     }
     
     @Override
     protected AVMStoreEntity createStoreEntity(AVMStoreEntity storeEntity)
     {
-        Long id = (Long) template.insert(INSERT_AVM_STORE, storeEntity);
-        storeEntity.setId(id);
+        template.insert(INSERT_AVM_STORE, storeEntity);
         return storeEntity;
     }
     
@@ -157,7 +157,7 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         propEntity.setAvmStoreId(storeId);
         propEntity.setQnameId(qnameId);
         
-        return (AVMStorePropertyEntity) template.queryForObject(SELECT_AVM_STORE_PROP, propEntity);
+        return (AVMStorePropertyEntity) template.selectOne(SELECT_AVM_STORE_PROP, propEntity);
     }
     
     @SuppressWarnings("unchecked")
@@ -169,7 +169,7 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         
         try
         {
-            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS, params);
+            return (List<AVMStorePropertyEntity>) template.selectList(SELECT_AVM_STORE_PROPS, params);
         }
         catch (Throwable e)
         {
@@ -187,9 +187,9 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         
         if (toLower)
         {
-            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN_L, params);
+            return (List<AVMStorePropertyEntity>) template.selectList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN_L, params);
         }
-        return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN, params);
+        return (List<AVMStorePropertyEntity>) template.selectList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -203,9 +203,9 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         
         if (toLower)
         {
-            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN_L, params);
+            return (List<AVMStorePropertyEntity>) template.selectList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN_L, params);
         }
-        return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN, params);
+        return (List<AVMStorePropertyEntity>) template.selectList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN, params);
     }
     
     @Override

@@ -42,7 +42,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.ibatis.SerializableTypeHandlerCallback;
+import org.alfresco.ibatis.SerializableTypeHandler;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -1266,7 +1266,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
-        int serializableType = SerializableTypeHandlerCallback.getSerializableType();
+        int serializableType = SerializableTypeHandler.getSerializableType();
         // Adjust the maximum allowable String length according to the dialect
         if (dialect instanceof AlfrescoSQLServerDialect)
         {
@@ -1312,7 +1312,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
         SchemaBootstrap.setMaxStringLength(maxStringLength);
-        SerializableTypeHandlerCallback.setSerializableType(serializableType);
+        SerializableTypeHandler.setSerializableType(serializableType);
         
         // Now override the maximum string length if it was set directly
         if (maximumStringLength > 0)

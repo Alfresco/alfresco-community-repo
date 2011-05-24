@@ -27,8 +27,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
+import org.apache.ibatis.session.ResultHandler;
 
 /**
  * Additional DAO services for patches
@@ -187,22 +186,22 @@ public interface PatchDAO
     /**
      * Migrate old Tenant attributes (if any)
      */
-    public void migrateOldAttrTenants(RowHandler rowHandler);
+    public void migrateOldAttrTenants(ResultHandler resultHandler);
     
     /**
      * Migrate old AVM Lock attributes (if any)
      */
-    public void migrateOldAttrAVMLocks(RowHandler rowHandler);
+    public void migrateOldAttrAVMLocks(ResultHandler resultHandler);
     
     /**
      * Migrate old Property-Backed Bean attributes (if any)
      */
-    public void migrateOldAttrPropertyBackedBeans(RowHandler rowHandler);
+    public void migrateOldAttrPropertyBackedBeans(ResultHandler resultHandler);
     
     /**
      * Migrate old Chaining User Registry Synchronizer attributes (if any)
      */
-    public void migrateOldAttrChainingURS(RowHandler rowHandler);
+    public void migrateOldAttrChainingURS(ResultHandler resultHandler);
     
     /**
      * Get custom global attribute names (if any)

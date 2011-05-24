@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.ibatis.RollupRowHandler;
+import org.alfresco.ibatis.RollupResultHandler;
 import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
 import org.alfresco.repo.domain.propval.PropertyClassEntity;
 import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
@@ -39,9 +39,11 @@ import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.util.Pair;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * iBatis-specific implementation of the PropertyValue DAO.
@@ -53,53 +55,55 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
 {
     private static final String SELECT_PROPERTY_CLASS_BY_ID = "alfresco.propval.select_PropertyClassByID";
     private static final String SELECT_PROPERTY_CLASS_BY_NAME = "alfresco.propval.select_PropertyClassByName";
-    private static final String INSERT_PROPERTY_CLASS = "alfresco.propval.insert_PropertyClass";
+    private static final String INSERT_PROPERTY_CLASS = "alfresco.propval.insert.insert_PropertyClass";
     
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "alfresco.propval.select_PropertyDateValueByID";
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDateValueByValue";
-    private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert_PropertyDateValue";
+    private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert.insert_PropertyDateValue";
     
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_ID = "alfresco.propval.select_PropertyStringValueByID";
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_VALUE = "alfresco.propval.select_PropertyStringValueByValue";
-    private static final String INSERT_PROPERTY_STRING_VALUE = "alfresco.propval.insert_PropertyStringValue";
+    private static final String INSERT_PROPERTY_STRING_VALUE = "alfresco.propval.insert.insert_PropertyStringValue";
     
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "alfresco.propval.select_PropertyDoubleValueByID";
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDoubleValueByValue";
-    private static final String INSERT_PROPERTY_DOUBLE_VALUE = "alfresco.propval.insert_PropertyDoubleValue";
+    private static final String INSERT_PROPERTY_DOUBLE_VALUE = "alfresco.propval.insert.insert_PropertyDoubleValue";
     
     private static final String SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID = "alfresco.propval.select_PropertySerializableValueByID";
-    private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "alfresco.propval.insert_PropertySerializableValue";
+    private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "alfresco.propval.insert.insert_PropertySerializableValue";
     
     private static final String SELECT_PROPERTY_VALUE_BY_ID = "alfresco.propval.select_PropertyValueById";
     private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "alfresco.propval.select_PropertyValueByLocalValue";
     private static final String SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE = "alfresco.propval.select_PropertyValueByDoubleValue";
     private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "alfresco.propval.select_PropertyValueByStringValue";
-    private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert_PropertyValue";
+    private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert.insert_PropertyValue";
     
     private static final String SELECT_PROPERTY_BY_ID = "alfresco.propval.select_PropertyById";
     private static final String SELECT_PROPERTIES_BY_IDS = "alfresco.propval.select_PropertiesByIds";
     private static final String SELECT_PROPERTY_ROOT_BY_ID = "alfresco.propval.select_PropertyRootById";
-    private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert_PropertyRoot";
+    private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert.insert_PropertyRoot";
     private static final String UPDATE_PROPERTY_ROOT = "alfresco.propval.update_PropertyRoot";
     private static final String DELETE_PROPERTY_ROOT_BY_ID = "alfresco.propval.delete_PropertyRootById";
     
     private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.select_PropertyUniqueContextById";
     private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.select_PropertyUniqueContextByValues";
-    private static final String INSERT_PROPERTY_UNIQUE_CTX = "alfresco.propval.insert_PropertyUniqueContext";
+    private static final String INSERT_PROPERTY_UNIQUE_CTX = "alfresco.propval.insert.insert_PropertyUniqueContext";
     private static final String UPDATE_PROPERTY_UNIQUE_CTX = "alfresco.propval.update_PropertyUniqueContext";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.delete_PropertyUniqueContextById";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.delete_PropertyUniqueContextByValues";
     
-    private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
+    private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert.insert_PropertyLink";
     private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     //================================
     // 'alf_prop_class' accessors
     //================================
@@ -109,7 +113,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyClassEntity entity = new PropertyClassEntity();
         entity.setId(id);
-        entity = (PropertyClassEntity) template.queryForObject(
+        entity = (PropertyClassEntity) template.selectOne(
                 SELECT_PROPERTY_CLASS_BY_ID,
                 entity);
         // Done
@@ -121,7 +125,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyClassEntity entity = new PropertyClassEntity();
         entity.setJavaClass(value);
-        entity = (PropertyClassEntity) template.queryForObject(
+        entity = (PropertyClassEntity) template.selectOne(
                 SELECT_PROPERTY_CLASS_BY_NAME,
                 entity);
         // Done
@@ -133,8 +137,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyClassEntity entity = new PropertyClassEntity();
         entity.setJavaClass(value);
-        Long id = (Long) template.insert(INSERT_PROPERTY_CLASS, entity);
-        entity.setId(id);
+        template.insert(INSERT_PROPERTY_CLASS, entity);
         // Done
         return entity;
     }
@@ -146,7 +149,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected PropertyDateValueEntity findDateValueById(Long id)
     {
-        PropertyDateValueEntity entity = (PropertyDateValueEntity) template.queryForObject(
+        PropertyDateValueEntity entity = (PropertyDateValueEntity) template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_ID,
                 id);
         // Done
@@ -156,7 +159,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected PropertyDateValueEntity findDateValueByValue(Date value)
     {
-        PropertyDateValueEntity result = (PropertyDateValueEntity) template.queryForObject(
+        PropertyDateValueEntity result = (PropertyDateValueEntity) template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_VALUE,
                 new Long(value.getTime()));
         // The ID is the actual time in ms (GMT)
@@ -182,7 +185,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setId(id);
-        String value = (String) template.queryForObject(
+        String value = (String) template.selectOne(
                 SELECT_PROPERTY_STRING_VALUE_BY_ID,
                 entity);
         // Done
@@ -195,10 +198,10 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setValue(value);
-        List<Long> rows = (List<Long>) template.queryForList(
+        List<Long> rows = (List<Long>) template.selectList(
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
                 entity,
-                0, 1);
+                new RowBounds(0, 1));
         // The CRC match prevents incorrect results from coming back.  Although there could be
         // several matches, we are sure that the matches are case-sensitive.
         if (rows.size() > 0)
@@ -216,9 +219,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setValue(value);
-        Long id = (Long) template.insert(INSERT_PROPERTY_STRING_VALUE, entity);
+        template.insert(INSERT_PROPERTY_STRING_VALUE, entity);
         // Done
-        return id;
+        return entity.getId();
     }
 
     //================================
@@ -230,7 +233,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDoubleValueEntity entity = new PropertyDoubleValueEntity();
         entity.setId(id);
-        entity = (PropertyDoubleValueEntity) template.queryForObject(
+        entity = (PropertyDoubleValueEntity) template.selectOne(
                 SELECT_PROPERTY_DOUBLE_VALUE_BY_ID,
                 entity);
         // Done
@@ -243,10 +246,10 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDoubleValueEntity entity = new PropertyDoubleValueEntity();
         entity.setDoubleValue(value);
-        List<PropertyDoubleValueEntity> results = (List<PropertyDoubleValueEntity>) template.queryForList(
+        List<PropertyDoubleValueEntity> results = (List<PropertyDoubleValueEntity>) template.selectList(
                 SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE,
                 entity,
-                0, 1);
+                new RowBounds(0, 1));
         // There could be several matches, so just get one
         if (results.size() > 0)
         {
@@ -264,8 +267,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDoubleValueEntity entity = new PropertyDoubleValueEntity();
         entity.setDoubleValue(value);
-        Long id = (Long) template.insert(INSERT_PROPERTY_DOUBLE_VALUE, entity);
-        entity.setId(id);
+        template.insert(INSERT_PROPERTY_DOUBLE_VALUE, entity);
         // Done
         return entity;
     }
@@ -279,7 +281,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertySerializableValueEntity entity = new PropertySerializableValueEntity();
         entity.setId(id);
-        entity = (PropertySerializableValueEntity) template.queryForObject(
+        entity = (PropertySerializableValueEntity) template.selectOne(
                 SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID,
                 entity);
         // Done
@@ -291,8 +293,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertySerializableValueEntity entity = new PropertySerializableValueEntity();
         entity.setSerializableValue(value);
-        Long id = (Long) template.insert(INSERT_PROPERTY_SERIALIZABLE_VALUE, entity);
-        entity.setId(id);
+        template.insert(INSERT_PROPERTY_SERIALIZABLE_VALUE, entity);
         // Done
         return entity;
     }
@@ -307,7 +308,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.queryForList(
+        List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.selectList(
                 SELECT_PROPERTY_VALUE_BY_ID,
                 entity);
         // At most one of the results represents a real value
@@ -388,7 +389,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         if (query != null)
         {
             // Uniqueness is guaranteed by the tables, so we get one value only
-            result = (PropertyValueEntity) template.queryForObject(query, queryObject);
+            result = (PropertyValueEntity) template.selectOne(query, queryObject);
         }
         
         // Done
@@ -436,8 +437,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         }
         
         // Persist the entity
-        Long id = (Long) template.insert(INSERT_PROPERTY_VALUE, insertEntity);
-        insertEntity.setId(id);
+        template.insert(INSERT_PROPERTY_VALUE, insertEntity);
         // Done
         return insertEntity;
     }
@@ -452,7 +452,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.queryForList(
+        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.selectList(
                 SELECT_PROPERTY_BY_ID,
                 entity);
         return results;
@@ -462,11 +462,11 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected void findPropertiesByIds(List<Long> ids, final PropertyFinderCallback callback)
     {
-        RowHandler valueRowHandler = new RowHandler()
+        ResultHandler valueResultHandler = new ResultHandler()
         {
-            public void handleRow(Object valueObject)
+            public void handleResult(ResultContext context)
             {
-                PropertyIdQueryResult result = (PropertyIdQueryResult) valueObject;
+                PropertyIdQueryResult result = (PropertyIdQueryResult) context.getResultObject();
                 Long id = result.getPropId();
                 // Make the serializable value
                 List<PropertyIdSearchRow> rows = result.getPropValues();
@@ -475,16 +475,16 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             }
         };
         // A row handler to roll up individual rows
-        RollupRowHandler rollupRowHandler = new RollupRowHandler(
+        RollupResultHandler rollupResultHandler = new RollupResultHandler(
                 KEY_COLUMNS_FINDBYIDS,
                 "propValues",
-                valueRowHandler);
+                valueResultHandler);
         // Query using the IDs
         PropertyIdQueryParameter params = new PropertyIdQueryParameter();
         params.setRootPropIds(ids);
-        template.queryWithRowHandler(SELECT_PROPERTIES_BY_IDS, params, rollupRowHandler);
+        template.select(SELECT_PROPERTIES_BY_IDS, params, rollupResultHandler);
         // Process any remaining results
-        rollupRowHandler.processLastResults();
+        rollupResultHandler.processLastResults();
         // Done
     }
 
@@ -493,7 +493,8 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyRootEntity rootEntity = new PropertyRootEntity();
         rootEntity.setVersion((short)0);
-        return (Long) template.insert(INSERT_PROPERTY_ROOT, rootEntity);
+        template.insert(INSERT_PROPERTY_ROOT, rootEntity);
+        return rootEntity.getId();
     }
 
     @Override
@@ -501,14 +502,19 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyRootEntity entity = new PropertyRootEntity();
         entity.setId(id);
-        return (PropertyRootEntity) template.queryForObject(SELECT_PROPERTY_ROOT_BY_ID, entity);
+        return (PropertyRootEntity) template.selectOne(SELECT_PROPERTY_ROOT_BY_ID, entity);
     }
 
     @Override
     protected PropertyRootEntity updatePropertyRoot(PropertyRootEntity entity)
     {
         entity.incrementVersion();
-        template.update(UPDATE_PROPERTY_ROOT, entity, 1);
+        int updated = template.update(UPDATE_PROPERTY_ROOT, entity);
+        if (updated != 1)
+        {
+            // unexpected number of rows affected
+            throw new ConcurrencyFailureException("Incorrect number of rows affected for updatePropertyRoot: " + entity + ": expected 1, actual " + updated);
+        }
         return entity;
     }
 
@@ -530,8 +536,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setValue2PropId(valueId2);
         entity.setValue3PropId(valueId3);
         entity.setPropertyId(propertyId);
-        Long id = (Long) template.insert(INSERT_PROPERTY_UNIQUE_CTX, entity);
-        entity.setId(id);
+        template.insert(INSERT_PROPERTY_UNIQUE_CTX, entity);
         return entity;
     }
 
@@ -540,7 +545,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
         entity.setId(id);
-        entity = (PropertyUniqueContextEntity) template.queryForObject(SELECT_PROPERTY_UNIQUE_CTX_BY_ID, entity);
+        entity = (PropertyUniqueContextEntity) template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_ID, entity);
         return entity;
     }
 
@@ -551,7 +556,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setValue1PropId(valueId1);
         entity.setValue2PropId(valueId2);
         entity.setValue3PropId(valueId3);
-        entity = (PropertyUniqueContextEntity) template.queryForObject(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
+        entity = (PropertyUniqueContextEntity) template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
         return entity;
     }
     
@@ -577,11 +582,11 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             }
         }
         
-        RowHandler valueRowHandler = new RowHandler()
+        ResultHandler valueResultHandler = new ResultHandler()
         {
-            public void handleRow(Object valueObject)
+            public void handleResult(ResultContext context)
             {
-                PropertyUniqueContextEntity result = (PropertyUniqueContextEntity) valueObject;
+                PropertyUniqueContextEntity result = (PropertyUniqueContextEntity) context.getResultObject();
                 
                 Long id = result.getId();
                 Long propId = result.getPropertyId();
@@ -594,7 +599,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             }
         };
         
-        template.queryWithRowHandler(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity, valueRowHandler);
+        template.select(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity, valueResultHandler);
         // Done
     }
 
@@ -602,7 +607,12 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     protected PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity)
     {
         entity.incrementVersion();
-        template.update(UPDATE_PROPERTY_UNIQUE_CTX, entity, 1);
+        int updated = template.update(UPDATE_PROPERTY_UNIQUE_CTX, entity);
+        if (updated != 1)
+        {
+            // unexpected number of rows affected
+            throw new ConcurrencyFailureException("Incorrect number of rows affected for updatePropertyUniqueContext: " + entity + ": expected 1, actual " + updated);
+        }
         return entity;
     }
 

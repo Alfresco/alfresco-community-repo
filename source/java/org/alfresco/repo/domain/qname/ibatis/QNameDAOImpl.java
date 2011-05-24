@@ -21,7 +21,7 @@ package org.alfresco.repo.domain.qname.ibatis;
 import org.alfresco.repo.domain.qname.AbstractQNameDAOImpl;
 import org.alfresco.repo.domain.qname.NamespaceEntity;
 import org.alfresco.repo.domain.qname.QNameEntity;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific extension of the QName and Namespace abstract DAO 
@@ -33,26 +33,27 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
 {
     private static final String SELECT_NS_BY_ID = "alfresco.qname.select_NamespaceById";
     private static final String SELECT_NS_BY_URI = "alfresco.qname.select_NamespaceByUri";
-    private static final String INSERT_NS = "alfresco.qname.insert_Namespace";
+    private static final String INSERT_NS = "alfresco.qname.insert.insert_Namespace";
     private static final String UPDATE_NS = "alfresco.qname.update_Namespace";
     private static final String SELECT_QNAME_BY_ID = "alfresco.qname.select_QNameById";
     private static final String SELECT_QNAME_BY_NS_AND_LOCALNAME = "alfresco.qname.select_QNameByNsAndLocalName";
-    private static final String INSERT_QNAME = "alfresco.qname.insert_QName";
+    private static final String INSERT_QNAME = "alfresco.qname.insert.insert_QName";
     private static final String UPDATE_QNAME = "alfresco.qname.update_QName";
-
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
     @Override
     protected NamespaceEntity findNamespaceEntityById(Long id)
     {
         NamespaceEntity entity = new NamespaceEntity();
         entity.setId(id);
-        entity = (NamespaceEntity) template.queryForObject(SELECT_NS_BY_ID, entity);
+        entity = (NamespaceEntity) template.selectOne(SELECT_NS_BY_ID, entity);
         return entity;
     }
 
@@ -61,7 +62,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     {
         NamespaceEntity entity = new NamespaceEntity();
         entity.setUriSafe(uri);
-        entity = (NamespaceEntity) template.queryForObject(SELECT_NS_BY_URI, entity);
+        entity = (NamespaceEntity) template.selectOne(SELECT_NS_BY_URI, entity);
         return entity;
     }
 
@@ -88,7 +89,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     {
         QNameEntity entity = new QNameEntity();
         entity.setId(id);
-        entity = (QNameEntity) template.queryForObject(SELECT_QNAME_BY_ID, entity);
+        entity = (QNameEntity) template.selectOne(SELECT_QNAME_BY_ID, entity);
         return entity;
     }
     
@@ -98,7 +99,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         QNameEntity entity = new QNameEntity();
         entity.setNamespaceId(nsId);
         entity.setLocalNameSafe(localName);
-        entity = (QNameEntity) template.queryForObject(SELECT_QNAME_BY_NS_AND_LOCALNAME, entity);
+        entity = (QNameEntity) template.selectOne(SELECT_QNAME_BY_NS_AND_LOCALNAME, entity);
         return entity;
     }
 

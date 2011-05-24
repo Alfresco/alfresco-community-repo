@@ -19,7 +19,7 @@
             </bean>
         </property>
     </bean>
-
+    
     <bean id="activitiesDataSource" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>javax.sql.DataSource</value>
@@ -31,7 +31,7 @@
             </list>
         </property>
     </bean>
-
+    
     <bean id="activitiesDataSource_autoCommit" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <bean class="org.alfresco.util.AutoCommitInterceptor" />
@@ -40,7 +40,7 @@
             <value>getConnection</value>
         </property>
     </bean>
-
+    
     
     <!-- MyBatis config for Activities domain -->
     
@@ -56,35 +56,42 @@
     <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="activitiesSqlSessionFactory"/>
     </bean>
-
     
-    <!-- iBatis config for Alfresco (using common datasource) -->
-    <bean id="alfrescoSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
+    <!-- MyBatis config for Alfresco (using common datasource) -->
+    <bean id="repoSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
-        <property name="resourceLoader" ref="dialectResourceLoader" />
         <property name="configLocation">
-            <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
-        </property> 
+            <value>classpath:alfresco/ibatis/repo-SqlMapConfig.xml</value>
+        </property>
     </bean>
-    <bean id="repoSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="avmSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="locksSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="repoSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="contentSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="contentSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="propertyValueSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="locksSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="auditSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="propertyValueSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="avmSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    
+    <bean id="solrSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    <bean id="solrSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
-        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
-    </bean>    
+    
+    <bean id="auditSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
+    </bean>
+    
 </beans>

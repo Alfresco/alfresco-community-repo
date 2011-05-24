@@ -1,29 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.qname">
-
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Namespace" type="org.alfresco.repo.domain.qname.NamespaceEntity"/>
-    <typeAlias alias="QName" type="org.alfresco.repo.domain.qname.QNameEntity"/>
+<mapper namespace="alfresco.qname">
 
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result_Namespace" class="Namespace">
+    <resultMap id="result_Namespace" type="Namespace">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="uri" column="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
-    <resultMap id="result_QName" class="QName">
+    <resultMap id="result_QName" type="QName">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="namespaceId" column="ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -34,15 +25,15 @@
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter_NamespaceId" class="Namespace">
+    <parameterMap id="parameter_NamespaceId" type="Namespace">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
-    <parameterMap id="parameter_NamespaceUri" class="Namespace">
+    <parameterMap id="parameter_NamespaceUri" type="Namespace">
         <parameter property="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
   
-    <parameterMap id="parameter_QNameId" class="QName">
+    <parameterMap id="parameter_QNameId" type="QName">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
@@ -52,20 +43,20 @@
     
     <sql id="insert_Namespace_AutoIncrement">
         insert into alf_namespace (version, uri) 
-        values (#version#, #uri#)
+        values (#{version}, #{uri})
     </sql>
     <sql id="insert_Namespace_Sequence">
         insert into alf_namespace (id, version, uri) 
-        values (#id#, #version#, #uri#)
+        values (#{id}, #{version}, #{uri})
     </sql>
     
     <sql id="insert_QName_AutoIncrement">
         insert into alf_qname (version, ns_id, local_name) 
-        values (#version#, #namespaceId#, #localName#)
+        values (#{version}, #{namespaceId}, #{localName})
     </sql>
     <sql id="insert_QName_AutoIncrement_Sequence">
         insert into alf_qname (id, version, ns_id, local_name) 
-        values (#id#, #version#, #namespaceId#, #localName#)
+        values (#{id}, #{version}, #{namespaceId}, #{localName})
     </sql>
     
     <!--                -->
@@ -90,13 +81,13 @@
             uri = ?
     </select>
     
-    <update id="update_Namespace" parameterClass="Namespace">
+    <update id="update_Namespace" parameterType="Namespace">
        update
            alf_namespace
        set
-           uri = #uri#
+           uri = #{uri}
        where
-           id = #id#
+           id = #{id}
     </update>
 
     <select id="select_QNameById" parameterMap="parameter_QNameId" resultMap="result_QName">
@@ -108,24 +99,24 @@
             id = ?
     </select>
 
-    <select id="select_QNameByNsAndLocalName" parameterClass="QName" resultMap="result_QName">
+    <select id="select_QNameByNsAndLocalName" parameterType="QName" resultMap="result_QName">
         select
             *
         from
             alf_qname
         where
-            ns_id = #namespaceId# and
-            local_name = #localName#
+            ns_id = #{namespaceId} and
+            local_name = #{localName}
     </select>
     
-    <update id="update_QName" parameterClass="QName">
+    <update id="update_QName" parameterType="QName">
        update
            alf_qname
        set
-           ns_id = #namespaceId#,
-           local_name = #localName#
+           ns_id = #{namespaceId},
+           local_name = #{localName}
        where
-           id = #id#
+           id = #{id}
     </update>
 
-</sqlMap>
+</mapper>

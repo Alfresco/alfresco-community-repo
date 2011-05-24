@@ -1,77 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.propval">
+<mapper namespace="alfresco.propval.insert">
 
-    <insert id="insert_PropertyClass" parameterClass="PropertyClass" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyClass" parameterType="PropertyClass" >
+        <selectKey resultType=
+        "long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_class_seq')
         </selectKey>
-        
-        insert into alf_prop_class (id, java_class_name, java_class_name_short, java_class_name_crc) 
-        values (#id#, #javaClassName#, #javaClassNameShort#, #javaClassNameCrc#)
+        <include refid="insert_PropertyClass_Sequence"/>
     </insert>
 
-    <insert id="insert_PropertyStringValue" parameterClass="PropertyStringValue" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyStringValue" parameterType="PropertyStringValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_string_value_seq')
         </selectKey>
-        
-        insert into alf_prop_string_value (id, string_value, string_end_lower, string_crc) 
-        values (#id#, #stringValue#, #stringEndLower#, #stringCrc#)
-        
+        <include refid="insert_PropertyStringValue_Sequence"/>
     </insert>
 
-    <insert id="insert_PropertyDoubleValue" parameterClass="PropertyDoubleValue" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyDoubleValue" parameterType="PropertyDoubleValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_double_value_seq')
         </selectKey>
-        
-        insert into alf_prop_double_value (id, double_value) 
-        values (#id#, #doubleValue#)
-        
+        <include refid="insert_PropertyDoubleValue_Sequence"/>
     </insert>
 
     <insert id="insert_PropertySerializableValue" parameterMap="parameter_IdPropertySerializableValue" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_serializable_value_seq')
         </selectKey>
-        
-        insert into alf_prop_serializable_value (id, serializable_value) 
-        values (?, ?)
-        
+        <include refid="insert_PropertySerializableValue_Sequence"/>
     </insert>
 
-    <insert id="insert_PropertyValue" parameterClass="PropertyValue" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyValue" parameterType="PropertyValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_value_seq')
         </selectKey>
-        
-        insert into alf_prop_value (id, actual_type_id, persisted_type, long_value) 
-        values (#id#, #actualTypeId#, #persistedType#, #longValue#)
-        
+        <include refid="insert_PropertyValue_Sequence"/>
     </insert>
 
     <insert id="insert_PropertyRoot" parameterMap="parameter_IdPropertyRoot" >
-        <selectKey resultClass="long" keyProperty="id" type="pre">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_root_seq')
         </selectKey>
         <include refid="insert_PropertyRoot_Sequence"/>
     </insert>
 
-    <insert id="insert_PropertyUniqueContext" parameterClass="PropertyUniqueContext" >
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyUniqueContext" parameterType="PropertyUniqueContext" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_prop_unique_ctx_seq')
         </selectKey>
         <include refid="insert_PropertyUniqueContext_Sequence"/>
     </insert>
 
-</sqlMap>
+</mapper>

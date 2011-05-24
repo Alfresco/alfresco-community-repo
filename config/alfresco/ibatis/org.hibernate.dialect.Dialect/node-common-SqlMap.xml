@@ -1,75 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.node">
+<mapper namespace="alfresco.node">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Server" type="org.alfresco.repo.domain.node.ServerEntity"/>
-    <typeAlias alias="Transaction" type="org.alfresco.repo.domain.node.TransactionEntity"/>
-    <typeAlias alias="TransactionQuery" type="org.alfresco.repo.domain.node.TransactionQueryEntity"/>
-    <typeAlias alias="Store" type="org.alfresco.repo.domain.node.StoreEntity"/>
-    <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
-    <typeAlias alias="NodeBatchLoad" type="org.alfresco.repo.domain.node.ibatis.NodeBatchLoadEntity"/>
-    <typeAlias alias="NodeUpdate" type="org.alfresco.repo.domain.node.NodeUpdateEntity"/>
-    <typeAlias alias="AuditProps" type="org.alfresco.repo.domain.node.AuditablePropertiesEntity"/>
-    <typeAlias alias="NodePropertyKey" type="org.alfresco.repo.domain.node.NodePropertyKey"/>
-    <typeAlias alias="NodePropertyValue" type="org.alfresco.repo.domain.node.NodePropertyValue"/>
-    <typeAlias alias="NodeProperty" type="org.alfresco.repo.domain.node.NodePropertyEntity"/>
-    <typeAlias alias="NodeAspects" type="org.alfresco.repo.domain.node.NodeAspectsEntity"/>
-    <typeAlias alias="NodeAssoc" type="org.alfresco.repo.domain.node.NodeAssocEntity"/>
-    <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
-    <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
-    <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
-    <typeAlias alias="Aspect" type="org.alfresco.repo.domain.node.AspectEntity"/>
+    <!--NOTE: MyBatis #224 - eg. Oracle -->
     
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
-
-    <resultMap id="result_Server" class="Server">
+    
+    <resultMap id="result_Server" type="Server">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="ipAddress" column="ip_address" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_Transaction" class="Transaction">
+    <resultMap id="result_Transaction" type="Transaction">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="changeTxnId" column="change_txn_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result_StoreRef" class="Store">
+    <resultMap id="result_StoreRef" type="Store">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_StoreRootNode" class="Node">
+    <resultMap id="result_StoreRootNode" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.id" column="storeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="storeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="storeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_AuditProps" class="AuditProps">
+    <resultMap id="result_AuditProps" type="AuditProps">
         <result property="auditCreator" column="audit_creator" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="auditCreated" column="audit_created" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="auditModifier" column="audit_modifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="auditModified" column="audit_modified" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="auditAccessed" column="audit_accessed" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_NodeRef" class="Node">
+    <resultMap id="result_NodeRef" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
     </resultMap>
-    <resultMap id="result_NodeStatus" class="Node">
+    <resultMap id="result_NodeStatus" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -78,7 +56,7 @@
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_Node" class="Node">
+    <resultMap id="result_Node" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.id" column="store_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -90,29 +68,31 @@
         <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="auditableProperties" resultMap="alfresco.node.result_AuditProps"/>
+        <association property="auditableProperties" resultMap="alfresco.node.result_AuditProps"/>
     </resultMap>
-    <resultMap id="result_NodeAcl" class="Node">
+    <resultMap id="result_NodeAcl" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result_AspectQNameIds" class="java.lang.Long">
+    <resultMap id="result_AspectQNameIds" type="java.lang.Long">
         <result property="" column="qname_id"/>
     </resultMap>
-    <resultMap id="result_NodeAspects" class="NodeAspects" groupBy="nodeId">
+    <!--  TODO review groupBy nodeId ...
+    <resultMap id="result_NodeAspects" type="NodeAspects" groupBy="nodeId"> -->
+    <resultMap id="result_NodeAspects" type="NodeAspects">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aspectQNameIds" resultMap="alfresco.node.result_AspectQNameIds"/>
+        <association property="aspectQNameIds" resultMap="alfresco.node.result_AspectQNameIds"/>
 <!--
         <result property="aspectQNameIds" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
 -->
     </resultMap>
-    <resultMap id="result_NodeProperty" class="NodeProperty">
+    <resultMap id="result_NodeProperty" type="NodeProperty">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="key.qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="key.localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="key.listIndex" column="list_index" jdbcType="INT" javaType="java.lang.Integer"/>
-        <result property="value.actualType" column="actual_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
-        <result property="value.persistedType" column="persisted_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="key.listIndex" column="list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="value.actualType" column="actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="value.persistedType" column="persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <result property="value.booleanValue" column="boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="value.longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="value.floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
@@ -120,7 +100,7 @@
         <result property="value.stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="value.serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
-    <resultMap id="result_NodeAssoc" class="NodeAssoc">
+    <resultMap id="result_NodeAssoc" type="NodeAssoc">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="sourceNode.id" column="sourceNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="sourceNode.store.protocol" column="sourceNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -132,7 +112,7 @@
         <result property="targetNode.uuid" column="targetNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result_ChildAssoc" class="ChildAssoc">
+    <resultMap id="result_ChildAssoc" type="ChildAssoc">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="parentNode.id" column="parentNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="parentNode.store.protocol" column="parentNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -148,23 +128,23 @@
         <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="isPrimary" column="is_primary" jdbcType="BIT" javaType="java.lang.Boolean" />
-        <result property="assocIndex" column="assoc_index" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
   
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter_Id" class="java.lang.Long">
+    <parameterMap id="parameter_Id" type="java.lang.Long">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
-    <parameterMap id="parameter_NodeProperty" class="NodeProperty">
+    <parameterMap id="parameter_NodeProperty" type="NodeProperty">
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="key.qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="key.localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="key.listIndex" jdbcType="INT" javaType="java.lang.Integer"/>
-        <parameter property="value.actualType" jdbcType="INT" javaType="java.lang.Integer"/>
-        <parameter property="value.persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="key.listIndex" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="value.actualType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="value.persistedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <parameter property="value.booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="value.longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="value.floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
@@ -172,11 +152,11 @@
         <parameter property="value.stringValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="value.serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </parameterMap>
-    <parameterMap id="parameter_NodeAspect" class="map">
+    <parameterMap id="parameter_NodeAspect" type="map">
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
-    <parameterMap id="parameter_NodesWithAspect" class="map">
+    <parameterMap id="parameter_NodesWithAspect" type="map">
         <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
@@ -187,69 +167,71 @@
     
     <sql id="insert_Server_AutoIncrement">
         insert into alf_server (version, ip_address)
-        values (#version#, #ipAddress#)
+        values (#{version}, #{ipAddress})
     </sql>
     <sql id="insert_Server_Sequence">
         insert into alf_server (id, version, ip_address)
-        values (#id#, #version#, #ipAddress#)
+        values (#{id}, #{version}, #{ipAddress})
     </sql>
     
     <sql id="insert_Transaction_AutoIncrement">
         insert into alf_transaction (version, server_id, change_txn_id, commit_time_ms)
-        values (#version#, #server.id#, #changeTxnId#, #commitTimeMs#)
+        values (#{version}, #{server.id}, #{changeTxnId}, #{commitTimeMs})
     </sql>
     <sql id="insert_Transaction_Sequence">
         insert into alf_transaction (id, version, server_id, change_txn_id, commit_time_ms)
-        values (#id#, #version#, #server.id#, #changeTxnId#, #commitTimeMs#)
+        values (#{id}, #{version}, #{server.id}, #{changeTxnId}, #{commitTimeMs})
     </sql>
     
     <sql id="insert_Store_AutoIncrement">
         insert into alf_store (version, protocol, identifier, root_node_id)
-        values (#version#, #protocol#, #identifier#, #rootNode.id#)
+        values (#{version}, #{protocol}, #{identifier}, #{rootNode.id,jdbcType=BIGINT})
     </sql>
+    
     <sql id="insert_Store_Sequence">
         insert into alf_store (id, version, protocol, identifier, root_node_id)
-        values (#id#, #version#, #protocol#, #identifier#, #rootNode.id#)
+        values (#{id}, #{version}, #{protocol}, #{identifier}, #{rootNode.id,jdbcType=BIGINT})
     </sql>
     
     <sql id="insert_Node_AutoIncrement">
         insert into alf_node
         (
             version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
-            <isNotNull property="auditableProperties" prepend=",">
-                audit_creator, audit_created,
+            <if test="auditableProperties != null">
+              , audit_creator, audit_created,
                 audit_modifier, audit_modified,
                 audit_accessed
-            </isNotNull>
+            </if>
         )
         values
         (
-            #version#, #store.id#, #uuid#, #typeQNameId#, #aclId#, #deleted#, #transaction.id#
-            <isNotNull property="auditableProperties" prepend=",">
-                #auditableProperties.auditCreator#, #auditableProperties.auditCreated#,
-                #auditableProperties.auditModifier#, #auditableProperties.auditModified#,
-                #auditableProperties.auditAccessed#
-            </isNotNull>
+            #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            <if test="auditableProperties != null">
+              , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
+                #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
+                #{auditableProperties.auditAccessed,jdbcType=VARCHAR}
+            </if>
         )
     </sql>
+    
     <sql id="insert_Node_Sequence">
         insert into alf_node
         (
             id, version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
-            <isNotNull property="auditableProperties" prepend=",">
-                audit_creator, audit_created,
+            <if test="auditableProperties != null">
+              , audit_creator, audit_created,
                 audit_modifier, audit_modified,
                 audit_accessed
-            </isNotNull>
+            </if>
         )
         values
         (
-            #id#, #version#, #store.id#, #uuid#, #typeQNameId#, #aclId#, #deleted#, #transaction.id#
-            <isNotNull property="auditableProperties" prepend=",">
-                #auditableProperties.auditCreator#, #auditableProperties.auditCreated#,
-                #auditableProperties.auditModifier#, #auditableProperties.auditModified#,
-                #auditableProperties.auditAccessed#
-            </isNotNull>
+            #{id}, #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            <if test="auditableProperties != null">
+              , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
+                #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
+                #{auditableProperties.auditAccessed,jdbcType=VARCHAR}
+            </if>
         )
     </sql>
     
@@ -263,10 +245,10 @@
         )
         values
         (
-            #version#, #parentNode.id#, #childNode.id#, #typeQNameId#,
-            #childNodeNameCrc#, #childNodeName#,
-            #qnameNamespaceId#, #qnameLocalName#, #qnameCrc#,
-            #isPrimary#, #assocIndex#
+            #{version}, #{parentNode.id}, #{childNode.id}, #{typeQNameId},
+            #{childNodeNameCrc}, #{childNodeName},
+            #{qnameNamespaceId}, #{qnameLocalName}, #{qnameCrc},
+            #{isPrimary}, #{assocIndex}
         )
     </sql>
     <sql id="insert_ChildAssoc_Sequence">
@@ -279,20 +261,20 @@
         )
         values
         (
-            #id#, #version#, #parentNode.id#, #childNode.id#, #typeQNameId#,
-            #childNodeNameCrc#, #childNodeName#,
-            #qnameNamespaceId#, #qnameLocalName#, #qnameCrc#,
-            #isPrimary#, #assocIndex#
+            #{id}, #{version}, #{parentNode.id}, #{childNode.id}, #{typeQNameId},
+            #{childNodeNameCrc}, #{childNodeName},
+            #{qnameNamespaceId}, #{qnameLocalName}, #{qnameCrc},
+            #{isPrimary}, #{assocIndex}
         )
     </sql>
 
     <sql id="insert_NodeAssoc_AutoIncrement">
         insert into alf_node_assoc (version, source_node_id, target_node_id, type_qname_id)
-        values (#version#, #sourceNode.id#, #targetNode.id#, #typeQNameId#)
+        values (#{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId})
     </sql>
     <sql id="insert_NodeAssoc_Sequence">
         insert into alf_node_assoc (id, version, source_node_id, target_node_id, type_qname_id)
-        values (#id#, #version#, #sourceNode.id#, #targetNode.id#, #typeQNameId#)
+        values (#{id}, #{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId})
     </sql>
     
     <!--                -->
@@ -326,185 +308,195 @@
     <!-- Updates        -->
     <!--                -->
     
-    <update id="update_TransactionCommitTime" parameterClass="Transaction">
+    <update id="update_TransactionCommitTime" parameterType="Transaction">
         update alf_transaction set
-            commit_time_ms = #commitTimeMs#
+            commit_time_ms = #{commitTimeMs}
         where
-            id = #id#
+            id = #{id}
     </update>
     
-    <update id="update_StoreRoot" parameterClass="Store">
+    <update id="update_StoreRoot" parameterType="Store">
         update alf_store set
-            root_node_id = #rootNode.id#
+            root_node_id = #{rootNode.id,jdbcType=BIGINT}
         where
-            id = #id#
+            id = #{id}
     </update>
     
-    <update id="update_Store" parameterClass="Store">
+    <update id="update_Store" parameterType="Store">
         update alf_store set
-            protocol = #protocol#,
-            identifier = #identifier#
+            protocol = #{protocol},
+            identifier = #{identifier}
         where
-            id = #id#
+            id = #{id}
     </update>
     
-    <update id="update_Node" parameterClass="NodeUpdate">
+    <update id="update_Node" parameterType="NodeUpdate">
         update alf_node set
-                                                                          version           = #version#
-            <isEqual property="updateStore" compareValue="true">        , store_id          = #store.id#</isEqual>
-            <isEqual property="updateUuid" compareValue="true">         , uuid              = #uuid#</isEqual>
-            <isEqual property="updateTypeQNameId" compareValue="true" > , type_qname_id     = #typeQNameId#</isEqual>
-            <isEqual property="updateAclId" compareValue="true" >       , acl_id            = #aclId#</isEqual>
-            <isEqual property="updateDeleted" compareValue="true" >     , node_deleted      = #deleted#</isEqual>
-            <isEqual property="updateTransaction" compareValue="true" > , transaction_id    = #transaction.id#</isEqual>
-            <isEqual property="updateAuditableProperties" compareValue="true" >
-                , audit_creator = #auditableProperties.auditCreator#
-                , audit_created = #auditableProperties.auditCreated#
-                , audit_modifier = #auditableProperties.auditModifier#
-                , audit_modified = #auditableProperties.auditModified#
-                , audit_accessed = #auditableProperties.auditAccessed#
-            </isEqual>
+                                                    version           = #{version}
+            <if test="updateStore == true">       , store_id          = #{store.id}</if>
+            <if test="updateUuid == true">        , uuid              = #{uuid}</if>
+            <if test="updateTypeQNameId == true"> , type_qname_id     = #{typeQNameId}</if>
+            <if test="updateAclId == true">       , acl_id            = #{aclId,jdbcType=BIGINT}</if>
+            <if test="updateDeleted == true">     , node_deleted      = #{deleted}</if>
+            <if test="updateTransaction == true"> , transaction_id    = #{transaction.id}</if>
+            <if test="updateAuditableProperties == true">
+                , audit_creator = #{auditableProperties.auditCreator,jdbcType=VARCHAR}
+                , audit_created = #{auditableProperties.auditCreated,jdbcType=VARCHAR}
+                , audit_modifier = #{auditableProperties.auditModifier,jdbcType=VARCHAR}
+                , audit_modified = #{auditableProperties.auditModified,jdbcType=VARCHAR}
+                , audit_accessed = #{auditableProperties.auditAccessed,jdbcType=VARCHAR}
+            </if>
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
-    <update id="update_NodePatchAcl" parameterClass="NodeUpdate">
+    <update id="update_NodePatchAcl" parameterType="NodeUpdate">
         update alf_node set
-            <isEqual property="updateAclId" compareValue="true" >       acl_id            = #aclId#</isEqual>
+            <if test="updateAclId == true">       acl_id            = #{aclId,jdbcType=BIGINT}</if>
         where
-            id = #id#
+            id = #{id}
     </update>
     
-    <update id="update_ChildAssocsUniqueName" parameterClass="ChildAssoc">
+    <update id="update_ChildAssocsUniqueName" parameterType="ChildAssoc">
         update alf_child_assoc set
-            child_node_name_crc = #childNodeNameCrc#,
-            child_node_name = #childNodeName#
+            child_node_name_crc = #{childNodeNameCrc},
+            child_node_name = #{childNodeName}
         where
-            child_node_id = #childNode.id# and
+            child_node_id = #{childNode.id} and
             child_node_name_crc > 0
     </update>
     
-    <update id="update_ChildAssocsIndex" parameterClass="ChildAssoc">
+    <update id="update_ChildAssocsIndex" parameterType="ChildAssoc">
         update alf_child_assoc set
-            assoc_index = #assocIndex#
+            assoc_index = #{assocIndex}
         where
-            parent_node_id = #parentNode.id# and
-            type_qname_id = #typeQNameId# and
-            qname_ns_id = #qnameNamespaceId# and
-            qname_localname = #qnameLocalName# and
-            child_node_id = #childNode.id#
+            parent_node_id = #{parentNode.id} and
+            type_qname_id = #{typeQNameId} and
+            qname_ns_id = #{qnameNamespaceId} and
+            qname_localname = #{qnameLocalName} and
+            child_node_id = #{childNode.id}
     </update>
     
-    <update id="update_ParentAssocsOfChild" parameterClass="ChildAssoc">
+    <update id="update_ParentAssocsOfChild" parameterType="ChildAssoc">
         update alf_child_assoc set
-            parent_node_id = #parentNode.id#
-            <isNotNull property="typeQNameId">, type_qname_id = #typeQNameId#</isNotNull>
-            <isNotNull property="childNodeNameCrc">, child_node_name_crc = #childNodeNameCrc#</isNotNull>
-            <isNotNull property="childNodeName">, child_node_name = #childNodeName#</isNotNull>
-            <isNotNull property="qnameNamespaceId">, qname_ns_id = #qnameNamespaceId#</isNotNull>
-            <isNotNull property="qnameLocalName">, qname_localname = #qnameLocalName#</isNotNull>
-            <isNotNull property="qnameCrc">, qname_crc = #qnameCrc#</isNotNull>
+            parent_node_id = #{parentNode.id}
+            <if test="typeQNameId != null">, type_qname_id = #{typeQNameId}</if>
+            <if test="childNodeNameCrc != null">, child_node_name_crc = #{childNodeNameCrc}</if>
+            <if test="childNodeName != null">, child_node_name = #{childNodeName}</if>
+            <if test="qnameNamespaceId != null">, qname_ns_id = #{qnameNamespaceId}</if>
+            <if test="qnameLocalName != null">, qname_localname = #{qnameLocalName}</if>
+            <if test="qnameCrc != null">, qname_crc = #{qnameCrc}</if>
         where
-            child_node_id = #childNode.id# and
-            is_primary = #isPrimary#
+            child_node_id = #{childNode.id} and
+            is_primary = #{isPrimary}
     </update>
     
     <!--                -->
     <!-- Deletes        -->
     <!--                -->
     
-    <delete id="delete_TransactionById" parameterClass="Transaction">
+    <delete id="delete_TransactionById" parameterType="Transaction">
         delete from alf_transaction
         where
-            id = #id#
+            id = #{id}
     </delete>
     
-    <delete id="delete_NodeById" parameterClass="Node">
+    <delete id="delete_NodeById" parameterType="Node">
         delete from alf_node
         where
-            id = #id#
-            <isEqual property="deleted" compareValue="true">and node_deleted = #deleted#</isEqual>
+            id = #{id}
+            <if test="deleted == true">and node_deleted = #{deleted}</if>
     </delete>
     
-    <delete id="delete_NodesByTxnCommitTime" parameterClass="TransactionQuery">
+    <delete id="delete_NodesByTxnCommitTime" parameterType="TransactionQuery">
         <![CDATA[
         delete from alf_node
         where
-            node_deleted = #deletedNodes# and
+            node_deleted = #{deletedNodes} and
             transaction_id <=
             (
                 select max(txn.id) from alf_transaction txn
                 where
-                    txn.commit_time_ms < #maxCommitTime#
+                    txn.commit_time_ms < #{maxCommitTime}
             )
         ]]>
     </delete>
     
-    <delete id="delete_NodeProperties" parameterClass="NodeProperty">
+    <delete id="delete_NodeProperties" parameterType="NodeProperty">
         delete from alf_node_properties
         where
-            node_id = #nodeId#
-            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
-            <isNotNull property="key.localeId">and locale_id = #key.localeId#</isNotNull>
-            <isNotNull property="key.listIndex">and list_index = #key.listIndex#</isNotNull>
-            <isNotNull property="qnameIds">
+            node_id = #{nodeId}
+            <if test="key != null">
+            <if test="key.qnameId != null">and qname_id = #{key.qnameId}</if>
+            <if test="key.localeId != null">and locale_id = #{key.localeId}</if>
+            <if test="key.listIndex != null">and list_index = #{key.listIndex}</if>
+            </if>
+            <if test="qnameIds != null">
                 and qname_id in
-                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="qnameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
     </delete>
     
-    <delete id="delete_NodeAspects" parameterClass="NodeAspects">
+    <delete id="delete_NodeAspects" parameterType="NodeAspects">
         delete from alf_node_aspects
         where
-            node_id = #nodeId#
-            <isNotNull property="aspectQNameIds" prepend="">
+            node_id = #{nodeId}
+            <if test="aspectQNameIds != null">
                 and qname_id in
-                <iterate property="aspectQNameIds" open="(" close=")" conjunction=", ">#aspectQNameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="aspectQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
     </delete>
     
-    <delete id="delete_NodeAssoc" parameterClass="NodeAssoc">
+    <delete id="delete_NodeAssoc" parameterType="NodeAssoc">
         delete from alf_node_assoc
         where
-            source_node_id = #sourceNode.id# and
-            target_node_id = #targetNode.id# and
-            type_qname_id = #typeQNameId#
+            source_node_id = #{sourceNode.id} and
+            target_node_id = #{targetNode.id} and
+            type_qname_id = #{typeQNameId}
     </delete>
     
-    <delete id="delete_NodeAssocsToAndFrom" parameterClass="NodeAssoc">
+    <delete id="delete_NodeAssocsToAndFrom" parameterType="NodeAssoc">
         delete from alf_node_assoc
         where
-            (source_node_id = #sourceNode.id# or target_node_id = #targetNode.id#)
-            <isNotNull property="typeQNameIds">
+            (source_node_id = #{sourceNode.id} or target_node_id = #{targetNode.id})
+            <if test="typeQNameIds != null">
                 and type_qname_id in
-                <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
     </delete>
     
-    <delete id="delete_ChildAssocById" parameterClass="ChildAssoc">
+    <delete id="delete_ChildAssocById" parameterType="ChildAssoc">
         delete from alf_child_assoc
         where
-            id = #id#
+            id = #{id}
     </delete>
     
-    <delete id="delete_ChildAssocsToAndFrom" parameterClass="ChildAssoc">
+    <delete id="delete_ChildAssocsToAndFrom" parameterType="ChildAssoc">
         delete from alf_child_assoc
         where
-            (parent_node_id = #parentNode.id# or child_node_id = #childNode.id#)
-            <isNotNull property="typeQNameIds">
+            (parent_node_id = #{parentNode.id} or child_node_id = #{childNode.id})
+            <if test="typeQNameIds != null">
                 and type_qname_id in
-                <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
     </delete>
     
     <!--                -->
     <!-- Statements     -->
     <!--                -->
     
-    <select id="select_ServerByIpAddress" parameterClass="Server" resultMap="result_Server">
+    <select id="select_ServerByIpAddress" parameterType="Server" resultMap="result_Server">
         select
             id,
             version,
@@ -512,7 +504,7 @@
         from
             alf_server
         where
-            ip_address = #ipAddress#
+            ip_address = #{ipAddress}
     </select>
     
     <select id="select_StoreAll" resultMap="result_StoreRef">
@@ -524,7 +516,7 @@
             alf_store
     </select>
     
-    <select id="select_StoreRootNodeById" parameterClass="Store" resultMap="result_StoreRootNode">
+    <select id="select_StoreRootNodeById" parameterType="Store" resultMap="result_StoreRootNode">
         select
             node.id             as id,
             store.id            as storeId,
@@ -535,10 +527,10 @@
             alf_store store
             join alf_node node on (store.root_node_id = node.id)
         where
-            store.id = #id#
+            store.id = #{id}
     </select>
     
-    <select id="select_StoreRootNodeByRef" parameterClass="Store" resultMap="result_StoreRootNode">
+    <select id="select_StoreRootNodeByRef" parameterType="Store" resultMap="result_StoreRootNode">
         select
             node.id             as id,
             store.id            as storeId,
@@ -549,8 +541,8 @@
             alf_store store
             join alf_node node on (store.root_node_id = node.id)
         where
-            store.protocol = #protocol# and
-            store.identifier = #identifier#
+            store.protocol = #{protocol} and
+            store.identifier = #{identifier}
     </select>
     
     <!-- Common results for result_Node -->
@@ -574,39 +566,42 @@
             node.audit_accessed  as audit_accessed
     </sql>
     
-    <select id="select_NodeById" parameterClass="Node" resultMap="result_Node">
+    <select id="select_NodeById" parameterType="Node" resultMap="result_Node">
         <include refid="alfresco.node.select_Node_Results"/>
         from
             alf_node node
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
-            node.id = #id#
-            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+            node.id = #{id}
+            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
-    <select id="select_NodeByNodeRef" parameterClass="Node" resultMap="result_Node">
+    <select id="select_NodeByNodeRef" parameterType="Node" resultMap="result_Node">
         <include refid="alfresco.node.select_Node_Results"/>
         from
             alf_node node
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
-            store.protocol = #store.protocol# and
-            store.identifier = #store.identifier# and
-            node.uuid = #uuid#
-            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+            store.protocol = #{store.protocol} and
+            store.identifier = #{store.identifier} and
+            node.uuid = #{uuid}
+            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
-    <select id="select_NodesByUuids" parameterClass="NodeBatchLoad" resultMap="result_Node">
+    <select id="select_NodesByUuids" parameterType="NodeBatchLoad" resultMap="result_Node">
         <include refid="alfresco.node.select_Node_Results"/>
         from
             alf_node node
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
-            node.store_id = #storeId# and
-            node.uuid in <iterate property="uuids" open="(" close=")" conjunction=",">#uuids[]#</iterate>
+            node.store_id = #{storeId} and
+            node.uuid in 
+            <foreach item="item" index="index" collection="uuids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
     </select>
     
     <sql id="select_NodeProperty_Results">
@@ -625,22 +620,26 @@
             prop.serializable_value as serializable_value
     </sql>
     
-    <select id="select_NodeProperties" parameterClass="NodeProperty" resultMap="result_NodeProperty">
+    <select id="select_NodeProperties" parameterType="NodeProperty" resultMap="result_NodeProperty">
         <include refid="alfresco.node.select_NodeProperty_Results"/>
         from
             alf_node_properties prop
-        where
-            <dynamic>
-                <isNotNull property="nodeId">prop.node_id = #nodeId#</isNotNull>
-                <isNotNull property="nodeIds">
-                    node_id in <iterate property="nodeIds" open="(" close=")" conjunction=",">#nodeIds[]#</iterate>
-                </isNotNull>
-            </dynamic>
-            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
-            <isNotNull property="qnameIds">
+        <where>
+            <if test="nodeId != null">prop.node_id = #{nodeId}</if>
+            <if test="nodeIds != null">
+                and node_id in 
+                <foreach item="item" index="index" collection="nodeIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="key != null and key.qnameId != null">and qname_id = #{key.qnameId}</if>
+            <if test="qnameIds != null">
                 and qname_id in
-                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="qnameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <sql id="select_NodeAspects_Results">
@@ -649,24 +648,28 @@
             aspects.qname_id           as qname_id
     </sql>
     
-    <select id="select_NodeAspects" parameterClass="NodeAspects" resultMap="result_NodeAspects">
+    <select id="select_NodeAspects" parameterType="NodeAspects" resultMap="result_NodeAspects">
         <include refid="alfresco.node.select_NodeAspects_Results"/>
         from
             alf_node_aspects aspects
-        where
-            <dynamic>
-                <isNotNull property="nodeId">aspects.node_id = #nodeId#</isNotNull>
-                <isNotNull property="nodeIds">
-                    aspects.node_id in <iterate property="nodeIds" open="(" close=")" conjunction=",">#nodeIds[]#</iterate>
-                </isNotNull>
-            </dynamic>
+        <where>
+            <if test="nodeId != null">aspects.node_id = #{nodeId}</if>
+            <if test="nodeIds != null">
+                and aspects.node_id in 
+                <foreach item="item" index="index" collection="nodeIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
 <!--
-            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
-            <isNotNull property="qnameIds">
+            <if test="key != null and key.qnameId">and qname_id = #{key.qnameId}</if>
+            <if test="qnameIds">
                 and qname_id in
-                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
-            </isNotNull>
+                <foreach item="item" index="index" collection="qnameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
 -->
+        </where>
     </select>
     
     <select id="select_NodesWithAspectId" parameterMap="parameter_NodesWithAspect" resultMap="result_NodeRef" >
@@ -705,22 +708,22 @@
             join alf_store targetStore on (targetStore.id = targetNode.store_id)
     </sql>
     
-    <select id="select_NodeAssocsBySource" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+    <select id="select_NodeAssocsBySource" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
-            sourceNode.id = #sourceNode.id#
+            sourceNode.id = #{sourceNode.id}
     </select>
 
-    <select id="select_NodeAssocsByTarget" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+    <select id="select_NodeAssocsByTarget" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
-            targetNode.id = #targetNode.id#
+            targetNode.id = #{targetNode.id}
     </select>
     
-    <select id="select_NodeAssocById" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+    <select id="select_NodeAssocById" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
-            assoc.id = #id#
+            assoc.id = #{id}
     </select>
     
     <!-- Common results for result_ChildAssoc -->
@@ -757,45 +760,54 @@
             assoc.id ASC
     </sql>
     
-    <select id="select_ChildAssocById" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+    <select id="select_ChildAssocById" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
-            assoc.id = #id#
+            assoc.id = #{id}
     </select>
 
-    <select id="select_ChildAssocsOfParent" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+    <select id="select_ChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
-            parentNode.id = #parentNode.id#
-            <isNotNull property="childNode">and assoc.child_node_id = #childNode.id#</isNotNull>
-            <isNotNull property="typeQNameIds">
-                and assoc.type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
-            </isNotNull>
-            <isNotNull property="typeQNameId">and assoc.type_qname_id = #typeQNameId#</isNotNull>
-            <isNotNull property="qnameCrc">and assoc.qname_crc = #qnameCrc#</isNotNull>
-            <isNotNull property="qnameNamespaceId">and assoc.qname_ns_id = #qnameNamespaceId#</isNotNull>
-            <isNotNull property="qnameLocalName">and assoc.qname_localname = #qnameLocalName#</isNotNull>
-            <isNotNull property="isPrimary">and assoc.is_primary = #isPrimary#</isNotNull>
-            <isNotNull property="childNodeName">and assoc.child_node_name = #childNodeName#</isNotNull>
-            <isNotNull property="childNodeNameCrc">and assoc.child_node_name_crc = #childNodeNameCrc#</isNotNull>
-            <isNotNull property="childNodeNameCrcs">
-                and child_node_name_crc in <iterate property="childNodeNameCrcs" open="(" close=")" conjunction=",">#childNodeNameCrcs[]#</iterate>
-            </isNotNull>
-            <isNotNull property="childNodeTypeQNameIds">
-                and childNode.type_qname_id in <iterate property="childNodeTypeQNameIds" open="(" close=")" conjunction=",">#childNodeTypeQNameIds[]#</iterate>
-            </isNotNull>
-            <isNotNull property="sameStore">
-                <isEqual property="sameStore" compareValue="true">and parentStore.id = childStore.id</isEqual>
-                <isEqual property="sameStore" compareValue="false"><![CDATA[and parentStore.id <> childStore.id]]></isEqual>
-            </isNotNull>
-        <isEqual property="ordered" compareValue="true">
+            parentNode.id = #{parentNode.id}
+            <if test="childNode != null">and assoc.child_node_id = #{childNode.id}</if>
+            <if test="typeQNameIds != null">
+                and assoc.type_qname_id in 
+                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="typeQNameId != null">and assoc.type_qname_id = #{typeQNameId}</if>
+            <if test="qnameCrc != null">and assoc.qname_crc = #{qnameCrc}</if>
+            <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
+            <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
+            <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
+            <if test="childNodeName != null">and assoc.child_node_name = #{childNodeName}</if>
+            <if test="childNodeNameCrc != null">and assoc.child_node_name_crc = #{childNodeNameCrc}</if>
+            <if test="childNodeNameCrcs != null">
+                and child_node_name_crc in 
+                <foreach item="item" index="index" collection="childNodeNameCrcs" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="childNodeTypeQNameIds != null">
+                and childNode.type_qname_id in 
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sameStore != null">
+                <if test="sameStore == true">and parentStore.id = childStore.id</if>
+                <if test="sameStore == false"><![CDATA[and parentStore.id <> childStore.id]]></if>
+            </if>
+        <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
-        </isEqual>
+        </if>
     </select>
     
-    <select id="select_ChildAssocsOfParentWithoutParentAssocsOfType" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+    <select id="select_ChildAssocsOfParentWithoutParentAssocsOfType" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         from
 	        (
@@ -808,29 +820,29 @@
 	        LEFT OUTER JOIN
 	        (
 	            alf_child_assoc a
-	            JOIN alf_child_assoc z2 ON (z2.parent_node_id = #parentNode.id# AND z2.child_node_id = a.parent_node_id )
+	            JOIN alf_child_assoc z2 ON (z2.parent_node_id = #{parentNode.id} AND z2.child_node_id = a.parent_node_id )
 	        )
-	        ON (a.child_node_id = childNode.id AND a.type_qname_id = #typeQNameId#)
+	        ON (a.child_node_id = childNode.id AND a.type_qname_id = #{typeQNameId})
         where
-            parentNode.id = #parentNode.id# and
+            parentNode.id = #{parentNode.id} and
             a.child_node_id IS NULL
     </select>
     
-    <select id="select_ChildAssocsByPropertyValue" parameterClass="ChildProperty" resultMap="result_ChildAssoc">
+    <select id="select_ChildAssocsByPropertyValue" parameterType="ChildProperty" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
            join alf_node_properties prop on (childNode.id = prop.node_id)
         where
-            parentNode.id = #parentNodeId#
-            and prop.qname_id = #propertyQNameId#
-            <isEqual property="value.persistedType" compareValue="6">and prop.string_value = #value.stringValue#</isEqual>
-            <isEqual property="value.persistedType" compareValue="5">and prop.double_value = #value.doubleValue#</isEqual>
-            <isEqual property="value.persistedType" compareValue="3">and prop.long_value = #value.longValue#</isEqual>
-            <isEqual property="value.persistedType" compareValue="1">and prop.boolean_value = #value.booleanValue#</isEqual> 
+            parentNode.id = #{parentNodeId}
+            and prop.qname_id = #{propertyQNameId}
+            <if test="value.persistedType == 6">and prop.string_value = #{value.stringValue}</if>
+            <if test="value.persistedType == 5">and prop.double_value = #{value.doubleValue}</if>
+            <if test="value.persistedType == 3">and prop.long_value = #{value.longValue}</if>
+            <if test="value.persistedType == 1">and prop.boolean_value = #{value.booleanValue}</if> 
         <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>
 
-    <select id="select_NodePrimaryChildAcls" parameterClass="ChildAssoc" resultMap="result_NodeAcl">
+    <select id="select_NodePrimaryChildAcls" parameterType="ChildAssoc" resultMap="result_NodeAcl">
        select
             node.id             as id,
             node.acl_id         as acl_id
@@ -839,25 +851,28 @@
             join alf_child_assoc assoc on
                 (
                     node.id = assoc.child_node_id
-                    and assoc.parent_node_id = #parentNode.id#
-                    and assoc.is_primary = #isPrimary#
+                    and assoc.parent_node_id = #{parentNode.id}
+                    and assoc.is_primary = #{isPrimary}
                 )
     </select>
 
-    <select id="select_ParentAssocsOfChild" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+    <select id="select_ParentAssocsOfChild" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
-            childNode.id = #childNode.id#
-            <isNotNull property="parentNode">and assoc.parent_node_id = #parentNode.id#</isNotNull>
-            <isNotNull property="typeQNameIds">
-                and type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
-            </isNotNull>
-            <isNotNull property="typeQNameId">and assoc.type_qname_id = #typeQNameId#</isNotNull>
-            <isNotNull property="qnameCrc">and assoc.qname_crc = #qnameCrc#</isNotNull>
-            <isNotNull property="qnameNamespaceId">and assoc.qname_ns_id = #qnameNamespaceId#</isNotNull>
-            <isNotNull property="qnameLocalName">and assoc.qname_localname = #qnameLocalName#</isNotNull>
-            <isNotNull property="isPrimary">and assoc.is_primary = #isPrimary#</isNotNull>
+            childNode.id = #{childNode.id}
+            <if test="parentNode != null">and assoc.parent_node_id = #{parentNode.id}</if>
+            <if test="typeQNameIds != null">
+                and type_qname_id in 
+                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="typeQNameId != null">and assoc.type_qname_id = #{typeQNameId}</if>
+            <if test="qnameCrc != null">and assoc.qname_crc = #{qnameCrc}</if>
+            <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
+            <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
+            <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
     </select>
     
     <sql id="select_Transaction_Results">
@@ -869,29 +884,35 @@
     </sql>
     
     <sql id="select_Transaction_OrderByCommitTimeTxnId">
-        <isEqual property="ascending" compareValue="true">order by txn.commit_time_ms ASC, txn.id ASC</isEqual>
-        <isEqual property="ascending" compareValue="false">order by txn.commit_time_ms DESC, txn.id DESC</isEqual>
+        <if test="ascending == true">order by txn.commit_time_ms ASC, txn.id ASC</if>
+        <if test="ascending == false">order by txn.commit_time_ms DESC, txn.id DESC</if>
     </sql>
     
     <!-- Full WHERE clause for TransactionQueryEntity -->
     <sql id="select_Transaction_FullWhere">
-        <dynamic prepend="where">
-            <isNotNull property="id" prepend="---">txn.id = #id#</isNotNull>
-            <isNotNull property="deletedNodes" prepend="and"> node.node_deleted = #deletedNodes#</isNotNull>
-            <isNotNull property="storeId" prepend="and"> store.id = #storeId#</isNotNull>
-            <isNotNull property="excludeServerId" prepend="and"><![CDATA[ server_id <> #excludeServerId#]]></isNotNull>
-            <isNotNull property="minCommitTime" prepend="and"><![CDATA[ txn.commit_time_ms >= #minCommitTime#]]></isNotNull>
-            <isNotNull property="maxCommitTime" prepend="and"><![CDATA[ txn.commit_time_ms < #maxCommitTime#]]></isNotNull>
-            <isNotEmpty property="includeTxnIds" prepend="and">
-                txn.id in <iterate property="includeTxnIds" open="(" close=")" conjunction=",">#includeTxnIds[]#</iterate>
-            </isNotEmpty>
-            <isNotEmpty property="excludeTxnIds" prepend="and">
-                txn.id NOT in <iterate property="excludeTxnIds" open="(" close=")" conjunction=",">#excludeTxnIds[]#</iterate>
-            </isNotEmpty>
-        </dynamic>
+        <where>
+            <if test="id != null">txn.id = #{id}</if>
+            <if test="deletedNodes != null"> and node.node_deleted = #{deletedNodes}</if>
+            <if test="storeId != null"> and store.id = #{storeId}</if>
+            <if test="excludeServerId != null"><![CDATA[ and server_id <> #{excludeServerId}]]></if>
+            <if test="minCommitTime != null"><![CDATA[ and txn.commit_time_ms >= #{minCommitTime}]]></if>
+            <if test="maxCommitTime != null"><![CDATA[ and txn.commit_time_ms < #{maxCommitTime}]]></if>
+            <if test="includeTxnIds != null">
+                and txn.id in 
+                <foreach item="item" index="index" collection="includeTxnIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="excludeTxnIds != null">
+                and txn.id NOT in 
+                <foreach item="item" index="index" collection="excludeTxnIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </sql>
     
-    <select id="select_TxnLast" parameterClass="TransactionQuery" resultMap="result_Transaction">
+    <select id="select_TxnLast" parameterType="TransactionQuery" resultMap="result_Transaction">
         <include refid="alfresco.node.select_Transaction_Results"/>
         from
             alf_transaction txn
@@ -899,11 +920,11 @@
             txn.commit_time_ms =
             (
                 select max(commit_time_ms) from alf_transaction
-                <![CDATA[where commit_time_ms <= #maxCommitTime#]]>
+                <![CDATA[where commit_time_ms <= #{maxCommitTime}]]>
             )
     </select>
     
-    <select id="select_TxnNodes" parameterClass="TransactionQuery" resultMap="result_NodeStatus">
+    <select id="select_TxnNodes" parameterType="TransactionQuery" resultMap="result_NodeStatus">
         select
             node.id             as id,
             store.protocol      as protocol,
@@ -920,7 +941,7 @@
         order by node.id
     </select>
     
-    <select id="select_Txns" parameterClass="TransactionQuery" resultMap="result_Transaction">
+    <select id="select_Txns" parameterType="TransactionQuery" resultMap="result_Transaction">
         <include refid="alfresco.node.select_Transaction_Results"/>
         from
             alf_transaction txn
@@ -928,24 +949,24 @@
         <include refid="alfresco.node.select_Transaction_OrderByCommitTimeTxnId"/>
     </select>
 
-    <select id="select_TxnCount" resultClass="java.lang.Integer">
+    <select id="select_TxnCount" resultType="java.lang.Integer">
         select
             count(txn.id)
         from
             alf_transaction txn
     </select>
     
-    <select id="select_TxnNodeCount" parameterClass="Node" resultClass="java.lang.Integer">
+    <select id="select_TxnNodeCount" parameterType="Node" resultType="java.lang.Integer">
         select
             count(node.id)
         from
             alf_node node
         where
-            node.transaction_id = #transaction.id#
-            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+            node.transaction_id = #{transaction.id}
+            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
 
-    <select id="select_TxnsUnused" parameterClass="TransactionQuery" resultClass="java.lang.Long">
+    <select id="select_TxnsUnused" parameterType="TransactionQuery" resultType="java.lang.Long">
         select
             txn.id
         from
@@ -953,24 +974,24 @@
             left join alf_node node on (node.transaction_id = txn.id)
         where
             node.id is null
-            <isNotNull property="minId"><![CDATA[and txn.id >= #minId#]]></isNotNull>
-            <isNotNull property="maxCommitTime"><![CDATA[and txn.commit_time_ms <= #maxCommitTime#]]></isNotNull>
+            <if test="minId != null"><![CDATA[and txn.id >= #{minId}]]></if>
+            <if test="maxCommitTime != null"><![CDATA[and txn.commit_time_ms <= #{maxCommitTime}]]></if>
         order by
             txn.id ASC
     </select>
     
-    <select id="select_TxnMinCommitTime" resultClass="java.lang.Long">
+    <select id="select_TxnMinCommitTime" resultType="java.lang.Long">
         select
             min(commit_time_ms)
         from
             alf_transaction
     </select>
 
-    <select id="select_TxnMaxCommitTime" resultClass="java.lang.Long">
+    <select id="select_TxnMaxCommitTime" resultType="java.lang.Long">
         select
             max(commit_time_ms)
         from
             alf_transaction
     </select>
 
-</sqlMap>
+</mapper>

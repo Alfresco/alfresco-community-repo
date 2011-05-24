@@ -26,9 +26,9 @@ import org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * Migrate Chaining User Registry Synchronizer attributes (from 'alf_*attribute*' to 'alf_prop_*')
@@ -60,7 +60,7 @@ public class MigrateAttrChainingURSPatch extends AbstractPatch
     {
         long startTime = System.currentTimeMillis();
         
-        ChainingURSRowHandler handler = new ChainingURSRowHandler();
+        ChainingURSResultHandler handler = new ChainingURSResultHandler();
         patchDAO.migrateOldAttrChainingURS(handler);
         
         if (handler.total > 0)
@@ -74,17 +74,17 @@ public class MigrateAttrChainingURSPatch extends AbstractPatch
         return msg;
     }
     
-    private class ChainingURSRowHandler implements RowHandler
+    private class ChainingURSResultHandler implements ResultHandler
     {
         private int total = 0;
         
-        private ChainingURSRowHandler()
+        private ChainingURSResultHandler()
         {
         }
         @SuppressWarnings("unchecked")
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            Map<String, Object> result = (Map<String, Object>)valueObject;
+            Map<String, Object> result = (Map<String, Object>)context.getResultObject();
             
             String label = (String)result.get("label");
             String zoneId = (String)result.get("zoneId");

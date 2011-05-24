@@ -18,12 +18,10 @@
  */
 package org.alfresco.repo.domain.query.ibatis;
 
-import java.sql.Savepoint;
-
 import org.alfresco.repo.domain.query.AbstractCannedQueryDAOImpl;
 import org.alfresco.repo.domain.query.QueryException;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * DAO implementation providing canned query support.
@@ -33,11 +31,11 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
 {
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
     
     @Override
@@ -60,7 +58,7 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         
         try
         {
-            Long result = (Long) template.queryForObject(query, parameterObj);
+            Long result = (Long) template.selectOne(query, parameterObj);
             if (result == null)
             {
                 result = 0L;

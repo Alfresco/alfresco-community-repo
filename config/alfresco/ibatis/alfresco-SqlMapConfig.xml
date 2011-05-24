@@ -17,34 +17,5 @@
     
     
     <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" callback="org.alfresco.ibatis.SerializableTypeHandlerCallback"/>
-    
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/appliedpatch-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/patch-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/qname-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/qname-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locale-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locale-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/node-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/node-update-acl-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/node-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/content-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/propval-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/audit-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/permissions-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/permissions-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/solr-common-SqlMap.xml"/>
-
-    <!-- Canned queries -->
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
-    
+        
 </sqlMapConfig>

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.domain.avm.AbstractAVMLockDAOImpl;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMLock DAO.
@@ -35,11 +35,12 @@ public class AVMLockDAOImpl extends AbstractAVMLockDAOImpl
     private static final String DELETE_MATCHING_AVM_LOCKS_1_KV ="alfresco.avm.delete_PropertyUniqueContextByValuesWithOneKV";
     private static final String DELETE_MATCHING_AVM_LOCKS_0_KV ="alfresco.avm.delete_PropertyUniqueContextByValuesWithNoKV";
     
-    private SqlMapClientTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
     
     @Override

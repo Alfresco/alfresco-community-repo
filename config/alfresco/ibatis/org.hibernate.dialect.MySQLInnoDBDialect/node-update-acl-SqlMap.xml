@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.node">
+<mapper namespace="alfresco.node.update">
     
     <!--
         MySQL does not allow the target table to be present in the subselect
     -->
-    <update id="update_PrimaryChildrenSharedAcl" parameterClass="PrimaryChildrenAclUpdate">
+    <update id="update_PrimaryChildrenSharedAcl" parameterType="PrimaryChildrenAclUpdate">
         update 
             alf_child_assoc assoc
-            join alf_node child on (child.id = assoc.child_node_id and assoc.is_primary = #isPrimary#) 
+            join alf_node child on (child.id = assoc.child_node_id and assoc.is_primary = #{isPrimary}) 
         set
-            child.acl_id = #newSharedAclId#
+            child.acl_id = #{newSharedAclId}
         where
-            assoc.parent_node_id = #primaryParentNodeId#
+            assoc.parent_node_id = #{primaryParentNodeId}
             and
             (
                 child.acl_id is null 
-                <isNotNull property="optionalOldSharedAclIdInAdditionToNull"> OR child.acl_id = #optionalOldSharedAclIdInAdditionToNull#</isNotNull>
+                <if test="optionalOldSharedAclIdInAdditionToNull != null"> OR child.acl_id = #{optionalOldSharedAclIdInAdditionToNull}</if>
             )
     </update>
 
-</sqlMap>
+</mapper>

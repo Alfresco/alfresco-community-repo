@@ -33,9 +33,8 @@ import org.alfresco.repo.domain.permissions.AuthorityAliasEntity;
 import org.alfresco.repo.domain.permissions.AuthorityEntity;
 import org.alfresco.repo.domain.permissions.PermissionEntity;
 import org.alfresco.repo.security.permissions.ACEType;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.engine.execution.SqlExecutor;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the ACL Crud DAO.
@@ -45,7 +44,7 @@ import com.ibatis.sqlmap.engine.execution.SqlExecutor;
  */
 public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
 {
-    private static final String INSERT_ACL = "alfresco.permissions.insert_Acl";
+    private static final String INSERT_ACL = "alfresco.permissions.insert.insert_Acl";
     private static final String SELECT_ACL_BY_ID = "alfresco.permissions.select_AclById";
     private static final String SELECT_ACLS_THAT_INHERIT_FROM_ACL = "alfresco.permissions.select_AclsThatInheritFromAcl";
     private static final String SELECT_LATEST_ACL_BY_GUID = "alfresco.permissions.select_LatestAclByGuid";
@@ -54,57 +53,57 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String UPDATE_ACL = "alfresco.permissions.update_Acl";
     private static final String DELETE_ACL = "alfresco.permissions.delete_Acl";
     
-    private static final String INSERT_ACL_MEMBER = "alfresco.permissions.insert_AclMember";
+    private static final String INSERT_ACL_MEMBER = "alfresco.permissions.insert.insert_AclMember";
     private static final String SELECT_ACL_MEMBERS_BY_ACL = "alfresco.permissions.select_AclMembersByAclId";
     private static final String SELECT_ACL_MEMBERS_BY_AUTHORITY = "alfresco.permissions.select_AclMembersByAuthorityName";
     private static final String UPDATE_ACL_MEMBER = "alfresco.permissions.update_AclMember";
     private static final String DELETE_ACL_MEMBERS_LIST = "alfresco.permissions.delete_AclMembersList";
     private static final String DELETE_ACL_MEMBERS_BY_ACL = "alfresco.permissions.delete_AclMembersByAclId";
     
-    private static final String INSERT_ACL_CHANGESET = "alfresco.permissions.insert_AclChangeSet";
+    private static final String INSERT_ACL_CHANGESET = "alfresco.permissions.insert.insert_AclChangeSet";
     private static final String SELECT_ACL_CHANGESET_BY_ID = "alfresco.permissions.select_AclChangeSetById";
     private static final String DELETE_ACL_CHANGESET = "alfresco.permissions.delete_AclChangeSet";
     
-    private static final String INSERT_ACE = "alfresco.permissions.insert_Ace";
+    private static final String INSERT_ACE = "alfresco.permissions.insert.insert_Ace";
     private static final String SELECT_ACE_BY_ID = "alfresco.permissions.select_AceById";
     private static final String SELECT_ACES_BY_AUTHORITY = "alfresco.permissions.select_AcesByAuthorityId";
     private static final String SELECT_ACES_AND_AUTHORIES_BY_ACL = "alfresco.permissions.select_AcesAndAuthoritiesByAclId";
     private static final String SELECT_ACE_WITH_NO_CONTEXT = "alfresco.permissions.select_AceWithNoContext";
     private static final String DELETE_ACES_LIST = "alfresco.permissions.delete_AcesList";
     
-    private static final String INSERT_ACE_CONTEXT = "alfresco.permissions.insert_AceContext";
+    private static final String INSERT_ACE_CONTEXT = "alfresco.permissions.insert.insert_AceContext";
     private static final String SELECT_ACE_CONTEXT_BY_ID = "alfresco.permissions.select_AceContextById";
     private static final String DELETE_ACE_CONTEXT = "alfresco.permissions.delete_AceContext";
     
-    private static final String INSERT_PERMISSION = "alfresco.permissions.insert_Permission";
+    private static final String INSERT_PERMISSION = "alfresco.permissions.insert.insert_Permission";
     private static final String SELECT_PERMISSION_BY_ID = "alfresco.permissions.select_PermissionById";
     private static final String SELECT_PERMISSION_BY_TYPE_AND_NAME = "alfresco.permissions.select_PermissionByTypeAndName";
     private static final String UPDATE_PERMISSION = "alfresco.permissions.update_Permission";
     private static final String DELETE_PERMISSION = "alfresco.permissions.delete_Permission";
     
-    private static final String INSERT_AUTHORITY = "alfresco.permissions.insert_Authority";
+    private static final String INSERT_AUTHORITY = "alfresco.permissions.insert.insert_Authority";
     private static final String SELECT_AUTHORITY_BY_ID = "alfresco.permissions.select_AuthorityById";
     private static final String SELECT_AUTHORITY_BY_NAME = "alfresco.permissions.select_AuthorityByName";
     private static final String UPDATE_AUTHORITY = "alfresco.permissions.update_Authority";
     private static final String DELETE_AUTHORITY = "alfresco.permissions.delete_Authority";
     
-    private static final String INSERT_AUTHORITY_ALIAS = "alfresco.permissions.insert_AuthorityAlias";
+    private static final String INSERT_AUTHORITY_ALIAS = "alfresco.permissions.insert.insert_AuthorityAlias";
     private static final String DELETE_AUTHORITY_ALIAS = "alfresco.permissions.delete_AuthorityAlias";
     
     
-    private SqlMapClientTemplate template;
+    private SqlSessionTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
+    
     
     @Override
     protected AclEntity createAclEntity(AclEntity entity)
     {
         entity.setVersion(0L);
-        Long id = (Long)template.insert(INSERT_ACL, entity);
-        entity.setId(id);
+        template.insert(INSERT_ACL, entity);
         return entity;
     }
     
@@ -114,7 +113,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclEntityId);
         
-        return (AclEntity)template.queryForObject(SELECT_ACL_BY_ID, params);
+        return (AclEntity)template.selectOne(SELECT_ACL_BY_ID, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -125,7 +124,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("id", aclEntityId);
         params.put("bool", true);
         
-        return (List<Long>)template.queryForList(SELECT_ACLS_THAT_INHERIT_FROM_ACL, params);
+        return (List<Long>)template.selectList(SELECT_ACLS_THAT_INHERIT_FROM_ACL, params);
     }
     
     @Override
@@ -135,7 +134,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("name", aclGuid);
         params.put("bool", true);
         
-        return (Long)template.queryForObject(SELECT_LATEST_ACL_BY_GUID, params);
+        return (Long)template.selectOne(SELECT_LATEST_ACL_BY_GUID, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -144,13 +143,13 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     {
         if (maxResults < 0)
         {
-            maxResults = SqlExecutor.NO_MAXIMUM_RESULTS;
+            maxResults = RowBounds.NO_ROW_LIMIT;
         }
         
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclEntityId);
         
-        return (List<Long>)template.queryForList(SELECT_ADM_NODES_BY_ACL, params, 0 , maxResults);
+        return (List<Long>)template.selectList(SELECT_ADM_NODES_BY_ACL, params, new RowBounds(0 , maxResults));
     }
     
     @SuppressWarnings("unchecked")
@@ -159,13 +158,13 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     {
         if (maxResults < 0)
         {
-            maxResults = SqlExecutor.NO_MAXIMUM_RESULTS;
+            maxResults = RowBounds.NO_ROW_LIMIT;
         }
         
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclEntityId);
         
-        return (List<Long>)template.queryForList(SELECT_AVM_NODES_BY_ACL, params, 0 , maxResults);
+        return (List<Long>)template.selectList(SELECT_AVM_NODES_BY_ACL, params, new RowBounds(0 , maxResults));
     }
     
     @Override
@@ -189,8 +188,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected AclMemberEntity createAclMemberEntity(AclMemberEntity entity)
     {
         entity.setVersion(0L);
-        Long id = (Long)template.insert(INSERT_ACL_MEMBER, entity);
-        entity.setId(id);
+        template.insert(INSERT_ACL_MEMBER, entity);
         return entity;
     }
     
@@ -201,7 +199,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclEntityId);
         
-        return (List<AclMemberEntity>) template.queryForList(SELECT_ACL_MEMBERS_BY_ACL, params);
+        return (List<AclMemberEntity>) template.selectList(SELECT_ACL_MEMBERS_BY_ACL, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -211,7 +209,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("name", authorityName);
         
-        return (List<AclMemberEntity>) template.queryForList(SELECT_ACL_MEMBERS_BY_AUTHORITY, params);
+        return (List<AclMemberEntity>) template.selectList(SELECT_ACL_MEMBERS_BY_AUTHORITY, params);
     }
     
     @Override
@@ -242,7 +240,9 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     {
         AclChangeSetEntity entity = new AclChangeSetEntity();
         entity.setVersion(0L);
-        return (Long)template.insert(INSERT_ACL_CHANGESET, entity);
+        template.insert(INSERT_ACL_CHANGESET, entity);
+        Long id = entity.getId();
+        return (id != null ? id : -1);
     }
     
     @Override
@@ -251,7 +251,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclChangeSetEntityId);
         
-        return (AclChangeSetEntity)template.queryForObject(SELECT_ACL_CHANGESET_BY_ID, params);
+        return (AclChangeSetEntity)template.selectOne(SELECT_ACL_CHANGESET_BY_ID, params);
     }
     
     @Override
@@ -267,7 +267,9 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected long createAceEntity(AceEntity entity)
     {
         entity.setVersion(0L);
-        return (Long)template.insert(INSERT_ACE, entity);
+        template.insert(INSERT_ACE, entity);
+        Long id = entity.getId();
+        return (id != null ? id : -1);
     }
     
     @Override
@@ -276,7 +278,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aceEntityId);
         
-        return (AceEntity)template.queryForObject(SELECT_ACE_BY_ID, params);
+        return (AceEntity)template.selectOne(SELECT_ACE_BY_ID, params);
     }
     
     @Override
@@ -288,7 +290,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("bool", allowed);
         params.put("int", type.getId());
         
-        return (AceEntity)template.queryForObject(SELECT_ACE_WITH_NO_CONTEXT, params);
+        return (AceEntity)template.selectOne(SELECT_ACE_WITH_NO_CONTEXT, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -298,7 +300,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", authorityEntityId);
         
-        return (List<Ace>) template.queryForList(SELECT_ACES_BY_AUTHORITY, params);
+        return (List<Ace>) template.selectList(SELECT_ACES_BY_AUTHORITY, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -308,7 +310,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclEntityId);
         
-        return (List<Map<String, Object>>) template.queryForList(SELECT_ACES_AND_AUTHORIES_BY_ACL, params);
+        return (List<Map<String, Object>>) template.selectList(SELECT_ACES_AND_AUTHORIES_BY_ACL, params);
     }
     
     @Override
@@ -321,7 +323,9 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected long createAceContextEntity(AceContextEntity entity)
     {
         entity.setVersion(0L);
-        return (Long)template.insert(INSERT_ACE_CONTEXT, entity);
+        template.insert(INSERT_ACE_CONTEXT, entity);
+        Long id = entity.getId();
+        return (id != null ? id : -1);
     }
     
     @Override
@@ -330,7 +334,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aceContextEntityId);
         
-        return (AceContextEntity)template.queryForObject(SELECT_ACE_CONTEXT_BY_ID, params);
+        return (AceContextEntity)template.selectOne(SELECT_ACE_CONTEXT_BY_ID, params);
     }
     
     @Override
@@ -346,8 +350,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected PermissionEntity createPermissionEntity(PermissionEntity entity)
     {
         entity.setVersion(0L);
-        Long id = (Long)template.insert(INSERT_PERMISSION, entity);
-        entity.setId(id);
+        template.insert(INSERT_PERMISSION, entity);
         return entity;
     }
     
@@ -357,7 +360,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", permissionEntityId);
         
-        return (PermissionEntity)template.queryForObject(SELECT_PERMISSION_BY_ID, params);
+        return (PermissionEntity)template.selectOne(SELECT_PERMISSION_BY_ID, params);
     }
     
     @Override
@@ -367,7 +370,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("id", qnameId);
         params.put("name", name);
         
-        return (PermissionEntity)template.queryForObject(SELECT_PERMISSION_BY_TYPE_AND_NAME, params);
+        return (PermissionEntity)template.selectOne(SELECT_PERMISSION_BY_TYPE_AND_NAME, params);
     }
     
     @Override
@@ -391,8 +394,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected AuthorityEntity createAuthorityEntity(AuthorityEntity entity)
     {
         entity.setVersion(0L);
-        Long id = (Long)template.insert(INSERT_AUTHORITY, entity);
-        entity.setId(id);
+        template.insert(INSERT_AUTHORITY, entity);
         return entity;
     }
     
@@ -402,7 +404,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", authorityEntityId);
         
-        return (AuthorityEntity)template.queryForObject(SELECT_AUTHORITY_BY_ID, params);
+        return (AuthorityEntity)template.selectOne(SELECT_AUTHORITY_BY_ID, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -415,7 +417,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         
         // note: allow for list (non-unique name) in case of upgrade of old schemas
         AuthorityEntity result = null;
-        List<AuthorityEntity> authorities = (List<AuthorityEntity>)template.queryForList(SELECT_AUTHORITY_BY_NAME, params);
+        List<AuthorityEntity> authorities = (List<AuthorityEntity>)template.selectList(SELECT_AUTHORITY_BY_NAME, params);
         for (AuthorityEntity found : authorities)
         {
             if (found.getAuthority().equals(authorityName))
@@ -448,7 +450,9 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected long createAuthorityAliasEntity(AuthorityAliasEntity entity)
     {
         entity.setVersion(0L);
-        return (Long)template.insert(INSERT_AUTHORITY_ALIAS, entity);
+        template.insert(INSERT_AUTHORITY_ALIAS, entity);
+        Long id = entity.getId();
+        return (id != null ? id : -1);
     }
     
     @Override

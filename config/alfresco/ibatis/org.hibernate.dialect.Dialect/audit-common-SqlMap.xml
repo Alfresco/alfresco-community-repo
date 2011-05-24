@@ -1,46 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.audit">
-
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="AuditModel" type="org.alfresco.repo.domain.audit.AuditModelEntity"/>
-    <typeAlias alias="AuditApplication" type="org.alfresco.repo.domain.audit.AuditApplicationEntity"/>
-    <typeAlias alias="AuditEntry" type="org.alfresco.repo.domain.audit.AuditEntryEntity"/>
-    <typeAlias alias="AuditDeleteParameters" type="org.alfresco.repo.domain.audit.AuditDeleteParameters"/>
-    <typeAlias alias="AuditQueryParameters" type="org.alfresco.repo.domain.audit.AuditQueryParameters"/>
-    <typeAlias alias="AuditQueryResult" type="org.alfresco.repo.domain.audit.AuditQueryResult"/>
+<mapper namespace="alfresco.audit">
 
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
 
-    <resultMap id="result_AuditModel" class="AuditModel">
+    <resultMap id="result_AuditModel" type="AuditModel">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentDataId" column="content_data_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentCrc" column="content_crc" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
-    <resultMap id="result_AuditApplication" class="AuditApplication">
+    <resultMap id="result_AuditApplication" type="AuditApplication">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
         <result property="applicationNameId" column="app_name_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="auditModelId" column="audit_model_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="disabledPathsId" column="disabled_paths_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-    <resultMap id="result_AuditEntry" class="AuditEntry">
+    <resultMap id="result_AuditEntry" type="AuditEntry">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="auditApplicationId" column="audit_app_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="auditUserId" column="audit_user_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="auditTime" column="audit_time" jdbcType="BIGINT" javaType="long"/>
         <result property="auditValuesId" column="audit_values_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
-    <resultMap id="result_AuditQueryNoValues" class="AuditQueryResult">
+    <resultMap id="result_AuditQueryNoValues" type="AuditQueryResult">
         <result property="auditAppNameId" column="audit_app_name_id" jdbcType="BIGINT" javaType="long"/>
         <result property="auditEntryId" column="audit_entry_id" jdbcType="BIGINT" javaType="long"/>
         <result property="auditUserId" column="audit_user_id" jdbcType="BIGINT" javaType="long"/>
@@ -49,15 +36,15 @@
     </resultMap>
     <resultMap id="result_AuditQueryAllValues"
                extends="alfresco.audit.result_AuditQueryNoValues"
-               class="AuditQueryResult">
-        <result property="auditValueRows" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
+               type="AuditQueryResult">
+        <association property="auditValueRows" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
   
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
 
-    <parameterMap id="parameter_IdMap" class="map">
+    <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
@@ -67,17 +54,32 @@
     
     <sql id="insert_AuditModel_AutoIncrement">
         insert into alf_audit_model (content_data_id, content_crc) 
-        values (#contentDataId#, #contentCrc#)
+        values (#{contentDataId}, #{contentCrc})
+    </sql>
+    
+    <sql id="insert_AuditModel_Sequence">
+        insert into alf_audit_model (id, content_data_id, content_crc) 
+        values (#{id}, #{contentDataId}, #{contentCrc})
     </sql>
     
     <sql id="insert_AuditApplication_AutoIncrement">
         insert into alf_audit_app (version, app_name_id, audit_model_id, disabled_paths_id) 
-        values (#version#, #applicationNameId#, #auditModelId#, #disabledPathsId#)
+        values (#{version}, #{applicationNameId}, #{auditModelId}, #{disabledPathsId})
+    </sql>
+    
+    <sql id="insert_AuditApplication_Sequence">
+        insert into alf_audit_app (id, version, app_name_id, audit_model_id, disabled_paths_id) 
+        values (#{id}, #{version}, #{applicationNameId}, #{auditModelId}, #{disabledPathsId})
     </sql>
     
     <sql id="insert_AuditEntry_AutoIncrement">
         insert into alf_audit_entry (audit_app_id, audit_user_id, audit_time, audit_values_id) 
-        values (#auditApplicationId#, #auditUserId#, #auditTime#, #auditValuesId#)
+        values (#{auditApplicationId}, #{auditUserId}, #{auditTime}, #{auditValuesId})
+    </sql>
+    
+    <sql id="insert_AuditEntry_Sequence">
+        insert into alf_audit_entry (id, audit_app_id, audit_user_id, audit_time, audit_values_id) 
+        values (#{id}, #{auditApplicationId}, #{auditUserId}, #{auditTime}, #{auditValuesId})
     </sql>
     
     <!--                -->
@@ -85,13 +87,13 @@
     <!--                -->
     
     <!-- Get the audit model by the CRC value -->
-    <select id="select_AuditModelByCrc" parameterClass="AuditModel" resultMap="result_AuditModel">
+    <select id="select_AuditModelByCrc" parameterType="AuditModel" resultMap="result_AuditModel">
         select
             *
         from
             alf_audit_model
         where
-            content_crc = #contentCrc#
+            content_crc = #{contentCrc}
     </select>
 
     <!-- Get the audit application by ID -->
@@ -115,83 +117,90 @@
     </select>
 
     <!-- Optimistic update of the audit application -->
-    <update id="update_AuditApplication" parameterClass="AuditApplication">
+    <update id="update_AuditApplication" parameterType="AuditApplication">
         update
             alf_audit_app
         set
-            version = #version#,
-            app_name_id = #applicationNameId#,
-            audit_model_id = #auditModelId#,
-            disabled_paths_id = #disabledPathsId#
+            version = #{version},
+            app_name_id = #{applicationNameId},
+            audit_model_id = #{auditModelId},
+            disabled_paths_id = #{disabledPathsId}
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
     <!-- TODO: This has to be replaced with two deletes; one for the property links and another for the entries -->
-    <delete id="delete_AuditEntries" parameterClass="AuditDeleteParameters">
+    <delete id="delete_AuditEntries" parameterType="AuditDeleteParameters">
        delete
        from
            alf_audit_entry
-       <dynamic prepend="where">
-           <isNotNull property="auditFromTime" prepend="and">
-               audit_app_id = #auditApplicationId#
-           </isNotNull>
-           <isNotNull property="auditFromTime" prepend="and">
-               <![CDATA[audit_time >= #auditFromTime#]]>
-           </isNotNull>
-           <isNotNull property="auditFromTime" prepend="and">
-               <![CDATA[audit_time < #auditToTime#]]>
-           </isNotNull>
-           <isNotNull property="auditEntryIds" prepend="and">
-                id in <iterate property="auditEntryIds" open="(" close=")" conjunction=", ">#auditEntryIds[]#</iterate>
-           </isNotNull>
-       </dynamic>
+       <where>
+           <if test="auditFromTime != null">
+              audit_app_id = #{auditApplicationId}
+           </if>
+           <if test="auditFromTime != null">
+               and audit_app_id = #{auditApplicationId}
+           </if>
+           <if test="auditFromTime != null">
+               <![CDATA[and audit_time >= #{auditFromTime}]]>
+           </if>
+           <if test="auditFromTime != null">
+               <![CDATA[and audit_time < #{auditToTime}]]>
+           </if>
+           <if test="auditEntryIds != null">
+                and id in 
+                <foreach item="item" index="index" collection="auditEntryIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+           </if>
+       </where>
     </delete>
     
     <sql id="select_AuditEntriesWhereSnippet">
-        <dynamic prepend="where">
-            <isNotNull prepend="and" property="auditAppNameId">
-                app.app_name_id = #auditAppNameId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditUserId">
-                entry.audit_user_id = #auditUserId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromId">
-                <![CDATA[entry.id >= #auditFromId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToId">
-                <![CDATA[entry.id < #auditToId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromTime">
-                <![CDATA[entry.audit_time >= #auditFromTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToTime">
-                <![CDATA[entry.audit_time < #auditToTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="searchKeyId">
-                sp_pl.key_prop_id = #searchKeyId#
-            </isNotNull>
-            <isNotNull prepend="and" property="searchValueId">
-                sp_pl.value_prop_id = #searchValueId#
-            </isNotNull>
-        </dynamic>
+        <where>
+            <if test="auditAppNameId != null">
+                app.app_name_id = #{auditAppNameId}
+            </if>
+            <if test="auditUserId != null">
+                and entry.audit_user_id = #{auditUserId}
+            </if>
+           <if test="auditFromId != null">
+                <![CDATA[and entry.id >= #{auditFromId}]]>
+            </if>
+            <if test="auditToId != null">
+                <![CDATA[and entry.id < #{auditToId}]]>
+            </if>
+            <if test="auditFromTime != null">
+                <![CDATA[and entry.audit_time >= #{auditFromTime}]]>
+            </if>
+            <if test="auditToTime != null">
+                <![CDATA[and entry.audit_time < #{auditToTime}]]>
+            </if>
+            <if test="searchKeyId != null">
+                and sp_pl.key_prop_id = #{searchKeyId}
+            </if>
+            <if test="searchValueId != null">
+                and sp_pl.value_prop_id = #{searchValueId}
+            </if>
+        </where>
     </sql>
+    
     <sql id="select_AuditEntriesOrderBySnippet">
-        <isEqual property="forward" compareProperty="forwardTrue">
+        <if test="forward == forwardTrue">
         order by
             entry.id asc
-        </isEqual>
-        <isNotEqual property="forward" compareProperty="forwardTrue">
+        </if>
+        <if test="forward != forwardTrue">
         order by
             entry.id desc
-        </isNotEqual>
+        </if>
     </sql>
     
     <!-- Get audit entries -->
-    <select id="select_AuditEntriesWithValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
+    <select id="select_AuditEntriesWithValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
         select
             app.app_name_id             as audit_app_name_id,
             entry.id                    as audit_entry_id,
@@ -214,9 +223,9 @@
             alf_audit_app app
             join alf_audit_entry entry on (entry.audit_app_id = app.id)
             
-        <isEqual property="keyOrValueSearch" compareValue="true">
+        <if test="keyOrValueSearch == true">
             join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
-        </isEqual>
+        </if>
         
             join alf_prop_link pl on (pl.root_prop_id = entry.audit_values_id)
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
@@ -228,7 +237,7 @@
     </select>
 
     <!-- Get audit entries -->
-    <select id="select_AuditEntriesWithoutValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+    <select id="select_AuditEntriesWithoutValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
         select
             app.app_name_id             as audit_app_name_id,
             entry.id                    as audit_entry_id,
@@ -239,12 +248,12 @@
             alf_audit_app app
             join alf_audit_entry entry on (entry.audit_app_id = app.id)
             
-        <isEqual property="keyOrValueSearch" compareValue="true">
+        <if test="keyOrValueSearch == true">
             join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
-        </isEqual>
+        </if>
         
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>
     </select>
 
-</sqlMap>
+</mapper>

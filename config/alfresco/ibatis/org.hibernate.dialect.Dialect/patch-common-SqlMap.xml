@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.patch">
+<mapper namespace="alfresco.patch">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
-    <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
-    <typeAlias alias="DuplicateEntry" type="org.alfresco.repo.admin.patch.impl.DuplicateEntry" />
-    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_admOldContentProp" class="java.util.HashMap">
+    <resultMap id="result_admOldContentProp" type="java.util.HashMap">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="listIndex" column="list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
@@ -26,12 +16,12 @@
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap id="result_authoritiesAndCrc" class="java.util.HashMap">
+    <resultMap id="result_authoritiesAndCrc" type="java.util.HashMap">
         <result property="authority" column="authority" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="crc" column="crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_childAssocsForCrc" class="java.util.HashMap">
+    <resultMap id="result_childAssocsForCrc" type="java.util.HashMap">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -42,44 +32,44 @@
         <result property="childNodeName" column="child_node_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap id="result_nodeIdAndName" class="java.util.HashMap">
+    <resultMap id="result_nodeIdAndName" type="java.util.HashMap">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap class="java.util.HashMap" id="result_admTenant">
+    <resultMap type="java.util.HashMap" id="result_admTenant">
         <result property="tenantDomain" column="tenantDomain" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="isEnabled" column="isEnabled" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="rootDir" column="rootDir" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap class="java.util.HashMap" id="result_avmLock">
+    <resultMap type="java.util.HashMap" id="result_avmLock">
         <result property="wpStoreId" column="wpStoreId" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="relPath" column="relPath" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="avmStore" column="avmStore" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="owner1" column="owner1" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap class="java.util.HashMap" id="result_PBB">
+    <resultMap type="java.util.HashMap" id="result_PBB">
         <result property="componentName" column="componentName" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="propName" column="propName" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="propValue" column="propValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap class="java.util.HashMap" id="result_ChainingURS">
+    <resultMap type="java.util.HashMap" id="result_ChainingURS">
         <result property="label" column="label" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="zoneId" column="zoneId" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="lastModified" column="lastModified" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_DuplicateEntry" class="DuplicateEntry">
+    <resultMap id="result_DuplicateEntry" type="DuplicateEntry">
         <result property="id" column="child_id" jdbcType="BIGINT" javaType="java.lang.Long" />
         <result property="parentId" column="parent_id" jdbcType="BIGINT" javaType="java.lang.Long" />
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String" />
         <result property="amount" column="cnt" jdbcType="BIGINT" javaType="java.lang.Long" />
     </resultMap>
     
-    <resultMap id="result_aclIneritanceIssue" class="java.util.HashMap">
+    <resultMap id="result_aclIneritanceIssue" type="java.util.HashMap">
         <result property="childAclId" column="child_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="childAclType" column="child_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="primaryParentAclId" column="primary_parent_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -87,7 +77,7 @@
         <result property="childNodeId" column="child_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" class="java.util.HashMap">
+    <resultMap id="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" type="java.util.HashMap">
         <result property="inheritedAclId" column="inherited_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="inheritedAclType" column="inherited_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -98,11 +88,11 @@
     <!-- Parameter Maps -->
     <!--                -->
     
-    <parameterMap id="parameter_IdMap" class="map">
+    <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
     </parameterMap>
 
-    <parameterMap id="parameter_admNewContentProp" class="map">
+    <parameterMap id="parameter_admNewContentProp" type="map">
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -110,24 +100,24 @@
         <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_contentMimetype" class="map">
+    <parameterMap id="parameter_contentMimetype" type="map">
         <parameter property="newMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="oldMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_childAssocCrcs" class="map">
+    <parameterMap id="parameter_childAssocCrcs" type="map">
         <parameter property="childNodeNameCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="qnameCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_nodeTypeAndNamePattern" class="map">
+    <parameterMap id="parameter_nodeTypeAndNamePattern" type="map">
         <parameter property="typeQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="propQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="namePattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
-    <parameterMap id="parameter_RenamedDuplicateEntry" class="DuplicateEntry">
+    <parameterMap id="parameter_RenamedDuplicateEntry" type="DuplicateEntry">
         <parameter property="name" jdbcType="VARCHAR" javaType="java.lang.String" />
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long" />
         <parameter property="parentId" jdbcType="BIGINT" javaType="java.lang.Long" />
@@ -137,23 +127,23 @@
     <!-- Selects        -->
     <!--                -->
 
-    <select id="select_avmMaxNodeId" resultClass="java.lang.Long">
+    <select id="select_avmMaxNodeId" resultType="java.lang.Long">
         select max(id) from avm_nodes
     </select>
 
-    <select id="select_admMaxNodeId" resultClass="java.lang.Long">
+    <select id="select_admMaxNodeId" resultType="java.lang.Long">
         select max(id) from alf_node
     </select>
     
-    <select id="select_avmNodesWithOldContentProperties" parameterClass="Ids" resultClass="java.lang.Long">
+    <select id="select_avmNodesWithOldContentProperties" parameterType="Ids" resultType="java.lang.Long">
         <![CDATA[
         select
             id
         from
             avm_nodes
         where
-            id >= #idOne#
-            and id < #idTwo#
+            id >= #{idOne}
+            and id < #{idTwo}
             and class_type = 'plainfile'
             and content_url is not null
             and content_url not like 'id:%'
@@ -162,7 +152,7 @@
         ]]>
     </select>
 
-    <select id="select_admOldContentProperties" parameterClass="Ids" resultMap="result_admOldContentProp">
+    <select id="select_admOldContentProperties" parameterType="Ids" resultMap="result_admOldContentProp">
         <![CDATA[
         select
             node_id,
@@ -173,8 +163,8 @@
         from
             alf_node_properties
         where
-            node_id >= #idOne#
-            and node_id < #idTwo#
+            node_id >= #{idOne}
+            and node_id < #{idTwo}
             and actual_type_n = 11
         order by
             node_id ASC
@@ -189,15 +179,15 @@
             alf_authority
     </select>
 
-    <select id="select_allChildAssocsCount" resultClass="java.lang.Integer">
+    <select id="select_allChildAssocsCount" resultType="java.lang.Integer">
         select count(*) from alf_child_assoc
     </select>
 
-    <select id="select_maxChildAssocId" resultClass="java.lang.Long">
+    <select id="select_maxChildAssocId" resultType="java.lang.Long">
         select max(id) from alf_child_assoc
     </select>
 
-    <select id="select_allChildAssocsForCrcs" parameterClass="Ids" resultMap="result_childAssocsForCrc">
+    <select id="select_allChildAssocsForCrcs" parameterType="Ids" resultMap="result_childAssocsForCrc">
         <![CDATA[
         select
             ca.id,
@@ -211,10 +201,10 @@
         from
             alf_child_assoc ca
             join alf_node cn on (cn.id = ca.child_node_id)
-            left join alf_node_properties cnp on (cnp.node_id = cn.id and cnp.qname_id = #idOne#)
+            left join alf_node_properties cnp on (cnp.node_id = cn.id and cnp.qname_id = #{idOne})
         where
-            ca.id >= #idTwo# and
-            ca.id < #idThree#
+            ca.id >= #{idTwo} and
+            ca.id < #{idThree}
         order by 
             ca.id ASC
         ]]>
@@ -231,9 +221,9 @@
             join alf_store s on (s.id = n.store_id)
             join alf_node_properties np on (np.node_id = n.id)
         where
-            n.type_qname_id = #typeQNameId# and
-            np.qname_id = #propQNameId# and
-            np.string_value like #namePattern#
+            n.type_qname_id = #{typeQNameId} and
+            np.qname_id = #{propQNameId} and
+            np.string_value like #{namePattern}
     </select>
     
     <select id="select_oldAttrTenants" resultMap="result_admTenant">
@@ -302,7 +292,7 @@
             ga.name = '.ChainingUserRegistrySynchronizer'
     </select>
     
-    <select id="select_oldAttrCustomNames" resultClass="string">
+    <select id="select_oldAttrCustomNames" resultType="string">
         select
             ga.name as name
         from
@@ -311,7 +301,7 @@
             name not in ('alfresco-tenants', '.href', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
     </select>
     
-    <select id="select_AllAclIds" resultClass="long">
+    <select id="select_AllAclIds" resultType="long">
         select
             id
         from
@@ -319,7 +309,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_UsedAclIds" resultClass="long">
+    <select id="select_UsedAclIds" resultType="long">
         select acl_id from avm_nodes where acl_id is not null
         union select acl_id from avm_stores where acl_id is not null
         union select acl_id from alf_node where acl_id is not null
@@ -327,7 +317,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_MaxAclId" resultClass="long">
+    <select id="select_MaxAclId" resultType="long">
         select
             max(acl.id)
         from
@@ -335,7 +325,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_DmNodeCount" resultClass="long">
+    <select id="select_DmNodeCount" resultType="long">
         select
             count(*)
         from
@@ -343,7 +333,7 @@
     </select>
     
     <!-- for patch -->
-    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap" resultClass="long">
+    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap" resultType="long">
         select
             count(*)
         from
@@ -377,7 +367,7 @@
         ]]>
     </select>
     
-    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
         <![CDATA[
         select distinct
        		childAcl.id as child_acl_id,
@@ -389,9 +379,9 @@
         	alf_access_control_list acl 
       		join alf_acl_member mem on mem.acl_id = acl.id
 			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
 			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse# AND childAcl.type = 2
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse} AND childAcl.type = 2
       	where 	   
       	(
       	            acl.id = childAcl.inherits_from
@@ -407,7 +397,7 @@
         ]]>
     </select>
    
-    <select id="select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+    <select id="select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
         <![CDATA[
         select distinct
        		childAcl.id as child_acl_id,
@@ -419,9 +409,9 @@
         	alf_access_control_list acl 
       		join alf_acl_member mem on mem.acl_id = acl.id
 			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
 			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse# AND childAcl.type = 1
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse} AND childAcl.type = 1
       	where 	   
       	(
       	            acl.inherited_acl = childAcl.inherits_from
@@ -437,7 +427,7 @@
         ]]>
     </select>
    
-    <select id="select_aclsThatInheritFromNonPrimaryParent" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+    <select id="select_aclsThatInheritFromNonPrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
         <![CDATA[
        select distinct
        		childAcl.id as child_acl_id,
@@ -449,9 +439,9 @@
         	alf_access_control_list acl 
       		join alf_acl_member mem on mem.acl_id = acl.id
 			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
 			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse#
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse}
       	where 	   
       	(
       	            childAcl.id is not null
@@ -462,7 +452,7 @@
         ]]>
     </select>
     
-    <select id="select_aclsThatInheritWithInheritanceUnset" parameterClass="boolean" resultMap="result_aclIneritanceIssue">
+    <select id="select_aclsThatInheritWithInheritanceUnset" parameterType="boolean" resultMap="result_aclIneritanceIssue">
         <![CDATA[
         select distinct
        		childAcl.id as child_acl_id,
@@ -474,7 +464,7 @@
         	alf_access_control_list acl 
       		join alf_acl_member mem on mem.acl_id = acl.id
 			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #trueOrFalse#
+			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
 			join alf_node child on priChild.child_node_id = child.id
 			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse#
       	where 	   
@@ -486,7 +476,7 @@
        ]]>
     </select>
     
-    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" parameterClass="boolean" resultMap="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl">
+    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" parameterType="boolean" resultMap="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl">
         <![CDATA[
         select distinct
           	inheritedAcl.id as inherited_acl_id,
@@ -496,7 +486,7 @@
         from 
         	alf_access_control_list acl 
       		join alf_acl_member mem on mem.acl_id = acl.id
-      		join alf_access_control_list inheritedAcl on inheritedAcl.inherits_from = acl.id AND inheritedAcl.inherits = #trueOrFalse# AND inheritedAcl.type = 1
+      		join alf_access_control_list inheritedAcl on inheritedAcl.inherits_from = acl.id AND inheritedAcl.inherits = #{trueOrFalse} AND inheritedAcl.type = 1
       	where 	acl.id = inheritedAcl.inherits_from
                 AND NOT EXISTS (
                 				select 1 
@@ -558,7 +548,7 @@
             and parent_id = ?
     </update>
     
-    <update id="update_CreateSizeCurrentProperty" parameterClass="SizeCurrentParams" >
+    <update id="update_CreateSizeCurrentProperty" parameterType="SizeCurrentParams" >
         INSERT INTO alf_node_properties
         (
            node_id, actual_type_n, persisted_type_n,
@@ -571,22 +561,22 @@
            qname_id, list_index, locale_id)
         SELECT
             n.id, 0, 0,
-            #false#,
+            #{false},
             0,
             0,
             0,
             null,
             null,
-            #sizeCurrentQNameId#, -1, #defaultLocaleId#
+            #{sizeCurrentQNameId}, -1, #{defaultLocaleId}
         FROM
             alf_node n
         WHERE
-            n.type_qname_id = #personTypeQNameId#
+            n.type_qname_id = #{personTypeQNameId}
             AND NOT EXISTS
             (
                 SELECT 1 FROM alf_node_properties np
                 WHERE np.node_id = n.id
-                AND np.qname_id = #sizeCurrentQNameId#
+                AND np.qname_id = #{sizeCurrentQNameId}
             )
     </update>
     
@@ -610,4 +600,4 @@
         delete from alf_attributes
     </delete>
     
-</sqlMap>
+</mapper>

@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.avm">
+<mapper namespace="alfresco.avm.insert">
     
-    <insert id="insert_AVMStore" parameterClass="AVMStore">
+    <insert id="insert_AVMStore" parameterType="AVMStore">
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('avm_stores_seq')
         </selectKey>
         
@@ -18,7 +16,7 @@
     
     <insert id="insert_AVMStoreProperty" parameterMap="parameter_IdStorePropertyPatternMap">
     
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('avm_store_properties_seq')
         </selectKey>
         
@@ -26,9 +24,9 @@
         
     </insert>
     
-    <insert id="insert_AVMNode" parameterClass="AVMNode">
+    <insert id="insert_AVMNode" parameterType="AVMNode">
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('avm_nodes_seq')
         </selectKey>
         
@@ -36,9 +34,9 @@
         
     </insert>
     
-    <insert id="insert_AVMVersionRoot" parameterClass="AVMVersionRoot">
+    <insert id="insert_AVMVersionRoot" parameterType="AVMVersionRoot">
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('avm_version_roots_seq')
         </selectKey>
         
@@ -46,4 +44,4 @@
         
     </insert>
     
-</sqlMap>
+</mapper>

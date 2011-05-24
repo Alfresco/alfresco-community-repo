@@ -23,10 +23,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 
 import org.alfresco.repo.domain.control.AbstractControlDAOImpl;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.SqlMapClient;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific, DB-agnostic implementation for connection controlling DAO.
@@ -37,13 +34,13 @@ import com.ibatis.sqlmap.client.SqlMapClient;
 public class ControlDAOImpl extends AbstractControlDAOImpl
 {
     /**
-     * The iBatis-specific template for convenient statement execution.
+     * The myBatis-specific template for convenient statement execution.
      */
-    protected SqlMapClientTemplate template;
+    protected SqlSessionTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
 
     public void startBatch()
@@ -53,6 +50,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
          * don't have any effect other than to let iBatis know that a batch
          * is possible.
          */
+        /*
         SqlMapClient sqlMapClient = template.getSqlMapClient();
         try
         {
@@ -63,6 +61,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
         {
             throw new RuntimeException("Failed to start DAO batch.", e);
         }
+        */
     }
 
     public void executeBatch()
@@ -72,6 +71,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
          * don't have any effect other than to let iBatis know that a batch
          * is possible.
          */
+        /*
         SqlMapClient sqlMapClient = template.getSqlMapClient();
         try
         {
@@ -81,8 +81,9 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
         }
         catch (SQLException e)
         {
-            throw new RuntimeException("Failed to start DAO batch.", e);
+            throw new RuntimeException("Failed to execute DAO batch.", e);
         }
+        */
     }
     
     /**
@@ -101,7 +102,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
         {
             try
             {
-                Connection connection = DataSourceUtils.getConnection(template.getDataSource());
+                Connection connection = template.getConnection();
                 return connection.setSavepoint(savepoint);
             }
             catch (SQLException e)
@@ -117,7 +118,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
         {
             try
             {
-                Connection connection = DataSourceUtils.getConnection(template.getDataSource());
+                Connection connection = template.getConnection();
                 connection.rollback(savepoint);
             }
             catch (SQLException e)
@@ -130,7 +131,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
         {
             try
             {
-                Connection connection = DataSourceUtils.getConnection(template.getDataSource());
+                Connection connection = template.getConnection();
                 connection.releaseSavepoint(savepoint);
             }
             catch (SQLException e)
@@ -143,7 +144,7 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
     @Override
     public int setTransactionIsolationLevel(int isolationLevel)
     {
-        Connection connection = DataSourceUtils.getConnection(template.getDataSource());
+        Connection connection = template.getConnection();
         if (connection == null)
         {
             throw new NullPointerException("There is no current connection");

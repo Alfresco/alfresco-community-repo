@@ -55,8 +55,6 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
-import com.ibatis.common.jdbc.exception.NestedSQLException;
-
 /**
  * A helper that runs a unit of work inside a UserTransaction,
  * transparently retrying the unit of work if the cause of
@@ -99,7 +97,6 @@ public class RetryingTransactionHelper
                 ConstraintViolationException.class,
                 UncategorizedSQLException.class,
                 SQLException.class,
-                NestedSQLException.class,
                 BatchUpdateException.class,
                 DataIntegrityViolationException.class,
                 StaleStateException.class,
@@ -560,7 +557,7 @@ public class RetryingTransactionHelper
         {
            return null;
         }
-        else if (retryCause instanceof NestedSQLException || retryCause instanceof UncategorizedSQLException)
+        else if (retryCause instanceof UncategorizedSQLException)
         {
             // The exception will have been caused by something else, so check that instead
             if (retryCause.getCause() != null && retryCause.getCause() != retryCause)

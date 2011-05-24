@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.ibatis.RollupRowHandler;
+import org.alfresco.ibatis.RollupResultHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
 import org.alfresco.repo.domain.audit.AuditApplicationEntity;
 import org.alfresco.repo.domain.audit.AuditDeleteParameters;
@@ -34,9 +34,11 @@ import org.alfresco.repo.domain.audit.AuditQueryParameters;
 import org.alfresco.repo.domain.audit.AuditQueryResult;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.util.Pair;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * iBatis-specific implementation of the DAO for <b>alf_audit_XXX</b> tables.
@@ -47,26 +49,26 @@ import com.ibatis.sqlmap.client.event.RowHandler;
 public class AuditDAOImpl extends AbstractAuditDAOImpl
 {
     private static final String SELECT_MODEL_BY_CRC = "alfresco.audit.select_AuditModelByCrc";
-    private static final String INSERT_MODEL = "alfresco.audit.insert_AuditModel";
+    private static final String INSERT_MODEL = "alfresco.audit.insert.insert_AuditModel";
     
     private static final String SELECT_APPLICATION_BY_ID = "alfresco.audit.select_AuditApplicationById";
     private static final String SELECT_APPLICATION_BY_NAME_ID = "alfresco.audit.select_AuditApplicationByNameId";
-    private static final String INSERT_APPLICATION = "alfresco.audit.insert_AuditApplication";
+    private static final String INSERT_APPLICATION = "alfresco.audit.insert.insert_AuditApplication";
     private static final String UPDATE_APPLICATION = "alfresco.audit.update_AuditApplication";
     
     private static final String DELETE_ENTRIES = "alfresco.audit.delete_AuditEntries";
-    private static final String INSERT_ENTRY = "alfresco.audit.insert_AuditEntry";
+    private static final String INSERT_ENTRY = "alfresco.audit.insert.insert_AuditEntry";
     
     @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
     private static final String SELECT_ENTRIES_WITH_VALUES = "alfresco.audit.select_AuditEntriesWithValues";
     private static final String SELECT_ENTRIES_WITHOUT_VALUES = "alfresco.audit.select_AuditEntriesWithoutValues";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     {
         AuditModelEntity entity = new AuditModelEntity();
         entity.setContentCrc(crc);
-        entity = (AuditModelEntity) template.queryForObject(
+        entity = (AuditModelEntity) template.selectOne(
                 SELECT_MODEL_BY_CRC,
                 entity);
         // Done
@@ -87,8 +89,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         AuditModelEntity entity = new AuditModelEntity();
         entity.setContentDataId(contentDataId);
         entity.setContentCrc(crc);
-        Long id = (Long) template.insert(INSERT_MODEL, entity);
-        entity.setId(id);
+        template.insert(INSERT_MODEL, entity);
         return entity;
     }
 
@@ -97,7 +98,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
-        AuditApplicationEntity entity = (AuditApplicationEntity) template.queryForObject(
+        AuditApplicationEntity entity = (AuditApplicationEntity) template.selectOne(
                 SELECT_APPLICATION_BY_ID,
                 params);
         // Done
@@ -121,7 +122,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", appNamePair.getFirst());
-        AuditApplicationEntity entity = (AuditApplicationEntity) template.queryForObject(
+        AuditApplicationEntity entity = (AuditApplicationEntity) template.selectOne(
                 SELECT_APPLICATION_BY_NAME_ID,
                 params);
         // Done
@@ -140,8 +141,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         entity.setApplicationNameId(appNameId);
         entity.setAuditModelId(modelId);
         entity.setDisabledPathsId(disabledPathsId);
-        Long id = (Long) template.insert(INSERT_APPLICATION, entity);
-        entity.setId(id);
+        template.insert(INSERT_APPLICATION, entity);
         return entity;
     }
 
@@ -156,7 +156,13 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         updateEntity.setAuditModelId(entity.getAuditModelId());
         updateEntity.setDisabledPathsId(entity.getDisabledPathsId());
         
-        template.update(UPDATE_APPLICATION, updateEntity, 1);
+        int updated = template.update(UPDATE_APPLICATION, updateEntity);
+        if (updated != 1)
+        {
+            // unexpected number of rows affected
+            throw new ConcurrencyFailureException("Incorrect number of rows affected for updateAuditApplication: " + updateEntity + ": expected 1, actual " + updated);
+        }
+        
         // Done
         return updateEntity;
     }
@@ -186,8 +192,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         entity.setAuditTime(time);
         entity.setAuditUserId(usernameId);
         entity.setAuditValuesId(valuesId);
-        Long id = (Long) template.insert(INSERT_ENTRY, entity);
-        entity.setId(id);
+        template.insert(INSERT_ENTRY, entity);
         return entity;
     }
 
@@ -274,8 +279,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                     }
                 }
             };
-
-            List<AuditQueryResult> rows = template.queryForList(SELECT_ENTRIES_WITHOUT_VALUES, params, 0, maxResults);
+            
+            List<AuditQueryResult> rows = (List<AuditQueryResult>) template.selectList(SELECT_ENTRIES_WITHOUT_VALUES, params, new RowBounds(0, maxResults));
             for (AuditQueryResult row : rows)
             {
                 resultsByValueId.put(row.getAuditValuesId(), row);
@@ -303,23 +308,24 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         }
         else
         {
-            // RowHandlers in RowHandlers: See 'groupBy' issue https://issues.apache.org/jira/browse/IBATIS-503
-            RowHandler queryRowHandler = new RowHandler()
+            // RowHandlers in RowHandlers: See 'groupBy' issue for iBatis 2.x https://issues.apache.org/jira/browse/IBATIS-503
+            ResultHandler queryResultHandler = new ResultHandler()
             {
-                public void handleRow(Object valueObject)
+                public void handleResult(ResultContext context)
                 {
-                    rowHandler.processResult((AuditQueryResult)valueObject);
+                    rowHandler.processResult((AuditQueryResult)context.getResultObject());
                 }
             };
-            RollupRowHandler rollupRowHandler = new RollupRowHandler(
+            RollupResultHandler rollupResultHandler = new RollupResultHandler(
                     new String[] {"auditEntryId"},
                     "auditValueRows",
-                    queryRowHandler,
+                    queryResultHandler,
                     maxResults);
             
-            template.queryWithRowHandler(rowHandler.valuesRequired() ? SELECT_ENTRIES_WITH_VALUES
-                    : SELECT_ENTRIES_WITHOUT_VALUES, params, rollupRowHandler);
-            rollupRowHandler.processLastResults();
+            template.select(rowHandler.valuesRequired() ? SELECT_ENTRIES_WITH_VALUES
+                    : SELECT_ENTRIES_WITHOUT_VALUES, params, rollupResultHandler);
+            rollupResultHandler.processLastResults();
         }
     }
 }
+

@@ -20,10 +20,12 @@
             </bean>
         </property>
    </bean>
+   
    <bean id="controlDAO.org.hibernate.dialect.Dialect"
          class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
    </bean>
+   
    <bean id="controlDAO.org.hibernate.dialect.PostgreSQLDialect"
          class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl$PostgreSQL"
          parent="controlDAO.org.hibernate.dialect.Dialect">
@@ -42,24 +44,24 @@
    </bean>
    
    <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
    </bean>
    
    <bean id="appliedPatchDAO" class="org.alfresco.repo.domain.patch.ibatis.AppliedPatchDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
    </bean>
    
    <bean id="qnameDAO" class="org.alfresco.repo.domain.qname.ibatis.QNameDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="namespaceCache" ref="immutableEntityCache"/>
       <property name="qnameCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="nodeDAO" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" init-method="init">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
       <property name="transactionService" ref="transactionService" />
       <property name="dictionaryService" ref="dictionaryService"/>
@@ -79,27 +81,27 @@
    </bean>
    
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
-      <property name="sqlMapClientTemplate" ref="locksSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="locksSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
    
    <bean id="mimetypeDAO" class="org.alfresco.repo.domain.mimetype.ibatis.MimetypeDAOImpl">
-      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
       <property name="mimetypeEntityCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="encodingDAO" class="org.alfresco.repo.domain.encoding.ibatis.EncodingDAOImpl">
-      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
       <property name="encodingEntityCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="localeDAO" class="org.alfresco.repo.domain.locale.ibatis.LocaleDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="localeEntityCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
-      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
       <property name="contentDataCache" ref="contentDataCache"/>
       <property name="controlDAO" ref="controlDAO"/>
       <property name="mimetypeDAO" ref="mimetypeDAO"/>
@@ -109,7 +111,7 @@
    </bean>
    
    <bean id="propertyValueDAO" class="org.alfresco.repo.domain.propval.ibatis.PropertyValueDAOImpl">
-      <property name="sqlMapClientTemplate" ref="propertyValueSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="propertyValueSqlSessionTemplate"/>
       <property name="converter">
          <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
       </property>
@@ -126,7 +128,7 @@
    </bean>
    
    <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
-      <property name="sqlMapClientTemplate" ref="auditSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="auditSqlSessionTemplate"/>
       <property name="contentService" ref="contentService"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="propertyValueDAO" ref="propertyValueDAO"/>
@@ -135,14 +137,14 @@
    <!-- AVM -->
    
    <bean id="newAvmStoreDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMStoreDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="avmStoreCache" ref="avmStoreCache"/>
       <property name="avmStorePropertyCache" ref="avmEntityCache"/>
    </bean>
    
    <bean id="newAvmNodeDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMNodeDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="avmNodeCache" ref="avmNodeCache"/>
       <property name="avmNodePropertyCache" ref="avmEntityCache"/>
@@ -150,18 +152,18 @@
    </bean>
    
    <bean id="newAvmNodeLinksDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMNodeLinksDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="avmChildEntryCache" ref="avmEntityCache"/>
       <property name="avmHistoryLinkCache" ref="avmEntityCache"/>
    </bean>
    
    <bean id="newAvmVersionRootDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMVersionRootDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="versionRootEntityCache" ref="avmVersionRootEntityCache"/>
    </bean>
    
    <bean id="avmLockDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMLockDAOImpl">
-      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="propertyValueDAO" ref="propertyValueDAO"/>
    </bean>
    
@@ -226,7 +228,7 @@
     </bean>
    
    <bean id="aclCrudDAO" class="org.alfresco.repo.domain.permissions.ibatis.AclCrudDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="aclEntityCache" ref="aclEntityCache"/>
       <property name="authorityEntityCache" ref="authorityEntityCache"/>
@@ -243,18 +245,18 @@
    </bean>
    
    <bean id="usageDAO" class="org.alfresco.repo.domain.usage.ibatis.UsageDAOImpl">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
    
    <bean id="cannedQueryDAO" class="org.alfresco.repo.domain.query.ibatis.CannedQueryDAOImpl" init-method="init">
-      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="controlDAO" ref="controlDAO"/>
    </bean>
    
    <bean id="solrDAO" class="org.alfresco.repo.domain.solr.ibatis.SOLRDAOImpl" init-method="init">
-      <property name="sqlMapClientTemplate" ref="solrSqlMapClientTemplate"/>
+      <property name="sqlSessionTemplate" ref="solrSqlSessionTemplate"/>
       <property name="qNameDAO" ref="qnameDAO"/>
    </bean>
    

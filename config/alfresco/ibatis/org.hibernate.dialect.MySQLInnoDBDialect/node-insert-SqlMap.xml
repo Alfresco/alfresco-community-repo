@@ -1,51 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.node">
+<mapper namespace="alfresco.node.insert">
 
-    <insert id="insert_Server" parameterClass="Server" >
+    <insert id="insert_Server" parameterType="Server" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_Server_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_Store" parameterClass="Store" >
+    <insert id="insert_Store" parameterType="Store" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_Store_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_Node" parameterClass="Node" >
+    <insert id="insert_Node" parameterType="Node" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_Node_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_Transaction" parameterClass="Transaction" >
+    <insert id="insert_Transaction" parameterType="Transaction" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_Transaction_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_NodeAssoc" parameterClass="NodeAssoc" >
+    <insert id="insert_NodeAssoc" parameterType="NodeAssoc" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_NodeAssoc_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-    <insert id="insert_ChildAssoc" parameterClass="ChildAssoc" >
+    <insert id="insert_ChildAssoc" parameterType="ChildAssoc" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_ChildAssoc_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
 
-</sqlMap>
+</mapper>

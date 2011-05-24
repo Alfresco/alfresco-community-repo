@@ -25,7 +25,8 @@ import java.util.Map;
 import org.alfresco.repo.domain.locks.AbstractLockDAOImpl;
 import org.alfresco.repo.domain.locks.LockEntity;
 import org.alfresco.repo.domain.locks.LockResourceEntity;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * iBatis-specific implementation of the Locks DAO.
@@ -39,25 +40,27 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     private static final String SELECT_LOCK_BY_ID = "alfresco.lock.select_LockByID";
     private static final String SELECT_LOCK_BY_KEY = "alfresco.lock.select_LockByKey";
     private static final String SELECT_LOCK_BY_SHARED_IDS = "alfresco.lock.select_LockBySharedIds";
-    private static final String INSERT_LOCKRESOURCE = "alfresco.lock.insert_LockResource";
-    private static final String INSERT_LOCK = "alfresco.lock.insert_Lock";
+    private static final String INSERT_LOCKRESOURCE = "alfresco.lock.insert.insert_LockResource";
+    private static final String INSERT_LOCK = "alfresco.lock.insert.insert_Lock";
     private static final String UPDATE_LOCK = "alfresco.lock.update_Lock";
     private static final String UPDATE_EXCLUSIVE_LOCK = "alfresco.lock.update_ExclusiveLock";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     @Override
     protected LockResourceEntity getLockResource(Long qnameNamespaceId, String qnameLocalName)
     {
         LockResourceEntity lockResource = new LockResourceEntity();
         lockResource.setQnameNamespaceId(qnameNamespaceId);
         lockResource.setQnameLocalName(qnameLocalName == null ? null : qnameLocalName.toLowerCase());
-        lockResource = (LockResourceEntity) template.queryForObject(SELECT_LOCKRESOURCE_BY_QNAME, lockResource);
+        lockResource = (LockResourceEntity) template.selectOne(SELECT_LOCKRESOURCE_BY_QNAME, lockResource);
         // Could be null
         return lockResource;
     }
@@ -69,8 +72,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         lockResource.setVersion(LockEntity.CONST_LONG_ZERO);
         lockResource.setQnameNamespaceId(qnameNamespaceId);
         lockResource.setQnameLocalName(qnameLocalName == null ? null : qnameLocalName.toLowerCase());
-        Long id = (Long) template.insert(INSERT_LOCKRESOURCE, lockResource);
-        lockResource.setId(id);
+        template.insert(INSERT_LOCKRESOURCE, lockResource);
         // Done
         return lockResource;
     }
@@ -79,7 +81,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     @Override
     protected List<LockEntity> getLocksBySharedResourceIds(List<Long> sharedLockResourceIds)
     {
-        List<LockEntity> locks = template.queryForList(SELECT_LOCK_BY_SHARED_IDS, sharedLockResourceIds);
+        List<LockEntity> locks = (List<LockEntity>) template.selectList(SELECT_LOCK_BY_SHARED_IDS, sharedLockResourceIds);
         // Done
         return locks;
     }
@@ -89,7 +91,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     {
         LockEntity lock = new LockEntity();
         lock.setId(id);
-        lock = (LockEntity) template.queryForObject(SELECT_LOCK_BY_ID, lock);
+        lock = (LockEntity) template.selectOne(SELECT_LOCK_BY_ID, lock);
         // Done
         return lock;
     }
@@ -100,7 +102,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         LockEntity lock = new LockEntity();
         lock.setSharedResourceId(sharedResourceId);
         lock.setExclusiveResourceId(exclusiveResourceId);
-        lock = (LockEntity) template.queryForObject(SELECT_LOCK_BY_KEY, lock);
+        lock = (LockEntity) template.selectOne(SELECT_LOCK_BY_KEY, lock);
         // Done
         return lock;
     }
@@ -121,8 +123,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         long exp = now + timeToLive;
         lock.setStartTime(now);
         lock.setExpiryTime(exp);
-        Long id = (Long) template.insert(INSERT_LOCK, lock);
-        lock.setId(id);
+        template.insert(INSERT_LOCK, lock);
         // Done
         return lock;
     }
@@ -141,7 +142,14 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
         updateLockEntity.setStartTime(new Long(now));
         updateLockEntity.setExpiryTime(new Long(exp));
-        template.update(UPDATE_LOCK, updateLockEntity, 1);
+        
+        int updated = template.update(UPDATE_LOCK, updateLockEntity);
+        if (updated != 1)
+        {
+            // unexpected number of rows affected
+            throw new ConcurrencyFailureException("Incorrect number of rows affected for updateLock: " + updateLockEntity + ": expected 1, actual " + updated);
+        }
+        
         // Done
         return updateLockEntity;
     }

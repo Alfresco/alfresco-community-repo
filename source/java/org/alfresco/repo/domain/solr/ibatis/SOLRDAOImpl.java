@@ -11,7 +11,8 @@ import org.alfresco.repo.domain.solr.NodeParameters;
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.SOLRTransactionParameters;
 import org.alfresco.repo.domain.solr.Transaction;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * DAO support for SOLR web scripts.
@@ -24,17 +25,15 @@ public class SOLRDAOImpl implements SOLRDAO
     private static final String SELECT_NODES = "alfresco.solr.select_Txn_Nodes";
     
     private QNameDAO qnameDAO;
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
-    public SqlMapClientTemplate getSqlMapClientTemplate()
-    {
-        return this.template;
-    }
+    
     
     public void setQNameDAO(QNameDAO qnameDAO)
     {
@@ -63,11 +62,11 @@ public class SOLRDAOImpl implements SOLRDAO
 
 	    if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
 	    {
-	        txns = (List<Transaction>)template.queryForList(SELECT_TRANSACTIONS, params, 0, maxResults);
+	        txns = (List<Transaction>)template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
 	    }
 	    else
 	    {
-            txns = (List<Transaction>)template.queryForList(SELECT_TRANSACTIONS, params);
+            txns = (List<Transaction>)template.selectList(SELECT_TRANSACTIONS, params);
 	    }
 	    
 	    return txns;
@@ -106,11 +105,11 @@ public class SOLRDAOImpl implements SOLRDAO
 
 	    if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
 	    {
-	        nodes = (List<NodeEntity>)template.queryForList(SELECT_NODES, nodeParameters, 0, maxResults);
+	        nodes = (List<NodeEntity>)template.selectList(SELECT_NODES, nodeParameters, new RowBounds(0, maxResults));
 	    }
 	    else
 	    {
-	        nodes = (List<NodeEntity>)template.queryForList(SELECT_NODES, nodeParameters);
+	        nodes = (List<NodeEntity>)template.selectList(SELECT_NODES, nodeParameters);
 	    }
 	    
 	    for(NodeEntity node : nodes)

@@ -1,38 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.usage">
+<mapper namespace="alfresco.usage">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="UsageDelta" type="org.alfresco.repo.domain.usage.UsageDeltaEntity"/>
-    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_UsageDelta" class="UsageDelta">
+    <resultMap id="result_UsageDelta" type="UsageDelta">
         <result property="deltaCount" column="delta_count" jdbcType="INTEGER" javaType="int"/>
         <result property="deltaSize" column="delta_size" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_UsernameUUID" class="HashMap">
+    <resultMap id="result_UsernameUUID" type="HashMap">
         <result property="username" column="username" jdbcType="VARCHAR" javaType="string"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
     
-    <resultMap id="result_UserContentUrl" class="HashMap">
+    <resultMap id="result_UserContentUrl" type="HashMap">
         <result property="owner" column="owner" jdbcType="VARCHAR" javaType="string"/>
         <result property="creator" column="creator" jdbcType="VARCHAR" javaType="string"/>
         <result property="contentUrl" column="contentUrl" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
     
-    <resultMap id="result_UserContentSize" class="HashMap">
+    <resultMap id="result_UserContentSize" type="HashMap">
         <result property="owner" column="owner" jdbcType="VARCHAR" javaType="string"/>
         <result property="creator" column="creator" jdbcType="VARCHAR" javaType="string"/>
         <result property="contentSize" column="contentSize" jdbcType="BIGINT" javaType="long"/>
@@ -43,11 +35,11 @@
     <!--                -->
     
     
-    <parameterMap id="parameter_IdMap" class="map">
+    <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_Selector1Map" class="map">
+    <parameterMap id="parameter_Selector1Map" type="map">
         <parameter property="personTypeQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="usernamePropQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="sizeCurrentPropQNameID" jdbcType="BIGINT" javaType="long"/>
@@ -55,7 +47,7 @@
         <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
     </parameterMap>
     
-    <parameterMap id="parameter_Selector2Map" class="map">
+    <parameterMap id="parameter_Selector2Map" type="map">
         <parameter property="contentTypeQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="ownerPropQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="contentPropQNameID" jdbcType="BIGINT" javaType="long"/>
@@ -63,7 +55,7 @@
         <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
     </parameterMap>
     
-    <parameterMap id="parameter_Selector3Map" class="map">
+    <parameterMap id="parameter_Selector3Map" type="map">
         <parameter property="personTypeQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="sizeCurrentPropQNameID" jdbcType="BIGINT" javaType="long"/>
         <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
@@ -79,14 +71,14 @@
         insert into alf_usage_delta
             (version, node_id, delta_size)
         values
-            (#version#, #nodeId#, #deltaSize#)
+            (#{version}, #{nodeId}, #{deltaSize})
     </sql>
     
     <sql id="insert_UsageDelta_Sequence">
         insert into alf_usage_delta
             (id, version, node_id, delta_size)
         values
-            (#id#, #version#, #nodeId#, #deltaSize#)
+            (#{id}, #{version}, #{nodeId}, #{deltaSize})
     </sql>
     
     <!--                -->
@@ -109,7 +101,7 @@
     </select>
     
     <!-- Get nodes with usage deltas -->
-    <select id="select_GetUsageDeltaNodes" resultClass="long">
+    <select id="select_GetUsageDeltaNodes" resultType="long">
         select 
             distinct(node_id)
         from
@@ -182,4 +174,4 @@
             node_id = ?
     </delete>
     
-</sqlMap>
+</mapper>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <typeAliases>
+        
+        <!-- AppliedPatch -->
+        
+        <typeAlias alias="AppliedPatch" type="org.alfresco.repo.domain.patch.AppliedPatchEntity"/>
+        
+         <!-- Audit -->
+        <typeAlias alias="AuditModel" type="org.alfresco.repo.domain.audit.AuditModelEntity"/>
+        <typeAlias alias="AuditApplication" type="org.alfresco.repo.domain.audit.AuditApplicationEntity"/>
+        <typeAlias alias="AuditEntry" type="org.alfresco.repo.domain.audit.AuditEntryEntity"/>
+        <typeAlias alias="AuditDeleteParameters" type="org.alfresco.repo.domain.audit.AuditDeleteParameters"/>
+        <typeAlias alias="AuditQueryParameters" type="org.alfresco.repo.domain.audit.AuditQueryParameters"/>
+        <typeAlias alias="AuditQueryResult" type="org.alfresco.repo.domain.audit.AuditQueryResult"/>
+        
+        <!-- Content -->
+        
+        <typeAlias alias="Mimetype" type="org.alfresco.repo.domain.mimetype.MimetypeEntity"/>
+        <typeAlias alias="Encoding" type="org.alfresco.repo.domain.encoding.EncodingEntity"/>
+        <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
+        <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
+        <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
+        <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
+        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+        
+        <!-- Locale -->
+        
+        <typeAlias alias="Locale" type="org.alfresco.repo.domain.locale.LocaleEntity"/>
+        
+        <!-- Locks -->
+        
+        <typeAlias alias="LockResource" type="org.alfresco.repo.domain.locks.LockResourceEntity"/>
+        <typeAlias alias="Lock" type="org.alfresco.repo.domain.locks.LockEntity"/>
+        
+        <!-- Node -->
+        
+        <typeAlias alias="Server" type="org.alfresco.repo.domain.node.ServerEntity"/>
+        <typeAlias alias="Transaction" type="org.alfresco.repo.domain.node.TransactionEntity"/>
+        <typeAlias alias="TransactionQuery" type="org.alfresco.repo.domain.node.TransactionQueryEntity"/>
+        <typeAlias alias="Store" type="org.alfresco.repo.domain.node.StoreEntity"/>
+        <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
+        <typeAlias alias="NodeBatchLoad" type="org.alfresco.repo.domain.node.ibatis.NodeBatchLoadEntity"/>
+        <typeAlias alias="NodeUpdate" type="org.alfresco.repo.domain.node.NodeUpdateEntity"/>
+        <typeAlias alias="AuditProps" type="org.alfresco.repo.domain.node.AuditablePropertiesEntity"/>
+        <typeAlias alias="NodePropertyKey" type="org.alfresco.repo.domain.node.NodePropertyKey"/>
+        <typeAlias alias="NodePropertyValue" type="org.alfresco.repo.domain.node.NodePropertyValue"/>
+        <typeAlias alias="NodeProperty" type="org.alfresco.repo.domain.node.NodePropertyEntity"/>
+        <typeAlias alias="NodeAspects" type="org.alfresco.repo.domain.node.NodeAspectsEntity"/>
+        <typeAlias alias="NodeAssoc" type="org.alfresco.repo.domain.node.NodeAssocEntity"/>
+        <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
+        <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
+        <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
+        
+        <!-- Patch -->
+        
+        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+        <typeAlias alias="DuplicateEntry" type="org.alfresco.repo.admin.patch.impl.DuplicateEntry" />
+        <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
+        
+        <!-- Permissions -->
+        
+        <typeAlias alias="Acl" type="org.alfresco.repo.domain.permissions.AclEntity"/>
+        <typeAlias alias="AclMember" type="org.alfresco.repo.domain.permissions.AclMemberEntity"/>
+        <typeAlias alias="AclChangeSet" type="org.alfresco.repo.domain.permissions.AclChangeSetEntity"/>
+        <typeAlias alias="Ace" type="org.alfresco.repo.domain.permissions.AceEntity"/>
+        <typeAlias alias="AceContext" type="org.alfresco.repo.domain.permissions.AceContextEntity"/>
+        <typeAlias alias="Permission" type="org.alfresco.repo.domain.permissions.PermissionEntity"/>
+        <typeAlias alias="Authority" type="org.alfresco.repo.domain.permissions.AuthorityEntity"/>
+        <typeAlias alias="AuthorityAlias" type="org.alfresco.repo.domain.permissions.AuthorityAliasEntity"/>
+        
+        <!-- PropVal -->
+        
+        <typeAlias alias="PropertyClass" type="org.alfresco.repo.domain.propval.PropertyClassEntity"/>
+        <typeAlias alias="PropertyDateValue" type="org.alfresco.repo.domain.propval.PropertyDateValueEntity"/>
+        <typeAlias alias="PropertyStringValue" type="org.alfresco.repo.domain.propval.PropertyStringValueEntity"/>
+        <typeAlias alias="PropertyStringQuery" type="org.alfresco.repo.domain.propval.PropertyStringQueryEntity"/>
+        <typeAlias alias="PropertyDoubleValue" type="org.alfresco.repo.domain.propval.PropertyDoubleValueEntity"/>
+        <typeAlias alias="PropertySerializableValue" type="org.alfresco.repo.domain.propval.PropertySerializableValueEntity"/>
+        <typeAlias alias="PropertyValue" type="org.alfresco.repo.domain.propval.PropertyValueEntity"/>
+        <typeAlias alias="PropertyRoot" type="org.alfresco.repo.domain.propval.PropertyRootEntity"/>
+        <typeAlias alias="PropertyLink" type="org.alfresco.repo.domain.propval.PropertyLinkEntity"/>
+        <typeAlias alias="PropertyUniqueContext" type="org.alfresco.repo.domain.propval.PropertyUniqueContextEntity"/>
+        <typeAlias alias="PropertyIdSearchRow" type="org.alfresco.repo.domain.propval.PropertyIdSearchRow"/>
+        <typeAlias alias="PropertyIdQueryResult" type="org.alfresco.repo.domain.propval.PropertyIdQueryResult"/>
+        <typeAlias alias="PropertyIdQueryParameter" type="org.alfresco.repo.domain.propval.PropertyIdQueryParameter"/>
+        
+        <!-- QName -->
+        
+        <typeAlias alias="Namespace" type="org.alfresco.repo.domain.qname.NamespaceEntity"/>
+        <typeAlias alias="QName" type="org.alfresco.repo.domain.qname.QNameEntity"/>
+        
+        <!-- SOLR -->
+        
+        <typeAlias alias="SOLRTransaction" type="org.alfresco.repo.domain.solr.TransactionEntity"/>
+        <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
+        <typeAlias alias="SOLRTransactionParameters" type="org.alfresco.repo.domain.solr.SOLRTransactionParameters"/>
+        <typeAlias alias="NodeParameters" type="org.alfresco.repo.domain.solr.NodeParameters"/>
+        
+        <!-- Usage -->
+        
+        <typeAlias alias="UsageDelta" type="org.alfresco.repo.domain.usage.UsageDeltaEntity"/>
+        
+        <!-- AVM -->
+        
+        <typeAlias alias="AVMStore" type="org.alfresco.repo.domain.avm.AVMStoreEntity"/>
+        <typeAlias alias="AVMNode" type="org.alfresco.repo.domain.avm.AVMNodeEntity"/>
+        <typeAlias alias="AVMNodeAspect" type="org.alfresco.repo.domain.avm.AVMAspectEntity"/>
+        <typeAlias alias="AVMChildEntry" type="org.alfresco.repo.domain.avm.AVMChildEntryEntity"/>
+        <typeAlias alias="AVMVersionRoot" type="org.alfresco.repo.domain.avm.AVMVersionRootEntity"/>
+        <typeAlias alias="AVMHistoryLink" type="org.alfresco.repo.domain.avm.AVMHistoryLinkEntity"/>
+        <typeAlias alias="AVMMergeLink" type="org.alfresco.repo.domain.avm.AVMMergeLinkEntity"/>
+        <typeAlias alias="AVMVersionLayeredNodeEntry" type="org.alfresco.repo.domain.avm.AVMVersionLayeredNodeEntryEntity"/>
+        <typeAlias alias="AVMStoreProperty" type="org.alfresco.repo.domain.avm.AVMStorePropertyEntity"/>
+        <typeAlias alias="AVMNodeProperty" type="org.alfresco.repo.domain.avm.AVMNodePropertyEntity"/>
+        <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
+        
+        <!-- Canned Queries -->
+
+        <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
+        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+    
+    </typeAliases>
+    
+    <typeHandlers> 
+        <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" handler="org.alfresco.ibatis.SerializableTypeHandler"/>
+    </typeHandlers>
+    
+    <mappers>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/appliedpatch-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/audit-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/qname-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/qname-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/locale-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/locale-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/locks-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/locks-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/content-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/node-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/node-update-acl-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/node-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/patch-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/permissions-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/permissions-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/propval-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/propval-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/solr-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/usage-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
+        <!-- Canned queries -->
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
+    </mappers>
+    
+</configuration>

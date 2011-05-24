@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--
     ** This configuraton is for tests only. **
@@ -27,29 +24,23 @@
     
     See class CannedQueryDAOTest for a demonstration.
 -->
-<sqlMap namespace="alfresco.query.test">
-
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
+<mapper namespace="alfresco.query.test">
 
     <!--                -->
     <!-- Statements     -->
     <!--                -->
     
-    <select id="select_CountMimetypes" parameterClass="TestOne" resultClass="Long">
+    <select id="select_CountMimetypes" parameterType="TestOne" resultType="Long">
         select
             count(*)
         from
             alf_mimetype
-        <isNotNull property="mimetypeMatch">
+        <if test="mimetypeMatch != null">
         where
-            <isEqual property="exact" compareValue="true">mimetype_str = #mimetypeMatch#</isEqual>
-            <isEqual property="exact" compareValue="false">mimetype_str like #mimetypeMatch#</isEqual>
-        </isNotNull>
-        <isEqual property="forceFail" compareValue="true">JUNKED</isEqual>
+            <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
+            <if test="exact == false">mimetype_str like #{mimetypeMatch}</if>
+        </if>
+        <if test="forceFail == true">JUNKED</if>
     </select>
 
-</sqlMap>
+</mapper>

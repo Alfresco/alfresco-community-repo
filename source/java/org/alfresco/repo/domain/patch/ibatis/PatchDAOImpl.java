@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.domain.patch.ibatis;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,10 +38,10 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
-import com.ibatis.sqlmap.engine.execution.SqlExecutor;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMPatch DAO.
@@ -101,14 +100,17 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
     private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl";
    
-    private SqlMapClientTemplate template;
-    private QNameDAO qnameDAO;
     private LocaleDAO localeDAO;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
+    
+    
+    private QNameDAO qnameDAO;
     
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -122,6 +124,8 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     
     public void startBatch()
     {
+        // TODO
+        /*
         try
         {
             template.getSqlMapClient().startBatch();
@@ -130,10 +134,13 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         {
             throw new RuntimeException("Failed to start batch", e);
         }
+        */
     }
 
     public void executeBatch()
     {
+        // TODO
+        /*
         try
         {
             template.getSqlMapClient().executeBatch();
@@ -142,12 +149,13 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         {
             throw new RuntimeException("Failed to start batch", e);
         }
+        */
     }
 
     @Override
     protected long getAVMNodeEntitiesCountWhereNewInStore()
     {
-        Long count = (Long) template.queryForObject(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
+        Long count = (Long) template.selectOne(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
         return count == null ? 0L : count;
     }
     
@@ -157,10 +165,10 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     {
         if (maxResults < 0)
         {
-            maxResults = SqlExecutor.NO_MAXIMUM_RESULTS;
+            maxResults = RowBounds.NO_ROW_LIMIT;
         }
         
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID, 0, maxResults);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID, new RowBounds(0, maxResults));
     }
     
     @SuppressWarnings("unchecked")
@@ -169,10 +177,10 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     {
         if (maxResults < 0)
         {
-            maxResults = SqlExecutor.NO_MAXIMUM_RESULTS;
+            maxResults = RowBounds.NO_ROW_LIMIT;
         }
         
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION, 0, maxResults);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION, new RowBounds(0, maxResults));
     }
     
     @SuppressWarnings("unchecked")
@@ -181,15 +189,15 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     {
         if (maxResults < 0)
         {
-            maxResults = SqlExecutor.NO_MAXIMUM_RESULTS;
+            maxResults = RowBounds.NO_ROW_LIMIT;
         }
         
-        return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION, 0, maxResults);
+        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION, new RowBounds(0, maxResults));
     }
 
     public long getMaxAvmNodeID()
     {
-        Long count = (Long) template.queryForObject(SELECT_AVM_MAX_NODE_ID);
+        Long count = (Long) template.selectOne(SELECT_AVM_MAX_NODE_ID);
         return count == null ? 0L : count;
     }
 
@@ -199,12 +207,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         IdsEntity ids = new IdsEntity();
         ids.setIdOne(minNodeId);
         ids.setIdTwo(maxNodeId);
-        return (List<Long>) template.queryForList(SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES, ids);
+        return (List<Long>) template.selectList(SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES, ids);
     }
 
     public long getMaxAdmNodeID()
     {
-        Long count = (Long) template.queryForObject(SELECT_ADM_MAX_NODE_ID);
+        Long count = (Long) template.selectOne(SELECT_ADM_MAX_NODE_ID);
         return count == null ? 0L : count;
     }
 
@@ -215,7 +223,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         IdsEntity ids = new IdsEntity();
         ids.setIdOne(minNodeId);
         ids.setIdTwo(maxNodeId);
-        return (List<Map<String, Object>>) template.queryForList(SELECT_ADM_OLD_CONTENT_PROPERTIES, ids);
+        return (List<Map<String, Object>>) template.selectList(SELECT_ADM_OLD_CONTENT_PROPERTIES, ids);
     }
     
     @Override
@@ -277,14 +285,14 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     protected long getMaxAclEntityId()
     {
-        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_MAX_ACL_ID, null);
+        Long count = (Long) template.selectOne(SELECT_PERMISSIONS_MAX_ACL_ID, null);
         return count == null ? 0L : count;
     }
     
     @Override
     protected long getDmNodeEntitiesCount()
     {
-        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT, null);
+        Long count = (Long) template.selectOne(SELECT_PERMISSIONS_DM_NODE_COUNT, null);
         return count == null ? 0L : count;
     }
     
@@ -293,7 +301,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", above);
-        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS, params);
+        Long count = (Long) template.selectOne(SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS, params);
         return count == null ? 0L : count;
     }
     
@@ -301,14 +309,14 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     protected List<Long> selectAllAclEntityIds()
     {
-        return (List<Long>) template.queryForList(SELECT_PERMISSIONS_ALL_ACL_IDS);
+        return (List<Long>) template.selectList(SELECT_PERMISSIONS_ALL_ACL_IDS);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<Long> selectNonDanglingAclEntityIds()
     {
-        return (List<Long>) template.queryForList(SELECT_PERMISSIONS_USED_ACL_IDS);
+        return (List<Long>) template.selectList(SELECT_PERMISSIONS_USED_ACL_IDS);
     }
     
     @Override
@@ -332,12 +340,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     public List<String> getAuthoritiesWithNonUtf8Crcs()
     {
         final List<String> results = new ArrayList<String>(1000);
-        RowHandler rowHandler = new RowHandler()
+        ResultHandler resultHandler = new ResultHandler()
         {
             @SuppressWarnings("unchecked")
-            public void handleRow(Object valueObject)
+            public void handleResult(ResultContext context)
             {
-                Map<String, Object> result = (Map<String, Object>) valueObject;
+                Map<String, Object> result = (Map<String, Object>) context.getResultObject();
                 String authority = (String) result.get("authority");
                 Long crc = (Long) result.get("crc");
                 Long crcShouldBe = CrcHelper.getStringCrcPair(authority, 32, true, true).getSecond();
@@ -348,20 +356,20 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
                 }
             }
         };
-        template.queryWithRowHandler(SELECT_AUTHORITIES_AND_CRC, rowHandler);
+        template.select(SELECT_AUTHORITIES_AND_CRC, resultHandler);
         // Done
         return results;
     }
     
     public int getChildAssocCount()
     {
-        return (Integer) template.queryForObject(SELECT_CHILD_ASSOCS_COUNT);
+        return (Integer) template.selectOne(SELECT_CHILD_ASSOCS_COUNT);
     }
     
     @Override
     public Long getMaxChildAssocId()
     {
-        Long maxAssocId = (Long) template.queryForObject(SELECT_CHILD_ASSOCS_MAX_ID);
+        Long maxAssocId = (Long) template.selectOne(SELECT_CHILD_ASSOCS_MAX_ID);
         return maxAssocId == null ? 0L : maxAssocId;
     }
 
@@ -400,7 +408,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
             
             try
             {
-                List<Map<String, Object>> rows = template.queryForList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, 0, queryMaxResults);
+                List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, new RowBounds(0, queryMaxResults));
                 if (results.size() == 0 && rows.size() >= maxResults)
                 {
                     // We have all we need
@@ -473,12 +481,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("namePattern", namePattern);
         
         final List<Pair<NodeRef, String>> results = new ArrayList<Pair<NodeRef, String>>(500);
-        RowHandler rowHandler = new RowHandler()
+        ResultHandler resultHandler = new ResultHandler()
         {
             @SuppressWarnings("unchecked")
-            public void handleRow(Object rowObject)
+            public void handleResult(ResultContext context)
             {
-                Map<String, Object> row = (Map<String, Object>) rowObject;
+                Map<String, Object> row = (Map<String, Object>) context.getResultObject();
                 String protocol = (String) row.get("protocol");
                 String identifier = (String) row.get("identifier");
                 String uuid = (String) row.get("uuid");
@@ -488,39 +496,39 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
                 results.add(pair);
             }
         };
-        template.queryWithRowHandler(SELECT_NODES_BY_TYPE_AND_NAME_PATTERN, params, rowHandler);
+        template.select(SELECT_NODES_BY_TYPE_AND_NAME_PATTERN, params, resultHandler);
         return results;
     }
     
     @Override
-    protected void getOldAttrTenantsImpl(RowHandler rowHandler)
+    protected void getOldAttrTenantsImpl(ResultHandler resultHandler)
     {
-        template.queryWithRowHandler(SELECT_OLD_ATTR_TENANTS, rowHandler);
+        template.select(SELECT_OLD_ATTR_TENANTS, resultHandler);
     }
     
     @Override
-    protected void getOldAttrAVMLocksImpl(RowHandler rowHandler)
+    protected void getOldAttrAVMLocksImpl(ResultHandler resultHandler)
     {
-        template.queryWithRowHandler(SELECT_OLD_ATTR_AVM_LOCKS, rowHandler);
+        template.select(SELECT_OLD_ATTR_AVM_LOCKS, resultHandler);
     }
     
     @Override
-    protected void getOldAttrPropertyBackedBeansImpl(RowHandler rowHandler)
+    protected void getOldAttrPropertyBackedBeansImpl(ResultHandler resultHandler)
     {
-        template.queryWithRowHandler(SELECT_OLD_ATTR_PBBS, rowHandler);
+        template.select(SELECT_OLD_ATTR_PBBS, resultHandler);
     }
     
     @Override
-    protected void getOldAttrChainingURSImpl(RowHandler rowHandler)
+    protected void getOldAttrChainingURSImpl(ResultHandler resultHandler)
     {
-        template.queryWithRowHandler(SELECT_OLD_ATTR_CHAINING_URS, rowHandler);
+        template.select(SELECT_OLD_ATTR_CHAINING_URS, resultHandler);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<String> getOldAttrCustomNamesImpl()
     {
-        return (List<String>)template.queryForList(SELECT_OLD_ATTR_CUSTOM_NAMES);
+        return (List<String>)template.selectList(SELECT_OLD_ATTR_CUSTOM_NAMES);
     }
     
     @Override
@@ -545,7 +553,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent()
     {
-        List<Map<String, Object>> rows = template.queryForList(
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(
                 SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT,
                 Boolean.TRUE);
         return rows;
@@ -555,7 +563,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<Map<String, Object>> getAclsThatInheritWithInheritanceUnset()
     {
-        List<Map<String, Object>> rows = template.queryForList(
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(
                 SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET,
                 Boolean.TRUE);
         return rows;
@@ -565,7 +573,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<Map<String, Object>> getDefiningAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
     {
-        List<Map<String, Object>> rows = template.queryForList(
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(
                 SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
                 Boolean.TRUE);
         return rows;
@@ -575,7 +583,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
     {
-        List<Map<String, Object>> rows = template.queryForList(
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(
                 SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
                 Boolean.TRUE);
         return rows;
@@ -585,7 +593,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl()
     {
-        List<Map<String, Object>> rows = template.queryForList(
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) template.selectList(
                 SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL,
                 Boolean.TRUE);
         return rows;

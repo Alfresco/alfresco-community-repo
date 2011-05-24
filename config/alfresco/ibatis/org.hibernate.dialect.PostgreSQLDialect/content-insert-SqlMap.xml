@@ -1,53 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
-    
-<sqlMap namespace="alfresco.content">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.content.insert">
    
-   <insert id="insert_Mimetype" parameterClass="Mimetype" >
+   <insert id="insert_Mimetype" parameterType="Mimetype" >
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_mimetype_seq')
         </selectKey>
         
-        insert into alf_mimetype (id, version, mimetype_str)
-        values (#id#, #version#, lower(#mimetype#))
+        <include refid="alfresco.content.insert_Mimetype_Sequence"/>
         
     </insert>
     
-    <insert id="insert_Encoding" parameterClass="Encoding" >
+    <insert id="insert_Encoding" parameterType="Encoding" >
     
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
              select nextVal('alf_encoding_seq')
         </selectKey>
         
-        insert into alf_encoding (id, version, encoding_str) 
-        values (#id#, #version#, lower(#encoding#))
+        <include refid="alfresco.content.insert_Encoding_Sequence"/>
         
     </insert>
     
-    <insert id="insert_ContentUrl" parameterClass="ContentUrl" >
+    <insert id="insert_ContentUrl" parameterType="ContentUrl" >
         
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_content_url_seq')
         </selectKey>
         
-        insert into alf_content_url (id, content_url, content_url_short, content_url_crc, content_size, orphan_time) 
-        values (#id#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#, #orphanTime#)
+         <include refid="alfresco.content.insert_ContentUrl_Sequence"/>
         
     </insert>
     
-    <insert id="insert_ContentData" parameterClass="ContentData" >
+    <insert id="insert_ContentData" parameterType="ContentData" >
     
-        <selectKey resultClass="long" keyProperty="id">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_content_data_seq')
         </selectKey>
         
-        insert into alf_content_data (id, version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
-        values (#id#, #version#, #contentUrlId#, #mimetypeId#, #encodingId#, #localeId#)
+        <include refid="alfresco.content.insert_ContentData_Sequence"/>
         
     </insert>
     
-</sqlMap>
+</mapper>

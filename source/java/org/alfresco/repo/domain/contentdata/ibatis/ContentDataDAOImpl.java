@@ -35,9 +35,10 @@ import org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 /**
  * iBatis-specific implementation of the ContentData DAO.
@@ -53,27 +54,30 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select_ContentUrlsOrphaned";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
-    private static final String INSERT_CONTENT_URL = "alfresco.content.insert_ContentUrl";
-    private static final String INSERT_CONTENT_DATA = "alfresco.content.insert_ContentData";
+    private static final String INSERT_CONTENT_URL = "alfresco.content.insert.insert_ContentUrl";
+    private static final String INSERT_CONTENT_DATA = "alfresco.content.insert.insert_ContentData";
     private static final String UPDATE_CONTENT_URL_ORPHAN_TIME = "alfresco.content.update_ContentUrlOrphanTime";
     private static final String UPDATE_CONTENT_DATA = "alfresco.content.update_ContentData";
     private static final String DELETE_CONTENT_DATA = "alfresco.content.delete_ContentData";
     private static final String DELETE_CONTENT_URLS = "alfresco.content.delete_ContentUrls";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     public Pair<Long, String> createContentUrlOrphaned(String contentUrl, Date orphanTime)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
         contentUrlEntity.setSize(0L);
         contentUrlEntity.setOrphanTime(orphanTime == null ? System.currentTimeMillis() : orphanTime.getTime());
-        Long id = (Long) template.insert(INSERT_CONTENT_URL, contentUrlEntity);
+        template.insert(INSERT_CONTENT_URL, contentUrlEntity);
+        Long id = contentUrlEntity.getId();
         // Done
         return new Pair<Long, String>(id, contentUrl);
     }
@@ -97,7 +101,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setId(id);
-        contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -111,7 +115,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_KEY, contentUrlEntity);
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -126,9 +130,9 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
-        List<ContentUrlEntity> results = template.queryForList(
-                SELECT_CONTENT_URLS_ORPHANED,
-                query, 0, maxResults);
+        List<ContentUrlEntity> results = (List<ContentUrlEntity>) template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
+                                                                                      query, 
+                                                                                      new RowBounds(0, maxResults));
         // Pass the result to the callback
         for (ContentUrlEntity result : results)
         {
@@ -165,7 +169,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = (ContentUrlEntity) template.queryForObject(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -200,7 +204,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
-        ContentDataEntity contentDataEntity = (ContentDataEntity) template.queryForObject(SELECT_CONTENT_DATA_BY_ID, params);
+        ContentDataEntity contentDataEntity = (ContentDataEntity) template.selectOne(SELECT_CONTENT_DATA_BY_ID, params);
         // Done
         return contentDataEntity;
     }
@@ -247,7 +251,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         idsEntity.setIdOne(nodeId);
         idsEntity.setIds(new ArrayList<Long>(qnameIds));
         @SuppressWarnings("unchecked")
-        List<Long> ids = (List<Long>) template.queryForList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
+        List<Long> ids = (List<Long>) template.selectList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
         // Delete each one
         for (Long id : ids)
         {

@@ -1,31 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.lock">
+<mapper namespace="alfresco.lock.insert">
 
-    <insert id="insert_LockResource" parameterClass="LockResource" >
+    <insert id="insert_LockResource" parameterType="LockResource" >
     
-       <selectKey resultClass="long" keyProperty="id">
+       <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_lock_resource_seq')
         </selectKey>
         
-        insert into alf_lock_resource (id, version, qname_ns_id, qname_localname)
-        values (#id#, #version#, #qnameNamespaceId#, lower(#qnameLocalName#))
-            
+        <include refid="insert_LockResource_Sequence"/>
+        
     </insert>
 
-    <insert id="insert_Lock" parameterClass="Lock" >
+    <insert id="insert_Lock" parameterType="Lock" >
     
-       <selectKey resultClass="long" keyProperty="id">
+       <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_lock_seq')
         </selectKey>
         
-        insert into alf_lock (id, version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time)
-        values (#id#, #version#, #sharedResourceId#, #exclusiveResourceId#, lower(#lockToken#), #startTime#, #expiryTime#)
+        <include refid="insert_Lock_Sequence"/>
         
     </insert>
 
-</sqlMap>
+</mapper>

@@ -1,22 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap      
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.locale">
+<mapper namespace="alfresco.locale">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Locale" type="org.alfresco.repo.domain.locale.LocaleEntity"/>
-    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_Locale" class="Locale">
+    <resultMap id="result_Locale" type="Locale">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="localeStr" column="locale_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -26,11 +18,11 @@
     <!-- Parameter Maps -->
     <!--                -->
     
-    <parameterMap id="parameter_LocaleStr" class="map">
+    <parameterMap id="parameter_LocaleStr" type="map">
         <parameter property="str" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
    
-    <parameterMap id="parameter_LocaleId" class="map">
+    <parameterMap id="parameter_LocaleId" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
    
@@ -40,9 +32,13 @@
     
     <sql id="insert_Locale_AutoIncrement">
         insert into alf_locale (version, locale_str) 
-        values (#version#, #localeStr#)
+        values (#{version}, #{localeStr})
     </sql>
     
+    <sql id="insert_Locale_Sequence">
+        insert into alf_locale (id, version, locale_str) 
+        values (#{id}, #{version}, #{localeStr})
+    </sql>
     
     <!--                -->
     <!-- Statements     -->
@@ -66,4 +62,4 @@
             locale_str = ?
     </select>
     
-</sqlMap>
+</mapper>

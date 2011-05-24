@@ -21,7 +21,7 @@ package org.alfresco.repo.domain.encoding.ibatis;
 import org.alfresco.repo.domain.encoding.AbstractEncodingDAOImpl;
 import org.alfresco.repo.domain.encoding.EncodingEntity;
 import org.alfresco.repo.domain.mimetype.MimetypeEntity;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the Mimetype DAO.
@@ -33,21 +33,23 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
 {
     private static final String SELECT_ENCODING_BY_ID = "alfresco.content.select_EncodingById";
     private static final String SELECT_ENCODING_BY_KEY = "alfresco.content.select_EncodingByKey";
-    private static final String INSERT_ENCODING = "alfresco.content.insert_Encoding";
+    private static final String INSERT_ENCODING = "alfresco.content.insert.insert_Encoding";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     @Override
     protected EncodingEntity getEncodingEntity(Long id)
     {
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setId(id);
-        encodingEntity = (EncodingEntity) template.queryForObject(SELECT_ENCODING_BY_ID, encodingEntity);
+        encodingEntity = (EncodingEntity) template.selectOne(SELECT_ENCODING_BY_ID, encodingEntity);
         // Done
         return encodingEntity;
     }
@@ -57,7 +59,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     {
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
-        encodingEntity = (EncodingEntity) template.queryForObject(SELECT_ENCODING_BY_KEY, encodingEntity);
+        encodingEntity = (EncodingEntity) template.selectOne(SELECT_ENCODING_BY_KEY, encodingEntity);
         // Could be null
         return encodingEntity;
     }
@@ -68,8 +70,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setVersion(MimetypeEntity.CONST_LONG_ZERO);
         encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
-        Long id = (Long) template.insert(INSERT_ENCODING, encodingEntity);
-        encodingEntity.setId(id);
+        template.insert(INSERT_ENCODING, encodingEntity);
         // Done
         return encodingEntity;
     }

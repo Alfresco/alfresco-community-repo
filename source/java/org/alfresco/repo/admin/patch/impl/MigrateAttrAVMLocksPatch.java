@@ -28,9 +28,9 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
 
 /**
  * Migrate AVM lock attributes (from 'alf_*attribute*' to 'alf_prop_*')
@@ -62,7 +62,7 @@ public class MigrateAttrAVMLocksPatch extends AbstractPatch
     {
         long startTime = System.currentTimeMillis();
         
-        AVMLockRowHandler handler = new AVMLockRowHandler();
+        AVMLockResultHandler handler = new AVMLockResultHandler();
         patchDAO.migrateOldAttrAVMLocks(handler);
         
         if (handler.total > 0)
@@ -79,17 +79,17 @@ public class MigrateAttrAVMLocksPatch extends AbstractPatch
     /**
      * Row handler for migrating AVM Locks
      */
-    private class AVMLockRowHandler implements RowHandler
+    private class AVMLockResultHandler implements ResultHandler
     {
         private int total = 0;
         
-        private AVMLockRowHandler()
+        private AVMLockResultHandler()
         {
         }
         @SuppressWarnings("unchecked")
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            Map<String, Object> result = (Map<String, Object>)valueObject;
+            Map<String, Object> result = (Map<String, Object>)context.getResultObject();
             
             String wpStoreId = (String)result.get("wpStoreId");
             String path = (String)result.get("relPath");

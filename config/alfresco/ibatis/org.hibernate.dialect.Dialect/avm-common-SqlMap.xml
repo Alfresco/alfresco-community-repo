@@ -1,34 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.avm">
+<mapper namespace="alfresco.avm">
     
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="AVMStore" type="org.alfresco.repo.domain.avm.AVMStoreEntity"/>
-    <typeAlias alias="AVMNode" type="org.alfresco.repo.domain.avm.AVMNodeEntity"/>
-    <typeAlias alias="AVMNodeAspect" type="org.alfresco.repo.domain.avm.AVMAspectEntity"/>
-    <typeAlias alias="AVMChildEntry" type="org.alfresco.repo.domain.avm.AVMChildEntryEntity"/>
-    <typeAlias alias="AVMVersionRoot" type="org.alfresco.repo.domain.avm.AVMVersionRootEntity"/>
-    <typeAlias alias="AVMHistoryLink" type="org.alfresco.repo.domain.avm.AVMHistoryLinkEntity"/>
-    <typeAlias alias="AVMMergeLink" type="org.alfresco.repo.domain.avm.AVMMergeLinkEntity"/>
-    <typeAlias alias="AVMVersionLayeredNodeEntry" type="org.alfresco.repo.domain.avm.AVMVersionLayeredNodeEntryEntity"/>
-    <typeAlias alias="AVMStoreProperty" type="org.alfresco.repo.domain.avm.AVMStorePropertyEntity"/>
-    <typeAlias alias="AVMNodeProperty" type="org.alfresco.repo.domain.avm.AVMNodePropertyEntity"/>
-    
-    <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
-    
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
     
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_AVMStore" class="AVMStore">
+    <resultMap id="result_AVMStore" type="AVMStore">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="nextVersion" column="next_version_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -37,22 +19,22 @@
         <result property="vers" column="vers" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_AVMStoreProperty" class="AVMStoreProperty">
+    <resultMap id="result_AVMStoreProperty" type="AVMStoreProperty">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="avmStoreId" column="avm_store_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="actualType" column="actual_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
-        <result property="persistedType" column="persisted_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="actualType" column="actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="persistedType" column="persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <result property="isMultiValued" column="multi_valued" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="booleanValue" column="boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
-        <result property="stringValue" column="string_value" jdbcType="TEXT" javaType="java.lang.String"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     
-    <resultMap id="result_AVMNode" class="AVMNode">
+    <resultMap id="result_AVMNode" type="AVMNode">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="storeNewId" column="store_new_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -67,9 +49,9 @@
         <result property="modifiedDate" column="modDate" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="accessDate" column="accessDate" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="isRoot" column="is_root" jdbcType="BIT" javaType="java.lang.Boolean"/>
-        <result property="deletedType" column="deletedType" jdbcType="INT" javaType="java.lang.Integer"/>
-        <result property="indirection" column="indirection" jdbcType="TEXT" javaType="java.lang.String"/>
-        <result property="indirectionVersion" column="indirection_version" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="deletedType" column="deletedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="indirection" column="indirection" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="indirectionVersion" column="indirection_version" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <result property="primaryIndirection" column="primary_indirection" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="opacity" column="opacity" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -79,54 +61,54 @@
         <result property="vers" column="vers" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_AVMNodeProperty" class="AVMNodeProperty">
+    <resultMap id="result_AVMNodeProperty" type="AVMNodeProperty">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="actualType" column="actual_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
-        <result property="persistedType" column="persisted_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="actualType" column="actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="persistedType" column="persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <result property="isMultiValued" column="multi_valued" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="booleanValue" column="boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <result property="longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
-        <result property="stringValue" column="string_value" jdbcType="TEXT" javaType="java.lang.String"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     
-    <resultMap id="result_AVMNodeAspect" class="AVMNodeAspect">
+    <resultMap id="result_AVMNodeAspect" type="AVMNodeAspect">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_AVMChildEntry" class="AVMChildEntry">
+    <resultMap id="result_AVMChildEntry" type="AVMChildEntry">
         <result property="parentNodeId" column="parent_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="childNodeId" column="child_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_AVMVersionRoot" class="AVMVersionRoot">
+    <resultMap id="result_AVMVersionRoot" type="AVMVersionRoot">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="storeId" column="avm_store_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="rootNodeId" column="root_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="version" column="version_id" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="version" column="version_id" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <result property="creator" column="creator" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="createdDate" column="create_date" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="tag" column="tag" jdbcType="TEXT" javaType="java.lang.String"/>
-        <result property="description" column="description" jdbcType="TEXT" javaType="java.lang.String"/>
+        <result property="tag" column="tag" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="description" column="description" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap id="result_AVMVersionLayeredNodeEntry" class="AVMVersionLayeredNodeEntry">
+    <resultMap id="result_AVMVersionLayeredNodeEntry" type="AVMVersionLayeredNodeEntry">
         <result property="versionRootId" column="version_root_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="md5sum" column="md5sum" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="path" column="path" jdbcType="TEXT" javaType="java.lang.String"/>
+        <result property="path" column="path" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap id="result_AVMHistoryLink" class="AVMHistoryLink">
+    <resultMap id="result_AVMHistoryLink" type="AVMHistoryLink">
         <result property="ancestorNodeId" column="ancestor" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="descendentNodeId" column="descendent" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_AVMMergeLink" class="AVMMergeLink">
+    <resultMap id="result_AVMMergeLink" type="AVMMergeLink">
         <result property="mergeFromNodeId" column="mfrom" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="mergeToNodeId" column="mto" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
@@ -135,49 +117,49 @@
     <!-- Parameter Maps -->
     <!--                -->
     
-    <parameterMap id="parameter_IdMap" class="map">
+    <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_BoolMap" class="map">
+    <parameterMap id="parameter_BoolMap" type="map">
         <parameter property="bool" jdbcType="BIT" javaType="java.lang.Boolean"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdFromMap" class="map">
+    <parameterMap id="parameter_IdFromMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="from" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdToMap" class="map">
+    <parameterMap id="parameter_IdToMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="to" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdFromToMap" class="map">
+    <parameterMap id="parameter_IdFromToMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="from" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="to" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_KeyPattern" class="map">
+    <parameterMap id="parameter_KeyPattern" type="map">
         <parameter property="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdAndKeyPattern" class="map">
+    <parameterMap id="parameter_IdAndKeyPattern" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <parameter property="localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdPatternMap" class="map">
+    <parameterMap id="parameter_IdPatternMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="pattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
-    <parameterMap id="parameter_NodePropertyPatternMap" class="AVMNodeProperty">
-        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
-        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+    <parameterMap id="parameter_NodePropertyPatternMap" type="AVMNodeProperty">
+        <parameter property="actualType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -189,9 +171,9 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_StorePropertyPatternMap" class="AVMStoreProperty">
-        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
-        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+    <parameterMap id="parameter_StorePropertyPatternMap" type="AVMStoreProperty">
+        <parameter property="actualType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -203,10 +185,10 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdStorePropertyPatternMap" class="AVMStoreProperty">
+    <parameterMap id="parameter_IdStorePropertyPatternMap" type="AVMStoreProperty">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
-        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="actualType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
         <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -218,7 +200,7 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameterMap_delete_PropertyUniqueContextByValues" class="map">
+    <parameterMap id="parameterMap_delete_PropertyUniqueContextByValues" type="map">
         <parameter property="value1PropId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="value2PropId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="value3LikeStr" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -233,32 +215,32 @@
     
     <sql id="insert_AVMStore_AutoIncrement">
         insert into avm_stores (next_version_id, name, vers, current_root_id, acl_id)
-        values (#version#, #name#, 0, null, null)
+        values (#{version}, #{name}, 0, null, null)
     </sql>
     
     <sql id="insert_AVMStore_Sequence">
         insert into avm_stores (id, next_version_id, name, vers, current_root_id, acl_id)
-        values (#id#, #version#, #name#, 0, null, null)
+        values (#{id}, #{version}, #{name}, 0, null, null)
     </sql>
     
     <sql id="insert_AVMNode_AutoIncrement">
         insert into avm_nodes (class_type, deletedType, version_id, vers, store_new_id, acl_id, guid, owner, creator, createDate, lastModifier, modDate, accessDate, is_root, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
-        values (#classType#, #deletedType#, #version#, 0, #storeNewId#, #aclId#, #guid#, #owner#, #creator#, #createdDate#, #modifier#, #modifiedDate#, #accessDate#, #isRoot#, #layerId#, #indirection#, #indirectionVersion#, #primaryIndirection#, #opacity#, #contentUrl#, #mimetype#, #encoding#, #length#)
+        values (#{classType}, #{deletedType}, #{version}, 0, #{storeNewId}, #{aclId}, #{guid}, #{owner}, #{creator}, #{createdDate}, #{modifier}, #{modifiedDate}, #{accessDate}, #{isRoot}, #{layerId}, #{indirection}, #{indirectionVersion}, #{primaryIndirection}, #{opacity}, #{contentUrl}, #{mimetype}, #{encoding}, #{length})
     </sql>
     
     <sql id="insert_AVMNode_Sequence">
         insert into avm_nodes (id, class_type, deletedType, version_id, vers, store_new_id, acl_id, guid, owner, creator, createDate, lastModifier, modDate, accessDate, is_root, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
-        values (#id#, #classType#, #deletedType#, #version#, 0, #storeNewId#, #aclId#, #guid#, #owner#, #creator#, #createdDate#, #modifier#, #modifiedDate#, #accessDate#, #isRoot#, #layerId#, #indirection#, #indirectionVersion#, #primaryIndirection#, #opacity#, #contentUrl#, #mimetype#, #encoding#, #length#)
+        values (#{id}, #{classType}, #{deletedType}, #{version}, 0, #{storeNewId}, #{aclId}, #{guid}, #{owner}, #{creator}, #{createdDate}, #{modifier}, #{modifiedDate}, #{accessDate}, #{isRoot}, #{layerId}, #{indirection}, #{indirectionVersion}, #{primaryIndirection}, #{opacity}, #{contentUrl}, #{mimetype}, #{encoding}, #{length})
     </sql>
     
     <sql id="insert_AVMVersionRoot_AutoIncrement">
         insert into avm_version_roots (avm_store_id, root_id, version_id, creator, create_date, tag, description)
-        values (#storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
+        values (#{storeId}, #{rootNodeId}, #{version}, #{creator}, #{createdDate}, #{tag}, #{description})
     </sql>
     
     <sql id="insert_AVMVersionRoot_Sequence">
         insert into avm_version_roots (id, avm_store_id, root_id, version_id, creator, create_date, tag, description)
-        values (#id#, #storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
+        values (#{id}, #{storeId}, #{rootNodeId}, #{version}, #{creator}, #{createdDate}, #{tag}, #{description})
     </sql>
     
     <sql id="insert_AVMStoreProperty_AutoIncrement">
@@ -278,27 +260,27 @@
     
     <insert id="insert_AVMNodeAspect">
         insert into avm_aspects (node_id, qname_id)
-        values (#nodeId#, #qnameId#)
+        values (#{nodeId}, #{qnameId})
     </insert>
     
     <insert id="insert_AVMChildEntry">
         insert into avm_child_entries (parent_id, name, child_id)
-        values (#parentNodeId#, #name#, #childNodeId#)
+        values (#{parentNodeId}, #{name}, #{childNodeId})
     </insert>
     
     <insert id="insert_AVMHistoryLink">
         insert into avm_history_links (ancestor, descendent)
-        values (#ancestorNodeId#, #descendentNodeId#)
+        values (#{ancestorNodeId}, #{descendentNodeId})
     </insert>
     
     <insert id="insert_AVMMergeLink">
         insert into avm_merge_links (mfrom, mto)
-        values (#mergeFromNodeId#, #mergeToNodeId#)
+        values (#{mergeFromNodeId}, #{mergeToNodeId})
     </insert>
     
     <insert id="insert_AVMVersionLayeredNodeEntry">
         insert into avm_version_layered_node_entry (version_root_id, md5sum, path)
-        values (#versionRootId#, #md5sum#, #path#)
+        values (#{versionRootId}, #{md5sum}, #{path})
     </insert>
 
     <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
@@ -311,22 +293,22 @@
     <!--                      -->
     
     <!-- Get AVMStore by name -->
-    <select id="select_AVMStoreByKey" parameterClass="AVMStore" resultMap="result_AVMStore">
+    <select id="select_AVMStoreByKey" parameterType="AVMStore" resultMap="result_AVMStore">
         select
             *
         from
             avm_stores
         where
-            name = #name#
+            name = #{name}
     </select>
     
-    <select id="select_AVMStoreByKeyL" parameterClass="AVMStore" resultMap="result_AVMStore">
+    <select id="select_AVMStoreByKeyL" parameterType="AVMStore" resultMap="result_AVMStore">
         select
             *
         from
             avm_stores
         where
-            lower(name) = lower(#name#)
+            lower(name) = lower(#{name})
     </select>
     
     <!-- Get AVMStore by ID -->
@@ -358,20 +340,20 @@
     </select>
     
     <!-- Optimistic update of the store -->
-    <update id="update_AVMStore" parameterClass="AVMStore">
+    <update id="update_AVMStore" parameterType="AVMStore">
         update
             avm_stores
         set
-            next_version_id = #nextVersion#,
-            name = #name#,
-            current_root_id = #rootNodeId#,
-            acl_id = #aclId#,
-            vers = #vers#
+            next_version_id = #{nextVersion},
+            name = #{name,jdbcType=VARCHAR},
+            current_root_id = #{rootNodeId,jdbcType=BIGINT},
+            acl_id = #{aclId,jdbcType=BIGINT},
+            vers = #{vers}
         where
-            id = #id#
-        <isGreaterThan property="vers" compareValue="0">
-            and vers = (#vers#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="vers gt 0">
+            and vers = (#{vers} - 1)
+        </if>
     </update>
     
     <!-- Delete AVMStore -->
@@ -387,14 +369,14 @@
     <!-- AVM Store Property Statements -->
     <!--                               -->
     
-    <select id="select_AVMStoreProperty" parameterClass="AVMStoreProperty" resultMap="result_AVMStoreProperty">
+    <select id="select_AVMStoreProperty" parameterType="AVMStoreProperty" resultMap="result_AVMStoreProperty">
         select
             *
         from
             avm_store_properties
         where
-            avm_store_id = #avmStoreId# and
-            qname_id = #qnameId#
+            avm_store_id = #{avmStoreId} and
+            qname_id = #{qnameId}
     </select>
     
     <select id="select_AVMStoreProperties" parameterMap="parameter_IdMap" resultMap="result_AVMStoreProperty">
@@ -475,13 +457,13 @@
             qname_id = ?
     </update>
     
-    <delete id="delete_AVMStoreProperty" parameterClass="AVMStoreProperty">
+    <delete id="delete_AVMStoreProperty" parameterType="AVMStoreProperty">
         delete
         from
             avm_store_properties
         where
-            avm_store_id = #avmStoreId# and
-            qname_id = #qnameId#
+            avm_store_id = #{avmStoreId} and
+            qname_id = #{qnameId}
     </delete>
     
     <delete id="delete_AVMStoreProperties" parameterMap="parameter_IdMap">
@@ -514,7 +496,7 @@
             store_new_id = ?
     </select>
     
-    <select id="select_AVMNodes_IDs_newLayeredInStore" parameterMap="parameter_IdMap" resultClass="long">
+    <select id="select_AVMNodes_IDs_newLayeredInStore" parameterMap="parameter_IdMap" resultType="long">
         select
             id
         from
@@ -553,7 +535,7 @@
             class_type = 'layeredfile'
     </select>
     
-    <select id="select_ContentUrlsForPlainFiles" resultClass="String">
+    <select id="select_ContentUrlsForPlainFiles" resultType="String">
         select
            content_url
         from
@@ -573,90 +555,90 @@
     </update>
     
     <!-- Optimistic update of the node -->
-    <update id="update_AVMNode" parameterClass="AVMNode">
+    <update id="update_AVMNode" parameterType="AVMNode">
         update
             avm_nodes
         set
-            store_new_id = #storeNewId#,
-            acl_id = #aclId#,
-            layer_id = #layerId#,
-            version_id = #version#,
-            class_type = #classType#,
-            deletedType = #deletedType#,
-            owner = #owner#,
-            modDate = #modifiedDate#,
-            accessDate = #accessDate#,
-            is_root = #isRoot#,
-            lastModifier = #modifier#,
-            indirection = #indirection#,
-            indirection_version = #indirectionVersion#,
-            primary_indirection = #primaryIndirection#,
-            opacity = #opacity#,
-            content_url = #contentUrl#,
-            mime_type = #mimetype#,
-            encoding = #encoding#,
-            length = #length#,
-            guid = #guid#,
-            vers = #vers#
+            store_new_id = #{storeNewId,jdbcType=BIGINT},
+            acl_id = #{aclId,jdbcType=BIGINT},
+            layer_id = #{layerId,jdbcType=BIGINT},
+            version_id = #{version},
+            class_type = #{classType},
+            deletedType = #{deletedType,jdbcType=INTEGER},
+            owner = #{owner},
+            modDate = #{modifiedDate},
+            accessDate = #{accessDate},
+            is_root = #{isRoot,jdbcType=BIT},
+            lastModifier = #{modifier},
+            indirection = #{indirection,jdbcType=VARCHAR},
+            indirection_version = #{indirectionVersion,jdbcType=INTEGER},
+            primary_indirection = #{primaryIndirection,jdbcType=BIT},
+            opacity = #{opacity,jdbcType=BIT},
+            content_url = #{contentUrl,jdbcType=VARCHAR},
+            mime_type = #{mimetype,jdbcType=VARCHAR},
+            encoding = #{encoding,jdbcType=VARCHAR},
+            length = #{length,jdbcType=BIGINT},
+            guid = #{guid,jdbcType=VARCHAR},
+            vers = #{vers}
         where
-            id = #id#
-        <isGreaterThan property="vers" compareValue="0">
-            and vers = (#vers#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="vers gt 0">
+            and vers = (#{vers} - 1)
+        </if>
     </update>
     
-    <update id="update_AVMNode_modTimeAndGuid" parameterClass="AVMNode">
+    <update id="update_AVMNode_modTimeAndGuid" parameterType="AVMNode">
         update
             avm_nodes
         set
-            modDate = #modifiedDate#,
-            guid = #guid#,
-            vers = #vers#
+            modDate = #{modifiedDate},
+            guid = #{guid,jdbcType=VARCHAR},
+            vers = #{vers}
         where
-            id = #id#
-        <isGreaterThan property="vers" compareValue="0">
-            and vers = (#vers#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="vers gt 0">
+            and vers = (#{vers} - 1)
+        </if>
     </update>
     
-    <update id="update_AVMNode_modTimeAndContentData" parameterClass="AVMNode">
+    <update id="update_AVMNode_modTimeAndContentData" parameterType="AVMNode">
         update
             avm_nodes
         set
-            modDate = #modifiedDate#,
-            content_url = #contentUrl#,
-            mime_type = #mimetype#,
-            encoding = #encoding#,
-            length = #length#,
-            vers = #vers#
+            modDate = #{modifiedDate},
+            content_url = #{contentUrl,jdbcType=VARCHAR},
+            mime_type = #{mimetype,jdbcType=VARCHAR},
+            encoding = #{encoding,jdbcType=VARCHAR},
+            length = #{length,jdbcType=BIGINT},
+            vers = #{vers}
         where
-            id = #id#
-        <isGreaterThan property="vers" compareValue="0">
-            and vers = (#vers#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="vers gt 0">
+            and vers = (#{vers} - 1)
+        </if>
     </update>
     
     <!-- for patch -->
-    <update id="update_AVMNodeList_nullifyAcl" parameterClass="list">
+    <update id="update_AVMNodeList_nullifyAcl" parameterType="list">
         update
             avm_nodes set acl_id = null
         where 
             acl_id is not null
             and id in 
-            <iterate open="(" close=")" conjunction=",">
-                #[]#
-            </iterate>
+            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+               #{item}
+            </foreach>
     </update>
     
     <!-- for patch -->
-    <update id="update_AVMNodeList_setAcl" parameterClass="IdListOfIdsParam">
+    <update id="update_AVMNodeList_setAcl" parameterType="IdListOfIdsParam">
         update
-            avm_nodes set acl_id = #id#
+            avm_nodes set acl_id = #{id,jdbcType=BIGINT}
         where 
             id in
-            <iterate property="listOfIds" open="(" close=")" conjunction=",">
-                #listOfIds[]#
-            </iterate>
+            <foreach item="item" index="index" collection="listOfIds" open="(" separator="," close=")"> 
+               #{item}
+            </foreach>
     </update>
     
     <delete id="delete_AVMNode" parameterMap="parameter_IdMap">
@@ -671,14 +653,14 @@
     <!-- AVM Node Property Statements -->
     <!--                              -->
     
-    <select id="select_AVMNodeProperty" parameterClass="AVMNodeProperty" resultMap="result_AVMNodeProperty">
+    <select id="select_AVMNodeProperty" parameterType="AVMNodeProperty" resultMap="result_AVMNodeProperty">
         select
             *
         from
             avm_node_properties
         where
-            node_id = #nodeId# and
-            qname_id = #qnameId#
+            node_id = #{nodeId} and
+            qname_id = #{qnameId}
     </select>
     
     <select id="select_AVMNodeProperties" parameterMap="parameter_IdMap" resultMap="result_AVMNodeProperty">
@@ -709,13 +691,13 @@
             qname_id = ?
     </update>
     
-    <delete id="delete_AVMNodeProperty" parameterClass="AVMNodeProperty">
+    <delete id="delete_AVMNodeProperty" parameterType="AVMNodeProperty">
         delete
         from
             avm_node_properties
         where
-            node_id = #nodeId# and
-            qname_id = #qnameId#
+            node_id = #{nodeId} and
+            qname_id = #{qnameId}
     </delete>
     
     <delete id="delete_AVMNodeProperties" parameterMap="parameter_IdMap">
@@ -730,7 +712,7 @@
     <!-- AVM VersionRoot Statements -->
     <!--                            -->
     
-    <select id="select_AVMVersionRootMaxVersionID" parameterMap="parameter_IdMap" resultClass="int">
+    <select id="select_AVMVersionRootMaxVersionID" parameterMap="parameter_IdMap" resultType="int">
         select
              max(version_id)
         from
@@ -739,19 +721,19 @@
             avm_store_id = ?
     </select>
     
-    <select id="select_AVMVersionRootMaxVersion" parameterClass="AVMStore" resultMap="result_AVMVersionRoot">
+    <select id="select_AVMVersionRootMaxVersion" parameterType="AVMStore" resultMap="result_AVMVersionRoot">
         select
             *
         from
             avm_version_roots
         where
-            avm_store_id = #id#
+            avm_store_id = #{id}
             and version_id = (select 
                                   max(vr.version_id)
                               from 
                                   avm_version_roots vr
                               where 
-                                  vr.avm_store_id = #id#
+                                  vr.avm_store_id = #{id}
                              )
     </select>
     
@@ -773,14 +755,14 @@
             root_id = ?
     </select>
     
-    <select id="select_AVMVersionRootByStoreVersion" parameterClass="AVMVersionRoot" resultMap="result_AVMVersionRoot">
+    <select id="select_AVMVersionRootByStoreVersion" parameterType="AVMVersionRoot" resultMap="result_AVMVersionRoot">
         select
             *
         from
             avm_version_roots
         where
-            avm_store_id = #storeId# and
-            version_id = #version#
+            avm_store_id = #{storeId} and
+            version_id = #{version}
     </select>
     
     <select id="select_AVMVersionRootsByStoreId" parameterMap="parameter_IdMap" resultMap="result_AVMVersionRoot">
@@ -866,14 +848,14 @@
     </select>
     
     <!-- Optimistic update of the version root -->
-    <update id="update_AVMVersionRoot" parameterClass="AVMVersionRoot">
+    <update id="update_AVMVersionRoot" parameterType="AVMVersionRoot">
         update
             avm_version_roots
         set
-            tag = #tag#,
-            description = #description#
+            tag = #{tag},
+            description = #{description}
         where
-            id = #id#
+            id = #{id}
     </update>
     
     <delete id="delete_AVMVersionRoot" parameterMap="parameter_IdMap">
@@ -910,7 +892,7 @@
     <!--                            -->
     
     <!-- Get AVMNodeAspects for given AVMNode ID -->
-    <select id="select_AVMNodeAspects" parameterMap="parameter_IdMap" resultClass="long">
+    <select id="select_AVMNodeAspects" parameterMap="parameter_IdMap" resultType="long">
         select
             qname_id
         from
@@ -920,13 +902,13 @@
     </select>
     
     <!-- Delete AVMNodeAspect -->
-    <delete id="delete_AVMNodeAspect" parameterClass="AVMNodeAspect">
+    <delete id="delete_AVMNodeAspect" parameterType="AVMNodeAspect">
         delete
         from
             avm_aspects
         where
-            node_id = #nodeId# and
-            qname_id = #qnameId#
+            node_id = #{nodeId} and
+            qname_id = #{qnameId}
     </delete>
     
     <delete id="delete_AVMNodeAspects" parameterMap="parameter_IdMap">
@@ -942,26 +924,26 @@
     <!--                           -->
     
     <!-- Get AVMChildEntry -->
-    <select id="select_AVMChildEntry" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+    <select id="select_AVMChildEntry" parameterType="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
             *
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            name = #name# and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            name = #{name} and
+            child_id = #{childNodeId}
     </select>
     
-    <select id="select_AVMChildEntryL" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+    <select id="select_AVMChildEntryL" parameterType="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
             *
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            lower(name) = lower(#name#) and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            lower(name) = lower(#{name}) and
+            child_id = #{childNodeId}
     </select>
     
     <!-- Get AVMNodeChildEntries by parent node ID -->
@@ -1006,98 +988,98 @@
     </select>
     
     <!-- Get AVMChildEntry by parent node ID and name -->
-    <select id="select_AVMChildEntryByParentAndName" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+    <select id="select_AVMChildEntryByParentAndName" parameterType="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
             *
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            name = #name#
+            parent_id = #{parentNodeId} and
+            name = #{name}
     </select>
     
-    <select id="select_AVMChildEntryByParentAndNameL" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+    <select id="select_AVMChildEntryByParentAndNameL" parameterType="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
             *
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            lower(name) = lower(#name#)
+            parent_id = #{parentNodeId} and
+            lower(name) = lower(#{name})
     </select>
     
     <!-- Get AVMChildEntry by parent node ID and child node ID -->
-    <select id="select_AVMChildEntryByParentAndChild" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+    <select id="select_AVMChildEntryByParentAndChild" parameterType="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
             *
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            child_id = #{childNodeId}
     </select>
     
     <!-- Remove AVMChildEntry -->
     <!-- unused
-    <delete id="delete_AVMChildEntry" parameterClass="AVMChildEntry">
+    <delete id="delete_AVMChildEntry" parameterType="AVMChildEntry">
         delete
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            name = #name# and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            name = #{name} and
+            child_id = #{childNodeId#
     </delete>
     
-    <delete id="delete_AVMChildEntryL" parameterClass="AVMChildEntry">
+    <delete id="delete_AVMChildEntryL" parameterType="AVMChildEntry">
         delete
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
+            parent_id = #{parentNodeId} and
             lower(name) = lower(#name#) and
-            child_id = #childNodeId#
+            child_id = #{childNodeId#
     </delete>
     -->
 
     <!-- Update child entry name (currently used for specific rename 'case' only) -->
-    <update id="update_AVMChildEntry" parameterClass="AVMChildEntry">
+    <update id="update_AVMChildEntry" parameterType="AVMChildEntry">
         update
             avm_child_entries
         set
-            name = #name#
+            name = #{name}
         where
-            parent_id = #parentNodeId# and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            child_id = #{childNodeId}
     </update>
     
     <!-- Remove AVMChildEntry by parent node ID and name -->
-    <delete id="delete_AVMChildEntryByParentAndName" parameterClass="AVMChildEntry">
+    <delete id="delete_AVMChildEntryByParentAndName" parameterType="AVMChildEntry">
         delete
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            name = #name#
+            parent_id = #{parentNodeId} and
+            name = #{name}
     </delete>
     
-    <delete id="delete_AVMChildEntryByParentAndNameL" parameterClass="AVMChildEntry">
+    <delete id="delete_AVMChildEntryByParentAndNameL" parameterType="AVMChildEntry">
         delete
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            lower(name) = lower(#name#)
+            parent_id = #{parentNodeId} and
+            lower(name) = lower(#{name})
     </delete>
     
     <!-- Remove AVMChildEntry by parent node ID and child node ID -->
-    <delete id="delete_AVMChildEntryByParentAndChild" parameterClass="AVMChildEntry">
+    <delete id="delete_AVMChildEntryByParentAndChild" parameterType="AVMChildEntry">
         delete
         from
             avm_child_entries
         where
-            parent_id = #parentNodeId# and
-            child_id = #childNodeId#
+            parent_id = #{parentNodeId} and
+            child_id = #{childNodeId}
     </delete>
     
     <!-- Remove AVMNodeChildEntries -->
@@ -1142,13 +1124,13 @@
             mto = ?
     </select>
     
-    <delete id="delete_AVMMergeLink" parameterClass="AVMMergeLink">
+    <delete id="delete_AVMMergeLink" parameterType="AVMMergeLink">
         delete
         from
             avm_merge_links
         where
-            mfrom = #mergeFromNodeId# and
-            mto = #mergeToNodeId#
+            mfrom = #{mergeFromNodeId} and
+            mto = #{mergeToNodeId}
     </delete>
     
     <!--                            -->
@@ -1173,23 +1155,23 @@
             descendent = ?
     </select>
     
-    <select id="select_AVMHistoryLink" parameterClass="AVMHistoryLink" resultMap="result_AVMHistoryLink">
+    <select id="select_AVMHistoryLink" parameterType="AVMHistoryLink" resultMap="result_AVMHistoryLink">
         select
             *
         from
             avm_history_links
         where
-            ancestor = #ancestorNodeId# and
-            descendent = #descendentNodeId#
+            ancestor = #{ancestorNodeId} and
+            descendent = #{descendentNodeId}
     </select>
     
-    <delete id="delete_AVMHistoryLink" parameterClass="AVMHistoryLink">
+    <delete id="delete_AVMHistoryLink" parameterType="AVMHistoryLink">
         delete
         from
             avm_history_links
         where
-            ancestor = #ancestorNodeId# and
-            descendent = #descendentNodeId#
+            ancestor = #{ancestorNodeId} and
+            descendent = #{descendentNodeId}
     </delete>
     
     
@@ -1290,4 +1272,4 @@
         )
     </delete>
     
-</sqlMap>
+</mapper>

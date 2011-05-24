@@ -20,8 +20,8 @@ package org.alfresco.repo.domain.mimetype.ibatis;
 
 import org.alfresco.repo.domain.mimetype.AbstractMimetypeDAOImpl;
 import org.alfresco.repo.domain.mimetype.MimetypeEntity;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 /**
  * iBatis-specific implementation of the Mimetype DAO.
@@ -33,22 +33,24 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
 {
     private static final String SELECT_MIMETYPE_BY_ID = "alfresco.content.select_MimetypeById";
     private static final String SELECT_MIMETYPE_BY_KEY = "alfresco.content.select_MimetypeByKey";
-    private static final String INSERT_MIMETYPE = "alfresco.content.insert_Mimetype";
+    private static final String INSERT_MIMETYPE = "alfresco.content.insert.insert_Mimetype";
     private static final String UPDATE_MIMETYPE = "alfresco.content.update_Mimetype";
     
-    private SqlMapClientTemplate template;
-
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
-
+    
+    
     @Override
     protected MimetypeEntity getMimetypeEntity(Long id)
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setId(id);
-        mimetypeEntity = (MimetypeEntity) template.queryForObject(SELECT_MIMETYPE_BY_ID, mimetypeEntity);
+        mimetypeEntity = (MimetypeEntity) template.selectOne(SELECT_MIMETYPE_BY_ID, mimetypeEntity);
         // Done
         return mimetypeEntity;
     }
@@ -58,7 +60,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setMimetype(mimetype == null ? null : mimetype.toLowerCase());
-        mimetypeEntity = (MimetypeEntity) template.queryForObject(SELECT_MIMETYPE_BY_KEY, mimetypeEntity);
+        mimetypeEntity = (MimetypeEntity) template.selectOne(SELECT_MIMETYPE_BY_KEY, mimetypeEntity);
         // Could be null
         return mimetypeEntity;
     }
@@ -69,8 +71,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setVersion(MimetypeEntity.CONST_LONG_ZERO);
         mimetypeEntity.setMimetype(mimetype == null ? null : mimetype.toLowerCase());
-        Long id = (Long) template.insert(INSERT_MIMETYPE, mimetypeEntity);
-        mimetypeEntity.setId(id);
+        template.insert(INSERT_MIMETYPE, mimetypeEntity);
         // Done
         return mimetypeEntity;
     }

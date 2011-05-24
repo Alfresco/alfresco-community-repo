@@ -26,7 +26,7 @@ import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.domain.avm.AVMVersionLayeredNodeEntryEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
 import org.alfresco.repo.domain.avm.AbstractAVMVersionRootDAOImpl;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMVersionRoot DAO
@@ -36,7 +36,7 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
 {
-    private static final String INSERT_AVM_VERSION_ROOT ="alfresco.avm.insert_AVMVersionRoot";
+    private static final String INSERT_AVM_VERSION_ROOT ="alfresco.avm.insert.insert_AVMVersionRoot";
     private static final String DELETE_AVM_VERSION_ROOT ="alfresco.avm.delete_AVMVersionRoot";
     private static final String UPDATE_AVM_VERSION_ROOT ="alfresco.avm.update_AVMVersionRoot";
     
@@ -54,30 +54,30 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     private static final String SELECT_AVM_VERSION_ROOTS_BY_VERSION_FROM ="alfresco.avm.select_AVMVersionRootsByVersionFrom";
     private static final String SELECT_AVM_VERSION_ROOTS_BY_VERSIONS_BETWEEN ="alfresco.avm.select_AVMVersionRootsByVersionsBetween";
     
-    private static final String INSERT_AVM_VERSION_LAYERED_NODE_ENTRY ="alfresco.avm.insert_AVMVersionLayeredNodeEntry";
+    private static final String INSERT_AVM_VERSION_LAYERED_NODE_ENTRY ="alfresco.avm.insert.insert_AVMVersionLayeredNodeEntry";
     private static final String DELETE_AVM_VERSION_LAYERED_NODE_ENTRIES ="alfresco.avm.delete_AVMVersionLayeredNodeEntries";
     private static final String SELECT_AVM_VERSION_LAYERED_NODE_ENTRIES ="alfresco.avm.select_AVMVersionLayeredNodeEntries";
     
     
-    private SqlMapClientTemplate template;
+    private SqlSessionTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
+    
     
     @Override
     protected AVMVersionRootEntity createVersionRootEntity(AVMVersionRootEntity newVersionRootEntity)
     {
-        Long id = (Long) template.insert(INSERT_AVM_VERSION_ROOT, newVersionRootEntity);
-        newVersionRootEntity.setId(id);
+        template.insert(INSERT_AVM_VERSION_ROOT, newVersionRootEntity);
         return newVersionRootEntity;
     }
     
     @Override
-    protected void updateVersionRootEntity(AVMVersionRootEntity updateVersionRootEntity)
+    protected int updateVersionRootEntity(AVMVersionRootEntity updateVersionRootEntity)
     {
-        template.update(UPDATE_AVM_VERSION_ROOT, updateVersionRootEntity, 1);
+        return template.update(UPDATE_AVM_VERSION_ROOT, updateVersionRootEntity);
     }
     
     @Override
@@ -85,7 +85,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         AVMStoreEntity storeEntity = new AVMStoreEntity();
         storeEntity.setId(storeId);
-        return (AVMVersionRootEntity) template.queryForObject(SELECT_AVM_VERSION_ROOT_MAX_VERSION, storeEntity);
+        return (AVMVersionRootEntity) template.selectOne(SELECT_AVM_VERSION_ROOT_MAX_VERSION, storeEntity);
     }
     
     @Override
@@ -93,7 +93,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
-        Integer maxVersionId = (Integer) template.queryForObject(SELECT_AVM_VERSION_ROOT_MAX_VERSION_ID, params);
+        Integer maxVersionId = (Integer) template.selectOne(SELECT_AVM_VERSION_ROOT_MAX_VERSION_ID, params);
         if (maxVersionId == null)
         {
             return null;
@@ -106,7 +106,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", vrEntityId);
-        return (AVMVersionRootEntity) template.queryForObject(SELECT_AVM_VERSION_ROOT_BY_ID, params);
+        return (AVMVersionRootEntity) template.selectOne(SELECT_AVM_VERSION_ROOT_BY_ID, params);
     }
     
     @Override
@@ -116,7 +116,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
         vrEntity.setStoreId(storeId);
         vrEntity.setVersion(version);
         
-        return (AVMVersionRootEntity) template.queryForObject(SELECT_AVM_VERSION_ROOT_BY_STORE_VERSION, vrEntity);
+        return (AVMVersionRootEntity) template.selectOne(SELECT_AVM_VERSION_ROOT_BY_STORE_VERSION, vrEntity);
     }
     
     @Override
@@ -124,7 +124,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", rootNodeId);
-        return (AVMVersionRootEntity) template.queryForObject(SELECT_AVM_VERSION_ROOT_BY_ROOT_NODE_ID, params);
+        return (AVMVersionRootEntity) template.selectOne(SELECT_AVM_VERSION_ROOT_BY_ROOT_NODE_ID, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -133,7 +133,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", storeId);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_STORE_ID, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_STORE_ID, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -142,7 +142,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("to", to);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_DATE_TO, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_DATE_TO, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -151,7 +151,7 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("from", from);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_DATE_FROM, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_DATE_FROM, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -161,9 +161,10 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
         params.put("id", storeId);
         params.put("from", from);
         params.put("to", to);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_DATES_BETWEEN, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_DATES_BETWEEN, params);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     protected List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsBetween(long storeId, long from, long to)
     {
@@ -171,25 +172,27 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
         params.put("id", storeId);
         params.put("from", from);
         params.put("to", to);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_VERSIONS_BETWEEN, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_VERSIONS_BETWEEN, params);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsFrom(long storeId, long from)
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("from", from);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_VERSION_FROM, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_VERSION_FROM, params);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsTo(long storeId, long to)
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
         params.put("id", storeId);
         params.put("to", to);
-        return (List<AVMVersionRootEntity>) template.queryForList(SELECT_AVM_VERSION_ROOTS_BY_VERSION_TO, params);
+        return (List<AVMVersionRootEntity>) template.selectList(SELECT_AVM_VERSION_ROOTS_BY_VERSION_TO, params);
     }
 
     @Override
@@ -225,6 +228,6 @@ public class AVMVersionRootDAOImpl extends AbstractAVMVersionRootDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", versionRootId);
-        return (List<AVMVersionLayeredNodeEntryEntity>) template.queryForList(SELECT_AVM_VERSION_LAYERED_NODE_ENTRIES, params);
+        return (List<AVMVersionLayeredNodeEntryEntity>) template.selectList(SELECT_AVM_VERSION_LAYERED_NODE_ENTRIES, params);
     }
 }

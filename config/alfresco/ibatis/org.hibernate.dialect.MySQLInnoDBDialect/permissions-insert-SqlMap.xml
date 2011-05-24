@@ -1,65 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.permissions">
+<mapper namespace="alfresco.permissions.insert">
 
-    <insert id="insert_Acl" parameterClass="Acl">
+    <insert id="insert_Acl" parameterType="Acl" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_Acl_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_AclMember" parameterClass="AclMember">
+    <insert id="insert_AclMember" parameterType="AclMember" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_AclMember_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_AclChangeSet" parameterClass="AclChangeSet">
+    <insert id="insert_AclChangeSet" parameterType="AclChangeSet" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_AclChangeSet_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_Ace" parameterClass="Ace">
+    <insert id="insert_Ace" parameterType="Ace" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_Ace_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_AceContext" parameterClass="AceContext">
+    <insert id="insert_AceContext" parameterType="AceContext" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_AceContext_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_Permission" parameterClass="Permission">
+    <insert id="insert_Permission" parameterType="Permission" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_Permission_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_Authority" parameterClass="Authority">
+    <insert id="insert_Authority" parameterType="Authority" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_Authority_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-    <insert id="insert_AuthorityAlias" parameterClass="AuthorityAlias">
+    <insert id="insert_AuthorityAlias" parameterType="AuthorityAlias" useGeneratedKeys="true" keyProperty="id">
         <include refid="insert_AuthorityAlias_AutoIncrement"/>
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            KEY_COLUMN:GENERATED_KEY
-        </selectKey>
     </insert>
     
-</sqlMap>
+</mapper>

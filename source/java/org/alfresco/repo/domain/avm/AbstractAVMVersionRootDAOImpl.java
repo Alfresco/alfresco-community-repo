@@ -94,7 +94,12 @@ public abstract class AbstractAVMVersionRootDAOImpl implements AVMVersionRootDAO
         ParameterCheck.mandatory("vrEntity.id", vrEntity.getId());
         ParameterCheck.mandatory("vrEntity.version", vrEntity.getVersion());
         
-        updateVersionRootEntity(vrEntity);
+        int updated = updateVersionRootEntity(vrEntity);
+        if (updated != 1)
+        {
+            // unexpected number of rows affected
+            throw new ConcurrencyFailureException("Incorrect number of rows affected for updateVersionRoot: " + vrEntity + ": expected 1, actual " + updated);
+        }
         
         // Cache it
         vrEntityCache.put(new Pair<Long, Integer>(vrEntity.getStoreId(), vrEntity.getVersion()), vrEntity.getId());
@@ -231,7 +236,7 @@ public abstract class AbstractAVMVersionRootDAOImpl implements AVMVersionRootDAO
     }
     
     protected abstract AVMVersionRootEntity createVersionRootEntity(AVMVersionRootEntity vrEntity);
-    protected abstract void updateVersionRootEntity(AVMVersionRootEntity updateVersionRootEntity);
+    protected abstract int updateVersionRootEntity(AVMVersionRootEntity updateVersionRootEntity);
     protected abstract int deleteVersionRootEntity(long vrEntityId);
     protected abstract AVMVersionRootEntity getVersionRootEntityMaxVersion(long storeId);
     protected abstract Long getVersionRootEntityMaxVersionId(long storeId);

@@ -1,29 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE sqlMap
-    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="alfresco.permissions">
+<mapper namespace="alfresco.permissions">
 
-    <!--                -->
-    <!-- Type Defs      -->
-    <!--                -->
-    
-    <typeAlias alias="Acl" type="org.alfresco.repo.domain.permissions.AclEntity"/>
-    <typeAlias alias="AclMember" type="org.alfresco.repo.domain.permissions.AclMemberEntity"/>
-    <typeAlias alias="AclChangeSet" type="org.alfresco.repo.domain.permissions.AclChangeSetEntity"/>
-    <typeAlias alias="Ace" type="org.alfresco.repo.domain.permissions.AceEntity"/>
-    <typeAlias alias="AceContext" type="org.alfresco.repo.domain.permissions.AceContextEntity"/>
-    <typeAlias alias="Permission" type="org.alfresco.repo.domain.permissions.PermissionEntity"/>
-    <typeAlias alias="Authority" type="org.alfresco.repo.domain.permissions.AuthorityEntity"/>
-    <typeAlias alias="AuthorityAlias" type="org.alfresco.repo.domain.permissions.AuthorityAliasEntity"/>
-    
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_Acl" class="Acl">
+    <resultMap id="result_Acl" type="Acl">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="aclId" column="acl_id" jdbcType="VARCHAR" javaType="string"/>
@@ -31,37 +18,37 @@
         <result property="aclVersion" column="acl_version" jdbcType="BIGINT" javaType="long"/>
         <result property="inherits" column="inherits" jdbcType="BIT" javaType="boolean"/>
         <result property="inheritsFrom" column="inherits_from" jdbcType="BIGINT" javaType="long"/>
-        <result property="type" column="type" jdbcType="INT" javaType="int"/>
+        <result property="type" column="type" jdbcType="INTEGER" javaType="int"/>
         <result property="inheritedAcl" column="inherited_acl" jdbcType="BIGINT" javaType="long"/>
         <result property="isVersioned" column="is_versioned" jdbcType="BIT" javaType="boolean"/>
         <result property="requiresVersion" column="requires_version" jdbcType="BIT" javaType="boolean"/>
         <result property="aclChangeSet" column="acl_change_set" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_AclMember" class="AclMember">
+    <resultMap id="result_AclMember" type="AclMember">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="long"/>
         <result property="aceId" column="ace_id" jdbcType="BIGINT" javaType="long"/>
-        <result property="pos" column="pos" jdbcType="INT" javaType="int"/>
+        <result property="pos" column="pos" jdbcType="INTEGER" javaType="int"/>
     </resultMap>
     
-    <resultMap id="result_AclChangeSet" class="AclChangeSet">
+    <resultMap id="result_AclChangeSet" type="AclChangeSet">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_Ace" class="Ace">
+    <resultMap id="result_Ace" type="Ace">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="permissionId" column="permission_id" jdbcType="BIGINT" javaType="long"/>
         <result property="authorityId" column="authority_id" jdbcType="BIGINT" javaType="long"/>
         <result property="allowed" column="allowed" jdbcType="BIT" javaType="boolean"/>
-        <result property="applies" column="applies" jdbcType="INT" javaType="int"/>
+        <result property="applies" column="applies" jdbcType="INTEGER" javaType="int"/>
         <result property="contextId" column="context_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_AceContext" class="AceContext">
+    <resultMap id="result_AceContext" type="AceContext">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="classContext" column="class_context" jdbcType="VARCHAR" javaType="string"/>
@@ -69,33 +56,33 @@
         <result property="kvpContext" column="kvp_context" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
     
-    <resultMap id="result_Permission" class="Permission">
+    <resultMap id="result_Permission" type="Permission">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="typeQnameId" column="type_qname_id" jdbcType="BIGINT" javaType="long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
     
-    <resultMap id="result_Authority" class="Authority">
+    <resultMap id="result_Authority" type="Authority">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="authority" column="authority" jdbcType="VARCHAR" javaType="string"/>
         <result property="crc" column="crc" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_AuthorityAlias" class="AuthorityAlias">
+    <resultMap id="result_AuthorityAlias" type="AuthorityAlias">
         <result property="id" column="id" jdbcType="BIGINT" javaType="long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
         <result property="authId" column="auth_id" jdbcType="BIGINT" javaType="long"/>
         <result property="aliasId" column="alias_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
-    <resultMap id="result_AceAndAuthority" class="HashMap">
+    <resultMap id="result_AceAndAuthority" type="HashMap">
         <result property="allowed" column="allowed" jdbcType="BIT" javaType="boolean"/>
-        <result property="applies" column="applies" jdbcType="INT" javaType="int"/>
+        <result property="applies" column="applies" jdbcType="INTEGER" javaType="int"/>
         <result property="authority" column="authority" jdbcType="VARCHAR" javaType="string"/>
         <result property="permissionId" column="permission_id" jdbcType="BIGINT" javaType="long"/>
-        <result property="pos" column="pos" jdbcType="INT" javaType="int"/>
+        <result property="pos" column="pos" jdbcType="INTEGER" javaType="int"/>
         <result property="aclmemId" column="aclmem_id" jdbcType="BIGINT" javaType="long"/>
     </resultMap>
     
@@ -104,34 +91,34 @@
     <!--                -->
     
     
-    <parameterMap id="parameter_IdMap" class="map">
+    <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_NameMap" class="map">
+    <parameterMap id="parameter_NameMap" type="map">
         <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdNameMap" class="map">
+    <parameterMap id="parameter_IdNameMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
         <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdBoolMap" class="map">
+    <parameterMap id="parameter_IdBoolMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
         <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
     </parameterMap>
     
-    <parameterMap id="parameter_NameBoolMap" class="map">
+    <parameterMap id="parameter_NameBoolMap" type="map">
         <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
         <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
     </parameterMap>
     
-    <parameterMap id="parameter_IdIdIntBoolMap" class="map">
+    <parameterMap id="parameter_IdIdIntBoolMap" type="map">
         <parameter property="id1" jdbcType="BIGINT" javaType="long"/>
         <parameter property="id2" jdbcType="BIGINT" javaType="long"/>
         <parameter property="bool" jdbcType="BIT" javaType="boolean"/>
-        <parameter property="int" jdbcType="INT" javaType="int"/>
+        <parameter property="int" jdbcType="INTEGER" javaType="int"/>
     </parameterMap>
     
     <!--                         -->
@@ -143,8 +130,8 @@
             (version, acl_id, latest, acl_version, inherits, inherits_from,
              type, inherited_acl, is_versioned, requires_version, acl_change_set)
         values
-            (#version#, #aclId#, #latest#, #aclVersion#, #inherits#, #inheritsFrom#,
-             #type#, #inheritedAcl#, #isVersioned#, #requiresVersion#, #aclChangeSet#)
+            (#{version}, #{aclId}, #{latest}, #{aclVersion}, #{inherits}, #{inheritsFrom},
+             #{type}, #{inheritedAcl}, #{isVersioned}, #{requiresVersion}, #{aclChangeSet})
     </sql>
     
     <sql id="insert_Acl_Sequence">
@@ -152,106 +139,106 @@
             (id, version, acl_id, latest, acl_version, inherits, inherits_from,
              type, inherited_acl, is_versioned, requires_version, acl_change_set)
         values
-            (#id#, #version#, #aclId#, #latest#, #aclVersion#, #inherits#, #inheritsFrom#,
-             #type#, #inheritedAcl#, #isVersioned#, #requiresVersion#, #aclChangeSet#)
+            (#{id}, #{version}, #{aclId}, #{latest}, #{aclVersion}, #{inherits}, #{inheritsFrom},
+             #{type}, #{inheritedAcl}, #{isVersioned}, #{requiresVersion}, #{aclChangeSet})
     </sql>
     
     <sql id="insert_AclMember_AutoIncrement">
         insert into alf_acl_member
             (version, acl_id, ace_id, pos)
         values
-            (#version#, #aclId#, #aceId#, #pos#)
+            (#{version}, #{aclId}, #{aceId}, #{pos})
     </sql>
     
     <sql id="insert_AclMember_Sequence">
         insert into alf_acl_member
             (id, version, acl_id, ace_id, pos)
         values
-            (#id#, #version#, #aclId#, #aceId#, #pos#)
+            (#{id}, #{version}, #{aclId}, #{aceId}, #{pos})
     </sql>
     
     <sql id="insert_AclChangeSet_AutoIncrement">
         insert into alf_acl_change_set
             (version)
         values
-            (#version#)
+            (#{version})
     </sql>
     
     <sql id="insert_AclChangeSet_Sequence">
         insert into alf_acl_change_set
             (id, version)
         values
-            (#id#, #version#)
+            (#{id}, #{version})
     </sql>
     
     <sql id="insert_Ace_AutoIncrement">
         insert into alf_access_control_entry
             (version, permission_id, authority_id, allowed, applies, context_id)
         values
-            (#version#, #permissionId#, #authorityId#, #allowed#, #applies#, #contextId#)
+            (#{version}, #{permissionId}, #{authorityId}, #{allowed}, #{applies}, #{contextId})
     </sql>
     
     <sql id="insert_Ace_Sequence">
         insert into alf_access_control_entry
             (id, version, permission_id, authority_id, allowed, applies, context_id)
         values
-            (#id#, #version#, #permissionId#, #authorityId#, #allowed#, #applies#, #contextId#)
+            (#{id}, #{version}, #{permissionId}, #{authorityId}, #{allowed}, #{applies}, #{contextId})
     </sql>
     
     <sql id="insert_AceContext_AutoIncrement">
         insert into alf_ace_context
             (version, class_context, property_context, kvp_context)
         values
-            (#version#, #classContext#, #propertyContext#, #kvpContext#)
+            (#{version}, #{classContext}, #{propertyContext}, #{kvpContext})
     </sql>
     
     <sql id="insert_AceContext_Sequence">
         insert into alf_ace_context
             (id, version, class_context, property_context, kvp_context)
         values
-            (#id#, #version#, #classContext#, #propertyContext#, #kvpContext#)
+            (#{id}, #{version}, #{classContext}, #{propertyContext}, #{kvpContext})
     </sql>
     
     <sql id="insert_Permission_AutoIncrement">
         insert into alf_permission
             (version, type_qname_id, name)
         values
-            (#version#, #typeQnameId#, #name#)
+            (#{version}, #{typeQnameId}, #{name})
     </sql>
     
     <sql id="insert_Permission_Sequence">
         insert into alf_permission
             (id, version, type_qname_id, name)
         values
-            (#id#, #version#, #typeQnameId#, #name#)
+            (#{id}, #{version}, #{typeQnameId}, #{name})
     </sql>
     
     <sql id="insert_Authority_AutoIncrement">
         insert into alf_authority
             (version, authority, crc)
         values
-            (#version#, #authority#, #crc#)
+            (#{version}, #{authority}, #{crc})
     </sql>
     
     <sql id="insert_Authority_Sequence">
         insert into alf_authority
             (id, version, authority, crc)
         values
-            (#id#, #version#, #authority#, #crc#)
+            (#{id}, #{version}, #{authority}, #{crc})
     </sql>
     
     <sql id="insert_AuthorityAlias_AutoIncrement">
         insert into alf_authority_alias
             (version, auth_id, alias_id)
         values
-            (#version#, #authId#, #aliasId#)
+            (#{version}, #{authId}, #{aliasId})
     </sql>
     
     <sql id="insert_AuthorityAlias_Sequence">
         insert into alf_authority_alias
             (id, version, auth_id, alias_id)
         values
-            (#id#, #version#, #authId#, #aliasId#)
+            (#{id}, #{version}, #{authId}, #{aliasId})
     </sql>
     
     
@@ -259,73 +246,74 @@
     <!-- Updates        -->
     <!--                -->
     
+    <!-- MyBatis #224 -->
     <!-- Optimistic update of the acl -->
-    <update id="update_Acl" parameterClass="Acl">
+    <update id="update_Acl" parameterType="Acl">
         update
             alf_access_control_list
         set
-            acl_id = #aclId#,
-            latest = #latest#,
-            acl_version = #aclVersion#,
-            inherits = #inherits#,
-            inherits_from = #inheritsFrom#,
-            type = #type#,
-            inherited_acl = #inheritedAcl#,
-            is_versioned = #isVersioned#,
-            requires_version = #requiresVersion#,
-            acl_change_set = #aclChangeSet#,
-            version = #version#
+            acl_id = #{aclId},
+            latest = #{latest},
+            acl_version = #{aclVersion},
+            inherits = #{inherits},
+            inherits_from = #{inheritsFrom,jdbcType=BIGINT},
+            type = #{type},
+            inherited_acl = #{inheritedAcl,jdbcType=BIGINT},
+            is_versioned = #{isVersioned},
+            requires_version = #{requiresVersion},
+            acl_change_set = #{aclChangeSet,jdbcType=BIGINT},
+            version = #{version}
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
     <!-- Optimistic update of the acl member -->
-    <update id="update_AclMember" parameterClass="AclMember">
+    <update id="update_AclMember" parameterType="AclMember">
         update
             alf_acl_member
         set
-            acl_id = #aclId#,
-            ace_id = #aceId#,
-            pos = #pos#,
-            version = #version#
+            acl_id = #{aclId},
+            ace_id = #{aceId},
+            pos = #{pos},
+            version = #{version}
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
     <!-- Optimistic update of the authority -->
-    <update id="update_Authority" parameterClass="Authority">
+    <update id="update_Authority" parameterType="Authority">
         update
             alf_authority
         set
-            authority = #authority#,
-            crc = #crc#,
-            version = #version#
+            authority = #{authority},
+            crc = #{crc},
+            version = #{version}
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
     <!-- Optimistic update of the permission -->
-    <update id="update_Permission" parameterClass="Permission">
+    <update id="update_Permission" parameterType="Permission">
         update
             alf_permission
         set
-            type_qname_id = #typeQnameId#,
-            name = #name#,
-            version = #version#
+            type_qname_id = #{typeQnameId},
+            name = #{name},
+            version = #{version}
         where
-            id = #id#
-        <isGreaterThan property="version" compareValue="0">
-            and version = (#version#-1)
-        </isGreaterThan>
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
     </update>
     
     <!--                -->
@@ -341,7 +329,7 @@
             id = ?
     </select>
     
-    <select id="select_AclsThatInheritFromAcl" parameterMap="parameter_IdBoolMap" resultClass="long">
+    <select id="select_AclsThatInheritFromAcl" parameterMap="parameter_IdBoolMap" resultType="long">
         select
             acl.id
         from
@@ -350,7 +338,7 @@
             acl.inherits_from = ? and acl.inherits = ?
     </select>
     
-    <select id="select_LatestAclByGuid" parameterMap="parameter_NameBoolMap" resultClass="long">
+    <select id="select_LatestAclByGuid" parameterMap="parameter_NameBoolMap" resultType="long">
         select
             acl.id
         from
@@ -359,7 +347,7 @@
             acl.acl_id = ? and acl.latest = ?
     </select>
     
-    <select id="select_ADMNodesByAclId" parameterMap="parameter_IdMap" resultClass="long">
+    <select id="select_ADMNodesByAclId" parameterMap="parameter_IdMap" resultType="long">
         select
             id
         from
@@ -368,7 +356,7 @@
             acl_id = ?
     </select>
     
-    <select id="select_AVMNodesByAclId" parameterMap="parameter_IdMap" resultClass="long">
+    <select id="select_AVMNodesByAclId" parameterMap="parameter_IdMap" resultType="long">
         select
             id
         from
@@ -508,26 +496,26 @@
     </delete>
     
     <!-- for patch -->
-    <delete id="delete_AclList" parameterClass="list">
+    <delete id="delete_AclList" parameterType="list">
         delete
         from
             alf_access_control_list
         where
             id in
-            <iterate open="(" close=")" conjunction=",">
-                #[]#
-            </iterate>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </delete>
     
-    <delete id="delete_AcesList" parameterClass="list">
+    <delete id="delete_AcesList" parameterType="list">
         delete
         from
             alf_access_control_entry
         where
             id in
-            <iterate open="(" close=")" conjunction=",">
-                #[]#
-            </iterate>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </delete>
     
     <!-- for patch -->
@@ -545,15 +533,15 @@
             )
     </delete>
     
-    <delete id="delete_AclMembersList" parameterClass="list">
+    <delete id="delete_AclMembersList" parameterType="list">
         delete
         from
             alf_acl_member
         where
             id in
-            <iterate open="(" close=")" conjunction=",">
-                #[]#
-            </iterate>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </delete>
     
     <delete id="delete_AclMembersByAclId" parameterMap="parameter_IdMap">
@@ -565,15 +553,15 @@
     </delete>
     
     <!-- for patch -->
-    <delete id="delete_AclMembersForAclList" parameterClass="list">
+    <delete id="delete_AclMembersForAclList" parameterType="list">
         delete
         from
             alf_acl_member
         where
             acl_id in
-            <iterate open="(" close=")" conjunction=",">
-                #[]#
-            </iterate>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </delete>
     
     <delete id="delete_AclChangeSet" parameterMap="parameter_IdMap">
@@ -616,4 +604,4 @@
             id = ?
     </delete>
     
-</sqlMap>
+</mapper>

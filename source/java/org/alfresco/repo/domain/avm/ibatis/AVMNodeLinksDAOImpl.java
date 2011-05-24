@@ -26,7 +26,7 @@ import org.alfresco.repo.domain.avm.AVMChildEntryEntity;
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
 import org.alfresco.repo.domain.avm.AbstractAVMNodeLinksDAOImpl;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the AVMNodeLinks DAO.
@@ -50,7 +50,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_CHILD ="alfresco.avm.select_AVMNodeChildEntriesByChild"; // child
     
-    private static final String INSERT_AVM_NODE_CHILD_ENTRY ="alfresco.avm.insert_AVMChildEntry"; // parent + name + child
+    private static final String INSERT_AVM_NODE_CHILD_ENTRY ="alfresco.avm.insert.insert_AVMChildEntry"; // parent + name + child
     
     private static final String UPDATE_AVM_NODE_CHILD_ENTRY ="alfresco.avm.update_AVMChildEntry"; // parent + child (update name)
     
@@ -60,29 +60,31 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     private static final String DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD ="alfresco.avm.delete_AVMChildEntryByParentAndChild"; // parent + child
     private static final String DELETE_AVM_NODE_CHILD_ENTRIES_BY_PARENT ="alfresco.avm.delete_AVMNodeChildEntriesByParent"; // parent
     
-    private static final String INSERT_AVM_MERGE_LINK ="alfresco.avm.insert_AVMMergeLink";
+    private static final String INSERT_AVM_MERGE_LINK ="alfresco.avm.insert.insert_AVMMergeLink";
     private static final String DELETE_AVM_MERGE_LINK ="alfresco.avm.delete_AVMMergeLink";
     
     private static final String SELECT_AVM_MERGE_LINKS_BY_FROM ="alfresco.avm.select_AVMMergeLinksByFrom";
     private static final String SELECT_AVM_MERGE_LINK_BY_TO ="alfresco.avm.select_AVMMergeLinkByTo";
     
-    private static final String INSERT_AVM_HISTORY_LINK ="alfresco.avm.insert_AVMHistoryLink";
+    private static final String INSERT_AVM_HISTORY_LINK ="alfresco.avm.insert.insert_AVMHistoryLink";
     private static final String DELETE_AVM_HISTORY_LINK ="alfresco.avm.delete_AVMHistoryLink";
     
     private static final String SELECT_AVM_HISTORY_LINKS_BY_ANCESTOR ="alfresco.avm.select_AVMHistoryLinksByAncestor";
     private static final String SELECT_AVM_HISTORY_LINK_BY_DESCENDENT ="alfresco.avm.select_AVMHistoryLinkByDescendent";
     private static final String SELECT_AVM_HISTORY_LINK ="alfresco.avm.select_AVMHistoryLink";
     
-    private SqlMapClientTemplate template;
+    
+    private SqlSessionTemplate template;
+    
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    {
+        this.template = sqlSessionTemplate;
+    }
+    
     
     // Initial generic fix for ALF-1940 (pending SAIL-349)
     // Note: in order to override to false DB must be setup to be case-insensitive (at least on column avm_child_entries.name)
     private boolean toLower = true;
-    
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
-    {
-        this.template = sqlMapClientTemplate;
-    }
     
     public void setToLower(boolean toLower)
     {
@@ -94,9 +96,9 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         if (toLower)
         {
-            return (AVMChildEntryEntity) template.queryForObject(SELECT_AVM_NODE_CHILD_ENTRY_L, childEntryEntity);
+            return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_L, childEntryEntity);
         }
-        return (AVMChildEntryEntity) template.queryForObject(SELECT_AVM_NODE_CHILD_ENTRY, childEntryEntity);
+        return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY, childEntryEntity);
     }
     
     @Override
@@ -106,16 +108,16 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
         
         if (toLower)
         {
-            return (AVMChildEntryEntity) template.queryForObject(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L, childEntryEntity);
+            return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L, childEntryEntity);
         }
-        return (AVMChildEntryEntity) template.queryForObject(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME, childEntryEntity);
+        return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME, childEntryEntity);
     }
     
     @Override
     protected AVMChildEntryEntity getChildEntryEntity(long parentNodeId, long childNodeId)
     {
         AVMChildEntryEntity childEntryEntity = new AVMChildEntryEntity(parentNodeId, childNodeId);
-        return (AVMChildEntryEntity) template.queryForObject(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD, childEntryEntity);
+        return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD, childEntryEntity);
     }
     
     @SuppressWarnings("unchecked")
@@ -124,7 +126,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", parentNodeId);
-        return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT, params);
+        return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -137,9 +139,9 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
         
         if (toLower)
         {
-            return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN_L, params);
+            return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN_L, params);
         }
-        return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN, params);
+        return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -148,7 +150,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", childNodeId);
-        return (List<AVMChildEntryEntity>) template.queryForList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_CHILD, params);
+        return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_CHILD, params);
     }
     
     @Override
@@ -213,7 +215,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", mergeToNodeId);
-        return (AVMMergeLinkEntity) template.queryForObject(SELECT_AVM_MERGE_LINK_BY_TO, params);
+        return (AVMMergeLinkEntity) template.selectOne(SELECT_AVM_MERGE_LINK_BY_TO, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -222,7 +224,7 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", mergeFromNodeId);
-        return (List<AVMMergeLinkEntity>) template.queryForList(SELECT_AVM_MERGE_LINKS_BY_FROM, params);
+        return (List<AVMMergeLinkEntity>) template.selectList(SELECT_AVM_MERGE_LINKS_BY_FROM, params);
     }
     
     
@@ -245,14 +247,14 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", descendentNodeId);
-        return (AVMHistoryLinkEntity) template.queryForObject(SELECT_AVM_HISTORY_LINK_BY_DESCENDENT, params);
+        return (AVMHistoryLinkEntity) template.selectOne(SELECT_AVM_HISTORY_LINK_BY_DESCENDENT, params);
     }
     
     @Override
     protected AVMHistoryLinkEntity getHistoryLinkEntity(long ancestorNodeId, long descendentNodeId)
     {
         AVMHistoryLinkEntity hLinkEntity = new AVMHistoryLinkEntity(ancestorNodeId, descendentNodeId);
-        return (AVMHistoryLinkEntity) template.queryForObject(SELECT_AVM_HISTORY_LINK, hLinkEntity);
+        return (AVMHistoryLinkEntity) template.selectOne(SELECT_AVM_HISTORY_LINK, hLinkEntity);
     }
     
     @SuppressWarnings("unchecked")
@@ -261,6 +263,6 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", ancestorNodeId);
-        return (List<AVMHistoryLinkEntity>) template.queryForList(SELECT_AVM_HISTORY_LINKS_BY_ANCESTOR, params);
+        return (List<AVMHistoryLinkEntity>) template.selectList(SELECT_AVM_HISTORY_LINKS_BY_ANCESTOR, params);
     }
 }

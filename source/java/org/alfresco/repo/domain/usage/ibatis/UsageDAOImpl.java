@@ -30,9 +30,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-
-import com.ibatis.sqlmap.client.event.RowHandler;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the Usage DAO.
@@ -44,7 +44,7 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
 {
     private static Log logger = LogFactory.getLog(UsageDAOImpl.class);
     
-    private static final String INSERT_USAGE_DELTA = "alfresco.usage.insert_UsageDelta";
+    private static final String INSERT_USAGE_DELTA = "alfresco.usage.insert.insert_UsageDelta";
     private static final String SELECT_USAGE_DELTA_TOTAL_SIZE_BY_NODE = "alfresco.usage.select_GetTotalDeltaSizeByNodeId";
     private static final String SELECT_USAGE_DELTA_NODES = "alfresco.usage.select_GetUsageDeltaNodes";
     private static final String SELECT_USERS_WITH_USAGE = "alfresco.usage.select_GetUsersWithUsage";
@@ -53,13 +53,15 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     private static final String DELETE_USAGE_DELTAS_BY_NODE = "alfresco.usage.delete_UsageDeltasByNodeId";
     
     
-    private SqlMapClientTemplate template;
-    private QNameDAO qnameDAO;
+    private SqlSessionTemplate template;
     
-    public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
-        this.template = sqlMapClientTemplate;
+        this.template = sqlSessionTemplate;
     }
+    
+    
+    private QNameDAO qnameDAO;
     
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -70,8 +72,7 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     protected UsageDeltaEntity insertUsageDeltaEntity(UsageDeltaEntity entity)
     {
         entity.setVersion(0L);
-        Long id = (Long)template.insert(INSERT_USAGE_DELTA, entity);
-        entity.setId(id);
+        template.insert(INSERT_USAGE_DELTA, entity);
         return entity;
     }
     
@@ -81,14 +82,14 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", nodeEntityId);
         
-        return (UsageDeltaEntity) template.queryForObject(SELECT_USAGE_DELTA_TOTAL_SIZE_BY_NODE, params);
+        return (UsageDeltaEntity) template.selectOne(SELECT_USAGE_DELTA_TOTAL_SIZE_BY_NODE, params);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<Long> selectUsageDeltaNodes()
     {
-        return (List<Long>) template.queryForList(SELECT_USAGE_DELTA_NODES);
+        return (List<Long>) template.selectList(SELECT_USAGE_DELTA_NODES);
     }
     
     @Override
@@ -123,13 +124,13 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         params.put("storeProtocol", storeRef.getProtocol());
         params.put("storeIdentifier", storeRef.getIdentifier());
         
-        MapRowHandler rowHandler = new MapRowHandler(resultsCallback);
+        MapResultHandler resultHandler = new MapResultHandler(resultsCallback);
         
-        template.queryWithRowHandler(SELECT_USERS_WITHOUT_USAGE, params, rowHandler);
+        template.select(SELECT_USERS_WITHOUT_USAGE, params, resultHandler);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Listed " + rowHandler.total + " users without usage");
+            logger.debug("   Listed " + resultHandler.total + " users without usage");
         }
     }
     
@@ -156,13 +157,13 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         params.put("storeProtocol", storeRef.getProtocol());
         params.put("storeIdentifier", storeRef.getIdentifier());
         
-        MapRowHandler rowHandler = new MapRowHandler(resultsCallback);
+        MapResultHandler resultHandler = new MapResultHandler(resultsCallback);
         
-        template.queryWithRowHandler(SELECT_USERS_WITH_USAGE, params, rowHandler);
+        template.select(SELECT_USERS_WITH_USAGE, params, resultHandler);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Listed " + rowHandler.total + " users with usage");
+            logger.debug("   Listed " + resultHandler.total + " users with usage");
         }
     }
     
@@ -182,7 +183,7 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         Long ownerPropQNameEntityId = ownerPropQNamePair.getFirst();
         Long contentPropQNameEntityId = contentPropQNamePair.getFirst();
         
-        MapRowHandler rowHandler = new MapRowHandler(resultsCallback);
+        MapResultHandler resultHandler = new MapResultHandler(resultsCallback);
         
         Map<String, Object> params = new HashMap<String, Object>(5);
         params.put("contentTypeQNameID", contentTypeQNameEntityId); // cm:content (type)
@@ -192,32 +193,32 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         params.put("storeIdentifier", storeRef.getIdentifier());
         
         // Query for the 'new' (FK) style content data properties (stored in 'string_value')
-        template.queryWithRowHandler(SELECT_CONTENT_SIZES_NEW, params, rowHandler);
+        template.select(SELECT_CONTENT_SIZES_NEW, params, resultHandler);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Listed " + rowHandler.total + " old content sizes");
+            logger.debug("   Listed " + resultHandler.total + " old content sizes");
         }
     }
     
     /**
      * Row handler for getting map of strings
      */
-    private static class MapRowHandler implements RowHandler
+    private static class MapResultHandler implements ResultHandler
     {
         private final MapHandler handler;
         
         private int total = 0;
         
-        private MapRowHandler(MapHandler handler)
+        private MapResultHandler(MapHandler handler)
         {
             this.handler = handler;
         }
         
         @SuppressWarnings("unchecked")
-        public void handleRow(Object valueObject)
+        public void handleResult(ResultContext context)
         {
-            handler.handle((Map<String, Object>)valueObject);
+            handler.handle((Map<String, Object>)context.getResultObject());
             total++;
             if (logger.isDebugEnabled() && (total == 0 || (total % 1000 == 0) ))
             {

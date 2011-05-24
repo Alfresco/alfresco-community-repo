@@ -1037,7 +1037,7 @@
             avm_child_entries
         where
             parent_id = #{parentNodeId} and
-            lower(name) = lower(#name#) and
+            lower(name) = lower(#{name}) and
             child_id = #{childNodeId#
     </delete>
     -->
@@ -1177,7 +1177,7 @@
     
     <!-- For patches -->
     
-    <select id="select_AVMNodeEntitiesCountWhereNewInStore">
+    <select id="select_AVMNodeEntitiesCountWhereNewInStore" resultType="long">
         select 
             count(*)
         from 

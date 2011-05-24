@@ -238,7 +238,7 @@
       ]]>
    </delete>
    
-   <select id="select_activity_posts" parameterType="ActivityPost" resultType="ActivityPost">
+   <select id="select_activity_posts_by_params" parameterType="ActivityPost" resultType="ActivityPost">
       <![CDATA[
       select 
          sequence_id as id,
@@ -260,7 +260,7 @@
       ]]>
    </select>
    
-   <select id="select_activity_posts_by_status_only" parameterType="ActivityPost" resultType="ActivityPost">
+   <select id="select_activity_posts_by_status" parameterType="ActivityPost" resultType="ActivityPost">
       <![CDATA[
       select 
          sequence_id as id,

@@ -62,7 +62,7 @@
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="configLocation">
-            <value>classpath:alfresco/ibatis/repo-SqlMapConfig.xml</value>
+            <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property>
     </bean>
     

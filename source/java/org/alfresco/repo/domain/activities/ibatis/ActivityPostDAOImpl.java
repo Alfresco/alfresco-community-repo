@@ -36,11 +36,11 @@ public class ActivityPostDAOImpl extends ActivitiesDAOImpl implements ActivityPo
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts", activityPost);
+            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_params", activityPost);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_status_only", activityPost);
+            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_status", activityPost);
         }
         else
         {

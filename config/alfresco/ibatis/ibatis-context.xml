@@ -78,5 +78,7 @@
     <bean id="avmSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
         <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
     </bean>
-    
+    <bean id="solrSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="alfrescoSqlMapClient"/>
+    </bean>    
 </beans>

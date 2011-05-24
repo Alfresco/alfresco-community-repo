@@ -41,7 +41,8 @@
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/permissions-insert-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
-    
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/solr-common-SqlMap.xml"/>
+
     <!-- Canned queries -->
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>

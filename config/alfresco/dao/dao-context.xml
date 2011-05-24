@@ -253,4 +253,9 @@
       <property name="controlDAO" ref="controlDAO"/>
    </bean>
    
+   <bean id="solrDAO" class="org.alfresco.repo.domain.solr.ibatis.SOLRDAOImpl" init-method="init">
+      <property name="sqlMapClientTemplate" ref="solrSqlMapClientTemplate"/>
+      <property name="qNameDAO" ref="qnameDAO"/>
+   </bean>
+   
 </beans>

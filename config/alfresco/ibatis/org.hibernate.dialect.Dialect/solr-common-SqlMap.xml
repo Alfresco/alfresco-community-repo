@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.solr">
+
+    <typeAlias alias="SOLRTransaction" type="org.alfresco.repo.domain.solr.TransactionEntity"/>
+    <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
+    <typeAlias alias="SOLRTransactionParameters" type="org.alfresco.repo.domain.solr.SOLRTransactionParameters"/>
+    <typeAlias alias="NodeParameters" type="org.alfresco.repo.domain.solr.NodeParameters"/>
+    
+    <resultMap id="result_Node" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
+    <resultMap id="result_Transaction" class="SOLRTransaction">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="updates" column="updates" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="deletes" column="deletes" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+
+    <select id="select_Txns" parameterClass="SOLRTransactionParameters" resultMap="result_Transaction">
+        select
+            txn.id              as id,
+            txn.commit_time_ms  as commit_time_ms,
+            (select
+                 count(node.id)
+             from
+                 alf_node node
+             where
+                 txn.id = node.transaction_id and
+                 node.node_deleted = 0
+            ) as updates,
+            (select
+                 count(node.id)
+             from
+                 alf_node node
+             where
+                 txn.id = node.transaction_id and
+                 node.node_deleted = 1
+            ) as deletes
+        from
+            alf_transaction txn
+        <dynamic prepend="where">
+           <isNotNull property="txnFromCommitTime" prepend="and">
+                <![CDATA[txn.commit_time_ms >= #txnFromCommitTime#]]>
+           </isNotNull>
+           <isNotNull property="minTxnId" prepend="and">
+                <![CDATA[txn.id >= #minTxnId#]]>
+           </isNotNull>
+        </dynamic>
+        order by txn.commit_time_ms ASC, txn.id ASC
+    </select>
+
+    <select id="select_Txn_Nodes" parameterClass="NodeParameters" resultMap="result_Node">
+        select
+            node.id             as id,
+            node.node_deleted   as node_deleted,
+            node.transaction_id as txn_id
+        from
+            alf_transaction txn
+            join alf_node node on (txn.id = node.transaction_id)
+        <dynamic>
+           <isEqual property="storeFilter" compareValue="true">
+            join alf_store store on (store.id = node.store_id)
+           </isEqual>
+        </dynamic>
+        <dynamic prepend="where">
+           <isNotNull property="transactionIds" prepend="and">
+                txn.id in <iterate property="transactionIds" open="(" close=")" conjunction=", ">#transactionIds[]#</iterate>
+           </isNotNull>
+           <isNotNull property="fromNodeId" prepend="and">
+                <![CDATA[node.id >= #fromNodeId#]]>
+           </isNotNull>
+           <isNotNull property="toNodeId" prepend="and">
+                <![CDATA[node.id <= #toNodeId#]]>
+           </isNotNull>
+           <isNotNull property="storeProtocol" prepend="and">
+                store.protocol = #storeProtocol#
+           </isNotNull>
+           <isNotNull property="storeIdentifier" prepend="and">
+                store.identifier = #storeIdentifier#
+           </isNotNull>
+           <isNotNull property="includeTypeIds" prepend="and">
+                node.type_qname_id in <iterate property="includeTypeIds" open="(" close=")" conjunction=", ">#includeTypeIds[]#</iterate>
+           </isNotNull>
+           <isNotNull property="excludeTypeIds" prepend="and">
+                node.type_qname_id not in <iterate property="excludeTypeIds" open="(" close=")" conjunction=", ">#excludeTypeIds[]#</iterate>
+           </isNotNull>
+           <isNotNull property="includeAspectIds" prepend="and">
+                exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = node.id
+                    and aspects.qname_id in <iterate property="includeAspectIds" open="(" close=")" conjunction=", ">#includeAspectIds[]#</iterate>     
+                )
+           </isNotNull>
+           <isNotNull property="excludeAspectIds" prepend="and">
+                not exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = node.id
+                    and aspects.qname_id in <iterate property="excludeAspectIds" open="(" close=")" conjunction=", ">#excludeAspectIds[]#</iterate>     
+                )
+           </isNotNull>
+        </dynamic>
+        order by node.id ASC
+    </select>
+</sqlMap>

@@ -23,7 +23,7 @@
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
                   <activiti:field name="script">
                      <activiti:string>
-                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowDueDate != 'undefined') task.dueDate = bpm_workflowDueDate
                         if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
                      </activiti:string>
                   </activiti:field>
@@ -66,7 +66,7 @@
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
                   <activiti:field name="script">
                      <activiti:string>
-                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowDueDate != 'undefined') task.dueDate = bpm_workflowDueDate
                         if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
                      </activiti:string>
                   </activiti:field>
@@ -88,7 +88,7 @@
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
                   <activiti:field name="script">
                      <activiti:string>
-                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowDueDate != 'undefined') task.dueDate = bpm_workflowDueDate
                         if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
                      </activiti:string>
                   </activiti:field>

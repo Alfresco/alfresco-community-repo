@@ -10,7 +10,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -18,6 +17,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @since 4.0
  */
+// TODO check that this does not return incomplete transactions i.e. commitTimeMs is set - does
+//  the sql account for this?
 public class GetTransactions extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(GetTransactions.class);

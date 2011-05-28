@@ -1,5 +1,6 @@
 package org.alfresco.repo.web.scripts.solr;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,10 @@ import org.alfresco.repo.domain.solr.SOLRDAO.NodeQueryCallback;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -49,84 +54,97 @@ public class GetNodes extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
-        String txnIdsString = req.getParameter("txnIds");
-        if(txnIdsString == null)
+        try
         {
-            throw new WebScriptException("txnIds parameter is required for GetNodes");
-        }
-        
-        String param = req.getParameter("fromNodeId");
-        Long fromNodeId = (param == null ? null : Long.valueOf(param));
-        
-        param = req.getParameter("toNodeId");
-        Long toNodeId = (param == null ? null : Long.valueOf(param));
-        
-        param = req.getParameter("excludeAspects");
-        Set<QName> excludeAspects = null;
-        if(param != null)
-        {
-            String[] excludeAspectsStrings = param.split(",");
-            excludeAspects = new HashSet<QName>(excludeAspectsStrings.length);
-            for(String excludeAspect : excludeAspectsStrings)
+            Content content = req.getContent();
+            if(content == null)
             {
-                excludeAspects.add(QName.createQName(excludeAspect.trim()));
+                throw new WebScriptException("Failed to convert request to String");
             }
-        }
-        
-        param = req.getParameter("includeAspects");
-        Set<QName> includeAspects = null;
-        if(param != null)
-        {
-            String[] includeAspectsStrings = param.split(",");
-            includeAspects = new HashSet<QName>(includeAspectsStrings.length);
-            for(String includeAspect : includeAspectsStrings)
+            JSONObject o = new JSONObject(content.getContent());
+
+            JSONArray aTxnIds = o.has("txnIds") ? o.getJSONArray("txnIds") : null;
+            Long fromTxnId = o.has("fromTxnId") ? o.getLong("fromTxnId") : null;
+            Long toTxnId = o.has("toTxnId") ? o.getLong("toTxnId") : null;
+
+            Long fromNodeId = o.has("fromNodeId") ? o.getLong("fromNodeId") : null;
+            Long toNodeId = o.has("toNodeId") ? o.getLong("toNodeId") : null;
+            
+            Set<QName> excludeAspects = null;
+            if(o.has("excludeAspects"))
             {
-                includeAspects.add(QName.createQName(includeAspect.trim()));
+                JSONArray aExcludeAspects = o.getJSONArray("excludeAspects");
+                excludeAspects = new HashSet<QName>(aExcludeAspects.length());
+                for(int i = 0; i < aExcludeAspects.length(); i++)
+                {
+                    excludeAspects.add(QName.createQName(aExcludeAspects.getString(i).trim()));
+                }
             }
+
+            Set<QName> includeAspects = null;
+            if(o.has("includeAspects"))
+            {
+                JSONArray aIncludeAspects = o.getJSONArray("includeAspects");
+                includeAspects = new HashSet<QName>(aIncludeAspects.length());
+                for(int i = 0; i < aIncludeAspects.length(); i++)
+                {
+                    includeAspects.add(QName.createQName(aIncludeAspects.getString(i).trim()));
+                }
+            }
+
+            // 0 or Integer.MAX_VALUE => ignore
+            int maxResults = o.has("maxResults") ? o.getInt("maxResults") : 0;
+
+            String storeProtocol = o.has("storeProtocol") ? o.getString("storeProtocol") : null;
+            String storeIdentifier = o.has("storeIdentifier") ? o.getString("storeIdentifier") : null;
+
+            List<Long> txnIds = null;
+            if(aTxnIds != null)
+            {
+                txnIds = new ArrayList<Long>(aTxnIds.length());
+                for(int i = 0; i < aTxnIds.length(); i++)
+                {
+                    txnIds.add(aTxnIds.getLong(i));
+                }
+            }
+
+            WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults);
+            NodeParameters nodeParameters = new NodeParameters();
+            nodeParameters.setTransactionIds(txnIds);
+            nodeParameters.setFromTxnId(fromTxnId);
+            nodeParameters.setToTxnId(toTxnId);
+            nodeParameters.setFromNodeId(fromNodeId);
+            nodeParameters.setToNodeId(toNodeId);
+            nodeParameters.setExcludeAspects(excludeAspects);
+            nodeParameters.setIncludeAspects(includeAspects);
+            nodeParameters.setStoreProtocol(storeProtocol);
+            nodeParameters.setStoreIdentifier(storeIdentifier);
+            nodeParameters.setMaxResults(maxResults);
+            solrDAO.getNodes(nodeParameters, nodeQueryCallback);
+
+            Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
+            List<Node> nodes = nodeQueryCallback.getNodes();
+            model.put("nodes", nodes);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
+            }
+
+            return model;
         }
-        
-        param = req.getParameter("maxResults");
-        int maxResults = (param == null ? 0 : Integer.valueOf(param));
-        
-        param = req.getParameter("storeProtocol");
-        String storeProtocol = param;
-        
-        param = req.getParameter("storeIdentifier");
-        String storeIdentifier = param;
-        
-        String[] txnIdStrings = txnIdsString.split(",");
-    	List<Long> txnIds = new ArrayList<Long>(txnIdStrings.length);
-        for(String txnIdString : txnIdStrings)
+        catch(IOException e)
         {
-        	txnIds.add(Long.valueOf(txnIdString.trim()));
+            throw new WebScriptException("IO exception parsing request", e);
         }
-
-        WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults);
-        NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
-        nodeParameters.setFromNodeId(fromNodeId);
-        nodeParameters.setToNodeId(toNodeId);
-        nodeParameters.setExcludeAspects(excludeAspects);
-        nodeParameters.setIncludeAspects(includeAspects);
-        nodeParameters.setStoreProtocol(storeProtocol);
-        nodeParameters.setStoreIdentifier(storeIdentifier);
-        solrDAO.getNodes(nodeParameters, maxResults, nodeQueryCallback);
-
-        Map<String, Object> model = new HashMap<String, Object>(2, 1.0f);
-        List<Node> nodes = nodeQueryCallback.getNodes();
-        model.put("nodes", nodes);
-        model.put("count", nodes.size());
-
-        if (logger.isDebugEnabled())
+        catch(JSONException e)
         {
-            logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
+            throw new WebScriptException("Invalid JSON", e);
         }
-        
-        return model;
     }
 
     /**
-     * 
+     * Callback for DAO get nodes query
      *
      */
     private static class WebNodeQueryCallback implements NodeQueryCallback

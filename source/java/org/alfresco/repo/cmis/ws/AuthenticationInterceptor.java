@@ -20,8 +20,8 @@ package org.alfresco.repo.cmis.ws;
 
 import java.util.List;
 
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.util.auth.Authorization;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.cxf.binding.soap.SoapMessage;

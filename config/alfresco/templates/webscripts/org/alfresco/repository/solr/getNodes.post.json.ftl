@@ -6,6 +6,5 @@
          <@solrLib.nodeJSON node=node/>
          <#if node_has_next>,</#if>
       </#list>
-   ],
-   "count": ${count}
+   ]
 }

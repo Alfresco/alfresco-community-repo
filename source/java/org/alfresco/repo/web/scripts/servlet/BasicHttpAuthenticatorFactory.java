@@ -22,14 +22,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.web.util.auth.Authorization;
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.webscripts.Authenticator;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;

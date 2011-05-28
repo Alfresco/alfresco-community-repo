@@ -47,6 +47,8 @@ import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
@@ -145,23 +147,33 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         this.context = context;
 
-        // authenticate user
-        String user = context.getUsername();
-        String password = context.getPassword();
-
-        if ((user == null) || (user.length() == 0))
-        {
-            throw new CmisPermissionDeniedException("No user provided!");
-        }
-
-        if (password == null)
-        {
-            password = "";
-        }
-
+        AuthenticationUtil.pushAuthentication();
+        
         try
         {
-            connector.getAuthenticationService().authenticate(user, password.toCharArray());
+            String currentUser = connector.getAuthenticationService().getCurrentUserName();
+            String user = context.getUsername();
+            String password = context.getPassword();
+
+            if (currentUser == null)
+            {
+                Authorization auth = new Authorization(user, password);
+
+                if (auth.isTicket())
+                {
+                    connector.getAuthenticationService().validate(auth.getTicket());
+                } else
+                {
+                    connector.getAuthenticationService().authenticate(auth.getUserName(), auth.getPasswordCharArray());
+                }
+
+            } else if (currentUser.equals(connector.getProxyUser()))
+            {
+                if (user != null && user.length() > 0)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+                }
+            }
         } catch (AuthenticationException ae)
         {
             throw new CmisPermissionDeniedException(ae.getMessage(), ae);
@@ -173,7 +185,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             beginReadOnlyTransaction();
         } catch (Exception e)
         {
-            connector.getAuthenticationService().clearCurrentSecurityContext();
+            AuthenticationUtil.popAuthentication();
 
             if (e instanceof CmisBaseException)
             {
@@ -202,8 +214,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         } finally
         {
-            // clean up
-            connector.getAuthenticationService().clearCurrentSecurityContext();
+            AuthenticationUtil.popAuthentication();
             context = null;
         }
     }

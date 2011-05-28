@@ -53,6 +53,9 @@
         order by txn.commit_time_ms ASC, txn.id ASC
     </select>
 
+<!-- 
+TODO filter the from clauses depending on which where clauses have been selected
+ -->
     <select id="select_Txn_Nodes" parameterType="NodeParameters" resultMap="result_Node">
         select
             node.id             as id,
@@ -66,12 +69,23 @@
             join alf_node node on (txn.id = node.transaction_id)
             join alf_store store on (store.id = node.store_id)
         <where>
-           <if test="transactionIds != null">
-                txn.id in 
-                <foreach item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-           </if>
+           <choose>
+	           <when test="transactionIds != null">
+	                txn.id in 
+	                <foreach item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+	                    #{item}
+	                </foreach>
+	           </when>
+	           <when test="fromTxnId != null and toTxnId != null">
+	                <![CDATA[txn.id >= #{fromTxnId} and txn.id <= #{toTxnId}]]>
+	           </when>
+	           <when test="fromTxnId = null and toTxnId != null">
+	                <![CDATA[txn.id <= #{toTxnId}]]>
+	           </when>
+               <when test="fromTxnId != null and toTxnId == null">
+                    <![CDATA[txn.id >= #{fromTxnId}]]>
+               </when>
+	       </choose>
            <if test="fromNodeId != null">
                 <![CDATA[and node.id >= #{fromNodeId}]]>
            </if>

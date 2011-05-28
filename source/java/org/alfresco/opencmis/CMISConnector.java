@@ -246,6 +246,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private Map<String, List<String>> kindToRenditionNames;
     private Map<String, NodeRef> rootNodeRefs = new ConcurrentHashMap<String, NodeRef>(1);
     private Map<String, CMISRenditionMapping> renditionMapping = new ConcurrentHashMap<String, CMISRenditionMapping>(1);
+    private String proxyUser;
 
     // OpenCMIS objects
     private BigInteger typesDefaultMaxItems = TYPES_DEFAULT_MAX_ITEMS;
@@ -534,6 +535,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
+    }
+
+    public void setProxyUser(String proxyUser)
+    {
+        this.proxyUser = proxyUser;
+    }
+
+    public String getProxyUser()
+    {
+        return proxyUser;
     }
 
     // --------------------------------------------------------------
@@ -2266,7 +2277,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             return;
         }
-        
+
         for (PropertyData<?> property : properties.getPropertyList())
         {
             if (Arrays.binarySearch(exclude, property.getId()) < 0)

@@ -118,7 +118,8 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                  Returns <tt>true</tt> if the node is present and undeleted
      */
     public boolean exists(NodeRef nodeRef);
-    
+    public boolean exists(Long nodeId);
+
     /**
      * Get the current status of the node, including deleted nodes.
      * 
@@ -128,7 +129,7 @@ public interface NodeDAO extends NodeBulkLoader
      *                          purged following deletion.
      */
     public NodeRef.Status getNodeRefStatus(NodeRef nodeRef);
-    
+
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef);
     
     public Pair<Long, NodeRef> getNodePair(Long nodeId);

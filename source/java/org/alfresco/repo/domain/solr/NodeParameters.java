@@ -6,16 +6,22 @@ import java.util.Set;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Stores node parameters for use in SOLR DAO queries
+ * Stores node query parameters for use in SOLR DAO queries
  * 
  * @since 4.0
  */
 public class NodeParameters
 {
     private List<Long> transactionIds;
+    private Long fromTxnId;
+    private Long toTxnId;
+
     private Long fromNodeId;
     private Long toNodeId;
-    
+
+    // default is 'all' results
+    private int maxResults = 0;
+
     private String storeProtocol;
     private String storeIdentifier;
     
@@ -29,6 +35,16 @@ public class NodeParameters
     private List<Long> includeAspectIds;
     private List<Long> excludeAspectIds;
     
+    public int getMaxResults()
+    {
+        return maxResults;
+    }
+
+    public void setMaxResults(int maxResults)
+    {
+        this.maxResults = maxResults;
+    }
+
     public boolean getStoreFilter()
     {
         return (storeProtocol != null || storeIdentifier != null);
@@ -62,6 +78,26 @@ public class NodeParameters
     public List<Long> getTransactionIds()
     {
         return transactionIds;
+    }
+    
+    public Long getFromTxnId()
+    {
+        return fromTxnId;
+    }
+
+    public void setFromTxnId(Long fromTxnId)
+    {
+        this.fromTxnId = fromTxnId;
+    }
+
+    public Long getToTxnId()
+    {
+        return toTxnId;
+    }
+
+    public void setToTxnId(Long toTxnId)
+    {
+        this.toTxnId = toTxnId;
     }
 
     public Long getFromNodeId()
@@ -162,6 +198,11 @@ public class NodeParameters
     public void setExcludeTypeIds(List<Long> excludeTypeIds)
     {
         this.excludeTypeIds = excludeTypeIds;
+    }
+    
+    public boolean isIncludeNodesTable()
+    {
+        return (getFromNodeId() != null || getToNodeId() != null || getIncludeTypeIds() != null || getExcludeTypeIds() != null || getIncludeAspectIds() != null || getExcludeAspectIds() != null);
     }
 
 }

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd" -->
+<model name="teststm:solrModel" 
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+   <description>Alfresco SOLR Test Model</description>
+   <author>Alfresco</author>
+   <published>2011-02-22</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/solrtest/1.0" prefix="teststm"/>
+   </namespaces>
+
+   <constraints/>
+   
+   <types>
+   
+      <type name="teststm:testobject">
+         <title>SOLR Object</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="teststm:mlTextProp">
+               <title>mlTextProp</title>
+               <type>d:mltext</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:boolProp">
+               <title>boolProp</title>
+               <type>d:boolean</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:longProp">
+               <title>lonProp</title>
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:floatProp">
+               <title>floatProp</title>
+               <type>d:float</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:doubleProp">
+               <title>doubleProp</title>
+               <type>d:double</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:dateProp">
+               <title>dateProp</title>
+               <type>d:date</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:dateTimeProp">
+               <title>dateTimeProp</title>
+               <type>d:datetime</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:qnameProp">
+               <title>qnameProp</title>
+               <type>d:qname</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:nodeRefProp">
+               <title>nodeRefProp</title>
+               <type>d:noderef</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:childAssocProp">
+               <title>childAssocProp</title>
+               <type>d:childassocref</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:assocProp">
+               <title>assocProp</title>
+               <type>d:assocref</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:pathProp">
+               <title>pathProp</title>
+               <type>d:path</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:categoryProp">
+               <title>categoryProp</title>
+               <type>d:category</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:localeProp">
+               <title>localeProp</title>
+               <type>d:locale</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:versionProp">
+               <title>versionProp</title>
+               <type>d:version</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:periodProp">
+               <title>periodProp</title>
+               <type>d:period</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+            <property name="teststm:anyProp">
+               <title>anyProp</title>
+               <type>d:any</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+      </type>
+      
+   </types>
+</model>

@@ -775,6 +775,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    public boolean exists(Long nodeId)
+    {
+        Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
+        return pair != null && !pair.getSecond().getDeleted();
+    }
+    
     public boolean exists(NodeRef nodeRef)
     {
         NodeEntity node = new NodeEntity(nodeRef);

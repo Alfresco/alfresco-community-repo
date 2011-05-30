@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.web.scripts.solr;
 
 import java.io.IOException;
@@ -39,6 +57,9 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  */
 public class GetNodeContent extends StreamContent
 {
+    private static final String TRANSFORM_STATUS_HEADER = "X-Alfresco-transformStatus";
+    private static final String TRANSFORM_EXCEPTION_HEADER = "X-Alfresco-transformException";
+    
     private static final Log logger = LogFactory.getLog(GetNodeContent.class);
 
     /**
@@ -110,9 +131,9 @@ public class GetNodeContent extends StreamContent
             }
             catch (Throwable e)
             {
-                if (logger.isInfoEnabled())
+                if (logger.isWarnEnabled())
                 {
-                    logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                    logger.warn("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
                 }
             }
             
@@ -151,14 +172,14 @@ public class GetNodeContent extends StreamContent
             ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
             if(transformer == null)
             {
+                res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
                 res.setStatus(HttpStatus.SC_NO_CONTENT);
                 return;
             }
 
-
             try
             {
-                // TODO how to ensure UTF-8?
+                // TODO how to ensure UTF-8 in the transformed text?
                 transformer.transform(reader, writer);
             }
             catch (ContentIOException e)
@@ -181,11 +202,14 @@ public class GetNodeContent extends StreamContent
 
         if(transformException != null)
         {
-            res.setHeader("XAlfresco-transformException", transformException.getMessage());
+            res.setHeader(TRANSFORM_STATUS_HEADER, "failed");
+            res.setHeader(TRANSFORM_EXCEPTION_HEADER, transformException.getMessage());
             res.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
         }
         else
         {
+            res.setHeader(TRANSFORM_STATUS_HEADER, "ok");
+            res.setStatus(HttpStatus.SC_OK);
             streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
         }
         

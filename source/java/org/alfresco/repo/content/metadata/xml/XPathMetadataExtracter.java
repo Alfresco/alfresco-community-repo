@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.metadata.xml;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -46,10 +47,10 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -92,6 +93,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     private static Log logger = LogFactory.getLog(XPathMetadataExtracter.class);
     
     private DocumentBuilder documentBuilder;
+    private DocumentBuilder dtdIgnoringDocumentBuilder;
     private XPathFactory xpathFactory;
     private Map<String, String> namespacesByPrefix;
     private Map<String, XPathExpression> xpathExpressionMapping;
@@ -104,7 +106,14 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
         try
         {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory normalFactory = DocumentBuilderFactory.newInstance();
+            documentBuilder = normalFactory.newDocumentBuilder();
+            
+            DocumentBuilderFactory dtdIgnoringFactory = DocumentBuilderFactory.newInstance();
+            dtdIgnoringFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            dtdIgnoringFactory.setFeature("http://xml.org/sax/features/validation", false);
+            dtdIgnoringDocumentBuilder = dtdIgnoringFactory.newDocumentBuilder();
+            
             xpathFactory = XPathFactory.newInstance();
         }
         catch (Throwable e)
@@ -211,7 +220,22 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         try
         {
             is = reader.getContentInputStream();
-            Document doc = documentBuilder.parse(is);
+            
+            Document doc;
+            try 
+            {
+                // Try with the default settings
+                doc = documentBuilder.parse(is);
+            }
+            catch(FileNotFoundException e)
+            {
+                // The XML depends on a DTD we don't have available
+                // Try to parse it without using DTDs. (This may mean we miss
+                //  out on some entities, but it's better than nothing!)
+                is = reader.getReader().getContentInputStream();
+                doc = dtdIgnoringDocumentBuilder.parse(is);
+            }
+            
             Map<String, Serializable> rawProperties = processDocument(doc);
             if (logger.isDebugEnabled())
             {

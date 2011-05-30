@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.content.metadata.xml;
 
+import static org.alfresco.repo.content.metadata.AbstractMetadataExtracterTest.QUICK_DESCRIPTION;
+import static org.alfresco.repo.content.metadata.AbstractMetadataExtracterTest.QUICK_TITLE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -30,6 +33,7 @@ import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.selector.RootElementNameContentWorkerSelector;
 import org.alfresco.repo.content.selector.XPathContentWorkerSelector;
@@ -40,6 +44,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -60,6 +65,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class XmlMetadataExtracterTest extends TestCase
 {
     private static final String FILE_ALFRESCO_MODEL = "xml-metadata/alfresco-model-sample.xml";
+    private static final String FILE_DITA_FILE = "xml-metadata/dita-concept-quick.xml";
     private static final String FILE_ECLIPSE_PROJECT = "xml-metadata/eclipse-project-sample.xml";
     private static final String FILE_EMPTY = "xml-metadata/empty-sample.xml";
     private static final String FILE_MALFORMED = "xml-metadata/malformed-sample.xml";
@@ -71,6 +77,7 @@ public class XmlMetadataExtracterTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private XPathMetadataExtracter alfrescoModelMetadataExtracter;
     private XPathMetadataExtracter eclipseProjectMetadataExtracter;
+    private XPathMetadataExtracter ditaConceptMetadataExtracter;
     private RootElementNameContentWorkerSelector<MetadataExtracter> rootElementNameMetadataExtracterSelector;
     private XPathContentWorkerSelector<MetadataExtracter> xpathMetadataExtracterSelector;
     private XmlMetadataExtracter xmlMetadataExtracter;
@@ -103,6 +110,7 @@ public class XmlMetadataExtracterTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         alfrescoModelMetadataExtracter = (XPathMetadataExtracter) ctx.getBean("extracter.xml.AlfrescoModelMetadataExtracter");
         eclipseProjectMetadataExtracter = (XPathMetadataExtracter) ctx.getBean("extracter.xml.EclipseProjectMetadataExtracter");
+        ditaConceptMetadataExtracter = (XPathMetadataExtracter) ctx.getBean("extracter.xml.DITAConceptMetadataExtracter");
         rootElementNameMetadataExtracterSelector = (RootElementNameContentWorkerSelector<MetadataExtracter>) ctx.getBean("extracter.xml.selector.RootElementSelector");
         xpathMetadataExtracterSelector = (XPathContentWorkerSelector<MetadataExtracter>) ctx.getBean("extracter.xml.selector.XPathSelector");
         xmlMetadataExtracter = (XmlMetadataExtracter) ctx.getBean("extracter.xml.XMLMetadataExtracter");
@@ -133,9 +141,9 @@ public class XmlMetadataExtracterTest extends TestCase
         alfrescoModelMetadataExtracter.extract(reader, checkProperties);
         
         // Check the values
-        assertEquals("Gavin Cornwell", checkProperties.get(ContentModel.PROP_AUTHOR));
-        assertEquals("fm:forummodel", checkProperties.get(ContentModel.PROP_TITLE));
-        assertEquals("Forum Model", checkProperties.get(ContentModel.PROP_DESCRIPTION));
+        assertEquals("Gavin Cornwell", getPropertyValue(checkProperties, ContentModel.PROP_AUTHOR));
+        assertEquals("fm:forummodel",  getPropertyValue(checkProperties, ContentModel.PROP_TITLE));
+        assertEquals("Forum Model",    getPropertyValue(checkProperties, ContentModel.PROP_DESCRIPTION));
     }
     
     public void testExtractEclipseProject() throws Exception
@@ -149,8 +157,53 @@ public class XmlMetadataExtracterTest extends TestCase
         eclipseProjectMetadataExtracter.extract(reader, checkProperties);
         
         // Check the values
-        assertEquals("Repository", checkProperties.get(ContentModel.PROP_TITLE));
-        assertEquals("JavaCC Nature", checkProperties.get(ContentModel.PROP_DESCRIPTION));
+        assertEquals("Repository",    getPropertyValue(checkProperties, ContentModel.PROP_TITLE));
+        assertEquals("JavaCC Nature", getPropertyValue(checkProperties, ContentModel.PROP_DESCRIPTION));
+    }
+    
+    public void testDITAFileWithDoctype() throws Exception
+    {
+        // Load the file as-is, with it's doctype
+        ContentReader reader = getReader(FILE_DITA_FILE);
+        assertTrue(reader.exists());
+        
+        // Check we have the doctype
+        String contents = reader.getContentString();
+        assertTrue("DOCTYPE should be present but wasn't", contents.indexOf("<!DOCTYPE") > -1);
+        
+        // Reset ready for the extraction test
+        reader = reader.getReader();
+        
+        // Now test extraction
+        doTestDITAFile(reader);
+    }
+    public void testDITAFileWithoutDoctype() throws Exception
+    {
+        // Munge the file to skip the doctype
+        ContentReader reader = getReader(FILE_DITA_FILE);
+        assertTrue(reader.exists());
+        String contents = reader.getContentString();
+        String noDocType = contents.replaceAll("<!DOCTYPE.*?>", "");
+        
+        File tmp = File.createTempFile("alfresco", ".xml");
+        tmp.deleteOnExit();
+        ContentWriter w = new FileContentWriter(tmp);
+        w.setEncoding(reader.getEncoding());
+        w.setMimetype(reader.getMimetype());
+        w.putContent(noDocType);
+                
+        // Now test extraction
+        doTestDITAFile(w.getReader());
+    }
+    private void doTestDITAFile(ContentReader reader) throws Exception
+    {
+        // Pass it to the extracter
+        PropertyMap checkProperties = new PropertyMap();
+        ditaConceptMetadataExtracter.extract(reader, checkProperties);
+        
+        // Check the values
+        assertEquals(QUICK_TITLE,       getPropertyValue(checkProperties, ContentModel.PROP_TITLE));
+        assertEquals(QUICK_DESCRIPTION, getPropertyValue(checkProperties, ContentModel.PROP_DESCRIPTION));
     }
     
     public void testEmptyFile() throws Exception
@@ -239,16 +292,16 @@ public class XmlMetadataExtracterTest extends TestCase
         PropertyMap checkAlfrescoModelProperties = new PropertyMap();
         xmlMetadataExtracter.extract(alfrescoModelReader, checkAlfrescoModelProperties);
         // Check the values
-        assertEquals("Gavin Cornwell", checkAlfrescoModelProperties.get(ContentModel.PROP_AUTHOR));
-        assertEquals("fm:forummodel", checkAlfrescoModelProperties.get(ContentModel.PROP_TITLE));
-        assertEquals("Forum Model", checkAlfrescoModelProperties.get(ContentModel.PROP_DESCRIPTION));
+        assertEquals("Gavin Cornwell", getPropertyValue(checkAlfrescoModelProperties, ContentModel.PROP_AUTHOR));
+        assertEquals("fm:forummodel",  getPropertyValue(checkAlfrescoModelProperties, ContentModel.PROP_TITLE));
+        assertEquals("Forum Model",    getPropertyValue(checkAlfrescoModelProperties, ContentModel.PROP_DESCRIPTION));
 
         // Pass the Eclipse Project xml to the extractor
         PropertyMap checkEclipseProjectProperties = new PropertyMap();
         xmlMetadataExtracter.extract(eclipseProjectReader, checkEclipseProjectProperties);
         // Check the values
-        assertEquals("Repository", checkEclipseProjectProperties.get(ContentModel.PROP_TITLE));
-        assertEquals("JavaCC Nature", checkEclipseProjectProperties.get(ContentModel.PROP_DESCRIPTION));
+        assertEquals("Repository",    getPropertyValue(checkEclipseProjectProperties, ContentModel.PROP_TITLE));
+        assertEquals("JavaCC Nature", getPropertyValue(checkEclipseProjectProperties, ContentModel.PROP_DESCRIPTION));
     }
     
     /**
@@ -301,5 +354,17 @@ public class XmlMetadataExtracterTest extends TestCase
         String checkDescription = (String) nodeService.getProperty(contentNodeRef, ContentModel.PROP_DESCRIPTION);
         assertEquals("fm:forummodel", checkTitle);
         assertEquals("Forum Model", checkDescription);
+    }
+    
+    private String getPropertyValue(PropertyMap properties, QName qname)
+    {
+        Object val = properties.get(qname);
+        assertNotNull("Property " + qname + " missing, properties are " + properties.keySet(), val);
+        
+        if(val instanceof String)
+            return (String)val;
+        if(val instanceof MLText)
+            return ((MLText)val).getDefaultValue();
+        return val.toString();
     }
 }

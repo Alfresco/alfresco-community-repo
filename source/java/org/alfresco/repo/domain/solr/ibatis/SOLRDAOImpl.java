@@ -2,6 +2,7 @@ package org.alfresco.repo.domain.solr.ibatis;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.SOLRTransactionParameters;
 import org.alfresco.repo.domain.solr.Transaction;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -226,6 +228,7 @@ public class SOLRDAOImpl implements SOLRDAO
         boolean includePaths = (resultFilter == null ? true : resultFilter.getIncludePaths());
         boolean includeNodeRef = (resultFilter == null ? true : resultFilter.getIncludeNodeRef());
         boolean includeAssociations = (resultFilter == null ? true : resultFilter.getIncludeAssociations());
+        boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
         
         Iterable<Long> iterable = null;
@@ -316,7 +319,7 @@ public class SOLRDAOImpl implements SOLRDAO
                 nodeMetaData.setNodeRef(pair.getSecond());
             }
         
-            if(includeAssociations)
+            if(includeChildAssociations)
             {
                 final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
                 nodeDAO.getChildAssocs(nodeId, null, null, null, false, false, new ChildAssocRefQueryCallback()
@@ -342,9 +345,15 @@ public class SOLRDAOImpl implements SOLRDAO
                     }
                 });
                 nodeMetaData.setChildAssocs(childAssocs);
-                
+            }
+
+            if(includeAssociations)
+            {
                 // TODO non-child associations
-//              Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
+//                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
+//                Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId);
+//                
+//                nodeMetaData.setAssocs();
             }
             
             if(includeOwner)

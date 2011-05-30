@@ -14,9 +14,18 @@ public class MetaDataResultsFilter
     private boolean includeAclId = true;
     private boolean includeOwner = true;
     private boolean includePaths = true;
-    private boolean includeAssociations = true;
+    private boolean includeAssociations = false;
+    private boolean includeChildAssociations = true;
     private boolean includeNodeRef = true;
     
+    public boolean getIncludeChildAssociations()
+    {
+        return includeChildAssociations;
+    }
+    public void setIncludeChildAssociations(boolean includeChildAssociations)
+    {
+        this.includeChildAssociations = includeChildAssociations;
+    }
     public boolean getIncludeNodeRef()
     {
         return includeNodeRef;

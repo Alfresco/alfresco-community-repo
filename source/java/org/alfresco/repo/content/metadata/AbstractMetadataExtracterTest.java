@@ -57,11 +57,11 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     */
     protected ApplicationContext ctx;
     
-    protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
-    protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
-    protected static final String QUICK_CREATOR = "Nevin Nollop";
-    protected static final String QUICK_CREATOR_EMAIL = "nevin.nollop@alfresco.com";
-    protected static final String QUICK_PREVIOUS_AUTHOR = "Derek Hulley";
+    public static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
+    public static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
+    public static final String QUICK_CREATOR = "Nevin Nollop";
+    public static final String QUICK_CREATOR_EMAIL = "nevin.nollop@alfresco.com";
+    public static final String QUICK_PREVIOUS_AUTHOR = "Derek Hulley";
 
     protected MimetypeMap mimetypeMap;
     protected DictionaryService dictionaryService;

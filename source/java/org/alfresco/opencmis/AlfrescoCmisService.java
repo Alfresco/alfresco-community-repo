@@ -148,7 +148,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         this.context = context;
 
         AuthenticationUtil.pushAuthentication();
-        
+
         try
         {
             String currentUser = connector.getAuthenticationService().getCurrentUserName();
@@ -694,30 +694,63 @@ public class AlfrescoCmisService extends AbstractCmisService
             // versions are filed in the same folder -> cut off version suffix
             String currentVersionId = connector.getCurrentVersionId(objectId);
             NodeRef nodeRef = connector.getNodeRef(currentVersionId);
-            NodeRef rootNodeRef = connector.getRootNodeRef();
 
-            if (!nodeRef.equals(rootNodeRef))
+            TypeDefinitionWrapper type = connector.getType(nodeRef);
+
+            if (type instanceof FolderTypeDefintionWrapper)
             {
-                ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(nodeRef);
-                if (parent != null)
+                NodeRef rootNodeRef = connector.getRootNodeRef();
+
+                if (!nodeRef.equals(rootNodeRef))
                 {
-                    ObjectData object = connector.createCMISObject(parent.getParentRef(), filter,
-                            includeAllowableActions, includeRelationships, renditionFilter, false, false);
-                    if (context.isObjectInfoRequired())
+                    ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(nodeRef);
+                    if (parent != null)
                     {
-                        getObjectInfo(repositoryId, object.getId());
+                        ObjectData object = connector.createCMISObject(parent.getParentRef(), filter,
+                                includeAllowableActions, includeRelationships, renditionFilter, false, false);
+                        if (context.isObjectInfoRequired())
+                        {
+                            getObjectInfo(repositoryId, object.getId());
+                        }
+
+                        ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                        objectParent.setObject(object);
+
+                        // include relative path segment
+                        if (includeRelativePathSegment)
+                        {
+                            objectParent.setRelativePathSegment(connector.getName(nodeRef));
+                        }
+
+                        result.add(objectParent);
                     }
-
-                    ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
-                    objectParent.setObject(object);
-
-                    // include relative path segment
-                    if (includeRelativePathSegment)
+                }
+            } else
+            {
+                List<ChildAssociationRef> parents = connector.getNodeService().getParentAssocs(nodeRef,
+                        ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                if (parents != null)
+                {
+                    for (ChildAssociationRef parent : parents)
                     {
-                        objectParent.setRelativePathSegment(connector.getName(nodeRef));
-                    }
+                        ObjectData object = connector.createCMISObject(parent.getParentRef(), filter,
+                                includeAllowableActions, includeRelationships, renditionFilter, false, false);
+                        if (context.isObjectInfoRequired())
+                        {
+                            getObjectInfo(repositoryId, object.getId());
+                        }
 
-                    result.add(objectParent);
+                        ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                        objectParent.setObject(object);
+
+                        // include relative path segment
+                        if (includeRelativePathSegment)
+                        {
+                            objectParent.setRelativePathSegment(connector.getName(nodeRef));
+                        }
+
+                        result.add(objectParent);
+                    }
                 }
             }
         }

@@ -27,6 +27,15 @@
          <title>SOLR Object</title>
          <parent>cm:content</parent>
          <properties>
+            <property name="teststm:contentProp">
+               <title>contentProp</title>
+               <type>d:content</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="false">
+               </index>
+               <constraints>
+               </constraints>
+            </property>
             <property name="teststm:mlTextProp">
                <title>mlTextProp</title>
                <type>d:mltext</type>

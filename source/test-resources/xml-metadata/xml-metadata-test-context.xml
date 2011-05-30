@@ -26,6 +26,27 @@
       </property>
    </bean>
    
+   <!-- An extractor that operates on DITA Concept Files -->
+   <bean id="extracter.xml.DITAConceptMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/dita-concept-quick-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/dita-concept-quick-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
    <!-- An extractor that operates on Eclipse project files -->
    <bean id="extracter.xml.EclipseProjectMetadataExtracter"
          class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"

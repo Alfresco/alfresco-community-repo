@@ -1226,8 +1226,9 @@
    <!--                                                                                                       -->
    <!--                                                                                                       -->
    
-   <bean id="solrSerializer" class="org.alfresco.util.SOLRSerializer" init-method="init">
+   <bean id="solrSerializer" class="org.alfresco.repo.web.scripts.solr.SOLRSerializer" init-method="init">
       <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.getTransactions.get"
@@ -1248,7 +1249,7 @@
       <property name="solrDAO" ref="solrDAO"/>
       <property name="solrSerializer" ref="solrSerializer"/>
    </bean>
-<!--   
+
    <bean id="webscript.org.alfresco.repository.solr.getNodeContent.get"
          class="org.alfresco.repo.web.scripts.solr.GetNodeContent"
          parent="webscript">
@@ -1256,5 +1257,5 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
--->
+
 </beans>

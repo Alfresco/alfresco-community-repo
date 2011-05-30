@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.node.ContentDataWithId;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.solr.MetaDataResultsFilter;
 import org.alfresco.repo.domain.solr.NodeMetaData;
 import org.alfresco.repo.domain.solr.NodeMetaDataParameters;
@@ -18,7 +18,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.SOLRSerializer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -160,8 +159,15 @@ public class GetNodesMetaData extends DeclarativeWebScript
                 {
                     // need to perform data structure conversions that are compatible with Freemarker
                     // e.g. Serializable -> String, QName -> String (because map keys must be string, number)
-                    FreemarkerNodeMetaData fNodeMetaData = new FreemarkerNodeMetaData(solrSerializer, nodeMetaData);
-                    nodesMetaData.add(fNodeMetaData);
+                    try
+                    {
+                        FreemarkerNodeMetaData fNodeMetaData = new FreemarkerNodeMetaData(solrSerializer, nodeMetaData);
+                        nodesMetaData.add(fNodeMetaData);
+                    }
+                    catch(Exception e)
+                    {
+                        throw new AlfrescoRuntimeException("Problem converting to Freemarker", e);
+                    }
 
                     if(noSizeCalculated && --counter == 0)
                     {
@@ -194,47 +200,54 @@ public class GetNodesMetaData extends DeclarativeWebScript
         }
     }
     
+    /*
+     * Bean to store node meta data for use by FreeMarker templates
+     */
     public static class FreemarkerNodeMetaData
     {
         private Long nodeId;
         private NodeRef nodeRef;
         private QName nodeType;
         private Long aclId;
-        private Map<String, Object> properties;
+        private Map<String, String> properties;
         private Set<QName> aspects;
-        private List<Path> paths;
+        private List<String> paths;
         private List<ChildAssociationRef> childAssocs;
-        
-        public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData)
+
+        @SuppressWarnings("unchecked")
+        public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
             setNodeId(nodeMetaData.getNodeId());
             setAclId(nodeMetaData.getAclId());
             setNodeRef(nodeMetaData.getNodeRef());
             setNodeType(nodeMetaData.getNodeType());
             
-            // TODO need to use SOLRTypeConverter to serialize Path
+            // convert Paths to Strings
+            List<String> paths = new ArrayList<String>();
             for(Path path : nodeMetaData.getPaths())
             {
-                
+                paths.add(solrSerializer.serializeValue(String.class, path));
             }
-            setPaths(nodeMetaData.getPaths());
+            setPaths(paths);
+
             setChildAssocs(nodeMetaData.getChildAssocs());
             setAspects(nodeMetaData.getAspects());
             Map<QName, Serializable> props = nodeMetaData.getProperties();
-            Map<String, Object> properties = (props != null ? new HashMap<String, Object>(props.size()) : null);
+            Map<String, String> properties = (props != null ? new HashMap<String, String>(props.size()) : null);
             for(QName propName : props.keySet())
             {
                 Serializable value = props.get(propName);
-
-                if(value instanceof ContentDataWithId)
-                {
-                    // special case - ContentDataWithId
-                    properties.put(propName.toString(), ((ContentDataWithId)value).getId());
-                }
-                else
-                {
-                    properties.put(propName.toString(), solrSerializer.serialize(propName, value));
-                }
+// deal with mutli value here
+//                if(value instanceof ContentDataWithId)
+//                {
+//                    // special case - ContentDataWithId
+//                    properties.put(propName, String.valueOf(((ContentDataWithId)value).getId()));
+//                }
+//                else
+//                {
+                    properties.put(solrSerializer.serializeValue(String.class, propName),
+                            solrSerializer.serialize(propName, value));
+//                }
             }
             setProperties(properties);
         }
@@ -247,11 +260,11 @@ public class GetNodesMetaData extends DeclarativeWebScript
         {
             this.nodeRef = nodeRef;
         }
-        public List<Path> getPaths()
+        public List<String> getPaths()
         {
             return paths;
         }
-        public void setPaths(List<Path> paths)
+        public void setPaths(List<String> paths)
         {
             this.paths = paths;
         }
@@ -279,11 +292,11 @@ public class GetNodesMetaData extends DeclarativeWebScript
         {
             this.aclId = aclId;
         }
-        public Map<String, Object> getProperties()
+        public Map<String, String> getProperties()
         {
             return properties;
         }
-        public void setProperties(Map<String, Object> properties)
+        public void setProperties(Map<String, String> properties)
         {
             this.properties = properties;
         }

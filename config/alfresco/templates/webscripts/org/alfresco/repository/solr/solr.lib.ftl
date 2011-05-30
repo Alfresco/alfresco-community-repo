@@ -26,8 +26,11 @@ TODO property values: string, number, date (at the moment all output as string)
          "aclId": <#if filter.includeAclId??><#if nodeMetaData.aclId??>${nodeMetaData.aclId?c}<#else>null</#if>,</#if>
          <#if filter.includeProperties??>
          "properties": {
-           <#list nodeMetaData.properties?keys as propQName>
-               <@qNameJSON qName=propQName/>: ${nodeMetaData.properties[propQName]}<#if propQName_has_next>,</#if>
+           <#list nodeMetaData.properties?keys as propName>
+               "${propName}": "${nodeMetaData.properties[propName]}"<#if propName_has_next>,</#if>
+<#--
+               <@qNameJSON qName=propQName/>: "${nodeMetaData.properties[propQName]}"<#if propQName_has_next>,</#if>
+-->
            </#list>
          },
          </#if>
@@ -41,7 +44,10 @@ TODO property values: string, number, date (at the moment all output as string)
          <#if filter.includePaths??>
          "paths": [
            <#list nodeMetaData.paths as path>
+           "${path}"<#if path_has_next>,</#if>
+<#--
                <@pathJSON path=path indent=""/><#if path_has_next>,</#if>
+-->
            </#list>
          ]
          </#if>
@@ -49,7 +55,11 @@ TODO property values: string, number, date (at the moment all output as string)
 </#macro>
 
 <#macro pathJSON path indent="">
-${indent}"${path.toString()}"
+${indent}[
+<#list path as element>
+${indent}"${element}"<#if element_has_next>,</#if>
+</#list>
+${indent}]
 </#macro>
 
 <#macro qNameJSON qName indent="">

@@ -73,4 +73,13 @@ public class NodeMetaData
     {
         this.paths = paths;
     }
+    
+    @Override
+    public String toString()
+    {
+        return "NodeMetaData [id=" + id + ", nodeRef=" + nodeRef + ", type=" + type + ", aclId=" + aclId
+                + ", properties=" + properties + ", aspects=" + aspects + ", paths=" + paths + "]";
+    }
+    
+    
 }

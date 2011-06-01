@@ -203,6 +203,7 @@ public class Schema2XForms implements Serializable
       importedSchemaDocumentElement.setAttributeNS(null, "id", "schema-1");
 
       NodeList nl = importedSchemaDocumentElement.getChildNodes();
+      boolean hasExternalSchema = false;
       
       for (int i = 0; i < nl.getLength(); i++)
       {
@@ -212,12 +213,17 @@ public class Schema2XForms implements Serializable
               String localName = current.getLocalName();
               if (localName.equals("include") || localName.equals("import"))
               {
-                  importedSchemaDocumentElement.removeChild(current);
+                  hasExternalSchema = true;
+				  break;
               }
           }
       }
 
-      modelSection.appendChild(importedSchemaDocumentElement);
+      // ALF-8105 / ETWOTWO-1384: Only embed the schema if it does not reference externals
+      if (!hasExternalSchema)
+      {
+          modelSection.appendChild(importedSchemaDocumentElement);
+      }
 
       //check if target namespace
       final StringList schemaNamespaces = schema.getNamespaces();

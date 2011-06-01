@@ -127,10 +127,6 @@ alfresco.xforms.Widget = new Class({
       {
         this.hideAlert();
       }
-      else
-      {
-        this.showAlert();
-      }
   },
 
   /** Sets the widget's valid state, as indicated by an XFormsEvent */

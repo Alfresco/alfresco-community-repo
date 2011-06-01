@@ -35,18 +35,11 @@ public class InviteSpaceUsersWizard extends BaseInviteUsersWizard
 {
    private static final long serialVersionUID = -1584891656721183347L;
    
-   /** Cache of available folder permissions */
-   Set<String> folderPermissions = null;
-   
    @Override
    protected Set<String> getPermissionsForType()
    {
-      if (this.folderPermissions == null)
-      {
-         this.folderPermissions = this.permissionService.getSettablePermissions(getNode().getType());
-      }
-       
-      return this.folderPermissions;
+      // Let the permission service do the caching to allow for dynamic model updates, etc.
+      return this.permissionService.getSettablePermissions(getNode().getType());
    }
 
    @Override

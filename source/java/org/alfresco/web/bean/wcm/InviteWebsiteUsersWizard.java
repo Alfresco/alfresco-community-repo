@@ -42,9 +42,6 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
 {
    private static final long serialVersionUID = -8128781845465773847L;
 
-   /** Cache of available folder permissions */
-   Set<String> folderPermissions = null;
-   
    /** the node representing the website */
    private Node website;
    
@@ -147,13 +144,8 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
    @Override
    protected Set<String> getPermissionsForType()
    {
-      if (this.folderPermissions == null)
-      {
-         // get permissions and roles for a website folder type
-         this.folderPermissions = this.getPermissionService().getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
-      }
-       
-      return this.folderPermissions;
+      // Let the permission service do the caching to allow for dynamic model updates, etc.
+      return this.permissionService.getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
    }
 
    protected void setNode(Node node)

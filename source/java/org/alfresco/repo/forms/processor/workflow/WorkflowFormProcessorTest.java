@@ -569,6 +569,8 @@ public class WorkflowFormProcessorTest extends TestCase
     private NamespaceService makeNamespaceService()
     {
         NamespaceServiceMemoryImpl nsService = new NamespaceServiceMemoryImpl();
+        nsService.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);
+        nsService.registerNamespace(NamespaceService.RENDITION_MODEL_PREFIX, NamespaceService.RENDITION_MODEL_1_0_URI);
         nsService.registerNamespace(NamespaceService.BPM_MODEL_PREFIX, NamespaceService.BPM_MODEL_1_0_URI);
         nsService.registerNamespace(NamespaceService.WORKFLOW_MODEL_PREFIX, NamespaceService.WORKFLOW_MODEL_1_0_URI);
         return nsService;

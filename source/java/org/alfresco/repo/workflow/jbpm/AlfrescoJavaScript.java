@@ -201,7 +201,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 	private String getExpression(boolean isTextOnly) {
         if (isTextOnly)
         {
-            return script.getTextTrim();
+            return script.getText().trim();
         }
         else
         {
@@ -210,7 +210,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
             {
                 throw new WorkflowException("Script expression has not been provided");
             }
-            return expressionElement.getTextTrim();
+            return expressionElement.getText().trim();
         }
 	}
 

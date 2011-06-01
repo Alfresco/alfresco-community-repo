@@ -38,6 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -208,10 +209,13 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         ArrayList<String> fields = new ArrayList<String>(8);
         
         // ignore system properties by default
-        fields.add("sys:node-dbid");
-        fields.add("sys:store-identifier");
-        fields.add("sys:node-uuid");
-        fields.add("sys:store-protocol");
+        fields.add(ContentModel.PROP_NODE_DBID.toPrefixString(this.namespaceService));
+        fields.add(ContentModel.PROP_NODE_UUID.toPrefixString(this.namespaceService));
+        fields.add(ContentModel.PROP_STORE_IDENTIFIER.toPrefixString(this.namespaceService));
+        fields.add(ContentModel.PROP_STORE_PROTOCOL.toPrefixString(this.namespaceService));
+        
+        // ignore associations that are system maintained
+        fields.add(RenditionModel.ASSOC_RENDITION.toPrefixString(this.namespaceService));
         
         return fields;
     }

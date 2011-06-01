@@ -3294,6 +3294,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         List<NodeRef.Status> nodeStatuses = new ArrayList<NodeRef.Status>(nodes.size());
         for (NodeEntity node : nodes)
         {
+            Long nodeId = node.getId();
+            Node cached = nodesCache.getValue(nodeId);
+            if (cached != null && !txnId.equals(cached.getTransaction().getId()))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Stale cached node #" + nodeId
+                            + " detected during transaction tracking. Cached transaction ID: "
+                            + cached.getTransaction().getId() + ", actual transaction ID: " + txnId);
+                }
+                invalidateCachesByNodeId(null, nodeId, nodesCache);
+                invalidateCachesByNodeId(null, nodeId, parentAssocsCache);
+            }
             nodeStatuses.add(node.getNodeStatus());
         }
         // Done

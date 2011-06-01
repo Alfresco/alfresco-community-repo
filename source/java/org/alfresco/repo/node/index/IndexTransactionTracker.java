@@ -512,21 +512,35 @@ found:
             // If the batch is full or if there are no more voids, fire the query
             if (voidTxnIdBatch.size() == VOID_BATCH_SIZE || !voidTxnIdIterator.hasNext())
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Checking void txn batch " + voidTxnIdBatch);
+                }
                 List<Transaction> filledTxns = nodeDAO.getTxnsByCommitTimeAscending(voidTxnIdBatch);
                 for (Transaction txn : filledTxns)
                 {
+                    InIndex inIndex;
                     if (txn.getCommitTimeMs() == null)          // Just coping with Hibernate mysteries
                     {
                         continue;
                     }
-                    else if (isTxnPresentInIndex(txn) != InIndex.NO)
+                    else if ((inIndex = isTxnPresentInIndex(txn)) != InIndex.NO)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Expiring indexed void txn " + txn.getId() + " (inIndex = " + inIndex + ")");
+                        }
                         // It is in the index so expire it from the voids.
                         // This can happen if void was committed locally.
                         toExpireTxnIds.add(txn.getId());
                     }
                     else
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Found unindexed void txn " + txn.getId() + " (inIndex = " + inIndex + ")");
+                        }
+
                         // It's not in the index so we have a timespamp from which to kick off
                         // It is a bone fide first transaction.  A void has been filled.
                         long txnCommitTimeMs = txn.getCommitTimeMs().longValue();
@@ -547,6 +561,11 @@ found:
             TxnRecord voidTxnRecord = voids.get(voidTxnId);
             if (voidTxnRecord.txnCommitTime < maxHistoricalTime)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Expiring void txn " + voidTxnId + " ("
+                            + (maxHistoricalTime - voidTxnRecord.txnCommitTime) + " ms too old)");
+                }
                 // It's too late for this void whether or not it has become live
                 toExpireTxnIds.add(voidTxnId);
             }
@@ -622,10 +641,11 @@ found:
             processedTxnRecord.txnCommitTime = txnCommitTimeMs;
             processedTxnRecords.put(txnId, processedTxnRecord);
             // Remove this entry from the void list - it is not void
-            voids.remove(txnId);
+            boolean previouslyVoid = voids.remove(txnId) != null;
             
             // Reindex the transaction if we are forcing it or if it isn't in the index already
-            if (forceReindex || isTxnPresentInIndex(txn) == InIndex.NO)
+            InIndex inIndex = InIndex.INDETERMINATE;
+            if (forceReindex || (inIndex = isTxnPresentInIndex(txn)) == InIndex.NO)
             {
                 // From this point on, until the tracker has caught up, all transactions need to be indexed
                 forceReindex = true;
@@ -633,14 +653,29 @@ found:
                 txnIdBuffer.add(txnId);
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Reindexing transaction: " + txn);
+                    if (previouslyVoid)
+                    {
+                        logger.debug("Reindexing previously void transaction: " + txn + " (inIndex = " + inIndex + ")");
+                    }
+                    else
+                    {
+                        logger.debug("Reindexing transaction: " + txn + " (inIndex = " + inIndex + ")");
+                    }
                 }
             }
             else
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Reindex skipping transaction: " + txn);
+                    if (previouslyVoid)
+                    {
+                        logger.debug("Reindex skipping previously void transaction: " + txn + " (inIndex = " + inIndex
+                                + ")");
+                    }
+                    else
+                    {
+                        logger.debug("Reindex skipping transaction: " + txn + " (inIndex = " + inIndex + ")");
+                    }
                 }
             }
             

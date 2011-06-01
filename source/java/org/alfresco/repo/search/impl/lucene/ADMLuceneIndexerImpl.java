@@ -74,6 +74,7 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -428,7 +429,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
                 for (Helper helper : toFTSIndex)
                 {
+                    // Delete both the document and the supplementary FTSSTATUS document (if there is one)
                     deletions.add(helper.ref);
+                    deletions.add(helper.id);
                 }
 
             }
@@ -745,20 +748,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
             xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
             xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-            if (isAtomic || indexAllProperties)
+
+            // Record the need for FTS on this node and transaction with a supplementary document. That way we won't
+            // forget about it if FTS is already in progress for an earlier transaction!
+            if (!isAtomic && !indexAllProperties)
             {
-                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-            }
-            else
-            {
+                Document ftsStatus = new Document();
+                ftsStatus.add(new Field("ID", GUID.generate(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+                ftsStatus.add(new Field("FTSREF", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+                ftsStatus.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                 if (isNew)
                 {
-                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                    ftsStatus.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                 }
                 else
                 {
-                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                    ftsStatus.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                 }
+                docs.add(ftsStatus);
             }
 
             // {
@@ -1544,7 +1551,22 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 for (int i = 0; i < hits.length(); i++)
                 {
                     Document doc = hits.doc(i);
-                    Helper helper = new Helper(doc.getField("ID").stringValue(), doc.getField("TX").stringValue());
+
+                    // For backward compatibility with existing indexes, cope with FTSSTATUS being stored directly on
+                    // the real document without an FTSREF
+                    Field ftsRef = doc.getField("FTSREF");
+                    Field id = doc.getField("ID");
+                    Helper helper;
+                    if (ftsRef == null)
+                    {
+                        // Old style - we only have a node ref
+                        helper = new Helper(id.stringValue(), id.stringValue(), doc.getField("TX").stringValue());
+                    }
+                    else
+                    {
+                        // New style - we have a unique FTS ID and a noderef
+                        helper = new Helper(id.stringValue(), ftsRef.stringValue(), doc.getField("TX").stringValue());
+                    }
                     toFTSIndex.add(helper);
                     if (++count >= size)
                     {
@@ -1583,6 +1605,13 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         NodeRef ref = new NodeRef(helper.ref);
                         // bypass nodes that have disappeared
                         if (!nodeService.exists(ref))
+                        {
+                            continue;
+                        }
+                        
+                        // bypass out of date transactions
+                        NodeRef.Status nodeStatus = nodeService.getNodeStatus(ref);
+                        if (nodeStatus == null || !helper.tx.equals(nodeStatus.getChangeTxnId()))
                         {
                             continue;
                         }
@@ -1654,12 +1683,15 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     private static class Helper
     {
+        String id;
+
         String ref;
 
         String tx;
 
-        Helper(String ref, String tx)
+        Helper(String id, String ref, String tx)
         {
+            this.id = id;
             this.ref = ref;
             this.tx = tx;
         }

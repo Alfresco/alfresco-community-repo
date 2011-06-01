@@ -25,6 +25,7 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
 
@@ -49,7 +50,7 @@ public class JBPMNode extends ScriptNode
      */
     public JBPMNode(NodeRef nodeRef, ServiceRegistry services)
     {
-        super(nodeRef, services, null);
+        super(nodeRef, services, NullScope.instance());
     }
 
     /**

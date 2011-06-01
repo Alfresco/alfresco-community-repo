@@ -31,11 +31,14 @@
         <property name="transferVersionChecker">
             <ref bean="transferVersionChecker" />
         </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
 		<property name="transferSpaceQuery">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_groups.childname}</value>
 		</property>
 		<property name="defaultTransferGroup">
-			<value>Default Group</value>
+			<value>cm:default</value>
 		</property>
 		<property name="transmitter" ref="transferTransmitter" />
 

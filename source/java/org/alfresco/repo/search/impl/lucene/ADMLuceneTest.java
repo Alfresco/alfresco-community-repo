@@ -233,7 +233,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     {
         super();
     }
-    
     /**
      * @param arg0
      */
@@ -4624,7 +4623,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 //            {
 //                continue;
 //            }
-            
+
 //            String sDate = df.getSimpleDateFormat().format(date);
 //            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "DATE-ista")) + ":\"" + sDate + "\"", null);
 //            assertEquals(1, results.length());
@@ -4666,7 +4665,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
             results.close();
 
-          
+            
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
             assertEquals(2, results.length());           
             assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));

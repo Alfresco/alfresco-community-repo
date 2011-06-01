@@ -21,9 +21,9 @@ package org.alfresco.repo.transfer;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -92,6 +92,7 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -166,6 +167,7 @@ public class TransferServiceImpl2 implements TransferService2
     private TenantService tenantService;
     private DescriptorService descriptorService;
     private TransferVersionChecker transferVersionChecker;
+    private NamespaceService namespaceService;
     
     /**
      * How long to delay while polling for commit status.
@@ -255,12 +257,19 @@ public class TransferServiceImpl2 implements TransferService2
         return retVal;
     }
 
-    private NodeRef getDefaultGroup()
+    protected NodeRef getDefaultGroup()
     {
         NodeRef home = getTransferHome();
-        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS,
-                    defaultTransferGroup);
-        return defaultGroup;
+        List<ChildAssociationRef> refs = nodeService.getChildAssocs(home, ContentModel.ASSOC_CONTAINS, QName.createQName(defaultTransferGroup, namespaceService));
+        if (refs.isEmpty())
+        {
+            // No transfer group.
+            throw new TransferException(MSG_NO_GROUP, new Object[]
+            {
+                defaultTransferGroup
+            });
+        }
+        return refs.get(0).getChildRef();
     }
 
     /**
@@ -1476,6 +1485,11 @@ public class TransferServiceImpl2 implements TransferService2
     public TransferVersionChecker getTransferVersionChecker()
     {
         return transferVersionChecker;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     private class TransferStatus 

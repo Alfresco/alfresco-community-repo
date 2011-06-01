@@ -367,8 +367,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         TransferTarget targetB = transferService.createAndSaveTransferTarget(nameB, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
 
         NodeRef transferHome = transferServiceImpl.getTransferHome();
-        NodeRef defaultGroup = nodeService.getChildByName(transferHome, ContentModel.ASSOC_CONTAINS, 
-                transferServiceImpl.getDefaultTransferGroup());
+        NodeRef defaultGroup = transferServiceImpl.getDefaultGroup();
         assertNotNull(defaultGroup);
         copyService.copyAndRename(defaultGroup, transferHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), true);
         

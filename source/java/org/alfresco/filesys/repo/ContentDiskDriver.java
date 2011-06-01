@@ -3450,9 +3450,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                         throw new org.alfresco.repo.security.permissions.AccessDeniedException("No write access to " + name);
                     
-                    if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED && fstate.findAttribute(CanDeleteWithoutPerms) == null)
-                        throw new org.alfresco.repo.security.permissions.AccessDeniedException("No delete access to " + name);
-                    
                     // Inhibit versioning for this transaction
                     
                     getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
@@ -3461,6 +3458,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
                     {
+                        // Check deleting permissions on the node if action of deleting was configured only
+                        if ((AccessStatus.DENIED == permissionService.hasPermission(nodeRef, PermissionService.DELETE)) && (null == fstate.findAttribute(CanDeleteWithoutPerms)))
+                        {
+                            throw new org.alfresco.repo.security.permissions.AccessDeniedException("No delete access to " + name);
+                        }
+
                         // Check if the node is locked
                         
                         if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_LOCKABLE))

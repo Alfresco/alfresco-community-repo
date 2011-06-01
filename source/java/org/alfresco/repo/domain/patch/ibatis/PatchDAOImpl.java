@@ -424,10 +424,16 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
                 // requery using the previous maxAssocId
                 minAssocId = maxAssocId;
                 // Double the range multiplier if we have a low hit-rate (<50% of desired size)
-                if (rows.size() < queryMaxResults / 2)
+                // and we can avoid integer overflow
+                if (rows.size() < queryMaxResults / 2 )
                 {
-                    rangeMultiplier *= 2L;
+                    long newRangeMultiplier = rangeMultiplier * 2L;
+                    long newIdRange = maxResults * newRangeMultiplier;                    
+                    if (newIdRange > 0 && newIdRange < maxIdRange)
+                    {
+                        rangeMultiplier = newRangeMultiplier;
                 }
+            }
             }
             catch (Throwable e)
             {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,14 +30,14 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 
-/*
+/**
  * Base class for Dictionary web scripts
  * 
  * @author Saravanan Sellathurai
  */
 public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 {
-	private static final String NAME_DELIMITER = "_";
+    private static final String NAME_DELIMITER = "_";
     
     private Map<String, String> prefixesAndUrlsMap;
     private Map<String, String> urlsAndPrefixesMap;
@@ -56,6 +56,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     private static final String ASSOCIATION_FILTER_OPTION_TYPE2 = "general";
     private static final String ASSOCIATION_FILTER_OPTION_TYPE3 = "child";
     
+    
     /**
      * Set the namespaceService property.
      * 
@@ -63,7 +64,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
      */
     public void setNamespaceService(NamespaceService namespaceservice)
     {
-    	this.namespaceService = namespaceservice;
+        this.namespaceService = namespaceservice;
     }
     
     /**
@@ -117,17 +118,15 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     
     
     /**
-     * 
      * @param qname
      * @return the namespaceuri from a qname 
      */
     public String getNamespaceURIfromQname(QName qname)
     {
     	return qname.getNamespaceURI();
-     }
+    }
 	
     /**
-     * 
      * @param className     the class name as cm_person
      * @return String       the full name in the following format {namespaceuri}shorname
      */
@@ -142,14 +141,13 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 			result = "{" + url + "}"+ name;
 			return result;
        	}
-       	catch(Exception e)
+       	catch (Exception e)
        	{
        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact classname - " + classname + "  parameter has not been provided in the URL");
        	}
     }
     
     /**
-     * 
      * @param classname - checks whether the classname is valid , gets the classname as input e.g cm_person
      * @return true - if the class is valid , false - if the class is invalid
      */
@@ -159,13 +157,9 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     	try
     	{
     		qname = QName.createQName(this.getFullNamespaceURI(classname));
-    		if (//(isValidPrefix(getPrefix(classname)) == true) && 
-    		     dictionaryservice.getClass(qname) != null) 
-	    	{
-	    		return true;
-	    	}
+    		return (dictionaryservice.getClass(qname) != null);
     	}
-    	catch(InvalidQNameException e)
+    	catch (InvalidQNameException e)
     	{
     		//just ignore
     	}
@@ -173,26 +167,6 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
     
     /**
-     * 
-     * @param prefix - checks whether the prefix is a valid one 
-     * @return true if the prefix is valid or false
-     */
-//    public boolean isValidPrefix(String prefix)
-//    {
-//        this.namespaceservice.
-//        
-//    	if(this.prefixes.contains(prefix) == true) 
-//    	{
-//    		return true;
-//    	}
-//    	else
-//    	{
-//    		return false;
-//    	}
-//    }
-    
-    /**
-     * 
      * @param namespaceprefix - gets a valid namespaceprefix as input
      * @return modelname from namespaceprefix - returns null if invalid namespaceprefix is given
      */
@@ -212,20 +186,12 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     
     public boolean isValidAssociationFilter(String af)
     {
-    	if(af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE1) ||
-    	   af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE2) ||
-    	   af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE3))
-    	{
-    		return true;
-    	}
-    	else
-    	{
-    		return false;
-    	}
+    	return (af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE1) ||
+          	    af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE2) ||
+          	    af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE3));
     }
     
     /**
-     * 
      * @param classname as the input
      * @return true if it is a aspect or false if it is a Type
      */
@@ -234,34 +200,26 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     	try
     	{
     		QName qname = QName.createQName(this.getFullNamespaceURI(classname));
-    		if( (this.dictionaryservice.getClass(qname)!=null) && 
-    				(this.dictionaryservice.getClass(qname).isAspect() == true))
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+    		return ((this.dictionaryservice.getClass(qname) != null) && 
+    				(this.dictionaryservice.getClass(qname).isAspect()));
     	}
-    	catch(InvalidQNameException e)
+    	catch (InvalidQNameException e)
     	{
-    		//ignore
+    		// ignore
     	}
     	return false;
 	}
     
     /**
-     * 
      * @param modelname - gets the modelname as the input (modelname is without prefix ie. cm:contentmodel => where modelname = contentmodel)
      * @return true if valid or false
      */
     public boolean isValidModelName(String modelname)
     {
     	boolean value = false;
-    	for(QName qnameObj:this.dictionaryservice.getAllModels())
+    	for (QName qnameObj:this.dictionaryservice.getAllModels())
 		{
-			if(qnameObj.getLocalName().equalsIgnoreCase(modelname))
+			if (qnameObj.getLocalName().equalsIgnoreCase(modelname))
 			{
 				value = true;
 				break;
@@ -269,8 +227,8 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 		}
     	return value;
     }
+    
     /**
-     * 
      * @param classname - returns the prefix from the classname of the format namespaceprefix:name eg. cm_person
      * @return prefix - returns the prefix of the classname
      */
@@ -303,12 +261,11 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     
     /**
      * @param input -gets a string input and validates it
-     * 
      * @return null if invalid or the string itself if its valid
      */
     public String getValidInput(String input)
     {
-    	if((input != null) && (input.length() > 0))
+    	if ((input != null) && (input.length() != 0))
     	{
     		return input;
     	}
@@ -319,26 +276,17 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
   
    /**
-    * 
     * @param classfilter =>valid class filters are all,apect or type
     * @return true if valid or false if invalid
     */
     public boolean isValidClassFilter(String classfilter)
     {
-    	if(classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || 
-    	   classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || 
-    	   classfilter.equals(CLASS_FILTER_OPTION_TYPE3))
-    	{
-    	    return true;
-    	}
-      	else
-    	{
-    		return false;
-    	}
+    	return (classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || 
+          	    classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || 
+          	    classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
     }
    
     /**
-     * @param 
      * @return a string map or prefixes and urls - with prefix as the key
      */
     public Map<String, String> getPrefixesAndUrlsMap()
@@ -347,8 +295,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
     
     /**
-     * 
-     * @return- a string map of urls and prefixes - with url as the key
+     * @return a string map of urls and prefixes - with url as the key
      */
     public Map<String, String> getUrlsAndPrefixesMap()
     {

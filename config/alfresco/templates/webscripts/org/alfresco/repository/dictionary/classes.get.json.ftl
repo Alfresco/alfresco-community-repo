@@ -1,7 +1,6 @@
 <#import "classdetails.lib.ftl" as classdetailsDefLib/>
 [
-<#list classdefs as classdefs>
-	<@classdetailsDefLib.classDefJSON classdefs=classdefs key = classdefs_index/>
-	<#if classdefs_has_next>,</#if>
+<#list classdefs as classdef>
+<@classdetailsDefLib.classDefJSON classdef=classdef key=classdef_index/><#if classdef_has_next>,</#if>
 </#list>
-]		
+]

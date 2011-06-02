@@ -705,12 +705,12 @@
    <!--                             -->
    <!-- DICTIONARY Service REST API -->
    <!--                             -->
-     
+   
    <bean id="webscript.dictionary" abstract="true" parent="webscript" init-method="init">
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="NamespaceService"/>
-   </bean>  
-     
+   </bean>
+   
    <bean id="webscript.org.alfresco.repository.dictionary.classes.get" class="org.alfresco.repo.web.scripts.dictionary.ClassesGet" parent="webscript.dictionary"/>
    <bean id="webscript.org.alfresco.repository.dictionary.class.get" class="org.alfresco.repo.web.scripts.dictionary.ClassGet" parent="webscript.dictionary"/>
    <bean id="webscript.org.alfresco.repository.dictionary.subclasses.get" class="org.alfresco.repo.web.scripts.dictionary.SubClassesGet" parent="webscript.dictionary"/>
@@ -718,6 +718,22 @@
    <bean id="webscript.org.alfresco.repository.dictionary.properties.get" class="org.alfresco.repo.web.scripts.dictionary.PropertiesGet" parent="webscript.dictionary"/>
    <bean id="webscript.org.alfresco.repository.dictionary.association.get" class="org.alfresco.repo.web.scripts.dictionary.AssociationGet" parent="webscript.dictionary"/>
    <bean id="webscript.org.alfresco.repository.dictionary.associations.get" class="org.alfresco.repo.web.scripts.dictionary.AssociationsGet" parent="webscript.dictionary"/>
+   
+   <bean id="webscript.org.alfresco.repository.dictionary.dictionary.get" class="org.alfresco.repo.web.scripts.dictionary.DictionaryGet" parent="webscript.dictionary">
+      <property name="ignoreNamespaces">
+         <set>
+            <value>http://www.alfresco.org/model/dictionary/1.0</value>
+            <value>http://www.alfresco.org/model/wcmmodel/1.0</value>
+            <value>http://www.alfresco.org/model/wcmappmodel/1.0</value>
+            <value>http://www.alfresco.org/model/wcmworkflow/1.0</value>
+            <value>http://www.alfresco.org/model/rendition/1.0</value>
+            <value>http://www.alfresco.org/model/versionstore/1.0</value>
+            <value>http://www.alfresco.org/model/versionstore/2.0</value>
+            <value>http://www.jcp.org/jcr/1.0</value>
+         </set>
+      </property>
+   </bean>
+    
     
     <!-- GET IMAP SERVER STATUS -->
     <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">

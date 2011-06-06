@@ -75,6 +75,11 @@
    </component>
    
    <component>
+      <component-type>org.alfresco.faces.StoreSelector</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UIStoreSelector</component-class>
+   </component>
+   
+   <component>
       <component-type>org.alfresco.faces.LanguageSelector</component-type>
       <component-class>org.alfresco.web.ui.repo.component.UILanguageSelector</component-class>
    </component>   

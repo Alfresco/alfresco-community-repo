@@ -4620,6 +4620,15 @@
 
    <managed-bean>
       <description>
+         Bean that generates a stores selector component
+      </description>
+      <managed-bean-name>StoreSelectorGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.StoreSelectorGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean that generates a charset selector component
       </description>
       <managed-bean-name>CharsetSelectorGenerator</managed-bean-name>

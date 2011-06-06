@@ -19,6 +19,9 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +38,7 @@ import javax.faces.el.ValueBinding;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.ActionsConfigElement;
@@ -646,7 +650,20 @@ public class UIActions extends SelfRenderingComponent
     */
    private static String createUniqueId()
    {
-      return "id_" + Short.toString(++id);
+      String guidString = GUID.generate();
+      byte[] guidBytes = null;
+      try
+      {
+          guidBytes = guidString.getBytes("ISO8859_1");
+      }
+      catch (UnsupportedEncodingException e)
+      {
+          //probably unreachable block, so just in case 
+          Charset defaultCharset = Charset.defaultCharset();
+          logger.warn("Can't get GUID bytes for encoding ISO8859_1, use default " + defaultCharset);
+          guidBytes = guidString.getBytes(defaultCharset);
+      }
+      return "id_" + new BigInteger(guidBytes).toString(Character.MAX_RADIX);
    }
    
    // ------------------------------------------------------------------------------

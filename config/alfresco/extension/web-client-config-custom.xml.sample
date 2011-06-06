@@ -106,7 +106,7 @@
 
    <config evaluator="aspect-name" condition="cm:storeSelector">
       <property-sheet>
-         <show-property name="cm:storeName" />
+         <show-property name="cm:storeName" component-generator="StoreSelectorGenerator" />
       </property-sheet>
    </config>
    <config evaluator="string-compare" condition="Action Wizards">

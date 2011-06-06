@@ -20,6 +20,7 @@ package org.alfresco.opencmis.dictionary;
 
 import java.util.Collection;
 
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;
@@ -71,10 +72,6 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             {
                 typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_FOLDER, classQName);
                 objectTypeDef = new FolderTypeDefintionWrapper(cmisMapping, serviceRegistry, typeId, classDef);
-            } else if (cmisMapping.isValidCmisRelationship(classQName))
-            {
-                typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_RELATIONSHIP, classQName);
-                objectTypeDef = new RelationshipTypeDefintionWrapper(cmisMapping, serviceRegistry, typeId, classDef);
             } else if (cmisMapping.isValidCmisPolicy(classQName))
             {
                 typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_POLICY, classQName);
@@ -96,6 +93,14 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
      */
     private void createAssocDefs(DictionaryRegistry registry, Collection<QName> classQNames)
     {
+        // register base type
+        String typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_RELATIONSHIP, CMISMapping.RELATIONSHIP_QNAME);
+        RelationshipTypeDefintionWrapper objectTypeDef = new RelationshipTypeDefintionWrapper(cmisMapping,
+                serviceRegistry, typeId, dictionaryService.getClass(CMISMapping.RELATIONSHIP_QNAME));
+
+        registry.registerTypeDefinition(objectTypeDef);
+
+        // register all other relationships
         for (QName classQName : classQNames)
         {
             if (!cmisMapping.isValidCmisRelationship(classQName))
@@ -103,9 +108,8 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
 
             // create appropriate kind of type definition
             AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-            String typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_RELATIONSHIP, classQName);
-            RelationshipTypeDefintionWrapper objectTypeDef = new RelationshipTypeDefintionWrapper(cmisMapping, typeId,
-                    assocDef);
+            typeId = cmisMapping.getCmisTypeId(BaseTypeId.CMIS_RELATIONSHIP, classQName);
+            objectTypeDef = new RelationshipTypeDefintionWrapper(cmisMapping, typeId, assocDef);
 
             registry.registerTypeDefinition(objectTypeDef);
         }

@@ -21,6 +21,7 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -40,15 +41,15 @@ public class NodeRefProperty extends AbstractVersioningProperty
         super(serviceRegistry, NodeRefPropertyId);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
+    @Override
     public Serializable getValue(NodeRef nodeRef)
     {
         return getLiveNodeRef(nodeRef);
+    }
+
+    @Override
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        return "" + assocRef.getId();
     }
 }

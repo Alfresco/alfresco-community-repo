@@ -1415,7 +1415,8 @@ public class AlfrescoCmisService extends AbstractCmisService
                             {
                                 if (connector.getNodeService().getChildAssocs(nodeRef).size() > 0)
                                 {
-                                    throw new CmisConstraintException("Could not delete folder with at least one Child");
+                                    throw new CmisConstraintException(
+                                            "Could not delete folder with at least one child!");
                                 }
 
                                 connector.getNodeService().deleteNode(nodeRef);
@@ -1435,6 +1436,11 @@ public class AlfrescoCmisService extends AbstractCmisService
                                 Version version = connector.getVersion(objectId);
                                 connector.getVersionService().deleteVersion(nodeRef, version);
                                 return true;
+                            }
+
+                            if (variant == ObjectVariantEnum.VERSION)
+                            {
+                                nodeRef = connector.getNodeRef(connector.getCurrentVersionId(objectId));
                             }
 
                             // remove not primary parent associations

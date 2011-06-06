@@ -165,7 +165,7 @@ public class CMISRenditionMapping
                 }
 
                 ContentReader reader = contentService.getReader(rendNodeRef, contentProperty);
-                if ((reader == null) || (reader.exists()))
+                if ((reader == null) || (!reader.exists()))
                 {
                     // no content -> no rendition
                     continue;
@@ -188,7 +188,7 @@ public class CMISRenditionMapping
                         {
                             // found a kind, not a MIME type
                             List<String> renditionNames = kindToRenditionNames.get(f);
-                            if (renditionNames.contains(rendName))
+                            if (renditionNames != null && renditionNames.contains(rendName))
                             {
                                 include = true;
                                 break;
@@ -237,6 +237,11 @@ public class CMISRenditionMapping
                 // finally add this rendition
                 result.add(createRenditionData(rendNodeRef, mimeType, title, kind, length, width, height));
             }
+        }
+
+        if (filterSet == null || filterSet.contains("cmis:thumbnail"))
+        {
+
         }
 
         return result;

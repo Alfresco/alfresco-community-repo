@@ -642,14 +642,6 @@ public class CMISMapping implements InitializingBean
         {
             return false;
         }
-        if (!isValidCmisDocumentOrFolder(getCmisType(associationDefinition.getSourceClass().getName())))
-        {
-            return false;
-        }
-        if (!isValidCmisDocumentOrFolder(getCmisType(associationDefinition.getTargetClass().getName())))
-        {
-            return false;
-        }
         return true;
     }
 

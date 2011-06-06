@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -1554,6 +1556,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private String convertAspectPropertyValue(Object value)
     {
+        if (value instanceof Date)
+        {
+            GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+            cal.setTime((Date) value);
+            value = cal;
+        }
+
         if (value instanceof GregorianCalendar)
         {
             DatatypeFactory df;
@@ -1759,11 +1768,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         for (AssociationRef assocRef : assocs)
         {
             TypeDefinitionWrapper assocTypeDef = cmisDictionaryService.findAssocType(assocRef.getTypeQName());
-            if (assocTypeDef != null)
+            if (assocTypeDef == null || getType(assocRef.getSourceRef()) == null
+                    || getType(assocRef.getTargetRef()) == null)
             {
-                result.add(createCMISObject(assocRef, null, false, IncludeRelationships.NONE, RENDITION_NONE, false,
-                        false));
+                continue;
             }
+
+            result.add(createCMISObject(assocRef, null, false, IncludeRelationships.NONE, RENDITION_NONE, false, false));
         }
 
         return result;
@@ -1807,31 +1818,34 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             for (AssociationRef assocRef : assocs)
             {
                 TypeDefinitionWrapper assocTypeDef = cmisDictionaryService.findAssocType(assocRef.getTypeQName());
-                if (assocTypeDef != null)
+                if (assocTypeDef == null || getType(assocRef.getSourceRef()) == null
+                        || getType(assocRef.getTargetRef()) == null)
                 {
-                    if ((typeId != null) && !assocRef.getId().equals(typeId))
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    counter++;
+                if ((typeId != null) && !assocRef.getId().equals(typeId))
+                {
+                    continue;
+                }
 
-                    if (skip > 0)
-                    {
-                        skip--;
-                        continue;
-                    }
+                counter++;
 
-                    max--;
-                    if (max > 0)
-                    {
-                        result.getObjects().add(
-                                createCMISObject(assocRef, filter, includeAllowableActions, IncludeRelationships.NONE,
-                                        RENDITION_NONE, false, false));
-                    } else
-                    {
-                        hasMore = true;
-                    }
+                if (skip > 0)
+                {
+                    skip--;
+                    continue;
+                }
+
+                max--;
+                if (max > 0)
+                {
+                    result.getObjects().add(
+                            createCMISObject(assocRef, filter, includeAllowableActions, IncludeRelationships.NONE,
+                                    RENDITION_NONE, false, false));
+                } else
+                {
+                    hasMore = true;
                 }
             }
         }
@@ -2458,8 +2472,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");
         }
 
-        if ((propDef.getPropertyDefinition().getUpdatability() == Updatability.READONLY)
-                || (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)))
+        Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
+        if ((updatability == Updatability.READONLY)
+                || (updatability == Updatability.WHENCHECKEDOUT && !nodeService.hasAspect(nodeRef,
+                        ContentModel.ASPECT_WORKING_COPY)))
         {
             throw new CmisInvalidArgumentException("Property " + property.getId() + " is read-only!");
         }

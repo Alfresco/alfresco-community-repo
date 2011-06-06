@@ -2,7 +2,7 @@ script:
 {
     // query type
     var typeId = url.templateArgs.typeId;
-    model.typedef = cmis.queryType(typeId);
+    model.typedef = cmisserver.queryType(typeId);
     if (model.typedef === null)
     {
         status.code = 404;
@@ -12,6 +12,6 @@ script:
     }
 
     // handle inherited properties
-    var includeInheritedProperties = args[cmis.ARG_INCLUDE_INHERITED_PROPERTIES];
+    var includeInheritedProperties = args[cmisserver.ARG_INCLUDE_INHERITED_PROPERTIES];
     model.includeInheritedProperties = includeInheritedProperties == "false" ? false : true;
 }

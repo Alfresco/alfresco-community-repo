@@ -23,17 +23,24 @@ import org.apache.chemistry.opencmis.client.api.Session;
 /**
  * Represents a CMIS connection.
  */
-public interface CMISConnection
+public interface CMISConnection extends Comparable<CMISConnection>
 {
     /**
-     * Gets connection id.
+     * Gets the connection id.
      * 
      * @return connection id
      */
     String getId();
 
     /**
-     * Gets OpenCMIS Session.
+     * Gets the internal connection id.
+     * 
+     * @return connection id
+     */
+    String getInternalId();
+
+    /**
+     * Gets the OpenCMIS Session.
      * 
      * @return OpenCMIS session
      */
@@ -54,9 +61,19 @@ public interface CMISConnection
     String getUserName();
 
     /**
-     * Indicates if the connection is a local or a remote connection.
+     * Indicates if the connection is shared by multiple users.
      */
-    boolean isLocal();
+    boolean isShared();
+
+    /**
+     * Indicates if the connection is the default connection.
+     */
+    boolean isDefault();
+
+    /**
+     * Indicates is the repository supports queries.
+     */
+    boolean supportsQuery();
 
     /**
      * Releases the CMIS session and removes the connection from connection

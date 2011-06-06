@@ -12,17 +12,17 @@ script:
     model.node = object.node;
 
     // property filter
-    model.filter = args[cmis.ARG_FILTER];
+    model.filter = args[cmisserver.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
 
     // relationship type
-    var relType = args[cmis.ARG_RELATIONSHIP_TYPE];
+    var relType = args[cmisserver.ARG_RELATIONSHIP_TYPE];
     if (relType != null)
     {
-        model.relTypeDef = cmis.queryType(relType);
+        model.relTypeDef = cmisserver.queryType(relType);
         if (model.relTypeDef === null)
         {
             status.setCode(400, "Relationship type " + relType + " unknown");
@@ -36,10 +36,10 @@ script:
     }
 
     // include sub relationship types
-    model.includeSubRelationshipTypes = args[cmis.ARG_INCLUDE_SUB_RELATIONSHIP_TYPES] == "true" ? true : false;
+    model.includeSubRelationshipTypes = args[cmisserver.ARG_INCLUDE_SUB_RELATIONSHIP_TYPES] == "true" ? true : false;
 
     // direction
-    var direction = args[cmis.ARG_DIRECTION];
+    var direction = args[cmisserver.ARG_DIRECTION];
     if (direction !== null && !CMISRelationshipDirectionEnum.FACTORY.validLabel(direction))
     {
         status.setCode(400, "Direction " + direction + " unknown");
@@ -48,11 +48,11 @@ script:
     model.direction = CMISRelationshipDirectionEnum.FACTORY.toEnum(direction);
     
     // include allowable actions
-    model.includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS] == "true" ? true : false;
+    model.includeAllowableActions = args[cmisserver.ARG_INCLUDE_ALLOWABLE_ACTIONS] == "true" ? true : false;
     
     // retrieve relationships
     var page = paging.createPageOrWindow(args);
-    var paged = cmis.queryRelationships(model.node, model.relTypeDef, model.includeSubRelationshipTypes, model.direction, page);
+    var paged = cmisserver.queryRelationships(model.node, model.relTypeDef, model.includeSubRelationshipTypes, model.direction, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 }

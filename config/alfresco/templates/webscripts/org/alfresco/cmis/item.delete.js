@@ -11,7 +11,7 @@ script:
     var node = object.node;
 
     // Intentionally pass false as allVersions flag for now. There is no binding.
-    cmis.deleteObject(node, false);
+    cmisserver.deleteObject(node, false);
     
     status.code = 204;  // Success, but no response content
     status.redirect = true;

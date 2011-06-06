@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.cmis.client;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +29,12 @@ import org.apache.chemistry.opencmis.client.api.Repository;
 public interface CMISConnectionManager
 {
     // --- connections ---
+
+    /**
+     * Creates a new default connection that is only visible to the current
+     * user.
+     */
+    CMISConnection createDefaultConnection(CMISServer server);
 
     /**
      * Creates a new connection that is only visible to the current user.
@@ -47,33 +52,27 @@ public interface CMISConnectionManager
     CMISConnection getConnection();
 
     /**
-     * Returns all user connections.
+     * Returns a specific connection or <code>null</code> if the connection id
+     * is unknown.
      */
-    Collection<CMISConnection> getUserConnections();
+    CMISConnection getConnection(String connectionId);
 
     /**
-     * Returns a specific user connection or <code>null</code> if the connection
-     * id is unknown.
+     * Returns all user connections.
      */
-    CMISConnection getUserConnections(String connectionId);
+    List<CMISConnection> getUserConnections();
 
     /**
      * Returns all shared connections.
      */
-    Collection<CMISConnection> getSharedConnections();
-
-    /**
-     * Returns a specific shared connection or <code>null</code> if the
-     * connection id is unknown.
-     */
-    CMISConnection getSharedConnection(String connectionId);
+    List<CMISConnection> getSharedConnections();
 
     // --- servers ---
 
     /**
      * Returns all configured server definitions.
      */
-    Collection<CMISServer> getServerDefinitions();
+    List<CMISServer> getServerDefinitions();
 
     /**
      * Gets a server definitions by name.

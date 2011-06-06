@@ -8,7 +8,7 @@ script:
     var object = getObjectFromUrl();
     model.node = object.node;
     
-    model.checkin = args[cmis.ARG_CHECKIN] == "true" ? true : false;
+    model.checkin = args[cmisserver.ARG_CHECKIN] == "true" ? true : false;
     
     if (entry !== null)
     {
@@ -27,9 +27,9 @@ script:
     // checkin
     if (model.checkin)
     {
-        var comment = args[cmis.ARG_CHECKIN_COMMENT];
-        var major = args[cmis.ARG_MAJOR];
+        var comment = args[cmisserver.ARG_CHECKIN_COMMENT];
+        var major = args[cmisserver.ARG_MAJOR];
         major = (major === null || major == "true") ? true : false;
-        model.node = cmis.checkIn(model.node, comment, major);
+        model.node = cmisserver.checkIn(model.node, comment, major);
     }
 }

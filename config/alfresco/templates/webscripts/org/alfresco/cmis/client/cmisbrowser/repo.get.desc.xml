@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Repository Info</shortname>
+  <url>/cmis-browser-app/repo</url>
+  <url>/cmis-browser-app/c/{conn}/repo</url>
+  <authentication>user</authentication>
+</webscript>

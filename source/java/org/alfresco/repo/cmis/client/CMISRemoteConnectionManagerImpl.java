@@ -18,21 +18,54 @@
  */
 package org.alfresco.repo.cmis.client;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 
 /**
  * CMIS Connection manager with a remote default connection.
  */
 public class CMISRemoteConnectionManagerImpl extends AbstractCMISConnectionManagerImpl implements CMISConnectionManager
 {
-    private CMISServer defaultServer;
-
-    /**
-     * Sets the remote server details.
-     */
-    public void setDefaultServer(Map<String, String> defaultServerProperties)
+    @Override
+    public CMISConnection createDefaultConnection(CMISServer server)
     {
-        defaultServer = createServerDefinition(defaultServerProperties);
+        lock.writeLock().lock();
+        try
+        {
+            CMISConnection connection = getConnection();
+            if (connection != null)
+            {
+                throw new IllegalStateException("Connection id is already in use!");
+            }
+
+            if (server == null)
+            {
+                throw new IllegalStateException("Server definition must be set!");
+            }
+
+            String currentUser = authenticationService.getCurrentUserName();
+
+            if (!server.getParameters().containsKey(SessionParameter.USER))
+            {
+                Map<String, String> parameters = new HashMap<String, String>(server.getParameters());
+                parameters.put(SessionParameter.USER, currentUser);
+                server = createServerDefinition(server.getName(), parameters);
+            }
+
+            String userConnectionId = createUserConnectionId(currentUser, DEFAULT_CONNECTION_ID);
+            Session session = createSession(server.getParameters());
+            connection = new CMISConnectionImpl(this, userConnectionId, session, server, currentUser, true, false);
+
+            userConnections.put(userConnectionId, connection);
+
+            return connection;
+        } finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -41,28 +74,6 @@ public class CMISRemoteConnectionManagerImpl extends AbstractCMISConnectionManag
     @Override
     public CMISConnection getConnection()
     {
-        lock.writeLock().lock();
-        try
-        {
-            CMISConnection connection = getUserConnections(LOCAL_CONNECTION_ID);
-            if (connection != null)
-            {
-                return connection;
-            }
-
-            String currentUser = authenticationService.getCurrentUserName();
-
-            if (defaultServer == null)
-            {
-                throw new IllegalStateException("No default server defined!");
-            }
-
-            CMISServer server = createServerDefinition(defaultServer, currentUser, null);
-
-            return createUserConnection(server, LOCAL_CONNECTION_ID);
-        } finally
-        {
-            lock.writeLock().unlock();
-        }
+        return getConnection(DEFAULT_CONNECTION_ID);
     }
 }

@@ -4,7 +4,7 @@ script:
 {
     // locate (optional) folder
     model.folder = null;
-    var folderId = args[cmis.ARG_FOLDER_ID];
+    var folderId = args[cmisserver.ARG_FOLDER_ID];
     if (folderId !== null)
     {
         var folder = getObjectFromObjectId(folderId);
@@ -25,25 +25,25 @@ script:
     model.includeDescendants = (args.includeDescendants == "true") ? true : false;
  
     // property filter 
-    model.filter = args[cmis.ARG_FILTER];
+    model.filter = args[cmisserver.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
    
     // rendition filter
-    model.renditionFilter = args[cmis.ARG_RENDITION_FILTER];
+    model.renditionFilter = args[cmisserver.ARG_RENDITION_FILTER];
     if (model.renditionFilter === null || model.renditionFilter.length == 0)
     {
         model.renditionFilter = "cmis:none";
     }
 
     // include allowable actions
-    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
+    var includeAllowableActions = args[cmisserver.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);   
 
     // include relationships
-    model.includeRelationships = args[cmis.ARG_INCLUDE_RELATIONSHIPS];
+    model.includeRelationships = args[cmisserver.ARG_INCLUDE_RELATIONSHIPS];
     if (model.includeRelationships == null || model.includeRelationships.length == 0)
     {
         model.includeRelationships = "none";
@@ -51,7 +51,7 @@ script:
 
     // retrieve checked-out
     var page = paging.createPageOrWindow(args);
-    var paged = cmis.queryCheckedOut(person.properties.userName, model.folder, model.includeDescendants, page);
+    var paged = cmisserver.queryCheckedOut(person.properties.userName, model.folder, model.includeDescendants, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 }

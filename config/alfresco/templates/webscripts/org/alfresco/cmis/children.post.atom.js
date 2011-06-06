@@ -22,7 +22,7 @@ script:
     model.parent = parent.node;
     
     // versioning state
-    var versioningState = args[cmis.ARG_VERSIONING_STATE];
+    var versioningState = args[cmisserver.ARG_VERSIONING_STATE];
     if (versioningState === null || versioningState.length == 0)
     {
        versioningState = "major";
@@ -32,7 +32,7 @@ script:
     var object = entry.getExtension(atom.names.cmisra_object);
     var objectIdProp = (object !== null) ? object.objectId : null;
     var objectId = (objectIdProp !== null) ? objectIdProp.nativeValue : null;
-    var sourceFolderId = args[cmis.ARG_SOURCE_FOLDER_ID];
+    var sourceFolderId = args[cmisserver.ARG_SOURCE_FOLDER_ID];
     var node = null;
 
     if (objectId == null)
@@ -54,7 +54,7 @@ script:
        }
        node = object.node;
        
-       cmis.addObjectToFolder(node, model.parent);
+       cmisserver.addObjectToFolder(node, model.parent);
     }
     else
     {
@@ -69,7 +69,7 @@ script:
         node = object.node;
     
         // perform move
-        cmis.moveObject(node, model.parent, sourceFolderId);
+        cmisserver.moveObject(node, model.parent, sourceFolderId);
     }
     
     // success

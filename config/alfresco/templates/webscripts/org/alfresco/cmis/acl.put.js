@@ -34,5 +34,5 @@ script:
             }
         }
     }
-    cmis.applyACL(model.node, principalIds, permissions);
+    cmisserver.applyACL(model.node, principalIds, permissions);
 }

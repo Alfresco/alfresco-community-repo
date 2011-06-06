@@ -44,19 +44,16 @@ public class CMISServerImpl implements CMISServer
         this.parameters = new HashMap<String, String>(parameters);
     }
 
-    @Override
     public String getName()
     {
         return name;
     }
 
-    @Override
     public String getDescription()
     {
         return description;
     }
 
-    @Override
     public Map<String, String> getParameters()
     {
         return Collections.unmodifiableMap(parameters);

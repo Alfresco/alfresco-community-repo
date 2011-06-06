@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Query</shortname>
+  <url>/cmis-browser-app/query?statement={statement?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/cmis-browser-app/c/{conn}/query?statement={statement?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <authentication>user</authentication>
+</webscript>

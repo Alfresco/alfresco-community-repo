@@ -64,7 +64,7 @@ script:
     var page = paging.createPageOrWindow(null, null, isNaN(skipCount) ? null : skipCount, isNaN(maxItems) ? null : maxItems);
     
     // perform query
-    var paged = cmis.query(model.statement, page);
+    var paged = cmisserver.query(model.statement, page);
     model.resultset = paged.result;
     model.cursor = paged.cursor;
     
@@ -72,12 +72,12 @@ script:
     
     // construct query uri
     model.queryUri = "/cmis/query";
-    model.queryArgs = cmis.ARG_QUERY_STATEMENT + "=" + model.statement;
-    if (model.includeAllowableActions) model.queryArgs += "&" + cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS + "=" + model.includeAllowableActions;
-    if (model.includeRelationships != "none") model.queryArgs += "&" + cmis.ARG_INCLUDE_RELATIONSHIPS + "=" + model.includeRelationships;
-    if (model.renditionFilter != "cmis:none") model.queryArgs += "&" + cmis.ARG_RENDITION_FILTER + "=" + model.renditionFilter;
-    model.queryArgs += "&" + cmis.ARG_SKIP_COUNT + "=" + page.number;
-    model.queryArgs += "&" + cmis.ARG_MAX_ITEMS + "=" + page.size;
+    model.queryArgs = cmisserver.ARG_QUERY_STATEMENT + "=" + model.statement;
+    if (model.includeAllowableActions) model.queryArgs += "&" + cmisserver.ARG_INCLUDE_ALLOWABLE_ACTIONS + "=" + model.includeAllowableActions;
+    if (model.includeRelationships != "none") model.queryArgs += "&" + cmisserver.ARG_INCLUDE_RELATIONSHIPS + "=" + model.includeRelationships;
+    if (model.renditionFilter != "cmis:none") model.queryArgs += "&" + cmisserver.ARG_RENDITION_FILTER + "=" + model.renditionFilter;
+    model.queryArgs += "&" + cmisserver.ARG_SKIP_COUNT + "=" + page.number;
+    model.queryArgs += "&" + cmisserver.ARG_MAX_ITEMS + "=" + page.size;
     
     // TODO: set Content-Location
     status.code = 201;

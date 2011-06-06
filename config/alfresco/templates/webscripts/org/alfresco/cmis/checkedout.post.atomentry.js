@@ -31,7 +31,7 @@ script:
     model.node = object.node; 
     
     // checkout
-    model.pwc = cmis.checkOut(objectId);
+    model.pwc = cmisserver.checkOut(objectId);
 
     // setup for 201 Created response
     // TODO: set Content-Location

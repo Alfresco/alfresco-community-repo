@@ -5,13 +5,13 @@
 function getObjectFromUrl()
 {
     var ret = new Object();
-    ret.ref = cmis.createObjectReferenceFromUrl(args, url.templateArgs);
+    ret.ref = cmisserver.createObjectReferenceFromUrl(args, url.templateArgs);
     if (ret.ref == null)
     {
         status.setCode(400, "Cannot determine object reference from URL");
         return ret;
     }
-    ret.node = cmis.getNode(ret.ref);
+    ret.node = cmisserver.getNode(ret.ref);
     if (ret.node === null)
     {
         status.setCode(404, "Cannot find object for " + ret.ref.toString());
@@ -26,13 +26,13 @@ function getObjectFromUrl()
 function getObjectFromObjectId(objectId)
 {
     var ret = new Object();
-    ret.ref = cmis.createObjectIdReference(objectId);
+    ret.ref = cmisserver.createObjectIdReference(objectId);
     if (ret.ref == null)
     {
         status.setCode(400, "Cannot create object id reference from " + objectId);
         return ret;
     }
-    ret.node = cmis.getNode(ret.ref);
+    ret.node = cmisserver.getNode(ret.ref);
     if (ret.node === null)
     {
         status.setCode(404, "Cannot find object for " + ret.ref.toString());
@@ -47,13 +47,13 @@ function getObjectFromObjectId(objectId)
 function getAssocFromUrl()
 {
     var ret = new Object();
-    ret.ref = cmis.createRelationshipReferenceFromUrl(args, url.templateArgs);
+    ret.ref = cmisserver.createRelationshipReferenceFromUrl(args, url.templateArgs);
     if (ret.ref == null)
     {
         status.setCode(400, "Cannot determine association reference from URL");
         return ret;
     }
-    ret.assoc = cmis.getAssociation(ret.ref);
+    ret.assoc = cmisserver.getAssociation(ret.ref);
     if (ret.assoc === null)
     {
         status.setCode(404, "Cannot find association for " + ret.ref.toString());

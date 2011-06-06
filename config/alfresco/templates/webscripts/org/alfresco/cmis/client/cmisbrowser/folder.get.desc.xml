@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Folder Browser</shortname>
+  <url>/cmis-browser-app/folder?id={objectId}</url>
+  <url>/cmis-browser-app/c/{conn}/folder?id={objectId}</url>
+  <authentication>user</authentication>
+</webscript>

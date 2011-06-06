@@ -14,12 +14,12 @@
       </tr>
     <#list cmisServers as s>
       <tr>
-        <td>${s.name}</td>
-        <td>${s.description}</td>
+        <td>${s.name?html}</td>
+        <td>${s.description?html}</td>
         <td> 
           <#assign p = s.parameters>
           <#list p?keys as key>
-            <code>${key} = ${p[key]}</code><br/>
+            <code>${key?html} = ${p[key]?html}</code><br/>
           </#list>
         </td>
       </tr>

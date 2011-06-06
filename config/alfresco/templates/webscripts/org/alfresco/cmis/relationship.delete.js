@@ -10,7 +10,7 @@ script:
     }
     var assoc = rel.assoc;
 
-    cmis.deleteObject(assoc);
+    cmisserver.deleteObject(assoc);
     
     status.code = 204;  // Success, but no response content
     status.redirect = true;

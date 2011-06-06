@@ -9,7 +9,7 @@ script:
     }
     var node = object.node;
     
-    cmis.cancelCheckOut(node);
+    cmisserver.cancelCheckOut(node);
     
     status.code = 204;  // Success, but no response content
     status.redirect = true;

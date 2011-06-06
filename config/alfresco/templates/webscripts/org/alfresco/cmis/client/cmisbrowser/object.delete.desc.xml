@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Object Details</shortname>
+  <url>/cmis-browser-app/object</url>
+  <url>/cmis-browser-app/c/{conn}/object</url>
+  <authentication>user</authentication>
+</webscript>

@@ -1,0 +1,25 @@
+<!-- -->
+<!-- CMIS Client Configuration -->
+<!-- -->
+
+<alfresco-config>
+
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="cmis-servers" class="org.alfresco.repo.cmis.client.CMISServersConfigElementReader" />
+      </element-readers>
+   </plug-ins>
+
+   <config evaluator="string-compare" condition="CMIS">
+      <cmis-servers>
+         <server>
+            <parameter key="name" value="alfresco-public-cmis"/>
+            <parameter key="description" value="Public Alfresco 3.4 CMIS Server (cmis.alfresco.com)"/>            
+            <parameter key="org.apache.chemistry.opencmis.binding.spi.type" value="atompub"/>
+            <parameter key="org.apache.chemistry.opencmis.binding.atompub.url" value="http://cmis.alfresco.com/service/cmis"/>
+            <parameter key="org.apache.chemistry.opencmis.binding.compression" value="true"/>
+         </server>
+      </cmis-servers>
+   </config>
+
+</alfresco-config>

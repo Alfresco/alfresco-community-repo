@@ -12,12 +12,12 @@ script:
     model.node = object.node;
  
     // property filter 
-    model.filter = args[cmis.ARG_FILTER];
+    model.filter = args[cmisserver.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
    
     // retrieve versions
-    model.nodes = cmis.getAllVersions(model.node);
+    model.nodes = cmisserver.getAllVersions(model.node);
 }

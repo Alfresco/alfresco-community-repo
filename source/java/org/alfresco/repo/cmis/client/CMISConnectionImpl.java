@@ -19,19 +19,22 @@
 package org.alfresco.repo.cmis.client;
 
 import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 
 public class CMISConnectionImpl implements CMISConnection
 {
     private AbstractCMISConnectionManagerImpl connectionManager;
 
     private String id;
+    private String internalId;
     private Session session;
     private CMISServer server;
     private String username;
-    private boolean isLocal;
+    private boolean isDefault;
+    private boolean isShared;
 
     public CMISConnectionImpl(AbstractCMISConnectionManagerImpl connectionManager, String id, Session session,
-            CMISServer server, String username, boolean isLocal)
+            CMISServer server, String username, boolean isDefault, boolean isShared)
     {
         if (connectionManager == null)
         {
@@ -49,17 +52,24 @@ public class CMISConnectionImpl implements CMISConnection
         }
 
         this.connectionManager = connectionManager;
-        this.id = id;
+        this.internalId = id;
+        int x = id.indexOf(AbstractCMISConnectionManagerImpl.RESERVED_ID_CHAR);
+        this.id = (x > -1 ? id.substring(0, x) : id);
         this.session = session;
         this.server = server;
         this.username = username;
-        this.isLocal = isLocal;
+        this.isDefault = isDefault;
+        this.isShared = isShared;
     }
 
-    @Override
     public String getId()
     {
         return id;
+    }
+
+    public String getInternalId()
+    {
+        return internalId;
     }
 
     @Override
@@ -68,28 +78,49 @@ public class CMISConnectionImpl implements CMISConnection
         return session;
     }
 
-    @Override
     public CMISServer getServer()
     {
         return server;
     }
 
-    @Override
     public String getUserName()
     {
         return username;
     }
 
-    @Override
-    public boolean isLocal()
+    public boolean isDefault()
     {
-        return isLocal;
+        return isDefault;
     }
 
-    @Override
+    public boolean isShared()
+    {
+        return isShared;
+    }
+
+    public boolean supportsQuery()
+    {
+        if (session == null)
+        {
+            return false;
+        }
+
+        if (session.getRepositoryInfo().getCapabilities() == null)
+        {
+            return true;
+        }
+
+        return session.getRepositoryInfo().getCapabilities().getQueryCapability() != CapabilityQuery.NONE;
+    }
+
     public void close()
     {
         connectionManager.removeConnection(this);
         session = null;
+    }
+
+    public int compareTo(CMISConnection conn)
+    {
+        return id.compareTo(conn.getId());
     }
 }

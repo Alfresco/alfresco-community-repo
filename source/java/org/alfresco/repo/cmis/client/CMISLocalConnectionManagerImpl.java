@@ -21,6 +21,7 @@ package org.alfresco.repo.cmis.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.AlfrescoLocalCmisServiceFactory;
 import org.alfresco.opencmis.CMISConnector;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -40,6 +41,12 @@ public class CMISLocalConnectionManagerImpl extends AbstractCMISConnectionManage
         AlfrescoLocalCmisServiceFactory.setCmisConnector(connector);
     }
 
+    @Override
+    public CMISConnection createDefaultConnection(CMISServer server)
+    {
+        throw new IllegalStateException("Local connection cannot be changed!");
+    }
+
     /**
      * Creates a local connection.
      */
@@ -49,7 +56,7 @@ public class CMISLocalConnectionManagerImpl extends AbstractCMISConnectionManage
         lock.writeLock().lock();
         try
         {
-            CMISConnection connection = getUserConnections(LOCAL_CONNECTION_ID);
+            CMISConnection connection = getConnection(DEFAULT_CONNECTION_ID);
             if (connection != null)
             {
                 return connection;
@@ -60,13 +67,14 @@ public class CMISLocalConnectionManagerImpl extends AbstractCMISConnectionManage
             Map<String, String> parameters = new HashMap<String, String>();
             parameters.put(SessionParameter.BINDING_TYPE, BindingType.LOCAL.value());
             parameters.put(SessionParameter.LOCAL_FACTORY, AlfrescoLocalCmisServiceFactory.class.getName());
+            parameters.put(SessionParameter.OBJECT_FACTORY_CLASS, AlfrescoObjectFactoryImpl.class.getName());
             parameters.put(SessionParameter.USER, currentUser);
 
-            CMISServer server = createServerDefinition("local", parameters);
+            CMISServer server = createServerDefinition("default", parameters);
             Session session = createSession(server.getParameters());
-            connection = new CMISConnectionImpl(this, LOCAL_CONNECTION_ID, session, server, currentUser, true);
+            String userConnectionId = createUserConnectionId(currentUser, DEFAULT_CONNECTION_ID);
 
-            String userConnectionId = createUserConnectionId(currentUser, LOCAL_CONNECTION_ID);
+            connection = new CMISConnectionImpl(this, userConnectionId, session, server, currentUser, true, false);
 
             userConnections.put(userConnectionId, connection);
 

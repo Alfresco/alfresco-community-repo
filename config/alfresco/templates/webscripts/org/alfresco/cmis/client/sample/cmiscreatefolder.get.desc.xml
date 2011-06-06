@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CMIS Create Folder Example</shortname>
+  <url>/cmissamples/createfolder</url>
+  <authentication>user</authentication>
+</webscript>

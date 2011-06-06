@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CMIS Content Stream</shortname>
+  <url>/cmis-browser-app/rendition/{streamId}?id={objectId}</url>
+  <url>/cmis-browser-app/c/{conn}/rendition/{streamId}?id={objectId}</url>
+  <authentication>user</authentication>
+</webscript>

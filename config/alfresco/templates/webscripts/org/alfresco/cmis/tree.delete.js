@@ -11,7 +11,7 @@ script:
     var node = object.node;
     
     // unfileObjects
-    var unfileObjects = args[cmis.ARG_UNFILE_OBJECTS];
+    var unfileObjects = args[cmisserver.ARG_UNFILE_OBJECTS];
     if (unfileObjects === null || unfileObjects.length == 0)
     {
        unfileObjects = "delete";
@@ -26,8 +26,8 @@ script:
        break script;       
     }
     
-    var continueOnFailure = (args[cmis.ARG_CONTINUE_ON_FAILURE] == "true");
+    var continueOnFailure = (args[cmisserver.ARG_CONTINUE_ON_FAILURE] == "true");
 
     // Intentionally pass allVersions=false, even though this isn't the default!
-    cmis.deleteTree(node, status, continueOnFailure, unfileObjects != "delete", false);
+    cmisserver.deleteTree(node, status, continueOnFailure, unfileObjects != "delete", false);
 }

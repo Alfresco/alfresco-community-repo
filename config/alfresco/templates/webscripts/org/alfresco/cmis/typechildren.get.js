@@ -1,15 +1,15 @@
 script:
 {
     var page = paging.createPageOrWindow(args);
-    var typeId = args[cmis.ARG_TYPE_ID];
+    var typeId = args[cmisserver.ARG_TYPE_ID];
     if (typeId === null)
     {
-        typeId = url.templateArgs[cmis.ARG_TYPE_ID];
+        typeId = url.templateArgs[cmisserver.ARG_TYPE_ID];
     }
     if (typeId === null)
     {
         // query for base types
-        var paged = cmis.queryTypeChildren(null, page);
+        var paged = cmisserver.queryTypeChildren(null, page);
         model.results = paged.results;
         model.cursor = paged.cursor;
         model.typedef = null;
@@ -17,7 +17,7 @@ script:
     else
     {
         // query a specific type and its children
-        var typedef = cmis.queryType(typeId);
+        var typedef = cmisserver.queryType(typeId);
         if (typedef === null)
         {
             status.code = 404;
@@ -25,13 +25,13 @@ script:
             status.redirect = true;
             break script;
         }
-        var paged = cmis.queryTypeChildren(typedef, page);
+        var paged = cmisserver.queryTypeChildren(typedef, page);
         model.results = paged.results;
         model.cursor = paged.cursor;
         model.typedef = typedef;
     }
 
     // handle property definitions
-    var includePropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
+    var includePropertyDefinitions = args[cmisserver.ARG_INCLUDE_PROPERTY_DEFINITIONS];
     model.includePropertyDefinitions = includePropertyDefinitions == "true" ? true : false;
 }

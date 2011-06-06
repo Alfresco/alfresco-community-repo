@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CMIS Federated Query</shortname>
+  <url>/cmis-browser-app/federatedquery?statement={statement?}&amp;maxItems={maxItems?}</url>
+  <authentication>user</authentication>
+</webscript>

@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CMIS Current Connection</shortname>
+  <url>/cmissamples/current</url>
+  <authentication>user</authentication>
+</webscript>

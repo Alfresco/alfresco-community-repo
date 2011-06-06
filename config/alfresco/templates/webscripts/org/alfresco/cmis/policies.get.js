@@ -12,7 +12,7 @@ script:
     model.node = object.node;
 
     // property filter
-    var filter = args[cmis.ARG_FILTER];
+    var filter = args[cmisserver.ARG_FILTER];
     if (filter === null)
     {
         filter = "*";
@@ -20,7 +20,7 @@ script:
     
     // retrieve policies
     var page = paging.createPageOrWindow(args);
-    var paged = cmis.getAppliedPolicies(model.node, filter, page);
+    var paged = cmisserver.getAppliedPolicies(model.node, filter, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 }

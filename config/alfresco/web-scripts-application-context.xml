@@ -11,8 +11,10 @@
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-scripts-config.xml</value>
+            <value>classpath:alfresco/web-scripts-cmis-config.xml</value>
             <value>classpath:alfresco/extension/web-api-config-custom.xml</value>  <!--  for backwards compatibility -->
             <value>classpath:alfresco/extension/web-scripts-config-custom.xml</value>
+            <value>classpath:alfresco/extension/web-scripts-cmis-config.xml</value>
          </list>
       </constructor-arg>
    </bean>
@@ -142,7 +144,7 @@
            <entry key="paging">
               <ref bean="webscripts.js.paging"/>
            </entry>
-           <entry key="cmisclient">
+           <entry key="cmis">
               <ref bean="webscripts.js.cmis.client" />
            </entry>
          </map>
@@ -313,8 +315,8 @@
       <property name="CMISService" ref="CMISService" />
    </bean>
 
-   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
-      <property name="extensionName"><value>cmis</value></property>
+   <bean id="webscripts.js.cmisserver" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
+      <property name="extensionName"><value>cmisserver</value></property>
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="CMISService" ref="CMISService" />
       <property name="CMISDictionaryService" ref="CMISDictionaryService" />
@@ -369,42 +371,20 @@
    <!--  CMIS Client -->
    <!--              -->
 
-   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISLocalConnectionManagerImpl">
-      <property name="authenticationService" ref="AuthenticationService" />
-      <property name="cmisConnector" ref="CMISConnector" />
-      <property name="servers">
-         <list> 
-            <map>
-               <entry key="name" value="demo"/>
-               <entry key="description" value="cmis.alfresco.com"/>            
-               <entry key="org.apache.chemistry.opencmis.binding.spi.type" value="atompub"/>
-               <entry key="org.apache.chemistry.opencmis.binding.atompub.url" value="http://cmis.alfresco.com/service/cmis"/>
-            </map>
-         </list>      
-      </property>
+   <bean id="webscript.org.alfresco.cmis.client.content.get" class="org.alfresco.repo.cmis.client.CMISContentStreamWebScript" parent="webscript">
+      <property name="connectionManager" ref="webscripts.js.cmis.client" />
    </bean>
    
-   <!--   
-   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISRemoteConnectionManagerImpl">
+   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISLocalConnectionManagerImpl" init-method="init">
       <property name="authenticationService" ref="AuthenticationService" />
-      <property name="defaultServer">
-         <map>
-            <entry key="name" value="default"/>
-            <entry key="description" value="Default server"/>            
-            <entry key="org.apache.chemistry.opencmis.binding.spi.type" value="atompub"/>
-            <entry key="org.apache.chemistry.opencmis.binding.atompub.url" value="http://<host>/service/cmis"/>
-         </map>  
-      </property>
-      <property name="servers">
-         <list> 
-            <map>
-               <entry key="name" value="demo"/>
-               <entry key="description" value="cmis.alfresco.com"/>            
-               <entry key="org.apache.chemistry.opencmis.binding.spi.type" value="atompub"/>
-               <entry key="org.apache.chemistry.opencmis.binding.atompub.url" value="http://cmis.alfresco.com/service/cmis"/>
-            </map>
-         </list>      
-      </property>
+      <property name="configService" ref="webscripts.config" />
+      <property name="cmisConnector" ref="CMISConnector" />
+   </bean>
+
+   <!--   
+   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISRemoteConnectionManagerImpl" init-method="init">
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="configService" ref="webscripts.config" />
    </bean>
    -->
 

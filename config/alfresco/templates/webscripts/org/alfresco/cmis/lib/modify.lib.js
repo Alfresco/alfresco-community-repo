@@ -13,7 +13,7 @@ function createNode(parent, entry, slug, versioningState)
 
     // locate type definition
     // TODO: check this against spec - default to Document, if not specified
-    var type = cmis.queryType(typeId === null ? DOCUMENT_TYPE_ID.id : typeId);
+    var type = cmisserver.queryType(typeId === null ? DOCUMENT_TYPE_ID.id : typeId);
     if (type === null)
     {
         status.code = 400;
@@ -36,7 +36,7 @@ function createNode(parent, entry, slug, versioningState)
     }
     else if (baseType == POLICY_TYPE_ID)
     {
-        node = cmis.createPolicy(typeId, parent);
+        node = cmisserver.createPolicy(typeId, parent);
     }
     else
     {
@@ -58,7 +58,7 @@ function createNode(parent, entry, slug, versioningState)
     // apply versioning state
     if (baseType == DOCUMENT_TYPE_ID && versioningState != null)
     {
-        node = cmis.applyVersioningState(node, versioningState);
+        node = cmisserver.applyVersioningState(node, versioningState);
     }
 
     // only return node if updated successfully
@@ -91,7 +91,7 @@ function updateNode(node, entry, exclude, validator)
     var vals = new Object();
     var exclude = (exclude == null) ? new Array() : exclude;
     exclude.push(PROP_BASE_TYPE_ID);
-    var typeDef = cmis.queryType(node);
+    var typeDef = cmisserver.queryType(node);
 
     // Apply the provided properties of the node type
     unpackProperties(node, typeDef, object == null ? null : object.properties, exclude, validator, vals);
@@ -111,7 +111,7 @@ function updateNode(node, entry, exclude, validator)
         if (extension != null)
         {
             // Add and remove aspects
-            cmis.setAspects(node, extension.aspectsToRemove, extension.aspectsToAdd);
+        	cmisserver.setAspects(node, extension.aspectsToRemove, extension.aspectsToAdd);
 
             // Apply the provided properties of the aspects
             unpackProperties(node, null, extension.properties, exclude, validator, vals);
@@ -213,7 +213,7 @@ function unpackProperties(node, typeDef, props, exclude, validator, vals)
        for each (propName in updateProps)
        {
            // is this a valid property?
-           var propDef = typeDef == null ? cmis.queryProperty(propName) : typeDef.propertyDefinitions[propName];
+           var propDef = typeDef == null ? cmisserver.queryProperty(propName) : typeDef.propertyDefinitions[propName];
            if (propDef == null)
            {
                status.code = 400;
@@ -299,7 +299,7 @@ function createAssociation(source, entry)
 
     // locate relationship type definition
     // TODO: check this against spec - default to Relationship, if not specified
-    var type = cmis.queryType(typeId === null ? RELATIONSHIP_TYPE_ID.id : typeId);
+    var type = cmisserver.queryType(typeId === null ? RELATIONSHIP_TYPE_ID.id : typeId);
     if (type === null)
     {
         status.setCode(400, "CMIS object type " + typeId + " not understood");
@@ -345,7 +345,7 @@ function createAssociation(source, entry)
 function applyPolicy(target, entry)
 {
     var object = entry.getExtension(atom.names.cmisra_object);
-    cmis.applyPolicy(object.objectId, target);
+    cmisserver.applyPolicy(object.objectId, target);
     return null;
 }
 

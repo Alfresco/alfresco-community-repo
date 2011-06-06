@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CMIS Content Stream</shortname>
+  <url>/cmis/content</url>
+  <authentication>user</authentication>
+</webscript>

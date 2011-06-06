@@ -10,7 +10,7 @@ script:
     }
     var node = object.node;
 
-    cmis.deleteContentStream(node);
+    cmisserver.deleteContentStream(node);
 
     status.code = 204;  // Success, but no response content
     status.redirect = true;

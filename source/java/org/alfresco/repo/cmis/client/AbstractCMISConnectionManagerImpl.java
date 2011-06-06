@@ -19,7 +19,6 @@
 package org.alfresco.repo.cmis.client;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -33,27 +32,38 @@ import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.config.ConfigService;
 
-public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectionManager, InitializingBean
+/**
+ * Connection manager base class.
+ */
+public abstract class AbstractCMISConnectionManagerImpl extends CMISHelper implements CMISConnectionManager
 {
     public static final String SERVER_NAME = "name";
     public static final String SERVER_DESCRIPTION = "description";
-    public static final String LOCAL_CONNECTION_ID = "local";
+    public static final String DEFAULT_CONNECTION_ID = "default";
     public static final char RESERVED_ID_CHAR = '$';
 
+    protected ConfigService configService;
     protected AuthenticationService authenticationService;
 
-    protected SessionFactory sessionFactory;
+    protected final SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
 
     protected LinkedHashMap<String, CMISConnection> sharedConnections;
     protected LinkedHashMap<String, CMISConnection> userConnections;
     protected int userConnectionsCapacity = 1000;
-    protected int sharedConnectionsCapacity = 1000;
+    protected int sharedConnectionsCapacity = 100;
 
     protected Map<String, CMISServer> servers;
 
-    protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    // --- set up ---
+
+    public void setConfigService(ConfigService configService)
+    {
+        this.configService = configService;
+    }
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -70,28 +80,12 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         this.sharedConnectionsCapacity = sharedConnectionsCapacity;
     }
 
-    public void setServers(List<Map<String, String>> serverList)
-    {
-        servers = new HashMap<String, CMISServer>();
-
-        for (Map<String, String> serverData : serverList)
-        {
-            CMISServer server = createServerDefinition(serverData);
-            if (server != null)
-            {
-                servers.put(server.getName(), server);
-            }
-        }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
+    public void init()
     {
         lock.writeLock().lock();
         try
         {
-            sessionFactory = SessionFactoryImpl.newInstance();
-
+            // create shared connection LRU cache
             sharedConnections = new LinkedHashMap<String, CMISConnection>(sharedConnectionsCapacity,
                     (int) Math.ceil(sharedConnectionsCapacity / 0.75) + 1, true)
             {
@@ -104,6 +98,7 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
                 }
             };
 
+            // create user connection LRU cache
             userConnections = new LinkedHashMap<String, CMISConnection>(userConnectionsCapacity,
                     (int) Math.ceil(userConnectionsCapacity / 0.75) + 1, true)
             {
@@ -115,15 +110,33 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
                     return size() > userConnectionsCapacity;
                 }
             };
+
+            // get predefined server definitions
+            CMISServersConfigElement cmisServersConfig = (CMISServersConfigElement) configService.getConfig("CMIS")
+                    .getConfigElement("cmis-servers");
+            if (cmisServersConfig != null && cmisServersConfig.getServerDefinitions() != null)
+            {
+                servers = cmisServersConfig.getServerDefinitions();
+            } else
+            {
+                servers = new HashMap<String, CMISServer>();
+            }
         } finally
         {
             lock.writeLock().unlock();
         }
     }
 
+    // --- connections ---
+
     @Override
     public CMISConnection createUserConnection(CMISServer server, String connectionId)
     {
+        if (connectionId == null || connectionId.length() == 0 || connectionId.indexOf(RESERVED_ID_CHAR) > -1)
+        {
+            throw new IllegalArgumentException("Invalid connection id!");
+        }
+
         String currentUser = authenticationService.getCurrentUserName();
         if (currentUser == null)
         {
@@ -142,7 +155,7 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
                 throw new IllegalStateException("Connection id is already in use!");
             }
 
-            connection = createConnection(server, userConnectionId);
+            connection = createConnection(server, userConnectionId, false);
 
             userConnections.put(userConnectionId, connection);
         } finally
@@ -161,6 +174,12 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
     @Override
     public CMISConnection createSharedConnection(CMISServer server, String connectionId)
     {
+        if (connectionId == null || connectionId.length() == 0 || connectionId.indexOf(RESERVED_ID_CHAR) > -1
+                || DEFAULT_CONNECTION_ID.equals(connectionId))
+        {
+            throw new IllegalArgumentException("Invalid connection id!");
+        }
+
         CMISConnection connection;
 
         lock.writeLock().lock();
@@ -171,9 +190,9 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
                 throw new IllegalStateException("Connection id is already in use!");
             }
 
-            connection = createConnection(server, connectionId);
+            connection = createConnection(server, connectionId, true);
 
-            sharedConnections.put(connection.getId(), connection);
+            sharedConnections.put(connection.getInternalId(), connection);
         } finally
         {
             lock.writeLock().unlock();
@@ -182,23 +201,42 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         return connection;
     }
 
-    protected CMISConnection createConnection(CMISServer server, String connectionId)
+    protected CMISConnection createConnection(CMISServer server, String connectionId, boolean isShared)
     {
-        if (connectionId == null || connectionId.length() == 0 || connectionId.indexOf(RESERVED_ID_CHAR) > -1)
-        {
-            throw new IllegalArgumentException("Invalid connection id!");
-        }
-
         Session session = createSession(server.getParameters());
         String username = server.getParameters().get(SessionParameter.USER);
 
-        return new CMISConnectionImpl(this, connectionId, session, server, username, false);
+        return new CMISConnectionImpl(this, connectionId, session, server, username, false, isShared);
     }
 
-    @Override
     public abstract CMISConnection getConnection();
 
-    public Collection<CMISConnection> getUserConnections()
+    public CMISConnection getConnection(String connectionId)
+    {
+        lock.writeLock().lock();
+        try
+        {
+            CMISConnection connection = sharedConnections.get(connectionId);
+            if (connection != null)
+            {
+                return connection;
+            }
+
+            String currentUser = authenticationService.getCurrentUserName();
+            if (currentUser == null)
+            {
+                return null;
+            }
+
+            String userConnectionId = createUserConnectionId(currentUser, connectionId);
+            return userConnections.get(userConnectionId);
+        } finally
+        {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public List<CMISConnection> getUserConnections()
     {
         String currentUser = authenticationService.getCurrentUserName();
         if (currentUser == null)
@@ -213,16 +251,17 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
 
             for (CMISConnection conn : userConnections.values())
             {
-                int idx = conn.getId().indexOf(RESERVED_ID_CHAR);
+                int idx = conn.getInternalId().indexOf(RESERVED_ID_CHAR);
                 if (idx > -1)
                 {
-                    if (currentUser.equals(conn.getId().substring(idx + 1)))
+                    if (currentUser.equals(conn.getInternalId().substring(idx + 1)))
                     {
                         result.add(conn);
                     }
                 }
             }
 
+            Collections.sort(result);
             return Collections.unmodifiableList(result);
         } finally
         {
@@ -230,43 +269,15 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         }
     }
 
-    public CMISConnection getUserConnections(String connectionId)
-    {
-        String currentUser = authenticationService.getCurrentUserName();
-        if (currentUser == null)
-        {
-            throw new IllegalStateException("No current user!");
-        }
-
-        lock.writeLock().lock();
-        try
-        {
-            String userConnectionId = createUserConnectionId(currentUser, connectionId);
-            return userConnections.get(userConnectionId);
-        } finally
-        {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public Collection<CMISConnection> getSharedConnections()
+    public List<CMISConnection> getSharedConnections()
     {
         lock.writeLock().lock();
         try
         {
-            return Collections.unmodifiableCollection(sharedConnections.values());
-        } finally
-        {
-            lock.writeLock().unlock();
-        }
-    }
+            List<CMISConnection> result = new ArrayList<CMISConnection>(sharedConnections.values());
 
-    public CMISConnection getSharedConnection(String connectionId)
-    {
-        lock.writeLock().lock();
-        try
-        {
-            return sharedConnections.get(connectionId);
+            Collections.sort(result);
+            return Collections.unmodifiableList(result);
         } finally
         {
             lock.writeLock().unlock();
@@ -275,7 +286,7 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
 
     public void removeConnection(CMISConnection connection)
     {
-        if (connection == null || connection.getId() == null)
+        if (connection == null || connection.getInternalId() == null)
         {
             return;
         }
@@ -283,19 +294,12 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         lock.writeLock().lock();
         try
         {
-            if (connection.isLocal())
+            if (connection.isShared())
             {
-                userConnections.remove(LOCAL_CONNECTION_ID);
+                sharedConnections.remove(connection.getInternalId());
             } else
             {
-                int idx = connection.getId().indexOf(RESERVED_ID_CHAR);
-                if (idx == -1)
-                {
-                    sharedConnections.remove(connection.getId());
-                } else
-                {
-                    userConnections.remove(connection.getId());
-                }
+                userConnections.remove(connection.getInternalId());
             }
         } finally
         {
@@ -314,25 +318,23 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         }
     }
 
-    @Override
-    public Collection<CMISServer> getServerDefinitions()
+    // --- servers ---
+
+    public List<CMISServer> getServerDefinitions()
     {
-        return servers == null ? null : servers.values();
+        return servers == null ? null : Collections.unmodifiableList(new ArrayList<CMISServer>(servers.values()));
     }
 
-    @Override
     public CMISServer getServerDefinition(String serverName)
     {
         return servers == null ? null : servers.get(serverName);
     }
 
-    @Override
     public CMISServer createServerDefinition(String serverName, Map<String, String> parameters)
     {
         return new CMISServerImpl(serverName, null, parameters);
     }
 
-    @Override
     public CMISServer createServerDefinition(CMISServer server, String username, String password)
     {
         if (server == null)
@@ -347,7 +349,6 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         return new CMISServerImpl(server.getName(), server.getDescription(), parameters);
     }
 
-    @Override
     public CMISServer createServerDefinition(CMISServer server, String username, String password, String repositoryId)
     {
         if (server == null)
@@ -384,7 +385,6 @@ public abstract class AbstractCMISConnectionManagerImpl implements CMISConnectio
         return null;
     }
 
-    @Override
     public List<Repository> getRepositories(CMISServer server)
     {
         if (server == null)

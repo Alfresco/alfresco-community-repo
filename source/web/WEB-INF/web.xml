@@ -99,6 +99,8 @@
       <param-name>org.apache.myfaces.ERROR_HANDLING</param-name>
       <param-value>false</param-value>
    </context-param>
+   
+   <!-- Activiti context param placeholder -->
 
    <filter>
       <filter-name>Authentication Filter</filter-name>
@@ -321,6 +323,8 @@
    <listener>
       <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener>
+   
+   <!-- Activiti listener placeholder -->
 
    <!-- Faces Servlet -->
    <servlet>
@@ -524,7 +528,9 @@
       <servlet-name>authenticatorServlet</servlet-name>
       <servlet-class>org.alfresco.repo.web.scripts.servlet.AuthenticatorServlet</servlet-class>
    </servlet>
-
+   
+   <!-- Activiti servlet placeholder -->
+	
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>/faces/*</url-pattern>
@@ -709,6 +715,8 @@
       <servlet-name>cmisbrowser</servlet-name>
       <url-pattern>/cmisbrowser/*</url-pattern>
    </servlet-mapping>
+   
+   <!-- Activiti servlet mapping placeholder -->
 
    <session-config>
       <session-timeout>60</session-timeout>

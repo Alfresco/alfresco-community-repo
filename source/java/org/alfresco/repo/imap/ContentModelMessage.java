@@ -32,7 +32,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.imap.ImapService.EmailBodyType;
+import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.namespace.QName;
@@ -98,10 +98,20 @@ public class ContentModelMessage extends AbstractMimeMessage
         // Cite MOB-395: "email agent will be used to select an appropriate template" - we are not able to
         // detect an email agent so we use a default template for all messages.
         // See AlfrescoImapConst to see the possible templates to use.
-        String bodyTxt = getEmailBodyText(EmailBodyType.TEXT_PLAIN);
-        rootMultipart.addBodyPart(getTextBodyPart(bodyTxt, EmailBodyType.TEXT_PLAIN.getSubtype(), EmailBodyType.TEXT_PLAIN.getMimeType()));
-        String bodyHtml = getEmailBodyText(EmailBodyType.TEXT_HTML);
-        rootMultipart.addBodyPart(getTextBodyPart(bodyHtml, EmailBodyType.TEXT_HTML.getSubtype(), EmailBodyType.TEXT_HTML.getMimeType()));
+        if (isMessageInSitesLibrary)
+        {
+            String bodyTxt = getEmailBodyText(EmailBodyFormat.SHARE_TEXT_PLAIN);
+            rootMultipart.addBodyPart(getTextBodyPart(bodyTxt, EmailBodyFormat.SHARE_TEXT_PLAIN.getSubtype(), EmailBodyFormat.SHARE_TEXT_PLAIN.getMimeType()));
+            String bodyHtml = getEmailBodyText(EmailBodyFormat.SHARE_TEXT_HTML);
+            rootMultipart.addBodyPart(getTextBodyPart(bodyHtml, EmailBodyFormat.SHARE_TEXT_HTML.getSubtype(), EmailBodyFormat.SHARE_TEXT_HTML.getMimeType()));
+        }
+        else
+        {
+            String bodyTxt = getEmailBodyText(EmailBodyFormat.ALFRESCO_TEXT_PLAIN);
+            rootMultipart.addBodyPart(getTextBodyPart(bodyTxt, EmailBodyFormat.ALFRESCO_TEXT_PLAIN.getSubtype(), EmailBodyFormat.ALFRESCO_TEXT_PLAIN.getMimeType()));
+            String bodyHtml = getEmailBodyText(EmailBodyFormat.ALFRESCO_TEXT_HTML);
+            rootMultipart.addBodyPart(getTextBodyPart(bodyHtml, EmailBodyFormat.ALFRESCO_TEXT_HTML.getSubtype(), EmailBodyFormat.ALFRESCO_TEXT_HTML.getMimeType()));
+        }
         return rootMultipart;
     }
 

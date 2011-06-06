@@ -127,7 +127,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private String repositoryTemplatePath;
     private boolean extractAttachmentsEnabled = true;
 
-    private Map<EmailBodyType, String> defaultBodyTemplates;
+    private Map<EmailBodyFormat, String> defaultBodyTemplates;
 
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
@@ -269,6 +269,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public String getWebApplicationContextUrl()
     {
         return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext();
+    }
+
+    public String getShareApplicationContextUrl()
+    {
+        return sysAdminParams.getShareProtocol() + "://" + sysAdminParams.getShareHost() + ":" + sysAdminParams.getSharePort() + "/" + sysAdminParams.getShareContext();
     }
 
     public String getRepositoryTemplatePath()
@@ -1915,21 +1920,23 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         return extractAttachmentsEnabled && !ignoreExtractionFolders.contains(nodeRef);
     }
 
-    public String getDefaultEmailBodyTemplate(EmailBodyType type)
+    public String getDefaultEmailBodyTemplate(EmailBodyFormat type)
     {
         if (defaultBodyTemplates == null)
         {
-            defaultBodyTemplates = new HashMap<EmailBodyType, String>(2);
+            defaultBodyTemplates = new HashMap<EmailBodyFormat, String>(4);
             
-            for (EmailBodyType onetype : EmailBodyType.values())
+            for (EmailBodyFormat onetype : EmailBodyFormat.values())
             {
-                String result = onetype.getClasspathTempltePath();
+                String result = onetype.getClasspathTemplatePath();
                 try
                 {
                     // This query uses cm:name to find the template node(s).
                     // For the case where the templates are renamed, it would be better to use a QName path-based query.
                     
-                    final StringBuilder templateName = new StringBuilder(DICTIONARY_TEMPLATE_PREFIX).append("-").append(onetype.getTypeSubtype()).append(".ftl");
+
+                    final StringBuilder templateName = new StringBuilder(DICTIONARY_TEMPLATE_PREFIX).append("_").append(onetype.getTypeSubtype()).append("_").append(onetype.getWebApp()).append(".ftl");
+
                     final String repositoryTemplatePath = getRepositoryTemplatePath();
                     int indexOfStoreDelim = repositoryTemplatePath.indexOf(StoreRef.URI_FILLER);
                     if (indexOfStoreDelim == -1)
@@ -1953,7 +1960,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     ResultSet resultSet = serviceRegistry.getSearchService().query(storeRef, "xpath", query);
                     if (resultSet == null || resultSet.length() == 0)
                     {
-                        throw new IllegalArgumentException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("template not found:" + templateName);
+                        }
+                        throw new AlfrescoRuntimeException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
                     }
                     final NodeRef defaultLocaleTemplate = resultSet.getNodeRef(0);
                     
@@ -1963,7 +1974,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     
                     resultSet.close();
                 }
-                // We are catching all exceptions. E.g. search service can possibly trow an exceptions on malformed queries.
+                // We are catching all exceptions. E.g. search service can possibly throw an exceptions on malformed queries.
                 catch (Exception e)
                 {
                     logger.error("[getDefaultEmailBodyTemplate]", e);
@@ -2153,5 +2164,33 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         
     }
     
-   
+    /**
+     * Return true if provided nodeRef is in Sites/.../documentlibrary
+     */
+    public boolean isNodeInSitesLibrary(NodeRef nodeRef)
+    {
+        boolean isInDocLibrary = false;
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+            if (parentName.equalsIgnoreCase("documentlibrary"))
+            {
+                isInDocLibrary = true;
+            }
+            nodeRef = parent;
+            if (nodeService.getPrimaryParent(nodeRef) != null)
+            {
+                parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+            }
+        }
+        if (parent == null)
+        {
+            return false;
+        }
+        else
+        {
+            return nodeService.getType(parent).equals(SiteModel.TYPE_SITE) && isInDocLibrary;
+        }
+   }
 }

@@ -37,14 +37,16 @@ import javax.mail.internet.MimeMessage;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.imap.ImapService.EmailBodyType;
+import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,6 +70,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
     protected ImapService imapService;
     protected FileInfo messageFileInfo;
     protected MimeMessage wrappedMessage;
+    protected boolean isMessageInSitesLibrary;
 
     protected AbstractMimeMessage(Session session)
     {
@@ -88,6 +91,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
         this.serviceRegistry = serviceRegistry;
         this.imapService = serviceRegistry.getImapService();
         this.messageFileInfo = fileInfo;
+        this.isMessageInSitesLibrary = imapService.isNodeInSitesLibrary(messageFileInfo.getNodeRef());
         RetryingTransactionHelper txHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
         txHelper.setMaxRetries(MAX_RETRIES);
         txHelper.setReadOnly(false);
@@ -214,10 +218,10 @@ public abstract class AbstractMimeMessage extends MimeMessage
      * Returns the text representing email body for ContentModel node.
      * 
      * @param nodeRef NodeRef of the target content.
-     * @param type The type of the returned body. May be the one of {@link EmailBodyType}.
+     * @param type The type of the returned body. May be the one of {@link EmailBodyFormat}.
      * @return Text representing email body for ContentModel node.
      */
-    public String getEmailBodyText(EmailBodyType type)
+    public String getEmailBodyText(EmailBodyFormat type)
     {
         return serviceRegistry.getTemplateService().processTemplate(
                 imapService.getDefaultEmailBodyTemplate(type),
@@ -278,7 +282,44 @@ public abstract class AbstractMimeMessage extends MimeMessage
         model.put("date", new Date());
         model.put("contextUrl", new String(imapService.getWebApplicationContextUrl()));
         model.put("alfTicket", new String(serviceRegistry.getAuthenticationService().getCurrentTicket()));
+        if (isMessageInSitesLibrary)
+        {
+            String pathFromSites = getPathFromSites(parent);
+            StringBuilder parsedPath = new StringBuilder();
+            String[] pathParts = pathFromSites.split("/");
+            if (pathParts.length > 2)
+            {
+                parsedPath.append(pathParts[0]).append("/").append(pathParts[1]);
+                parsedPath.append("?filter=path|");
+                for (int i = 2; i < pathParts.length; i++)
+                {
+                    parsedPath.append("/").append(pathParts[i]);
+                }
+
+            }
+            else
+            {
+                parsedPath.append(pathFromSites);
+            }
+            model.put("shareContextUrl", new String(imapService.getShareApplicationContextUrl()));
+            model.put("parentPathFromSites", parsedPath.toString());
+        }
         return model;
+    }
+
+    private String getPathFromSites(NodeRef ref)
+    {
+        NodeService nodeService = serviceRegistry.getNodeService();
+        String name = ((String) nodeService.getProperty(ref, ContentModel.PROP_NAME)).toLowerCase();
+        if (nodeService.getType(ref).equals(SiteModel.TYPE_SITE))
+        {
+            return name;
+        }
+        else
+        {
+            NodeRef parent = nodeService.getPrimaryParent(ref).getParentRef();
+            return getPathFromSites(parent) + "/" + name;
+        }
     }
 
     protected void updateMessageID() throws MessagingException

@@ -35,35 +35,43 @@ public interface ImapService
 {
     
     /**
-     * Helper enumeration to handle email body type text/html and text/plain
+     * Helper enumeration to handle email body format text/html and text/plain for Alfresco/Share webapp
      */
-    public static enum EmailBodyType
+    public static enum EmailBodyFormat
     {
-        TEXT_PLAIN(AlfrescoImapConst.CLASSPATH_TEXT_PLAIN_TEMPLATE),
-        TEXT_HTML(AlfrescoImapConst.CLASSPATH_TEXT_HTML_TEMPLATE);
+        ALFRESCO_TEXT_PLAIN(AlfrescoImapConst.CLASSPATH_ALFRESCO_TEXT_PLAIN_TEMPLATE),
+        SHARE_TEXT_PLAIN(AlfrescoImapConst.CLASSPATH_SHARE_TEXT_PLAIN_TEMPLATE),
         
-        EmailBodyType(String templatePath)
+        ALFRESCO_TEXT_HTML(AlfrescoImapConst.CLASSPATH_ALFRESCO_TEXT_HTML_TEMPLATE),
+        SHARE_TEXT_HTML(AlfrescoImapConst.CLASSPATH_SHARE_TEXT_HTML_TEMPLATE);
+        
+        EmailBodyFormat(String templatePath)
         {
             this.templatePath = templatePath;
         }
         public String getSubtype()
         {
-            return name().toLowerCase().substring(5);
+            return name().toLowerCase().substring(name().indexOf("_") + 1 + "TEXT".length());
         }
 
         public String getTypeSubtype()
         {
-            return name().toLowerCase().replaceAll("_", "");
+            return name().toLowerCase().substring(name().indexOf("_") + 1).replaceAll("_", "");
         }
 
         public String getMimeType()
         {
-            return name().toLowerCase().replaceAll("_", "/");
+            return name().toLowerCase().substring(name().indexOf("_") + 1).replaceAll("_", "/");
         }
         
-        public String getClasspathTempltePath()
+        public String getClasspathTemplatePath()
         {
             return this.templatePath;
+        }
+        
+        public String getWebApp()
+        {
+            return name().toLowerCase().substring(0, name().indexOf("_"));
         }
         
         private String templatePath;
@@ -229,6 +237,11 @@ public interface ImapService
     public String getWebApplicationContextUrl();
 
     /**
+     * @return Web application context url for share (e.g. http://localhost:8080/share)
+     */
+    public String getShareApplicationContextUrl();
+
+    /**
      * Returns a template for email body. It is either classpath path or NodeRef.toString().
      * This method trying to find a template on the path in the repository first
      * e.g. {@code "Data Dictionary > IMAP Templates >"}. This path should be set as the property of the "imapHelper" bean.
@@ -238,5 +251,14 @@ public interface ImapService
      * @param Type one of the possible body types text/html and text/plain
      * @return
      */
-    public String getDefaultEmailBodyTemplate(EmailBodyType type);
+    public String getDefaultEmailBodyTemplate(EmailBodyFormat type);
+    
+    /**
+     * Determine if provided node belongs to Sites.
+     * 
+     * @param nodeRef nodeRef
+     * @return true if provided node belongs to sites.
+     */
+    public boolean isNodeInSitesLibrary(NodeRef nodeRef);
+
 }

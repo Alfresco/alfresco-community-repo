@@ -2798,4 +2798,62 @@
         </property>
     </bean>
        
+     <bean id="patch.imap.messages.share" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.imap.messages.share</value></property>
+        <property name="description"><value>patch.imap.messages.share.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4202</value></property>
+        <property name="targetSchema"><value>4203</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/templates/imap/share_messages.xml</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.imap.clear.old.messages" class="org.alfresco.repo.admin.patch.impl.ClearOldImapMessgesPatch" parent="basePatch" >
+        <property name="id"><value>patch.imap.clear.old.messages</value></property>
+        <property name="description"><value>patch.imap.clear.old.messages.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4202</value></property>
+        <property name="targetSchema"><value>4203</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>     
+    </bean> 
+	
+    <bean id="patch.imap.clear.old.templates2" class="org.alfresco.repo.admin.patch.impl.ClearOldImapTemplatesPatch2" parent="basePatch" >
+        <property name="id"><value>patch.imap.clear.old.messages</value></property>
+        <property name="description"><value>patch.imap.clear.old.messages.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5000</value></property>
+        <property name="targetSchema"><value>5001</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>     
+    </bean> 
+    
+    <bean id="patch.imapSpacesTemplates2" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
+        <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5000</value></property>
+        <property name="targetSchema"><value>5001</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/bootstrap/imapSpacesTemplates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+       
 </beans>

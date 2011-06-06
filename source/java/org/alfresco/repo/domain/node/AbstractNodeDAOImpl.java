@@ -165,9 +165,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Cache for the Node parent assocs:<br/>
      * KEY: ID<br/>
      * VALUE: ParentAssocs<br/>
-     * VALUE KEY: None<br/s>
+     * VALUE KEY: ChildByNameKey<br/s>
      */
-    private EntityLookupCache<Long, ParentAssocsInfo, Serializable> parentAssocsCache;
+    private EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey> parentAssocsCache;
     
     /**
      * Constructor.  Set up various instance-specific members such as caches and locks.
@@ -182,7 +182,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodesCache = new EntityLookupCache<Long, Node, NodeRef>(new NodesCacheCallbackDAO());
         aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<Long, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
-        parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, Serializable>(new ParentAssocsCallbackDAO());
+        parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey>(new ParentAssocsCallbackDAO());
     }
 
     /**
@@ -338,7 +338,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     public void setParentAssocsCache(SimpleCache<Long, ParentAssocsInfo> parentAssocsCache)
     {
-        this.parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, Serializable>(
+        this.parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey>(
                 parentAssocsCache,
                 CACHE_REGION_PARENT_ASSOCS,
                 new ParentAssocsCallbackDAO());
@@ -2733,7 +2733,37 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName)
     {
+        ChildByNameKey valueKey = new ChildByNameKey(parentNodeId, assocTypeQName, childName);
+        
+        // cache-only operation: try reverse lookup on parentAssocs (note: for primary assoc only)
+        Long childNodeId = parentAssocsCache.getKey(valueKey);
+        if (childNodeId != null)
+        {
+            Pair<Long, ParentAssocsInfo> value = parentAssocsCache.getByKey(childNodeId);
+            if (value != null)
+            {
+                ChildAssocEntity assoc = value.getSecond().getPrimaryParentAssoc();
+                if (assoc == null)
+                {
+                    return null;
+                }
+                
+                Pair<Long, ChildAssociationRef> result = assoc.getPair(qnameDAO);
+                if (result.getSecond().getTypeQName().equals(assocTypeQName))
+                {
+                    return result;
+                }
+            }
+        }
+        
+        // TODO could refactor as single select to get parent assocs by child name
         ChildAssocEntity assoc = selectChildAssoc(parentNodeId, assocTypeQName, childName);
+        if (assoc != null)
+        {
+            // additional lookup to populate cache - note: also pulls in 2ndary assocs
+            parentAssocsCache.getByKey(assoc.getChildNode().getId());
+        }
+        
         return assoc == null ? null : assoc.getPair(qnameDAO);
     }
 
@@ -3072,13 +3102,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @author Derek Hulley
      * @since 3.4
      */
-    private class ParentAssocsCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, ParentAssocsInfo, Serializable>
+    private class ParentAssocsCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, ParentAssocsInfo, ChildByNameKey>
     {
         public Pair<Long, ParentAssocsInfo> createValue(ParentAssocsInfo value)
         {
             throw new UnsupportedOperationException("Nodes are created independently.");
         }
-
+        
         public Pair<Long, ParentAssocsInfo> findByKey(Long nodeId)
         {
             // Find out if it is a root or store root
@@ -3092,6 +3122,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assocs);
             // Done
             return new Pair<Long, ParentAssocsInfo>(nodeId, value);
+        }
+        
+        @Override
+        public ChildByNameKey getValueKey(ParentAssocsInfo value)
+        {
+            ChildAssocEntity entity = value.getPrimaryParentAssoc();
+            
+            if (entity != null)
+            {
+                return new ChildByNameKey(entity.getParentNode().getId(), qnameDAO.getQName(entity.getTypeQNameId()).getSecond(), entity.getChildNodeName());
+            }
+            
+            return null;
+        }
+        
+        public Pair<Long, ParentAssocsInfo> findByValue(ParentAssocsInfo value)
+        {
+            return findByKey(value.getPrimaryParentAssoc().getChildNode().getId());
         }
     }
     

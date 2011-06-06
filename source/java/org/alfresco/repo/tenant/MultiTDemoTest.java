@@ -38,6 +38,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -63,6 +64,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,6 +94,7 @@ public class MultiTDemoTest extends TestCase
     private RepoAdminService repoAdminService;
     private DictionaryService dictionaryService;
     private UsageService usageService;
+    private TransactionService transactionService;
     
     public static int NUM_TENANTS = 2;
     
@@ -152,6 +155,7 @@ public class MultiTDemoTest extends TestCase
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
         usageService = (UsageService) ctx.getBean("usageService");
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
         
         createTenants();
     }
@@ -270,58 +274,66 @@ public class MultiTDemoTest extends TestCase
         final String tenantDomain1 = TEST_RUN+".groupdel1";
         final String tenantDomain2 = TEST_RUN+".groupdel2";
         
-        final String[] tenantUniqueGroupNames = new String[10];
-        final String[] superadminUniqueGroupNames = new String[10];
-        for (int i = 0; i < tenantUniqueGroupNames.length; i++)
+        try
         {
-            tenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
-            superadminUniqueGroupNames[i] = TEST_RUN + "test_group_sa" + i;
+            final String[] tenantUniqueGroupNames = new String[10];
+            final String[] superadminUniqueGroupNames = new String[10];
+            for (int i = 0; i < tenantUniqueGroupNames.length; i++)
+            {
+                tenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
+                superadminUniqueGroupNames[i] = TEST_RUN + "test_group_sa" + i;
+            }
+            
+            clearUsage(AuthenticationUtil.getAdminUserName());
+            
+            createTenant(tenantDomain1);
+            createTenant(tenantDomain2);
+            
+            final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+            final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
+            final String superAdmin = "admin";
+            
+            // Create test authorities that are visible only to tenant1
+            clearUsage(tenantDomain1);
+            createTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
+            // Check that tenant1's authorities are visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, true);
+            // Check that tenant1's authorities are not visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName2, false);
+            // Check that tenant1's authorities are not visible to super-admin
+            checkTestAuthoritiesPresence(tenantUniqueGroupNames, superAdmin, false);
+            
+            
+            // Create test authorities that are visible only to super-admin
+            createTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
+            // Check that super-admin's authorities are not visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName1, false);
+            // Check that super-admin's authorities are not visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName2, false);
+            // Check that super-admin's authorities are visible to super-admin
+            checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, true);
+            
+            
+            // Delete tenant1's authorities
+            clearUsage(tenantDomain1);
+            deleteTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
+            // Check that tenant1's authorities are not visible to tenant1
+            checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, false);
+            
+            // Delete super-admin's authorities
+            deleteTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
+            // Check that super-admin's authorities are not visible to super-admin
+            checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, false);
         }
-        
-        clearUsage(AuthenticationUtil.getAdminUserName());
-        
-        createTenant(tenantDomain1);
-        createTenant(tenantDomain2);
-        
-        final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
-        final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
-        final String superAdmin = "admin";
-        
-        // Create test authorities that are visible only to tenant1
-        clearUsage(tenantDomain1);
-        createTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
-        // Check that tenant1's authorities are visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, true);
-        // Check that tenant1's authorities are not visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName2, false);
-        // Check that tenant1's authorities are not visible to super-admin
-        checkTestAuthoritiesPresence(tenantUniqueGroupNames, superAdmin, false);
-        
-        
-        // Create test authorities that are visible only to super-admin
-        createTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
-        // Check that super-admin's authorities are not visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName1, false);
-        // Check that super-admin's authorities are not visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(superadminUniqueGroupNames, tenantAdminName2, false);
-        // Check that super-admin's authorities are visible to super-admin
-        checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, true);
-        
-        
-        // Delete tenant1's authorities
-        clearUsage(tenantDomain1);
-        deleteTestAuthoritiesForTenant(tenantUniqueGroupNames, tenantAdminName1);
-        // Check that tenant1's authorities are not visible to tenant1
-        checkTestAuthoritiesPresence(tenantUniqueGroupNames, tenantAdminName1, false);
-        
-        // Delete super-admin's authorities
-        deleteTestAuthoritiesForTenant(superadminUniqueGroupNames, superAdmin);
-        // Check that super-admin's authorities are not visible to super-admin
-        checkTestAuthoritiesPresence(superadminUniqueGroupNames, superAdmin, false);
+        finally
+        {
+            deleteTenant(tenantDomain1);
+            deleteTenant(tenantDomain2);
+        }
     }
     
     public void testSharedGroupDeletion()
@@ -329,79 +341,89 @@ public class MultiTDemoTest extends TestCase
         final String tenantDomain1 = TEST_RUN+".groupdel3";
         final String tenantDomain2 = TEST_RUN+".groupdel4";
         
-        final String[] commonTenantUniqueGroupNames = new String[10];
-        for (int i = 0; i < commonTenantUniqueGroupNames.length; i++)
+        try
         {
-            commonTenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
+            final String[] commonTenantUniqueGroupNames = new String[10];
+            for (int i = 0; i < commonTenantUniqueGroupNames.length; i++)
+            {
+                commonTenantUniqueGroupNames[i] = TEST_RUN + "test_group" + i;
+            }
+            
+            clearUsage(AuthenticationUtil.getAdminUserName());
+            
+            createTenant(tenantDomain1);
+            createTenant(tenantDomain2);
+            
+            final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+            final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
+            final String superAdmin = "admin";
+            
+            // Create test common authorities for tenant1
+            clearUsage(tenantDomain1);
+            createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+            // Create test common authorities for tenant2
+            clearUsage(tenantDomain2);
+            createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+            // Create test common authorities for super-admin
+            createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
+            
+            // Check that authorities are visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+            // Check that authorities are visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+            // Check that authorities are visible to super-admin
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+            
+            // Delete tenant1's authorities
+            clearUsage(tenantDomain1);
+            deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+            // Check that authorities are not visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, false);
+            // Check that authorities are visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+            // Check that authorities are visible to super-admin
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+            
+            // Create test common authorities for tenant1
+            clearUsage(tenantDomain1);
+            createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
+            // Delete tenant2's authorities
+            clearUsage(tenantDomain2);
+            deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+            // Check that authorities are visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+            // Check that authorities are not visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, false);
+            // Check that authorities are visible to super-admin
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
+            
+            // Create test common authorities for tenant2
+            clearUsage(tenantDomain2);
+            createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
+            // Delete super-admin's authorities
+            deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
+            // Check that authorities are visible to tenant1
+            clearUsage(tenantDomain1);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
+            // Check that authorities are visible to tenant2
+            clearUsage(tenantDomain2);
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
+            // Check that authorities are not visible to super-admin
+            checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, false);
         }
-        
-        clearUsage(AuthenticationUtil.getAdminUserName());
-        
-        createTenant(tenantDomain1);
-        createTenant(tenantDomain2);
-        
-        final String tenantAdminName1 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
-        final String tenantAdminName2 = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
-        final String superAdmin = "admin";
-        
-        // Create test common authorities for tenant1
-        clearUsage(tenantDomain1);
-        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
-        // Create test common authorities for tenant2
-        clearUsage(tenantDomain2);
-        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
-        // Create test common authorities for super-admin
-        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
-        
-        // Check that authorities are visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
-        // Check that authorities are visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
-        // Check that authorities are visible to super-admin
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
-        
-        // Delete tenant1's authorities
-        clearUsage(tenantDomain1);
-        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
-        // Check that authorities are not visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, false);
-        // Check that authorities are visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
-        // Check that authorities are visible to super-admin
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
-        
-        // Create test common authorities for tenant1
-        clearUsage(tenantDomain1);
-        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName1);
-        // Delete tenant2's authorities
-        clearUsage(tenantDomain2);
-        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
-        // Check that authorities are visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
-        // Check that authorities are not visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, false);
-        // Check that authorities are visible to super-admin
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, true);
-        
-        // Create test common authorities for tenant2
-        clearUsage(tenantDomain2);
-        createTestAuthoritiesForTenant(commonTenantUniqueGroupNames, tenantAdminName2);
-        // Delete super-admin's authorities
-        deleteTestAuthoritiesForTenant(commonTenantUniqueGroupNames, superAdmin);
-        // Check that authorities are visible to tenant1
-        clearUsage(tenantDomain1);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName1, true);
-        // Check that authorities are visible to tenant2
-        clearUsage(tenantDomain2);
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, tenantAdminName2, true);
-        // Check that authorities are not visible to super-admin
-        checkTestAuthoritiesPresence(commonTenantUniqueGroupNames, superAdmin, false);
+        finally
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            
+            deleteTenant(tenantDomain1);
+            deleteTenant(tenantDomain2);
+        }
     }
     
     
@@ -423,6 +445,32 @@ public class MultiTDemoTest extends TestCase
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private void deleteTenant(final String tenantDomain)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // delete tenant (if it exists)
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        if (tenantAdminService.existsTenant(tenantDomain))
+                        {
+                            tenantAdminService.deleteTenant(tenantDomain);
+                            
+                            logger.info("Deleted tenant " + tenantDomain);
+                        }
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+                return null;
+            }
+        });
     }
     
     public void test_ETHREEOH_2015()
@@ -1127,6 +1175,19 @@ public class MultiTDemoTest extends TestCase
                     return null;
                 }
             }, tenantAdminName);
+        }
+    }
+    
+    // pseudo cleanup - if this test runs last
+    public void testDeleteTenants()
+    {
+        logger.info("test delete tenant");
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        for (final String tenantDomain : tenants)
+        {    
+            deleteTenant(tenantDomain);
         }
     }
     

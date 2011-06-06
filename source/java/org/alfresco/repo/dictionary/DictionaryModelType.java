@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -806,7 +807,18 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 for (WorkflowDefinition workflowDef : workflowDefs)
                 {
                     String workflowDefName = workflowDef.getName();
-                    String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
+                    
+                    String workflowNamespaceURI = null;
+                    try
+                    {
+                        workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
+                    }
+                    catch (NamespaceException ne)
+                    {
+                        logger.warn("Skipped workflow when validating model delete - unknown namespace: "+ne);
+                        continue;
+                    }
+                    
                     for (NamespaceDefinition namespaceDef : namespaceDefs)
                     {
                         if (workflowNamespaceURI.equals(namespaceDef.getUri()))

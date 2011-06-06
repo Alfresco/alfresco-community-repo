@@ -209,12 +209,16 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true,
                         false);
             }
-            // Otherwise, we want a writeable transaction, so if the current transaction is read only we set the
+            // Otherwise,
+            // - for check-only mode we want a readable txn or
+            // - for check-and-fix mode we want a writeable transaction, so if the current transaction is read only we set the
             // requiresNew flag to true
             else
             {
-                authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false,
-                        AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
+                boolean readOnly = (validationMode ==  UserNameValidationMode.CHECK);
+                boolean requiresNew = ((!readOnly) && (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY));
+                        
+                authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, readOnly, requiresNew);
             }
             if ((authentication == null) || (callback.ae != null))
             {

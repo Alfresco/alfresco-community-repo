@@ -1321,18 +1321,31 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         {
             // Get the version history node for the node is question and delete it
             NodeRef versionHistoryNodeRef = getVersionHistoryNodeRef(nodeRef);
-    
+            
             if (versionHistoryNodeRef != null)
             {
-                // Delete the version history node
-                this.dbNodeService.deleteNode(versionHistoryNodeRef);
-    
-                if (this.nodeService.exists(nodeRef) == true && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+                try
                 {
-                    // Reset the version label property on the versionable node
-                    this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);
+                    // Disable auto-version behaviour
+                    this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    
+                    // Delete the version history node
+                    this.dbNodeService.deleteNode(versionHistoryNodeRef);
+                    
+                    if (this.nodeService.exists(nodeRef) == true && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+                    {
+                        
+                            // Reset the version label property on the versionable node
+                            this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);
+                    }
+                    
+                }
+                finally
+                {
+                    this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                 }
             }
+
         }
     }
     

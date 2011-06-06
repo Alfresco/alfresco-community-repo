@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
@@ -370,7 +369,6 @@ public class PropFindMethod extends WebDAVMethod
      */
     protected void generateResponseForNode(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
     {
-        NodeRef nodeRef = nodeInfo.getNodeRef();
         boolean isFolder = nodeInfo.isFolder();
         
         // Output the response block for the current node
@@ -411,10 +409,10 @@ public class PropFindMethod extends WebDAVMethod
             generateNamedPropertiesResponse(xml, nodeInfo, isFolder);
             break;
         case GET_ALL_PROPS:
-            generateAllPropertiesResponse(xml, nodeRef, isFolder);
+            generateAllPropertiesResponse(xml, nodeInfo, isFolder);
             break;
         case FIND_PROPS:
-            generateFindPropertiesResponse(xml, nodeRef, isFolder);
+            generateFindPropertiesResponse(xml, nodeInfo, isFolder);
             break;
         }
 
@@ -432,10 +430,8 @@ public class PropFindMethod extends WebDAVMethod
      */
     private void generateNamedPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
-        NodeRef nodeRef = nodeInfo.getNodeRef();
-        
         // Get the properties for the node
-        Map<QName, Serializable> props = getNodeService().getProperties(nodeRef);
+        Map<QName, Serializable> props = nodeInfo.getProperties();
 
         // Output the start of the properties element
         Attributes nullAttr = getDAVHelper().getNullAttributes();
@@ -454,7 +450,6 @@ public class PropFindMethod extends WebDAVMethod
 
             String propName = property.getName();
             String propNamespaceUri = property.getNamespaceUri();
-//            String propNamespaceName = property.getNamespaceName();
 
             // Check if the property is a standard WebDAV property
 
@@ -465,7 +460,7 @@ public class PropFindMethod extends WebDAVMethod
                 // Check if the client is requesting lock information
                 if (propName.equals(WebDAV.XML_LOCK_DISCOVERY)) // && metaData.isLocked())
                 {
-                    generateLockDiscoveryResponse(xml, nodeRef, isDir);
+                    generateLockDiscoveryResponse(xml, nodeInfo, isDir);
                 }
                 else if (propName.equals(WebDAV.XML_SUPPORTED_LOCK))
                 {
@@ -489,7 +484,7 @@ public class PropFindMethod extends WebDAVMethod
                 else if (propName.equals(WebDAV.XML_DISPLAYNAME))
                 {
                     // Get the node name
-                    if (getRootNodeRef().equals(nodeRef))
+                    if (getRootNodeRef().equals(nodeInfo.getNodeRef()))
                     {
                         // Output an empty name for the root node
                         xml.write(DocumentHelper.createElement(WebDAV.XML_NS_SOURCE));
@@ -506,7 +501,7 @@ public class PropFindMethod extends WebDAVMethod
                             String name = typeConv.convert(String.class, davValue);
                             if (name == null || name.length() == 0)
                             {
-                                logger.error("WebDAV name is null, value=" + davValue.getClass().getName() + ", node=" + nodeRef);
+                                logger.error("WebDAV name is null, value=" + davValue.getClass().getName() + ", node=" + nodeInfo.getNodeRef());
                             }
                             xml.write(name);
                         }
@@ -563,7 +558,7 @@ public class PropFindMethod extends WebDAVMethod
                     // Output the etag
 
                     xml.startElement(WebDAV.DAV_NS, WebDAV.XML_GET_ETAG, WebDAV.XML_NS_GET_ETAG, nullAttr);
-                    xml.write(getDAVHelper().makeETag(nodeRef));
+                    xml.write(getDAVHelper().makeETag(nodeInfo));
                     xml.endElement(WebDAV.DAV_NS, WebDAV.XML_GET_ETAG, WebDAV.XML_NS_GET_ETAG);
                 }
                 else if (propName.equals(WebDAV.XML_GET_CONTENT_LENGTH))
@@ -616,11 +611,11 @@ public class PropFindMethod extends WebDAVMethod
             else
             {
                 // Look in the custom properties
-
+                
                 // TODO: Custom properties lookup
-//                String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
-
-                String value = (String) getNodeService().getProperty(nodeRef, property.createQName());
+                // String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
+                
+                String value = (String) nodeInfo.getProperties().get(property.createQName());
                 if (value == null)
                 {
                 propertiesNotFound.add(property);
@@ -699,11 +694,11 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    protected void generateAllPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
+    protected void generateAllPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
         // Get the properties for the node
 
-        Map<QName, Serializable> props = getNodeService().getProperties(node);
+        Map<QName, Serializable> props = nodeInfo.getProperties();
 
         // Output the start of the properties element
 
@@ -714,7 +709,7 @@ public class PropFindMethod extends WebDAVMethod
 
         // Generate a lock status report, if locked
 
-        generateLockDiscoveryResponse(xml, node, isDir);
+        generateLockDiscoveryResponse(xml, nodeInfo, isDir);
 
         // Output the supported lock types
 
@@ -741,7 +736,7 @@ public class PropFindMethod extends WebDAVMethod
             String name = typeConv.convert(String.class, davValue);
             if (name == null || name.length() == 0)
             {
-                logger.error("WebDAV name is null, value=" + davValue.getClass().getName() + ", node=" + node);
+                logger.error("WebDAV name is null, value=" + davValue.getClass().getName() + ", node=" + nodeInfo.getNodeRef());
             }
             xml.write(name);
         }
@@ -801,7 +796,7 @@ public class PropFindMethod extends WebDAVMethod
             // Output the etag
 
             xml.startElement(WebDAV.DAV_NS, WebDAV.XML_GET_ETAG, WebDAV.XML_NS_GET_ETAG, nullAttr);
-            xml.write(getDAVHelper().makeETag(node));
+            xml.write(getDAVHelper().makeETag(nodeInfo));
             xml.endElement(WebDAV.DAV_NS, WebDAV.XML_GET_ETAG, WebDAV.XML_NS_GET_ETAG);
         }
 
@@ -850,7 +845,7 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    protected void generateFindPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir)
+    protected void generateFindPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir)
     {
         try
         {
@@ -908,14 +903,14 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    protected void generateLockDiscoveryResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
+    protected void generateLockDiscoveryResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
         // Output the lock status response
 
-        LockInfo lockInfo = getNodeLockInfo(node);
+        LockInfo lockInfo = getNodeLockInfo(nodeInfo);
         if (lockInfo.isLocked())
         {
-            generateLockDiscoveryXML(xml, node, lockInfo);
+            generateLockDiscoveryXML(xml, nodeInfo, lockInfo);
         }
     }
 

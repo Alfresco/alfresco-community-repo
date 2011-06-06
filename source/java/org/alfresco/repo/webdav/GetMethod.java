@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -40,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implements the WebDAV GET method
@@ -50,8 +50,8 @@ public class GetMethod extends WebDAVMethod
 {
     // Request parameters
 
-    private ArrayList ifMatchTags = null;
-    private ArrayList ifNoneMatchTags = null;
+    private ArrayList<String> ifMatchTags = null;
+    private ArrayList<String> ifNoneMatchTags = null;
     private Date m_ifModifiedSince = null;
     private Date m_ifUnModifiedSince = null;
 
@@ -188,13 +188,12 @@ public class GetMethod extends WebDAVMethod
         }
         else
         {
-            NodeRef pathNodeRef = realNodeInfo.getNodeRef();
             // Return the node details, and content if requested, check that the node passes the pre-conditions
 
             checkPreConditions(realNodeInfo);
 
             // Build the response header
-            m_response.setHeader(WebDAV.HEADER_ETAG, getDAVHelper().makeQuotedETag(pathNodeRef));
+            m_response.setHeader(WebDAV.HEADER_ETAG, getDAVHelper().makeQuotedETag(nodeInfo));
 
             Date modifiedDate = realNodeInfo.getModifiedDate();
             if (modifiedDate != null)
@@ -231,7 +230,7 @@ public class GetMethod extends WebDAVMethod
     {
         // Make an etag for the node
 
-        String strETag = getDAVHelper().makeQuotedETag(nodeInfo.getNodeRef());
+        String strETag = getDAVHelper().makeQuotedETag(nodeInfo);
         TypeConverter typeConv = DefaultTypeConverter.INSTANCE;
 
         // Check the If-Match header, don't send any content back if none of the tags in

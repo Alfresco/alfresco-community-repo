@@ -353,24 +353,24 @@ public class WebDAVHelper
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */
-    public final String makeETag(NodeRef node)
+    public final String makeETag(FileInfo nodeInfo)
     {
         // Get the modify date/time property for the node
         
         StringBuilder etag = new StringBuilder();
-        makeETagString(node, etag);
+        makeETagString(nodeInfo, etag);
         return etag.toString();
     }
     
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */
-    public final String makeQuotedETag(NodeRef node)
+    public final String makeQuotedETag(FileInfo nodeInfo)
     {
         StringBuilder etag = new StringBuilder();
         
         etag.append("\"");
-        makeETagString(node, etag);
+        makeETagString(nodeInfo, etag);
         etag.append("\"");
         return etag.toString();
     }
@@ -378,13 +378,13 @@ public class WebDAVHelper
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */
-    protected final void makeETagString(NodeRef node, StringBuilder etag)
+    protected final void makeETagString(FileInfo nodeInfo, StringBuilder etag)
     {
         // Get the modify date/time property for the node
         
-        Object modVal = getNodeService().getProperty(node, ContentModel.PROP_MODIFIED);
+        Object modVal = nodeInfo.getProperties().get(ContentModel.PROP_MODIFIED);
         
-        etag.append(node.getId());
+        etag.append(nodeInfo.getNodeRef().getId());
         
         if ( modVal != null)
         {

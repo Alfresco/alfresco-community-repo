@@ -737,10 +737,10 @@ public abstract class WebDAVMethod
      * @param xml XMLWriter
      * @param lockNode NodeRef
      */
-    protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode, LockInfo lockInfo) throws Exception
+    protected void generateLockDiscoveryXML(XMLWriter xml, FileInfo lockNodeInfo, LockInfo lockInfo) throws Exception
     {
-	    String owner = (String) getNodeService().getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
-	    generateLockDiscoveryXML(xml, lockNode, false, lockInfo.getScope(), lockInfo.getDepth(), WebDAV.makeLockToken(lockNode, owner), owner);
+	    String owner = (String) lockNodeInfo.getProperties().get(ContentModel.PROP_LOCK_OWNER);
+	    generateLockDiscoveryXML(xml, lockNodeInfo, false, lockInfo.getScope(), lockInfo.getDepth(), WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), owner), owner);
 	}
   
     /**
@@ -755,18 +755,14 @@ public abstract class WebDAVMethod
      * @param owner String lock owner
      * 
      */
-    protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode, boolean emptyNamespace, String scope, String depth, String lToken, String owner) throws Exception
+    protected void generateLockDiscoveryXML(XMLWriter xml, FileInfo lockNodeInfo, boolean emptyNamespace, String scope, String depth, String lToken, String owner) throws Exception
     {
         Attributes nullAttr= getDAVHelper().getNullAttributes();
         String ns = emptyNamespace ? "" : WebDAV.DAV_NS;
-        if (lockNode != null)
+        if (lockNodeInfo != null)
         {
-            
             // Get the lock details
-
-            NodeService nodeService = getNodeService();
-            
-            Date expiryDate = (Date) nodeService.getProperty(lockNode, ContentModel.PROP_EXPIRY_DATE);
+            Date expiryDate = (Date) lockNodeInfo.getProperties().get(ContentModel.PROP_EXPIRY_DATE);
             
             // Output the XML response
             
@@ -864,8 +860,8 @@ public abstract class WebDAVMethod
      */
     protected LockInfo checkNode(FileInfo fileInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
     {
-        LockInfo nodeLockInfo = getNodeLockInfo(fileInfo.getNodeRef());
-        String nodeETag = getDAVHelper().makeQuotedETag(fileInfo.getNodeRef());
+        LockInfo nodeLockInfo = getNodeLockInfo(fileInfo);
+        String nodeETag = getDAVHelper().makeQuotedETag(fileInfo);
 
         
         if (m_conditions == null)
@@ -1055,25 +1051,25 @@ public abstract class WebDAVMethod
      * @param fileInfo node
      * @return String Lock token
      */
-    protected LockInfo getNodeLockInfo(NodeRef nodeRef)
+    protected LockInfo getNodeLockInfo(FileInfo nodeInfo)
     {
         LockInfo lockInfo = new LockInfo();
         NodeService nodeService = getNodeService();
         LockService lockService = getLockService();
 
         // Check if node is locked directly.
-        LockStatus lockSts = lockService.getLockStatus(nodeRef);
+        LockStatus lockSts = lockService.getLockStatus(nodeInfo.getNodeRef());
         if (lockSts == LockStatus.LOCKED || lockSts == LockStatus.LOCK_OWNER)
         {
-            String propOpaqueLockToken = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
+            String propOpaqueLockToken = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
             if (propOpaqueLockToken != null)
             {
                 // Get lock depth
-                String depth = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_LOCK_DEPTH);
+                String depth = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_LOCK_DEPTH);
                 //Get lock scope
-                String scope = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_LOCK_SCOPE);
+                String scope = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_LOCK_SCOPE);
                 // Get shared lock tokens
-                String sharedLocks = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
+                String sharedLocks = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_SHARED_LOCK_TOKENS);
 
                 // Node has it's own Lock token.
                 // Store lock information to the lockInfo object
@@ -1088,13 +1084,13 @@ public abstract class WebDAVMethod
         else
         {
             // No has no exclusive lock but can be locked with shared lock
-            String sharedLocks = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
+            String sharedLocks = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_SHARED_LOCK_TOKENS);
             if (sharedLocks != null)
             {
                 // Get lock depth
-                String depth = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_LOCK_DEPTH);
+                String depth = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_LOCK_DEPTH);
                 //Get lock scope
-                String scope = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_LOCK_SCOPE);
+                String scope = (String) nodeInfo.getProperties().get(WebDAVModel.PROP_LOCK_SCOPE);
 
                 // Node has it's own Lock token.
                 // Store lock information to the lockInfo object
@@ -1110,6 +1106,7 @@ public abstract class WebDAVMethod
 
         // Node isn't locked directly and has no it's own  Lock token.
         // Try to search indirect lock.
+        NodeRef nodeRef = nodeInfo.getNodeRef();
         NodeRef node = nodeRef;
         while (true)
         {

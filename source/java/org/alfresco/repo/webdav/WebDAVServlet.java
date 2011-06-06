@@ -19,6 +19,8 @@
 package org.alfresco.repo.webdav;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -137,7 +139,10 @@ public class WebDAVServlet extends HttpServlet
                 WebDAVServerException error = (WebDAVServerException) e;
                 if (error.getCause() != null)
                 {
-                    logger.error(INTERNAL_SERVER_ERROR, error.getCause());
+                    StringWriter writer = new StringWriter();
+                    PrintWriter print = new PrintWriter(writer);
+                    error.printStackTrace(print);
+                    logger.error(print.toString(), e);
                 }
 
                 if (logger.isDebugEnabled())
@@ -158,7 +163,10 @@ public class WebDAVServlet extends HttpServlet
             }
             else
             {
-                logger.error(INTERNAL_SERVER_ERROR, e);
+                StringWriter writer = new StringWriter();
+                PrintWriter print = new PrintWriter(writer);
+                e.printStackTrace(print);
+                logger.error(print.toString(), e);
 
                 if (response.isCommitted())
                 {

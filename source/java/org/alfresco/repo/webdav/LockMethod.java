@@ -291,7 +291,7 @@ public class LockMethod extends WebDAVMethod
         m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, WebDAV.XML_CONTENT_TYPE);
 
         // We either created a new lock or refreshed an existing lock, send back the lock details
-        generateResponse(lockNodeInfo.getNodeRef(), userName);
+        generateResponse(lockNodeInfo, userName);
     }
     
     /**
@@ -326,6 +326,9 @@ public class LockMethod extends WebDAVMethod
         {
             // Lock the node
             lockService.lock(lockNode.getNodeRef(), LockType.WRITE_LOCK, getLockTimeout());
+            
+            // update local cache (will be read back when generating the response)
+            lockNode.getProperties().put(ContentModel.PROP_LOCK_OWNER, userName);
 
             //this.lockInfo.setToken(lockToken);
             getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_OPAQUE_LOCK_TOKEN, lockToken);
@@ -366,7 +369,7 @@ public class LockMethod extends WebDAVMethod
     /**
      * Generates the XML lock discovery response body
      */
-    protected void generateResponse(NodeRef lockNode, String userName) throws Exception
+    protected void generateResponse(FileInfo lockNodeInfo, String userName) throws Exception
     {
         String scope;
         String lt;
@@ -384,7 +387,7 @@ public class LockMethod extends WebDAVMethod
             // Output refreshed lock
             lt = this.lockInfo.getToken();
         }
-        String owner = (String) getNodeService().getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
+        String owner = (String) lockNodeInfo.getProperties().get(ContentModel.PROP_LOCK_OWNER);
 
         XMLWriter xml = createXMLWriter();
 
@@ -394,7 +397,7 @@ public class LockMethod extends WebDAVMethod
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_NS_PROP + nsdec, getDAVHelper().getNullAttributes());
 
         // Output the lock details
-        generateLockDiscoveryXML(xml, lockNode, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
+        generateLockDiscoveryXML(xml, lockNodeInfo, false, scope, WebDAV.getDepthName(m_depth), lt, owner);
 
         // Close off the XML
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);

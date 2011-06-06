@@ -23,13 +23,13 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
+import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
@@ -39,6 +39,7 @@ import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.core.SharedDevice;
+import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileAction;
@@ -56,6 +57,7 @@ import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.TransferModel;
@@ -63,6 +65,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -70,13 +73,19 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -88,6 +97,12 @@ import org.springframework.extensions.config.element.GenericConfigElement;
  */
 public class ContentDiskDriverTest extends TestCase
 {
+    private static final String TEST_PROTOTYPE_NAME = "test";
+    private static final String TEST_REMOTE_NAME = "remoteName";
+    private static final String TEST_SERVER_NAME = "testServer";
+
+    private static final String TEST_USER_AUTHORITY = "userx";
+
     private Repository repositoryHelper;
     private CifsHelper cifsHelper;
     private ContentDiskDriver driver;
@@ -97,6 +112,11 @@ public class ContentDiskDriverTest extends TestCase
     private ContentService contentService;
     private RuleService ruleService;
     private ActionService actionService;
+    private PersonService personService;
+    private MutableAuthenticationService authenticationService;
+    private PermissionService permissionService;
+    private OwnableService ownableService;
+    private FileFolderService fileFolderService;
     
     private static Log logger = LogFactory.getLog(ContentDiskDriverTest.class);
 
@@ -123,6 +143,11 @@ public class ContentDiskDriverTest extends TestCase
         contentService = (ContentService)applicationContext.getBean("contentService");
         ruleService = (RuleService)applicationContext.getBean("ruleService");
         actionService = (ActionService)this.applicationContext.getBean("actionService");
+        personService = (PersonService) this.applicationContext.getBean("personService");
+        authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
+        permissionService = (PermissionService) this.applicationContext.getBean("permissionService");
+        ownableService = (OwnableService) this.applicationContext.getBean("ownableService");
+        fileFolderService = (FileFolderService) this.applicationContext.getBean("fileFolderService");
         
         assertNotNull("content disk driver is null", driver);
         assertNotNull("repositoryHelper is null", repositoryHelper);
@@ -441,158 +466,158 @@ public class ContentDiskDriverTest extends TestCase
     /*
      * MER : I can't see what DeleteOnClose does.  Test commented out  
      */
-    public void testSetFileInfo() throws Exception
-    {
-        logger.debug("testSetFileInfo");
-        ServerConfiguration scfg = new ServerConfiguration("testServer");
-        TestServer testServer = new TestServer("testServer", scfg);
-        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
-        DiskSharedDevice share = getDiskSharedDevice();
-        final TreeConnection testConnection = testServer.getTreeConnection(share);
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        Date now = new Date();
-        
-        // CREATE 6 hours ago
-        final Date CREATED = new Date(now.getTime() - 1000 * 60 * 60 * 6);
-        // Modify one hour ago
-        final Date MODIFIED = new Date(now.getTime() - 1000 * 60 * 60 * 1);
-        
-        class TestContext
-        {     
-            NodeRef testNodeRef;    
-        };
-        
-        final TestContext testContext = new TestContext();
-      
-        /**
-          * Step 1 : Create a new file in read/write mode and add some content.
-          * Call SetInfo to set the creation date
-          */
-        int openAction = FileAction.CreateNotExist;
-        
-        final String FILE_NAME="testSetFileInfo.txt";
-        final String FILE_PATH="\\"+FILE_NAME;
-                  
-        final FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
-                
-        final NetworkFile file = driver.createFile(testSession, testConnection, params);
-        assertNotNull("file is null", file);
-        assertFalse("file is read only, should be read-write", file.isReadOnly());
-        
-        RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                byte[] stuff = "Hello World".getBytes();
-                file.writeFile(stuff, stuff.length, 0, 0);
-                file.close();  // needed to actually flush content to node
-              
-                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-                info.setFileInformationFlags(FileInfo.SetModifyDate);
-                info.setModifyDateTime(MODIFIED.getTime());
-                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-                return null;
-            }
-        };
-        tran.doInTransaction(writeStuffCB);
-        
-        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                NodeRef companyHome = repositoryHelper.getCompanyHome();
-                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-                testContext.testNodeRef = newNode;
-                assertNotNull("can't find new node", newNode);
-                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
-                assertNotNull("content is null", content);     
-                Date modified = (Date)nodeService.getProperty(newNode, ContentModel.PROP_MODIFIED);
-                assertEquals("modified time not set correctly", MODIFIED, modified);
-                return null;
-            }
-        };
-        tran.doInTransaction(validateCB);
-        
-        /**
-         * Step 2: Change the created date
-         */
-        logger.debug("Step 2: Change the created date");
-        RetryingTransactionCallback<Void> changeCreatedCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-                info.setFileInformationFlags(FileInfo.SetCreationDate);
-                info.setCreationDateTime(CREATED.getTime());
-                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-                return null;
-            }
-        };
-        tran.doInTransaction(changeCreatedCB);
-  
-        RetryingTransactionCallback<Void> validateCreatedCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                NodeRef companyHome = repositoryHelper.getCompanyHome();
-                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-                testContext.testNodeRef = newNode;
-                assertNotNull("can't find new node", newNode);
-                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
-                assertNotNull("content is null", content);     
-                Date created = (Date)nodeService.getProperty(newNode, ContentModel.PROP_CREATED);
-                assertEquals("created time not set correctly", CREATED, created);
-                return null;
-            }
-        };
-        tran.doInTransaction(validateCreatedCB);
-        
+//    public void testSetFileInfo() throws Exception
+//    {
+//        logger.debug("testSetFileInfo");
+//        ServerConfiguration scfg = new ServerConfiguration("testServer");
+//        TestServer testServer = new TestServer("testServer", scfg);
+//        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+//        DiskSharedDevice share = getDiskSharedDevice();
+//        final TreeConnection testConnection = testServer.getTreeConnection(share);
+//        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+//        
+//        Date now = new Date();
+//        
+//        // CREATE 6 hours ago
+//        final Date CREATED = new Date(now.getTime() - 1000 * 60 * 60 * 6);
+//        // Modify one hour ago
+//        final Date MODIFIED = new Date(now.getTime() - 1000 * 60 * 60 * 1);
+//        
+//        class TestContext
+//        {     
+//            NodeRef testNodeRef;    
+//        };
+//        
+//        final TestContext testContext = new TestContext();
+//      
 //        /**
-//         * Step 3: Test 
-//         */
-//        logger.debug("Step 3: test deleteOnClose");
-//        RetryingTransactionCallback<Void> deleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+//          * Step 1 : Create a new file in read/write mode and add some content.
+//          * Call SetInfo to set the creation date
+//          */
+//        int openAction = FileAction.CreateNotExist;
+//        
+//        final String FILE_NAME="testSetFileInfo.txt";
+//        final String FILE_PATH="\\"+FILE_NAME;
+//                  
+//        final FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+//                
+//        final NetworkFile file = driver.createFile(testSession, testConnection, params);
+//        assertNotNull("file is null", file);
+//        assertFalse("file is read only, should be read-write", file.isReadOnly());
+//        
+//        RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
 //
 //            @Override
 //            public Void execute() throws Throwable
 //            {
-//               NetworkFile f2 = driver.openFile(testSession, testConnection, params);
-//                 
-//               FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-//               info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
-//               driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-//                
-//               byte[] stuff = "Update".getBytes();
-//               f2.writeFile(stuff, stuff.length, 0, 0);
-//               f2.close();  // needed to actually flush content to node
-//     
-//               return null;
+//                byte[] stuff = "Hello World".getBytes();
+//                file.writeFile(stuff, stuff.length, 0, 0);
+//                file.close();  // needed to actually flush content to node
+//              
+//                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+//                info.setFileInformationFlags(FileInfo.SetModifyDate);
+//                info.setModifyDateTime(MODIFIED.getTime());
+//                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+//                return null;
 //            }
 //        };
-//        tran.doInTransaction(deleteOnCloseCB);
-//  
-//        RetryingTransactionCallback<Void> validateDeleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+//        tran.doInTransaction(writeStuffCB);
+//        
+//        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
 //
 //            @Override
 //            public Void execute() throws Throwable
 //            {
 //                NodeRef companyHome = repositoryHelper.getCompanyHome();
 //                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-//                assertNull("can still find new node", newNode);
+//                testContext.testNodeRef = newNode;
+//                assertNotNull("can't find new node", newNode);
+//                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+//                assertNotNull("content is null", content);     
+//                Date modified = (Date)nodeService.getProperty(newNode, ContentModel.PROP_MODIFIED);
+//                assertEquals("modified time not set correctly", MODIFIED, modified);
 //                return null;
 //            }
 //        };
-//        tran.doInTransaction(validateDeleteOnCloseCB);
-        
-        // clean up so we could run the test again
-        driver.deleteFile(testSession, testConnection, FILE_PATH);    
-        
-    } // test set file info
+//        tran.doInTransaction(validateCB);
+//        
+//        /**
+//         * Step 2: Change the created date
+//         */
+//        logger.debug("Step 2: Change the created date");
+//        RetryingTransactionCallback<Void> changeCreatedCB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+//                info.setFileInformationFlags(FileInfo.SetCreationDate);
+//                info.setCreationDateTime(CREATED.getTime());
+//                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+//                return null;
+//            }
+//        };
+//        tran.doInTransaction(changeCreatedCB);
+//  
+//        RetryingTransactionCallback<Void> validateCreatedCB = new RetryingTransactionCallback<Void>() {
+//
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                NodeRef companyHome = repositoryHelper.getCompanyHome();
+//                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+//                testContext.testNodeRef = newNode;
+//                assertNotNull("can't find new node", newNode);
+//                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+//                assertNotNull("content is null", content);     
+//                Date created = (Date)nodeService.getProperty(newNode, ContentModel.PROP_CREATED);
+//                assertEquals("created time not set correctly", CREATED, created);
+//                return null;
+//            }
+//        };
+//        tran.doInTransaction(validateCreatedCB);
+//        
+////        /**
+////         * Step 3: Test 
+////         */
+////        logger.debug("Step 3: test deleteOnClose");
+////        RetryingTransactionCallback<Void> deleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+////
+////            @Override
+////            public Void execute() throws Throwable
+////            {
+////               NetworkFile f2 = driver.openFile(testSession, testConnection, params);
+////                 
+////               FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+////               info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
+////               driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+////                
+////               byte[] stuff = "Update".getBytes();
+////               f2.writeFile(stuff, stuff.length, 0, 0);
+////               f2.close();  // needed to actually flush content to node
+////     
+////               return null;
+////            }
+////        };
+////        tran.doInTransaction(deleteOnCloseCB);
+////  
+////        RetryingTransactionCallback<Void> validateDeleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+////
+////            @Override
+////            public Void execute() throws Throwable
+////            {
+////                NodeRef companyHome = repositoryHelper.getCompanyHome();
+////                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+////                assertNull("can still find new node", newNode);
+////                return null;
+////            }
+////        };
+////        tran.doInTransaction(validateDeleteOnCloseCB);
+//        
+//        // clean up so we could run the test again
+//        driver.deleteFile(testSession, testConnection, FILE_PATH);    
+//        
+//    } // test set file info
 
     
     /**
@@ -2512,7 +2537,177 @@ public class ContentDiskDriverTest extends TestCase
         };
         tran.doInTransaction(deleteNodeCB, false, true);
     } //testDirListing
-    
+
+
+    public void testFileInformationUpdatingByEditorUserForAlf8808() throws Exception
+    {
+        final Holder<org.alfresco.service.cmr.model.FileInfo> editorFolder = new Holder<org.alfresco.service.cmr.model.FileInfo>();
+        final Holder<org.alfresco.service.cmr.model.FileInfo> testFile = new Holder<org.alfresco.service.cmr.model.FileInfo>();
+
+        // Configuring test server with test server configuration and getting test tree connection for test shared device
+        ServerConfiguration config = new ServerConfiguration(ContentDiskDriverTest.TEST_SERVER_NAME);
+        TestServer server = new TestServer(ContentDiskDriverTest.TEST_SERVER_NAME, config);
+        DiskSharedDevice device = getDiskSharedDevice();
+        final TreeConnection treeConnection = server.getTreeConnection(device);
+
+        // Getting target entity for testing - ContentDiskDriver
+        final ContentDiskDriver deviceInterface = (ContentDiskDriver) treeConnection.getInterface();
+        // Creating mock-session
+        final SrvSession session = new TestSrvSession(13, server, ContentDiskDriverTest.TEST_PROTOTYPE_NAME, ContentDiskDriverTest.TEST_REMOTE_NAME);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    NodeRef rootNode = repositoryHelper.getCompanyHome();
+                    // Creating test user to invite him as Editor for test content. This user will be created correctly (with person and authentication options)
+                    createUser(ContentDiskDriverTest.TEST_USER_AUTHORITY, ContentDiskDriverTest.TEST_USER_AUTHORITY, rootNode);
+                    // Safely creating folder for test content
+                    editorFolder.value = getOrCreateNode(rootNode, PermissionService.EDITOR, ContentModel.TYPE_FOLDER).getFirst();
+                    // Creating test content which will be editable by user created above
+                    testFile.value = getOrCreateNode(rootNode, "Test.txt", ContentModel.TYPE_CONTENT).getFirst();
+
+                    // Applying 'Editor' role for test user to test file
+                    permissionService.setPermission(testFile.value.getNodeRef(), ContentDiskDriverTest.TEST_USER_AUTHORITY, PermissionService.EDITOR, true);
+
+                    try
+                    {
+                        // Creating data for target method invocation
+                        final FileInfo updatedInfo = new FileInfo();
+                        updatedInfo.setFileName(testFile.value.getName());
+                        updatedInfo.setFileId(DefaultTypeConverter.INSTANCE.intValue(testFile.value.getProperties().get(ContentModel.PROP_NODE_DBID)));
+
+                        // Testing ContentDiskDriver.setFileInformation() with test user authenticated who has 'Editor' role for test content.
+                        // This method should fail if check on 'DELETE' permission was not moved to 'DeleteOnClose' context
+                        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork() throws Exception
+                            {
+                                deviceInterface.setFileInformation(session, treeConnection, testFile.value.getName(), updatedInfo);
+                                return null;
+                            }
+                        }, ContentDiskDriverTest.TEST_USER_AUTHORITY);
+                    }
+                    catch (Exception e)
+                    {
+                        // Informing about test failure. Expected exception is 'org.alfresco.jlan.server.filesys.AccessDeniedException'
+                        if (e.getCause() instanceof AccessDeniedException)
+                        {
+                            fail("For user='" + TEST_USER_AUTHORITY + "' " + e.getCause().toString());
+                        }
+                        else
+                        {
+                            fail("Unexpected exception was caught: " + e.toString());
+                        }
+                    }
+                }
+                finally
+                {
+                    // Cleaning all test data and rolling back transaction to revert all introduced changes during testing
+
+                    if (authenticationService.authenticationExists(ContentDiskDriverTest.TEST_USER_AUTHORITY))
+                    {
+                        authenticationService.deleteAuthentication(ContentDiskDriverTest.TEST_USER_AUTHORITY);
+                    }
+
+                    if (personService.personExists(ContentDiskDriverTest.TEST_USER_AUTHORITY))
+                    {
+                        personService.deletePerson(ContentDiskDriverTest.TEST_USER_AUTHORITY);
+                    }
+
+                    try
+                    {
+                        if (null != testFile.value)
+                        {
+                            nodeService.deleteNode(testFile.value.getNodeRef());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Doing nothing
+                    }
+
+                    try
+                    {
+                        if (null != editorFolder.value)
+                        {
+                            nodeService.deleteNode(editorFolder.value.getNodeRef());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Doing nothing
+                    }
+                }
+
+                return null;
+            }
+        }, false, true);
+    }
+
+    /**
+     * Searching for file object with specified name or creating new one if such object is not exist
+     * 
+     * @param parentRef - {@link NodeRef} of desired parent object
+     * @param name - {@link String} value for name of desired file object
+     * @param type - {@link QName} instance which determines type of the object. It may be cm:content, cm:folder etc (see {@link ContentModel})
+     * @return {@link Pair}&lt;{@link org.alfresco.service.cmr.model.FileInfo}, {@link Boolean}> instance which contains {@link NodeRef} of newly created object and
+     *         <code>true</code> value if file object with specified name was not found or {@link NodeRef} of existent file object and <code>false</code> in other case
+     */
+    private Pair<org.alfresco.service.cmr.model.FileInfo, Boolean> getOrCreateNode(NodeRef parentRef, String name, QName type)
+    {
+        NodeRef result = nodeService.getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, name);
+        Boolean created = false;
+        if (null == result)
+        {
+            result = nodeService.getChildByName(parentRef, ContentModel.ASSOC_CHILDREN, name);
+        }
+        if (created = (null == result))
+        {
+            result = fileFolderService.create(parentRef, name, type).getNodeRef();
+        }
+        return new Pair<org.alfresco.service.cmr.model.FileInfo, Boolean>(fileFolderService.getFileInfo(result), created);
+    }
+
+    /**
+     * Creates correct user entity with correct user home space, person and authentication with password equal to '<code>password</code>' options if these options are not exist.
+     * Method searches for space with name equal to '<code>name</code>' to make it user home space or creates new folder with name equal to '<code>name</code>'. All required
+     * permissions and roles will be applied to user home space
+     * 
+     * @param name - {@link String} value which contains new user name
+     * @param password - {@link String} value of text password for new user
+     * @param parentNodeRef - {@link NodeRef} instance of parent folder where user home space should be found or created
+     */
+    private void createUser(String name, String password, NodeRef parentNodeRef)
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_USERNAME, name);
+        Pair<org.alfresco.service.cmr.model.FileInfo, Boolean> userHome = getOrCreateNode(parentNodeRef, name, ContentModel.TYPE_FOLDER);
+        if (userHome.getSecond())
+        {
+            NodeRef nodeRef = userHome.getFirst().getNodeRef();
+            permissionService.setPermission(nodeRef, name, permissionService.getAllPermission(), true);
+            permissionService.setPermission(nodeRef, permissionService.getAllAuthorities(), PermissionService.CONSUMER, true);
+            permissionService.setPermission(nodeRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
+            ownableService.setOwner(nodeRef, name);
+            permissionService.setInheritParentPermissions(nodeRef, false);
+
+            properties.put(ContentModel.PROP_HOMEFOLDER, nodeRef);
+            if (!personService.personExists(name))
+            {
+                personService.createPerson(properties);
+            }
+            if (!authenticationService.authenticationExists(name))
+            {
+                authenticationService.createAuthentication(name, password.toCharArray());
+            }
+        }
+    }
+
     /**
      * Test server
      */

@@ -38,9 +38,11 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.TemplateValueConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
+import freemarker.core.Environment;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -194,7 +196,10 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
                 {
                     // perform the template processing against supplied data model
                     Object freeMarkerModel = convertToFreeMarkerModel(model);
-                    t.process(freeMarkerModel, out);
+                    Environment env = t.createProcessingEnvironment(freeMarkerModel, out);
+                    // set the locale to ensure dates etc. are appropriate localised
+                    env.setLocale(I18NUtil.getLocale());
+                    env.process();
                 }
                 catch (Throwable err)
                 {

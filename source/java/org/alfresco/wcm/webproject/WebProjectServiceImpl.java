@@ -305,7 +305,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         inviteWebUser(wpNodeRef, AuthenticationUtil.getFullyAuthenticatedUser(), WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Bind the post-commit transaction listener with data required for virtualization server notification
-        CreateWebProjectTransactionListener tl = new CreateWebProjectTransactionListener(wpStoreId);
+        CreateWebAppTransactionListener tl = new CreateWebAppTransactionListener(wpStoreId, WCMUtil.DIR_ROOT);
         AlfrescoTransactionSupport.bindListener(tl);
         
         if (logger.isDebugEnabled())
@@ -357,13 +357,16 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                                                    new PropertyValue(DataTypeDefinition.TEXT,
                                                    webAppDescription));
                     }
-
+                    
                     // Snapshot the store with the empty webapp
                     avmService.createSnapshot(stagingStoreId, null, null);
                     
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
+            
+            CreateWebAppTransactionListener tl = new CreateWebAppTransactionListener(wpInfo.getStoreId(), webAppName);
+            AlfrescoTransactionSupport.bindListener(tl);
             
             if (logger.isDebugEnabled())
             {
@@ -1541,15 +1544,17 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     
     /**
-     * Transaction listener - invoked after commit
+     * Create WebProject/WebApp Transaction listener - invoked after commit
      */
-    private class CreateWebProjectTransactionListener extends TransactionListenerAdapter
+    private class CreateWebAppTransactionListener extends TransactionListenerAdapter
     {
         private String wpStoreId;
+        private String webApp;
 
-        public CreateWebProjectTransactionListener(String wpStoreId)
+        public CreateWebAppTransactionListener(String wpStoreId, String webApp)
         {
             this.wpStoreId = wpStoreId;
+            this.webApp = webApp;
         }
 
         /**
@@ -1561,11 +1566,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             // post-commit
             if (wpStoreId != null)
             {
-               // update the virtualisation server with the default ROOT webapp path
+               // update the virtualisation server with webapp
                // performed after the main txn has committed successfully
                String newStoreName = WCMUtil.buildStagingStoreName(wpStoreId);
                
-               String path = WCMUtil.buildStoreWebappPath(newStoreName, WCMUtil.DIR_ROOT);
+               String path = WCMUtil.buildStoreWebappPath(newStoreName, webApp);
                
                WCMUtil.updateVServerWebapp(virtServerRegistry, path, true);
             }     

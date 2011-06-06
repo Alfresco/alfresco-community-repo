@@ -24,6 +24,7 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DAT
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
@@ -116,6 +118,26 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
             // a separate field for each value once we have full
             // UI support in place.
             Collection<?> values = (Collection<?>) value;
+            
+            // if the non empty collection is a List of Date objects 
+            // we need to convert each date to a ISO8601 format 
+            if (value instanceof List<?> && !values.isEmpty())
+            {
+                List<?> list = (List<?>)values;
+                if (list.get(0) instanceof Date)
+                {
+                    List<String> isoDates = new ArrayList<String>(list.size());
+                    for (Object date : list)
+                    {
+                        isoDates.add(ISO8601DateFormat.format((Date)date));
+                    }
+                    
+                    // return the ISO formatted dates as a comma delimited string 
+                    return StringUtils.collectionToCommaDelimitedString(isoDates);
+                }
+            }
+            
+            // return everything else using toString()
             return StringUtils.collectionToCommaDelimitedString(values);
         }
         else if (value instanceof ContentData)

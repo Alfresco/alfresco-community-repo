@@ -80,5 +80,24 @@
          </map>
       </property>
    </bean>
+   
+   <!-- This transformer allows for the webpreviewing of outlook msg files. --> 
+   <bean id="transformer.complex.Msg2swf" 
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
+        parent="baseContentTransformer" > 
+      <property name="transformers"> 
+         <list> 
+            <ref bean="transformer.OutlookMsg" /> 
+            <ref bean="transformer.PdfBox.TextToPdf" /> 
+            <ref bean="transformer.Pdf2swf" /> 
+         </list> 
+      </property> 
+      <property name="intermediateMimetypes"> 
+         <list> 
+            <value>text/plain</value> 
+            <value>application/pdf</value> 
+         </list> 
+      </property> 
+   </bean> 
 
 </beans>

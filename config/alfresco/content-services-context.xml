@@ -520,6 +520,22 @@
    <bean id="transformer.OutlookMsg"
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />
+         
+   <bean id="transformer.complex.OutlookMsg2Image" 
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
+        parent="baseContentTransformer" > 
+      <property name="transformers"> 
+         <list> 
+            <ref bean="transformer.OutlookMsg" /> 
+            <ref bean="transformer.complex.Text.Image" /> 
+         </list> 
+      </property> 
+      <property name="intermediateMimetypes"> 
+         <list> 
+            <value>text/plain</value> 
+         </list> 
+      </property> 
+   </bean> 
 
    <bean id="transformer.RFC822"
          class="org.alfresco.repo.content.transform.EMLTransformer"

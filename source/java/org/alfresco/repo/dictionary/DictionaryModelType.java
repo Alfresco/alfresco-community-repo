@@ -140,6 +140,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         
     private List<String> storeUrls; // stores against which model deletes should be validated
     
+    /** Validation marker */
+    private boolean doValidation = true;
     
     /**
      * Set the dictionary DAO
@@ -239,6 +241,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         this.storeUrls = storeUrls;
     }
     
+    public void setDoValidation(boolean doValidation)
+    {
+    	this.doValidation = doValidation;
+    }    
     
     /**
      * The initialise method
@@ -676,7 +682,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         nodeService.setProperties(nodeRef, props);
                                         
                                         // Validate model against dictionary - could be new, unchanged or updated
-                                        validateModel(modelDefinition.getName(), m2Model, compiledModel);
+                                        if (doValidation == true)
+                                        {
+                                        	validateModel(modelDefinition.getName(), m2Model, compiledModel);
+                                        }
                                         
                                         // invalidate - to force lazy re-init
                                         //dictionaryDAO.destroy();

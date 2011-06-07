@@ -18,17 +18,14 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -153,18 +150,20 @@ public class PutMethod extends WebDAVMethod
 
         // Access the content
         ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
-        // set content properties
-        String mimetype = getMimetypeService().guessMimetype(contentNodeInfo.getName());
-
-        writer.setMimetype(mimetype);
+        
+        // Set content properties
+        if (m_strContentType != null)
+        {
+            writer.setMimetype(m_strContentType);
+        }
+        else
+        {
+            writer.guessMimetype(contentNodeInfo.getName());
+        }
+        writer.guessEncoding();
 
         // Get the input stream from the request data
         InputStream is = m_request.getInputStream();
-        is = is.markSupported() ? is : new BufferedInputStream(is);
-        
-        ContentCharsetFinder charsetFinder = getMimetypeService().getContentCharsetFinder();
-        Charset encoding = charsetFinder.getCharset(is, mimetype);
-        writer.setEncoding(encoding.name());
 
         // Write the new data to the content node
         writer.putContent(is);

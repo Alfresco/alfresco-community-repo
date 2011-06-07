@@ -63,7 +63,9 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
     public void setUp() throws Exception
     {
         super.setUp();
-        extracter = new TikaAutoMetadataExtracter();
+        
+        TikaConfig config = (TikaConfig)ctx.getBean("tikaConfig");
+        extracter = new TikaAutoMetadataExtracter(config);
         extracter.setDictionaryService(dictionaryService);
         extracter.register();
         
@@ -91,37 +93,17 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testSupports() throws Exception
     {
-        TikaConfig config = TikaConfig.getDefaultConfig();
-        
         ArrayList<String> mimeTypes = new ArrayList<String>();
         for (Parser p : new Parser[] {
                  new OfficeParser(), new OpenDocumentParser(),
                  new Mp3Parser(), new OOXMLParser()
         }) {
            Set<MediaType> mts = p.getSupportedTypes(new ParseContext());
-           for (MediaType mt : mts) 
-           {
-              MediaType canonical = config.getMediaTypeRegistry().normalize(mt);
-              mimeTypes.add( canonical.toString() );
+           for (MediaType mt : mts) {
+              mimeTypes.add(mt.toString());
            }
         }
         
-        // Check Tika handles it properly
-        AutoDetectParser p = new AutoDetectParser();
-        Set<String> amts = new HashSet<String>();
-        for (MediaType mt : p.getSupportedTypes(new ParseContext()))
-        {
-            amts.add(mt.toString());
-        }
-        for (String mimetype : mimeTypes)
-        {
-            assertTrue(
-                    "Tika doesn't support expected mimetype: " + mimetype,
-                    amts.contains(mimetype)
-            );
-        }
-        
-        // Now check the extractor does too
         for (String mimetype : mimeTypes)
         {
             boolean supports = extracter.isSupported(mimetype);
@@ -228,8 +210,7 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       assertEquals("8 8 8", p.get("Data BitsPerSample"));
       assertEquals("none", p.get("Transparency Alpha"));
       
-      //p = openAndCheck(".bmp", "image/bmp"); // TODO Fixed in Swift, 
-      p = openAndCheck(".bmp", "image/x-ms-bmp"); // TODO Pre-swift workaround 
+      p = openAndCheck(".bmp", "image/bmp");
       assertEquals("409", p.get("width"));
       assertEquals("92", p.get("height"));
       assertEquals("8 8 8", p.get("Data BitsPerSample"));
@@ -284,19 +265,22 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       return file;
    }
    private Map<String, Serializable> openAndCheck(String fileBase, String expMimeType) throws Throwable {
-      // Cheat and ask Tika for the mime type!
+      // Get the mimetype via the MimeTypeMap 
+      // (Uses Tika internally for the detection)
       File file = open(fileBase);
-      AutoDetectParser ap = new AutoDetectParser();
-      Metadata metadata = new Metadata();
-      metadata.set(Metadata.RESOURCE_NAME_KEY, "quick"+fileBase);
-      MediaType mt = ap.getDetector().detect(
-            new BufferedInputStream(new FileInputStream(file)), metadata);
-      String mimetype = mt.toString();
+      ContentReader detectReader = new FileContentReader(file);
+      String mimetype = mimetypeMap.guessMimetype(fileBase, detectReader);
 
       assertEquals("Wrong mimetype for " + fileBase, mimetype, expMimeType);
       
+      // Ensure the Tika Auto parser actually handles this
+      assertTrue("Mimetype should be supported but isn't: " + mimetype, extracter.isSupported(mimetype));
+      
+      // Now create our proper reader
       ContentReader sourceReader = new FileContentReader(file);
       sourceReader.setMimetype(mimetype);
+      
+      // And finally do the properties extraction
       return extracter.extractRaw(sourceReader);
    }
 }

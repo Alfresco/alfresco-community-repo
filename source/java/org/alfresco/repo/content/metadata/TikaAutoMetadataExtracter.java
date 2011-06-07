@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
@@ -49,19 +50,35 @@ import org.apache.tika.parser.Parser;
 public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log logger = LogFactory.getLog(TikaAutoMetadataExtracter.class);
+    private static AutoDetectParser parser;
+    private static TikaConfig config;
 
     public static ArrayList<String> SUPPORTED_MIMETYPES;
-    static {
+    private static ArrayList<String> buildMimeTypes(TikaConfig tikaConfig)
+    {
+       config = tikaConfig;
+       parser = new AutoDetectParser(config);
+
        SUPPORTED_MIMETYPES = new ArrayList<String>();
-       AutoDetectParser p = new AutoDetectParser();
-       for(MediaType mt : p.getParsers().keySet()) {
+       parser = new AutoDetectParser();
+       for(MediaType mt : parser.getParsers().keySet()) 
+       {
+          // Add the canonical mime type
           SUPPORTED_MIMETYPES.add( mt.toString() );
+          
+          // And add any aliases of the mime type too - Alfresco uses some
+          //  non canonical forms of various mimetypes, so we need all of them
+          for(MediaType alias : config.getMediaTypeRegistry().getAliases(mt)) 
+          {
+              SUPPORTED_MIMETYPES.add( alias.toString() );
+          }
        }
+       return SUPPORTED_MIMETYPES;
     }
     
-    public TikaAutoMetadataExtracter()
+    public TikaAutoMetadataExtracter(TikaConfig tikaConfig)
     {
-       super(SUPPORTED_MIMETYPES);
+       super( buildMimeTypes(tikaConfig) );
     }
     
     /**
@@ -70,6 +87,6 @@ public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
      */
     @Override
     protected Parser getParser() {
-       return new AutoDetectParser();
+       return parser;
     }
 }

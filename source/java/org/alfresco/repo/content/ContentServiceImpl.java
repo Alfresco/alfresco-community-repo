@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -85,6 +86,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private AVMService avmService;
+    private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
     
@@ -125,6 +127,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
     
     public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
@@ -490,6 +497,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             listener.setRetryingTransactionHelper(transactionHelper);
             writer.addListener(listener);
             
+        }
+        
+        // supply the writer with a copy of the mimetype service if needed
+        if (writer instanceof AbstractContentWriter)
+        {
+            ((AbstractContentWriter)writer).setMimetypeService(mimetypeService);
         }
         
         // give back to the client

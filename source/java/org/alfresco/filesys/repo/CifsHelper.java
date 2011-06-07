@@ -627,7 +627,7 @@ public class CifsHelper
             ContentData newContentData = fileToMoveInfo.getContentData();
 
             // Reset the mime type
-            
+            // TODO Pass the content along when guessing the mime type, so we're more accurate
             String mimetype = mimetypeService.guessMimetype(newName);
             newContentData = ContentData.setMimetype(newContentData, mimetype);
 

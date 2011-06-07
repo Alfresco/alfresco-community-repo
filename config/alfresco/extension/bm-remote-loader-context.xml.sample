@@ -16,9 +16,6 @@
         <property name="authenticationService">
             <ref bean="AuthenticationService"/>
         </property>
-        <property name="mimetypeService">
-            <ref bean="MimetypeService"/>
-        </property>
     </bean>
     
     <bean id="fileFolderRemoteRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
@@ -50,9 +47,6 @@
         </property>
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
-        </property>
-        <property name="mimetypeService">
-            <ref bean="MimetypeService"/>
         </property>
         <property name="checkOutCheckInService">
  	    <ref bean="CheckoutCheckinService"/>

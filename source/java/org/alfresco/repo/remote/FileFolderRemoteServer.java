@@ -20,10 +20,8 @@ package org.alfresco.repo.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -55,7 +53,6 @@ public class FileFolderRemoteServer implements FileFolderRemote
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationService authenticationService;
     private FileFolderService fileFolderService;
-    private MimetypeService mimetypeService;
 
     /**
      * @param transactionService            provides transactional support and retrying
@@ -82,11 +79,11 @@ public class FileFolderRemoteServer implements FileFolderRemote
     }
 
     /**
-     * @param mimetypeService               used to determine the character encoding
+     * @deprecated The mimetype service is no longer needed.
      */
+    @Deprecated
     public void setMimetypeService(MimetypeService mimetypeService)
     {
-        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -552,19 +549,15 @@ public class FileFolderRemoteServer implements FileFolderRemote
             {
                 public ContentData execute() throws Throwable
                 {
-                    // Guess the mimetype
-                    String mimetype = mimetypeService.guessMimetype(filename);
-                    
                     // Get a writer
                     ContentWriter writer = fileFolderService.getWriter(nodeRef);
+                    
+                    // We need the mimetype and encoding finding for us
+                    writer.guessEncoding();
+                    writer.guessMimetype(filename);
+                    
                     // Make a stream
                     ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-                    // Guess the encoding
-                    ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                    Charset charset = charsetFinder.getCharset(is, mimetype);
-                    // Set metadata
-                    writer.setEncoding(charset.name());
-                    writer.setMimetype(mimetype);
                     
                     // Write the stream
                     writer.putContent(is);
@@ -606,19 +599,15 @@ public class FileFolderRemoteServer implements FileFolderRemote
 
                     for (int i = 0; i < filenames.length; i++)
                     {
-
-                        String mimetype = mimetypeService.guessMimetype(filenames[i]);
-
                         // Get a writer
                         ContentWriter writer = fileFolderService.getWriter(nodeRefs[i]);
+                        
+                        // We need the mimetype and encoding finding for us
+                        writer.guessEncoding();
+                        writer.guessMimetype(filenames[i]);
+                        
                         // Make a stream
                         ByteArrayInputStream is = new ByteArrayInputStream(bytes[i]);
-                        // Guess the encoding
-                        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                        Charset charset = charsetFinder.getCharset(is, mimetype);
-                        // Set metadata
-                        writer.setEncoding(charset.name());
-                        writer.setMimetype(mimetype);
 
                         // Write the stream
                         writer.putContent(is);

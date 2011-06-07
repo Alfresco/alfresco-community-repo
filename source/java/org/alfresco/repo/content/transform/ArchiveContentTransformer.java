@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
@@ -50,22 +51,11 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
     private static Log logger = LogFactory.getLog(ArchiveContentTransformer.class);
 
     private boolean includeContents = false;
-    public void setIncludeContents(String includeContents)
-    {
-       // Spring really ought to be able to handle
-       //  setting a boolean that might still be
-       //  ${foo} (i.e. not overridden in a property).
-       // As we can't do that with spring, we do it...
-       this.includeContents = false;
-       if(includeContents != null && includeContents.length() > 0)
-       {
-          this.includeContents = TransformationOptions.relaxedBooleanTypeConverter.convert(includeContents).booleanValue();
-       }
-    }
+    private TikaConfig tikaConfig;
     
     /** 
      * We support all the archive mimetypes that the Tika
-     *  office parser can handle
+     *  package parser can handle
      */
     public static ArrayList<String> SUPPORTED_MIMETYPES;
     static {
@@ -79,6 +69,29 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
      
     public ArchiveContentTransformer() {
         super(SUPPORTED_MIMETYPES);
+    }
+    
+    /**
+     * Injects the TikaConfig to use
+     * 
+     * @param tikaConfig The Tika Config to use 
+     */
+    public void setTikaConfig(TikaConfig tikaConfig)
+    {
+        this.tikaConfig = tikaConfig;
+    }
+    
+    public void setIncludeContents(String includeContents)
+    {
+       // Spring really ought to be able to handle
+       //  setting a boolean that might still be
+       //  ${foo} (i.e. not overridden in a property).
+       // As we can't do that with spring, we do it...
+       this.includeContents = false;
+       if(includeContents != null && includeContents.length() > 0)
+       {
+          this.includeContents = TransformationOptions.relaxedBooleanTypeConverter.convert(includeContents).booleanValue();
+       }
     }
     
     @Override
@@ -96,9 +109,15 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
       {
          recurse = options.getIncludeEmbedded();
       }
+      
       if(recurse)
       {
-         context.set(Parser.class, new AutoDetectParser());
+         // Use an auto detect parser to handle the contents
+         if(tikaConfig == null)
+         {
+             tikaConfig = TikaConfig.getDefaultConfig();
+         }
+         context.set(Parser.class, new AutoDetectParser(tikaConfig));
       }
       
       return context;

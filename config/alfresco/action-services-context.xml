@@ -548,9 +548,6 @@
         <property name="contentService">
             <ref bean="ContentService" />
         </property>
-        <property name="mimetypeService">
-            <ref bean="mimetypeService"/>
-        </property>
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
         </property>

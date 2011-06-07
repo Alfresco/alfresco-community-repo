@@ -1826,15 +1826,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 throw new CMISContentAlreadyExistsException();
             }
 
-            contentStream = contentStream.markSupported() ? contentStream : new BufferedInputStream(contentStream);
-
-            // establish content encoding
-            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-            Charset encoding = charsetFinder.getCharset(contentStream, mimeType);
-
             ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
+            writer.guessEncoding();
             writer.setMimetype(mimeType);
-            writer.setEncoding(encoding.name());
             writer.putContent(contentStream);
 
             return existed;

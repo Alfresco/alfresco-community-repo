@@ -20,6 +20,7 @@ package org.alfresco.repo.model.filefolder;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
@@ -894,12 +895,25 @@ public class FileFolderServiceImplTest extends TestCase
     {
         FileInfo fileInfo = fileFolderService.create(workingRootNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
         NodeRef fileNodeRef = fileInfo.getNodeRef();
+        
         // Write the content but without setting the mimetype
         ContentWriter writer = fileFolderService.getWriter(fileNodeRef);
         writer.putContent("CONTENT");
         
         ContentReader reader = fileFolderService.getReader(fileNodeRef);
         assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
+        
+        
+        // Now ask for encoding too
+        writer = fileFolderService.getWriter(fileNodeRef);
+        writer.guessEncoding();
+        OutputStream out = writer.getContentOutputStream();
+        out.write( "<html><body>hall\u00e5 v\u00e4rlden</body></html>".getBytes("UnicodeBig") );
+        out.close();
+        
+        reader = fileFolderService.getReader(fileNodeRef);
+        assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
+        assertEquals("Encoding was not automatically set", "UTF-16BE", reader.getEncoding());
     }
 
     @SuppressWarnings("unused")

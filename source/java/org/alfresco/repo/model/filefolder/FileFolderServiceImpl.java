@@ -360,7 +360,7 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             logger.debug("Deep search for files: \n" +
                     "   context: " + contextNodeRef + "\n" +
-                    "   results: " + results);
+                    "   results: " + results.size());
         }
         return results;
         
@@ -600,12 +600,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /**
      * A deep version of listSimple.   Which recursively walks down the tree from a given starting point, returning 
      * the node refs of files or folders found along the way.
-     * 
-     * MER: I've added this rather than changing listSimple to minimise the risk of breaking 
-     * the existing code.   This is a quick performance improvement between using 
-     * XPath which is awful or adding new methods to the NodeService/DB   This is also a dangerous method in that it can return a 
-     * lot of data and take a long time. 
-     * 
+     * <p>
      * The folder filter is called for each sub-folder to determine whether to search in that sub-folder, should a subfolder be excluded 
      * then all its chidren are excluded as well.
      * 
@@ -615,8 +610,19 @@ public class FileFolderServiceImpl implements FileFolderService
      * @param subfolder filter controls which folders to search.  If null then all subfolders are searched.
      * @return list of node references
      */
+   /* <p>
+    * MER: I've added this rather than changing listSimple to minimise the risk of breaking 
+    * the existing code.   This is a quick performance improvement between using 
+    * XPath which is awful or adding new methods to the NodeService/DB   This is also a dangerous method in that it can return a 
+    * lot of data and take a long time.
+    */  
     private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean folders, boolean files, SubFolderFilter folderFilter)
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("searchSimpleDeep contextNodeRef:" + contextNodeRef);
+        }
+        
         Set<QName> folderTypeQNames = new HashSet<QName>(10);
         Set<QName> fileTypeQNames = new HashSet<QName>(10);
         
@@ -701,7 +707,10 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         
-        logger.debug("search deep finished size:" + result.size());
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("searchSimpleDeep finished size:" + result.size());
+        }
  
         // Done
         return result;
@@ -1214,7 +1223,7 @@ public class FileFolderServiceImpl implements FileFolderService
         if (writer.getMimetype() == null)
         {
             final String name = fileInfo.getName();
-            writer.setMimetype(mimetypeService.guessMimetype(name));
+            writer.guessMimetype(name);
         }
         // Done
         return writer;

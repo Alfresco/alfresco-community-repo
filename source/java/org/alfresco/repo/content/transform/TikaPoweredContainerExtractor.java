@@ -79,18 +79,10 @@ public class TikaPoweredContainerExtractor
     private NodeService nodeService;
     private ContentService contentService;
     
+    private TikaConfig config;
     private AutoDetectParser parser;
     private Detector detector;
 
-    public TikaPoweredContainerExtractor() 
-    {
-       TikaConfig config = TikaConfig.getDefaultConfig();
-       detector = new ContainerAwareDetector(
-             config.getMimeRepository()
-       );
-       parser = new AutoDetectParser(detector);
-    }
-    
     /**
      * Injects the nodeService bean.
      * 
@@ -109,6 +101,22 @@ public class TikaPoweredContainerExtractor
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * Injects the TikaConfig to use
+     * 
+     * @param tikaConfig The Tika Config to use 
+     */
+    public void setTikaConfig(TikaConfig tikaConfig)
+    {
+        this.config = tikaConfig;
+        
+        // Setup the detector and parser
+        detector = new ContainerAwareDetector(
+                config.getMimeRepository()
+        );
+        parser = new AutoDetectParser(detector);
     }
 
     /**
@@ -276,6 +284,9 @@ public class TikaPoweredContainerExtractor
        </property>
        <property name="contentService">
           <ref bean="ContentService" />
+       </property>
+       <property name="tikaConfig">
+          <bean class="org.apache.tika.config.TikaConfig" factory-method="getDefaultConfig" />
        </property>
    </bean>
    <bean id="extractEmbeddedResources" class="org.alfresco.repo.content.transform.TikaPoweredContainerExtractor$ExtractorActionExecutor" parent="action-executer">

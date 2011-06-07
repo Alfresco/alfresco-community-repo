@@ -171,6 +171,9 @@
         <property name="extractAttachmentsEnabled">
             <value>${imap.server.attachments.extraction.enabled}</value>
         </property>
+        <property name="mimetypeService">
+            <ref bean="mimetypeService" />
+        </property>
     </bean>
     
     <!-- Public Imap Service -->

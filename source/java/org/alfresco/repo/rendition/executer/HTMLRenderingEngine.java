@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -79,6 +80,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class HTMLRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(HTMLRenderingEngine.class);
+    private TikaConfig tikaConfig;
     
     /**
      * This optional parameter, when set to true, causes only the
@@ -110,6 +112,15 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
        return paramList;
     }
 
+    /**
+     * Injects the TikaConfig to use
+     * 
+     * @param tikaConfig The Tika Config to use 
+     */
+    public void setTikaConfig(TikaConfig tikaConfig)
+    {
+        this.tikaConfig = tikaConfig;
+    }
 
     /*
      * (non-Javadoc)
@@ -122,7 +133,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
         String sourceMimeType = contentReader.getMimetype();
         
         // Check that Tika supports the supplied file
-        AutoDetectParser p = new AutoDetectParser();
+        AutoDetectParser p = new AutoDetectParser(tikaConfig);
         MediaType sourceMediaType = MediaType.parse(sourceMimeType);
         if(! p.getParsers().containsKey(sourceMediaType))
         {

@@ -3415,7 +3415,9 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
          */
         public void guessMimetype(String filename)
         {
-            setMimetype(services.getMimetypeService().guessMimetype(filename));
+            ContentService contentService = services.getContentService();
+            ContentReader reader = contentService.getReader(nodeRef, property); 
+            setMimetype(services.getMimetypeService().guessMimetype(filename, reader));
         }
         
         /**

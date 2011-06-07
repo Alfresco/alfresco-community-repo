@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -267,13 +268,17 @@ public class FileImporterImpl implements FileImporter
                     "Unable to create file.  " +
                     "Parent type is inappropriate: " + nodeService.getType(parentNodeRef));
         }
+        
+        // Identify the type of the file
+        FileContentReader reader = new FileContentReader(file);
+        String mimetype = mimetypeService.guessMimetype(file.getName(), reader);
 
         // create properties for content type
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>(3, 1.0f);
         contentProps.put(ContentModel.PROP_NAME, file.getName());
         contentProps.put(
                 ContentModel.PROP_CONTENT,
-                new ContentData(null, mimetypeService.guessMimetype(file.getName()), 0L, "UTF-8"));
+                new ContentData(null, mimetype, 0L, "UTF-8"));
         String currentUser = authenticationService.getCurrentUserName();
         contentProps.put(ContentModel.PROP_CREATOR, currentUser == null ? "unknown" : currentUser);
 

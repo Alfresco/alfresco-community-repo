@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.tika.config.TikaConfig;
 
 /**
  * Most of the work for testing the Tika Auto-Detect transformer
@@ -38,7 +39,8 @@ public class TikaAutoContentTransformerTest extends TikaPoweredContentTransforme
     {
         super.setUp();
         
-        transformer = new TikaAutoContentTransformer();
+        TikaConfig config = (TikaConfig)ctx.getBean("tikaConfig");
+        transformer = new TikaAutoContentTransformer( config );
     }
     
     /**

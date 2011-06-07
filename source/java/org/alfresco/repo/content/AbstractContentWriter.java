@@ -29,16 +29,19 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,6 +65,8 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     private List<ContentStreamListener> listeners;
     private WritableByteChannel channel;
     private ContentReader existingContentReader;
+    private MimetypeService mimetypeService;
+    private DoGuessingOnCloseListener guessingOnCloseListener;
     
     /**
      * @param contentUrl the content URL
@@ -73,6 +78,21 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         this.existingContentReader = existingContentReader;
         
         listeners = new ArrayList<ContentStreamListener>(2);
+        
+        // We always register our own listener as the first one
+        // This allows us to perform any guessing (if needed) before
+        //  the normal listeners kick in and eg write things to the DB
+        guessingOnCloseListener = new DoGuessingOnCloseListener();
+        listeners.add(guessingOnCloseListener);
+    }
+    
+    /**
+     * Supplies the Mimetype Service to be used when guessing
+     *  encoding and mimetype information. 
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -454,7 +474,19 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         {
             // attempt to use the correct encoding
             String encoding = getEncoding();
-            byte[] bytes = (encoding == null) ? content.getBytes() : content.getBytes(encoding);
+            byte[] bytes;
+            if(encoding == null) 
+            {
+                // Use the system default, and record what that was
+                bytes = content.getBytes();
+                setEncoding( System.getProperty("file.encoding") );
+            }
+            else
+            {
+                // Use the encoding that they specified
+                bytes = content.getBytes(encoding);
+            }
+
             // get the stream
             OutputStream os = getContentOutputStream();
             ByteArrayInputStream is = new ByteArrayInputStream(bytes);
@@ -467,6 +499,110 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     "   writer: " + this +
                     "   content length: " + content.length(),
                     e);
+        }
+    }
+    
+    /**
+     * When the content has been written, attempt to guess
+     *  the encoding of it.
+     *  
+     * @see ContentWriter#guessEncoding()
+     */
+    public void guessEncoding()
+    {
+        if (mimetypeService == null)
+        {
+            logger.warn("MimetypeService not supplied, but required for content guessing");
+            return;
+        }
+        
+        if(isClosed())
+        {
+            // Content written, can do it now
+            doGuessEncoding();
+        }
+        else
+        {
+            // Content not yet written, wait for the
+            //  data to be written before doing so
+            guessingOnCloseListener.guessEncoding = true;
+        }
+    }
+    private void doGuessEncoding()
+    {
+        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+        
+        ContentReader reader = getReader();
+        InputStream is = reader.getContentInputStream();
+        Charset charset = charsetFinder.getCharset(is, getMimetype());
+        try
+        {
+            is.close();
+        }
+        catch(IOException e)
+        {}
+        
+        setEncoding(charset.name());
+    }
+
+    /**
+     * When the content has been written, attempt to guess
+     *  the mimetype of it, using the filename and contents.
+     *  
+     * @see ContentWriter#guessMimetype(String)
+     */
+    public void guessMimetype(String filename)
+    {
+        if (mimetypeService == null)
+        {
+            logger.warn("MimetypeService not supplied, but required for content guessing");
+            return;
+        }
+        
+        
+        if(isClosed())
+        {
+            // Content written, can do it now
+            doGuessMimetype(filename);
+        }
+        else
+        {
+            // Content not yet written, wait for the
+            //  data to be written before doing so
+            guessingOnCloseListener.guessMimetype = true;
+            guessingOnCloseListener.filename = filename;
+        }
+    }
+    private void doGuessMimetype(String filename)
+    {
+        String mimetype = mimetypeService.guessMimetype(
+                filename, getReader()
+        );
+        setMimetype(mimetype);
+    }
+    
+    /**
+     * Our own listener that is always the first on the list,
+     *  which lets us perform guessing operations when the
+     *  content has been written.
+     */
+    private class DoGuessingOnCloseListener implements ContentStreamListener
+    {
+        private boolean guessEncoding = false;
+        private boolean guessMimetype = false;
+        private String filename = null;
+
+        @Override
+        public void contentStreamClosed() throws ContentIOException
+        {
+            if(guessMimetype)
+            {
+                doGuessMimetype(filename);
+            }
+            if(guessEncoding)
+            {
+                doGuessEncoding();
+            }
         }
     }
 }

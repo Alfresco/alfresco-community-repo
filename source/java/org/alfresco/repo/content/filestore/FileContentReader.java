@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  */
 public class FileContentReader extends AbstractContentReader
+    implements org.alfresco.service.cmr.repository.FileContentReader
 {
     /**
      * message key for missing content.  Parameters are
@@ -147,6 +148,9 @@ public class FileContentReader extends AbstractContentReader
         return file;
     }
 
+    /**
+     * @return Whether the file exists or not
+     */
     public boolean exists()
     {
         return file.exists();

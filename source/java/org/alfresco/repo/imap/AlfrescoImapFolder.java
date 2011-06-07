@@ -1065,100 +1065,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         
         if (extractAttachmentsEnabled)
         {
-            extractAttachments(folderFileInfo, messageFile, message);
+            imapService.extractAttachments(folderFileInfo.getNodeRef(), messageFile.getNodeRef(), message);
         }
         return new IncomingImapMessage(messageFile, serviceRegistry, message);
     }
-    
-    private void extractAttachments(
-            FileInfo parentFolder,
-            FileInfo messageFile,
-            MimeMessage originalMessage)
-            throws IOException, MessagingException
-    {
-        NodeService nodeService = serviceRegistry.getNodeService();
-        FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
-
-        String messageName = (String)nodeService.getProperty(messageFile.getNodeRef(), ContentModel.PROP_NAME);
-        String attachmentsFolderName = messageName + "-attachments";
-        FileInfo attachmentsFolderFileInfo = null;
-        Object content = originalMessage.getContent();
-        if (content instanceof Multipart)
-        {
-            Multipart multipart = (Multipart) content;
-
-            for (int i = 0, n = multipart.getCount(); i < n; i++)
-            {
-                Part part = multipart.getBodyPart(i);
-                if ("attachment".equalsIgnoreCase(part.getDisposition()))
-                {
-                    if (attachmentsFolderFileInfo == null)
-                    {
-                        attachmentsFolderFileInfo = fileFolderService.create(
-                                parentFolder.getNodeRef(),
-                                attachmentsFolderName,
-                                ContentModel.TYPE_FOLDER);
-                        serviceRegistry.getNodeService().createAssociation(
-                                messageFile.getNodeRef(),
-                                attachmentsFolderFileInfo.getNodeRef(),
-                                ImapModel.ASSOC_IMAP_ATTACHMENTS_FOLDER);
-                    }
-                    createAttachment(messageFile, attachmentsFolderFileInfo, part);
-                }
-            }
-        }
-
-    }
-    
-    private void createAttachment(FileInfo messageFile, FileInfo attachmentsFolderFileInfo, Part part) throws MessagingException, IOException
-    {
-        String fileName = part.getFileName();
-        try
-        {
-            fileName = MimeUtility.decodeText(fileName);
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            if (logger.isWarnEnabled())
-            {
-                logger.warn("Cannot decode file name '" + fileName + "'", e);
-            }
-        }
-
-        ContentType contentType = new ContentType(part.getContentType());
-        FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
-        List<FileInfo> result = fileFolderService.search(attachmentsFolderFileInfo.getNodeRef(), fileName, false);
-        // The one possible behaviour
-        /*
-        if (result.size() > 0)
-        {
-            for (FileInfo fi : result)
-            {
-                fileFolderService.delete(fi.getNodeRef());
-            }
-        }
-        */
-        // And another one behaviour which will overwrite the content of the existing file. It is performance preferable.
-        FileInfo attachmentFile = null;
-        if (result.size() == 0)
-        {
-            FileInfo createdFile = fileFolderService.create(
-                    attachmentsFolderFileInfo.getNodeRef(),
-                    fileName,
-                    ContentModel.TYPE_CONTENT);
-            serviceRegistry.getNodeService().createAssociation(
-                    messageFile.getNodeRef(),
-                    createdFile.getNodeRef(),
-                    ImapModel.ASSOC_IMAP_ATTACHMENT);
-            result.add(createdFile);
-        }
-        attachmentFile = result.get(0);
-        ContentWriter writer = fileFolderService.getWriter(attachmentFile.getNodeRef());
-        writer.setMimetype(contentType.getBaseType());
-        OutputStream os = writer.getContentOutputStream();
-        FileCopyUtils.copy(part.getInputStream(), os);
-    }
-    
+        
     private void removeMessageFromCache(long uid)
     {
         messages.remove(uid);

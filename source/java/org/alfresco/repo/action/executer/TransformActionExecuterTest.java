@@ -97,15 +97,16 @@ class DummyMimetypeService implements MimetypeService
 {
     private final String result;
     public DummyMimetypeService(String result) { this.result = result; }
-    public ContentCharsetFinder getContentCharsetFinder() { return null; }
-    public Map<String, String> getDisplaysByExtension()   { return null; }
-    public Map<String, String> getDisplaysByMimetype()    { return null; }
-    public String getExtension(String mimetype)           { return result; }
-    public Map<String, String> getExtensionsByMimetype()  { return null; }
-    public String getMimetype(String extension)           { return null; }
-    public List<String> getMimetypes()                    { return null; }
-    public Map<String, String> getMimetypesByExtension()  { return null; }
-    public String guessMimetype(String filename)          { return null; }
-    public boolean isText(String mimetype)                { return false;}
-    public String getMimetypeIfNotMatches(ContentReader reader) { return null; }
+    public ContentCharsetFinder getContentCharsetFinder()        { return null;  }
+    public Map<String, String> getDisplaysByExtension()          { return null;  }
+    public Map<String, String> getDisplaysByMimetype()           { return null;  }
+    public String getExtension(String mimetype)                  { return result;}
+    public Map<String, String> getExtensionsByMimetype()         { return null;  }
+    public String getMimetype(String extension)                  { return null;  }
+    public List<String> getMimetypes()                           { return null;  }
+    public Map<String, String> getMimetypesByExtension()         { return null;  }
+    public String guessMimetype(String filename)                 { return null;  }
+    public String guessMimetype(String filename,ContentReader reader){ return null; }
+    public boolean isText(String mimetype)                       { return false; }
+    public String getMimetypeIfNotMatches(ContentReader reader)  { return null;  }
 }

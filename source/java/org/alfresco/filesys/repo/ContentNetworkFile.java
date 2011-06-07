@@ -18,17 +18,12 @@
  */
 package org.alfresco.filesys.repo;
 
-import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.DiskFullException;
@@ -41,7 +36,6 @@ import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -59,6 +53,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the <tt>NetworkFile</tt> for direct interaction
@@ -419,25 +414,22 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         if (modified)
         {
             NodeRef contentNodeRef = getNodeRef();
+            ContentWriter writer = (ContentWriter)content;
+            
             // We may be in a retry block, in which case this section will already have executed and channel will be null
             if (channel != null)
             {
-                // Take a guess at the mimetype (if it has not been set by something already)
+                // Do we need the mimetype guessing for us when we're done?
                 if (content.getMimetype() == null || content.getMimetype().equals(MimetypeMap.MIMETYPE_BINARY) )
                 {
                     String filename = (String) nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME);
-                    String mimetype = mimetypeService.guessMimetype(filename);
-                    content.setMimetype(mimetype);
+                    writer.guessMimetype(filename);
                 }
-                // Take a guess at the locale
-                channel.position(0);
-                InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
-                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                Charset charset = charsetFinder.getCharset(is, content.getMimetype());
-                content.setEncoding(charset.name());
-
+                
+                // We always want the encoding guessing
+                writer.guessEncoding();
+                
                 // Close the channel
-
                 channel.close();
                 channel = null;
             }
@@ -449,7 +441,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
 
             // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
-            ContentReader postUpdateContentReader = ((ContentWriter) content).getReader();
+            ContentReader postUpdateContentReader = writer.getReader();
 
             RunAsWork<ContentReader> getReader = new RunAsWork<ContentReader>()
             {

@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.imap;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.mail.Flags;
+import javax.mail.MessagingException;
 import javax.mail.Flags.Flag;
+import javax.mail.internet.MimeMessage;
 
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -261,4 +264,20 @@ public interface ImapService
      */
     public boolean isNodeInSitesLibrary(NodeRef nodeRef);
 
+  
+    /**
+     * Extract Attachments
+     * 
+     * @param parentFolder
+     * @param messageFile the node ref of the message.
+     * @param originalMessage
+     * @throws IOException
+     * @throws MessagingException
+     */
+    public NodeRef extractAttachments(
+            NodeRef parentFolder,
+            NodeRef messageFile,
+            MimeMessage originalMessage)
+            throws IOException, MessagingException;
+  
 }

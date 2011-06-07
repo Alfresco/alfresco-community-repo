@@ -1718,7 +1718,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        return AdctionParameterTypeCopyBehaviourCallback.INSTANCE;
+        return ActionParameterTypeCopyBehaviourCallback.INSTANCE;
     }
 
     /**
@@ -1728,9 +1728,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * @author Derek Hulley
      * @since 3.2
      */
-    private static class AdctionParameterTypeCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    private static class ActionParameterTypeCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
-        private static final AdctionParameterTypeCopyBehaviourCallback INSTANCE = new AdctionParameterTypeCopyBehaviourCallback();
+        private static final ActionParameterTypeCopyBehaviourCallback INSTANCE = new ActionParameterTypeCopyBehaviourCallback();
 
         @Override
         public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails,
@@ -1750,7 +1750,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode,
                 Map<NodeRef, NodeRef> copyMap)
     {
-        AdctionParameterTypeCopyBehaviourCallback.INSTANCE.repointNodeRefs(sourceNodeRef, targetNodeRef,
+        ActionParameterTypeCopyBehaviourCallback.INSTANCE.repointNodeRefs(sourceNodeRef, targetNodeRef,
                     ActionModel.PROP_PARAMETER_VALUE, copyMap, nodeService);
     }
 }

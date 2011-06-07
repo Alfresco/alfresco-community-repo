@@ -81,6 +81,8 @@ public class ContentAwareScriptableQNameMap<K,V> extends ScriptableQNameMap<K,V>
                    String fileName = (String)get("cm:name");
                    if (fileName != null)
                    {
+                       // We don't have any content, so just use the filename when
+                       //  trying to guess the mimetype for this
                        mimetype = this.services.getMimetypeService().guessMimetype(fileName);
                    }
                }

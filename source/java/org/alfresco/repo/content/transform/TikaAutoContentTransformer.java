@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
@@ -37,6 +38,9 @@ import org.apache.tika.parser.Parser;
  */
 public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
 {
+    private static AutoDetectParser parser;
+    private static TikaConfig config;
+
     /** 
      * We support all the mimetypes that the Tika
      *  auto-detect parser can handle, except for
@@ -44,10 +48,13 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
      *  make much sense
      */
     public static ArrayList<String> SUPPORTED_MIMETYPES;
-    static {
+    private static ArrayList<String> buildMimeTypes(TikaConfig tikaConfig)
+    {
+       config = tikaConfig;
+       parser = new AutoDetectParser(config);
+
        SUPPORTED_MIMETYPES = new ArrayList<String>();
-       AutoDetectParser p = new AutoDetectParser();
-       for(MediaType mt : p.getParsers().keySet()) {
+       for(MediaType mt : parser.getParsers().keySet()) {
           if(mt.toString().startsWith("application/vnd.oasis.opendocument.formula")) {
              // TODO Tika support for quick.odf, mimetype=application/vnd.oasis.opendocument.formula
              // TODO Tika support for quick.otf, mimetype=application/vnd.oasis.opendocument.formula-template
@@ -85,11 +92,12 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
              SUPPORTED_MIMETYPES.add( mt.toString() );
           }
        }
+       return SUPPORTED_MIMETYPES;
     }
    
-    public TikaAutoContentTransformer()
+    public TikaAutoContentTransformer(TikaConfig tikaConfig)
     {
-       super(SUPPORTED_MIMETYPES);
+       super( buildMimeTypes(tikaConfig) );
     }
     
     /**
@@ -100,6 +108,6 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
      */
     protected Parser getParser()
     {
-       return new AutoDetectParser();
+       return parser;
     }
 }

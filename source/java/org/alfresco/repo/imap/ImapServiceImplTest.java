@@ -18,13 +18,18 @@
  */
 package org.alfresco.repo.imap;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.mail.Flags;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -37,10 +42,12 @@ import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -55,7 +62,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.Utf7;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -285,18 +291,24 @@ public class ImapServiceImplTest extends TestCase
         assertTrue("folder A found", foundA);
         assertTrue("folder B found", foundB);
         
+        mf = imapService.listMailboxes(user, MAILBOX_PATTERN);
+        assertEquals("can't repeat the listing of folders", 2, mf.size());
+        
+        mf = imapService.listMailboxes(user, MAILBOX_PATTERN);
+        assertEquals("can't repeat the listing of folders", 2, mf.size());
+        
         /**
          * The new mailboxes should be subscribed?
          */
         List<AlfrescoImapFolder> aif = imapService.listSubscribedMailboxes(user, MAILBOX_PATTERN);
-        assertEquals(2, aif.size());
+        assertEquals("not subscribed to two mailboxes", 2, aif.size());
         
         /**
          * Unsubscribe to one of the mailboxes.
          */
         imapService.unsubscribe(user, MAILBOX_NAME_B);
         List<AlfrescoImapFolder> aif2 = imapService.listSubscribedMailboxes(user, MAILBOX_PATTERN);
-        assertEquals(1, aif2.size());
+        assertEquals("not subscribed to one mailbox", 1, aif2.size());
     }
     
     public void testListSubscribedMailbox() throws Exception
@@ -514,8 +526,8 @@ public class ImapServiceImplTest extends TestCase
     
     public void testRenameAccentedMailbox() throws Exception
     {
-        String MAILBOX_ACCENTED_NAME_A = "Hôtel";
-        String MAILBOX_ACCENTED_NAME_B = "HôtelXX";
+        String MAILBOX_ACCENTED_NAME_A = "Hï¿½tel";
+        String MAILBOX_ACCENTED_NAME_B = "Hï¿½telXX";
         
         imapService.createMailbox(user, MAILBOX_ACCENTED_NAME_A);
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_A);
@@ -526,4 +538,45 @@ public class ImapServiceImplTest extends TestCase
         assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_B));
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_B);
     } 
+    
+    /**
+     * Test attachment extraction with a TNEF message
+     * @throws Exception
+     */
+    public void testAttachmentExtraction() throws Exception
+    {
+        AuthenticationUtil.setRunAsUserSystem();
+        /**
+         * Load a TNEF message
+         */
+        ClassPathResource fileResource = new ClassPathResource("imap/test-tnef-message.eml");
+        assertNotNull("unable to find test resource test-tnef-message.eml", fileResource);
+        InputStream is = new FileInputStream(fileResource.getFile());
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), is);
+        
+        /**
+         * Create a test node containing the message
+         */
+        String storePath = "workspace://SpacesStore";
+        String companyHomePathInStore = "/app:company_home";
+        StoreRef storeRef = new StoreRef(storePath);
+        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+        
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore, null, namespaceService, false);
+        NodeRef companyHomeNodeRef = nodeRefs.get(0);
+        
+        FileInfo f1 = fileFolderService.create(companyHomeNodeRef, "ImapServiceImplTest", ContentModel.TYPE_FOLDER);
+        FileInfo d2 = fileFolderService.create(f1.getNodeRef(), "ImapServiceImplTest", ContentModel.TYPE_FOLDER);
+        FileInfo f2 = fileFolderService.create(f1.getNodeRef(), "test-tnef-message.eml", ContentModel.TYPE_CONTENT);
+        
+        ContentWriter writer = fileFolderService.getWriter(f2.getNodeRef());
+        writer.putContent(new FileInputStream(fileResource.getFile()));
+        
+        NodeRef folder = imapService.extractAttachments(f1.getNodeRef(), f2.getNodeRef(), message);
+        assertNotNull(folder);
+
+        List<FileInfo> files = fileFolderService.listFiles(folder);
+        assertTrue("three files not found", files.size() == 3);
+
+    }
 }

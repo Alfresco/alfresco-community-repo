@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -91,11 +90,6 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private ContentService contentService;
     
     /**
-     * The mimetype service
-     */
-    private MimetypeService mimetypeService;
-    
-    /**
      * The file folder service
      */
     private FileFolderService fileFolderService;
@@ -128,16 +122,6 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     public void setContentService(ContentService contentService)
     {
        this.contentService = contentService;
-    }
-    
-    /**
-     * Sets the MimetypeService to use
-     * 
-     * @param mimetypeService The MimetypeService
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
     }
     
     /**
@@ -263,7 +247,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                     // push the content of the file into the node
                     InputStream contentStream = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
                     ContentWriter writer = this.contentService.getWriter(fileRef, ContentModel.PROP_CONTENT, true);
-                    writer.setMimetype(this.mimetypeService.guessMimetype(fileName));
+                    writer.guessMimetype(fileName);
                     writer.putContent(contentStream);
                 }
                 else

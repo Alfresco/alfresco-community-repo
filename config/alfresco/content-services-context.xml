@@ -93,6 +93,9 @@
       <property name="policyComponent">
           <ref bean="policyComponent" />
       </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService"/>
+      </property>
       <property name="avmService">
           <ref bean="avmService"/>
       </property>
@@ -112,6 +115,10 @@
           <ref bean="fileContentStore" />
       </property>
    </bean>
+
+    <!-- Our common Tika configuration -->
+    <bean id="tikaConfig" class="org.apache.tika.config.TikaConfig"
+          factory-method="getDefaultConfig" />
    
     <!-- Characterset decoder -->
     <bean id="charset.finder" class="org.alfresco.repo.content.encoding.ContentCharsetFinder">
@@ -148,6 +155,9 @@
       </property>
       <property name="contentCharsetFinder">
          <ref bean="charset.finder"/>
+      </property>
+      <property name="tikaConfig">
+         <ref bean="tikaConfig"/>
       </property>
    </bean>
    
@@ -206,7 +216,9 @@
    <!-- Content Metadata Extractors -->
    <!-- The last one listed for any mimetype will be used if available -->
    <!-- As such, the Tika auto-detect fallback should be listed first -->
-   <bean id="extracter.TikaAuto"       class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter"     parent="baseMetadataExtracter" />
+   <bean id="extracter.TikaAuto"       class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter"     parent="baseMetadataExtracter">
+      <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
+   </bean>
    <bean id="extracter.PDFBox"        class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter"        parent="baseMetadataExtracter" />
    <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter" />
    <bean id="extracter.Office"        class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter"        parent="baseMetadataExtracter" />
@@ -412,7 +424,9 @@
 
    <bean id="transformer.TikaAuto"
          class="org.alfresco.repo.content.transform.TikaAutoContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseContentTransformer">
+      <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
+   </bean>
 
    <!-- This one does excel only -->
    <bean id="transformer.Poi"
@@ -545,6 +559,9 @@
          </list>
       </property>
       <property name="includeContents" value="${transformer.Archive.includeContents}" />
+      <property name="tikaConfig">
+         <ref bean="tikaConfig"/>
+      </property>
    </bean>
 
 </beans>

@@ -339,7 +339,8 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
         if (contentReader == null)
         {
-            // Determine the mimetype from the file extension
+            // Determine the mimetype from the file extension only
+            // (We've no content so we can't include that in our check)
             mimetype = mimetypeService.guessMimetype(name);
         }
         else

@@ -20,13 +20,11 @@ package org.alfresco.repo.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -71,7 +69,6 @@ public class LoaderRemoteServer implements LoaderRemote
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private FileFolderRemote fileFolderRemote;
-    private MimetypeService mimetypeService;
     private CheckOutCheckInService checkOutCheckInService;
 
     /**
@@ -112,11 +109,11 @@ public class LoaderRemoteServer implements LoaderRemote
     }
 
     /**
-     * @param mimetypeService               used to determine encoding, etc
+     * @deprecated The mimetype service is no longer needed.
      */
+    @Deprecated
     public void setMimetypeService(MimetypeService mimetypeService)
     {
-        this.mimetypeService = mimetypeService;
     }
 
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
@@ -260,18 +257,16 @@ public class LoaderRemoteServer implements LoaderRemote
                         results[i] = newFileInfo;
                         NodeRef newFileNodeRef = newFileInfo.getNodeRef();
 
-                        // Guess the mimetype
-                        String mimetype = mimetypeService.guessMimetype(filenames[i]);
                         // Get a writer
                         ContentWriter writer = fileFolderService.getWriter(newFileNodeRef);
+                        
+                        // We need the encoding and mimetype guessing
+                        writer.guessMimetype(filenames[i]);
+                        writer.guessEncoding();
+                        
                         // Make a stream
                         ByteArrayInputStream is = new ByteArrayInputStream(bytes[i]);
-                        // Guess the encoding
-                        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                        Charset charset = charsetFinder.getCharset(is, mimetype);
-                        // Set metadata
-                        writer.setEncoding(charset.name());
-                        writer.setMimetype(mimetype);
+
                         // Write the stream
                         writer.putContent(is);
                     }

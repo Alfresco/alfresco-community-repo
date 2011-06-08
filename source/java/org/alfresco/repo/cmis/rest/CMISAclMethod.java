@@ -20,8 +20,8 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlService;
+import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 

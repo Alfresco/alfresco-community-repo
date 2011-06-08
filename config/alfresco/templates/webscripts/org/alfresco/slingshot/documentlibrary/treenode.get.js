@@ -12,17 +12,12 @@ function getTreeNode()
    {
       var items = new Array(),
          hasSubfolders = true,
-         ignoredTypes =
-         {
-            "{http://www.alfresco.org/model/forum/1.0}forum": true,
-            "{http://www.alfresco.org/model/forum/1.0}topic": true,
-            "{http://www.alfresco.org/model/content/1.0}systemfolder": true
-         },
+         ignoredTypes = ['fm:forum','fm:topic'],
          evalChildFolders = args["children"] !== "false",
          resultsTrimmed = false,
          argMax = parseInt(args["max"], 10),
          maxItems = isNaN(argMax) ? -1 : argMax;
-   
+      
       // Use helper function to get the arguments
       var parsedArgs = ParseArgs.getParsedArgs();
       if (parsedArgs === null)
@@ -31,22 +26,20 @@ function getTreeNode()
       }
 
       // Look for folders in the pathNode
-      for each (item in parsedArgs.pathNode.children)
+      var folders = parsedArgs.pathNode.childFileFolders(false, true, ignoredTypes);
+      for each (item in folders)
       {
-         if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
+         if (evalChildFolders)
          {
-            if (evalChildFolders)
-            {
                hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
-            }
+         }
             
-            items.push(
-            {
+         items.push(
+         {
                node: item,
                hasSubfolders: hasSubfolders
-            });
-         }
-         
+         });
+            
          if (maxItems !== -1 && items.length > maxItems)
          {
             items.pop();

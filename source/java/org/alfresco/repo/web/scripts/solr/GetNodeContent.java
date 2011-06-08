@@ -93,16 +93,15 @@ public class GetNodeContent extends StreamContent
     {
         ContentReader textReader = null;
         Exception transformException = null;
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
 
-        String nodeIDString = templateVars.get("nodeId");
+        String nodeIDString = req.getParameter("nodeId");
         if(nodeIDString == null)
         {
             throw new WebScriptException("nodeID parameter is required for GetNodeContent");
         }
         long nodeId = Long.valueOf(nodeIDString).longValue();
 
-        String propertyQName = templateVars.get("propertyQName");
+        String propertyQName = req.getParameter("propertyQName");
         QName propertyName = null;
         if(propertyQName == null)
         {

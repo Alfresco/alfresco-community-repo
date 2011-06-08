@@ -1,8 +1,7 @@
 <webscript>
   <shortname>Get node property content as text</shortname>
   <description>Get the content for the node property as text.</description>
-  <url>/api/solr/textContent/{nodeId}</url>
-  <url>/api/solr/textContent/{nodeId}/{propertyQName}</url>
+  <url>/api/solr/textContent?nodeId={nodeId}&amp;propertyQName={propertyQName?}</url>
   <format default="json">argument</format>
   <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>

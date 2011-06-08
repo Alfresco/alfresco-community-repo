@@ -27,24 +27,65 @@ function getDoclist()
          favourites: favourites
       }),
       query = filterParams.query;
-
-   // Query the nodes - passing in sort and result limit parameters
-   if (query !== "")
+   
+   var useDB = true;
+   
+   if ((useDB == true) && ((filter == "path") || (filter == "") || (filter == null)))
    {
-      allNodes = search.query(
-      {
-         query: query,
-         language: filterParams.language,
-         page:
-         {
-            maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
-         },
-         sort: filterParams.sort,
-         templates: filterParams.templates,
-         namespace: (filterParams.namespace ? filterParams.namespace : null)
-      });
+       // TODO also add DB filter by "node" (in addition to "path")
+       
+       var parentNode = parsedArgs.pathNode;
+       if (parentNode !== null)
+       {
+          var ignoreTypes=["cm:thumbnail", "fm:forums","fm:forum","fm:topic","fm:post"];
+          
+          allNodes = parentNode.childFileFolders(true, true, ignoreTypes);
+          
+          // TODO push down sorting to FileFolderService.list (see also AlfrescoCmisService.getChildren)
+          if ((args.sortField == null) || (args.sortField == "cm:name"))
+          {
+             sortByName(allNodes, args.sortAsc);
+          }
+          else if (args.sortField == "cm:content.size")
+          {
+             sortBySize(allNodes, args.sortAsc);
+          }
+          else if (args.sortField == "cm:content.mimetype")
+          {
+             sortByMimetype(allNodes, args.sortAsc);
+          }
+          else if ((args.sortField == "cm:created") || (args.sortField == "cm:modified"))
+          {
+             sortByPropDate(allNodes, args.sortAsc, args.sortField);
+          }
+          else
+          {
+             // assume string (=> supports toLowerCase)
+             sortByPropStr(allNodes, args.sortAsc, args.sortField);
+          }
+       }
    }
-
+   else
+   {
+       // Query the nodes - passing in sort and result limit parameters
+       if (query !== "")
+       {
+          allNodes = search.query(
+          {
+             query: query,
+             language: filterParams.language,
+             page:
+             {
+                maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+             },
+             sort: filterParams.sort,
+             templates: filterParams.templates,
+             namespace: (filterParams.namespace ? filterParams.namespace : null)
+          });
+       }
+   }
+   
+   
    // Ensure folders and folderlinks appear at the top of the list
    var folderNodes = [],
       documentNodes = [];
@@ -215,6 +256,89 @@ function getDoclist()
       items: items
    });
 }
+
+// TEMP
+function sortByName(arr, sortAsc)
+{
+      arr.sort
+      (
+         function( a, b )
+         {
+           return ((sortAsc == null) || (sortAsc == "true"))
+              ? (b.name.toLowerCase() > a.name.toLowerCase() ? -1 : 1)
+              : (a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 1);
+         }
+      );
+}
+
+// TEMP
+function sortBySize(arr, sortAsc)
+{
+      arr.sort
+      (
+         function( a, b )
+         {
+           return ((sortAsc == null) || (sortAsc == "true"))
+              ? (b.size > a.size ? -1 : 1)
+              : (a.size > b.size ? -1 : 1);
+        } 
+      );
+}
+
+// TEMP
+function sortByMimetype(arr, sortAsc)
+{
+      arr.sort
+      (
+         function( a, b )
+         {
+           return ((sortAsc == null) || (sortAsc == "true"))
+              ? (b.mimetype.toLowerCase() > a.mimetype.toLowerCase() ? -1 : 1)
+              : (a.mimetype.toLowerCase() > b.mimetype.toLowerCase() ? -1 : 1);
+        } 
+      );
+}
+
+// TEMP
+function sortByPropStr(arr, sortAsc, sortField)
+{
+      arr.sort
+      (
+         function( a, b )
+         {
+            var aStr = a.properties[sortField];
+            if (aStr == null)
+            {
+               aStr = "";
+            }
+            
+            var bStr = b.properties[sortField];
+            if (bStr == null)
+            {
+               bStr = "";
+            }
+            
+            return ((sortAsc == null) || (sortAsc == "true"))
+              ? (bStr == "" && aStr != "" ? -1 : (bStr != "" && aStr == "" ? 1 : (bStr.toLowerCase() > aStr.toLowerCase() ? -1 : 1)))
+              : (aStr == "" && bStr != "" ? -1 : (aStr != "" && bStr == "" ? 1 : (aStr.toLowerCase() > bStr.toLowerCase() ? -1 : 1)));          
+          }
+      );
+}
+
+// TEMP
+function sortByPropDate(arr, sortAsc, sortField)
+{
+      arr.sort
+      (
+         function( a, b )
+         {
+           return ((sortAsc == null) || (sortAsc == "true"))
+              ? (b.properties[sortField] - a.properties[sortField])
+              : (a.properties[sortField] - b.properties[sortField]);
+         }
+      );
+}
+
 
 /**
  * Document List Component: doclist

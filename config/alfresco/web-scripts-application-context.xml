@@ -1254,7 +1254,11 @@
       <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
 
-
+   <!--                                                                                                       -->
+   <!-- Node Locator                                                                                          -->
+   <!--                                                                                                       -->
+   <!--                                                                                                       -->
+   
    <bean id="webscript.org.alfresco.repository.nodelocator.node-location.get"
          class="org.alfresco.repo.web.scripts.nodelocator.NodeLocationGet"
          parent="webscript">

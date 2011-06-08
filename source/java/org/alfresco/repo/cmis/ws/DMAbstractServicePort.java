@@ -33,7 +33,6 @@ import java.util.Map.Entry;
 import javax.xml.bind.JAXBElement;
 
 import org.alfresco.cmis.CMISAccessControlEntry;
-import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlReport;
 import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISAclPropagationEnum;
@@ -54,6 +53,7 @@ import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

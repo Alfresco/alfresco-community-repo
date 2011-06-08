@@ -18,9 +18,9 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlReport;
 import org.alfresco.cmis.CMISServiceException;
+import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 

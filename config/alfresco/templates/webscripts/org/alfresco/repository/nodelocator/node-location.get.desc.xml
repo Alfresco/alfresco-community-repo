@@ -1,0 +1,11 @@
+<webscript>
+   <shortname>Locate Node</shortname>
+   <description>
+      Locates a Node in the repository using the specified Node Location strategy.
+   </description>
+   <url>/api/{store_type}/{store_id}/{node_id}/nodelocator/{node_locator_name}</url>
+   <url>/api/nodelocator/{node_locator_name}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

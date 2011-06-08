@@ -43,6 +43,7 @@ import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -1646,19 +1647,47 @@ public class AclDAOImpl implements AclDAO
 
     private static final String RESOURCE_KEY_ACL_CHANGE_SET_ID = "acl.change.set.id";
 
+    private UpdateChangeSetListener updateChangeSetListener = new UpdateChangeSetListener();
+    /**
+     * Wrapper to update the current changeset to get the change time correct
+     * 
+     * @author Derek Hulley
+     * @since 4.0
+     */
+    private class UpdateChangeSetListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            if (readOnly)
+            {
+                return;
+            }
+            Long changeSetId = (Long) AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_ID);
+            if (changeSetId == null)
+            {
+                // There has not been a change
+                return;
+            }
+            // Update it
+            long commitTimeMs = System.currentTimeMillis();
+            aclCrudDAO.updateAclChangeSet(changeSetId, commitTimeMs);
+        }
+    }
     /**
      * Support to get the current ACL change set and bind this to the transaction. So we only make one new version of an
      * ACL per change set. If something is in the current change set we can update it.
      */
     private long getCurrentChangeSetId()
     {
-        Long changeSetId = (Long)AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_ID);
+        Long changeSetId = (Long) AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_ID);
         if (changeSetId == null)
         {
             changeSetId = aclCrudDAO.createAclChangeSet();
 
-            // bind the id
+            // bind the ID and the listener
             AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_ACL_CHANGE_SET_ID, changeSetId);
+            AlfrescoTransactionSupport.bindListener(updateChangeSetListener);
             if (logger.isDebugEnabled())
             {
                 logger.debug("New change set = " + changeSetId);

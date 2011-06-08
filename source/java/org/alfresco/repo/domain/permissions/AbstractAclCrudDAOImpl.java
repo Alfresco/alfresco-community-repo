@@ -489,25 +489,39 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     // ACL Change Set
     //
     
-    public long createAclChangeSet()
+    public Long createAclChangeSet()
     {
         return createAclChangeSetEntity();
     }
     
-    public AclChangeSetEntity getAclChangeSet(long changeSetId)
+    @Override
+    public void updateAclChangeSet(Long aclChangeSetEntityId, long commitTimeMs)
+    {
+        int updated = updateChangeSetEntity(aclChangeSetEntityId, commitTimeMs);
+        if (updated != 1)
+        {
+            throw new ConcurrencyFailureException("Update by ID should delete exactly 1: " + aclChangeSetEntityId);
+        }
+    }
+
+    public AclChangeSetEntity getAclChangeSet(Long changeSetId)
     {
         return getAclChangeSetEntity(changeSetId);
     }
     
-    public void deleteAclChangeSet(long changeSetId)
+    public void deleteAclChangeSet(Long changeSetId)
     {
-        deleteAclChangeSetEntity(changeSetId);
+        int deleted = deleteAclChangeSetEntity(changeSetId);
+        if (deleted != 1)
+        {
+            throw new ConcurrencyFailureException("Deleted by ID should delete exactly 1: " + changeSetId);
+        }
     }
     
-    protected abstract long createAclChangeSetEntity();
-    protected abstract AclChangeSetEntity getAclChangeSetEntity(long changeSetId);
-    protected abstract int deleteAclChangeSetEntity(long id);
-    
+    protected abstract Long createAclChangeSetEntity();
+    protected abstract AclChangeSetEntity getAclChangeSetEntity(Long changeSetId);
+    protected abstract int deleteAclChangeSetEntity(Long id);
+    protected abstract int updateChangeSetEntity(Long id, long commitTimeMs);
     
     //
     // Access Control Entry (ACE)

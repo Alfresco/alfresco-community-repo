@@ -42,6 +42,7 @@ import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
+import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -57,12 +58,15 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.PagingFileInfoResults;
+import org.alfresco.service.cmr.model.PagingSortRequest;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.PagingSortProp;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -126,6 +130,8 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.server.RenditionInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * OpenCMIS service object.
@@ -134,6 +140,8 @@ import org.apache.chemistry.opencmis.commons.spi.Holder;
  */
 public class AlfrescoCmisService extends AbstractCmisService
 {
+    private static Log logger = LogFactory.getLog(AlfrescoCmisService.class);
+    
     private CMISConnector connector;
     private CallContext context;
     private UserTransaction txn;
@@ -501,58 +509,102 @@ public class AlfrescoCmisService extends AbstractCmisService
             Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
             Boolean includePathSegment, BigInteger maxItems, BigInteger skipCount, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+        
         checkRepositoryId(repositoryId);
-
+        
         // convert BigIntegers to int
         int max = (maxItems == null ? Integer.MAX_VALUE : maxItems.intValue());
         int skip = (skipCount == null || skipCount.intValue() < 0 ? 0 : skipCount.intValue());
-
+        
         ObjectInFolderListImpl result = new ObjectInFolderListImpl();
         List<ObjectInFolderData> list = new ArrayList<ObjectInFolderData>();
         result.setObjects(list);
-
+        
         // get the children references
         NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
-        List<ChildAssociationRef> childrenList = connector.getNodeService().getChildAssocs(folderNodeRef);
-
+        
+        // TEMP - impl subject to change
+        
+        // convert orderBy to sortProps
+        List<PagingSortProp> sortProps = null;
+        if (orderBy != null)
+        {
+            sortProps = new ArrayList<PagingSortProp>(1);
+            
+            String[] parts = orderBy.split(",");
+            if (parts.length > 0)
+            {
+                for (int i = 0; i < parts.length; i++)
+                {
+                    String[] sort = parts[i].split(" "); // TODO support multiple spaces
+                    
+                    if (sort.length > 0)
+                    {
+                        PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService().findPropertyByQueryName(sort[0]);
+                        if (propDef != null)
+                        {
+                            QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
+                            if (sortProp != null)
+                            {
+                                boolean sortAsc = ((sort.length == 1) || (sortAsc = (sort[1].equalsIgnoreCase("asc"))));
+                                sortProps.add(new PagingSortProp(sortProp, sortAsc));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        PagingSortRequest pageRequest = new PagingSortRequest(skipCount.intValue(), maxItems.intValue(), true, sortProps);
+        PagingFileInfoResults pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, pageRequest);
+        List<FileInfo> childrenList = pageOfNodeInfos.getResultsForPage();
+        
         if (max > 0)
         {
             int lastIndex = (max + skip > childrenList.size() ? childrenList.size() : max + skip) - 1;
             for (int i = skip; i <= lastIndex; i++)
             {
-                ChildAssociationRef child = childrenList.get(i);
-
+                FileInfo child = childrenList.get(i);
+                
                 try
                 {
                     // create a child CMIS object
-                    ObjectData object = connector.createCMISObject(child.getChildRef(), filter,
-                            includeAllowableActions, includeRelationships, renditionFilter, false, false);
+                    ObjectData object = connector.createCMISObject(child, filter,
+                             includeAllowableActions, includeRelationships, renditionFilter, false, false);
+                    
                     if (context.isObjectInfoRequired())
                     {
                         getObjectInfo(repositoryId, object.getId());
                     }
-
+                    
                     ObjectInFolderDataImpl childData = new ObjectInFolderDataImpl();
                     childData.setObject(object);
-
+                    
                     // include path segment
                     if (includePathSegment)
                     {
-                        childData.setPathSegment(connector.getName(child.getChildRef()));
+                        childData.setPathSegment(child.getName());
                     }
-
+                    
                     // add it
                     list.add(childData);
+                    
                 } catch (InvalidNodeRefException e)
                 {
                     // ignore invalid children
                 }
             }
         }
-
+        
         result.setHasMoreItems(childrenList.size() - skip > result.getObjects().size());
         result.setNumItems(BigInteger.valueOf(childrenList.size()));
-
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getChildren: "+childrenList.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
         return result;
     }
 

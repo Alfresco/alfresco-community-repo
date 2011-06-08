@@ -524,7 +524,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         }
         
         // create acl change set, defining acl and shared acl
-        long aclChangeSet = aclCrudDAO.createAclChangeSet();
+        Long aclChangeSet = aclCrudDAO.createAclChangeSet();
         
         long definingAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.DEFINING, false);
         long sharedAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.SHARED, false);

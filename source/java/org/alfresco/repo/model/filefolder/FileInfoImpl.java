@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,16 +43,20 @@ public class FileInfoImpl implements FileInfo
     private boolean isFolder;
     private boolean isLink;
     private Map<QName, Serializable> properties;
+    private QName typeQName;
 
     /**
      * Package-level constructor
      */
     /* package */ FileInfoImpl(
             NodeRef nodeRef,
+            QName typeQName,
             boolean isFolder,
             Map<QName, Serializable> properties)
     {
         this.nodeRef = nodeRef;
+        this.typeQName = typeQName;
+        
         this.isFolder = isFolder;
         this.properties = properties;
         
@@ -159,5 +163,10 @@ public class FileInfoImpl implements FileInfo
     public Map<QName, Serializable> getProperties()
     {
         return properties;
+    }
+    
+    public QName getType()
+    {
+        return typeQName;
     }
 }

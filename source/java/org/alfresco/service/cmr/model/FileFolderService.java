@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.model;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
@@ -49,6 +50,17 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> list(NodeRef contextNodeRef);
+    
+    /**
+     * TEMP
+     * 
+     * @deprecated for review (API is subject to change)
+     */
+    public PagingFileInfoResults list(NodeRef contextNodeRef, 
+                                      boolean files, 
+                                      boolean folders, 
+                                      Set<QName> ignoreTypeQNames, 
+                                      PagingSortRequest pagingRequest);
     
     /**
      * Lists all immediate child files of the given context node

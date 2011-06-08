@@ -1,0 +1,1033 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.repo.solr;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import junit.framework.TestCase;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.solr.Transaction;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.solr.MetaDataResultsFilter;
+import org.alfresco.repo.solr.NodeMetaData;
+import org.alfresco.repo.solr.NodeMetaDataParameters;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
+import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ConfigurableApplicationContext;
+
+/**
+ * Tests tracking component
+ *
+ * @since 4.0
+ */
+public class SOLRTrackingComponentTest extends TestCase
+{
+    private static final Log logger = LogFactory.getLog(SOLRTrackingComponentTest.class);
+    
+    private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
+    private static enum NodeStatus
+    {
+        UPDATED, DELETED;
+    }
+
+    private AuthenticationComponent authenticationComponent;
+    private TransactionService transactionService;
+    private RetryingTransactionHelper txnHelper;
+    private NodeService nodeService;
+    private FileFolderService fileFolderService;
+    private NodeDAO nodeDAO;
+    private SOLRTrackingComponent solrTrackingComponent;
+    
+    private StoreRef storeRef;
+    private NodeRef rootNodeRef;
+    
+    @Override
+    public void setUp() throws Exception
+    {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        transactionService = serviceRegistry.getTransactionService();
+        txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
+        nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        nodeService = (NodeService)ctx.getBean("NodeService");
+        fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
+        authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        
+        authenticationComponent.setSystemUserAsCurrentUser();
+        
+        storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
+        rootNodeRef = nodeService.getRootNode(storeRef);
+    }
+    
+    public void testGetNodeMetaData()
+    {
+        long startTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testGetNodeMetaData", true, true);
+        st.buildTransactions();
+        
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+
+        int[] updates = new int[] {1, 1};
+        int[] deletes = new int[] {0, 1};
+        List<Long> txnIds = checkTransactions(txns, 2, updates, deletes);
+
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+        
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        getNodeMetaData(nodeMetaDataParams, null, st);
+    }
+    
+    public void testGetNodeMetaData100Nodes()
+    {
+        long startTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testGetNodeMetaData", true, true);
+        st.buildTransactions();
+        
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+
+        int[] updates = new int[] {100};
+        int[] deletes = new int[] {0};
+        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+        
+//        assertEquals("Unxpected number of nodes", 3, nodeQueryCallback.getSuccessCount());
+
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        getNodeMetaData(nodeMetaDataParams, null, st);
+
+        nodeMetaDataParams.setMaxResults(20);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        
+//        assertEquals("Unxpected number of nodes", 3, bt.getSuccessCount());
+    }
+    
+    public void testNodeMetaDataManyNodes() throws Exception
+    {
+        long fromCommitTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
+        st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+
+        int[] updates = new int[] {2001};
+        int[] deletes = new int[] {0};
+        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+        
+        // make sure caches are warm - time last call
+        logger.debug("Cold cache");
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        logger.debug("Warm cache");
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        
+        // clear out node caches
+        nodeDAO.clear();
+
+        logger.debug("Cold cache - explicit clear");
+        nodeMetaDataParams.setMaxResults(800);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        logger.debug("Warm cache");        
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        
+        logger.debug("Cold cache - explicit clear");
+        nodeMetaDataParams.setMaxResults(500);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        logger.debug("Warm cache");        
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        
+        logger.debug("Cold cache - explicit clear");
+        nodeMetaDataParams.setMaxResults(200);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        logger.debug("Warm cache");        
+        getNodeMetaData(nodeMetaDataParams, null, st);
+        
+        // clear out node caches
+        nodeDAO.clear();
+        
+        logger.debug("Cold cache - explicit clear");
+        getNodeMetaData(nodeMetaDataParams, null, st);
+    }
+
+    public void testNodeMetaDataCache() throws Exception
+    {
+        long fromCommitTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
+        st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+
+        int[] updates = new int[] {2001};
+        int[] deletes = new int[] {0};
+        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+        
+        // clear out node caches
+        nodeDAO.clear();
+
+        logger.debug("Cold cache - explicit clear");
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        MetaDataResultsFilter filter = new MetaDataResultsFilter();
+        filter.setIncludeAssociations(false);
+        //filter.setIncludePaths(false);
+        filter.setIncludeChildAssociations(false);
+        getNodeMetaData(nodeMetaDataParams, filter, st);
+    }
+    
+    public void testNodeMetaDataNullPropertyValue() throws Exception
+    {
+        long fromCommitTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
+        st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+
+        int[] updates = new int[] {11};
+        int[] deletes = new int[] {0};
+        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+        
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        getNodeMetaData(nodeMetaDataParams, null, st);
+    }
+    
+    public void testFilters()
+    {
+        long startTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, "testFilters", true, true);
+        st.buildTransactions();
+        
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+
+        int[] updates = new int[] {1, 1};
+        int[] deletes = new int[] {0, 1};
+        List<Long> txnIds = checkTransactions(txns, 2, updates, deletes);
+        
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setTransactionIds(txnIds);
+        getNodes(nodeParameters, st);
+
+        NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
+        nodeMetaDataParams.setNodeIds(st.getNodeIds());
+        getNodeMetaData(nodeMetaDataParams, null, st);
+    }
+
+    private static class NodeAssertions
+    {
+        private Set<QName> aspects;
+        private Map<QName, Serializable> properties;
+        private NodeStatus nodeStatus;
+        private Boolean expectAspects = true;
+        private Boolean expectProperties = true;
+        private boolean expectType = true;
+        private boolean expectOwner = true;
+        private boolean expectAssociations = true;
+        private boolean expectPaths = true;
+        private boolean expectAclId = true;
+
+        public NodeAssertions()
+        {
+            super();
+        }
+        
+        public boolean isExpectType()
+        {
+            return expectType;
+        }
+
+        public boolean isExpectOwner()
+        {
+            return expectOwner;
+        }
+
+        public boolean isExpectAssociations()
+        {
+            return expectAssociations;
+        }
+
+        public boolean isExpectPaths()
+        {
+            return expectPaths;
+        }
+
+        public boolean isExpectAclId()
+        {
+            return expectAclId;
+        }
+
+        public boolean isExpectAspects()
+        {
+            return expectAspects;
+        }
+
+        public boolean isExpectProperties()
+        {
+            return expectProperties;
+        }
+
+        public void setNodeStatus(NodeStatus nodeStatus)
+        {
+            this.nodeStatus = nodeStatus;
+        }
+
+        public NodeStatus getNodeStatus()
+        {
+            return nodeStatus;
+        }
+
+        public Set<QName> getAspects()
+        {
+            return aspects;
+        }
+
+        public Map<QName, Serializable> getProperties()
+        {
+            return properties;
+        }
+    }
+
+    private List<Long> checkTransactions(List<Transaction> txns, int numTransactions, int[] updates, int[] deletes)
+    {
+        assertEquals("Number of transactions is incorrect", numTransactions, txns.size());
+
+        List<Long> txnIds = new ArrayList<Long>(txns.size());
+        int i = 0;
+        for(Transaction txn : txns)
+        {
+            assertEquals("Number of deletes is incorrect", deletes[i], txn.getDeletes());
+            assertEquals("Number of updates is incorrect", updates[i], txn.getUpdates());
+            i++;
+
+            txnIds.add(txn.getId());
+        }
+        
+        return txnIds;
+    }
+    
+    private void getNodes(NodeParameters nodeParameters, SOLRTest bt)
+    {
+        long startTime = System.currentTimeMillis();
+        solrTrackingComponent.getNodes(nodeParameters, bt);        
+        long endTime = System.currentTimeMillis();
+        
+        bt.runNodeChecks(nodeParameters.getMaxResults());
+        
+        logger.debug("Got " + bt.getActualNodeCount() + " nodes in " + (endTime - startTime) + " ms");
+    }
+    
+    private void getNodeMetaData(NodeMetaDataParameters params, MetaDataResultsFilter filter, SOLRTest bt)
+    {
+        bt.clearNodesMetaData();
+
+        long startTime = System.currentTimeMillis();
+        solrTrackingComponent.getNodesMetadata(params, filter, bt);
+        long endTime = System.currentTimeMillis();
+
+        bt.runNodeMetaDataChecks(params.getMaxResults());
+        
+        logger.debug("Got " + bt.getActualNodeMetaDataCount() + " node metadatas in " + (endTime - startTime) + " ms");
+    }
+    
+    private static abstract class SOLRTest implements NodeQueryCallback, NodeMetaDataQueryCallback
+    {
+        protected FileFolderService fileFolderService;
+        protected RetryingTransactionHelper txnHelper;
+        protected NodeService nodeService;
+        protected NodeRef rootNodeRef;
+        protected NodeDAO nodeDAO;
+
+        protected String containerName;
+        protected Map<NodeRef, NodeAssertions> nodeAssertions;
+        
+        protected boolean doChecks;
+        protected boolean doNodeChecks;
+        protected boolean doMetaDataChecks;
+
+        protected int successCount = 0;
+        protected int failureCount = 0;
+
+        protected List<Long> nodeIds;
+        
+        protected long expectedNumMetaDataNodes = 0;
+        
+        protected long actualNodeCount = 0;
+        protected long actualNodeMetaDataCount = 0;
+
+        SOLRTest(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            this.txnHelper = txnHelper;
+            this.nodeService = nodeService;
+            this.rootNodeRef = rootNodeRef;
+            this.fileFolderService = fileFolderService;
+            this.nodeDAO = nodeDAO;
+            
+            this.containerName = containerName;
+            this.nodeAssertions = new HashMap<NodeRef, NodeAssertions>();
+            this.nodeIds = new ArrayList<Long>(getExpectedNumNodes());
+            
+            this.doNodeChecks = doNodeChecks;
+            this.doMetaDataChecks = doMetaDataChecks;
+            this.doChecks = doNodeChecks || doMetaDataChecks;
+        }
+
+        void runNodeChecks(int maxResults)
+        {
+            if(doNodeChecks)
+            {
+                if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
+                {
+                    assertEquals("Number of returned nodes is incorrect", maxResults, getActualNodeCount());
+                }
+                else
+                {
+                    assertEquals("Number of returned nodes is incorrect", getExpectedNumNodes(), getActualNodeCount());
+                }
+                assertEquals("Unexpected failures", 0, getFailureCount());
+                assertEquals("Success count is incorrect", getActualNodeCount(), getSuccessCount());
+            }
+        }
+
+        void runNodeMetaDataChecks(int maxResults)
+        {
+            if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
+            {
+                assertEquals("Number of returned nodes is incorrect", maxResults, getActualNodeMetaDataCount());
+            }
+            else
+            {
+                assertEquals("Number of returned nodes is incorrect", getExpectedNumMetaDataNodes(), getActualNodeMetaDataCount());
+            }
+        }
+        
+        void clearNodesMetaData()
+        {
+            successCount = 0;
+            failureCount = 0;
+            actualNodeMetaDataCount = 0;
+            nodeAssertions.clear();
+        }
+
+        public long getActualNodeCount()
+        {
+            return actualNodeCount;
+        }
+
+        public long getActualNodeMetaDataCount()
+        {
+            return actualNodeMetaDataCount;
+        }
+        
+        protected long getExpectedNumMetaDataNodes()
+        {
+            return expectedNumMetaDataNodes;
+        }
+
+        protected abstract int getExpectedNumNodes();
+        protected abstract void buildTransactionsInternal();
+
+        public NodeAssertions getNodeAssertions(NodeRef nodeRef)
+        {
+            NodeAssertions assertions = nodeAssertions.get(nodeRef);
+            if(assertions == null)
+            {
+                assertions = new NodeAssertions();
+                nodeAssertions.put(nodeRef, assertions);
+            }
+            return assertions;
+        }
+        
+        protected void setExpectedNodeStatus(NodeRef nodeRef, NodeStatus nodeStatus)
+        {
+            if(nodeStatus == NodeStatus.UPDATED)
+            {
+                expectedNumMetaDataNodes++;
+            }
+            
+            if(doChecks)
+            {
+                NodeAssertions nodeAssertions = getNodeAssertions(nodeRef);
+                nodeAssertions.setNodeStatus(nodeStatus);
+            }
+        }
+        
+        void buildTransactions()
+        {
+            buildTransactionsInternal();
+        }
+        
+        @Override
+        public boolean handleNode(Node node) {
+            actualNodeCount++;
+
+            if(doNodeChecks)
+            {
+                NodeRef nodeRef = node.getNodeRef();
+                Boolean isDeleted = node.getDeleted();
+                nodeIds.add(node.getId());
+    
+                NodeAssertions expectedStatus = getNodeAssertions(nodeRef);
+                if(expectedStatus == null)
+                {
+                    throw new RuntimeException("Unexpected missing assertion for NodeRef " + nodeRef);
+                }
+                
+                if((expectedStatus.getNodeStatus() == NodeStatus.DELETED && isDeleted) ||
+                        (expectedStatus.getNodeStatus() == NodeStatus.UPDATED && !isDeleted))
+                {
+                    successCount++;
+                }
+                else
+                {
+                    failureCount++;
+                }
+            }
+
+            return true;
+        }
+
+/*        private boolean compareProperties(Map<QName, Serializable> properties1, Map<QName, Serializable> properties2)
+        {
+            boolean match = true;
+            
+            if(properties1.size() != properties2.size())
+            {
+                match = false;
+            }
+            else
+            {
+                for(QName qname : properties1.keySet())
+                {
+                    Serializable value1 = properties1.get(qname);
+                    Serializable value2 = properties2.get(qname);
+                    if(value1 instanceof MLText)
+                    {
+                        if(!(value2 instanceof MLText))
+                        {
+                            match = false;
+                            break;
+                        }
+                        MLText ml1 = (MLText)value1;
+                        MLText ml2 = (MLText)value2;
+                        if(ml1.getDefaultValue().equals(ml2.getDefaultValue()))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    else if(value1 instanceof ContentDataWithId)
+                    {
+                        if(!(value2 instanceof ContentDataWithId))
+                        {
+                            match = false;
+                            break;
+                        }
+                        ContentDataWithId cd1 = (ContentDataWithId)value1;
+                        ContentDataWithId cd2 = (ContentDataWithId)value2;
+                        if(cd1.getDefaultValue().equals(ml2.getDefaultValue()))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if(!value1.equals(value2))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return match;
+        }*/
+
+        @Override
+        public boolean handleNodeMetaData(NodeMetaData nodeMetaData) {
+            actualNodeMetaDataCount++;
+
+            if(doMetaDataChecks)
+            {
+                Long nodeId = nodeMetaData.getNodeId();
+                NodeRef nodeRef = nodeMetaData.getNodeRef();
+
+                Set<QName> aspects = nodeMetaData.getAspects();
+                Set<QName> actualAspects = nodeService.getAspects(nodeRef);
+                assertEquals("Aspects are incorrect", actualAspects, aspects);
+
+                Map<QName, Serializable> properties = nodeMetaData.getProperties();
+                // NodeService converts properties so use nodeDAO to get unadulterated property value
+                Map<QName, Serializable> actualProperties = nodeDAO.getNodeProperties(nodeId);
+                //assertTrue("Properties are incorrect", compareProperties(actualProperties, properties));
+                assertEquals("Properties are incorrect", actualProperties, properties);
+
+                NodeAssertions assertions = getNodeAssertions(nodeRef);
+//                NodeAssertions assertions = nodes.get(nodeRef);
+
+                Set<QName> expectedAspects = assertions.getAspects();
+                if(expectedAspects != null)
+                {
+                    for(QName aspect : expectedAspects)
+                    {
+                        assertTrue("Expected aspect" + aspect, aspects.contains(aspect));
+                    }
+                }
+                
+                Map<QName, Serializable> expectedProperties = assertions.getProperties();
+                if(expectedProperties != null)
+                {
+                    for(QName propName : expectedProperties.keySet())
+                    {
+                        Serializable expectedPropValue = expectedProperties.get(propName);
+                        Serializable actualPropValue = properties.get(propName);
+                        assertNotNull("Missing property " + propName, actualPropValue);
+                        assertEquals("Incorrect property value", expectedPropValue, actualPropValue);
+                    }
+                }
+
+                // TODO complete path tests
+//                List<Path> actualPaths = nodeMetaData.getPaths();
+//                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
+//                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
+                
+                boolean expectAspects = assertions.isExpectAspects();
+                if(expectAspects && nodeMetaData.getAspects() == null)
+                {
+                    fail("Expecting aspects but got no aspects");
+                }
+                else if(!expectAspects && nodeMetaData.getAspects() != null)
+                {
+                    fail("Not expecting aspects but got aspects");
+                }
+                
+                boolean expectProperties = assertions.isExpectProperties();
+                if(expectProperties && nodeMetaData.getProperties() == null)
+                {
+                    fail("Expecting properties but got no properties");
+                }
+                else if(!expectProperties && nodeMetaData.getProperties() != null)
+                {
+                    fail("Not expecting properties but got properties");
+                }
+
+                boolean expectType = assertions.isExpectType();
+                if(expectType && nodeMetaData.getNodeType() == null)
+                {
+                    fail("Expecting type but got no type");
+                }
+                else if(!expectType && nodeMetaData.getNodeType() != null)
+                {
+                    fail("Not expecting type but got type");
+                }
+                
+                boolean expectAclId = assertions.isExpectAclId();
+                if(expectAclId && nodeMetaData.getAclId() == null)
+                {
+                    fail("Expecting acl id but got no acl id");
+                }
+                else if(!expectAclId && nodeMetaData.getAclId() != null)
+                {
+                    fail("Not expecting acl id but got acl id");
+                }
+                
+                boolean expectPaths = assertions.isExpectPaths();
+                if(expectPaths && nodeMetaData.getPaths() == null)
+                {
+                    fail("Expecting paths but got no paths");
+                }
+                else if(!expectPaths && nodeMetaData.getPaths() != null)
+                {
+                    fail("Not expecting paths but got paths");
+                }
+
+                boolean expectAssociations = assertions.isExpectAssociations();
+                if(expectAssociations && nodeMetaData.getChildAssocs() == null)
+                {
+                    fail("Expecting associations but got no associations");
+                }
+                else if(!expectAssociations && nodeMetaData.getChildAssocs() != null)
+                {
+                    fail("Not expecting associations but got associations");
+                }
+                
+                boolean expectOwner = assertions.isExpectOwner();
+                if(expectOwner && nodeMetaData.getOwner() == null)
+                {
+                    fail("Expecting owner but got no owner");
+                }
+                else if(!expectOwner && nodeMetaData.getOwner() != null)
+                {
+                    fail("Not expecting owner but got owner");
+                }
+            }
+            
+            successCount++;
+
+            return true;
+        }
+        
+        public int getSuccessCount()
+        {
+            return successCount;
+        }
+
+        public int getFailureCount()
+        {
+            return failureCount;
+        }
+
+        public List<Long> getNodeIds()
+        {
+            return nodeIds;
+        }
+    }
+
+    private static class SOLRTest1 extends SOLRTest
+    {
+        private NodeRef container;
+        private NodeRef content1;
+        private NodeRef content2;
+        
+        SOLRTest1(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            super(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+        }
+        
+        public int getExpectedNumNodes()
+        {
+            return 3;
+        }
+        
+        protected void buildTransactionsInternal()
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    PropertyMap props = new PropertyMap();
+                    props.put(ContentModel.PROP_NAME, "Container1");
+                    container = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+
+                    FileInfo contentInfo = fileFolderService.create(container, "Content1", ContentModel.TYPE_CONTENT);
+                    content1 = contentInfo.getNodeRef();
+
+                    return null;
+                }
+            });
+
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
+                    content2 = contentInfo.getNodeRef();
+
+                    fileFolderService.delete(content1);
+
+                    return null;
+                }
+            });
+            
+            setExpectedNodeStatus(container, NodeStatus.UPDATED);
+            setExpectedNodeStatus(content1, NodeStatus.DELETED);
+            setExpectedNodeStatus(content2, NodeStatus.UPDATED);
+        }
+    }
+    
+    private static class SOLRTest3 extends SOLRTest
+    {
+        private NodeRef container;
+        private NodeRef content1;
+        private NodeRef content2;
+
+        SOLRTest3(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            super(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+        }
+        
+        public int getExpectedNumNodes()
+        {
+            return 3;
+        }
+
+        protected void buildTransactionsInternal()
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    PropertyMap props = new PropertyMap();
+                    props.put(ContentModel.PROP_NAME, "Container1");
+                    container = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    
+                    FileInfo contentInfo = fileFolderService.create(container, "Content1", ContentModel.TYPE_CONTENT);
+                    content1 = contentInfo.getNodeRef();
+                    
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+                    aspectProperties.put(ContentModel.PROP_AUTHOR, "steve");
+                    nodeService.addAspect(content1, ContentModel.ASPECT_AUTHOR, aspectProperties);
+                    
+                    return null;
+                }
+            });
+            
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
+                    content2 = contentInfo.getNodeRef();
+                    
+                    nodeService.addAspect(content2, ContentModel.ASPECT_TEMPORARY, null);
+                    fileFolderService.delete(content1);
+
+                    return null;
+                }
+            });
+
+            setExpectedNodeStatus(container, NodeStatus.UPDATED);
+            setExpectedNodeStatus(content1, NodeStatus.DELETED);
+            setExpectedNodeStatus(content2, NodeStatus.UPDATED);
+        }
+    }
+    
+    private static class SOLRTest100Nodes extends SOLRTest
+    {
+        SOLRTest100Nodes(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            super(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+        }
+        
+        public int getExpectedNumNodes()
+        {
+            return 100;
+        }
+        
+        protected void buildTransactionsInternal()
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    PropertyMap props = new PropertyMap();
+                    props.put(ContentModel.PROP_NAME, "Container100Nodes");
+                    NodeRef container = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    setExpectedNodeStatus(container, NodeStatus.UPDATED);
+
+                    for(int i = 0; i < 99; i++)
+                    {
+                        FileInfo contentInfo = fileFolderService.create(container, "Content" + i, ContentModel.TYPE_CONTENT);
+                        NodeRef nodeRef = contentInfo.getNodeRef();
+
+                        setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
+                    }
+                    
+                    return null;
+                }
+            });
+        }
+    }
+
+    private static class SOLRTest4 extends SOLRTest
+    {
+        private int numContentNodes = 2000;
+        
+        SOLRTest4(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            super(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+        }
+        
+        public int getExpectedNumNodes()
+        {
+            return numContentNodes + 1;
+        }
+
+        public void buildTransactionsInternal()
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    PropertyMap props = new PropertyMap();
+                    props.put(ContentModel.PROP_NAME, containerName);
+                    NodeRef container = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    setExpectedNodeStatus(container, NodeStatus.UPDATED);
+
+                    for(int i = 0; i < numContentNodes; i++)
+                    {
+                        FileInfo contentInfo = fileFolderService.create(container, "Content" + i, ContentModel.TYPE_CONTENT);
+                        NodeRef nodeRef = contentInfo.getNodeRef();
+
+                        if(i % 2 == 1)
+                        {
+                            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
+                        }
+                        nodeService.setProperty(nodeRef, ContentModel.PROP_AUTHOR, null);
+
+                        setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
+                    }
+                    
+                    return null;
+                }
+            });
+        }
+    }
+
+    private static class SOLRTest5 extends SOLRTest
+    {
+        private int numContentNodes = 10;
+        
+        SOLRTest5(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService,
+                NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
+        {
+            super(txnHelper, fileFolderService, nodeDAO, nodeService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+        }
+        
+        public int getExpectedNumNodes()
+        {
+            return numContentNodes + 1;
+        }
+
+        public void buildTransactionsInternal()
+        {
+            final String titles[] = 
+            {
+                    "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6",
+                    "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6"
+            };
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    PropertyMap props = new PropertyMap();
+                    props.put(ContentModel.PROP_NAME, containerName);
+                    NodeRef container = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    setExpectedNodeStatus(container, NodeStatus.UPDATED);
+
+                    for(int i = 0; i < numContentNodes; i++)
+                    {
+                        FileInfo contentInfo = fileFolderService.create(container, "Content" + i, ContentModel.TYPE_CONTENT);
+                        NodeRef nodeRef = contentInfo.getNodeRef();
+
+                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
+                        if(i % 5 == 1)
+                        {
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_AUTHOR, null);
+                        }
+                        else
+                        {
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_AUTHOR, "author" + i);
+                        }
+
+                        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, titles[i]);
+
+                        setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
+                    }
+                    
+                    return null;
+                }
+            });
+        }
+    }
+}

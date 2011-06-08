@@ -106,9 +106,10 @@ CREATE SEQUENCE alf_acl_change_set_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_acl_change_set
 (
     id INT8 NOT NULL,
-    version INT8 NOT NULL,
+    commit_time_ms INT8,
     PRIMARY KEY (id)
 );
+CREATE INDEX idx_alf_acs_ctms ON alf_acl_change_set (commit_time_ms);
 
 CREATE SEQUENCE alf_access_control_list_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_access_control_list

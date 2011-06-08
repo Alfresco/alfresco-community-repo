@@ -74,9 +74,10 @@ public interface AclCrudDAO
     // ACL Change Set
     //
     
-    public long createAclChangeSet();
-    public AclChangeSet getAclChangeSet(long aclChangeSetEntityId);
-    public void deleteAclChangeSet(long aclChangeSetEntityId);
+    public Long createAclChangeSet();
+    public void updateAclChangeSet(Long aclChangeSetEntityId, long commitTimeMs);
+    public AclChangeSet getAclChangeSet(Long aclChangeSetEntityId);
+    public void deleteAclChangeSet(Long aclChangeSetEntityId);
     
     //
     // ACL Member

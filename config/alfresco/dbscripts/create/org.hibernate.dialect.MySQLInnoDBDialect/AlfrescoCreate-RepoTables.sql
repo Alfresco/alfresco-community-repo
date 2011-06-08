@@ -99,7 +99,8 @@ CREATE TABLE alf_access_control_entry
 CREATE TABLE alf_acl_change_set
 (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    version BIGINT NOT NULL,
+    commit_time_ms BIGINT,
+	KEY idx_alf_acs_ctms (commit_time_ms)
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

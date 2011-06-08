@@ -784,7 +784,7 @@ public class CMISQueryParser
                             }
 
                             TypeDefinitionWrapper typeDef = cmisDictionaryService.findTypeForClass(selector.getType(),
-                                    BaseTypeId.CMIS_DOCUMENT, BaseTypeId.CMIS_FOLDER);
+                                    validScopes);
                             if (typeDef == null)
                             {
                                 throw new CmisInvalidArgumentException("Type unsupported in CMIS queries: "
@@ -859,8 +859,7 @@ public class CMISQueryParser
                             }
                         }
 
-                        TypeDefinitionWrapper typeDef = cmisDictionaryService.findTypeForClass(selector.getType(),
-                                BaseTypeId.CMIS_DOCUMENT, BaseTypeId.CMIS_FOLDER);
+                        TypeDefinitionWrapper typeDef = cmisDictionaryService.findTypeForClass(selector.getType(), validScopes);
                         if (typeDef == null)
                         {
                             throw new CmisInvalidArgumentException("Type unsupported in CMIS queries: "

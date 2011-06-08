@@ -75,7 +75,20 @@ public class AclCrudDAOTest extends TestCase
         return txnHelper.doInTransaction(callback);
     }
     
-    private void deleteAclChangeSet(final long aclChangeSetId) throws Exception
+    private void updateAclChangeSet(final Long aclChangeSetId) throws Exception
+    {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                aclCrudDAO.updateAclChangeSet(aclChangeSetId, System.currentTimeMillis());
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(callback);
+    }
+    
+    private void deleteAclChangeSet(final Long aclChangeSetId) throws Exception
     {
         RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
@@ -102,12 +115,13 @@ public class AclCrudDAOTest extends TestCase
     
     public void testCreateAndDeleteAclChangeSet() throws Exception
     {
-        long aclChangeSetId = createAclChangeSet();
+        Long aclChangeSetId = createAclChangeSet();
         
         AclChangeSet acsEntity= getAclChangeSet(aclChangeSetId);
         assertNotNull(acsEntity);
-        assertEquals(new Long(aclChangeSetId), acsEntity.getId());
+        assertEquals(aclChangeSetId, acsEntity.getId());
         
+        updateAclChangeSet(aclChangeSetId);
         deleteAclChangeSet(aclChangeSetId);
         
         assertNull(getAclChangeSet(aclChangeSetId));

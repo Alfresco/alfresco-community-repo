@@ -13,7 +13,8 @@
       <property name="searchService"><ref bean="admSearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
-
+      <property name="cannedQueryRegistry" ref="cannedQueryRegistry"/>
+      
       <property name="systemNamespaces">
          <list>
             <value>http://www.alfresco.org/model/application/1.0</value>
@@ -134,6 +135,16 @@
            <value>org.alfresco.repo.imap.ImapService</value>
         </list>
      </property>
-  </bean>
-
+   </bean>
+   
+   <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+   
+   <bean name="getChildrenCannedQueryFactory" class="org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory">
+      <property name="registry" ref="cannedQueryRegistry"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="methodSecurityInterceptor" ref="FileFolderService_security"/>
+   </bean>
+   
 </beans>

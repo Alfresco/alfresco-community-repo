@@ -40,6 +40,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.StaleStateException;
@@ -100,6 +101,7 @@ public class RetryingTransactionHelper
                 BatchUpdateException.class,
                 DataIntegrityViolationException.class,
                 StaleStateException.class,
+                TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
                 ObjectNotFoundException.class,
                 CacheException.class,                       // Usually a cache replication issue
                 RemoteCacheException.class,                 // A cache replication issue

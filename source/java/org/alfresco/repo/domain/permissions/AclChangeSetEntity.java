@@ -20,7 +20,6 @@ package org.alfresco.repo.domain.permissions;
 
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Entity for <b>alf_acl_change_set</b> persistence.
  * 
@@ -30,7 +29,7 @@ import org.alfresco.util.EqualsHelper;
 public class AclChangeSetEntity implements AclChangeSet
 {
     private Long id;
-    private Long version;
+    private Long commitTimeMs;
     
     /**
      * Default constructor
@@ -49,16 +48,16 @@ public class AclChangeSetEntity implements AclChangeSet
         this.id = id;
     }
     
-    public Long getVersion()
+    public Long getCommitTimeMs()
     {
-        return version;
+        return commitTimeMs;
     }
-    
-    public void setVersion(Long version)
+
+    public void setCommitTimeMs(Long commitTimeMs)
     {
-        this.version = version;
+        this.commitTimeMs = commitTimeMs;
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -89,7 +88,7 @@ public class AclChangeSetEntity implements AclChangeSet
         StringBuilder sb = new StringBuilder(512);
         sb.append("AclChangeSetEntity")
           .append("[ ID=").append(id)
-          .append(", version=").append(version)
+          .append(", commitTimeMs=").append(commitTimeMs)
           .append("]");
         return sb.toString();
     }

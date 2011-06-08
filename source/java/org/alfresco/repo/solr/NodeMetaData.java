@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.domain.solr;
+package org.alfresco.repo.solr;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -33,9 +33,8 @@ import org.alfresco.util.Pair;
 /**
  * 
  * @since 4.0
- *
  */
-public class NodeMetaDataEntity implements NodeMetaData
+public class NodeMetaData
 {
     private Long nodeId;
     private NodeRef nodeRef;

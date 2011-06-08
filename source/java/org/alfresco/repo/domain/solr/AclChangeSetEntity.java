@@ -19,14 +19,39 @@
 package org.alfresco.repo.domain.solr;
 
 /**
- * Interface for SOLR transaction objects.
+ * Interface for SOLR changeset objects.
  * 
+ * @author Derek Hulley
  * @since 4.0
  */
-public interface Transaction
+public class AclChangeSetEntity implements AclChangeSet
 {
-    public Long getId();
-    public Long getCommitTimeMs();
-    public int getUpdates();
-    public int getDeletes();
+    private Long id;
+    private Long commitTimeMs;
+    private int aclCount;
+
+    public Long getId()
+    {
+        return id;
+    }
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+    public Long getCommitTimeMs()
+    {
+        return commitTimeMs;
+    }
+    public void setCommitTimeMs(Long commitTimeMs)
+    {
+        this.commitTimeMs = commitTimeMs;
+    }
+    public int getAclCount()
+    {
+        return aclCount;
+    }
+    public void setAclCount(int aclCount)
+    {
+        this.aclCount = aclCount;
+    }
 }

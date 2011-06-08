@@ -18,45 +18,17 @@
  */
 package org.alfresco.repo.domain.solr.ibatis;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
-import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.solr.MetaDataResultsFilter;
-import org.alfresco.repo.domain.solr.NodeMetaData;
-import org.alfresco.repo.domain.solr.NodeMetaDataEntity;
-import org.alfresco.repo.domain.solr.NodeMetaDataParameters;
-import org.alfresco.repo.domain.solr.NodeParameters;
+import org.alfresco.repo.domain.solr.AclChangeSet;
+import org.alfresco.repo.domain.solr.NodeParametersEntity;
 import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.domain.solr.SOLRTransactionParameters;
+import org.alfresco.repo.domain.solr.SOLRTrackingParameters;
 import org.alfresco.repo.domain.solr.Transaction;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
+import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
@@ -65,589 +37,520 @@ import org.mybatis.spring.SqlSessionTemplate;
  * 
  * @since 4.0
  */
-// TODO Freemarker requires the construction of a model which means that lists and maps need to be built up in memory
-// - consider building the JSON in a more streaming manner, without building up of these data structures.
-// downside: loss of separation of model and view
-// upside: better performance?
 public class SOLRDAOImpl implements SOLRDAO
 {
-    private static final Log logger = LogFactory.getLog(SOLRDAOImpl.class);
     private static final String SELECT_TRANSACTIONS = "alfresco.solr.select_Txns";
     private static final String SELECT_NODES = "alfresco.solr.select_Txn_Nodes";
     
-    private DictionaryService dictionaryService;
-    private NodeDAO nodeDAO;
-    private QNameDAO qnameDAO;
-    private OwnableService ownableService;
-    private TenantService tenantService;
-
     private SqlSessionTemplate template;
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-    
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
-    }
+    private QNameDAO qnameDAO;
 
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-    
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
-        this.nodeDAO = nodeDAO;
-    }
-    
     public void setQNameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
 
-    /*
+    /**
      * Initialize
      */    
     public void init()
     {
-        PropertyCheck.mandatory(this, "ownableService", ownableService);
-        PropertyCheck.mandatory(this, "tenantService", tenantService);
-        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
+        PropertyCheck.mandatory(this, "template", template);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
     }
     
-	@SuppressWarnings("unchecked")
-    /**
-     * {@inheritDoc}
-     */
-	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
-	{
-	    if(minTxnId == null && fromCommitTime == null && (maxResults == 0 || maxResults == Integer.MAX_VALUE))
-	    {
-	        throw new IllegalArgumentException("Must specify at least one parameter");
-	    }
-
-	    List<Transaction> txns = null;
-	    SOLRTransactionParameters params = new SOLRTransactionParameters();
-	    params.setMinTxnId(minTxnId);
-	    params.setTxnFromCommitTime(fromCommitTime);
-
-	    if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
-	    {
-	        txns = (List<Transaction>)template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
-	    }
-	    else
-	    {
-            txns = (List<Transaction>)template.selectList(SELECT_TRANSACTIONS, params);
-	    }
-	    
-	    return txns;
-	}
-
-	@SuppressWarnings("unchecked")
-	// TODO should create qnames if don't exist?
-    /**
-     * {@inheritDoc}
-     */
-	public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback)
-	{
-	    List<NodeEntity> nodes = null;
-        NodeQueryRowHandler rowHandler = new NodeQueryRowHandler(callback);
-
-        if(nodeParameters.getIncludeTypeIds() == null && nodeParameters.getIncludeNodeTypes() != null)
+	@Override
+    @SuppressWarnings("unchecked")
+    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults)
+    {
+        if (minAclChangeSetId == null && fromCommitTime == null && (maxResults == 0 || maxResults == Integer.MAX_VALUE))
         {
-            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(nodeParameters.getIncludeNodeTypes(), false);
-            nodeParameters.setIncludeTypeIds(new ArrayList<Long>(qnamesIds));
+            throw new IllegalArgumentException("Must specify at least one parameter");
         }
 
-        if(nodeParameters.getExcludeTypeIds() == null && nodeParameters.getExcludeNodeTypes() != null)
+        SOLRTrackingParameters params = new SOLRTrackingParameters();
+        params.setFromIdInclusive(minAclChangeSetId);
+        params.setFromCommitTimeInclusive(fromCommitTime);
+
+        List<AclChangeSet> results = null;
+        if(maxResults != 0 && maxResults != Integer.MAX_VALUE)
         {
-            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(nodeParameters.getExcludeNodeTypes(), false);
-            nodeParameters.setExcludeTypeIds(new ArrayList<Long>(qnamesIds));
+            results = (List<AclChangeSet>)template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
+        }
+        else
+        {
+            results = (List<AclChangeSet>)template.selectList(SELECT_TRANSACTIONS, params);
         }
         
-        if(nodeParameters.getExcludeAspectIds() == null && nodeParameters.getExcludeAspects() != null)
+        return results;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
+	{
+        if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
         {
-            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(nodeParameters.getExcludeAspects(), false);
-            nodeParameters.setExcludeAspectIds(new ArrayList<Long>(qnamesIds));
+            throw new IllegalArgumentException("Maximum results must be a reasonable number.");
         }
 
-        if(nodeParameters.getIncludeAspectIds() == null && nodeParameters.getIncludeAspects() != null)
-        {
-            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(nodeParameters.getIncludeAspects(), false);
-            nodeParameters.setIncludeAspectIds(new ArrayList<Long>(qnamesIds));
-        }
+	    SOLRTrackingParameters params = new SOLRTrackingParameters();
+	    params.setFromIdInclusive(minTxnId);
+	    params.setFromCommitTimeInclusive(fromCommitTime);
+
+        return (List<Transaction>) template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+	public List<Node> getNodes(NodeParameters nodeParameters)
+	{
+	    NodeParametersEntity params = new NodeParametersEntity(nodeParameters, qnameDAO);
 
 	    if(nodeParameters.getMaxResults() != 0 && nodeParameters.getMaxResults() != Integer.MAX_VALUE)
 	    {
-	        nodes = (List<NodeEntity>)template.selectList(SELECT_NODES, nodeParameters,
+	        return (List<Node>) template.selectList(
+	                SELECT_NODES, params,
 	                new RowBounds(0, nodeParameters.getMaxResults()));
 	    }
 	    else
 	    {
-	        nodes = (List<NodeEntity>)template.selectList(SELECT_NODES, nodeParameters);
-	    }
-	    
-	    for(NodeEntity node : nodes)
-	    {
-	    	rowHandler.processResult(node);
+	        return (List<Node>) template.selectList(SELECT_NODES, params);
 	    }
 	}
+//
+//	/**
+//	 * A dumb iterator that iterates over longs in sequence.
+//	 *
+//	 */
+//	private static class SequenceIterator implements Iterable<Long>, Iterator<Long>
+//	{
+//	    private long fromId;
+//	    private long toId;
+//	    private long counter;
+//	    private int maxResults;
+//	    private boolean inUse = false;
+//
+//	    SequenceIterator(Long fromId, Long toId, int maxResults)
+//	    {
+//	        this.fromId = (fromId == null ? 1 : fromId.longValue());
+//	        this.toId = (toId == null ? Long.MAX_VALUE : toId.longValue());
+//	        this.maxResults = maxResults;
+//	        this.counter = this.fromId;
+//	    }
+//	    
+//	    public List<Long> getList()
+//	    {
+//            List<Long> ret = new ArrayList<Long>(100);
+//            @SuppressWarnings("rawtypes")
+//            Iterator nodeIds = iterator();
+//            while(nodeIds.hasNext())
+//            {
+//                ret.add((Long)nodeIds.next());
+//            }
+//            return ret;
+//	    }
+//
+//        @Override
+//        public Iterator<Long> iterator()
+//        {
+//            if(inUse)
+//            {
+//                throw new IllegalStateException("Already in use");
+//            }
+//            this.counter = this.fromId;
+//            this.inUse = true;
+//            return this;
+//        }
+//
+//        @Override
+//        public boolean hasNext()
+//        {
+//            return ((counter - this.fromId) < maxResults) &&  counter <= toId;
+//        }
+//
+//        @Override
+//        public Long next()
+//        {
+//            return counter++;
+//        }
+//
+//        @Override
+//        public void remove()
+//        {
+//            throw new UnsupportedOperationException();
+//        }
+//	}
 
-	/**
-	 * A dumb iterator that iterates over longs in sequence.
-	 *
-	 */
-	private static class SequenceIterator implements Iterable<Long>, Iterator<Long>
-	{
-	    private long fromId;
-	    private long toId;
-	    private long counter;
-	    private int maxResults;
-	    private boolean inUse = false;
-
-	    SequenceIterator(Long fromId, Long toId, int maxResults)
-	    {
-	        this.fromId = (fromId == null ? 1 : fromId.longValue());
-	        this.toId = (toId == null ? Long.MAX_VALUE : toId.longValue());
-	        this.maxResults = maxResults;
-	        this.counter = this.fromId;
-	    }
-	    
-	    public List<Long> getList()
-	    {
-            List<Long> ret = new ArrayList<Long>(100);
-            @SuppressWarnings("rawtypes")
-            Iterator nodeIds = iterator();
-            while(nodeIds.hasNext())
-            {
-                ret.add((Long)nodeIds.next());
-            }
-            return ret;
-	    }
-
-        @Override
-        public Iterator<Long> iterator()
-        {
-            if(inUse)
-            {
-                throw new IllegalStateException("Already in use");
-            }
-            this.counter = this.fromId;
-            this.inUse = true;
-            return this;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return ((counter - this.fromId) < maxResults) &&  counter <= toId;
-        }
-
-        @Override
-        public Long next()
-        {
-            return counter++;
-        }
-
-        @Override
-        public void remove()
-        {
-            throw new UnsupportedOperationException();
-        }
-	}
-
-    private boolean isCategorised(AspectDefinition aspDef)
-    {
-        if(aspDef == null)
-        {
-            return false;
-        }
-        AspectDefinition current = aspDef;
-        while (current != null)
-        {
-            if (current.getName().equals(ContentModel.ASPECT_CLASSIFIABLE))
-            {
-                return true;
-            }
-            else
-            {
-                QName parentName = current.getParentName();
-                if (parentName == null)
-                {
-                    break;
-                }
-                current = dictionaryService.getAspect(parentName);
-            }
-        }
-        return false;
-    }
-    
-    private Collection<Pair<Path, QName>> getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
-    {
-        ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
-
-        for (QName classRef : aspects)
-        {
-            AspectDefinition aspDef = dictionaryService.getAspect(classRef);
-            if (isCategorised(aspDef))
-            {
-                LinkedList<Pair<Path, QName>> aspectPaths = new LinkedList<Pair<Path, QName>>();
-                for (PropertyDefinition propDef : aspDef.getProperties().values())
-                {
-                    if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
-                    {
-                        for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties.get(propDef.getName())))
-                        {
-                            if (catRef != null)
-                            {
-                                // can be running in context of System user, hence use input nodeRef
-                                catRef = tenantService.getName(nodeRef, catRef);
-
-                                try
-                                {
-                                    Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
-                                    for (Path path : nodeDAO.getPaths(pair, false))
-                                    {
-                                        if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
-                                        {
-                                            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
-                                            boolean isFakeRoot = true;
-
-                                            final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
-                                            // We have a callback handler to filter results
-                                            ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-                                            {
-                                                public boolean preLoadNodes()
-                                                {
-                                                    return false;
-                                                }
-                                                
-                                                public boolean handle(
-                                                        Pair<Long, ChildAssociationRef> childAssocPair,
-                                                        Pair<Long, NodeRef> parentNodePair,
-                                                        Pair<Long, NodeRef> childNodePair)
-                                                {
-                                                    results.add(childAssocPair.getSecond());
-                                                    return true;
-                                                }
-
-                                                public void done()
-                                                {
-                                                }                               
-                                            };
-                                            
-                                            Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
-                                            nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
-                                            for (ChildAssociationRef car : results)
-                                            {
-                                                if (cae.getRef().equals(car))
-                                                {
-                                                    isFakeRoot = false;
-                                                    break;
-                                                }
-                                            }
-                                            if (isFakeRoot)
-                                            {
-                                                if (path.toString().indexOf(aspDef.getName().toString()) != -1)
-                                                {
-                                                    aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                catch (InvalidNodeRefException e)
-                                {
-                                    // If the category does not exists we move on the next
-                                }
-
-                            }
-                        }
-                    }
-                }
-                categoryPaths.addAll(aspectPaths);
-            }
-        }
-        // Add member final element
-        for (Pair<Path, QName> pair : categoryPaths)
-        {
-            if (pair.getFirst().last() instanceof Path.ChildAssocElement)
-            {
-                Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
-                ChildAssociationRef assocRef = cae.getRef();
-                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
-            }
-        }
-
-        return categoryPaths;
-    }
-    
-    private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
-    {
-        int maxResults = nodeMetaDataParameters.getMaxResults();
-        boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
-
-        List<Long> nodeIds = null;
-        Iterable<Long> iterable = null;
-        List<Long> allNodeIds = nodeMetaDataParameters.getNodeIds();
-        if(allNodeIds != null)
-        {
-            int toIndex = (maxResults > allNodeIds.size() ? allNodeIds.size() : maxResults);
-            nodeIds = isLimitSet ? allNodeIds.subList(0, toIndex) : nodeMetaDataParameters.getNodeIds();
-            iterable = nodeMetaDataParameters.getNodeIds();
-        }
-        else
-        {
-            Long fromNodeId = nodeMetaDataParameters.getFromNodeId();
-            Long toNodeId = nodeMetaDataParameters.getToNodeId();
-            nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here?
-            iterable = new SequenceIterator(fromNodeId, toNodeId, maxResults);
-            int counter = 1;
-            for(Long nodeId : iterable)
-            {
-                if(isLimitSet && counter++ > maxResults)
-                {
-                    break;
-                }
-                nodeIds.add(nodeId);
-            }
-        }
-        // pre-cache nodes
-        nodeDAO.cacheNodesById(nodeIds);
-        
-        return nodeIds;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void getNodesMetadata(NodeMetaDataParameters nodeMetaDataParameters, MetaDataResultsFilter resultFilter, NodeMetaDataQueryCallback callback)
-    {
-        int maxResults = nodeMetaDataParameters.getMaxResults();
-        NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
-        boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
-        boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
-        boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());
-        boolean includeAspects = (resultFilter == null ? true : resultFilter.getIncludeAspects());
-        boolean includePaths = (resultFilter == null ? true : resultFilter.getIncludePaths());
-        boolean includeNodeRef = (resultFilter == null ? true : resultFilter.getIncludeNodeRef());
-        boolean includeAssociations = (resultFilter == null ? true : resultFilter.getIncludeAssociations());
-        boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
-        boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
-        
-        List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
-
-        //Iterable<Long> iterable = null;
-//        if(nodeMetaDataParameters.getNodeIds() != null)
+//    private boolean isCategorised(AspectDefinition aspDef)
+//    {
+//        if(aspDef == null)
+//        {
+//            return false;
+//        }
+//        AspectDefinition current = aspDef;
+//        while (current != null)
+//        {
+//            if (current.getName().equals(ContentModel.ASPECT_CLASSIFIABLE))
+//            {
+//                return true;
+//            }
+//            else
+//            {
+//                QName parentName = current.getParentName();
+//                if (parentName == null)
+//                {
+//                    break;
+//                }
+//                current = dictionaryService.getAspect(parentName);
+//            }
+//        }
+//        return false;
+//    }
+//    
+//    // TODO: Push into Abstract class
+//    private Collection<Pair<Path, QName>> getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
+//    {
+//        ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
+//
+//        for (QName classRef : aspects)
+//        {
+//            AspectDefinition aspDef = dictionaryService.getAspect(classRef);
+//            if (isCategorised(aspDef))
+//            {
+//                LinkedList<Pair<Path, QName>> aspectPaths = new LinkedList<Pair<Path, QName>>();
+//                for (PropertyDefinition propDef : aspDef.getProperties().values())
+//                {
+//                    if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
+//                    {
+//                        for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties.get(propDef.getName())))
+//                        {
+//                            if (catRef != null)
+//                            {
+//                                // can be running in context of System user, hence use input nodeRef
+//                                catRef = tenantService.getName(nodeRef, catRef);
+//
+//                                try
+//                                {
+//                                    Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
+//                                    for (Path path : nodeDAO.getPaths(pair, false))
+//                                    {
+//                                        if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
+//                                        {
+//                                            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
+//                                            boolean isFakeRoot = true;
+//
+//                                            final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+//                                            // We have a callback handler to filter results
+//                                            ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+//                                            {
+//                                                public boolean preLoadNodes()
+//                                                {
+//                                                    return false;
+//                                                }
+//                                                
+//                                                public boolean handle(
+//                                                        Pair<Long, ChildAssociationRef> childAssocPair,
+//                                                        Pair<Long, NodeRef> parentNodePair,
+//                                                        Pair<Long, NodeRef> childNodePair)
+//                                                {
+//                                                    results.add(childAssocPair.getSecond());
+//                                                    return true;
+//                                                }
+//
+//                                                public void done()
+//                                                {
+//                                                }                               
+//                                            };
+//                                            
+//                                            Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
+//                                            nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
+//                                            for (ChildAssociationRef car : results)
+//                                            {
+//                                                if (cae.getRef().equals(car))
+//                                                {
+//                                                    isFakeRoot = false;
+//                                                    break;
+//                                                }
+//                                            }
+//                                            if (isFakeRoot)
+//                                            {
+//                                                if (path.toString().indexOf(aspDef.getName().toString()) != -1)
+//                                                {
+//                                                    aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                catch (InvalidNodeRefException e)
+//                                {
+//                                    // If the category does not exists we move on the next
+//                                }
+//
+//                            }
+//                        }
+//                    }
+//                }
+//                categoryPaths.addAll(aspectPaths);
+//            }
+//        }
+//        // Add member final element
+//        for (Pair<Path, QName> pair : categoryPaths)
+//        {
+//            if (pair.getFirst().last() instanceof Path.ChildAssocElement)
+//            {
+//                Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
+//                ChildAssociationRef assocRef = cae.getRef();
+//                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
+//            }
+//        }
+//
+//        return categoryPaths;
+//    }
+//    
+//    private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
+//    {
+//        int maxResults = nodeMetaDataParameters.getMaxResults();
+//        boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
+//
+//        List<Long> nodeIds = null;
+//        Iterable<Long> iterable = null;
+//        List<Long> allNodeIds = nodeMetaDataParameters.getNodeIds();
+//        if(allNodeIds != null)
 //        {
 //            int toIndex = (maxResults > allNodeIds.size() ? allNodeIds.size() : maxResults);
-//            nodeIds = isLimitSet ? nodeMetaDataParameters.getNodeIds().subList(0, maxResults) : nodeMetaDataParameters.getNodeIds();
-//            //iterable = nodeMetaDataParameters.getNodeIds();
+//            nodeIds = isLimitSet ? allNodeIds.subList(0, toIndex) : nodeMetaDataParameters.getNodeIds();
+//            iterable = nodeMetaDataParameters.getNodeIds();
 //        }
 //        else
 //        {
 //            Long fromNodeId = nodeMetaDataParameters.getFromNodeId();
 //            Long toNodeId = nodeMetaDataParameters.getToNodeId();
-//            nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here
-//            SequenceIterator si = new SequenceIterator(fromNodeId, toNodeId, maxResults);
-//            nodeIds = si.getList();
-//            //iterable = si;
-//        }
-        // pre-cache nodes
-//        nodeDAO.cacheNodesById(nodeIds);
-
-        //int i = 1;
-        for(Long nodeId : nodeIds)
-        {
-            Map<QName, Serializable> props = null;
-            Set<QName> aspects = null;
-            
-//            if(isLimitSet && i++ > maxResults)
+//            nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here?
+//            iterable = new SequenceIterator(fromNodeId, toNodeId, maxResults);
+//            int counter = 1;
+//            for(Long nodeId : iterable)
 //            {
-//                break;
+//                if(isLimitSet && counter++ > maxResults)
+//                {
+//                    break;
+//                }
+//                nodeIds.add(nodeId);
 //            }
-
-            if(!nodeDAO.exists(nodeId))
-            {
-                // TODO nodeDAO doesn't cache anything for deleted nodes. Should we be ignoring delete node meta data?
-                continue;
-            }
-
-            NodeMetaDataEntity nodeMetaData = new NodeMetaDataEntity();
-
-            nodeMetaData.setNodeId(nodeId);
-
-            Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
-
-            nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
-
-            if(includeType)
-            {
-                QName nodeType = nodeDAO.getNodeType(nodeId);
-                nodeMetaData.setNodeType(nodeType);
-            }
-
-            if(includePaths || includeProperties)
-            {
-                props = nodeDAO.getNodeProperties(nodeId);
-            }
-            nodeMetaData.setProperties(props);
-
-            if(includePaths || includeAspects)
-            {
-                aspects = nodeDAO.getNodeAspects(nodeId);
-            }
-            nodeMetaData.setAspects(aspects);
-
-            // TODO paths may change during get i.e. node moved around in the graph
-            if(includePaths)
-            {
-                Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
-                List<Path> directPaths = nodeDAO.getPaths(pair, false);
-
-                Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
-                for (Path path : directPaths)
-                {
-                    paths.add(new Pair<Path, QName>(path, null));
-                }
-                paths.addAll(categoryPaths);
-
-                nodeMetaData.setPaths(paths);
-            }
-
-            if(includeNodeRef)
-            {
-                nodeMetaData.setNodeRef(pair.getSecond());
-            }
-        
-            if(includeChildAssociations)
-            {
-                final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
-                {
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-                    
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
-                            Pair<Long, NodeRef> childNodePair)
-                    {
-                        childAssocs.add(childAssocPair.getSecond());
-                        return true;
-                    }
-                    
-                    @Override
-                    public void done()
-                    {
-                    }
-                });
-                nodeMetaData.setChildAssocs(childAssocs);
-            }
-
-            if(includeAssociations)
-            {
-                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
-                {
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
-                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
-                    {
-                        parentAssocs.add(childAssocPair.getSecond());
-                        return true;
-                    }
-
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public void done()
-                    {
-                    }
-                });
-                        
-                // TODO non-child associations
-//                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
-//                Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId);
-//                
-//                nodeMetaData.setAssocs();
-            }
-            
-            if(includeOwner)
-            {
-                // cached in OwnableService
-                nodeMetaData.setOwner(ownableService.getOwner(pair.getSecond()));
-            }
- 
-            rowHandler.processResult(nodeMetaData);
-        }
-    }
-    
-    /**
-     * Class that passes results from a result entity into the client callback
-     */
-    protected class NodeQueryRowHandler
-    {
-        private final NodeQueryCallback callback;
-        private boolean more;
-
-        private NodeQueryRowHandler(NodeQueryCallback callback)
-        {
-            this.callback = callback;
-            this.more = true;
-        }
-        
-        public void processResult(Node row)
-        {
-            if (!more)
-            {
-                // No more results required
-                return;
-            }
-            
-            more = callback.handleNode(row);
-        }
-    }
-    
-    /**
-     * Class that passes results from a result entity into the client callback
-     */
-    protected class NodeMetaDataQueryRowHandler
-    {
-        private final NodeMetaDataQueryCallback callback;
-        private boolean more;
-
-        private NodeMetaDataQueryRowHandler(NodeMetaDataQueryCallback callback)
-        {
-            this.callback = callback;
-            this.more = true;
-        }
-        
-        public void processResult(NodeMetaData row)
-        {
-            if (!more)
-            {
-                // No more results required
-                return;
-            }
-            
-            more = callback.handleNodeMetaData(row);
-        }
-    }
+//        }
+//        // pre-cache nodes
+//        nodeDAO.cacheNodesById(nodeIds);
+//        
+//        return nodeIds;
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public void getNodesMetadata(
+//            NodeMetaDataParameters nodeMetaDataParameters,
+//            MetaDataResultsFilter resultFilter,
+//            NodeMetaDataQueryCallback callback)
+//    {
+//        int maxResults = nodeMetaDataParameters.getMaxResults();
+//        NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
+//        boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
+//        boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
+//        boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());
+//        boolean includeAspects = (resultFilter == null ? true : resultFilter.getIncludeAspects());
+//        boolean includePaths = (resultFilter == null ? true : resultFilter.getIncludePaths());
+//        boolean includeNodeRef = (resultFilter == null ? true : resultFilter.getIncludeNodeRef());
+//        boolean includeAssociations = (resultFilter == null ? true : resultFilter.getIncludeAssociations());
+//        boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
+//        boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
+//        
+//        List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
+//
+//        for(Long nodeId : nodeIds)
+//        {
+//            Map<QName, Serializable> props = null;
+//            Set<QName> aspects = null;
+//            
+//            if (!nodeDAO.exists(nodeId))
+//            {
+//                // Deleted nodes have no metadata
+//                continue;
+//            }
+//
+//            NodeMetaDataEntity nodeMetaData = new NodeMetaDataEntity();
+//            nodeMetaData.setNodeId(nodeId);
+//
+//            Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
+//            nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
+//
+//            if(includeType)
+//            {
+//                QName nodeType = nodeDAO.getNodeType(nodeId);
+//                nodeMetaData.setNodeType(nodeType);
+//            }
+//
+//            if(includePaths || includeProperties)
+//            {
+//                props = nodeDAO.getNodeProperties(nodeId);
+//            }
+//            nodeMetaData.setProperties(props);
+//
+//            if(includePaths || includeAspects)
+//            {
+//                aspects = nodeDAO.getNodeAspects(nodeId);
+//            }
+//            nodeMetaData.setAspects(aspects);
+//
+//            // TODO paths may change during get i.e. node moved around in the graph
+//            if(includePaths)
+//            {
+//                Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
+//                List<Path> directPaths = nodeDAO.getPaths(pair, false);
+//
+//                Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
+//                for (Path path : directPaths)
+//                {
+//                    paths.add(new Pair<Path, QName>(path, null));
+//                }
+//                paths.addAll(categoryPaths);
+//
+//                nodeMetaData.setPaths(paths);
+//            }
+//
+//            if(includeNodeRef)
+//            {
+//                nodeMetaData.setNodeRef(pair.getSecond());
+//            }
+//        
+//            if(includeChildAssociations)
+//            {
+//                final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
+//                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
+//                {
+//                    @Override
+//                    public boolean preLoadNodes()
+//                    {
+//                        return false;
+//                    }
+//                    
+//                    @Override
+//                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+//                            Pair<Long, NodeRef> childNodePair)
+//                    {
+//                        childAssocs.add(childAssocPair.getSecond());
+//                        return true;
+//                    }
+//                    
+//                    @Override
+//                    public void done()
+//                    {
+//                    }
+//                });
+//                nodeMetaData.setChildAssocs(childAssocs);
+//            }
+//
+//            if(includeAssociations)
+//            {
+//                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
+//                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
+//                {
+//                    @Override
+//                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+//                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+//                    {
+//                        parentAssocs.add(childAssocPair.getSecond());
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public boolean preLoadNodes()
+//                    {
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public void done()
+//                    {
+//                    }
+//                });
+//                        
+//                // TODO non-child associations
+////                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
+////                Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId);
+////                
+////                nodeMetaData.setAssocs();
+//            }
+//            
+//            if(includeOwner)
+//            {
+//                // cached in OwnableService
+//                nodeMetaData.setOwner(ownableService.getOwner(pair.getSecond()));
+//            }
+// 
+//            rowHandler.processResult(nodeMetaData);
+//        }
+//    }
+//    
+//    /**
+//     * Class that passes results from a result entity into the client callback
+//     */
+//    protected class NodeQueryRowHandler
+//    {
+//        private final NodeQueryCallback callback;
+//        private boolean more;
+//
+//        private NodeQueryRowHandler(NodeQueryCallback callback)
+//        {
+//            this.callback = callback;
+//            this.more = true;
+//        }
+//        
+//        public void processResult(Node row)
+//        {
+//            if (!more)
+//            {
+//                // No more results required
+//                return;
+//            }
+//            
+//            more = callback.handleNode(row);
+//        }
+//    }
+//    
+//    /**
+//     * Class that passes results from a result entity into the client callback
+//     */
+//    protected class NodeMetaDataQueryRowHandler
+//    {
+//        private final NodeMetaDataQueryCallback callback;
+//        private boolean more;
+//
+//        private NodeMetaDataQueryRowHandler(NodeMetaDataQueryCallback callback)
+//        {
+//            this.callback = callback;
+//            this.more = true;
+//        }
+//        
+//        public void processResult(NodeMetaData row)
+//        {
+//            if (!more)
+//            {
+//                // No more results required
+//                return;
+//            }
+//            
+//            more = callback.handleNodeMetaData(row);
+//        }
+//    }
 }

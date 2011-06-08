@@ -139,6 +139,7 @@
              <ref bean="patch.db-V3.4-AVM-rename-dupes" />
              <ref bean="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
              <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
+             <ref bean="patch.db-V4.0-AclChangeSet" />
           </list>
        </property>
     </bean>

@@ -61,6 +61,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String DELETE_ACL_MEMBERS_BY_ACL = "alfresco.permissions.delete_AclMembersByAclId";
     
     private static final String INSERT_ACL_CHANGESET = "alfresco.permissions.insert.insert_AclChangeSet";
+    private static final String UPDATE_ACL_CHANGESET = "alfresco.permissions.update_AclChangeSet";
     private static final String SELECT_ACL_CHANGESET_BY_ID = "alfresco.permissions.select_AclChangeSetById";
     private static final String DELETE_ACL_CHANGESET = "alfresco.permissions.delete_AclChangeSet";
     
@@ -236,17 +237,15 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
     
     @Override
-    protected long createAclChangeSetEntity()
+    protected Long createAclChangeSetEntity()
     {
         AclChangeSetEntity entity = new AclChangeSetEntity();
-        entity.setVersion(0L);
         template.insert(INSERT_ACL_CHANGESET, entity);
-        Long id = entity.getId();
-        return (id != null ? id : -1);
+        return entity.getId();
     }
     
     @Override
-    protected AclChangeSetEntity getAclChangeSetEntity(long aclChangeSetEntityId)
+    protected AclChangeSetEntity getAclChangeSetEntity(Long aclChangeSetEntityId)
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclChangeSetEntityId);
@@ -255,7 +254,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
     
     @Override
-    protected int deleteAclChangeSetEntity(long aclChangeSetEntityId)
+    protected int deleteAclChangeSetEntity(Long aclChangeSetEntityId)
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", aclChangeSetEntityId);
@@ -263,6 +262,16 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         return template.delete(DELETE_ACL_CHANGESET, params);
     }
     
+    @Override
+    protected int updateChangeSetEntity(Long id, long commitTimeMs)
+    {
+        AclChangeSetEntity entity = new AclChangeSetEntity();
+        entity.setId(id);
+        entity.setCommitTimeMs(commitTimeMs);
+        
+        return template.update(UPDATE_ACL_CHANGESET, entity);
+    }
+
     @Override
     protected long createAceEntity(AceEntity entity)
     {

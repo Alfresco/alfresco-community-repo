@@ -1186,6 +1186,17 @@
             </list>
         </property>
     </bean>
+    
+    <!-- SOLR Tracking   -->
+    
+    <bean id="solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="ownableService" ref="ownableService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="solrDAO" ref="solrDAO" />
+    </bean>
 
     <!--                 -->
     <!-- Copy Service    -->

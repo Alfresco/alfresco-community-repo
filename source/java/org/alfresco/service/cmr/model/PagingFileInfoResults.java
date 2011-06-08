@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.domain.solr;
+package org.alfresco.service.cmr.model;
+
+import org.alfresco.service.cmr.repository.PagingResultsSPI;
 
 /**
- * Interface for SOLR transaction objects.
+ * TEMP
  * 
- * @since 4.0
+ * @deprecated for review (API is subject to change)
  */
-public interface Transaction
+public interface PagingFileInfoResults extends PagingResultsSPI<FileInfo>
 {
-    public Long getId();
-    public Long getCommitTimeMs();
-    public int getUpdates();
-    public int getDeletes();
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
- *
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  * This file is part of Alfresco
  *
  * Alfresco is free software: you can redistribute it and/or modify
@@ -42,6 +41,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -268,6 +268,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             else if (FileInfo.class.isAssignableFrom(returnedObject.getClass()))
             {
                 return decide(authentication, object, config, (FileInfo) returnedObject);
+            }
+            else if (PagingFileInfoResults.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Controlled object (paged permissions already applied) - access allowed for " + object.getClass().getName());
+                }
+                return returnedObject;
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -617,13 +625,21 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
            for (int i = 0; i < returnedObject.length(); i++)
            {
                long currentTimeMillis = System.currentTimeMillis();
-               if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
+               if (i >= maxChecks)
                {
+                   log.warn("maxChecks exceeded (" + maxChecks + ")", new Exception("Back Trace"));
                    filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
                            .getResultSetMetaData().getSearchParameters()));
                    break;
                }
-   
+               else if ((currentTimeMillis - startTimeMillis) > maxCheckTime)
+               {
+                   log.warn("maxCheckTime exceeded (" + (currentTimeMillis - startTimeMillis) + " milliseconds)", new Exception("Back Trace"));
+                   filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
+                           .getResultSetMetaData().getSearchParameters()));
+                   break;
+               }
+               
                // All permission checks must pass
                filteringResultSet.setIncluded(i, true);
    

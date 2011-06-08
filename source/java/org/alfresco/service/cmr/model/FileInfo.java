@@ -81,4 +81,9 @@ public interface FileInfo extends Serializable
      * @return Returns all the node properties
      */
     public Map<QName, Serializable> getProperties();
+    
+    /**
+     * @return Returns (sub-)type of folder or file
+     */
+    public QName getType();
 }

@@ -2525,8 +2525,8 @@
         <property name="id" value="patch.db-V3.4-RemovingLinkValidationMetadata" />
         <property name="description" value="patch.removingLinkValidationMetadata.description" />
         <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="4113" />
-        <property name="targetSchema" value="4114" />
+        <property name="fixesToSchema" value="5001" />
+        <property name="targetSchema" value="5002" />
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/link-validation-metadata-removing.sql</value>
         </property>
@@ -2535,10 +2535,9 @@
     <bean id="patch.mtFixAdminExistingTenants" class="org.alfresco.repo.admin.patch.impl.MultiTFixAdminExistingTenantsPatch" parent="basePatch" >
         <property name="id"><value>patch.mtFixAdminExistingTenants</value></property>
         <property name="description"><value>patch.mtFixAdminExistingTenants.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4114</value></property>
-        <property name="targetSchema"><value>4115</value></property>
-        
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5002" />
+        <property name="targetSchema" value="5003" />
         <property name="nodeDAO">
             <ref bean="nodeDAO"/>
         </property>
@@ -2559,9 +2558,9 @@
     <bean id="patch.fixUserQNames" class="org.alfresco.repo.admin.patch.impl.FixUserQNamesPatch" parent="basePatch">
         <property name="id"><value>patch.fixUserQNames</value></property>
         <property name="description"><value>patch.fixUserQNames.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4115</value></property>
-        <property name="targetSchema"><value>4116</value></property>
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5003" />
+        <property name="targetSchema" value="5004" />
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.fixNameCrcValues-2" />
@@ -2787,7 +2786,7 @@
             <ref bean="admNodeACLDAO"/>
         </property>
      </bean>
-   
+    
      <bean id="patch.db-V3.4-JBPM-FK-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-JBPM-FK-indexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -2809,7 +2808,7 @@
             <ref bean="spacesBootstrap" />
         </property>     
     </bean> 
-	
+    
     <bean id="patch.imap.clear.old.templates2" class="org.alfresco.repo.admin.patch.impl.ClearOldImapTemplatesPatch2" parent="basePatch" >
         <property name="id"><value>patch.imap.clear.old.messages</value></property>
         <property name="description"><value>patch.imap.clear.old.messages.description</value></property>
@@ -2838,5 +2837,16 @@
             </props>
         </property>
     </bean>
-       
+    
+    <bean id="patch.db-V4.0-AclChangeSet" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-AclChangeSet" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5007" />
+        <property name="targetSchema" value="5008" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/AclChangeSet-Tracking.sql</value>
+        </property>
+    </bean>
+    
 </beans>

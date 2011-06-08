@@ -159,16 +159,16 @@
     
     <sql id="insert_AclChangeSet_AutoIncrement">
         insert into alf_acl_change_set
-            (version)
+            (commit_time_ms)
         values
-            (#{version})
+            (null)
     </sql>
     
     <sql id="insert_AclChangeSet_Sequence">
         insert into alf_acl_change_set
-            (id, version)
+            (id, commit_time_ms)
         values
-            (#{id}, #{version})
+            (#{id}, null)
     </sql>
     
     <sql id="insert_Ace_AutoIncrement">
@@ -268,6 +268,16 @@
         <if test="version gt 0">
             and version = (#{version} - 1)
         </if>
+    </update>
+    
+    <!-- Update of the change set -->
+    <update id="update_AclChangeSet" parameterType="AclChangeSet">
+        update
+            alf_acl_change_set
+        set
+            commit_time_ms = #{commitTimeMs,jdbcType=BIGINT}
+        where
+            id = #{id}
     </update>
     
     <!-- Optimistic update of the acl member -->

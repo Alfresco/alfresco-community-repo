@@ -4,7 +4,7 @@
 
 <mapper namespace="alfresco.solr">
 
-    <resultMap id="result_Node" type="Node">
+    <resultMap id="result_Node" type="SOLRNode">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -20,7 +20,7 @@
         <result property="deletes" column="deletes" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
 
-    <select id="select_Txns" parameterType="SOLRTransactionParameters" resultMap="result_Transaction">
+    <select id="select_Txns" parameterType="SOLRTrackingParameters" resultMap="result_Transaction">
         select
             txn.id              as id,
             txn.commit_time_ms  as commit_time_ms,
@@ -30,7 +30,7 @@
                  alf_node node
              where
                  txn.id = node.transaction_id and
-                 node.node_deleted = 0
+                 node.node_deleted = #{false}
             ) as updates,
             (select
                  count(node.id)
@@ -38,25 +38,22 @@
                  alf_node node
              where
                  txn.id = node.transaction_id and
-                 node.node_deleted = 1
+                 node.node_deleted = #{true}
             ) as deletes
         from
             alf_transaction txn
         <where>
-           <if test="txnFromCommitTime != null">
-               <![CDATA[txn.commit_time_ms >= #{txnFromCommitTime}]]>
+           <if test="fromCommitTimeInclusive != null">
+               <![CDATA[txn.commit_time_ms >= #{fromCommitTimeInclusive}]]>
            </if>
-           <if test="minTxnId != null">
-               <![CDATA[and txn.id >= #{minTxnId}]]>
+           <if test="fromIdInclusive != null">
+               <![CDATA[and txn.id >= #{fromIdInclusive}]]>
            </if>
         </where>
         order by txn.commit_time_ms ASC, txn.id ASC
     </select>
 
-<!-- 
-TODO filter the from clauses depending on which where clauses have been selected
- -->
-    <select id="select_Txn_Nodes" parameterType="NodeParameters" resultMap="result_Node">
+    <select id="select_Txn_Nodes" parameterType="SOLRNodeParameters" resultMap="result_Node">
         select
             node.id             as id,
             node.node_deleted   as node_deleted,

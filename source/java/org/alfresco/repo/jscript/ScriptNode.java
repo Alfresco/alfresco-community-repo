@@ -59,8 +59,11 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.PagingFileInfoResults;
+import org.alfresco.service.cmr.model.PagingSortRequest;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -69,6 +72,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.PagingSortProp;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -135,6 +139,9 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     
     /** Cached values */
     protected NodeRef nodeRef;
+    
+    private FileInfo nodeInfo;
+    
     private String name;
     private QName type;
     protected String id;
@@ -167,6 +174,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
 
     protected ServiceRegistry services = null;
     private NodeService nodeService = null;
+    private FileFolderService fileFolderService = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private Boolean isLinkToDocument = null;
@@ -201,6 +209,13 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * @param services  The ServiceRegistry the Node can use to access services
      * @param scope     Root scope for this Node
      */
+    public ScriptNode(FileInfo nodeInfo, ServiceRegistry services, Scriptable scope)
+    {
+        this(nodeInfo.getNodeRef(), services, scope);
+        
+        this.nodeInfo = nodeInfo;
+    }
+    
     public ScriptNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         if (nodeRef == null)
@@ -217,6 +232,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.id = nodeRef.getId();
         this.services = services;
         this.nodeService = services.getNodeService();
+        this.fileFolderService = services.getFileFolderService();
         this.scope = scope;
     }
     
@@ -245,6 +261,11 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     public ScriptNode newInstance(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         return new ScriptNode(nodeRef, services, scope);
+    }
+    
+    public ScriptNode newInstance(FileInfo nodeInfo, ServiceRegistry services, Scriptable scope)
+    {
+        return new ScriptNode(nodeInfo, services, scope);
     }
     
     /**
@@ -533,33 +554,17 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public Scriptable childFileFolders(boolean files, boolean folders, Object ignoreTypes)
     {
+        return childFileFolders(files, folders, ignoreTypes, -1, -1, null, true).getResult();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int skipOffset, int maxItems, String sortProp, boolean ascending)
+    {
         Object[] results;
         
-        // Build a list of file and folder types
-        DictionaryService dd = services.getDictionaryService();
-        Set<QName> searchTypeQNames = new HashSet<QName>(16, 1.0f);
-        if (folders)
-        {
-            Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_FOLDER, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_FOLDER);
-        }
-        if (files)
-        {
-            Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_CONTENT, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
-            qnames = dd.getSubTypes(ContentModel.TYPE_LINK, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_LINK);
-        }
+        Set<QName> ignoreTypeQNames = new HashSet<QName>(5);
         
-        // Remove 'system' folder types
-        Collection<QName> qnames = dd.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-        searchTypeQNames.removeAll(qnames);
-        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
-        
-        // Add user defined types to ignore from the search
+        // Add user defined types to ignore
         if (ignoreTypes instanceof ScriptableObject)
         {
             Serializable types = getValueConverter().convertValueForRepo((ScriptableObject)ignoreTypes);
@@ -567,36 +572,41 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             {
                 for (Serializable typeObj : (List<Serializable>)types)
                 {
-                    searchTypeQNames.remove(createQName(typeObj.toString()));
+                    ignoreTypeQNames.add(createQName(typeObj.toString()));
                 }
             }
             else if (types instanceof String)
             {
-                searchTypeQNames.remove(createQName(types.toString()));
+                ignoreTypeQNames.add(createQName(types.toString()));
             }
         }
         else if (ignoreTypes instanceof String)
         {
-            searchTypeQNames.remove(createQName(ignoreTypes.toString()));
+            ignoreTypeQNames.add(createQName(ignoreTypes.toString()));
         }
         
-        // Perform the query and collect the results
-        if (searchTypeQNames.size() != 0)
+        List<PagingSortProp> sortProps = null; // note: null sortProps => get all in default sort order
+        if (sortProp != null)
         {
-            List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(this.nodeRef, searchTypeQNames);
-            results = new Object[childAssocRefs.size()];
-            for (int i=0; i<childAssocRefs.size(); i++)
-            {
-                ChildAssociationRef assocRef = childAssocRefs.get(i);
-                results[i] = newInstance(assocRef.getChildRef(), this.services, this.scope);
-            }
-        }
-        else
-        {
-            results = new Object[0];
+            sortProps = new ArrayList<PagingSortProp>(1);
+            sortProps.add(new PagingSortProp(createQName(sortProp), ascending));
         }
         
-        return Context.getCurrentContext().newArray(this.scope, results);
+        PagingSortRequest pageRequest = new PagingSortRequest(skipOffset, maxItems, true, sortProps);
+        
+        PagingFileInfoResults pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, ignoreTypeQNames, pageRequest);
+        
+        List<FileInfo> nodeInfos = pageOfNodeInfos.getResultsForPage();
+        
+        int size = nodeInfos.size();
+        results = new Object[size];
+        for (int i=0; i<size; i++)
+        {
+            FileInfo nodeInfo = nodeInfos.get(i);
+            results[i] = newInstance(nodeInfo, this.services, this.scope);
+        }
+        
+        return new ScriptPagingNodes(Context.getCurrentContext().newArray(this.scope, results), pageOfNodeInfos.getTotalCount(), pageOfNodeInfos.hasMore());
     }
     
     /**
@@ -749,7 +759,6 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * 
      * @return Array of child associations from this Node that match a specific object type.
      */
-    @SuppressWarnings("unchecked")
     public Scriptable getChildAssocsByType(String type)
     {
         // get the list of child assoc nodes for each association type
@@ -830,7 +839,16 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             // properties that have not been initialised - see AR-1673.
             this.properties = new ContentAwareScriptableQNameMap<String, Serializable>(this, this.services);
             
-            Map<QName, Serializable> props = this.nodeService.getProperties(this.nodeRef);
+            Map<QName, Serializable> props = null;
+            if (nodeInfo != null)
+            {
+                props = nodeInfo.getProperties();
+            }
+            else
+            {
+                props = this.nodeService.getProperties(this.nodeRef);
+            }
+            
             for (QName qname : props.keySet())
             {
                 Serializable propValue = props.get(qname);

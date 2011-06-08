@@ -42,6 +42,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.opencmis.dictionary.CMISAllowedActionEnum;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;

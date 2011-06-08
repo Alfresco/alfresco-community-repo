@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISActionEvaluator;
 import org.alfresco.cmis.CMISAllowedActionEnum;
@@ -39,6 +38,7 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;

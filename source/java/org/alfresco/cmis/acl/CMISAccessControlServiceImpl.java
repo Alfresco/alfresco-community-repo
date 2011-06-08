@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.cmis.CMISAccessControlEntry;
-import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlReport;
 import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISAclCapabilityEnum;
@@ -42,6 +41,7 @@ import org.alfresco.cmis.CMISPermissionDefinition;
 import org.alfresco.cmis.CMISPermissionMapping;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.mapping.CMISMapping;
+import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;

@@ -16,19 +16,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.cmis;
+package org.alfresco.repo.search.impl.lucene;
+
+import org.alfresco.repo.search.AbstractResultSetRowIterator;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
- * Enum label (mapping from Enum name to CMIS name)
- * 
- * @author davidc
+ * @author Andy
+ *
  */
-public interface EnumLabel
+public class SolrJSONResultSetRowIterator extends AbstractResultSetRowIterator
 {
+
     /**
-     * Gets the enum label (as defined by CMIS)
-     * 
-     * @return  enum label
+     * @param resultSet
      */
-    public String getLabel();
+    public SolrJSONResultSetRowIterator(ResultSet resultSet)
+    {
+        super(resultSet);
+        // TODO Auto-generated constructor stub
+    }
+
+    public ResultSetRow next()
+    {
+        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToNextPosition());
+    }
+
+    public ResultSetRow previous()
+    {
+        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToPreviousPosition());
+    }
 }

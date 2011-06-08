@@ -18,6 +18,9 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.opencmis.EnumFactory;
+import org.alfresco.opencmis.EnumLabel;
+
 /**
  * Enumeration of the <b>CMIS Change Type</b>. Possible values:<br />
  * <b>CREATED</b><br />

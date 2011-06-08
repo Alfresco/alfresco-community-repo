@@ -3,6 +3,32 @@
 
 <beans>
 
+    <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" >
+        <property name="serviceRegistry"           ref="ServiceRegistry" />
+        <property name="cmisConnector"             ref="CMISConnector" />
+        <property name="cmisMapping"               ref="OpenCMISMapping" />
+        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService" />
+    </bean>
+
+    <bean id="OpenCMISPropertyLuceneBuilderMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping" >
+        <property name="dictionaryService"         ref="dictionaryService" />
+        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService" />
+    </bean>
+
+    <bean id="OpenCMISDictionaryService" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" >
+        <property name="cmisMapping"                  ref="OpenCMISMapping" />
+        <property name="dictionaryService"            ref="dictionaryService" />
+        <property name="dictionaryDAO"                ref="dictionaryDAO" />
+        <property name="tenantService"                ref="tenantService" />
+        <property name="propertyLuceneBuilderMapping" ref="OpenCMISPropertyLuceneBuilderMapping" />
+        <property name="propertyAccessorMapping"      ref="OpenCMISPropertyAccessorMapping" />
+    </bean>
+
+    <bean id="OpenCMISMapping" class="org.alfresco.opencmis.mapping.CMISMapping" >
+        <property name="dictionaryService"      ref="dictionaryService" />
+        <property name="namespaceService"       ref="namespaceService" />
+    </bean>
+
     <bean id="CMISLifecycleBean" class="org.alfresco.opencmis.CMISLifecycleBean">
         <property name="cmisServiceFactory"     ref="CMISServiceFactory" />
     </bean>
@@ -54,20 +80,6 @@
         <property name="namespaceService"       ref="namespaceService" />
         <property name="searchService"          ref="SearchService" />
     </bean>
-
-    <bean id="OpenCMISDictionaryService" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" >
-        <property name="dictionaryService"      ref="dictionaryService" />
-        <property name="dictionaryDAO"          ref="dictionaryDAO" />
-        <property name="OpenCMISMapping"        ref="OpenCMISMapping" />
-        <property name="tenantService"          ref="tenantService" />
-        <property name="serviceRegistry"        ref="ServiceRegistry" />
-    </bean>
-
-    <bean id="OpenCMISMapping" class="org.alfresco.opencmis.mapping.CMISMapping" >
-        <property name="serviceRegistry"        ref="ServiceRegistry" />
-        <property name="cmisConnector"          ref="CMISConnector" />
-    </bean>
-
 
     <bean id="OpenCMISQueryService" class="org.alfresco.opencmis.search.CMISQueryServiceImpl" >
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />   

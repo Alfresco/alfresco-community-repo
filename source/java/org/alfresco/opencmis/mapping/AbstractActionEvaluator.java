@@ -18,7 +18,7 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.opencmis.CMISActionEvaluator;
+import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 

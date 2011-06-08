@@ -453,5 +453,4 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         return propDef.getCardinality() == CMISCardinalityEnum.MULTI_VALUED;
     }
     
-    
 }

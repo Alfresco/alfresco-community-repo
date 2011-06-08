@@ -18,6 +18,9 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.opencmis.EnumFactory;
+import org.alfresco.opencmis.EnumLabel;
+
 /**
  * CMIS Updatability Enum
  * 

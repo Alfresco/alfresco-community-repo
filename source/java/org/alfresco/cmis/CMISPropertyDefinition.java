@@ -20,6 +20,9 @@ package org.alfresco.cmis;
 
 import java.util.Collection;
 
+import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
+import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
+
 
 /**
  * CMIS Property Definition
@@ -159,5 +162,4 @@ public interface CMISPropertyDefinition
      * @return
      */
     public CMISPropertyLuceneBuilder getPropertyLuceneBuilder();
-
 }

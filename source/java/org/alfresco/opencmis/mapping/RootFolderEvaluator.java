@@ -18,8 +18,8 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.opencmis.CMISActionEvaluator;
 import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 

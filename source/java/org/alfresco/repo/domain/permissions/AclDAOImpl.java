@@ -44,7 +44,6 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
@@ -66,20 +65,11 @@ public class AclDAOImpl implements AclDAO
 {
     private static Log logger = LogFactory.getLog(AclDAOImpl.class);
 
-    /** Access to QName entities */
     private QNameDAO qnameDAO;
-
-    /** Access to ACL entities */
     private AclCrudDAO aclCrudDAO;
-
-    /** Access to Nodes entities */
     private NodeDAO nodeDAO;
-
     private TenantService tenantService;
-
-    /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
-
     private SimpleCache<Serializable, Set<String>> readersCache;
 
     private enum WriteMode
@@ -152,17 +142,19 @@ public class AclDAOImpl implements AclDAO
         this.readersCache = readersCache;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#createAccessControlList()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Long createAccessControlList()
     {
         return createAccessControlList(getDefaultProperties()).getId();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getDefaultProperties()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public AccessControlListProperties getDefaultProperties()
     {
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
@@ -172,9 +164,10 @@ public class AclDAOImpl implements AclDAO
         return properties;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Acl createAccessControlList(AccessControlListProperties properties)
     {
         if (properties == null)
@@ -215,9 +208,10 @@ public class AclDAOImpl implements AclDAO
         return createAccessControlList(properties, null, null);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties, java.util.List, java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Acl createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited)
     {
         if (properties == null)
@@ -347,7 +341,10 @@ public class AclDAOImpl implements AclDAO
         return createdAcl;
     }
 
-    private void getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<Ace> toAdd, Long inheritsFrom, boolean cascade,
+    private void getWritable(
+            final Long id, final Long parent,
+            List<? extends AccessControlEntry> exclude, List<Ace> toAdd,
+            Long inheritsFrom, boolean cascade,
             List<AclChange> changes, WriteMode mode)
     {
         List<Ace> inherited = null;
@@ -392,18 +389,12 @@ public class AclDAOImpl implements AclDAO
     /**
      * Make a whole tree of ACLs copy on write if required Includes adding and removing ACEs which can be optimised
      * slightly for copy on write (no need to add and then remove)
-     * 
-     * @param id
-     * @param parent
-     * @param exclude
-     * @param toAdd
-     * @param inheritsFrom
-     * @param cascade
-     * @param depth
-     * @param changes
      */
-    private void getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<Ace> toAdd, Long inheritsFrom,
-            List<Ace> inherited, List<Integer> positions, boolean cascade, int depth, List<AclChange> changes, WriteMode mode, boolean requiresVersion)
+    private void getWritable(
+            final Long id, final Long parent,
+            List<? extends AccessControlEntry> exclude, List<Ace> toAdd, Long inheritsFrom,
+            List<Ace> inherited, List<Integer> positions,
+            boolean cascade, int depth, List<AclChange> changes, WriteMode mode, boolean requiresVersion)
     {
         AclChange current = getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, depth, mode, requiresVersion);
         changes.add(current);
@@ -430,16 +421,11 @@ public class AclDAOImpl implements AclDAO
 
     /**
      * COW for an individual ACL
-     * 
-     * @param id
-     * @param parent
-     * @param exclude
-     * @param toAdd
-     * @param inheritsFrom
-     * @param depth
      * @return - an AclChange
      */
-    private AclChange getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<Ace> acesToAdd, Long inheritsFrom,
+    private AclChange getWritable(
+            final Long id, final Long parent,
+            List<? extends AccessControlEntry> exclude, List<Ace> acesToAdd, Long inheritsFrom,
             List<Ace> inherited, List<Integer> positions, int depth, WriteMode mode, boolean requiresVersion)
     {
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
@@ -630,10 +616,6 @@ public class AclDAOImpl implements AclDAO
 
     /**
      * Helper to remove ACEs from an ACL
-     * 
-     * @param id
-     * @param exclude
-     * @param depth
      */
     private void removeAcesFromAcl(final Long id, final List<? extends AccessControlEntry> exclude, final int depth)
     {
@@ -747,9 +729,10 @@ public class AclDAOImpl implements AclDAO
         addInherited(acl, inherited, positions, depth);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAccessControlEntries(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> deleteAccessControlEntries(final String authority)
     {
         List<AclChange> acls = new ArrayList<AclChange>();
@@ -859,9 +842,10 @@ public class AclDAOImpl implements AclDAO
         return acls;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAclForNode(long, boolean)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void deleteAclForNode(long aclId, boolean isAVMNode)
     {
         Acl dbAcl = getAcl(aclId);
@@ -901,9 +885,10 @@ public class AclDAOImpl implements AclDAO
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAccessControlList(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> deleteAccessControlList(final Long id)
     {
         if (logger.isDebugEnabled())
@@ -1010,6 +995,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<AclChange> deleteLocalAccessControlEntries(Long id)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1023,6 +1009,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<AclChange> deleteInheritedAccessControlEntries(Long id)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1036,6 +1023,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<AclChange> deleteAccessControlEntries(Long id, AccessControlEntry pattern)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1047,6 +1035,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public Acl getAcl(Long id)
     {
         return aclCrudDAO.getAcl(id);
@@ -1055,6 +1044,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public AccessControlListProperties getAccessControlListProperties(Long id)
     {
         ParameterCheck.mandatory("id", id);                 // Prevent unboxing failures
@@ -1064,6 +1054,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * {@inheritDoc}
      */
+    @Override
     public AccessControlList getAccessControlList(Long id)
     {
         AccessControlList acl = aclCache.get(id);
@@ -1132,9 +1123,10 @@ public class AclDAOImpl implements AclDAO
         return acl;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getInheritedAccessControlList(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Long getInheritedAccessControlList(Long id)
     {
         aclCache.remove(id);
@@ -1173,9 +1165,10 @@ public class AclDAOImpl implements AclDAO
         return inheritedAclId;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#mergeInheritedAccessControlList(java.lang.Long, java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target)
     {
         // TODO: For now we do a replace - we could do an insert if both inherit from the same acl
@@ -1268,9 +1261,10 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#setAccessControlEntry(java.lang.Long, org.alfresco.repo.security.permissions.AccessControlEntry)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> setAccessControlEntry(final Long id, final AccessControlEntry ace)
     {
         Acl target = aclCrudDAO.getAcl(id);
@@ -1316,9 +1310,10 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#enableInheritance(java.lang.Long, java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> enableInheritance(Long id, Long parent)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1364,9 +1359,10 @@ public class AclDAOImpl implements AclDAO
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#disableInheritance(java.lang.Long, boolean)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl)
     {
         aclCache.remove(id);
@@ -1527,9 +1523,10 @@ public class AclDAOImpl implements AclDAO
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getDbAccessControlListCopy(java.lang.Long, java.lang.Long, org.alfresco.repo.security.permissions.ACLCopyMode)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Acl getAclCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
         return getAclEntityCopy(toCopy, toInheritFrom, mode);
@@ -1545,16 +1542,28 @@ public class AclDAOImpl implements AclDAO
         return aclCrudDAO.getAcl(id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults)
     {
         return aclCrudDAO.getAVMNodesByAcl(aclEntityId, maxResults);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults)
     {
         return aclCrudDAO.getADMNodesByAcl(aclEntityId, maxResults);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Acl createLayeredAcl(Long indirectedAcl)
     {
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
@@ -1654,21 +1663,6 @@ public class AclDAOImpl implements AclDAO
             {
                 logger.debug("New change set = " + changeSetId);
             }
-        }
-        else
-        {
-            /*
-            AclChangeSetEntity changeSet = aclCrudDAO.getAclChangeSet((Long)changeSetId);
-            if (changeSet == null)
-            {
-                throw new AlfrescoRuntimeException("Unexpected: missing change set "+changeSetId);
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Existing change set = " + changeSetId);
-            }
-             */
         }
         return changeSetId;
     }
@@ -1846,39 +1840,30 @@ public class AclDAOImpl implements AclDAO
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#renameAuthority(java.lang.String, java.lang.String)
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void renameAuthority(String before, String after)
     {
         aclCrudDAO.renameAuthority(before, after);
         aclCache.clear();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#fixSharedAcl(java.lang.Long, java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void fixSharedAcl(Long shared, Long defining)
     {
-        Acl definingAcl = null;
-        if (defining != null)
+        if (defining == null)
         {
-            definingAcl = aclCrudDAO.getAcl(defining);
-        }
-        else
-        {
-            throw new IllegalStateException("Null defining acl");
+            throw new IllegalArgumentException("Null defining acl");
         }
         
-        Acl sharedAcl = null;
-        if (shared != null)
+        if (shared == null)
         {
-            sharedAcl = aclCrudDAO.getAcl(defining);
-        }
-        else
-        {
-            throw new IllegalStateException("Null shared acl");
+            throw new IllegalArgumentException("Null shared acl");
         }
         List<AclChange> changes = new ArrayList<AclChange>();
         getWritable(shared, defining, null, null, defining, true, changes, WriteMode.CHANGE_INHERITED);

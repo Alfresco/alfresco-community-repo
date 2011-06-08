@@ -50,7 +50,6 @@ public abstract class AbstractDataExtractor implements DataExtractor, Initializi
 
     /**
      * Set the registry with which to register
-     * @param registry
      */
     public void setRegistry(NamedObjectRegistry<DataExtractor> registry)
     {

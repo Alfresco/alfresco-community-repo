@@ -614,6 +614,22 @@
 			</list>
         </property>
     </bean>
+    
+    <bean id="solr.fts.alfresco" class="org.alfresco.repo.search.impl.lucene.SolrAlfrescoFTSQueryLanguage" >
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
 
     <bean id="abstractLuceneIndexerAndSearcherFactory" abstract="true">
         <property name="avmSnapShotTriggeredIndexingMethodInterceptor">

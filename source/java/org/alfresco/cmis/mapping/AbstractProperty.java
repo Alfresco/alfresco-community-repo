@@ -21,8 +21,8 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.alfresco.cmis.CMISPropertyAccessor;
-import org.alfresco.cmis.CMISPropertyLuceneBuilder;
+import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
+import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;

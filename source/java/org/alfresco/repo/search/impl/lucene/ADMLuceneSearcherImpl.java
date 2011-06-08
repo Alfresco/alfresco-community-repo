@@ -44,6 +44,7 @@ import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;

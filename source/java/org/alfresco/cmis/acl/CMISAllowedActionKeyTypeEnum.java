@@ -18,8 +18,8 @@
  */
 package org.alfresco.cmis.acl;
 
-import org.alfresco.cmis.EnumFactory;
-import org.alfresco.cmis.EnumLabel;
+import org.alfresco.opencmis.EnumFactory;
+import org.alfresco.opencmis.EnumLabel;
 
 /**
  * Part two of the allowable action key for the permission mappings

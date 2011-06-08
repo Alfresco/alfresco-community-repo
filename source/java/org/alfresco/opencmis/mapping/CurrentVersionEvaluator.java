@@ -21,7 +21,7 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.CMISActionEvaluator;
+import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;

@@ -18,6 +18,8 @@
  */
 package org.alfresco.cmis;
 
+import org.alfresco.opencmis.EnumFactory;
+
 /**
  * Specifies which types of permissions are supported..
  * 

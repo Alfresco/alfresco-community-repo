@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.opencmis.EnumFactory;
+import org.alfresco.opencmis.EnumLabel;
+
 /**
  * CMIS Allowed Action Enum
  * 

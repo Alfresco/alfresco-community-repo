@@ -669,7 +669,7 @@ public class ModuleManagementTool
                             outputMessage("   Title:        " + moduleDetails.getTitle(), true);
                             outputMessage("   Version:      " + moduleDetails.getVersion(), true);
                             outputMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
-                            outputMessage("   Desription:   " + moduleDetails.getDescription(), true); 
+                            outputMessage("   Description:   " + moduleDetails.getDescription(), true); 
                         }
                     }
                 }

@@ -195,7 +195,6 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
                 logger.debug(" Id: " + propDef.getPropertyId().getId());
                 logger.debug(" Owning Type: " + propDef.getOwningType().getTypeId());
                 logger.debug(" Property Accessor: " + propDef.getPropertyAccessor() + " , mappedProperty=" + propDef.getPropertyAccessor().getMappedProperty());
-                logger.debug(" Property Lucene Builder: " + propDef.getPropertyLuceneBuilder());
             }
         }
 

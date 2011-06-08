@@ -29,7 +29,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -45,10 +44,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.version.VersionModel;
@@ -437,9 +437,14 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                 while (t.hasMoreTokens() && result != null)
                 {
                     String name = t.nextToken();
-                    List<ChildAssociationRef> results = this.nodeService.getChildrenByName(
-                            result, ContentModel.ASSOC_CONTAINS, Collections.singletonList(name));
-                    result = (results.size() > 0 ? results.get(0).getChildRef() : null);
+                    try
+                    {
+                        result = this.nodeService.getChildByName(result, ContentModel.ASSOC_CONTAINS, name);
+                    }
+                    catch (AccessDeniedException ade)
+                    {
+                        result = null;
+                    }
                 }
             }
             

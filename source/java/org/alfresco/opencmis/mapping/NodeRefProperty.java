@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class NodeRefProperty extends AbstractVersioningProperty
 {
-    public static final String NodeRefPropertyId = "alf:nodeRef";
+    public static final String NodeRefPropertyId = "alfcmis:nodeRef";
 
     /**
      * Construct

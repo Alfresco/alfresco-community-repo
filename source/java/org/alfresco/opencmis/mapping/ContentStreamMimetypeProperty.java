@@ -34,7 +34,7 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
  * 
  * @author andyh
  */
-public class ContentStreamMimetypeProperty extends AbstractSimpleProperty
+public class ContentStreamMimetypeProperty extends AbstractProperty
 {
     /**
      * Construct

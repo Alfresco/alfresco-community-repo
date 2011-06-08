@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo.LockWork;

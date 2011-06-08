@@ -466,7 +466,7 @@
 			join alf_node node on node.acl_id = acl.id
 			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
 			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #trueOrFalse#
+			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse}
       	where 	   
         (
                     childAcl.id is not null
@@ -580,24 +580,28 @@
             )
     </update>
     
+    <update id="drop_oldAttrAlfListAttributeEntries">
+        drop table alf_list_attribute_entries
+    </update>
+    
+    <update id="drop_oldAttrAlfMapAttributeEntries">
+        drop table alf_map_attribute_entries
+    </update>
+    
+    <update id="drop_oldAttrAlfGlobalAttributes">
+        drop table alf_global_attributes
+    </update>
+    
+    <update id="drop_oldAttrAlfAttributes">
+        drop table alf_attributes
+    </update>
+    
+    <update id="drop_oldAttrAlfAttributes_seq">
+        drop sequence alf_attributes_seq
+    </update>
+    
     <!--                -->
     <!-- Deletes        -->
     <!--                -->
-    
-    <delete id="delete_oldAttrAlfListAttributeEntries">
-        delete from alf_list_attribute_entries
-    </delete>
-    
-    <delete id="delete_oldAttrAlfMapAttributeEntries">
-        delete from alf_map_attribute_entries
-    </delete>
-    
-    <delete id="delete_oldAttrAlfGlobalAttributes">
-        delete from alf_global_attributes
-    </delete>
-    
-    <delete id="delete_oldAttrAlfAttributes">
-        delete from alf_attributes
-    </delete>
     
 </mapper>

@@ -20,12 +20,10 @@
             </bean>
         </property>
    </bean>
-   
    <bean id="controlDAO.org.hibernate.dialect.Dialect"
          class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
    </bean>
-   
    <bean id="controlDAO.org.hibernate.dialect.PostgreSQLDialect"
          class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl$PostgreSQL"
          parent="controlDAO.org.hibernate.dialect.Dialect">
@@ -43,12 +41,32 @@
       <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
    </bean>
    
-   <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
+   <bean id="patchDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>patchDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.patch.PatchDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.hibernate.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="patchDAOBase" abstract="true">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
    </bean>
+   <bean id="patchDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl" parent="patchDAOBase" />
+   <bean id="patchDAO.org.hibernate.dialect.PostgreSQLDialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl$PostgreSQL" parent="patchDAOBase" />
+   <bean id="patchDAO.org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl$Oracle" parent="patchDAOBase" />
    
    <bean id="appliedPatchDAO" class="org.alfresco.repo.domain.patch.ibatis.AppliedPatchDAOImpl">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>

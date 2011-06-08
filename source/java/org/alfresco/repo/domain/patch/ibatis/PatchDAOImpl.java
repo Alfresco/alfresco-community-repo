@@ -89,11 +89,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_OLD_ATTR_CHAINING_URS = "alfresco.patch.select_oldAttrChainingURS";
     private static final String SELECT_OLD_ATTR_CUSTOM_NAMES = "alfresco.patch.select_oldAttrCustomNames";
     
-    private static final String  DELETE_OLD_ATTR_LIST = "alfresco.patch.delete_oldAttrAlfListAttributeEntries";
-    private static final String  DELETE_OLD_ATTR_MAP = "alfresco.patch.delete_oldAttrAlfMapAttributeEntries";
-    private static final String  DELETE_OLD_ATTR_GLOBAL = "alfresco.patch.delete_oldAttrAlfGlobalAttributes";
-    private static final String  DELETE_OLD_ATTR = "alfresco.patch.delete_oldAttrAlfAttributes";
-
+    private static final String DROP_OLD_ATTR_LIST = "alfresco.patch.drop_oldAttrAlfListAttributeEntries";
+    private static final String DROP_OLD_ATTR_MAP = "alfresco.patch.drop_oldAttrAlfMapAttributeEntries";
+    private static final String DROP_OLD_ATTR_GLOBAL = "alfresco.patch.drop_oldAttrAlfGlobalAttributes";
+    private static final String DROP_OLD_ATTR = "alfresco.patch.drop_oldAttrAlfAttributes";
+    private static final String DROP_OLD_ATTR_SEQ = "alfresco.patch.drop_oldAttrAlfAttributes_seq";
+    
     private static final String SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT = "alfresco.patch.select_aclsThatInheritFromNonPrimaryParent";
     private static final String SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET = "alfresco.patch.select_aclsThatInheritWithInheritanceUnset";
     private static final String SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
@@ -102,7 +103,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
    
     private LocaleDAO localeDAO;
     
-    private SqlSessionTemplate template;
+    protected SqlSessionTemplate template;
     
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
@@ -538,23 +539,46 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     }
     
     @Override
-    protected void deleteAllOldAttrsImpl()
+    public void migrateOldAttrDropTables()
     {
-        int deleted = 0;
-        
-        deleted = template.delete(DELETE_OLD_ATTR_LIST);
-        logger.info("Deleted "+deleted+" rows from alf_list_attribute_entries");
-        
-        deleted = template.delete(DELETE_OLD_ATTR_MAP);
-        logger.info("Deleted "+deleted+" rows from alf_map_attribute_entries");
-        
-        deleted = template.delete(DELETE_OLD_ATTR_GLOBAL);
-        logger.info("Deleted "+deleted+" rows from alf_global_attributes");
-        
-        deleted = template.delete(DELETE_OLD_ATTR);
-        logger.info("Deleted "+deleted+" rows from alf_attributes");
+        template.update(DROP_OLD_ATTR_LIST);
+        template.update(DROP_OLD_ATTR_MAP);
+        template.update(DROP_OLD_ATTR_GLOBAL);
+        template.update(DROP_OLD_ATTR);
     }
 
+    /**
+     * PostgreSQL-specific DAO
+     * 
+     * @author Derek Hulley
+     * @since 4.0
+     */
+    public static class PostgreSQL extends PatchDAOImpl
+    {
+        @Override
+        public void migrateOldAttrDropTables()
+        {
+            super.migrateOldAttrDropTables();
+            template.update(DROP_OLD_ATTR_SEQ);
+        }
+    }
+    
+    /**
+     * Oracle-specific DAO
+     * 
+     * @author Derek Hulley
+     * @since 4.0
+     */
+    public static class Oracle extends PatchDAOImpl
+    {
+        @Override
+        public void migrateOldAttrDropTables()
+        {
+            super.migrateOldAttrDropTables();
+            template.update(DROP_OLD_ATTR_SEQ);
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent()

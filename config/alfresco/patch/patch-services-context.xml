@@ -2272,7 +2272,6 @@
             </list>
         </property>
     </bean>
-    
     <bean id="patch.migrateAttrAVMLocks" class="org.alfresco.repo.admin.patch.impl.MigrateAttrAVMLocksPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrAVMLocks</value></property>
         <property name="description"><value>patch.migrateAttrAVMLocks.description</value></property>
@@ -2293,7 +2292,6 @@
             </list>
         </property>
     </bean>
-    
     <bean id="patch.migrateAttrPropBackedBeans" class="org.alfresco.repo.admin.patch.impl.MigrateAttrPropBackedBeanPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrPropBackedBeans</value></property>
         <property name="description"><value>patch.migrateAttrPropBackedBeans.description</value></property>
@@ -2313,7 +2311,6 @@
             </list>
         </property>
     </bean>
-    
     <bean id="patch.migrateAttrChainingURS" class="org.alfresco.repo.admin.patch.impl.MigrateAttrChainingURSPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrChainingURS</value></property>
         <property name="description"><value>patch.migrateAttrChainingURS.description</value></property>
@@ -2333,13 +2330,19 @@
             </list>
         </property>
     </bean>
-    
-    <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.MigrateAttrDeletePatch" parent="basePatch">
+    <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrDelete</value></property>
         <property name="description"><value>patch.migrateAttrDelete.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4106</value></property>
         <property name="targetSchema"><value>4107</value></property>
+    </bean>
+    <bean id="patch.migrateAttrDropOldTables" class="org.alfresco.repo.admin.patch.impl.MigrateAttrDropOldTablesPatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrDropOldTables</value></property>
+        <property name="description"><value>patch.migrateAttrDropOldTables.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5006</value></property>
+        <property name="targetSchema"><value>5007</value></property>
         <property name="applyToTenants"><value>false</value></property>
         <property name="dependsOn" >
             <list>
@@ -2579,12 +2582,11 @@
         <property name="id"><value>patch.db-V3.4-AVM-rename-dupes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4200</value></property>
-        <property name="targetSchema"><value>4201</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-rename-dupes.sql</value>
         </property>
-        
         <property name="alternatives" >
             <list>
                 <ref bean="patch.eliminateDuplicates" />
@@ -2596,8 +2598,8 @@
         <property name="id"><value>patch.activitiesEmailTemplate</value></property>
         <property name="description"><value>patch.activitiesEmailTemplate.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4300</value></property>
-        <property name="targetSchema"><value>4301</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />
@@ -2622,8 +2624,8 @@
         <property name="id"><value>patch.newUserEmailTemplates</value></property>
         <property name="description"><value>patch.newUserEmailTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4301</value></property>
-        <property name="targetSchema"><value>4302</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -2640,8 +2642,8 @@
         <property name="id"><value>patch.inviteEmailTemplates</value></property>
         <property name="description"><value>patch.inviteEmailTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4301</value></property>
-        <property name="targetSchema"><value>4302</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -2658,8 +2660,8 @@
         <property name="id"><value>patch.htmlNotificationMailTemplates</value></property>
         <property name="description"><value>patch.htmlNotificationMailTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4301</value></property>
-        <property name="targetSchema"><value>4302</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -2676,8 +2678,8 @@
         <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
         <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4302</value></property>
-        <property name="targetSchema"><value>4303</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -2759,8 +2761,8 @@
         <property name="id" value="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
         <property name="description" value="patch.varcharFieldSizesQuadrupleIncreasing.description" />
         <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="4303" />
-        <property name="targetSchema" value="4304" />
+        <property name="fixesToSchema" value="5005" />
+        <property name="targetSchema" value="5006" />
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/varchar-field-sizes-quadruple-increasing.sql</value>
         </property>
@@ -2770,9 +2772,8 @@
         <property name="id"><value>patch.fixAclInheritance</value></property>
         <property name="description"><value>patch.fixAclInheritance.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4304</value></property>
-        <property name="targetSchema"><value>4305</value></property>
-        <!-- helper beans -->
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="patchDAO">
             <ref bean="patchDAO" />
         </property>
@@ -2791,8 +2792,8 @@
         <property name="id"><value>patch.db-V3.4-JBPM-FK-indexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4305</value></property>
-        <property name="targetSchema"><value>4306</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
         </property>
@@ -2802,8 +2803,8 @@
         <property name="id"><value>patch.imap.clear.old.messages</value></property>
         <property name="description"><value>patch.imap.clear.old.messages.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4202</value></property>
-        <property name="targetSchema"><value>4203</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>     
@@ -2813,8 +2814,8 @@
         <property name="id"><value>patch.imap.clear.old.messages</value></property>
         <property name="description"><value>patch.imap.clear.old.messages.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5000</value></property>
-        <property name="targetSchema"><value>5001</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>     
@@ -2824,8 +2825,8 @@
         <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
         <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5000</value></property>
-        <property name="targetSchema"><value>5001</value></property>
+        <property name="fixesToSchema"><value>5005</value></property>
+        <property name="targetSchema"><value>5006</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>

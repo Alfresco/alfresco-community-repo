@@ -270,61 +270,6 @@ CREATE TABLE alf_locale
 );
 CREATE UNIQUE INDEX locale_str ON alf_locale (locale_str);
 
-CREATE SEQUENCE alf_attributes_seq START WITH 1 INCREMENT BY 1;
-CREATE TABLE alf_attributes
-(
-    id INT8 NOT NULL,
-    type VARCHAR(1) NOT NULL,
-    version INT8 NOT NULL,
-    acl_id INT8,
-    bool_value BOOL,
-    byte_value INT2,
-    short_value INT4,
-    int_value INT4,
-    long_value INT8,
-    float_value FLOAT4,
-    double_value FLOAT8,
-    string_value VARCHAR(1024),
-    serializable_value BYTEA,
-    PRIMARY KEY (id),    
-    CONSTRAINT fk_alf_attr_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id)
-);
-CREATE INDEX fk_alf_attr_acl ON alf_attributes (acl_id);
-
-CREATE TABLE alf_global_attributes
-(
-    name VARCHAR(160) NOT NULL,
-    attribute INT8,
-    PRIMARY KEY (name),   
-    CONSTRAINT fk_alf_gatt_att FOREIGN KEY (attribute) REFERENCES alf_attributes (id)
-);
-CREATE UNIQUE INDEX attribute ON alf_global_attributes (attribute);
-CREATE INDEX fk_alf_gatt_att ON alf_global_attributes (attribute);
-
-CREATE TABLE alf_list_attribute_entries
-(
-    list_id INT8 NOT NULL,
-    mindex INT4 NOT NULL,
-    attribute_id INT8,
-    PRIMARY KEY (list_id, mindex),
-    CONSTRAINT fk_alf_lent_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id),
-    CONSTRAINT fk_alf_lent_latt FOREIGN KEY (list_id) REFERENCES alf_attributes (id)
-);
-CREATE INDEX fk_alf_lent_att ON alf_list_attribute_entries (attribute_id);
-CREATE INDEX fk_alf_lent_latt ON alf_list_attribute_entries (list_id);
-
-CREATE TABLE alf_map_attribute_entries
-(
-    map_id INT8 NOT NULL,
-    mkey VARCHAR(160) NOT NULL,
-    attribute_id INT8,
-    PRIMARY KEY (map_id, mkey),
-    CONSTRAINT fk_alf_matt_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id),
-    CONSTRAINT fk_alf_matt_matt FOREIGN KEY (map_id) REFERENCES alf_attributes (id)
-);
-CREATE INDEX fk_alf_matt_matt ON alf_map_attribute_entries (map_id);
-CREATE INDEX fk_alf_matt_att ON alf_map_attribute_entries (attribute_id);
-
 CREATE TABLE alf_node_aspects
 (
     node_id INT8 NOT NULL,

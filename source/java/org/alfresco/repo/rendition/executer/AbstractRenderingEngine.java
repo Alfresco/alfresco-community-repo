@@ -36,6 +36,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.locator.SelfNodeLocator;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.RenderingEngineDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
@@ -47,7 +48,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.rendition.NodeLocator;
 import org.alfresco.service.cmr.rendition.RenderCallback;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeLocator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceException;
@@ -189,14 +190,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 	/**
 	 * Default {@link NodeLocator} simply returns the source node.
 	 */
-	private final static NodeLocator defaultNodeLocator = new NodeLocator()
-	{
-	    @Override
-        public NodeRef getNode(NodeRef sourceNode, Map<String, Serializable> params)
-	    {
-	        return sourceNode;
-	    }
-	};
+	private final static NodeLocator defaultNodeLocator = new SelfNodeLocator();
 	
 	/*
 	 * Injected beans

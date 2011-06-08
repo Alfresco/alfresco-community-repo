@@ -4,6 +4,8 @@
 
 <mapper namespace="alfresco.activities">
 
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+   
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
@@ -53,7 +55,7 @@
     
     <sql id="insert_ActivityFeedControl_Sequence">
         insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)
-        values (#{id}, #{feedUserId}, #{siteNetwork}, #{appTool}, #{lastModified})
+        values (#{id}, #{feedUserId}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{lastModified})
     </sql>
     
     <sql id="insert_ActivityFeed_AutoIncrement">
@@ -63,7 +65,7 @@
     
     <sql id="insert_ActivityFeed_Sequence">
         insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
-        values (#{id}, #{activityType}, #{activitySummary}, #{activitySummaryFormat}, #{feedUserId}, #{postUserId}, #{postDate}, #{postId}, #{siteNetwork}, #{appTool}, #{feedDate})
+        values (#{id}, #{activityType}, #{activitySummary,jdbcType=VARCHAR}, #{activitySummaryFormat,jdbcType=VARCHAR}, #{feedUserId,jdbcType=VARCHAR}, #{postUserId}, #{postDate}, #{postId,jdbcType=BIGINT}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{feedDate})
     </sql>
     
     <sql id="insert_ActivityPost_AutoIncrement">
@@ -73,7 +75,7 @@
     
     <sql id="insert_ActivityPost_Sequence">
         insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
-      values (#{id}, #{status}, #{activityData}, #{userId}, #{postDate}, #{activityType}, #{siteNetwork}, #{appTool}, #{jobTaskNode}, #{lastModified})
+        values (#{id}, #{status}, #{activityData}, #{userId}, #{postDate}, #{activityType}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{jobTaskNode}, #{lastModified})
     </sql>
     
     <!--                -->
@@ -307,7 +309,7 @@
    
    <update id="update_activity_post_data" parameterType="ActivityPost">
       <![CDATA[ 
-      update alf_activity_post set status = #{status}, activity_data=#{activityData}, site_network=#{siteNetwork}, last_modified=#{lastModified}
+      update alf_activity_post set status = #{status}, activity_data=#{activityData}, site_network=#{siteNetwork,jdbcType=VARCHAR}, last_modified=#{lastModified}
       where sequence_id = #{id}
       and status <> #{status}
       ]]>

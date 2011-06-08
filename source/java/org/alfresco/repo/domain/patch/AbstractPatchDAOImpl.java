@@ -27,7 +27,6 @@ import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.apache.ibatis.session.ResultHandler;
 
-
 /**
  * Abstract implementation for Patch DAO.
  * <p>
@@ -217,6 +216,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract int deleteAclMemberEntitiesForAcls(List<Long> aclIds);
     
     // note: caller's row handler is expected to migrate the attrs
+    @Override
     public void migrateOldAttrTenants(ResultHandler resultHandler)
     {
         getOldAttrTenantsImpl(resultHandler);
@@ -225,6 +225,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract void getOldAttrTenantsImpl(ResultHandler resultHandler);
     
     // note: caller's row handler is expected to migrate the attrs
+    @Override
     public void migrateOldAttrAVMLocks(ResultHandler resultHandler)
     {
         getOldAttrAVMLocksImpl(resultHandler);
@@ -233,6 +234,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract void getOldAttrAVMLocksImpl(ResultHandler resultHandler);
     
     // note: caller's row handler is expected to migrate the attrs
+    @Override
     public void migrateOldAttrPropertyBackedBeans(ResultHandler resultHandler)
     {
         getOldAttrPropertyBackedBeansImpl(resultHandler);
@@ -241,6 +243,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract void getOldAttrPropertyBackedBeansImpl(ResultHandler resultHandler);
     
     // note: caller's row handler is expected to migrate the attrs
+    @Override
     public void migrateOldAttrChainingURS(ResultHandler resultHandler)
     {
         getOldAttrChainingURSImpl(resultHandler);
@@ -248,18 +251,11 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     
     protected abstract void getOldAttrChainingURSImpl(ResultHandler resultHandler);
     
+    @Override
     public List<String> getOldAttrCustomNames()
     {
         return getOldAttrCustomNamesImpl();
     }
     
     protected abstract List<String> getOldAttrCustomNamesImpl();
-    
-    public void deleteAllOldAttrs()
-    {
-        deleteAllOldAttrsImpl();
-    }
-    
-    protected abstract void deleteAllOldAttrsImpl();
-    
 }

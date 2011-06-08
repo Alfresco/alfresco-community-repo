@@ -240,7 +240,7 @@
     
     <sql id="insert_AVMVersionRoot_Sequence">
         insert into avm_version_roots (id, avm_store_id, root_id, version_id, creator, create_date, tag, description)
-        values (#{id}, #{storeId}, #{rootNodeId}, #{version}, #{creator}, #{createdDate}, #{tag}, #{description})
+        values (#{id}, #{storeId}, #{rootNodeId}, #{version}, #{creator}, #{createdDate}, #{tag,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR})
     </sql>
     
     <sql id="insert_AVMStoreProperty_AutoIncrement">
@@ -852,8 +852,8 @@
         update
             avm_version_roots
         set
-            tag = #{tag},
-            description = #{description}
+            tag = #{tag,jdbcType=VARCHAR},
+            description = #{description,jdbcType=VARCHAR}
         where
             id = #{id}
     </update>

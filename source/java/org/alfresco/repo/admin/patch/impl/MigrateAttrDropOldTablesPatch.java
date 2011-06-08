@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,26 +18,19 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.List;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Migrate attributes - check no custom attributes and then delete from 'alf_*attribute*' tables
+ * Migrate attributes (drop tables 'alf_*attribute*')
  * 
- * @author janv
- * @since 3.4
+ * @author Derek Hulley
+ * @since 4.0
  */
-public class MigrateAttrDeletePatch extends AbstractPatch
+public class MigrateAttrDropOldTablesPatch extends AbstractPatch
 {
-    private Log logger = LogFactory.getLog(this.getClass());
-    
-    private static final String MSG_SUCCESS = "patch.migrateAttrDelete.result";
+    private static final String MSG_SUCCESS = "patch.migrateAttrDropOldTables.result";
     
     private PatchDAO patchDAO;
     
@@ -49,18 +42,7 @@ public class MigrateAttrDeletePatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        List<String> results = patchDAO.getOldAttrCustomNames();
-        
-        if (results.size() > 0)
-        {
-            for (String custom : results)
-            {
-                logger.warn("Custom global attribute found: "+custom);
-            }
-            throw new AlfrescoRuntimeException("Custom attributes found - will require custom migration patch: "+results);
-        }
-        
-        patchDAO.deleteAllOldAttrs();
+        patchDAO.migrateOldAttrDropTables();
         
         // build the result message
         String msg = I18NUtil.getMessage(MSG_SUCCESS);

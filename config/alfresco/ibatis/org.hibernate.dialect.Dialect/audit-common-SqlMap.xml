@@ -4,10 +4,12 @@
 
 <mapper namespace="alfresco.audit">
 
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
-
+    
     <resultMap id="result_AuditModel" type="AuditModel">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentDataId" column="content_data_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -79,7 +81,7 @@
     
     <sql id="insert_AuditEntry_Sequence">
         insert into alf_audit_entry (id, audit_app_id, audit_user_id, audit_time, audit_values_id) 
-        values (#{id}, #{auditApplicationId}, #{auditUserId}, #{auditTime}, #{auditValuesId})
+        values (#{id}, #{auditApplicationId}, #{auditUserId,jdbcType=BIGINT}, #{auditTime}, #{auditValuesId,jdbcType=BIGINT})
     </sql>
     
     <!--                -->

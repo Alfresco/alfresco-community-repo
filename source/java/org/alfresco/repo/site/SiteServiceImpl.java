@@ -64,7 +64,6 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -83,7 +82,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl implements SiteService, SiteModel
+public class SiteServiceImpl implements SiteServiceInternal, SiteModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
@@ -578,11 +577,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * Get the node reference that is the site root
-     * 
-     * @return NodeRef node reference
+    * {@inheritDoc}
      */
-    private NodeRef getSiteRoot()
+    public NodeRef getSiteRoot()
     {
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef siteHomeRef = siteHomeRefs.get(tenantDomain);
@@ -996,14 +993,14 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 public NodeRef doWork() throws Exception
                 {
                     // the site "short name" directly maps to the cm:name property
-                    NodeRef siteNodeRef = nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
+                    NodeRef siteNode = nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
                     
                     // cache the result if found - null results will be required to ensure new sites are found later
-                    if (siteNodeRef != null)
+                    if (siteNode != null)
                     {
-                        siteNodeRefs.put(cacheKey, siteNodeRef);
+                        siteNodeRefs.put(cacheKey, siteNode);
                     }
-                    return siteNodeRef;
+                    return siteNode;
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
@@ -1679,6 +1676,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         } 
         catch (FileNotFoundException e)
         {
+            //NOOP
         }
 
         // create the container node reference
@@ -1792,6 +1790,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         } 
         catch (FileNotFoundException e)
         {
+            //NOOP
         }
 
         return containerNodeRef;

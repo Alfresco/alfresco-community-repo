@@ -73,37 +73,4 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     {
         return (List<AppliedPatchEntity>) template.selectList(SELECT_ALL_APPLIED_PATCH);
     }
-    
-//
-//    @Override
-//    protected EncodingEntity getEncodingEntity(Long id)
-//    {
-//        EncodingEntity encodingEntity = new EncodingEntity();
-//        encodingEntity.setId(id);
-//        encodingEntity = (EncodingEntity) template.queryForObject(SELECT_ENCODING_BY_ID, encodingEntity);
-//        // Done
-//        return encodingEntity;
-//    }
-//
-//    @Override
-//    protected EncodingEntity getEncodingEntity(String encoding)
-//    {
-//        EncodingEntity encodingEntity = new EncodingEntity();
-//        encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
-//        encodingEntity = (EncodingEntity) template.queryForObject(SELECT_ENCODING_BY_KEY, encodingEntity);
-//        // Could be null
-//        return encodingEntity;
-//    }
-//
-//    @Override
-//    protected EncodingEntity createEncodingEntity(String encoding)
-//    {
-//        EncodingEntity encodingEntity = new EncodingEntity();
-//        encodingEntity.setVersion(MimetypeEntity.CONST_LONG_ZERO);
-//        encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
-//        Long id = (Long) template.insert(INSERT_ENCODING, encodingEntity);
-//        encodingEntity.setId(id);
-//        // Done
-//        return encodingEntity;
-//    }
 }

@@ -253,60 +253,6 @@ CREATE TABLE alf_locale
     UNIQUE KEY locale_str (locale_str)
 ) ENGINE=InnoDB;
 
-CREATE TABLE alf_attributes
-(
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    type VARCHAR(1) NOT NULL,
-    version BIGINT NOT NULL,
-    acl_id BIGINT,
-    bool_value BIT,
-    byte_value TINYINT,
-    short_value SMALLINT,
-    int_value INTEGER,
-    long_value BIGINT,
-    float_value FLOAT,
-    double_value DOUBLE PRECISION,
-    string_value TEXT,
-    serializable_value BLOB,
-    PRIMARY KEY (id),
-    KEY fk_alf_attr_acl (acl_id),
-    CONSTRAINT fk_alf_attr_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id)
-) ENGINE=InnoDB;
-
-CREATE TABLE alf_global_attributes
-(
-    name VARCHAR(160) NOT NULL,
-    attribute BIGINT,
-    PRIMARY KEY (name),
-    UNIQUE KEY attribute (attribute),
-    KEY fk_alf_gatt_att (attribute),
-    CONSTRAINT fk_alf_gatt_att FOREIGN KEY (attribute) REFERENCES alf_attributes (id)
-) ENGINE=InnoDB;
-
-CREATE TABLE alf_list_attribute_entries
-(
-    list_id BIGINT NOT NULL,
-    mindex INTEGER NOT NULL,
-    attribute_id BIGINT,
-    PRIMARY KEY (list_id, mindex),
-    KEY fk_alf_lent_att (attribute_id),
-    KEY fk_alf_lent_latt (list_id),
-    CONSTRAINT fk_alf_lent_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id),
-    CONSTRAINT fk_alf_lent_latt FOREIGN KEY (list_id) REFERENCES alf_attributes (id)
-) ENGINE=InnoDB;
-
-CREATE TABLE alf_map_attribute_entries
-(
-    map_id BIGINT NOT NULL,
-    mkey VARCHAR(160) NOT NULL,
-    attribute_id BIGINT,
-    PRIMARY KEY (map_id, mkey),
-    KEY fk_alf_matt_matt (map_id),
-    KEY fk_alf_matt_att (attribute_id),
-    CONSTRAINT fk_alf_matt_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id),
-    CONSTRAINT fk_alf_matt_matt FOREIGN KEY (map_id) REFERENCES alf_attributes (id)
-) ENGINE=InnoDB;
-
 CREATE TABLE alf_node_aspects
 (
     node_id BIGINT NOT NULL,

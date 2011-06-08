@@ -795,4 +795,10 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public final boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        return removeSecondaryChildAssociation(childAssocRef);
+    }
 }

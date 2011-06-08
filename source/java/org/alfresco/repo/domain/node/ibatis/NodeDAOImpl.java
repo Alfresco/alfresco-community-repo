@@ -1122,6 +1122,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
         
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
         resultsCallback.done();
     }
@@ -1144,6 +1147,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
 
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        
+        // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+        template.clearCache();
+        
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE, assoc, resultHandler);
         resultsCallback.done();
     }

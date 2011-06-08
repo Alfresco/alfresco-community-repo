@@ -204,14 +204,14 @@ public interface PatchDAO
     public void migrateOldAttrChainingURS(ResultHandler resultHandler);
     
     /**
+     * Drop old attribute alf_*attribute* tables
+     */
+    public void migrateOldAttrDropTables();
+    
+    /**
      * Get custom global attribute names (if any)
      */
     public List<String> getOldAttrCustomNames();
-    
-    /**
-     * Delete all old attributes (from alf_*attribute* tables)
-     */
-    public void deleteAllOldAttrs();
     
     /**
      * Get shared acls with inheritance issues

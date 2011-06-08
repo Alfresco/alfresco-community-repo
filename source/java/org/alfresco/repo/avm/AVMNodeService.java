@@ -1096,7 +1096,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     /**
      * TODO: Implement
      */
-    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    public boolean removeSecondaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         throw new UnsupportedOperationException();
     }

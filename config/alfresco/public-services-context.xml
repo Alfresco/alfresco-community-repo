@@ -633,11 +633,12 @@
                 <prop key="getCurrentUserName">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
                 <prop key="invalidateUserSession">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
                 <prop key="invalidateTicket">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
-                <prop key="validate">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
                 <prop key="getCurrentTicket">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
                 <prop key="clearCurrentSecurityContext">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
                 <prop key="isCurrentUserTheSystemUser">PROPAGATION_NOT_SUPPORTED, readOnly</prop>
-                <prop key="*">${server.transaction.mode.default}</prop>
+                
+                <prop key="validate">PROPAGATION_REQUIRED, readOnly</prop>
+                <prop key="*">${server.transaction.mode.default}</prop> <!-- including "authenticate*" -->
             </props>
         </property>
     </bean>

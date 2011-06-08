@@ -41,6 +41,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -1353,6 +1354,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // From sub group four
         assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRole("testMembership", USER_FOUR));
 
+        // Set a membership with an illegal role. See ALF-619.
+        // I'm checking that the exception type thrown is what it should be.
+        try
+        {
+            this.siteService.setMembership("testMembership", this.groupThree, "rubbish");
+        }
+        catch (UnknownAuthorityException expected)
+        {
+            return;
+        }
+        fail("Expected exception not thrown.");
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -88,7 +88,6 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ModelUtil;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -130,7 +129,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private PermissionsManager permissionsManager;
     private RepoAdminService repoAdminService;
     private ServiceRegistry serviceRegistry;
-    
+
     private boolean createMissingPeople;
     private static Set<QName> mutableProperties;
     private String defaultHomeFolderProvider;
@@ -182,7 +181,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "storeUrl", storeRef);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
-        PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "permissionServiceSPI", permissionServiceSPI);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "authenticationService", authenticationService);

@@ -1254,7 +1254,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
-    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    @Override
+    public boolean removeSecondaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         Long parentNodeId = getNodePairNotNull(childAssocRef.getParentRef()).getFirst();
         Long childNodeId = getNodePairNotNull(childAssocRef.getChildRef()).getFirst();

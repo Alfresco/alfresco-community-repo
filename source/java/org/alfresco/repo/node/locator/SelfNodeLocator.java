@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.service.cmr.rendition;
+package org.alfresco.repo.node.locator;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -25,19 +25,29 @@ import java.util.Map;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * This interface defines a strategy object used for finding a {@link NodeRef}.
- * 
  * @author Nick Smith
+ * @since 4.0
+ *
  */
-public interface NodeLocator
+public class SelfNodeLocator extends AbstractNodeLocator
 {
+    public static final String NAME = "SelfNodeLocator";
     /**
-     * Finds a {@link NodeRef} given a starting {@link NodeRef} and a
-     * {@link Map} of parameters.
-     * 
-     * @param sourceNode the starting point for locating a new node.
-     * @param params a {@link Map} of parameters.
-     * @return the {@link NodeRef}.
-     */
-    NodeRef getNode(NodeRef sourceNode, Map<String, Serializable> params);
+    * {@inheritDoc}
+    */
+    @Override
+    public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
+    {
+        return source;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public String getName()
+    {
+        return NAME;
+    }
+
 }

@@ -260,7 +260,17 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
+    @Override
     public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public boolean removeSecondaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }

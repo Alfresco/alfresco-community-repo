@@ -17,7 +17,7 @@
         <result property="fixesToSchema" column="fixes_to_schema" jdbcType="INTEGER" javaType="int"/>
         <result property="targetSchema" column="target_schema" jdbcType="INTEGER" javaType="int"/>
         <result property="appliedToSchema" column="applied_to_schema" jdbcType="INTEGER" javaType="int"/>
-        <result property="appliedOnDate" column="applied_on_date" jdbcType="DATE" javaType="date" />
+        <result property="appliedOnDate" column="applied_on_date" jdbcType="TIMESTAMP" javaType="date" />
         <result property="appliedToServer" column="applied_to_server" jdbcType="VARCHAR" javaType="string"/>
         <result property="wasExecuted" column="was_executed" jdbcType="BOOLEAN" javaType="boolean"/>
         <result property="succeeded" column="succeeded" jdbcType="BOOLEAN" javaType="boolean"/>
@@ -41,7 +41,7 @@
             (
                 #{id}, #{description,jdbcType=VARCHAR},
                 #{fixesFromSchema,jdbcType=INTEGER}, #{fixesToSchema,jdbcType=INTEGER}, #{targetSchema,jdbcType=INTEGER},
-                #{appliedToSchema,jdbcType=INTEGER}, #{appliedOnDate,jdbcType=DATE}, #{appliedToServer,jdbcType=VARCHAR},
+                #{appliedToSchema,jdbcType=INTEGER}, #{appliedOnDate,jdbcType=TIMESTAMP}, #{appliedToServer,jdbcType=VARCHAR},
                 #{wasExecuted,jdbcType=BOOLEAN}, #{succeeded,jdbcType=BOOLEAN}, #{report,jdbcType=VARCHAR}
             )
     </insert>
@@ -59,7 +59,7 @@
                 fixes_to_schema = #{fixesToSchema,jdbcType=INTEGER},
                 target_schema = #{targetSchema,jdbcType=INTEGER},
                 applied_to_schema = #{appliedToSchema,jdbcType=INTEGER},
-                applied_on_date = #{appliedOnDate,jdbcType=DATE},
+                applied_on_date = #{appliedOnDate,jdbcType=TIMESTAMP},
                 applied_to_server = #{appliedToServer,jdbcType=VARCHAR},
                 was_executed = #{wasExecuted,jdbcType=BOOLEAN},
                 succeeded = #{succeeded,jdbcType=BOOLEAN},

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
@@ -38,6 +39,8 @@ import org.alfresco.service.namespace.QName;
 @PublicService
 public interface SiteService
 {
+    static String DOCUMENT_LIBRARY = "documentLibrary";
+    
     /**
      * Create a new site.
      * 
@@ -197,6 +200,7 @@ public interface SiteService
      * @param shortName     site short name
      * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      * @param role          site role
+     * @throws UnknownAuthorityException if the site role is not supported.
      */
     @Auditable(parameters = {"shortName", "authorityName", "role"})
     void setMembership(String shortName, String authorityName, String role);

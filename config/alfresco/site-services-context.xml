@@ -19,7 +19,7 @@
     <!-- Site service bean -->
     <bean id="SiteService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.site.SiteService</value>
+            <value>org.alfresco.repo.site.SiteServiceInternal</value>
         </property>
         <property name="target">
             <ref bean="siteService"/>

@@ -308,6 +308,15 @@ public interface WorkflowService
     @Auditable(parameters = {"pathId"})
     public WorkflowTask getStartTask(String workflowInstanceId);
 
+    /**
+     * Gets a graphical view of the workflow instance
+     * 
+     * @param workflowInstanceId  the workflow instance id
+     * @return image view of the workflow instance as an InputStream or null if a diagram is not available
+     * @since 4.0
+     */
+    @Auditable(parameters = {"workflowInstanceId"})
+    public InputStream getWorkflowImage(String workflowInstanceId);
     
     //
     // Workflow Timer Management

@@ -1000,6 +1000,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             throw new WorkflowException(msg, ae);
         }
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public InputStream getWorkflowImage(String workflowInstanceId)
+    {
+        // TODO: Link this up with the underlying Activiti instance diagram API
+        return null;
+    }
 
     /**
      * Converts the given list of {@link ProcessDefinition}s to a list of {@link WorkflowDefinition}s

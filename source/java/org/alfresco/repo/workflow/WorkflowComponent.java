@@ -247,6 +247,15 @@ public interface WorkflowComponent
      * @return  the list of active timers
      */
     public List<WorkflowTimer> getTimers(String workflowId);
+    
+    /**
+     * Gets a graphical view of the workflow instance
+     * 
+     * @param workflowInstanceId  the workflow instance id
+     * @return image view of the workflow instance as an InputStream or null if a diagram is not available
+     * @since 4.0
+     */
+    public InputStream getWorkflowImage(String workflowInstanceId);
 
 }
 

@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.solr;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * 
@@ -42,7 +44,8 @@ public class NodeMetaDataEntity implements NodeMetaData
     private Long aclId;
     private Map<QName, Serializable> properties;
     private Set<QName> aspects;
-    private List<Path> paths;
+//    private List<Path> paths;
+    private Collection<Pair<Path, QName>> paths;
     private List<ChildAssociationRef> childAssocs;
     
     public String getOwner()
@@ -61,11 +64,11 @@ public class NodeMetaDataEntity implements NodeMetaData
     {
         this.nodeRef = nodeRef;
     }
-    public List<Path> getPaths()
+    public Collection<Pair<Path, QName>> getPaths()
     {
         return paths;
     }
-    public void setPaths(List<Path> paths)
+    public void setPaths(Collection<Pair<Path, QName>> paths)
     {
         this.paths = paths;
     }

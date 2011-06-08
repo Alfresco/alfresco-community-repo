@@ -20,11 +20,14 @@ package org.alfresco.repo.domain.solr.ibatis;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
@@ -38,10 +41,16 @@ import org.alfresco.repo.domain.solr.NodeParameters;
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.SOLRTransactionParameters;
 import org.alfresco.repo.domain.solr.Transaction;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -70,8 +79,14 @@ public class SOLRDAOImpl implements SOLRDAO
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private OwnableService ownableService;
+    private TenantService tenantService;
 
     private SqlSessionTemplate template;
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
     
     public void setOwnableService(OwnableService ownableService)
     {
@@ -103,6 +118,8 @@ public class SOLRDAOImpl implements SOLRDAO
      */    
     public void init()
     {
+        PropertyCheck.mandatory(this, "ownableService", ownableService);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
@@ -190,46 +207,227 @@ public class SOLRDAOImpl implements SOLRDAO
 	 * A dumb iterator that iterates over longs in sequence.
 	 *
 	 */
-	private static class SequenceIterator implements Iterable<Long>
+	private static class SequenceIterator implements Iterable<Long>, Iterator<Long>
 	{
 	    private long fromId;
 	    private long toId;
 	    private long counter;
+	    private int maxResults;
+	    private boolean inUse = false;
 
-	    SequenceIterator(Long fromId, Long toId)
+	    SequenceIterator(Long fromId, Long toId, int maxResults)
 	    {
 	        this.fromId = (fromId == null ? 1 : fromId.longValue());
 	        this.toId = (toId == null ? Long.MAX_VALUE : toId.longValue());
+	        this.maxResults = maxResults;
 	        this.counter = this.fromId;
 	    }
 	    
+	    public List<Long> getList()
+	    {
+            List<Long> ret = new ArrayList<Long>(100);
+            @SuppressWarnings("rawtypes")
+            Iterator nodeIds = iterator();
+            while(nodeIds.hasNext())
+            {
+                ret.add((Long)nodeIds.next());
+            }
+            return ret;
+	    }
+
         @Override
         public Iterator<Long> iterator()
         {
-            counter = this.fromId;
-            return new Iterator<Long>() {
+            if(inUse)
+            {
+                throw new IllegalStateException("Already in use");
+            }
+            this.counter = this.fromId;
+            this.inUse = true;
+            return this;
+        }
 
-                @Override
-                public boolean hasNext()
-                {
-                    return counter <= toId;
-                }
+        @Override
+        public boolean hasNext()
+        {
+            return ((counter - this.fromId) < maxResults) &&  counter <= toId;
+        }
 
-                @Override
-                public Long next()
-                {
-                    return counter++;
-                }
+        @Override
+        public Long next()
+        {
+            return counter++;
+        }
 
-                @Override
-                public void remove()
-                {
-                    throw new UnsupportedOperationException();
-                }
-            };
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
         }
 	}
-	   
+
+    private boolean isCategorised(AspectDefinition aspDef)
+    {
+        if(aspDef == null)
+        {
+            return false;
+        }
+        AspectDefinition current = aspDef;
+        while (current != null)
+        {
+            if (current.getName().equals(ContentModel.ASPECT_CLASSIFIABLE))
+            {
+                return true;
+            }
+            else
+            {
+                QName parentName = current.getParentName();
+                if (parentName == null)
+                {
+                    break;
+                }
+                current = dictionaryService.getAspect(parentName);
+            }
+        }
+        return false;
+    }
+    
+    private Collection<Pair<Path, QName>> getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
+    {
+        ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
+
+        for (QName classRef : aspects)
+        {
+            AspectDefinition aspDef = dictionaryService.getAspect(classRef);
+            if (isCategorised(aspDef))
+            {
+                LinkedList<Pair<Path, QName>> aspectPaths = new LinkedList<Pair<Path, QName>>();
+                for (PropertyDefinition propDef : aspDef.getProperties().values())
+                {
+                    if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
+                    {
+                        for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties.get(propDef.getName())))
+                        {
+                            if (catRef != null)
+                            {
+                                // can be running in context of System user, hence use input nodeRef
+                                catRef = tenantService.getName(nodeRef, catRef);
+
+                                try
+                                {
+                                    Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
+                                    for (Path path : nodeDAO.getPaths(pair, false))
+                                    {
+                                        if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
+                                        {
+                                            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
+                                            boolean isFakeRoot = true;
+
+                                            final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+                                            // We have a callback handler to filter results
+                                            ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+                                            {
+                                                public boolean preLoadNodes()
+                                                {
+                                                    return false;
+                                                }
+                                                
+                                                public boolean handle(
+                                                        Pair<Long, ChildAssociationRef> childAssocPair,
+                                                        Pair<Long, NodeRef> parentNodePair,
+                                                        Pair<Long, NodeRef> childNodePair)
+                                                {
+                                                    results.add(childAssocPair.getSecond());
+                                                    return true;
+                                                }
+
+                                                public void done()
+                                                {
+                                                }                               
+                                            };
+                                            
+                                            Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
+                                            nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
+                                            for (ChildAssociationRef car : results)
+                                            {
+                                                if (cae.getRef().equals(car))
+                                                {
+                                                    isFakeRoot = false;
+                                                    break;
+                                                }
+                                            }
+                                            if (isFakeRoot)
+                                            {
+                                                if (path.toString().indexOf(aspDef.getName().toString()) != -1)
+                                                {
+                                                    aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (InvalidNodeRefException e)
+                                {
+                                    // If the category does not exists we move on the next
+                                }
+
+                            }
+                        }
+                    }
+                }
+                categoryPaths.addAll(aspectPaths);
+            }
+        }
+        // Add member final element
+        for (Pair<Path, QName> pair : categoryPaths)
+        {
+            if (pair.getFirst().last() instanceof Path.ChildAssocElement)
+            {
+                Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
+                ChildAssociationRef assocRef = cae.getRef();
+                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
+            }
+        }
+
+        return categoryPaths;
+    }
+    
+    private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
+    {
+        int maxResults = nodeMetaDataParameters.getMaxResults();
+        boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
+
+        List<Long> nodeIds = null;
+        Iterable<Long> iterable = null;
+        List<Long> allNodeIds = nodeMetaDataParameters.getNodeIds();
+        if(allNodeIds != null)
+        {
+            int toIndex = (maxResults > allNodeIds.size() ? allNodeIds.size() : maxResults);
+            nodeIds = isLimitSet ? allNodeIds.subList(0, toIndex) : nodeMetaDataParameters.getNodeIds();
+            iterable = nodeMetaDataParameters.getNodeIds();
+        }
+        else
+        {
+            Long fromNodeId = nodeMetaDataParameters.getFromNodeId();
+            Long toNodeId = nodeMetaDataParameters.getToNodeId();
+            nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here?
+            iterable = new SequenceIterator(fromNodeId, toNodeId, maxResults);
+            int counter = 1;
+            for(Long nodeId : iterable)
+            {
+                if(isLimitSet && counter++ > maxResults)
+                {
+                    break;
+                }
+                nodeIds.add(nodeId);
+            }
+        }
+        // pre-cache nodes
+        nodeDAO.cacheNodesById(nodeIds);
+        
+        return nodeIds;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -247,52 +445,40 @@ public class SOLRDAOImpl implements SOLRDAO
         boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
         
-        Iterable<Long> iterable = null;
-        if(nodeMetaDataParameters.getNodeIds() != null)
-        {
-            iterable = nodeMetaDataParameters.getNodeIds();
-        }
-        else
-        {
-            iterable = new SequenceIterator(nodeMetaDataParameters.getFromNodeId(), nodeMetaDataParameters.getToNodeId());
-        }
+        List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
 
-        // pre-cache nodes?
-        // TODO does this cache acls, etc for the node?
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(100);
-        int i = 1;
-        for(Long nodeId : iterable)
-        {
-            if(isLimitSet && i++ > maxResults)
-            {
-                break;
-            }
+        //Iterable<Long> iterable = null;
+//        if(nodeMetaDataParameters.getNodeIds() != null)
+//        {
+//            int toIndex = (maxResults > allNodeIds.size() ? allNodeIds.size() : maxResults);
+//            nodeIds = isLimitSet ? nodeMetaDataParameters.getNodeIds().subList(0, maxResults) : nodeMetaDataParameters.getNodeIds();
+//            //iterable = nodeMetaDataParameters.getNodeIds();
+//        }
+//        else
+//        {
+//            Long fromNodeId = nodeMetaDataParameters.getFromNodeId();
+//            Long toNodeId = nodeMetaDataParameters.getToNodeId();
+//            nodeIds = new ArrayList<Long>(isLimitSet ? maxResults : 100); // TODO better default here
+//            SequenceIterator si = new SequenceIterator(fromNodeId, toNodeId, maxResults);
+//            nodeIds = si.getList();
+//            //iterable = si;
+//        }
+        // pre-cache nodes
+//        nodeDAO.cacheNodesById(nodeIds);
 
-            if(!nodeDAO.exists(nodeId))
-            {
-                continue;
-            }
-
-            Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
-            nodeRefs.add(pair.getSecond());
-        }
-        if(logger.isDebugEnabled())
+        //int i = 1;
+        for(Long nodeId : nodeIds)
         {
-            logger.debug("SOLRDAO caching " + nodeRefs.size() + " nodes");
-        }
-        nodeDAO.cacheNodes(nodeRefs);
-
-        i = 1;
-        for(Long nodeId : iterable)
-        {
-            if(isLimitSet && i++ > maxResults)
-            {
-                break;
-            }
+            Map<QName, Serializable> props = null;
+            Set<QName> aspects = null;
+            
+//            if(isLimitSet && i++ > maxResults)
+//            {
+//                break;
+//            }
 
             if(!nodeDAO.exists(nodeId))
             {
-                // ignore deleted node?
                 // TODO nodeDAO doesn't cache anything for deleted nodes. Should we be ignoring delete node meta data?
                 continue;
             }
@@ -311,22 +497,31 @@ public class SOLRDAOImpl implements SOLRDAO
                 nodeMetaData.setNodeType(nodeType);
             }
 
-            if(includeProperties)
+            if(includePaths || includeProperties)
             {
-                Map<QName, Serializable> props = nodeDAO.getNodeProperties(nodeId);
-                nodeMetaData.setProperties(props);
+                props = nodeDAO.getNodeProperties(nodeId);
             }
+            nodeMetaData.setProperties(props);
 
-            if(includeAspects)
+            if(includePaths || includeAspects)
             {
-                Set<QName> aspects = nodeDAO.getNodeAspects(nodeId);
-                nodeMetaData.setAspects(aspects);
+                aspects = nodeDAO.getNodeAspects(nodeId);
             }
+            nodeMetaData.setAspects(aspects);
 
-            // paths may change during get i.e. node moved around in the graph
+            // TODO paths may change during get i.e. node moved around in the graph
             if(includePaths)
             {
-                List<Path> paths = nodeDAO.getPaths(pair, false);
+                Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
+                List<Path> directPaths = nodeDAO.getPaths(pair, false);
+
+                Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
+                for (Path path : directPaths)
+                {
+                    paths.add(new Pair<Path, QName>(path, null));
+                }
+                paths.addAll(categoryPaths);
+
                 nodeMetaData.setPaths(paths);
             }
 
@@ -338,12 +533,11 @@ public class SOLRDAOImpl implements SOLRDAO
             if(includeChildAssociations)
             {
                 final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getChildAssocs(nodeId, null, null, null, false, false, new ChildAssocRefQueryCallback()
+                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
                 {
                     @Override
                     public boolean preLoadNodes()
                     {
-                        // already cached above
                         return false;
                     }
                     
@@ -365,6 +559,29 @@ public class SOLRDAOImpl implements SOLRDAO
 
             if(includeAssociations)
             {
+                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
+                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
+                {
+                    @Override
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                    {
+                        parentAssocs.add(childAssocPair.getSecond());
+                        return true;
+                    }
+
+                    @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public void done()
+                    {
+                    }
+                });
+                        
                 // TODO non-child associations
 //                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
 //                Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId);

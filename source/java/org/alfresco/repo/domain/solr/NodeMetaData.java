@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.solr;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,11 +28,12 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 public interface NodeMetaData
 {
     public NodeRef getNodeRef();
-    public List<Path> getPaths();
+    public Collection<Pair<Path, QName>> getPaths();
     public QName getNodeType();
     public Long getNodeId();
     public Long getAclId();

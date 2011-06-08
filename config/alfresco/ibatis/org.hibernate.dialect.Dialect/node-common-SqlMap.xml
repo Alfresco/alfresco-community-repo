@@ -604,6 +604,19 @@
             </foreach>
     </select>
     
+    <select id="select_NodesByIds" parameterType="NodeBatchLoad" resultMap="result_Node">
+        <include refid="alfresco.node.select_Node_Results"/>
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        where
+            node.id in 
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+    
     <sql id="select_NodeProperty_Results">
         select
             prop.node_id            as node_id,

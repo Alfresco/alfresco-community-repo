@@ -30,6 +30,7 @@ public class NodeBatchLoadEntity
 {
     private Long storeId;
     private List<String> uuids;
+    private List<Long> ids;
     
     public Long getStoreId()
     {
@@ -47,5 +48,12 @@ public class NodeBatchLoadEntity
     {
         this.uuids = uuids;
     }
-    
+    public List<Long> getIds()
+    {
+        return ids;
+    }
+    public void setIds(List<Long> ids)
+    {
+        this.ids = ids;
+    }
 }

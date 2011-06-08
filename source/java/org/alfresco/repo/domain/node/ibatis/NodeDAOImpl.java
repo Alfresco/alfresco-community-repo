@@ -31,6 +31,7 @@ import java.util.SortedSet;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.ChildPropertyEntity;
+import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeAspectsEntity;
 import org.alfresco.repo.domain.node.NodeAssocEntity;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -86,6 +87,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
+    private static final String SELECT_NODES_BY_IDS = "alfresco.node.select_NodesByIds";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert.insert_NodeProperty";
@@ -379,15 +381,26 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
+    protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
     {
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
         nodeBatchLoadEntity.setStoreId(storeId);
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
         
-        return (List<NodeEntity>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+        return (List<Node>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<Node> selectNodesByIds(SortedSet<Long> ids)
+    {
+        NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        nodeBatchLoadEntity.setIds(new ArrayList<Long>(ids));
+        
+        return (List<Node>) template.selectList(SELECT_NODES_BY_IDS, nodeBatchLoadEntity);
+    }
+
+    
     /**
      * Pull out the key-value pairs from the rows
      */

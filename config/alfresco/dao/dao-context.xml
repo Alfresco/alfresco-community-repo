@@ -261,6 +261,7 @@
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="qNameDAO" ref="qnameDAO"/>
       <property name="ownableService" ref="ownableService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
    
 </beans>

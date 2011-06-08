@@ -3146,7 +3146,70 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /*
      * Bulk caching
      */
-    
+
+    // TODO there must be a way to limit the repeated code here and in cacheNodes(List<NodeRef>)
+    public void cacheNodesById(List<Long> nodeIds)
+    {
+        /*
+         * ALF-2712: Performance degradation from 3.1.0 to 3.1.2
+         * ALF-2784: Degradation of performance between 3.1.1 and 3.2x (observed in JSF)
+         * 
+         * There is an obvious cost associated with querying the database to pull back nodes,
+         * and there is additional cost associated with putting the resultant entries into the
+         * caches.  It is NO MORE expensive to check the cache than it is to put an entry into it
+         * - and probably cheaper considering cache replication - so we start checking nodes to see
+         * if they have entries before passing them over for batch loading.
+         * 
+         * However, when running against a cold cache or doing a first-time query against some
+         * part of the repo, we will be checking for entries in the cache and consistently getting
+         * no results.  To avoid unnecessary checking when the cache is PROBABLY cold, we
+         * examine the ratio of hits/misses at regular intervals.
+         */
+        if (nodeIds.size() < 10)
+        {
+            // We only cache where the number of results is potentially
+            // a problem for the N+1 loading that might result.
+            return;
+        }
+        
+        int foundCacheEntryCount = 0;
+        int missingCacheEntryCount = 0;
+        boolean forceBatch = false;
+        
+        List<Long> batchLoadNodeIds = new ArrayList<Long>(nodeIds.size());
+        for (Long nodeId : nodeIds)
+        {
+            if (!forceBatch)
+            {
+                // Is this node in the cache?
+                if (nodesCache.getValue(nodeId) != null)
+                {
+                    foundCacheEntryCount++;                             // Don't add it to the batch
+                    continue;
+                }
+                else
+                {
+                    missingCacheEntryCount++;                           // Fall through and add it to the batch
+                }
+                if (foundCacheEntryCount + missingCacheEntryCount % 100 == 0)
+                {
+                    // We force the batch if the number of hits drops below the number of misses
+                    forceBatch = foundCacheEntryCount < missingCacheEntryCount;
+                }
+            }
+            
+            batchLoadNodeIds.add(nodeId);
+        }
+        
+        int size = batchLoadNodeIds.size();
+        cacheNodesBatch(batchLoadNodeIds);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Pre-loaded " + size + " nodes.");
+        }
+    }
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -3242,27 +3305,47 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             if (batch.size() >= batchSize)
             {
                 // Preload
-                cacheNodesNoBatch(storeId, batch);
+                cacheNodesNoBatch(selectNodesByUuids(storeId, batch));
                 batch.clear();
             }
         }
         // Load any remaining nodes
         if (batch.size() > 0)
         {
-            cacheNodesNoBatch(storeId, batch);
+            cacheNodesNoBatch(selectNodesByUuids(storeId, batch));
+        }
+    }
+    
+    private void cacheNodesBatch(List<Long> nodeIds)
+    {
+        int batchSize = 256;
+        SortedSet<Long> batch = new TreeSet<Long>();
+        for (Long nodeId : nodeIds)
+        {
+            batch.add(nodeId);
+            if (batch.size() >= batchSize)
+            {
+                // Preload
+                cacheNodesNoBatch(selectNodesByIds(batch));
+                batch.clear();
+            }
+        }
+        // Load any remaining nodes
+        if (batch.size() > 0)
+        {
+            cacheNodesNoBatch(selectNodesByIds(batch));
         }
     }
     
     /**
      * Bulk-fetch the nodes for a given store.  All nodes passed in are fetched.
      */
-    private void cacheNodesNoBatch(Long storeId, SortedSet<String> uuids)
+    private void cacheNodesNoBatch(List<Node> nodes)
     {
         // Get the nodes
-        List<NodeEntity> nodes = selectNodesByUuids(storeId, uuids);
         SortedSet<Long> aspectNodeIds = new TreeSet<Long>();
         SortedSet<Long> propertiesNodeIds = new TreeSet<Long>();
-        for (NodeEntity node : nodes)
+        for (Node node : nodes)
         {
             Long nodeId = node.getId();
             nodesCache.setValue(nodeId, node);
@@ -3274,6 +3357,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 aspectNodeIds.add(nodeId);
             }
+        }
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Pre-loaded " + propertiesNodeIds.size() + " properties");
+            logger.debug("Pre-loaded " + propertiesNodeIds.size() + " aspects");
         }
         
         List<NodeAspectsEntity> nodeAspects = selectNodeAspects(aspectNodeIds);
@@ -3450,7 +3539,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int deleteNodesByCommitTime(boolean deletedOnly, long maxTxnCommitTimeMs);
     protected abstract NodeEntity selectNodeById(Long id, Boolean deleted);
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
-    protected abstract List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
+    protected abstract List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
+    protected abstract List<Node> selectNodesByIds(SortedSet<Long> ids);
     protected abstract Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
     protected abstract List<NodeAspectsEntity> selectNodeAspects(Set<Long> nodeIds);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId);

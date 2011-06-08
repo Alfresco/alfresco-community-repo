@@ -42,6 +42,15 @@ public interface NodeBulkLoader
     public void cacheNodes(List<NodeRef> nodeRefs);
     
     /**
+     * Pre-cache data relevant to the given nodes.  There is no need to split the collection
+     * up before calling this method; it is up to the implementations to ensure that batching
+     * is done where necessary.
+     * 
+     * @param nodeIds           the nodes that will be cached.
+     */
+    public void cacheNodesById(List<Long> nodeIds);
+    
+    /**
      * <b>FOR TESTING ONLY: </b>Clears out node cache data
      */
     public void clear();

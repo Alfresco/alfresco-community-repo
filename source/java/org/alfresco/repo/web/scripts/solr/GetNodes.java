@@ -27,9 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.solr.NodeParameters;
-import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.domain.solr.SOLRDAO.NodeQueryCallback;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,11 +43,11 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Support for SOLR. Get a list of nodes in the given transactions.
- * 
- * Supports fromNodeId, toNodeId, count (all optional) to control the number of nodes returned
- * e.g. (null, null, 1000) will return at most 1000 nodes starting from the first node in the first transaction.
- * e.g. (1234, null, 1000) will return at most 1000 nodes starting from the node id 1234.
+ * Support for SOLR: Get a list of nodes in the given transactions.
+ * <p/>
+ * Supports fromNodeId, toNodeId, count (all optional) to control the number of nodes returned<br/>
+ * e.g. (null, null, 1000) will return at most 1000 nodes starting from the first node in the first transaction.<br/>
+ * e.g. (1234, null, 1000) will return at most 1000 nodes starting from the node id 1234.<br/>
  * 
  * @since 4.0
  */
@@ -55,20 +55,13 @@ public class GetNodes extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(GetNodes.class);
 
-    private SOLRDAO solrDAO;
+    private SOLRTrackingComponent solrTrackingComponent;
     
-    /**
-     * @param solrDAO          the solrDAO to set
-     */
-    public void setSolrDAO(SOLRDAO solrDAO)
+    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
     {
-        this.solrDAO = solrDAO;
+        this.solrTrackingComponent = solrTrackingComponent;
     }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
-     */
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -162,7 +155,7 @@ public class GetNodes extends DeclarativeWebScript
             nodeParameters.setStoreProtocol(storeProtocol);
             nodeParameters.setStoreIdentifier(storeIdentifier);
             nodeParameters.setMaxResults(maxResults);
-            solrDAO.getNodes(nodeParameters, nodeQueryCallback);
+            solrTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
 
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
             List<Node> nodes = nodeQueryCallback.getNodes();

@@ -26,6 +26,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Bean to carry node metadata
+ * 
+ * @since 4.0
+ */
 public class NodeMetaData
 {
     private long id;

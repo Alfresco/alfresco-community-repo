@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.solr.MetaDataResultsFilter;
-import org.alfresco.repo.domain.solr.NodeMetaData;
-import org.alfresco.repo.domain.solr.NodeMetaDataParameters;
-import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.domain.solr.SOLRDAO.NodeMetaDataQueryCallback;
+import org.alfresco.repo.solr.MetaDataResultsFilter;
+import org.alfresco.repo.solr.NodeMetaData;
+import org.alfresco.repo.solr.NodeMetaDataParameters;
+import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -49,32 +49,31 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 // todo url parameter to remove whitespace in results - make it the default?
+/**
+ * Support for SOLR: Get metadata for nodes given IDs, ranges of IDs, etc.
+ * <p/>
+ * 
+ * @since 4.0
+ */
 public class GetNodesMetaData extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(GetNodesMetaData.class);
     private static final int INITIAL_DEFAULT_SIZE = 100;
     private static final int BATCH_SIZE = 50;
     
-    private SOLRDAO solrDAO;
+    private SOLRTrackingComponent solrTrackingComponent;
     private SOLRSerializer solrSerializer;
     
-    /**
-     * @param solrDAO          the solrDAO to set
-     */
-    public void setSolrDAO(SOLRDAO solrDAO)
+    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
     {
-        this.solrDAO = solrDAO;
+        this.solrTrackingComponent = solrTrackingComponent;
     }
-    
+
     public void setSolrSerializer(SOLRSerializer solrSerializer)
     {
         this.solrSerializer = solrSerializer;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
-     */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -168,11 +167,12 @@ public class GetNodesMetaData extends DeclarativeWebScript
             params.setToNodeId(toNodeId);
             params.setMaxResults(maxResults);
 
-            solrDAO.getNodesMetadata(params, filter, new NodeMetaDataQueryCallback()
+            solrTrackingComponent.getNodesMetadata(params, filter, new NodeMetaDataQueryCallback()
             {
                 private int counter = BATCH_SIZE;
                 private int numBatches = 0;
 
+                @Override
                 public boolean handleNodeMetaData(NodeMetaData nodeMetaData)
                 {
                     // need to perform data structure conversions that are compatible with Freemarker
@@ -218,8 +218,10 @@ public class GetNodesMetaData extends DeclarativeWebScript
         }
     }
 
-    /*
+    /**
      * Bean to store node meta data for use by FreeMarker templates
+     * 
+     * @since 4.0
      */
     public static class FreemarkerNodeMetaData
     {
@@ -232,7 +234,6 @@ public class GetNodesMetaData extends DeclarativeWebScript
         private List<String> paths;
         private List<ChildAssociationRef> childAssocs;
 
-        @SuppressWarnings("unchecked")
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
             setNodeId(nodeMetaData.getNodeId());

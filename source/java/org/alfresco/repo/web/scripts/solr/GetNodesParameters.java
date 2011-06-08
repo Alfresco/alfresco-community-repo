@@ -23,6 +23,11 @@ import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Input parameters for retrieving node details for SOLR.
+ * 
+ * @since 4.0
+ */
 public class GetNodesParameters
 {
     private List<Long> transactionIds;

@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.Transaction;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -32,32 +31,35 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Support for SOLR: Get a list of transactions with a commit time greater than or equal to the given parameter.
+ * Support for SOLR: Track ACL Change Sets
  *
  * @since 4.0
  */
-public class GetTransactions extends DeclarativeWebScript
+public class GetAclChangeSets extends DeclarativeWebScript
 {
-    protected static final Log logger = LogFactory.getLog(GetTransactions.class);
+    protected static final Log logger = LogFactory.getLog(GetAclChangeSets.class);
 
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SOLRDAO solrDAO;
     
-    public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
+    /**
+     * @param solrDAO          the SOLDAO to set
+     */
+    public void setSolrDAO(SOLRDAO solrDAO)
     {
-        this.solrTrackingComponent = solrTrackingComponent;
+        this.solrDAO = solrDAO;
     }
-
+    
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
-        String minTxnIdParam = req.getParameter("minTxnId");
+        String minAclChangeSetIdParam = req.getParameter("minAclChangeSetId");
         String fromCommitTimeParam = req.getParameter("fromCommitTime");
         String maxResultsParam = req.getParameter("maxResults");
 
-        Long minTxnId = (minTxnIdParam == null ? null : Long.valueOf(minTxnIdParam));
+        Long minAclChangeSetId = (minAclChangeSetIdParam == null ? null : Long.valueOf(minAclChangeSetIdParam));
         Long fromCommitTime = (fromCommitTimeParam == null ? null : Long.valueOf(fromCommitTimeParam));
         int maxResults = (maxResultsParam == null ? 0 : Integer.valueOf(maxResultsParam));
         
-        List<Transaction> transactions = solrTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxResults);
+        List<Transaction> transactions = solrDAO.getTransactions(minAclChangeSetId, fromCommitTime, maxResults);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("transactions", transactions);
@@ -69,5 +71,4 @@ public class GetTransactions extends DeclarativeWebScript
         
         return model;
     }
-
 }

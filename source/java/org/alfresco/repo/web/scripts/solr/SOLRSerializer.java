@@ -52,7 +52,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class SOLRSerializer
+/**
+ * SOLR conversions of values to JSON-compatible <tt>String</tt>.
+ * 
+ * @since 4.0
+ */
+/* package */ class SOLRSerializer
 {
     protected static final Log logger = LogFactory.getLog(SOLRSerializer.class);
     

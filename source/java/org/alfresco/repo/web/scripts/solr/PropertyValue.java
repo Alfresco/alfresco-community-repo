@@ -1,6 +1,6 @@
 package org.alfresco.repo.web.scripts.solr;
 
-/*
+/**
  * Represents a property value to be used by Freemarker
  * 
  * @since 4.0

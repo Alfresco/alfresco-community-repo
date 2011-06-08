@@ -21,6 +21,8 @@ function getDoclist()
 
    // Try to find a filter query based on the passed-in arguments
    var allNodes = [],
+      totalRecords,
+      paged = false,
       favourites = Common.getFavourites(),
       filterParams = Filters.getFilterParams(filter, parsedArgs,
       {
@@ -39,30 +41,28 @@ function getDoclist()
        {
           var ignoreTypes=["cm:thumbnail", "fm:forums","fm:forum","fm:topic","fm:post"];
           
-          allNodes = parentNode.childFileFolders(true, true, ignoreTypes);
+          var skip = -1;
+          var max = -1;
           
-          // TODO push down sorting to FileFolderService.list (see also AlfrescoCmisService.getChildren)
-          if ((args.sortField == null) || (args.sortField == "cm:name"))
+          if (args.size != null)
           {
-             sortByName(allNodes, args.sortAsc);
+             max = args.size;
+             
+             if (args.pos > 0)
+             {
+                skip = (args.pos - 1) * max;
+             }
           }
-          else if (args.sortField == "cm:content.size")
-          {
-             sortBySize(allNodes, args.sortAsc);
-          }
-          else if (args.sortField == "cm:content.mimetype")
-          {
-             sortByMimetype(allNodes, args.sortAsc);
-          }
-          else if ((args.sortField == "cm:created") || (args.sortField == "cm:modified"))
-          {
-             sortByPropDate(allNodes, args.sortAsc, args.sortField);
-          }
-          else
-          {
-             // assume string (=> supports toLowerCase)
-             sortByPropStr(allNodes, args.sortAsc, args.sortField);
-          }
+          
+          var sortField = (args.sortField == null ? "cm:name" : args.sortField);
+          var sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
+          
+          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, sortField, sortAsc);
+          
+          allNodes = pagedResult.result;
+          totalRecords = pagedResult.totalCount;
+          
+          paged = true;
        }
    }
    else
@@ -112,8 +112,8 @@ function getDoclist()
    // Node type counts
    var folderNodesCount = folderNodes.length,
       documentNodesCount = documentNodes.length,
-      nodes, totalRecords;
-
+      nodes;
+   
    if (parsedArgs.type === "documents")
    {
       nodes = documentNodes;
@@ -123,16 +123,20 @@ function getDoclist()
       // TODO: Sorting with folders at end -- swap order of concat()
       nodes = folderNodes.concat(documentNodes);
    }
-   totalRecords = nodes.length;
    
    // Pagination
    var pageSize = args.size || nodes.length,
       pagePos = args.pos || "1",
       startIndex = (pagePos - 1) * pageSize;
-
-   // Trim the nodes array down to the page size
-   nodes = nodes.slice(startIndex, pagePos * pageSize);
-
+   
+   if (! paged)
+   {
+       totalRecords = nodes.length;
+       
+       // Trim the nodes array down to the page size
+       nodes = nodes.slice(startIndex, pagePos * pageSize);
+   }
+   
    // Common or variable parent container?
    var parent = null;
    
@@ -256,89 +260,6 @@ function getDoclist()
       items: items
    });
 }
-
-// TEMP
-function sortByName(arr, sortAsc)
-{
-      arr.sort
-      (
-         function( a, b )
-         {
-           return ((sortAsc == null) || (sortAsc == "true"))
-              ? (b.name.toLowerCase() > a.name.toLowerCase() ? -1 : 1)
-              : (a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 1);
-         }
-      );
-}
-
-// TEMP
-function sortBySize(arr, sortAsc)
-{
-      arr.sort
-      (
-         function( a, b )
-         {
-           return ((sortAsc == null) || (sortAsc == "true"))
-              ? (b.size > a.size ? -1 : 1)
-              : (a.size > b.size ? -1 : 1);
-        } 
-      );
-}
-
-// TEMP
-function sortByMimetype(arr, sortAsc)
-{
-      arr.sort
-      (
-         function( a, b )
-         {
-           return ((sortAsc == null) || (sortAsc == "true"))
-              ? (b.mimetype.toLowerCase() > a.mimetype.toLowerCase() ? -1 : 1)
-              : (a.mimetype.toLowerCase() > b.mimetype.toLowerCase() ? -1 : 1);
-        } 
-      );
-}
-
-// TEMP
-function sortByPropStr(arr, sortAsc, sortField)
-{
-      arr.sort
-      (
-         function( a, b )
-         {
-            var aStr = a.properties[sortField];
-            if (aStr == null)
-            {
-               aStr = "";
-            }
-            
-            var bStr = b.properties[sortField];
-            if (bStr == null)
-            {
-               bStr = "";
-            }
-            
-            return ((sortAsc == null) || (sortAsc == "true"))
-              ? (bStr == "" && aStr != "" ? -1 : (bStr != "" && aStr == "" ? 1 : (bStr.toLowerCase() > aStr.toLowerCase() ? -1 : 1)))
-              : (aStr == "" && bStr != "" ? -1 : (aStr != "" && bStr == "" ? 1 : (aStr.toLowerCase() > bStr.toLowerCase() ? -1 : 1)));          
-          }
-      );
-}
-
-// TEMP
-function sortByPropDate(arr, sortAsc, sortField)
-{
-      arr.sort
-      (
-         function( a, b )
-         {
-           return ((sortAsc == null) || (sortAsc == "true"))
-              ? (b.properties[sortField] - a.properties[sortField])
-              : (a.properties[sortField] - b.properties[sortField]);
-         }
-      );
-}
-
 
 /**
  * Document List Component: doclist

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,7 +36,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.HttpStatus;
@@ -48,12 +46,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * 
  * A web service to return the text content (transformed if required) of a node's
  * content property.
  * 
  * @since 4.0
- *
  */
 public class GetNodeContent extends StreamContent
 {
@@ -87,7 +83,7 @@ public class GetNodeContent extends StreamContent
     }
 
     /**
-     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+     * @in
      */
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
@@ -155,47 +151,38 @@ public class GetNodeContent extends StreamContent
             return;            
         }
 
-        // optimisation - already text so just return the content directly
-        // TODO - better way of doing this?
-        if(reader.getMimetype().startsWith("text/"))
+        // Perform transformation catering for mimetype AND encoding
+        ContentWriter writer = contentService.getTempWriter();
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");                            // Expect transformers to produce UTF-8
+
+        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        if(transformer == null)
         {
-            textReader = reader;
+            res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
+            res.setStatus(HttpStatus.SC_NO_CONTENT);
+            return;
         }
-        else
+
+        try
         {
-            ContentWriter writer = contentService.getTempWriter();
-            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            writer.setEncoding("UTF-8");
-    
-            TransformationOptions options = new TransformationOptions();
-            ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            if(transformer == null)
-            {
-                res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
-                res.setStatus(HttpStatus.SC_NO_CONTENT);
-                return;
-            }
+            transformer.transform(reader, writer);
+        }
+        catch (ContentIOException e)
+        {
+            transformException = e;
+        }
 
-            try
+        if(transformException == null)
+        {
+            // point the reader to the new-written content
+            textReader = writer.getReader();
+            // Check that the reader is a view onto something concrete
+            if (textReader == null || !textReader.exists())
             {
-                // TODO how to ensure UTF-8 in the transformed text?
-                transformer.transform(reader, writer);
-            }
-            catch (ContentIOException e)
-            {
-                transformException = e;
-            }
-
-            if(transformException == null)
-            {
-                // point the reader to the new-written content
-                textReader = writer.getReader();
-                // Check that the reader is a view onto something concrete
-                if (textReader == null || !textReader.exists())
-                {
-                    transformException = new ContentIOException("The transformation did not write any content, yet: \n"
-                            + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
-                }
+                transformException = new ContentIOException(
+                        "The transformation did not write any content, yet: \n"
+                        + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
             }
         }
 
@@ -210,17 +197,5 @@ public class GetNodeContent extends StreamContent
             res.setStatus(HttpStatus.SC_OK);
             streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
         }
-        
-        /*        writer.addListener(new ContentStreamListener()
-        {
-
-            @Override
-            public void contentStreamClosed() throws ContentIOException
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-        });*/
     }
 }

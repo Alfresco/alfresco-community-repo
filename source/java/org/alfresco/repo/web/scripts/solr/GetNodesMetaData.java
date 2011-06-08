@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -47,7 +48,6 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-// TODO how to hook into bulk loading of nodes + properties + aspects?
 // todo url parameter to remove whitespace in results - make it the default?
 public class GetNodesMetaData extends DeclarativeWebScript
 {
@@ -217,7 +217,7 @@ public class GetNodesMetaData extends DeclarativeWebScript
             throw new WebScriptException("Invalid JSON", e);
         }
     }
-    
+
     /*
      * Bean to store node meta data for use by FreeMarker templates
      */
@@ -227,7 +227,7 @@ public class GetNodesMetaData extends DeclarativeWebScript
         private NodeRef nodeRef;
         private QName nodeType;
         private Long aclId;
-        private Map<String, String> properties;
+        private Map<String, PropertyValue> properties;
         private Set<QName> aspects;
         private List<String> paths;
         private List<ChildAssociationRef> childAssocs;
@@ -242,30 +242,24 @@ public class GetNodesMetaData extends DeclarativeWebScript
             
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
-            for(Path path : nodeMetaData.getPaths())
+            for(Pair<Path, QName> pair : nodeMetaData.getPaths())
             {
-                paths.add(solrSerializer.serializeValue(String.class, path));
+                JSONObject o = new JSONObject();
+                o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
+                o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));
+                paths.add(o.toString(3));
             }
             setPaths(paths);
 
             setChildAssocs(nodeMetaData.getChildAssocs());
             setAspects(nodeMetaData.getAspects());
             Map<QName, Serializable> props = nodeMetaData.getProperties();
-            Map<String, String> properties = (props != null ? new HashMap<String, String>(props.size()) : null);
+            Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
             for(QName propName : props.keySet())
             {
                 Serializable value = props.get(propName);
-// deal with mutli value here
-//                if(value instanceof ContentDataWithId)
-//                {
-//                    // special case - ContentDataWithId
-//                    properties.put(propName, String.valueOf(((ContentDataWithId)value).getId()));
-//                }
-//                else
-//                {
-                    properties.put(solrSerializer.serializeValue(String.class, propName),
-                            solrSerializer.serialize(propName, value));
-//                }
+                properties.put(solrSerializer.serializeValue(String.class, propName),
+                        solrSerializer.serialize(propName, value));
             }
             setProperties(properties);
         }
@@ -310,11 +304,11 @@ public class GetNodesMetaData extends DeclarativeWebScript
         {
             this.aclId = aclId;
         }
-        public Map<String, String> getProperties()
+        public Map<String, PropertyValue> getProperties()
         {
             return properties;
         }
-        public void setProperties(Map<String, String> properties)
+        public void setProperties(Map<String, PropertyValue> properties)
         {
             this.properties = properties;
         }

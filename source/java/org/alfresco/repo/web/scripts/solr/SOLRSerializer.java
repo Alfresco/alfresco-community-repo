@@ -20,20 +20,22 @@ package org.alfresco.repo.web.scripts.solr;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.node.ContentDataWithId;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.AttributeElement;
@@ -46,10 +48,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
-import org.springframework.extensions.webscripts.json.JSONWriter;
+import org.json.JSONObject;
 
-public class SOLRSerializer
+class SOLRSerializer
 {
     protected static final Log logger = LogFactory.getLog(SOLRSerializer.class);
     
@@ -94,11 +97,12 @@ public class SOLRSerializer
         return typeConverter.INSTANCE.convert(String.class, value);
     }
     
-    public String serialize(QName propName, Serializable value) throws IOException
+    @SuppressWarnings("unchecked")
+    public PropertyValue serialize(QName propName, Serializable value) throws IOException, JSONException
     {
         if(value == null)
         {
-            return null;
+            return new PropertyValue(false, "null");
         }
 
         PropertyDefinition propertyDef = dictionaryService.getProperty(propName);
@@ -106,7 +110,7 @@ public class SOLRSerializer
         {
             throw new IllegalArgumentException("Could not find property definition for property " + propName);
         }
-
+        
         boolean isMulti = propertyDef.isMultiValued();
         if(isMulti)
         {
@@ -115,27 +119,34 @@ public class SOLRSerializer
                 throw new IllegalArgumentException("Multi value: expected a collection, got " + value.getClass().getName());
             }
 
-            @SuppressWarnings("unchecked")
             Collection<Serializable> c = (Collection<Serializable>)value;
 
-            StringWriter body = new StringWriter();
-            JSONWriter jsonOut = new JSONWriter(body);
-            jsonOut.startObject();
+            JSONArray body = new JSONArray();
+            for(Serializable o : c)
             {
-                jsonOut.startArray();
-                for(Serializable o : c)
-                {
-                    jsonOut.writeValue(serializeToString(o));
-                }
-                jsonOut.endArray();
+                body.put(serializeValue(String.class, o));
             }
-            jsonOut.endObject();
             
-            return body.toString();
+            return new PropertyValue(false, body.toString());
         }
         else
         {
-            return serializeToString(value);
+            boolean encodeString = true;
+            DataTypeDefinition dataType = propertyDef.getDataType();
+            QName dataTypeName = dataType.getName();
+            if(dataTypeName.equals(DataTypeDefinition.MLTEXT))
+            {
+                encodeString = false;
+            }
+            else if(dataTypeName.equals(DataTypeDefinition.CONTENT))
+            {
+                encodeString = false;
+            }
+            else
+            {
+                encodeString = true;
+            }
+            return new PropertyValue(encodeString, serializeValue(String.class, value));
         }
     }
     
@@ -163,6 +174,31 @@ public class SOLRSerializer
                 }
             }
 
+            // MLText
+            INSTANCE.addConverter(MLText.class, String.class, new TypeConverter.Converter<MLText, String>()
+            {
+                public String convert(MLText source)
+                {
+                    try
+                    {
+                        JSONArray array = new JSONArray();
+                        for(Locale locale : source.getLocales())
+                        {
+                            JSONObject json = new JSONObject();
+                            json.put("locale", DefaultTypeConverter.INSTANCE.convert(String.class, locale));
+                            json.put("value", source.getValue(locale));
+                            array.put(json);
+                        }
+
+                        return array.toString(3);
+                    }
+                    catch(JSONException e)
+                    {
+                        throw new AlfrescoRuntimeException("Unable to serialize content data to JSON", e);
+                    }
+                }
+            });
+            
             // QName
             INSTANCE.addConverter(QName.class, String.class, new TypeConverter.Converter<QName, String>()
             {
@@ -177,7 +213,23 @@ public class SOLRSerializer
             {
                 public String convert(ContentDataWithId source)
                 {
-                    return String.valueOf(source.getId());
+                    JSONObject json = new JSONObject();
+                    try
+                    {
+                        json.put("contentId", String.valueOf(source.getId()));
+                        String locale = INSTANCE.convert(String.class, source.getLocale());
+                        json.put("locale", locale == null ? JSONObject.NULL : locale);
+                        String encoding = source.getEncoding();
+                        json.put("encoding", encoding == null ? JSONObject.NULL : encoding);
+                        String mimetype = source.getMimetype();
+                        json.put("mimetype", mimetype == null ? JSONObject.NULL : mimetype);
+                        json.put("size", String.valueOf(source.getSize()));
+                        return json.toString(3);
+                    }
+                    catch(JSONException e)
+                    {
+                        throw new AlfrescoRuntimeException("Unable to serialize content data to JSON", e);
+                    }
                 }
             });
                     
@@ -300,66 +352,6 @@ public class SOLRSerializer
                     return source.toString();
                 }
             });
-
-            // TODO should be list of Strings, need to double-check
-//            INSTANCE.addConverter(List.class, Path.class, new TypeConverter.Converter<List, Path>()
-//            {
-//                public Path convert(List source)
-//                {
-////                    try
-////                    {
-//                        Path path = new Path();
-//                        for(Object pathElementObj : source)
-//                        {
-//                            String pathElementStr = (String)pathElementObj;
-//                            Path.Element pathElement = null;
-//                            int idx = pathElementStr.indexOf("|");
-//                            if(idx == -1)
-//                            {
-//                                throw new IllegalArgumentException("Unable to deserialize to Path Element, invalid string " + pathElementStr);
-//                            }
-//
-//                            String prefix = pathElementStr.substring(0, idx+1);
-//                            String suffix = pathElementStr.substring(idx+1);
-//                            if(prefix.equals("a|"))
-//                            {
-//                                pathElement = INSTANCE.convert(Path.AttributeElement.class, suffix);
-//                            }
-//                            else if(prefix.equals("p|"))
-//                            {
-//                                pathElement = INSTANCE.convert(Path.ParentElement.class, suffix);
-//                            }
-//                            else if(prefix.equals("c|"))
-//                            {
-//                                pathElement = INSTANCE.convert(Path.ChildAssocElement.class, suffix);
-//                            }
-//                            else if(prefix.equals("s|"))
-//                            {
-//                                pathElement = INSTANCE.convert(Path.SelfElement.class, suffix);
-//                            }
-//                            else if(prefix.equals("ds|"))
-//                            {
-//                                pathElement = new Path.DescendentOrSelfElement();
-//                            }
-////                            else if(prefix.equals("se|"))
-////                            {
-////                                pathElement = new JCRPath.SimpleElement(QName.createQName(suffix));
-////                            }
-//                            else
-//                            {
-//                                throw new IllegalArgumentException("Unable to deserialize to Path, invalid path element string " + pathElementStr);
-//                            }
-//
-//                            path.append(pathElement);
-//                        }
-//                        return path;
-////                    }
-////                    catch(JSONException e)
-////                    {
-////                        throw new IllegalArgumentException(e);
-////                    }
-//                }
-//            });
             
             // associations
             INSTANCE.addConverter(ChildAssociationRef.class, String.class, new TypeConverter.Converter<ChildAssociationRef, String>()

@@ -20,7 +20,6 @@ package org.alfresco.repo.web.scripts.solr;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -171,88 +170,61 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     private JSONArray getNodes(GetNodesParameters parameters, int maxResults, int expectedNumNodes) throws Exception
     {
     	StringBuilder url = new StringBuilder("/api/solr/nodes");
-        StringWriter body = new StringWriter();
-        JSONWriter jsonOut = new JSONWriter(body);
         
-        jsonOut.startObject();
+        JSONObject json = new JSONObject();
+        if(parameters.getTransactionIds() != null)
         {
-            if(parameters.getTransactionIds() != null)
+            JSONArray array = new JSONArray();
+            for(Long txnId : parameters.getTransactionIds())
             {
-                jsonOut.startValue("txnIds");
-                {
-                    jsonOut.startArray();
-                    {
-                        for(Long txnId : parameters.getTransactionIds())
-                        {
-                            jsonOut.writeValue(txnId);
-                        }
-
-                    }
-                    jsonOut.endArray();
-                }
-                jsonOut.endValue();
+                array.put(txnId);
             }
-    	
-        	if(parameters.getFromNodeId() != null)
-        	{
-        	    jsonOut.writeValue("fromNodeId", parameters.getFromNodeId());
-        	}
-        	if(parameters.getToNodeId() != null)
-        	{
-                jsonOut.writeValue("toNodeId", parameters.getToNodeId());
-        	}
-            if(parameters.getExcludeAspects() != null)
-            {
-                jsonOut.startValue("excludeAspects");
-                {
-                    jsonOut.startArray();
-                    {
-                        for(QName excludeAspect : parameters.getExcludeAspects())
-                        {
-                            jsonOut.writeValue(excludeAspect.toString());
-                        }
-                    }
-                    jsonOut.endArray();
-                }
-                jsonOut.endValue();
-            }
-            if(parameters.getIncludeAspects() != null)
-            {
-                jsonOut.startValue("includeAspects");
-                {
-                    jsonOut.startArray();
-                    {
-                        for(QName includeAspect : parameters.getIncludeAspects())
-                        {
-                            jsonOut.writeValue(includeAspect.toString());
-                        }
-                    }
-                    jsonOut.endArray();
-                }
-                jsonOut.endValue();
-            }
-
-            if(parameters.getStoreProtocol() != null)
-            {
-                jsonOut.writeValue("storeProtocol", parameters.getStoreProtocol());
-            }
-
-            if(parameters.getStoreIdentifier() != null)
-            {
-                jsonOut.writeValue("storeIdentifier", parameters.getStoreIdentifier());
-            }
-            
-            jsonOut.writeValue("maxResults", maxResults);
+            json.put("txnIds", array);
         }
-        jsonOut.endObject();
+    	
+    	if(parameters.getFromNodeId() != null)
+    	{
+    	    json.put("fromNodeId", parameters.getFromNodeId());
+    	}
 
-//    	if(maxResults != null)
-//    	{
-//    		url.append("&maxResults=");
-//    		url.append(maxResults);
-//    	}
+    	if(parameters.getToNodeId() != null)
+    	{
+            json.put("toNodeId", parameters.getToNodeId());
+    	}
+    	
+        if(parameters.getExcludeAspects() != null)
+        {
+            JSONArray array = new JSONArray();
+            for(QName excludeAspect : parameters.getExcludeAspects())
+            {
+                array.put(excludeAspect.toString());
+            }
+            json.put("excludeAspects", array);
+        }
+        
+        if(parameters.getIncludeAspects() != null)
+        {
+            JSONArray array = new JSONArray();
+            for(QName includeAspect : parameters.getIncludeAspects())
+            {
+                array.put(includeAspect.toString());
+            }
+            json.put("includeAspects", array);
+        }
 
-        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url.toString(), body.toString(), "application/json");
+        if(parameters.getStoreProtocol() != null)
+        {
+            json.put("storeProtocol", parameters.getStoreProtocol());
+        }
+
+        if(parameters.getStoreIdentifier() != null)
+        {
+            json.put("storeIdentifier", parameters.getStoreIdentifier());
+        }
+            
+        json.put("maxResults", maxResults);
+
+        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url.toString(), json.toString(), "application/json");
  
         long startTime = System.currentTimeMillis();
     	Response response = sendRequest(req, Status.STATUS_OK, admin);
@@ -265,10 +237,10 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     		logger.debug(response.getContentAsString());
     	}
     	//System.out.println("getNodes: " + response.getContentAsString());
-        JSONObject json = new JSONObject(response.getContentAsString());
-        json.write(new PrintWriter(System.out));
+        JSONObject jsonResponse = new JSONObject(response.getContentAsString());
+        jsonResponse.write(new PrintWriter(System.out));
 
-        JSONArray nodes = json.getJSONArray("nodes");
+        JSONArray nodes = jsonResponse.getJSONArray("nodes");
 
         //assertEquals("Node count is incorrect", nodes.length(), json.getInt("count"));
 
@@ -565,30 +537,21 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     private JSONArray getNodesMetaData(List<Long> nodeIds, int maxResults, int numMetaDataNodes) throws Exception
     {
         StringBuilder url = new StringBuilder("/api/solr/metadata");
-        StringWriter body = new StringWriter();
-        JSONWriter jsonOut = new JSONWriter(body);
-        
-        jsonOut.startObject();
+
+        JSONObject json = new JSONObject();
+        if(nodeIds != null && nodeIds.size() > 0)
         {
-            if(nodeIds != null && nodeIds.size() > 0)
+            JSONArray array = new JSONArray();
+            for(Long nodeId : nodeIds)
             {
-                jsonOut.startValue("nodeIds");
-                {
-                    jsonOut.startArray();
-                    for(Long nodeId : nodeIds)
-                    {
-                        jsonOut.writeValue(nodeId);
-                    }
-                    jsonOut.endArray();
-                }
-                jsonOut.endValue();
+                array.put(nodeId);
             }
-
-            jsonOut.writeValue("maxResults", maxResults);
+            json.put("nodeIds", array);
         }
-        jsonOut.endObject();
 
-        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url.toString(), body.toString(), "application/json");
+        json.put("maxResults", maxResults);
+
+        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url.toString(), json.toString(), "application/json");
         long startTime = System.currentTimeMillis();
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         long endTime = System.currentTimeMillis();
@@ -600,9 +563,9 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             logger.debug("nodesMetaData = " + content);
         }
 
-        JSONObject json = new JSONObject(content);
+        JSONObject jsonResponse = new JSONObject(content);
 
-        JSONArray nodes = json.getJSONArray("nodes");
+        JSONArray nodes = jsonResponse.getJSONArray("nodes");
 
         System.out.println("Got metadata for " + nodes.length() + " nodes in " + (endTime - startTime) + " ms");
         
@@ -648,7 +611,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         });
     }
     
-    public void testGetTransactions1() throws Exception
+/*    public void testGetTransactions1() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
@@ -1046,7 +1009,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         parameters.setTransactionIds(transactionIds);
         parameters.setExcludeAspects(excludeAspects);
         JSONArray nodes = getNodes(parameters, 0, 51);
-    }
+    }*/
     
     public void testNodeMetaData() throws Exception
     {
@@ -1092,9 +1055,12 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         List<Path> expectedPaths = nodeService.getPaths(expectedNodeRef, false);
         for(int i = 0; i < paths.length(); i++)
         {
-            String path = paths.getString(i);
+            JSONObject o = paths.getJSONObject(i);
+            String path = o.getString("path");
+            String qname = o.has("qname") ? o.getString("qname") : null;
             String expectedPath = expectedPaths.get(i).toString();
             assertEquals("Path element " + i + " is incorrect", expectedPath, path);
+            assertNull("qname should be null", qname);
         }
     }
 

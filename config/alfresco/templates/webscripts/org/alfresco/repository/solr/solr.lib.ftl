@@ -15,9 +15,6 @@
       }
 </#macro>
 
-<#--
-TODO property values: string, number, date (at the moment all output as string)
--->
 <#macro nodeMetaDataJSON nodeMetaData filter>
       {
          "id": ${nodeMetaData.nodeId?c},
@@ -27,10 +24,7 @@ TODO property values: string, number, date (at the moment all output as string)
          <#if filter.includeProperties??>
          "properties": {
            <#list nodeMetaData.properties?keys as propName>
-               "${propName}": "${nodeMetaData.properties[propName]}"<#if propName_has_next>,</#if>
-<#--
-               <@qNameJSON qName=propQName/>: "${nodeMetaData.properties[propQName]}"<#if propQName_has_next>,</#if>
--->
+               "${propName}": ${nodeMetaData.properties[propName]}<#if propName_has_next>,</#if>
            </#list>
          },
          </#if>
@@ -44,10 +38,7 @@ TODO property values: string, number, date (at the moment all output as string)
          <#if filter.includePaths??>
          "paths": [
            <#list nodeMetaData.paths as path>
-           "${path}"<#if path_has_next>,</#if>
-<#--
-               <@pathJSON path=path indent=""/><#if path_has_next>,</#if>
--->
+           ${path}<#if path_has_next>,</#if>
            </#list>
          ]
          </#if>
@@ -57,7 +48,7 @@ TODO property values: string, number, date (at the moment all output as string)
 <#macro pathJSON path indent="">
 ${indent}[
 <#list path as element>
-${indent}"${element}"<#if element_has_next>,</#if>
+${indent}${element}<#if element_has_next>,</#if>
 </#list>
 ${indent}]
 </#macro>

@@ -202,13 +202,12 @@ public class GetNodeContent extends StreamContent
 
         if(transformException != null)
         {
-            res.setHeader(TRANSFORM_STATUS_HEADER, "failed");
+            res.setHeader(TRANSFORM_STATUS_HEADER, "transformFailed");
             res.setHeader(TRANSFORM_EXCEPTION_HEADER, transformException.getMessage());
-            res.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            res.setStatus(HttpStatus.SC_NO_CONTENT);
         }
         else
         {
-            res.setHeader(TRANSFORM_STATUS_HEADER, "ok");
             res.setStatus(HttpStatus.SC_OK);
             streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
         }

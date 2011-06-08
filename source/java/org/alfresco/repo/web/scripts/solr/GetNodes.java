@@ -109,7 +109,29 @@ public class GetNodes extends DeclarativeWebScript
                     includeAspects.add(QName.createQName(aIncludeAspects.getString(i).trim()));
                 }
             }
+            
+            Set<QName> excludeNodeTypes = null;
+            if(o.has("excludeNodeTypes"))
+            {
+                JSONArray aExcludeNodeTypes = o.getJSONArray("excludeNodeTypes");
+                excludeNodeTypes = new HashSet<QName>(aExcludeNodeTypes.length());
+                for(int i = 0; i < aExcludeNodeTypes.length(); i++)
+                {
+                    excludeNodeTypes.add(QName.createQName(aExcludeNodeTypes.getString(i).trim()));
+                }
+            }
 
+            Set<QName> includeNodeTypes = null;
+            if(o.has("includeNodeTypes"))
+            {
+                JSONArray aIncludeNodeTypes = o.getJSONArray("includeNodeTypes");
+                includeNodeTypes = new HashSet<QName>(aIncludeNodeTypes.length());
+                for(int i = 0; i < aIncludeNodeTypes.length(); i++)
+                {
+                    includeNodeTypes.add(QName.createQName(aIncludeNodeTypes.getString(i).trim()));
+                }
+            }
+            
             // 0 or Integer.MAX_VALUE => ignore
             int maxResults = o.has("maxResults") ? o.getInt("maxResults") : 0;
 
@@ -135,6 +157,8 @@ public class GetNodes extends DeclarativeWebScript
             nodeParameters.setToNodeId(toNodeId);
             nodeParameters.setExcludeAspects(excludeAspects);
             nodeParameters.setIncludeAspects(includeAspects);
+            nodeParameters.setExcludeNodeTypes(excludeNodeTypes);
+            nodeParameters.setIncludeNodeTypes(includeNodeTypes);
             nodeParameters.setStoreProtocol(storeProtocol);
             nodeParameters.setStoreIdentifier(storeIdentifier);
             nodeParameters.setMaxResults(maxResults);

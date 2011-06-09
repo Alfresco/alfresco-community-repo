@@ -1233,6 +1233,24 @@
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
    </bean>
 
+   <bean id="webscript.org.alfresco.repository.solr.acls.post"
+         class="org.alfresco.repo.web.scripts.solr.AclsGet"
+         parent="webscript">
+      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.solr.acls.get"
+         parent="webscript.org.alfresco.repository.solr.acls.post" />
+
+   <bean id="webscript.org.alfresco.repository.solr.aclsReaders.post"
+         class="org.alfresco.repo.web.scripts.solr.AclsReadersGet"
+         parent="webscript">
+      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.solr.aclsReaders.get" 
+         parent="webscript.org.alfresco.repository.solr.aclsReaders.post" />
+
    <bean id="webscript.org.alfresco.repository.solr.transactions.get"
          class="org.alfresco.repo.web.scripts.solr.TransactionsGet"
          parent="webscript">

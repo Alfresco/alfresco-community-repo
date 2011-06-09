@@ -1,8 +1,8 @@
 function main()
 {
     // Extract template args
-    var itemKind = url.templateArgs["item_kind"];
-    var itemId = url.templateArgs["item_id"];
+    var itemKind = decodeURIComponent(url.templateArgs["item_kind"]);
+    var itemId = decodeURIComponent(url.templateArgs["item_id"]);
 
     if (logger.isLoggingEnabled())
     {

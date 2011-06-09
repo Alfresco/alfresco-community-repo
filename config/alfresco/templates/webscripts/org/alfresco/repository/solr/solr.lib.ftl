@@ -6,6 +6,26 @@
       }
 </#macro>
 
+<#macro aclJSON acl>
+      {
+         "id": ${acl.id?c},
+         "aclChangeSetId": ${acl.aclChangeSetId?c}
+      }
+</#macro>
+
+<#macro aclReadersJSON aclReaders>
+      {
+         "aclId": ${aclReaders.aclId?c},
+         "readers" :
+         [
+            <#list aclReaders.readers as reader>
+               ${reader?string}
+               <#if reader_has_next>,</#if>
+            </#list>
+         ]
+      }
+</#macro>
+
 <#macro transactionJSON txn>
       {
          "id": ${txn.id?c},

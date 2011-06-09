@@ -26,17 +26,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.solr.Acl;
+import org.alfresco.repo.solr.AclChangeSet;
+import org.alfresco.repo.solr.AclReaders;
+import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -61,19 +65,15 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @since 4.0
  */
-// TODO check txn ids are correct - how to get txn ids?
-// TODO create a node in txn1 and delete it in txn2 - only the delete in txn2 appears. Will SOLR not then see this as deletion of a non-existent node?
-// TODO test getTxns: combinations of fromTxnId, fromCommitTime, maxResults
-// TODO move/duplicate tests to SOLRDAO tests
 public class SOLRWebScriptTest extends BaseWebScriptTest
 {
     protected static final Log logger = LogFactory.getLog(SOLRWebScriptTest.class);
 
     private ApplicationContext ctx;
+    private SOLRTrackingComponent solrTrackingComponent;
     private NodeDAO nodeDAO;
     private TransactionService transactionService;
     private NodeService nodeService;
-    private ContentService contentService;
     private FileFolderService fileFolderService;
     private RetryingTransactionHelper txnHelper;
     private NamespaceService namespaceService;
@@ -81,33 +81,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     private String admin;
 
     private StoreRef storeRef;
-    private StoreRef storeRef1;
     private NodeRef rootNodeRef;
-    private NodeRef rootNodeRef1;
-    
-    private NodeRef container1;
-    private NodeRef container2;
     private NodeRef container3;
-    private NodeRef container4;
-    private NodeRef container5;
-    private NodeRef content1;
-    private NodeRef content2;
-    private NodeRef content3;
-
-    private long container1NodeID;
-    private long container2NodeID;
-    private long container3NodeID;
-    private long container4NodeID;
-    private long container5NodeID;
-    private long content1NodeID;
-    private long content2NodeID;
-    private long content3NodeID;
-    private long content4NodeID;
-    private long content5NodeID;
-    
-    private JSONObject firstNode;
-    private JSONObject secondNode;
-    private JSONObject thirdNode;
 
     private ArrayList<NodeRef> contents = new ArrayList<NodeRef>(100);
     private List<Long> nodeIDs = new ArrayList<Long>(100);
@@ -121,11 +96,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
-        contentService = serviceRegistry.getContentService();
         fileFolderService = serviceRegistry.getFileFolderService();
         namespaceService = serviceRegistry.getNamespaceService();
         txnHelper = transactionService.getRetryingTransactionHelper();
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
 
         admin = AuthenticationUtil.getAdminUserName();
 
@@ -133,9 +108,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         
         storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + ".1." + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
-        storeRef1 = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + ".2." + System.currentTimeMillis());
-        rootNodeRef1 = nodeService.getRootNode(storeRef1);
     }
 
     @Override
@@ -160,7 +132,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         JSONArray transactions = json.getJSONArray("transactions");
         
-        System.out.println("Got " + transactions.length() + " txns in " + (endTime - startTime) + " ms");
+        logger.debug("Got " + transactions.length() + " txns in " + (endTime - startTime) + " ms");
         
         return transactions;
     }
@@ -181,7 +153,119 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         JSONArray aclChangeSets = json.getJSONArray("aclChangeSets");
         
-        System.out.println("Got " + aclChangeSets.length() + " txns in " + (endTime - startTime) + " ms");
+        logger.debug("Got " + aclChangeSets.length() + " txns in " + (endTime - startTime) + " ms");
+    }
+
+    public void testAclsGet() throws Exception
+    {
+        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 100);
+        if (aclChangeSets.size() == 0)
+        {
+            return;         // Can't test, but very unlikely
+        }
+        // Build JSON using these
+        JSONObject json = new JSONObject();
+        JSONArray aclChangeSetIdsJSON = new JSONArray();
+        int count = 0;
+        List<Long> aclChangeSetIds = new ArrayList<Long>();
+        for (AclChangeSet aclChangeSet : aclChangeSets)
+        {
+            if (count >= 512)
+            {
+                break;
+            }
+            if (aclChangeSet.getAclCount() == 0)
+            {
+                continue;           // No ACLs
+            }
+            Long aclChangeSetId = aclChangeSet.getId();
+            aclChangeSetIdsJSON.put(aclChangeSetId);
+            aclChangeSetIds.add(aclChangeSetId);
+            count++;
+        }
+        json.put("aclChangeSetIds", aclChangeSetIdsJSON);
+        
+        String url = "/api/solr/acls";
+        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
+        Response response = sendRequest(req, Status.STATUS_OK, admin);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug(response.getContentAsString());
+        }
+        json = new JSONObject(response.getContentAsString());
+        JSONArray acls = json.getJSONArray("acls");
+        
+        // Check
+        List<Acl> aclsCheck = solrTrackingComponent.getAcls(aclChangeSetIds, null, 512);
+        assertEquals("Script and API returned different number of results", aclsCheck.size(), acls.length());
+    }
+    
+    public void testAclReadersGet() throws Exception
+    {
+        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 1024);
+        List<Long> aclChangeSetIds = new ArrayList<Long>(50);
+        for (AclChangeSet aclChangeSet : aclChangeSets)
+        {
+            if (aclChangeSet.getAclCount() > 0)
+            {
+                aclChangeSetIds.add(aclChangeSet.getId());
+                break;
+            }
+        }
+        if (aclChangeSetIds.size() == 0)
+        {
+            // No ACLs; not likely
+        }
+        List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, null, 1024);
+        List<Long> aclIds = new ArrayList<Long>(acls.size());
+        JSONObject json = new JSONObject();
+        JSONArray aclIdsJSON = new JSONArray();
+        for (Acl acl : acls)
+        {
+            Long aclId = acl.getId();
+            aclIds.add(aclId);
+            aclIdsJSON.put(aclId);
+        }
+        json.put("aclIds", aclIdsJSON);
+        
+        // Now get the readers
+        List<AclReaders> aclsReaders = solrTrackingComponent.getAclsReaders(aclIds);
+        assertEquals("Should have same number of ACLs as supplied", aclIds.size(), aclsReaders.size());
+        assertTrue("Must have *some* ACLs here", aclIds.size() > 0);
+        Map<Long, Set<String>> readersByAclId = new HashMap<Long, Set<String>>();
+        for (AclReaders aclReaders : aclsReaders)
+        {
+            readersByAclId.put(aclReaders.getAclId(), aclReaders.getReaders());
+        }
+        
+        // Now query using the webscript
+        String url = "/api/solr/aclsReaders";
+        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
+        Response response = sendRequest(req, Status.STATUS_OK, admin);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug(response.getContentAsString());
+        }
+        json = new JSONObject(response.getContentAsString());
+        JSONArray aclsReadersJSON = json.getJSONArray("aclsReaders");
+        // Check
+        assertEquals("Script and API returned different number of results", readersByAclId.size(), aclsReadersJSON.length());
+        
+        // Iterate of the JSON and ensure that the list of ACL readers is correct
+        for (int i = 0; i < aclsReadersJSON.length(); i++)
+        {
+            // Choose an ACL and check the readers
+            JSONObject aclReadersJSON = aclsReadersJSON.getJSONObject(i);
+            Long aclIdJSON = aclReadersJSON.getLong("aclId");
+            Set<String> readersCheck = readersByAclId.get(aclIdJSON);
+            JSONArray readersJSON = aclReadersJSON.getJSONArray("readers");
+            assertEquals("Readers list for ACL " + aclIdJSON + " is wrong. ", readersCheck.size(), readersJSON.length());
+            for (int j = 0; j < readersJSON.length(); j++)
+            {
+                String readerJSON = readersJSON.getString(j);
+                assertTrue("Found reader not in check set: " + readerJSON, readersCheck.contains(readerJSON));
+            }
+        }
     }
 
     private JSONArray getNodes(GetNodesParameters parameters, int maxResults, int expectedNumNodes) throws Exception
@@ -253,7 +337,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     	{
     		logger.debug(response.getContentAsString());
     	}
-    	//System.out.println("getNodes: " + response.getContentAsString());
+    	//logger.debug("getNodes: " + response.getContentAsString());
         JSONObject jsonResponse = new JSONObject(response.getContentAsString());
         jsonResponse.write(new PrintWriter(System.out));
 
@@ -261,127 +345,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         //assertEquals("Node count is incorrect", nodes.length(), json.getInt("count"));
 
-        System.out.println("Got " + nodes.length() + " nodes in " + (endTime - startTime) + " ms");
+        logger.debug("Got " + nodes.length() + " nodes in " + (endTime - startTime) + " ms");
 
         assertEquals("Number of returned node meta data results is incorrect", expectedNumNodes, nodes.length());
 
         return nodes;
-    }
-    
-    private void buildTransactions1()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                PropertyMap props = new PropertyMap();
-                props.put(ContentModel.PROP_NAME, "Container1");
-                container1 = nodeService.createNode(
-                		rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_FOLDER,
-                        props).getChildRef();
-                
-            	System.out.println("container1 = " + container1);
-
-            	FileInfo content1Info = fileFolderService.create(container1, "Content1", ContentModel.TYPE_CONTENT);
-            	content1 = content1Info.getNodeRef();
-            	
-                container1NodeID = getNodeID(container1);
-                content1NodeID = getNodeID(content1);
-
-                if(logger.isDebugEnabled())
-                {
-                	logger.debug("content1 = " + content1);
-                }
-            	
-            	return null;
-            }
-        });
-
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-            	FileInfo content2Info = fileFolderService.create(container1, "Content2", ContentModel.TYPE_CONTENT);
-            	content2 = content2Info.getNodeRef();
-                content2NodeID = getNodeID(content2);
-                
-                if(logger.isDebugEnabled())
-                {
-                	logger.debug("content2 = " + content2);
-                }
-            	
-                nodeService.addAspect(content1, ContentModel.ASPECT_TEMPORARY, null);
-            	fileFolderService.delete(content1);
-
-            	return null;
-            }
-        });
-    }
-    
-    private void buildTransactions2()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                PropertyMap props = new PropertyMap();
-                props.put(ContentModel.PROP_NAME, "Container2");
-                container2 = nodeService.createNode(
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_FOLDER,
-                        props).getChildRef();
-                container2NodeID = getNodeID(container2);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("container2 = " + container2);
-                }
-
-                FileInfo content1Info = fileFolderService.create(container2, "Content1", ContentModel.TYPE_CONTENT);
-                content1 = content1Info.getNodeRef();
-                content1NodeID = getNodeID(content1);
-                
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("content1 = " + content1);
-                }
-
-                FileInfo content2Info = fileFolderService.create(container2, "Content2", ContentModel.TYPE_CONTENT);
-                content2 = content2Info.getNodeRef();
-                content2NodeID = getNodeID(content2);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("content2 = " + content2);
-                }
-                
-                return null;
-            }
-        });
-
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                FileInfo content3Info = fileFolderService.create(container2, "Content3", ContentModel.TYPE_CONTENT);
-                content3 = content3Info.getNodeRef();
-                content3NodeID = getNodeID(content3);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("content3 = " + content3);
-                }
-
-                nodeService.addAspect(content1, ContentModel.ASPECT_TEMPORARY, null);
-                fileFolderService.delete(content1);
-                
-                nodeService.setProperty(content3, ContentModel.PROP_NAME, "Content 3 New Name");
-
-                return null;
-            }
-        });
     }
     
     private List<Long> getTransactionIds(JSONArray transactions) throws JSONException
@@ -398,18 +366,20 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         return txnIds;
     }
 
-    public static String join(Collection s, String delimiter) {
+    public static String join(Collection<Object> s, String delimiter)
+    {
         StringBuffer buffer = new StringBuffer();
-        Iterator iter = s.iterator();
-        while (iter.hasNext()) {
+        Iterator<Object> iter = s.iterator();
+        while (iter.hasNext())
+        {
             buffer.append(iter.next());
-            if (iter.hasNext()) {
+            if (iter.hasNext())
+            {
                 buffer.append(delimiter);
             }
         }
         return buffer.toString();
     }
-
     
     private void buildTransactions3()
     {
@@ -425,7 +395,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
                         ContentModel.ASSOC_CHILDREN,
                         ContentModel.TYPE_FOLDER,
                         props).getChildRef();
-                container3NodeID = getNodeID(container3);
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("container3 = " + container3);
@@ -449,79 +418,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         });
     }
 
-    private void buildTransactions4()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                PropertyMap props = new PropertyMap();
-                props.put(ContentModel.PROP_NAME, "Container4");
-                container4 = nodeService.createNode(
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_FOLDER,
-                        props).getChildRef();
-                container4NodeID = getNodeID(container4);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("container4 = " + container4);
-                }
-                                
-                for(int i = 0; i < 100; i++)
-                {
-                    FileInfo content1Info = fileFolderService.create(container4, "Content" + i, ContentModel.TYPE_CONTENT);
-                    NodeRef nodeRef = content1Info.getNodeRef();
-                    contents.add(nodeRef);
-                    nodeIDs.add(getNodeID(nodeRef));
-                    
-                    if(i % 2 == 1)
-                    {
-                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
-                    }
-                }
-                
-                return null;
-            }
-        });
-        
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                PropertyMap props = new PropertyMap();
-                props.put(ContentModel.PROP_NAME, "Container5");
-                container5 = nodeService.createNode(
-                        rootNodeRef1,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_FOLDER,
-                        props).getChildRef();
-                container5NodeID = getNodeID(container5);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("container5 = " + container5);
-                }
-
-                for(int i = 0; i < 100; i++)
-                {
-                    FileInfo content1Info = fileFolderService.create(container5, "Content" + i, ContentModel.TYPE_CONTENT);
-                    NodeRef nodeRef = content1Info.getNodeRef();
-                    contents.add(nodeRef);
-                    nodeIDs.add(getNodeID(nodeRef));
-
-                    if(i % 2 == 1)
-                    {
-                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
-                    }
-                }
-
-                return null;
-            }
-        });
-    }
-    
     private NodeRef container6;
     
     private void buildTransactions5()
@@ -584,7 +480,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         JSONArray nodes = jsonResponse.getJSONArray("nodes");
 
-        System.out.println("Got metadata for " + nodes.length() + " nodes in " + (endTime - startTime) + " ms");
+        logger.debug("Got metadata for " + nodes.length() + " nodes in " + (endTime - startTime) + " ms");
         
         assertEquals("Number of returned nodes is incorrect", numMetaDataNodes, nodes.length());
         
@@ -605,7 +501,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
                         ContentModel.ASSOC_CHILDREN,
                         ContentModel.TYPE_FOLDER,
                         props).getChildRef();
-                long container6NodeID = getNodeID(container6);
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("container6 = " + container6);
@@ -627,406 +522,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             }
         });
     }
-    
-/*    public void testGetTransactions1() throws Exception
-    {
-        long fromCommitTime = System.currentTimeMillis();
-
-        buildTransactions1();
-
-        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime;
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        
-//        assertEquals("Expected application/json content type", "application/json[;charset=UTF-8]", response.getContentType());
-        
-//        System.out.println(response.getContentAsString());
-        JSONObject json = new JSONObject(response.getContentAsString());
-
-        JSONArray transactions = json.getJSONArray("transactions");
-        assertEquals("Number of transactions is incorrect", 2, transactions.length());
-
-        int[] updates = new int[] {1, 1};
-        int[] deletes = new int[] {0, 1};
-        //StringBuilder txnIds = new StringBuilder();
-        int numTxns = transactions.length();
-        List<Long> transactionIds = getTransactionIds(transactions);
-        for(int i = 0; i < numTxns; i++)
-        {
-            JSONObject txn = transactions.getJSONObject(i);
-            assertEquals("Number of deletes is incorrect", deletes[i], txn.getLong("deletes"));
-            assertEquals("Number of updates is incorrect", updates[i], txn.getLong("updates"));
-
-//          txnIds.append(txn.getString("id"));
-//          if(i < (numTxns - 1))
-//          {
-//              txnIds.append(",");
-//          }
-        }
-        
-        // get all nodes at once
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("txnIds = " + transactions.toString());
-        }
-        
-        GetNodesParameters parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        JSONArray nodes = getNodes(parameters, 0, 3);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        JSONObject lastNode = nodes.getJSONObject(2);
-        assertTrue("nodeID is missing", lastNode.has("id"));
-        Long fromNodeId = lastNode.getLong("id");
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("fromNodeId = " + fromNodeId);
-        }
-        assertNotNull("Unexpected null fromNodeId", fromNodeId);
-
-        firstNode = nodes.getJSONObject(0);
-        secondNode = nodes.getJSONObject(1);
-        //assertEquals("Expected transaction ids to be the same", firstNode.getLong("txnID") == secondNode.getLong("txnID"));
-        assertEquals("Expected node update", "u", firstNode.getString("status"));
-        assertEquals("Expected node deleted", "d", secondNode.getString("status"));
-        assertEquals("Node id is incorrect", container1NodeID, firstNode.getLong("id"));
-        assertEquals("Node id is incorrect", content1NodeID, secondNode.getLong("id"));
-
-        // get first 2 nodes
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        nodes = getNodes(parameters, 2, 2);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        lastNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", lastNode.has("id"));
-        fromNodeId = lastNode.getLong("id");
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("fromNodeId = " + fromNodeId);
-        }
-        assertNotNull("Unexpected null fromNodeId", fromNodeId);
-
-        // get 4 nodes starting with fromNodeId, should return only 2 nodes (including fromNodeId)
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setFromNodeId(fromNodeId);
-        nodes = getNodes(parameters, 4, 2);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        firstNode = nodes.getJSONObject(0);
-        secondNode = nodes.getJSONObject(1);
-        assertEquals("Expected node deleted", "d", firstNode.getString("status"));
-        assertEquals("Expected node updated", "u", secondNode.getString("status"));
-        assertEquals("Node id is incorrect", content1NodeID, firstNode.getLong("id"));
-        assertEquals("Node id is incorrect", content2NodeID, secondNode.getLong("id"));
-                
-        // get 0 (all) nodes starting with fromNodeId, should return 2 nodes
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setFromNodeId(fromNodeId);
-        nodes = getNodes(parameters, 0, 2);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        // get 2 nodes ending with toNodeId, should return 2 nodes
-        long toNodeId = content2NodeID;
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setToNodeId(toNodeId);
-        nodes = getNodes(parameters, 2, 2);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        firstNode = nodes.getJSONObject(0);
-        secondNode = nodes.getJSONObject(1);
-        assertEquals("Expected node deleted", "u", firstNode.getString("status"));
-        assertEquals("Node id is incorrect", container1NodeID, firstNode.getLong("id"));
-        assertEquals("Expected node updated", "d", secondNode.getString("status"));
-        assertEquals("Node id is incorrect", content1NodeID, secondNode.getLong("id"));
-
-        // get 1 node ending with toNodeId, should return 1 nodes
-        toNodeId = content2NodeID;
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setToNodeId(toNodeId);
-        nodes = getNodes(parameters, 1, 1);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        firstNode = nodes.getJSONObject(0);
-        assertEquals("Expected node updated", "u", firstNode.getString("status"));
-        assertEquals("Node id is incorrect", container1NodeID, firstNode.getLong("id"));
-
-        // get 3 nodes ending with toNodeId, should return 3 nodes
-        toNodeId = content2NodeID;
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setToNodeId(toNodeId);
-        nodes = getNodes(parameters, 3, 3);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        firstNode = nodes.getJSONObject(0);
-        assertEquals("Expected node updated", "u", firstNode.getString("status"));
-        assertEquals("Node id is incorrect", container1NodeID, firstNode.getLong("id"));
-
-        secondNode = nodes.getJSONObject(1);
-        assertEquals("Expected node deleted", "d", secondNode.getString("status"));
-        assertEquals("Node id is incorrect", content1NodeID, secondNode.getLong("id"));
-
-        thirdNode = nodes.getJSONObject(2);
-        assertEquals("Expected node updated", "u", thirdNode.getString("status"));
-        assertEquals("Node id is incorrect", content2NodeID, thirdNode.getLong("id"));
-    }
-    
-    public void testGetNodesStoreName() throws Exception
-    {
-        long fromCommitTime = System.currentTimeMillis();
-
-        buildTransactions4();
-        
-        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime;
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        
-        if(logger.isDebugEnabled())
-        {
-            logger.debug(response.getContentAsString());
-        }
-        JSONObject json = new JSONObject(response.getContentAsString());
-
-        JSONArray transactions = json.getJSONArray("transactions");
-        assertEquals("Number of transactions is incorrect", 2, transactions.length());
-
-        // first txn has 2 updates rather than three because content1 is deleted in txn 2 and therefore
-        // "belongs" to that txn (because txn2 was the last to alter the node)
-        
-        List<Long> transactionIds = getTransactionIds(transactions);
-
-        // exact store name
-        GetNodesParameters parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setStoreProtocol(storeRef.getProtocol());
-        parameters.setStoreIdentifier(storeRef.getIdentifier());
-        JSONArray nodes = getNodes(parameters, 0, 101);
-        
-        nodes = getNodes(parameters, 50, 50);
-        
-        // store protocol
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setStoreProtocol(storeRef.getProtocol());
-        nodes = getNodes(parameters, 0, 202);
-
-        // store identifier
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setStoreIdentifier(storeRef.getIdentifier());
-        nodes = getNodes(parameters, 0, 101);
-    }
-
-    public void testGetTransactions2() throws Exception
-    {
-        long fromCommitTime = System.currentTimeMillis();
-
-        buildTransactions2();
-
-        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime;
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("txns =");
-            logger.debug(response.getContentAsString());
-        }
-        JSONObject json = new JSONObject(response.getContentAsString());
-
-        JSONArray transactions = json.getJSONArray("transactions");
-        assertEquals("Number of transactions is incorrect", 2, transactions.length());
-
-        // first txn has 2 updates rather than three because content1 is deleted in txn 2 and therefore
-        // "belongs" to that txn (because txn2 was the last to alter the node)
-        int[] updates = new int[] {2, 1};
-        int[] deletes = new int[] {0, 1};
-        StringBuilder txnIds = new StringBuilder();
-        int numTxns = transactions.length();
-        for(int i = 0; i < numTxns; i++)
-        {
-            JSONObject txn = transactions.getJSONObject(i);
-            assertEquals("Number of deletes is incorrect", deletes[i], txn.getLong("deletes"));
-            assertEquals("Number of updates is incorrect", updates[i], txn.getLong("updates"));
-
-            txnIds.append(txn.getString("id"));
-            if(i < (numTxns - 1))
-            {
-                txnIds.append(",");
-            }
-        }
-        
-        // get all nodes at once
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("txnIds = " + txnIds.toString());
-        }
-
-        List<Long> transactionIds = getTransactionIds(transactions);
-        
-        // get all nodes in the txns
-        GetNodesParameters parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        JSONArray nodes = getNodes(parameters, 0, 4);
-        JSONObject lastNode = nodes.getJSONObject(nodes.length() - 1);
-        Long fromNodeId = lastNode.getLong("id");
-        assertNotNull("Unexpected null fromNodeId", fromNodeId);
-
-        // get first 2 nodes
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        nodes = getNodes(parameters, 2, 2);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("nodes:");
-            logger.debug(nodes.toString(3));
-        }
-
-        firstNode = nodes.getJSONObject(0);
-        assertTrue("nodeID is missing", firstNode.has("id"));
-        secondNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", secondNode.has("id"));
-        fromNodeId = secondNode.getLong("id");
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("fromNodeId = " + fromNodeId);
-        }
-        assertNotNull("Unexpected null nodeID", fromNodeId);
-
-        //assertEquals("Expected transaction ids to be the same", firstNode.getLong("txnID"), secondNode.getLong("txnID"));
-        assertEquals("Expected node update", "u", firstNode.getString("status"));
-        assertEquals("Expected node delete", "d", secondNode.getString("status"));
-        assertEquals("Incorrect node id", container2NodeID, firstNode.getLong("id"));
-        assertEquals("Incorrect node id", content1NodeID, secondNode.getLong("id"));
-        
-        // get 10 nodes (including fromNodeId) starting with fromNodeId, should return only 3 nodes
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setFromNodeId(fromNodeId);
-        nodes = getNodes(parameters, 10, 3);
-
-        firstNode = nodes.getJSONObject(0);
-        assertTrue("nodeID is missing", firstNode.has("id"));
-        secondNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", secondNode.has("id"));
-        thirdNode = nodes.getJSONObject(2);
-        assertTrue("nodeID is missing", thirdNode.has("id"));
-
-        assertEquals("Expected node delete", "d", firstNode.getString("status"));
-        assertEquals("Expected node update", "u", secondNode.getString("status"));
-        assertEquals("Expected node update", "u", thirdNode.getString("status"));
-        assertEquals("Incorrect node id", content1NodeID, firstNode.getLong("id"));
-        assertEquals("Incorrect node id", content2NodeID, secondNode.getLong("id"));
-        assertEquals("Incorrect node id", content3NodeID, thirdNode.getLong("id"));
-
-        // test with from and to node ids
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setFromNodeId(container2NodeID);
-        parameters.setToNodeId(content3NodeID);
-        nodes = getNodes(parameters, 2, 2);
-
-        firstNode = nodes.getJSONObject(0);
-        assertTrue("nodeID is missing", firstNode.has("id"));
-        secondNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", secondNode.has("id"));
-        assertEquals("Incorrect node id", container2NodeID, firstNode.getLong("id"));
-        assertEquals("Incorrect node id", content1NodeID, secondNode.getLong("id"));
-
-        // test right truncation
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setToNodeId(content3NodeID);
-        nodes = getNodes(parameters, 2, 2);
-
-        firstNode = nodes.getJSONObject(0);
-        assertTrue("nodeID is missing", firstNode.has("id"));
-        secondNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", secondNode.has("id"));
-        assertEquals("Incorrect node id", container2NodeID, firstNode.getLong("id"));
-        assertEquals("Incorrect node id", content1NodeID, secondNode.getLong("id"));
-        
-        // test left truncation, specifying from node only
-        parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setFromNodeId(container2NodeID);
-        nodes = getNodes(parameters, 2, 2);
-
-        firstNode = nodes.getJSONObject(0);
-        assertTrue("nodeID is missing", firstNode.has("id"));
-        secondNode = nodes.getJSONObject(1);
-        assertTrue("nodeID is missing", secondNode.has("id"));
-        assertEquals("Incorrect node id", container2NodeID, firstNode.getLong("id"));
-        assertEquals("Incorrect node id", content1NodeID, secondNode.getLong("id"));
-    }
-    
-    public void testGetNodesExcludeAspects() throws Exception
-    {
-        long fromCommitTime = System.currentTimeMillis();
-
-        buildTransactions3();
-        
-        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime;
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("txns = ");
-            logger.debug(response.getContentAsString());
-        }
-        JSONObject json = new JSONObject(response.getContentAsString());
-
-        JSONArray transactions = json.getJSONArray("transactions");
-        assertEquals("Number of transactions is incorrect", 1, transactions.length());
-
-        // first txn has 2 updates rather than three because content1 is deleted in txn 2 and therefore
-        // "belongs" to that txn (because txn2 was the last to alter the node)
-        
-        List<Long> transactionIds = getTransactionIds(transactions);
-
-        Set<QName> excludeAspects = new HashSet<QName>(1);
-        excludeAspects.add(ContentModel.ASPECT_TEMPORARY);
-        
-        // get all nodes, exclude nodes with temporary aspect
-        GetNodesParameters parameters = new GetNodesParameters();
-        parameters.setTransactionIds(transactionIds);
-        parameters.setExcludeAspects(excludeAspects);
-        JSONArray nodes = getNodes(parameters, 0, 51);
-    }*/
     
     public void testNodeMetaData() throws Exception
     {
@@ -1064,7 +559,6 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         JSONObject properties = node.getJSONObject("properties");
         Map<QName, String> propertyMap = getPropertyMap(properties);
         
-//        assertEquals("Incorrect number of aspects", 1, aspects.length());
         assertTrue("Expected author aspect", containsAspect(aspects, ContentModel.ASPECT_AUTHOR));
         assertTrue("Expected author property", containsProperty(propertyMap, ContentModel.PROP_AUTHOR, "steve"));
         
@@ -1104,6 +598,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         }
 
         // make sure caches are warm - time last call
+        @SuppressWarnings("unused")
         JSONArray nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
         nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
 
@@ -1176,63 +671,9 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         String value = propertyMap.get(propName);
         return (value == null ? false : value.equals(propValue));
-//        boolean success = false;
-//        for(int i = 0; i < propertiesArray.length(); i++)
-//        {
-//            JSONObject prop = propertiesArray.getJSONObject(i);
-//            prop.keys();
-//            String qName = prop.getString("name");
-//            String value = prop.getString("value");
-//            if(qName.equals(QName.createQName(qName)))
-//            {
-//                success |= (propValue == null ? true : value.equals(propValue));
-//            }
-//            if(success)
-//            {
-//                break;
-//            }
-//        }
-//        
-//        return success;
     }
     
-/*    private void buildTransactions3()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                PropertyMap props = new PropertyMap();
-                props.put(ContentModel.PROP_NAME, "Container1");
-                container3 = nodeService.createNode(
-                        rootNodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.ASSOC_CHILDREN,
-                        ContentModel.TYPE_FOLDER,
-                        props).getChildRef();
-                
-                System.out.println("container1 = " + container1);
-
-                FileInfo content1Info = fileFolderService.create(container3, "Content1", ContentModel.TYPE_CONTENT);
-                content1 = content1Info.getNodeRef();
-                
-                container3NodeID = getNodeID(container3);
-                content1NodeID = getNodeID(content1);
-                
-                ContentWriter writer = contentService.getWriter(content1Info.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                writer.putContent("test content");
-
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("content1 = " + content1);
-                }
-                
-                return null;
-            }
-        });
-    }
-    
-    public void testGetContent() throws Exception
+    public void DISABLED_testGetContent() throws Exception
     {
         long nodeId = -1l;
         String propertyName = ContentModel.PROP_CONTENT.toString();
@@ -1242,14 +683,12 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         String url = "/api/solr/content?nodeId=" + nodeId + "&propertyName=" + propertyName;
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         Response response = sendRequest(req, Status.STATUS_OK, admin);
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("content1 = " + response.getContentAsString());
         }
-
         assertEquals("Content length is incorrect", "test content".length(), response.getContentLength());
-
-    }*/
+    }
     
     private long getNodeID(NodeRef nodeRef)
     {

@@ -22,6 +22,7 @@ function getDoclist()
    // Try to find a filter query based on the passed-in arguments
    var allNodes = [],
       totalRecords,
+      totalRecordsUpper,
       paged = false,
       favourites = Common.getFavourites(),
       filterParams = Filters.getFilterParams(filter, parsedArgs,
@@ -56,11 +57,14 @@ function getDoclist()
           
           var sortField = (args.sortField == null ? "cm:name" : args.sortField);
           var sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
+
+          // TODO review
+          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, (skip + 1000), sortField, sortAsc, "TODO");
           
-          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, sortField, sortAsc);
+          allNodes = pagedResult.page;
           
-          allNodes = pagedResult.result;
-          totalRecords = pagedResult.totalCount;
+          totalRecords      = pagedResult.totalResultCountLower;
+          totalRecordsUpper = pagedResult.totalResultCountUpper;
           
           paged = true;
        }
@@ -240,15 +244,22 @@ function getDoclist()
          }
       }
    }
-
+   
+   var paging =
+            {
+               totalRecords: totalRecords,
+               startIndex: startIndex
+            };
+   
+   if (paged && (! (totalRecords === totalRecordsUpper)))
+   {
+      paging.totalRecordsUpper = totalRecordsUpper;
+   }
+   
    return (
    {
       luceneQuery: query,
-      paging:
-      {
-         totalRecords: totalRecords,
-         startIndex: startIndex
-      },
+      paging: paging,
       container: parsedArgs.rootNode,
       parent: parent,
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),

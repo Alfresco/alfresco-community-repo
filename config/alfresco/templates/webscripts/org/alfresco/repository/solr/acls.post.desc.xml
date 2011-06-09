@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Get ACL ChangeSets</shortname>
-  <description>Get the ACL ChangeSets from the given commit time.</description>
-  <url>/api/solr/aclchangesets?fromId={fromId?}&amp;fromTime={fromTime?}&amp;maxResults={maxResults?}</url>
+  <shortname>Get ACLs</shortname>
+  <description>Get the ACLs for given ChangeSets.</description>
+  <url>/api/solr/acls?fromId={fromId?}&amp;maxResults={maxResults?}</url>
   <format default="json">argument</format>
   <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>
@@ -10,15 +10,17 @@
   <args>
     <arg>
       <name>fromId</name>
-      <description>Smallest changset ID (inclusive)</description>
-    </arg> 
-    <arg>
-      <name>fromTime</name>
-      <description>Smallest commit time (inclusive)</description>
+      <description>Minimum ACL ID that can be specified when exactly one ACL ChangeSet ID is given</description>
     </arg> 
     <arg>
       <name>maxResults</name>
       <description>Maximum number of results (optional: default 1024)</description>
+    </arg> 
+    <arg>
+      <name>POST content</name>
+      <description>
+      { aclChangeSetIds : [ 1, 2, ..., n] }
+      </description>
     </arg> 
  </args>
 </webscript>

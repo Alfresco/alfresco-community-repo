@@ -24,32 +24,29 @@ function getTreeNode()
       {
          return;
       }
-
-      // Look for folders in the pathNode
-      var folders = parsedArgs.pathNode.childFileFolders(false, true, ignoredTypes);
-      for each (item in folders)
+      
+      // Look for folders in the pathNode - sort by ascending name
+      var pagedResult = parsedArgs.pathNode.childFileFolders(false, true, ignoredTypes, 0, maxItems, 0, "cm:name", true, "TODO");
+      
+      if (pagedResult.hasMoreItems() == true)
+      {
+         resultsTrimmed = true;
+      }
+      
+      for each (item in pagedResult.page)
       {
          if (evalChildFolders)
          {
-               hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
+            hasSubfolders = item.childFileFolders(false, true, ignoredTypes, 1).page.length > 0;
          }
-            
+         
          items.push(
          {
-               node: item,
-               hasSubfolders: hasSubfolders
+            node: item,
+            hasSubfolders: hasSubfolders
          });
-            
-         if (maxItems !== -1 && items.length > maxItems)
-         {
-            items.pop();
-            resultsTrimmed = true;
-            break;
-         }
       }
-   
-      items.sort(sortByName);
-   
+      
       return (
       {
          parent: parsedArgs.pathNode,
@@ -62,11 +59,4 @@ function getTreeNode()
       status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
       return;
    }
-}
-
-
-/* Sort the results by case-insensitive name */
-function sortByName(a, b)
-{
-   return (b.node.name.toLowerCase() > a.node.name.toLowerCase() ? -1 : 1);
 }

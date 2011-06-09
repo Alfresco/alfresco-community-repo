@@ -1,0 +1,18 @@
+<webscript>
+  <shortname>Get ACLs readers</shortname>
+  <description>Get the readers for given ACLs.</description>
+  <url>/api/solr/aclsReaders</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+  <args>
+    <arg>
+      <name>POST content</name>
+      <description>
+      { aclIds: [1, 2, 3, ..., N] }
+      </description>
+    </arg> 
+ </args>
+</webscript>

@@ -96,10 +96,9 @@ function main()
     var submissionUrl = formScriptObj.submissionUrl;
     if (submissionUrl === null)
     {
-        // replace characters that can cause issues in URLs
-        var escapedItemId = itemId.replace(':', '_');
-        
-        submissionUrl = '/api/' + itemKind + '/' + escapedItemId + '/formprocessor';
+        // encode the item id and item kind using URI encoding scheme, however, the encoded / character
+        // causes problems when posting back to Apache so change these back
+        submissionUrl = '/api/' + encodeURIComponent(itemKind) + '/' + encodeURIComponent(itemId).replace(/%2f/g, "/") + '/formprocessor';
     }
     
     // create form model

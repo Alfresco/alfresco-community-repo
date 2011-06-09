@@ -2,6 +2,9 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalRecords": ${doclist.paging.totalRecords?c},
+   <#if doclist.paging.totalRecordsUpper??>
+   "totalRecordsUpper": ${doclist.paging.totalRecordsUpper?c},
+   </#if>
    "startIndex": ${doclist.paging.startIndex?c},
    "metadata":
    {

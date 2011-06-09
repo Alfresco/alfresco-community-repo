@@ -171,8 +171,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(URL_SITES), 200);        
         JSONArray result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        int sitesBefore = result.length();
-        assertTrue("There should be at least one site present", sitesBefore > 0);
+        final int preexistingSiteCount = result.length();
         
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
@@ -183,17 +182,17 @@ public class SiteServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(URL_SITES), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(5 + sitesBefore, result.length());
+        assertEquals("Wrong site count", preexistingSiteCount + 5, result.length());
         
         response = sendRequest(new GetRequest(URL_SITES + "?size=3"), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(3, result.length());        
+        assertEquals("Wrong site count (?size=3)", 3, result.length());        
 
         response = sendRequest(new GetRequest(URL_SITES + "?size=13"), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
-        assertEquals(5 + sitesBefore, result.length());
+        assertEquals("Wrong site count (?size=13)", Math.min(13, preexistingSiteCount + 5), result.length());
     }
     
     /**

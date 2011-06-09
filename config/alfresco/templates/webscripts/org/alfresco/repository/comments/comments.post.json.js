@@ -21,6 +21,12 @@ function addComment(node)
    // get a unique name
    var name = getUniqueChildName(commentsFolder, "comment");
    
+   // Add the comments rollup aspect to the commented-upon node.
+   if (!node.hasAspect("fm:commentsRollup"))
+   {
+      node.addAspect("fm:commentsRollup");
+   }
+   
    // create the comment
    var commentNode = commentsFolder.createNode(name, "fm:post");
    commentNode.mimetype = "text/html";

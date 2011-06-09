@@ -180,19 +180,20 @@ public class NodesGet extends DeclarativeWebScript
 
     /**
      * Callback for DAO get nodes query
-     *
      */
     private static class WebNodeQueryCallback implements NodeQueryCallback
     {
     	private ArrayList<Node> nodes;
 
-		public WebNodeQueryCallback(int count) {
+		public WebNodeQueryCallback(int count)
+		{
 			super();
 			nodes = new ArrayList<Node>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
 		}
 
 		@Override
-		public boolean handleNode(Node node) {
+		public boolean handleNode(Node node)
+		{
     		nodes.add(node);
 
     		// continue - get next node
@@ -204,5 +205,4 @@ public class NodesGet extends DeclarativeWebScript
 		    return nodes;
 		}
     }
-
 }

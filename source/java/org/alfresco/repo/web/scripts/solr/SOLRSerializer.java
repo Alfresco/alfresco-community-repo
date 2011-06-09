@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.AttributeElement;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter.Converter;
 import org.alfresco.service.namespace.NamespaceService;
@@ -92,14 +93,22 @@ import org.json.JSONObject;
         this.namespaceService = namespaceService;
     }
 
+    public String serializeToString(Serializable value)
+    {
+        if (value != null && typeConverter.INSTANCE.getConverter(value.getClass(), String.class) == null)
+        {
+            // There is no converter
+            return value.toString();
+        }
+        else
+        {
+            return typeConverter.INSTANCE.convert(String.class, value);
+        }
+    }
+    
     public <T> T serializeValue(Class<T> targetClass, Object value) throws JSONException
     {
         return typeConverter.INSTANCE.convert(targetClass, value);
-    }
-    
-    public String serializeToString(Serializable value)
-    {
-        return typeConverter.INSTANCE.convert(String.class, value);
     }
     
     @SuppressWarnings("unchecked")
@@ -111,13 +120,12 @@ import org.json.JSONObject;
         }
 
         PropertyDefinition propertyDef = dictionaryService.getProperty(propName);
-        if(propertyDef == null)
+        if (propertyDef == null)
         {
-            throw new IllegalArgumentException("Could not find property definition for property " + propName);
+            // Treat it as text
+            return new PropertyValue(true, serializeToString(value));
         }
-        
-        boolean isMulti = propertyDef.isMultiValued();
-        if(isMulti)
+        else if (propertyDef.isMultiValued())
         {
             if(!(value instanceof Collection))
             {
@@ -129,7 +137,7 @@ import org.json.JSONObject;
             JSONArray body = new JSONArray();
             for(Serializable o : c)
             {
-                body.put(serializeValue(String.class, o));
+                body.put(serializeToString(o));
             }
             
             return new PropertyValue(false, body.toString());
@@ -151,7 +159,7 @@ import org.json.JSONObject;
             {
                 encodeString = true;
             }
-            return new PropertyValue(encodeString, serializeValue(String.class, value));
+            return new PropertyValue(encodeString, serializeToString(value));
         }
     }
     

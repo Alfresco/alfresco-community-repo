@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
@@ -483,12 +483,12 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                 }
                 else
                 {
-                    result.append(LuceneQueryParser.escape(token));
+                    result.append(AbstractLuceneQueryParser.escape(token));
                 }
             }
             else
             {
-                result.append(LuceneQueryParser.escape(token));
+                result.append(AbstractLuceneQueryParser.escape(token));
             }
         }
         return result.toString();

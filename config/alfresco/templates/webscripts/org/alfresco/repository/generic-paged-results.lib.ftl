@@ -39,9 +39,12 @@ Usage:
   <#if .vars[pagingVar]??>,
     "paging": 
     {
-      "totalItems": ${.vars[pagingVar].totalItems?c},
       "maxItems": ${.vars[pagingVar].maxItems?c},
-      "skipCount": ${.vars[pagingVar].skipCount?c}
+      "skipCount": ${.vars[pagingVar].skipCount?c},
+      "totalItems": ${.vars[pagingVar].totalItems?c},
+      "totalItemsRangeEnd": <#if .vars[pagingVar].confidence == "RANGE">
+                            ${.vars[pagingVar].totalItemsRangeMax?c}<#else>null</#if>,
+      "confidence": "${.vars[pagingVar].confidence?lower_case}"
     }
   </#if>
 </#escape>

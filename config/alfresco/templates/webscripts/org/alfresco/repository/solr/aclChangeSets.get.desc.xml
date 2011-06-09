@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get ACL ChangeSets</shortname>
+  <description>Get the ACL ChangeSets from the given commit time.</description>
+  <url>/api/solr/aclchangesets?fromId={fromId?}&amp;fromTime={fromTime?}&amp;maxResults={maxResults?}</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+</webscript>

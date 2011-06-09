@@ -25,7 +25,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.repository.NodeLocatorService;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -38,7 +38,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @since 4.0
  *
  */
-public class NodeLocationGet extends DeclarativeWebScript
+public class NodeLocatorGet extends DeclarativeWebScript
 {
     private static final String NODE_ID = "node_id";
     private static final String STORE_ID = "store_id";

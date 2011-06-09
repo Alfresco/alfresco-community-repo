@@ -23,11 +23,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -165,6 +163,25 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         System.out.println("Got " + transactions.length() + " txns in " + (endTime - startTime) + " ms");
         
         return transactions;
+    }
+
+    public void testAclChangeSetsGet() throws Exception
+    {
+        String url = "/api/solr/aclchangesets?fromTime=" + 0L + "&fromId=" + 0L;
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+        long startTime = System.currentTimeMillis();
+        Response response = sendRequest(req, Status.STATUS_OK, admin);
+        long endTime = System.currentTimeMillis();
+
+        if(logger.isDebugEnabled())
+        {
+            logger.debug(response.getContentAsString());
+        }
+        JSONObject json = new JSONObject(response.getContentAsString());
+
+        JSONArray aclChangeSets = json.getJSONArray("aclChangeSets");
+        
+        System.out.println("Got " + aclChangeSets.length() + " txns in " + (endTime - startTime) + " ms");
     }
 
     private JSONArray getNodes(GetNodesParameters parameters, int maxResults, int expectedNumNodes) throws Exception

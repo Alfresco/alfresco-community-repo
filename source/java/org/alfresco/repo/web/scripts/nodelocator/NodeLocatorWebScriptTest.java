@@ -21,13 +21,13 @@ package org.alfresco.repo.web.scripts.nodelocator;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.node.locator.AncestorNodeLocator;
-import org.alfresco.repo.node.locator.CompanyHomeNodeLocator;
-import org.alfresco.repo.node.locator.DocLibNodeLocator;
-import org.alfresco.repo.node.locator.SitesHomeNodeLocator;
-import org.alfresco.repo.node.locator.UserHomeNodeLocator;
-import org.alfresco.repo.node.locator.XPathNodeLocator;
+import org.alfresco.repo.nodelocator.AncestorNodeLocator;
+import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
+import org.alfresco.repo.nodelocator.SitesHomeNodeLocator;
+import org.alfresco.repo.nodelocator.UserHomeNodeLocator;
+import org.alfresco.repo.nodelocator.XPathNodeLocator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.DocLibNodeLocator;
 import org.alfresco.repo.site.SiteServiceInternal;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -51,7 +51,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @since 4.0
  *
  */
-public class NodeLocationWebScriptTest extends BaseWebScriptTest
+public class NodeLocatorWebScriptTest extends BaseWebScriptTest
 {
     private static final String baseURL = "api/nodelocator/";
     private SiteServiceInternal siteService;

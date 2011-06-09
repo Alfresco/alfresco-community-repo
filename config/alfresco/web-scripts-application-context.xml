@@ -1227,27 +1227,33 @@
       <property name="namespaceService" ref="namespaceService"/>
    </bean>
 
-   <bean id="webscript.org.alfresco.repository.solr.getTransactions.get"
-         class="org.alfresco.repo.web.scripts.solr.GetTransactions"
+   <bean id="webscript.org.alfresco.repository.solr.aclChangeSets.get"
+         class="org.alfresco.repo.web.scripts.solr.AclChangeSetsGet"
          parent="webscript">
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
    </bean>
 
-   <bean id="webscript.org.alfresco.repository.solr.getNodes.post"
-         class="org.alfresco.repo.web.scripts.solr.GetNodes"
+   <bean id="webscript.org.alfresco.repository.solr.transactions.get"
+         class="org.alfresco.repo.web.scripts.solr.TransactionsGet"
          parent="webscript">
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
    </bean>
 
-   <bean id="webscript.org.alfresco.repository.solr.getNodesMetaData.post"
-         class="org.alfresco.repo.web.scripts.solr.GetNodesMetaData"
+   <bean id="webscript.org.alfresco.repository.solr.nodes.post"
+         class="org.alfresco.repo.web.scripts.solr.NodesGet"
+         parent="webscript">
+      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.solr.nodesMetaData.post"
+         class="org.alfresco.repo.web.scripts.solr.NodesMetaDataGet"
          parent="webscript">
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
       <property name="solrSerializer" ref="solrSerializer"/>
    </bean>
 
-   <bean id="webscript.org.alfresco.repository.solr.getNodeContent.get"
-         class="org.alfresco.repo.web.scripts.solr.GetNodeContent"
+   <bean id="webscript.org.alfresco.repository.solr.nodeContent.get"
+         class="org.alfresco.repo.web.scripts.solr.NodeContentGet"
          parent="webscript">
       <property name="contentService" ref="contentService"/>
       <property name="nodeService" ref="nodeService"/>
@@ -1259,8 +1265,8 @@
    <!--                                                                                                       -->
    <!--                                                                                                       -->
    
-   <bean id="webscript.org.alfresco.repository.nodelocator.node-location.get"
-         class="org.alfresco.repo.web.scripts.nodelocator.NodeLocationGet"
+   <bean id="webscript.org.alfresco.repository.nodelocator.node-locator.get"
+         class="org.alfresco.repo.web.scripts.nodelocator.NodeLocatorGet"
          parent="webscript">
       <property name="nodeLocatorService" ref="nodeLocatorService"/>
    </bean>

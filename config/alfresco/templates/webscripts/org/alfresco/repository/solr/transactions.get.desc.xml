@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get transactions</shortname>
+  <description>Get the transactions from the given commit time.</description>
+  <url>/api/solr/transactions?fromTxnId={fromTxnId?}&amp;fromCommitTime={fromCommitTime?}&amp;maxResults={maxResults?}</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+</webscript>

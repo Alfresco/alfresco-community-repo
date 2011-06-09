@@ -1,3 +1,11 @@
+<#macro aclChangeSetJSON aclChangeSet>
+      {
+         "id": ${aclChangeSet.id?c},
+         "commitTimeMs": ${aclChangeSet.commitTimeMs?c},
+         "aclCount": ${aclChangeSet.aclCount?c}
+      }
+</#macro>
+
 <#macro transactionJSON txn>
       {
          "id": ${txn.id?c},

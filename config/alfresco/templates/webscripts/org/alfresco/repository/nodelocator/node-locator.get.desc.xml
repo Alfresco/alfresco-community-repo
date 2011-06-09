@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Locate Node</shortname>
+   <shortname>Node Locator</shortname>
    <description>
       Locates a Node in the repository using the specified Node Location strategy.
    </description>

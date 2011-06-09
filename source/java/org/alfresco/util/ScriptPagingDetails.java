@@ -12,10 +12,20 @@ package org.alfresco.util;
  */
 public class ScriptPagingDetails
 {
-    private int totalItems = -1;
-    private int maxItems = -1; // TODO To PagingRequest
+    public enum ItemsSizeConfidence {
+        EXACT,     
+        RANGE,
+        AT_LEAST,
+        UNKNOWN
+    };
+   
     private int skipCount = -1; // TODO To PagingRequest
     private String queryExecutionId = null;  // TODO To PagingRequest
+    private int maxItems = -1; // TODO To PagingRequest
+    
+    private int totalItems = -1;
+    private int totalItemsRangeMax = -1;
+    private ItemsSizeConfidence confidence = ItemsSizeConfidence.UNKNOWN;
     
     public ScriptPagingDetails() {}
     public ScriptPagingDetails(int maxItems, int skipCount)
@@ -29,6 +39,15 @@ public class ScriptPagingDetails
         this.queryExecutionId = queryExecutionId;
     }
     
+    public ItemsSizeConfidence getConfidence()
+    {
+        return confidence;
+    }
+    
+    /**
+     * Get the total number of items. See {@link #getConfidence()} for an idea 
+     *  of the accuracy/confidence on this value. 
+     */
     public int getTotalItems()
     {
         return totalItems;
@@ -36,6 +55,24 @@ public class ScriptPagingDetails
     public void setTotalItems(int totalItems)
     {
         this.totalItems = totalItems;
+        
+        if(totalItems >= 0)
+        {
+           this.confidence = ItemsSizeConfidence.EXACT;
+        }
+        else
+        {
+           this.confidence = ItemsSizeConfidence.UNKNOWN;
+        }
+    }
+    
+    /**
+     * Where the confidence is {@link ItemsSizeConfidence#RANGE}, returns
+     *  the upper bound of the range.
+     */
+    public int getTotalItemsRangeMax()
+    {
+        return totalItemsRangeMax;
     }
     
     public int getMaxItems()

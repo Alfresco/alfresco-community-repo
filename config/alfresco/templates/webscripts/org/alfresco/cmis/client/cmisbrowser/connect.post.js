@@ -34,5 +34,9 @@ try {
 	model.repoinfo = model.conn.session.repositoryInfo;
 	model.rootFolder = model.conn.session.rootFolder;
 } catch (e) {
+	if(connection != null) {
+		connection.close();
+	}
+	
 	model.error = (e.javaException == null ? e.rhinoException.message : e.javaException.message);
 }

@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +115,7 @@ public class SiteServiceTest extends BaseWebScriptTest
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
             
             this.personService.createPerson(ppOne);
-        }        
+        }
     }
     
     @Override
@@ -574,11 +575,15 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testSiteCustomProperties()
         throws Exception
     {
-        // Create a site with a custom property
+        QName custPropSingle = QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation");
+        QName custPropMuliple = QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "siteTags");
+        
+        // Create a site with custom properties, one single and one multiple
         SiteInfo siteInfo = this.siteService.createSite("testPreset", "mySiteWithCustomProperty2", "testTitle", "testDescription", SiteVisibility.PUBLIC);
         NodeRef siteNodeRef = siteInfo.getNodeRef();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation"), "information");
+        properties.put(custPropSingle, "information");
+        properties.put(custPropMuliple, (Serializable)Arrays.asList(new String[]{ "tag1", "tag2", "tag333" }));
         this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
         this.createdSites.add("mySiteWithCustomProperty2");
         
@@ -595,6 +600,18 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals("{http://www.alfresco.org/model/dictionary/1.0}text", addInfo.get("type"));
         assertEquals("Additional Site Information", addInfo.get("title"));
         
+        JSONObject tags = customProperties.getJSONObject("{http://www.alfresco.org/model/sitecustomproperty/1.0}siteTags");
+        assertNotNull(tags);
+        assertEquals("{http://www.alfresco.org/model/sitecustomproperty/1.0}siteTags", tags.get("name"));
+        assertEquals(JSONObject.NULL, tags.get("type"));
+        assertEquals(JSONObject.NULL, tags.get("title"));
+        // TODO Fix ALF-2707 so this works
+        System.err.println(response.getContentAsString());
+//        JSONArray tagsA = tags.getJSONArray("value");
+//        assertEquals(3, tagsA.length());
+//        assertEquals("tag1", tagsA.getString(0));
+//        assertEquals("tag2", tagsA.getString(1));
+//        assertEquals("tag333", tagsA.getString(2));
     }
     
     /**

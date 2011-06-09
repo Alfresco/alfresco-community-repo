@@ -407,7 +407,8 @@ public class CMISScript extends BaseScopableProcessorExtension
         }
         
         Cursor cursor = paging.createCursor(children.length, page);
-        ScriptNode[] nodes = new ScriptNode[cursor.getRowCount()];
+        int cnt = (cursor.getRowCount() < 0 ? 0 : cursor.getRowCount());
+        ScriptNode[] nodes = new ScriptNode[cnt];
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
             nodes[i - cursor.getStartRow()] = new ScriptNode(children[i], services, getScope());

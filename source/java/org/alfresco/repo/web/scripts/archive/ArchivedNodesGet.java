@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ModelUtil;
-import org.alfresco.util.PagingDetails;
+import org.alfresco.util.ScriptPagingDetails;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -89,7 +89,7 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
         }
         
         // Grab the paging parameters
-        PagingDetails paging = new PagingDetails(
+        ScriptPagingDetails paging = new ScriptPagingDetails(
                     getIntParameter(req, MAX_ITEMS, deletedNodes.size()),
                     getIntParameter(req, SKIP_COUNT, 0)
         );

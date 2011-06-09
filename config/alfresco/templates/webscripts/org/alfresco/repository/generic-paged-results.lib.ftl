@@ -42,8 +42,8 @@ Usage:
       "maxItems": ${.vars[pagingVar].maxItems?c},
       "skipCount": ${.vars[pagingVar].skipCount?c},
       "totalItems": ${.vars[pagingVar].totalItems?c},
-      "totalItemsRangeEnd": <#if .vars[pagingVar].confidence?? && .vars[pagingVar].confidence == "RANGE">${.vars[pagingVar].totalItemsRangeMax?c}<#else>null</#if>,
-      "confidence": <#if .vars[pagingVar].confidence??>"${.vars[pagingVar].confidence?lower_case}"<#else>null</#if>
+      "totalItemsRangeEnd": <#if .vars[pagingVar].confidence == "RANGE">${.vars[pagingVar].totalItemsRangeMax?c}<#else>null</#if>,
+      "confidence": "${.vars[pagingVar].confidence?lower_case}"
     }
   </#if>
 </#escape>

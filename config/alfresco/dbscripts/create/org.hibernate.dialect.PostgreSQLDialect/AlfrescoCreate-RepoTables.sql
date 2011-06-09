@@ -23,6 +23,16 @@ CREATE TABLE alf_applied_patch
     PRIMARY KEY (id)
 );
 
+CREATE SEQUENCE alf_locale_seq START WITH 1 INCREMENT BY 1;
+CREATE TABLE alf_locale
+(
+    id INT8 NOT NULL,
+    version INT8 NOT NULL,
+    locale_str VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id)    
+);
+CREATE UNIQUE INDEX locale_str ON alf_locale (locale_str);
+
 CREATE SEQUENCE alf_namespace_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_namespace
 (
@@ -210,6 +220,7 @@ CREATE TABLE alf_node
     transaction_id INT8 NOT NULL,
     node_deleted BOOL NOT NULL,
     type_qname_id INT8 NOT NULL,
+    locale_id INT8 NOT NULL,
     acl_id INT8,
     audit_creator VARCHAR(255),
     audit_created VARCHAR(30),
@@ -220,7 +231,8 @@ CREATE TABLE alf_node
     CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
     CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES alf_store (id),
     CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),
-    CONSTRAINT fk_alf_node_txn FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id)
+    CONSTRAINT fk_alf_node_txn FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id),
+    CONSTRAINT fk_alf_node_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id)
 );
 CREATE UNIQUE INDEX store_id ON alf_node (store_id, uuid);
 CREATE INDEX idx_alf_node_del ON alf_node (node_deleted);
@@ -228,6 +240,7 @@ CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
 CREATE INDEX fk_alf_node_txn ON alf_node (transaction_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
 CREATE INDEX fk_alf_node_tqn ON alf_node (type_qname_id);
+CREATE INDEX fk_alf_node_loc ON alf_node (locale_id);
 
 CREATE INDEX fk_alf_store_root ON alf_store (root_node_id);
 ALTER TABLE alf_store ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES alf_node (id);
@@ -260,16 +273,6 @@ CREATE INDEX fk_alf_cass_tqn ON alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON alf_child_assoc (qname_ns_id);
 CREATE INDEX idx_alf_cass_qncrc ON alf_child_assoc (qname_crc, type_qname_id, parent_node_id);
 CREATE INDEX idx_alf_cass_pri ON alf_child_assoc (parent_node_id, is_primary, child_node_id);
-
-CREATE SEQUENCE alf_locale_seq START WITH 1 INCREMENT BY 1;
-CREATE TABLE alf_locale
-(
-    id INT8 NOT NULL,
-    version INT8 NOT NULL,
-    locale_str VARCHAR(20) NOT NULL,
-    PRIMARY KEY (id)    
-);
-CREATE UNIQUE INDEX locale_str ON alf_locale (locale_str);
 
 CREATE TABLE alf_node_aspects
 (

@@ -21,7 +21,6 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
@@ -94,7 +93,12 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             }
             
             @Override
-            public Boolean hasMoreItems()
+            public boolean hasMoreItems()
+            {
+                return false;
+            }
+            
+            public boolean permissionsApplied()
             {
                 return false;
             }
@@ -109,12 +113,7 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         Authentication authentication = (((SecureContext) context).getAuthentication());
         
         ConfigAttributeDefinition cad = methodSecurityInterceptor.getObjectDefinitionSource().getAttributes(new InternalMethodInvocation(method));
-        MaxChecksCollection c = (MaxChecksCollection)methodSecurityInterceptor.getAfterInvocationManager().decide(authentication, null, cad, new MaxChecksCollection((Collection)results, maxChecks));
-        
-        final List<R> permissionCheckedResults = (List) c.getWrapped();
-        
-        final boolean cutoff = c.isCutoff();
-        final int count = permissionCheckedResults.size();
+        final WrappedList<R> wl = (WrappedList<R>)methodSecurityInterceptor.getAfterInvocationManager().decide(authentication, null, cad, new WrappedList<R>(results, maxChecks));
         
         // final result
         ret = new PagingResults<R>()
@@ -128,25 +127,32 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
-                return new Pair<Integer, Integer>(count, ((! cutoff) ? count : null));
+                int count = wl.size();
+                return new Pair<Integer, Integer>(count, ((! wl.hasMoreItems()) ? count : null));
             }
             
             @Override
             public List<R> getPage()
             {
-                return permissionCheckedResults;
+                return wl;
             }
             
             @Override
-            public Boolean hasMoreItems()
+            public boolean hasMoreItems()
             {
-                return (! cutoff);
+                return wl.hasMoreItems(); // if hasMoreItems then implies cutoff
+            }
+            
+            @Override
+            public boolean permissionsApplied()
+            {
+                return wl.permissionsApplied();
             }
         };
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("applyPermissions: "+count+" items in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.trace("applyPermissions: "+wl.size()+" items in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
         return ret;

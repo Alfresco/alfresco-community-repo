@@ -19,17 +19,18 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.alfresco.repo.publishing.PublishingModel.*;
-    
-import java.util.Collections;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL_TYPE;
+import static org.mockito.Mockito.when;
+
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.alfresco.repo.transfer.AbstractNodeFilter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;

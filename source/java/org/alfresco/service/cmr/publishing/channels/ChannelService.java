@@ -36,5 +36,7 @@ public interface ChannelService
     List<ChannelType> getChannelTypes();
     Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties);
     void deleteChannel(String siteId, String channelName);
+    void renameChannel(String siteId, String oldName, String newName);
+    void updateChannel(String siteId, String channelName, Map<QName,Serializable> properties);
     List<Channel> getChannels(String siteId);
 }

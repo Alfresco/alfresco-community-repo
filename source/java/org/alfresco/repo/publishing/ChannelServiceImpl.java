@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
@@ -48,8 +49,9 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Nick Smith
+ * @author Brian
  * @since 4.0
- *
+ * 
  */
 public class ChannelServiceImpl implements ChannelService
 {
@@ -62,15 +64,17 @@ public class ChannelServiceImpl implements ChannelService
     private EnvironmentHelper environmentHelper;
 
     /**
-     * @param siteService the siteService to set
+     * @param siteService
+     *            the siteService to set
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -78,7 +82,8 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -86,38 +91,39 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
-     * @param environmentHelper the environmentHelper to set
+     * @param environmentHelper
+     *            the environmentHelper to set
      */
     public void setEnvironmentHelper(EnvironmentHelper environmentHelper)
     {
         this.environmentHelper = environmentHelper;
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public void register(ChannelType channelType)
     {
         ParameterCheck.mandatory("channelType", channelType);
         String id = channelType.getId();
-        if(channelTypes.containsKey(id))
+        if (channelTypes.containsKey(id))
         {
-            throw new IllegalArgumentException("Channel type "+id+" is already registered!");
+            throw new IllegalArgumentException("Channel type " + id + " is already registered!");
         }
         channelTypes.put(id, channelType);
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<ChannelType> getChannelTypes()
     {
         return new ArrayList<ChannelType>(channelTypes.values());
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties)
     {
         NodeRef channelContainer = getChannelContainer(siteId);
@@ -143,7 +149,8 @@ public class ChannelServiceImpl implements ChannelService
 
             // Now create the corresponding channel nodes in each of the
             // configured environments
-            //FIXME: BJR: 20110506: Should we provide a means for supplying separate properties for each environment?
+            // FIXME: BJR: 20110506: Should we provide a means for supplying
+            // separate properties for each environment?
             Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
             for (NodeRef environment : environments.values())
             {
@@ -155,17 +162,27 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public void deleteChannel(String siteId, String channelName)
     {
-        // TODO Auto-generated method stub
-        
+        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
+        Set<NodeRef> containers = new HashSet<NodeRef>();
+        containers.add(getChannelContainer(siteId));
+        containers.addAll(environments.values());
+        for (NodeRef channelContainer : containers)
+        {
+            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
+            if (channel != null)
+            {
+                nodeService.deleteNode(channel);
+            }
+        }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<Channel> getChannels(String siteId)
     {
         ParameterCheck.mandatory("siteId", siteId);
@@ -215,25 +232,75 @@ public class ChannelServiceImpl implements ChannelService
         Serializable channelTypeId = props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
         ChannelType channelType = channelTypes.get(channelTypeId);
         String name = (String) props.get(ContentModel.PROP_NAME);
-        return new ChannelImpl(channelType, nodeRef, name, this);
+        return new ChannelImpl(channelType, nodeRef, name, this, nodeService);
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public ChannelType getChannelType(String id)
     {
         return channelTypes.get(id);
     }
-    
+
     public NodeFinder getChannelDependancyNodeFinder()
     {
         return new ChannelDependancyNodeFinder(this);
     }
-    
+
     public NodeFilter getChannelDependancyNodeFilter()
     {
         return new ChannelDependancyNodeFilter(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.service.cmr.publishing.channels.ChannelService#renameChannel
+     * (java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public void renameChannel(String siteId, String oldName, String newName)
+    {
+        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
+        Set<NodeRef> containers = new HashSet<NodeRef>();
+        containers.add(getChannelContainer(siteId));
+        containers.addAll(environments.values());
+        for (NodeRef channelContainer : containers)
+        {
+            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, oldName);
+            if (channel != null)
+            {
+                nodeService.setProperty(channel, ContentModel.PROP_NAME, newName);
+                nodeService.moveNode(channel, channelContainer, ContentModel.ASSOC_CONTAINS, QName.createQName(
+                        NamespaceService.APP_MODEL_1_0_URI, newName));
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.alfresco.service.cmr.publishing.channels.ChannelService#updateChannel
+     * (java.lang.String, java.lang.String, java.util.Map)
+     */
+    @Override
+    public void updateChannel(String siteId, String channelName, Map<QName, Serializable> properties)
+    {
+        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
+        Set<NodeRef> containers = new HashSet<NodeRef>();
+        containers.add(getChannelContainer(siteId));
+        containers.addAll(environments.values());
+        for (NodeRef channelContainer : containers)
+        {
+            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
+            if (channel != null)
+            {
+                nodeService.setProperties(channel, properties);
+            }
+        }
     }
 
 }

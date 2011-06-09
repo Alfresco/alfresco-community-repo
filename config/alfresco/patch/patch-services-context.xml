@@ -2860,4 +2860,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V4.0-Node-Locale" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-Node-Locale" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5009" />
+        <property name="targetSchema" value="5010" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/Node-Locale.sql</value>
+        </property>
+    </bean>
+    
 </beans>

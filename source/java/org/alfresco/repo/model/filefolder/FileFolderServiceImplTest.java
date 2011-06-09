@@ -70,7 +70,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -119,7 +118,6 @@ public class FileFolderServiceImplTest extends TestCase
         permissionService = serviceRegistry.getPermissionService();
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -129,7 +127,7 @@ public class FileFolderServiceImplTest extends TestCase
         IntegrityChecker.setWarnInTransaction();
 
         // authenticate
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // create a test store
         StoreRef storeRef = nodeService
@@ -219,7 +217,7 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void testListPage() throws Exception
     {
-        // sanity check only (see also GetChildrenCannedQueryTest)
+        // sanity checks only (see also GetChildrenCannedQueryTest)
         
         PagingFileInfoRequest pagingRequest = new PagingFileInfoRequest(100, null);
         PagingFileInfoResults pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, pagingRequest);
@@ -235,6 +233,15 @@ public class FileFolderServiceImplTest extends TestCase
         String[] expectedNames = new String[]
         { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
         checkFileList(files, 2, 3, expectedNames);
+        
+        
+        // empty list if skip count greater than number of results (ALF-7884)
+        pagingRequest = new PagingFileInfoRequest(1000, 3, null, null);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertEquals(0, pagingResults.getPage().size());
         
         // TODO add more here
     }
@@ -502,7 +509,6 @@ public class FileFolderServiceImplTest extends TestCase
     /**
      * <a href="https://issues.alfresco.com/jira/browse/ALF-7692">ALF-7692</a>
      */
-    @SuppressWarnings("deprecation")
     public void testMovePermissions() throws Exception
     {
         txn.commit();

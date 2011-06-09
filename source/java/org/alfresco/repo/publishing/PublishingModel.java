@@ -51,6 +51,8 @@ public interface PublishingModel
     public static final QName PROP_PUBLISHING_EVENT_TIME = QName.createQName(NAMESPACE, "publishingEventTime");
     public static final QName PROP_PUBLISHING_EVENT_TIME_ZONE = QName.createQName(NAMESPACE, "publishingEventTimeZone");
     public static final QName PROP_PUBLISHING_EVENT_COMMENT = QName.createQName(NAMESPACE, "publishingEventComment");
+    public static final QName PROP_PUBLISHING_EVENT_CHANNEL= QName.createQName(NAMESPACE, "publishingEventChannel");
+    public static final QName PROP_PUBLISHING_EVENT_WORKFLOW_ID= QName.createQName(NAMESPACE, "publishingEventWorkflowId");
     public static final QName PROP_PUBLISHING_EVENT_PAYLOAD = QName.createQName(NAMESPACE, "publishingEventPayload");
     public static final QName PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH = QName.createQName(NAMESPACE,
             "publishingEventNodesToPublish");
@@ -63,7 +65,7 @@ public interface PublishingModel
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_FAILED = "FAILED";
 
     public static final QName ASSOC_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "publishingQueueAssoc");
-    public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEvent");
+    public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEventAssoc");
 
     // Workflow Properties
     public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");

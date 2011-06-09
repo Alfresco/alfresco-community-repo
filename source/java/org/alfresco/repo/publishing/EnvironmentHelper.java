@@ -19,7 +19,10 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.alfresco.repo.publishing.PublishingModel.*;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +33,7 @@ import java.util.TreeMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -167,8 +171,10 @@ public class EnvironmentHelper
         if (queueAssoc == null)
         {
             // No publishing queue
-            queueAssoc = nodeService.createNode(environment, PublishingModel.ASSOC_PUBLISHING_QUEUE, QName.createQName(
-                    PublishingModel.NAMESPACE, "publishingQueue"), PublishingModel.TYPE_PUBLISHING_QUEUE);
+            queueAssoc = nodeService.createNode(environment,
+                    PublishingModel.ASSOC_PUBLISHING_QUEUE,
+                    QName.createQName(PublishingModel.NAMESPACE, "publishingQueue"),
+                    PublishingModel.TYPE_PUBLISHING_QUEUE);
         }
         return queueAssoc.getChildRef();
     }
@@ -211,4 +217,5 @@ public class EnvironmentHelper
         }, AuthenticationUtil.getSystemUserName());
 
     }
+
 }

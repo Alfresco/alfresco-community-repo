@@ -647,6 +647,8 @@ public class Site implements Serializable
         {
             // create the custom properties map
             ScriptNode siteNode = new ScriptNode(this.siteInfo.getNodeRef(), this.serviceRegistry);
+            // set the scope, for use when converting props to javascript objects
+            siteNode.setScope(scope);
             this.customProperties = new ContentAwareScriptableQNameMap<String, CustomProperty>(siteNode, this.serviceRegistry);
             
             Map<QName, Serializable> props = siteInfo.getCustomProperties();

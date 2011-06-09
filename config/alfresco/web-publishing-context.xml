@@ -48,7 +48,7 @@
    <!--  Channel Type Implementations -->
    <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
       <property name="channelService" ref="channelService" />
-      <property name="serviceRegistry" ref="serviceRegistry" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
    </bean>
    
    <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
@@ -61,6 +61,8 @@
       <property name="nodeService" ref="nodeService" />
       <property name="contentService" ref="contentService" />
       <property name="serializer" ref="publishingPackageSerializer" />
+      <property name="workflowService" ref="WorkflowService" />
+      <property name="workflowEngineId" value="jbpm" />
    </bean>
    
 
@@ -81,9 +83,12 @@
       <property name="publishingEventHelper" ref="publishingEventHelper" />
    </bean>
    
+      <!--  Publishing Service -->
    <bean id="publishingService" class="org.alfresco.repo.publishing.PublishServiceImpl">
       <property name="environmentFactory" ref="publishingObjectFactory" />
+      <property name="publishingEventHelper" ref="publishingEventHelper" />
    </bean>
+   
    
    <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardPublishingPackageSerializer" />
 

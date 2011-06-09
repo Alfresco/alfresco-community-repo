@@ -47,6 +47,7 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Loads the repository up with orphaned content and then runs the cleaner.
@@ -266,6 +267,7 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                     storeRef,
                     null,
                     ContentModel.TYPE_CONTENT,
+                    I18NUtil.getLocale(),
                     null,
                     null);
             Long nodeId = assoc.getChildNode().getId();

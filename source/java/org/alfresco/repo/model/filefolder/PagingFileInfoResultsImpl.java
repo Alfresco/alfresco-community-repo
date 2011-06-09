@@ -20,7 +20,7 @@ package org.alfresco.repo.model.filefolder;
 
 import java.util.List;
 
-import org.alfresco.repo.security.permissions.impl.acegi.ResultsPermissionChecked;
+import org.alfresco.query.PermissionedResults;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.util.Pair;
@@ -31,22 +31,22 @@ import org.alfresco.util.Pair;
  * @author janv
  * @since 4.0
  */
-/* package */ class PagingFileInfoResultsImpl implements PagingFileInfoResults, ResultsPermissionChecked
+/* package */ class PagingFileInfoResultsImpl implements PagingFileInfoResults, PermissionedResults
 {
     private List<FileInfo> nodeInfos;
     
-    private Boolean hasMoreItems;
+    private boolean hasMoreItems;
     private Pair<Integer, Integer> totalResultCount;
     private String queryExecutionId;
-    private boolean permissionChecked;
+    private boolean permissionsApplied;
     
-    public PagingFileInfoResultsImpl(List<FileInfo> nodeInfos, Boolean hasMoreItems, Pair<Integer, Integer> totalResultCount, String queryExecutionId, boolean permissionChecked)
+    public PagingFileInfoResultsImpl(List<FileInfo> nodeInfos, boolean hasMoreItems, Pair<Integer, Integer> totalResultCount, String queryExecutionId, boolean permissionsApplied)
     {
         this.nodeInfos = nodeInfos;
         this.hasMoreItems = hasMoreItems;
         this.totalResultCount = totalResultCount;
         this.queryExecutionId = queryExecutionId;
-        this.permissionChecked = permissionChecked;
+        this.permissionsApplied = permissionsApplied;
     }
     
     public List<FileInfo> getPage()
@@ -54,7 +54,7 @@ import org.alfresco.util.Pair;
         return nodeInfos;
     }
     
-    public Boolean hasMoreItems()
+    public boolean hasMoreItems()
     {
         return hasMoreItems;
     }
@@ -69,8 +69,8 @@ import org.alfresco.util.Pair;
         return queryExecutionId;
     }
     
-    public boolean permissionsChecked()
+    public boolean permissionsApplied()
     {
-        return permissionChecked;
+        return permissionsApplied;
     }
 }

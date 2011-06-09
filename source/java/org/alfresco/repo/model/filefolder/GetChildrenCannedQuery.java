@@ -48,6 +48,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
@@ -156,6 +157,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         
         if (sortPairsCnt > 0)
         {
+            // sorted - note: permissions will be applied post query
             final List<SortableNode> children = new ArrayList<SortableNode>(100);
             
             SortedChildQueryCallback callback = new SortedChildQueryCallback()
@@ -183,30 +185,33 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
         else
         {
+            // unsorted (apart from any implicit order) - note: permissions are applied during result handling to allow early cutoff
+            
             int requestedCount = parameters.getPageDetails().getResultsRequiredForPaging();
             if (requestedCount != Integer.MAX_VALUE)
             {
                 requestedCount++; // add one for "hasMoreItems"
             }
             
-            result = new ArrayList<NodeRef>(100);
-            
-            final int maxItems = requestedCount;
+            final WrappedList<NodeRef> rawResult = new WrappedList<NodeRef>(new ArrayList<NodeRef>(100), requestedCount);
             
             UnsortedChildQueryCallback callback = new UnsortedChildQueryCallback()
             {
                 public boolean handle(NodeRef nodeRef)
                 {
-                    result.add(nodeRef);
+                    rawResult.add(nodeRef);
                     
                     // More results ?
-                    return (result.size() < maxItems);
+                    return (rawResult.size() < rawResult.getMaxChecks());
                 }
             };
             
             UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback, parameters.getAuthenticationToken());
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
+            
+            // permissions have been applied
+            result = new WrappedList<NodeRef>(rawResult.getWrapped(), true, (rawResult.size() == requestedCount));
         }
         
         if (start != null)
@@ -577,6 +582,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             preload(nodeRefs);
             
+            // TODO track total time for incremental permission checks ... and cutoff (eg. based on some config)
             PagingResults<NodeRef> results = applyPermissions(nodeRefs, authenticationToken, nodeRefs.size());
             
             for (NodeRef nodeRef : results.getPage())

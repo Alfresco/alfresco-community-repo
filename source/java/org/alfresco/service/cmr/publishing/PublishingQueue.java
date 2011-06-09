@@ -28,11 +28,12 @@ public interface PublishingQueue
     /**
      * Adds the supplied publishing package onto the queue.
      * @param publishingPackage The publishing package that is to be enqueued
+     * @param channelName The name of the channel to be published to.
      * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
      * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
      * @return The identifier of the newly scheduled event
      */
-    String scheduleNewEvent(PublishingPackage publishingPackage, Calendar schedule, String comment);
+    String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment);
     
     void cancelEvent(String eventId);
 }

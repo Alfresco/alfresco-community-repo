@@ -30,6 +30,7 @@ public class NodeUpdateEntity extends NodeEntity
     private boolean updateStore;
     private boolean updateUuid;
     private boolean updateTypeQNameId;
+    private boolean updateLocaleId;
     private boolean updateAclId;
     private boolean updateDeleted;
     private boolean updateTransaction;
@@ -48,7 +49,7 @@ public class NodeUpdateEntity extends NodeEntity
     public boolean isUpdateAnything()
     {
         return updateAuditableProperties || updateTransaction || updateDeleted
-                || updateAclId || updateStore || updateUuid || updateTypeQNameId;
+               || updateLocaleId || updateAclId || updateStore || updateUuid || updateTypeQNameId;
     }
 
     public boolean isUpdateStore()
@@ -79,6 +80,16 @@ public class NodeUpdateEntity extends NodeEntity
     public void setUpdateTypeQNameId(boolean updateTypeQNameId)
     {
         this.updateTypeQNameId = updateTypeQNameId;
+    }
+
+    public boolean isUpdateLocaleId()
+    {
+        return updateLocaleId;
+    }
+
+    public void setUpdateLocaleId(boolean updateLocaleId)
+    {
+        this.updateLocaleId = updateLocaleId;
     }
 
     public boolean isUpdateAclId()

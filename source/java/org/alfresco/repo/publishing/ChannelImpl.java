@@ -19,9 +19,14 @@
 
 package org.alfresco.repo.publishing;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
@@ -33,18 +38,20 @@ public class ChannelImpl implements Channel
     private final ChannelType channelType;
     private final String name;
     private final ChannelServiceImpl channelService;
+    private final NodeService nodeService;
 
     /**
      * @param channelType
      * @param name
      * @param channelService
      */
-    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelServiceImpl channelService)
+    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelServiceImpl channelService, NodeService nodeService)
     {
         this.nodeRef = nodeRef;
         this.channelType = channelType;
         this.name = name;
         this.channelService = channelService;
+        this.nodeService = nodeService;
     }
 
     /* (non-Javadoc)
@@ -72,6 +79,15 @@ public class ChannelImpl implements Channel
     public NodeRef getNodeRef()
     {
         return nodeRef;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.publishing.channels.Channel#getProperties()
+     */
+    @Override
+    public Map<QName, Serializable> getProperties()
+    {
+        return nodeService.getProperties(nodeRef);
     }
 
 }

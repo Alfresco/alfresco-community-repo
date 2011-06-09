@@ -91,26 +91,19 @@ public class MLContainerType implements
      *
      * Since the pivot must be an existing translation and the pivot can t be empty, some tests must be performed when
      * the locale of the mlContainer is updated.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        /*
-         * TODO: Move into MultilingualContentService
-         */
-        
         Locale localeAfter  = (Locale) after.get(ContentModel.PROP_LOCALE);
         Locale localeBefore = (Locale) before.get(ContentModel.PROP_LOCALE);
 
-        // The locale can be set as null if the container have no children.
-        // Normaly, it's ONLY the case at the creation of the container.
-        if(localeAfter == null && nodeService.getChildAssocs(nodeRef).size() != 0)
+        if (localeAfter == null)
         {
-            throw new IllegalArgumentException("A Locale property must be defined for a Multilingual Container and can't be null");
+            throw new IllegalArgumentException("The ML container cannot have a null locale.");
         }
-
-        if(localeAfter != null && !localeAfter.equals(localeBefore))
+        
+        // If the locale is changing, then ensure that the pivot translation is present and matches
+        if (localeBefore != null && !localeAfter.equals(localeBefore))
         {
             Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(nodeRef);
 

@@ -38,6 +38,7 @@ import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.PagingResults;
+import org.alfresco.query.PermissionedResults;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
@@ -273,10 +274,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (PagingResults.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (ResultsPermissionChecked.class.isAssignableFrom(returnedObject.getClass()) &&
-                    (! ((ResultsPermissionChecked)returnedObject).permissionsChecked()))
+                if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()) &&
+                    (! ((PermissionedResults)returnedObject).permissionsApplied()))
                 {
-                    throw new AlfrescoRuntimeException("Not implemented yet");
+                    throw new AlfrescoRuntimeException("Not implemented");
                     /*
                     if (log.isDebugEnabled())
                     {
@@ -289,7 +290,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 {
                     if (log.isDebugEnabled())
                     {
-                        log.debug("Paging Results access - already checked permissions");
+                        log.debug("Paging Results access - already checked permissions for " + object.getClass().getName());
                     }
                     
                     return returnedObject;
@@ -341,11 +342,20 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (Collection.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
+                if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()) &&
+                        ((PermissionedResults)returnedObject).permissionsApplied())
                 {
-                    log.debug("Collection Access");
+                    // Already checked - don't need to re-check (eg. WrappedList - used by unsorted GetChildren CQ)
+                    return returnedObject;
                 }
-                return decide(authentication, object, config, (Collection) returnedObject);
+                else
+                {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Collection Access");
+                    }
+                    return decide(authentication, object, config, (Collection) returnedObject);
+                }
             }
             else if (returnedObject.getClass().isArray())
             {
@@ -873,9 +883,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         boolean cutoff = false;
         
         int maxChecks = Integer.MAX_VALUE;
-        if (returnedObject instanceof MaxChecksCollection)
+        if ((returnedObject instanceof WrappedList<?>) && ((WrappedList<?>)returnedObject).getMaxChecks() > 0)
         {
-            maxChecks = ((MaxChecksCollection)returnedObject).getMaxChecks();
+            maxChecks = ((WrappedList<?>)returnedObject).getMaxChecks();
         }
         
         Iterator iterator = returnedObject.iterator();
@@ -999,9 +1009,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 ;
         }
         
-        if (cutoff && (returnedObject instanceof MaxChecksCollection))
+        if (returnedObject instanceof WrappedList<?>)
         {
-            ((MaxChecksCollection)returnedObject).setCutoff(cutoff);
+            ((WrappedList<?>)returnedObject).setHasMoreItems(cutoff);
+            ((WrappedList<?>)returnedObject).setPermissionsApplied(true);
         }
         
         return returnedObject;

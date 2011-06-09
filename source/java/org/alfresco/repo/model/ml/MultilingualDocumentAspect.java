@@ -134,9 +134,6 @@ public class MultilingualDocumentAspect implements
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        /* 
-         * TODO: Move this into MultilingualContentService#setTranslationLocale
-         */
         Locale localeBefore = (Locale)before.get(ContentModel.PROP_LOCALE);
         
         Locale localeAfter = null;

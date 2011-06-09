@@ -26,6 +26,7 @@
          <title>Base</title>
          <mandatory-aspects>
             <aspect>sys:referenceable</aspect>
+            <aspect>sys:localized</aspect>
          </mandatory-aspects>
       </type>
 

@@ -64,6 +64,7 @@
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -229,7 +230,7 @@
     <sql id="insert_Node_AutoIncrement">
         insert into alf_node
         (
-            version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
+            version, store_id, uuid, type_qname_id, locale_id, acl_id, node_deleted, transaction_id
             <if test="auditableProperties != null">
               , audit_creator, audit_created,
                 audit_modifier, audit_modified,
@@ -238,7 +239,7 @@
         )
         values
         (
-            #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
             <if test="auditableProperties != null">
               , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
                 #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
@@ -250,7 +251,7 @@
     <sql id="insert_Node_Sequence">
         insert into alf_node
         (
-            id, version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
+            id, version, store_id, uuid, type_qname_id, locale_id, acl_id, node_deleted, transaction_id
             <if test="auditableProperties != null">
               , audit_creator, audit_created,
                 audit_modifier, audit_modified,
@@ -259,7 +260,7 @@
         )
         values
         (
-            #{id}, #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            #{id}, #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
             <if test="auditableProperties != null">
               , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
                 #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
@@ -327,7 +328,6 @@
             ?, ?,
             ?, ?, ?, ?, ?, ?
         )
-        
     </insert>
     
     <insert id="insert_NodeAspect" parameterMap="parameter_NodeAspect">
@@ -369,6 +369,7 @@
             <if test="updateStore == true">       , store_id          = #{store.id}</if>
             <if test="updateUuid == true">        , uuid              = #{uuid}</if>
             <if test="updateTypeQNameId == true"> , type_qname_id     = #{typeQNameId}</if>
+            <if test="updateLocaleId == true">    , locale_id         = #{localeId}</if>
             <if test="updateAclId == true">       , acl_id            = #{aclId,jdbcType=BIGINT}</if>
             <if test="updateDeleted == true">     , node_deleted      = #{deleted}</if>
             <if test="updateTransaction == true"> , transaction_id    = #{transaction.id}</if>
@@ -604,6 +605,7 @@
             store.identifier    as identifier,
             node.uuid           as uuid,
             node.type_qname_id  as type_qname_id,
+            node.locale_id      as locale_id,
             node.acl_id         as acl_id,
             node.node_deleted   as node_deleted,
             txn.id              as txn_id,

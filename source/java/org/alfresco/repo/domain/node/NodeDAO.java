@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -148,6 +149,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param storeRef          the store to which the node must belong
      * @param uuid              the node store-unique identifier, or <tt>null</tt> to assign a GUID
      * @param nodeTypeQName     the type of the node
+     * @parma nodeLocale        the locale of the node
      * @param childNodeName     the <b>cm:name</b> of the child node or <tt>null</tt> to use the node's UUID
      * @param auditableProperties   a map containing any <b>cm:auditable</b> properties for the node
      * @return                  Returns the details of the child association created
@@ -161,6 +163,7 @@ public interface NodeDAO extends NodeBulkLoader
             StoreRef storeRef,
             String uuid,
             QName nodeTypeQName,
+            Locale nodeLocale,
             String childNodeName,
             Map<QName, Serializable> auditableProperties/*,
             Map<QName, Serializable> ownableProperties*/) throws InvalidTypeException;
@@ -188,8 +191,9 @@ public interface NodeDAO extends NodeBulkLoader
      * @param storeRef          the new store or <tt>null</tt> to keep the existing one
      * @param uuid              the new UUID for the node or <tt>null</tt> to keep it the same
      * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
+     * @param nodeLocale        the new locale for the node or <tt>null</tt> to keep the existing one
      */
-    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName);
+    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName, Locale nodeLocale);
     
     public void setNodeAclId(Long nodeId, Long aclId);
     

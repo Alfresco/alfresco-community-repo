@@ -45,8 +45,13 @@
     </bean>
 
    <!-- Mock Service Registry -->
-    <bean id="serviceRegistry" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="ServiceRegistry" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.ServiceRegistry" />
+    </bean>
+
+   <!-- Mock Workflow Service-->
+    <bean id="WorkflowService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.workflow.WorkflowService" />
     </bean>
 
    <bean id="dictionaryBootstrap" class="java.lang.Object" />

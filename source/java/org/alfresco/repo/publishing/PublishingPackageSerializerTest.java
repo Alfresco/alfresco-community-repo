@@ -19,11 +19,11 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.mockito.Mockito.*;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,11 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.publishing.PublishingPackageImpl.PublishingPackageEntryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.ServiceRegistry;
@@ -63,10 +65,7 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
@@ -83,7 +82,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PublishingPackageSerializerTest
 {
     @Autowired
-    protected ApplicationContext applicationContext;
     protected ServiceRegistry serviceRegistry;
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected NodeService nodeService;
@@ -91,12 +89,18 @@ public class PublishingPackageSerializerTest
     protected FileFolderService fileFolderService;
     protected SiteService siteService;
 
-    protected AuthenticationComponent authenticationComponent;
-    private String siteId;
-    private EnvironmentHelper environmentHelper;
+    @Resource(name="publishingService")
     private PublishingService publishingService;
+    
+    @Resource(name="authenticationComponent")
+    protected AuthenticationComponent authenticationComponent;
+
+    @Resource(name="publishingPackageSerializer")
     private StandardPublishingPackageSerializer serializer;
+
+    private String siteId;
     private TransferManifestNormalNode normalNode1;
+//    private EnvironmentHelper environmentHelper;
 
     /**
      * @throws java.lang.Exception
@@ -104,18 +108,15 @@ public class PublishingPackageSerializerTest
     @Before
     public void setUp() throws Exception
     {
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        serviceRegistry.getAuthenticationService().authenticate("admin", "admin".toCharArray());
-
+        String adminUser = AuthenticationUtil.getAdminUserName();
+        AuthenticationUtil.setFullyAuthenticatedUser(adminUser);
         retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
         fileFolderService = serviceRegistry.getFileFolderService();
         workflowService = serviceRegistry.getWorkflowService();
         nodeService = serviceRegistry.getNodeService();
         siteService = serviceRegistry.getSiteService();
 
-        environmentHelper = (EnvironmentHelper) applicationContext.getBean("environmentHelper");
-        publishingService = (PublishingService) applicationContext.getBean("publishingService");
-        serializer = (StandardPublishingPackageSerializer) applicationContext.getBean("publishingPackageSerializer");
+//        environmentHelper = (EnvironmentHelper) applicationContext.getBean("environmentHelper");
         siteId = GUID.generate();
         siteService.createSite("test", siteId, "Test site created by PublishingPackageSerializerTest",
                 "Test site created by PublishingPackageSerializerTest", SiteVisibility.PUBLIC);
@@ -176,14 +177,8 @@ public class PublishingPackageSerializerTest
         TransferManifestNodeFactory mockTMNFactory = mock(TransferManifestNodeFactory.class);
         packageImpl.setTransferManifestNodeFactory(mockTMNFactory);
 
-        doAnswer(new Answer<TransferManifestNode>()
-        {
-            @Override
-            public TransferManifestNode answer(InvocationOnMock invocation) throws Throwable
-            {
-                return normalNode1;
-            }
-        }).when(mockTMNFactory).createTransferManifestNode(any(NodeRef.class), any(TransferDefinition.class));
+       when(mockTMNFactory.createTransferManifestNode(any(NodeRef.class), any(TransferDefinition.class)))
+               .thenReturn(normalNode1);
 
         packageImpl.addNodesToPublish(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,"Hello"));
 

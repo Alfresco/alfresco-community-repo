@@ -117,7 +117,8 @@ public class ValueConverter
             try
             {
             	Context.enter();
-            	// convert array to a native JavaScript Array
+            	// Convert array to a native JavaScript Array
+            	// Note - a scope is usually required for this to work
             	value = (Serializable)Context.getCurrentContext().newArray(scope, array);
             }
             finally

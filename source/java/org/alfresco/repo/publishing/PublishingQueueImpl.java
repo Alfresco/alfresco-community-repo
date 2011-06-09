@@ -75,11 +75,12 @@ public class PublishingQueueImpl implements PublishingQueue
      * java.util.Calendar, java.lang.String)
      */
     @Override
-    public String scheduleNewEvent(PublishingPackage publishingPackage, Calendar schedule, String comment)
+    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment)
     {
         try
         {
-            NodeRef eventNode = publishingEventHelper.create(nodeRef, publishingPackage, schedule, comment);
+            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelName, schedule, comment);
+            publishingEventHelper.startPublishingWorkflow(eventNode, schedule);
             return eventNode.toString();
         }
         catch (Exception ex)

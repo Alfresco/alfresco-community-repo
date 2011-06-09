@@ -98,7 +98,6 @@ public class ReferenceablePropertiesEntity
 
     public static Serializable getReferenceableProperty(Node node, QName qname)
     {
-        Long nodeId = node.getId();
         NodeRef nodeRef = node.getNodeRef();
         if (qname.equals(ContentModel.PROP_STORE_PROTOCOL))
         {
@@ -114,7 +113,7 @@ public class ReferenceablePropertiesEntity
         }
         else if (qname.equals(ContentModel.PROP_NODE_DBID))
         {
-            return nodeId;
+            return node.getId();
         }
         throw new IllegalArgumentException("Not sys:referenceable property: " + qname);
     }

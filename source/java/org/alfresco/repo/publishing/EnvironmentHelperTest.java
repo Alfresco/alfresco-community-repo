@@ -26,8 +26,9 @@ import static junit.framework.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import javax.annotation.Resource;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,8 +41,6 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
@@ -57,18 +56,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class EnvironmentHelperTest
 {
-    @Autowired
-    protected ApplicationContext applicationContext;
+    @Resource(name = "ServiceRegistry")
     protected ServiceRegistry serviceRegistry;
-    protected RetryingTransactionHelper retryingTransactionHelper;
     protected NodeService nodeService;
     protected WorkflowService workflowService;
     protected FileFolderService fileFolderService;
     protected SiteService siteService;
 
-    protected AuthenticationComponent authenticationComponent;
-    private String siteId;
+    @Resource(name="environmentHelper")
     private EnvironmentHelper environmentHelper;
+    private String siteId;
 
     /**
      * @throws java.lang.Exception
@@ -76,20 +73,16 @@ public class EnvironmentHelperTest
     @Before
     public void setUp() throws Exception
     {
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        serviceRegistry.getAuthenticationService().authenticate("admin", "admin".toCharArray());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
         fileFolderService = serviceRegistry.getFileFolderService();
         workflowService = serviceRegistry.getWorkflowService();
         nodeService = serviceRegistry.getNodeService();
         siteService = serviceRegistry.getSiteService();
 
-        environmentHelper = (EnvironmentHelper) applicationContext.getBean("environmentHelper");
         siteId = GUID.generate();
         siteService.createSite("test", siteId, "Test site created by ChannelServiceImplIntegratedTest",
                 "Test site created by ChannelServiceImplIntegratedTest", SiteVisibility.PUBLIC);
-
     }
 
     @Test

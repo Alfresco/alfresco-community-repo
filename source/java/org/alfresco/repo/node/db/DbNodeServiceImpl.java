@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -74,6 +75,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Node service using database persistence layer to fulfill functionality
@@ -318,6 +320,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Ensure child uniqueness
         String newName = extractNameProperty(properties);
         
+        // Get the thread's locale
+        Locale locale = I18NUtil.getLocale();
+        
         // create the node instance
         ChildAssocEntity assoc = nodeDAO.newNode(
                 parentNodePair.getFirst(),
@@ -326,6 +331,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 parentStoreRef,
                 newUuid,
                 nodeTypeQName,
+                locale,
                 newName,
                 properties);
         ChildAssociationRef childAssocRef = assoc.getRef(qnameDAO);
@@ -728,7 +734,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeUpdateNode(nodeRef);
         
         // Set the type
-        nodeDAO.updateNode(nodePair.getFirst(), null, null, typeQName);
+        nodeDAO.updateNode(nodePair.getFirst(), null, null, typeQName, null);
         
         // Add the default aspects and properties required for the given type. Existing values will not be overridden.
         addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);

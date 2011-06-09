@@ -19,15 +19,29 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
  *
  */
-public interface PublishingPackageEntry
+public interface NodeSnapshot
 {
     NodeRef getNodeRef();
-    NodeSnapshot getSnapshot();
-    boolean isPublish();
+    ChildAssociationRef getPrimaryParentAssoc();
+    Path getPrimaryPath();
+    Map<QName, Serializable> getProperties();
+    List<ChildAssociationRef> getAllParentAssocs();
+    List<AssociationRef> getOutboundPeerAssociations();
+    QName getType();
+    Set<QName> getAspects();
 }

@@ -252,7 +252,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 18 fields", 18, fieldDefs.size());
+        assertEquals("Wrong number of fields", 19, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -650,7 +650,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 7 fields", 7, fieldDefs.size());
+        assertEquals("Wrong number of fields", 8, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -829,7 +829,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 7 fields", 7, fieldDefs.size());
+        assertEquals("Wrong number of fields", 8, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not

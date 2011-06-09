@@ -16,14 +16,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.security.permissions.impl.acegi;
 
+package org.alfresco.repo.publishing;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 
 /**
- * @author janv
+ * @author Nick Smith
  * @since 4.0
+ *
  */
-public interface ResultsPermissionChecked
+public class PublishingEventFilterImpl implements PublishingEventFilter
 {
-    public boolean permissionsChecked();
+    private Set<String> ids = new HashSet<String>();
+    
+    /**
+    * {@inheritDoc}
+    */
+    public PublishingEventFilter setIds(String... ids)
+    {
+        if(ids != null && ids.length>0)
+        {
+            this.ids.addAll(Arrays.asList(ids));
+        }
+        return this;
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    public Set<String> getIds()
+    {
+        return Collections.unmodifiableSet(ids);
+    }
+    
 }

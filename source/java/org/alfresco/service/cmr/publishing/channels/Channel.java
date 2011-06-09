@@ -19,7 +19,11 @@
 
 package org.alfresco.service.cmr.publishing.channels;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
@@ -40,4 +44,6 @@ public interface Channel
      * @return
      */
     String getName();
+    
+    Map<QName, Serializable> getProperties();
 }

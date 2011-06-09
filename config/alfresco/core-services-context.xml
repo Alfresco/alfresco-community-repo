@@ -1307,6 +1307,10 @@
             <ref bean="NodeService" />
         </property>
     </bean>
+    <bean id="commentsRollupAspect" class="org.alfresco.repo.forum.CommentsRollupAspect" init-method="init">
+       <property name="policyComponent" ref="policyComponent"/>
+   </bean>
+    
 
     <!-- Bean to support full text search -->
 

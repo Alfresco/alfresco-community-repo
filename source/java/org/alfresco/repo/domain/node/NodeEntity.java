@@ -36,6 +36,7 @@ public class NodeEntity implements Node
     private StoreEntity store;
     private String uuid;
     private Long typeQNameId;
+    private Long localeId;
     private Long aclId;
     private Boolean deleted;
     private TransactionEntity transaction;
@@ -71,6 +72,7 @@ public class NodeEntity implements Node
         this.store = node.getStore();
         this.uuid = node.getUuid();
         this.typeQNameId = node.getTypeQNameId();
+        this.localeId = node.getLocaleId();
         this.aclId = node.getAclId();
         this.deleted = node.getDeleted();
         this.transaction = node.getTransaction();
@@ -93,6 +95,7 @@ public class NodeEntity implements Node
         }
         sb.append(", uuid=").append(uuid)
           .append(", typeQNameId=").append(typeQNameId)
+          .append(", localeId=").append(localeId)
           .append(", aclId=").append(aclId)
           .append(", deleted=").append(deleted)
           .append(", transaction=").append(transaction)
@@ -129,22 +132,26 @@ public class NodeEntity implements Node
         }
     }
     
+    @Override
     public NodeRef getNodeRef()
     {
         return new NodeRef(store.getStoreRef(), uuid);
     }
     
+    @Override
     public NodeRef.Status getNodeStatus()
     {
         NodeRef nodeRef = new NodeRef(store.getStoreRef(), uuid);
         return new NodeRef.Status(nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
     }
     
+    @Override
     public Pair<Long, NodeRef> getNodePair()
     {
         return new Pair<Long, NodeRef>(id, getNodeRef());
     }
 
+    @Override
     public Long getId()
     {
         return id;
@@ -156,6 +163,7 @@ public class NodeEntity implements Node
         this.id = id;
     }
 
+    @Override
     public Long getVersion()
     {
         return version;
@@ -167,6 +175,7 @@ public class NodeEntity implements Node
         this.version = version;
     }
 
+    @Override
     public StoreEntity getStore()
     {
         return store;
@@ -178,6 +187,7 @@ public class NodeEntity implements Node
         this.store = store;
     }
 
+    @Override
     public String getUuid()
     {
         return uuid;
@@ -189,6 +199,7 @@ public class NodeEntity implements Node
         this.uuid = uuid;
     }
 
+    @Override
     public Long getTypeQNameId()
     {
         return typeQNameId;
@@ -200,6 +211,18 @@ public class NodeEntity implements Node
         this.typeQNameId = typeQNameId;
     }
 
+    @Override
+    public Long getLocaleId()
+    {
+        return localeId;
+    }
+
+    public void setLocaleId(Long localeId)
+    {
+        this.localeId = localeId;
+    }
+
+    @Override
     public Long getAclId()
     {
         return aclId;
@@ -211,6 +234,7 @@ public class NodeEntity implements Node
         this.aclId = aclId;
     }
 
+    @Override
     public Boolean getDeleted()
     {
         return deleted;
@@ -222,6 +246,7 @@ public class NodeEntity implements Node
         this.deleted = deleted;
     }
 
+    @Override
     public TransactionEntity getTransaction()
     {
         return transaction;
@@ -233,6 +258,7 @@ public class NodeEntity implements Node
         this.transaction = transaction;
     }
 
+    @Override
     public AuditablePropertiesEntity getAuditableProperties()
     {
         return auditableProperties;

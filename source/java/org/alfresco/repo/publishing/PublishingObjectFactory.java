@@ -82,6 +82,7 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
         environment.setNodeRef(node);
         environment.setPublishingQueueFactory(this);
         environment.setEnvironmentHelper(environmentHelper);
+        environment.setPublishingEventHelper(publishingEventHelper);
         return environment;
     }
 

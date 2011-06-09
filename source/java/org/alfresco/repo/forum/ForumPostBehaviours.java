@@ -20,13 +20,14 @@ package org.alfresco.repo.forum;
 
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * This class registers behaviours for the {@link ForumModel#TYPE_POST fm:post} content type.
@@ -36,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @since 4.0
  */
 public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePolicy,
-                                            NodeServicePolicies.OnDeleteNodePolicy
+                                            NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private PolicyComponent policyComponent;
     private NodeService nodeService;
@@ -61,9 +62,9 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                 ForumModel.TYPE_POST,
                 new JavaBehaviour(this, "onCreateNode"));
         this.policyComponent.bindClassBehaviour(
-                OnDeleteNodePolicy.QNAME,
+                BeforeDeleteNodePolicy.QNAME,
                 ForumModel.TYPE_POST,
-                new JavaBehaviour(this, "onDeleteNode"));
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
     
     @Override
@@ -81,13 +82,12 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     }
 
     @Override
-    public void onDeleteNode(ChildAssociationRef childAssocRef,
-            boolean isNodeArchived)
+    public void beforeDeleteNode(NodeRef nodeRef)
     {
         // We have one less comment under a discussable node.
         // We need to find the fm:commentsRollup ancestor to this comment node and decrement its commentCount
-        
-        NodeRef commentsRollupNode = getCommentsRollupAncestor(childAssocRef.getParentRef());
+        NodeRef topicNode = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        NodeRef commentsRollupNode = getCommentsRollupAncestor(topicNode);
         
         if (commentsRollupNode != null)
         {
@@ -102,19 +102,37 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
      * {@link ForumModel#ASPECT_COMMENTS_ROLLUP commentsRollup} aspect.
      * 
      * @param topicNode
-     * @return the NodeRef of the commentsRollup ancestor if there is one (which there always should be), else <code>null</code>.
+     * @return the NodeRef of the commentsRollup ancestor if there is one, else <code>null</code>.
      */
     private NodeRef getCommentsRollupAncestor(NodeRef topicNode)
     {
+        // We are specifically trying to roll up "comment" counts here. In other words the number of "comments" on a node
+        // as applied through the Share UI.
+        // We are not trying to roll up generic fm:post counts. Although, of course, comments are modelled as fm:post nodes.
+        // So there are two scenarios in which we do not want to roll up changes to the count.
+        // 1. When the fm:post node is not a Share comment.
+        // 2. When the node is being deleted as part of a cascade delete.
+        // If an ancestor node to an fm:post is deleted then the parent structure may have been flattened within the archive store.
+        //
+        NodeRef result = null;
+        
         NodeRef forumNode = nodeService.getPrimaryParent(topicNode).getParentRef();
-        NodeRef commentsRollupNode = nodeService.getPrimaryParent(forumNode).getParentRef();
-        if (! nodeService.hasAspect(commentsRollupNode, ForumModel.ASPECT_COMMENTS_ROLLUP))
+        if (ForumModel.TYPE_FORUM.equals(nodeService.getType(forumNode)) && !forumNode.getStoreRef().equals(StoreRef.PROTOCOL_ARCHIVE))
         {
-            return null;
+            NodeRef commentsRollupNode = nodeService.getPrimaryParent(forumNode).getParentRef();
+            
+            if (!commentsRollupNode.getStoreRef().equals(StoreRef.PROTOCOL_ARCHIVE))
+            {
+                if (! nodeService.hasAspect(commentsRollupNode, ForumModel.ASPECT_COMMENTS_ROLLUP))
+                {
+                    result = null;
+                }
+                else
+                {
+                    result = commentsRollupNode;
+                }
+            }
         }
-        else
-        {
-            return commentsRollupNode;
-        }
+        return result;
     }
 }

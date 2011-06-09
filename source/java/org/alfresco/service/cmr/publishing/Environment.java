@@ -33,4 +33,10 @@ public interface Environment
     Map<NodeRef,NodePublishStatus> checkPublishStatus(Collection<NodeRef> nodes);
     
     List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter);
+    
+    /**
+     * Creates a {@link PublishingEventFilter}.
+     * @return a new {@link PublishingEventFilter}.
+     */
+    PublishingEventFilter createPublishingEventFilter();
 }

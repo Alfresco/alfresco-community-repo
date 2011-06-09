@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public class EnvironmentImpl implements Environment
@@ -40,44 +41,49 @@ public class EnvironmentImpl implements Environment
     private NodeRef nodeRef;
     private String id;
     private EnvironmentHelper environmentHelper;
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.Environment#checkPublishStatus(java.util.Collection)
+    private PublishingEventHelper publishingEventHelper;
+    
+    /**
+     * {@inheritDoc}
      */
-    @Override
     public Map<NodeRef, NodePublishStatus> checkPublishStatus(Collection<NodeRef> nodes)
     {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.Environment#getId()
+    /**
+     * {@inheritDoc}
      */
-    @Override
     public String getId()
     {
         return id;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.Environment#getPublishingEvents(org.alfresco.service.cmr.publishing.PublishingEventFilter)
+    /**
+     * {@inheritDoc}
      */
-    @Override
     public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
     {
-        // TODO Auto-generated method stub
-        return null;
+        NodeRef queue = environmentHelper.getPublishingQueue(nodeRef);
+        return publishingEventHelper.findPublishingEvents(queue, filter);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.Environment#getPublishingQueue()
+    /**
+     * {@inheritDoc}
      */
-    @Override
     public PublishingQueue getPublishingQueue()
     {
         return publishingQueueFactory.createPublishingQueueObject(nodeRef);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+     public PublishingEventFilter createPublishingEventFilter()
+     {
+         return new PublishingEventFilterImpl();
+     }
 
     /**
      * @param node
@@ -102,6 +108,14 @@ public class EnvironmentImpl implements Environment
     public void setEnvironmentHelper(EnvironmentHelper environmentHelper)
     {
         this.environmentHelper = environmentHelper;
+    }
+    
+    /**
+     * @param publishingEventHelper the publishingEventHelper to set
+     */
+    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper)
+    {
+        this.publishingEventHelper = publishingEventHelper;
     }
 
 }

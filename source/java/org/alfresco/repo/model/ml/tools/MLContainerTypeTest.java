@@ -51,8 +51,8 @@ public class MLContainerTypeTest extends AbstractMultilingualTestCases
         
         // 1. Locale as null
         
-        // Ensure that the setting of the locale of the mlContainer as null throws an excpetion
-        assertTrue("The setting of the locale of a mlContainer must throws an exception", 
+        // Setting a null locale has no effect on any node
+        assertFalse("The setting of the locale of a mlContainer must throws an exception", 
                 setLocaleProp(mlContainer, null));
         // Ensure that the locale of the mlContainer is not changed
         assertEquals("The locale of the mlContainer would not be changed", 

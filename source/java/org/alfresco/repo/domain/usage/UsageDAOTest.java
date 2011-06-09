@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see UsageDAO
@@ -80,6 +81,7 @@ public class UsageDAOTest extends TestCase
                 storeRef,
                 null,
                 ContentModel.TYPE_CONTENT,
+                I18NUtil.getLocale(),
                 null,
                 null);
         

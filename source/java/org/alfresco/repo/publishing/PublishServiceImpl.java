@@ -29,11 +29,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public class PublishServiceImpl implements PublishingService
 {
     private EnvironmentFactory environmentFactory;
+    private PublishingEventHelper publishingEventHelper;
     
     /**
      * @param environmentFactory the environmentFactory to set
@@ -43,42 +45,47 @@ public class PublishServiceImpl implements PublishingService
         this.environmentFactory = environmentFactory;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingService#getEnvironment(java.lang.String, java.lang.String)
+    /**
+     * @param publishingEventHelper the publishingEventHelper to set
      */
-    @Override
+    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper)
+    {
+        this.publishingEventHelper = publishingEventHelper;
+    }
+    
+    /**
+     * 
+    * {@inheritDoc}
+     */
     public Environment getEnvironment(String siteId, String environmentName)
     {
         return environmentFactory.createEnvironmentObject(siteId, environmentName);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingService#getEnvironments(java.lang.String)
+    /**
+     * 
+    * {@inheritDoc}
      */
-    @Override
     public List<Environment> getEnvironments(String siteId)
     {
         return environmentFactory.createEnvironmentObjects(siteId);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingService#getPublishingDependencies(org.alfresco.service.cmr.repository.NodeRef)
+    /**
+     * 
+    * {@inheritDoc}
      */
-    @Override
     public Set<NodeRef> getPublishingDependencies(NodeRef node)
     {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingService#getPublishingEvent(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    @Override
-    public PublishingEvent getPublishingEvent(String id)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+     public PublishingEvent getPublishingEvent(String id)
+     {
+         return publishingEventHelper.getPublishingEvent(id);
+     }
 }

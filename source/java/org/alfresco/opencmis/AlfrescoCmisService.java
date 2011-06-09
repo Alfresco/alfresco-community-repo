@@ -597,11 +597,10 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
         
-        if (pageOfNodeInfos.hasMoreItems() != null)
-        {
-            result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
-        }
+        /// has more ?
+        result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
         
+        // total count ?
         Pair<Integer, Integer> totalCounts = pageOfNodeInfos.getTotalResultCount();
         if (totalCounts != null)
         {

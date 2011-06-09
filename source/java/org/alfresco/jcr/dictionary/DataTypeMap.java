@@ -56,6 +56,7 @@ public class DataTypeMap
         dataTypeToPropertyType.put(DataTypeDefinition.NODE_REF, PropertyType.REFERENCE);
         dataTypeToPropertyType.put(DataTypeDefinition.PATH, PropertyType.PATH);
         dataTypeToPropertyType.put(DataTypeDefinition.ANY, PropertyType.UNDEFINED);
+        dataTypeToPropertyType.put(DataTypeDefinition.LOCALE, PropertyType.STRING);
     }
     
     /** Map of JCR Property Type to Alfresco Data Type */

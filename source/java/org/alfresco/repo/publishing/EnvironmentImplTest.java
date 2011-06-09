@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,17 +17,25 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.service.cmr.publishing;
+package org.alfresco.repo.publishing;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * @author Brian
+ * @author Nick Smith
+ * @since 4.0
  *
  */
-public interface PublishingPackageEntry
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml"})
+public class EnvironmentImplTest
 {
-    NodeRef getNodeRef();
-    NodeSnapshot getSnapshot();
-    boolean isPublish();
+    @Test
+    public void test1()
+    {
+        
+    }
 }

@@ -30,6 +30,8 @@ public interface Node extends NodeIdAndAclId
 {
     public abstract NodeRef getNodeRef();
 
+    public NodeRef.Status getNodeStatus();
+    
     public abstract Pair<Long, NodeRef> getNodePair();
 
     public abstract Long getVersion();
@@ -39,6 +41,8 @@ public interface Node extends NodeIdAndAclId
     public abstract String getUuid();
 
     public abstract Long getTypeQNameId();
+    
+    public abstract Long getLocaleId();
 
     public abstract Boolean getDeleted();
 

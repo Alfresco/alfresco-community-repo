@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,7 +41,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -86,6 +85,9 @@ public class FileFolderPerformanceTester extends TestCase
     private NodeRef rootFolderRef;
     private File dataFile;
     
+    private String USERNAME = AuthenticationUtil.getAdminUserName(); // as admin
+    //private String USERNAME = AuthenticationUtil.getSystemUserName(); // as system (bypass permissions)
+    
     
     protected NodeService getNodeService()
     {
@@ -103,12 +105,24 @@ public class FileFolderPerformanceTester extends TestCase
         searchService = serviceRegistry.getSearchService();
         nodeService = getNodeService();
         
-        // authenticate
-        authenticationComponent.setSystemUserAsCurrentUser();
+        authenticate(USERNAME);
         
         rootFolderRef = getOrCreateRootFolder();
         
         dataFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
+    }
+    
+
+    private void authenticate(String userName)
+    {
+        if (AuthenticationUtil.getSystemUserName().equals(userName))
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+        }
+        else
+        {
+            authenticationComponent.setCurrentUser(userName);
+        }
     }
     
     public void testSetUp() throws Exception
@@ -118,7 +132,7 @@ public class FileFolderPerformanceTester extends TestCase
     
     protected NodeRef getOrCreateRootFolder()
     {
-     // find the guest folder
+        // find the company home folder
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, "/app:company_home");
         try
@@ -185,7 +199,7 @@ public class FileFolderPerformanceTester extends TestCase
             public void run()
             {
                 // authenticate
-                authenticationComponent.setSystemUserAsCurrentUser();
+                authenticate(USERNAME);
                 
                 // progress around the folders until they have been populated
                 start = System.currentTimeMillis();
@@ -242,16 +256,20 @@ public class FileFolderPerformanceTester extends TestCase
                 long time = (end - start);
                 double average = (double) time / (double) (folderCount * currentBatchCount * filesPerBatch);
                 double percentComplete = (double) currentBatchCount / (double) batchCount * 100.0;
-                logger.debug("\n" +
-                        "[" + Thread.currentThread().getName() + "] \n" +
-                        "   Created " + (currentBatchCount*filesPerBatch) + " files in each of " + folderCount +
-                            " folders (" + (randomOrder ? "shuffled" : "in order") + "): \n" +
-                        "   Progress: " + String.format("%9.2f", percentComplete) +  " percent complete \n" +
-                        "   Average: " + String.format("%10.2f", average) + " ms per file \n" +
-                        "   Average: " + String.format("%10.2f", 1000.0/average) + " files per second");
+                
+                if (percentComplete > 0)
+                {
+                    logger.debug("\n" +
+                            "[" + Thread.currentThread().getName() + "] \n" +
+                            "   Created " + (currentBatchCount*filesPerBatch) + " files in each of " + folderCount +
+                                " folders (" + (randomOrder ? "shuffled" : "in order") + "): \n" +
+                            "   Progress: " + String.format("%9.2f", percentComplete) +  " percent complete \n" +
+                            "   Average: " + String.format("%10.2f", average) + " ms per file \n" +
+                            "   Average: " + String.format("%10.2f", 1000.0/average) + " files per second");
+                }
             }
         };
-
+        
         // kick off the required number of threads
         logger.debug("\n" +
                 "Starting " + threadCount +
@@ -282,35 +300,44 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
     
-    @SuppressWarnings("unused")
     private void readStructure(
             final NodeRef parentNodeRef,
             final int threadCount,
             final int repetitions,
             final double[] dumpPoints)
     {
-        final List<ChildAssociationRef> children = nodeService.getChildAssocs(parentNodeRef);
+        final List<FileInfo> children = fileFolderService.list(parentNodeRef);
         Runnable runnable = new Runnable()
         {
             public void run()
             {
                 // authenticate
-                authenticationComponent.setSystemUserAsCurrentUser();
+                authenticate(USERNAME);
                 
                 for (int i = 0; i < repetitions; i++)
                 {
                     // read the contents of each folder
-                    for (ChildAssociationRef childAssociationRef : children)
+                    for (final FileInfo fileInfo : children)
                     {
-                        final NodeRef folderRef = childAssociationRef.getChildRef();
+                        final NodeRef folderRef = fileInfo.getNodeRef();
                         RetryingTransactionCallback<Object> readCallback = new RetryingTransactionCallback<Object>()
                         {
                             public Object execute() throws Exception
                             {
-                                // read the child associations of the folder
-                                nodeService.getChildAssocs(folderRef);
-                                // get the type
-                                nodeService.getType(folderRef);
+                                List<FileInfo> tmp = null;
+                                if (fileInfo.isFolder())
+                                {
+                                    long start = System.currentTimeMillis();
+                                    
+                                    // read the children of the folder
+                                    tmp = fileFolderService.list(folderRef);
+                                    
+                                    logger.debug("List "+tmp.size()+" items in "+(System.currentTimeMillis()-start)+" msecs");
+                                }
+                                else
+                                {
+                                    throw new AlfrescoRuntimeException("Not a folder: "+folderRef);
+                                }
                                 // done
                                 return null;
                             };
@@ -318,15 +345,18 @@ public class FileFolderPerformanceTester extends TestCase
                         retryingTransactionHelper.doInTransaction(readCallback, true);
                     }
                 }
-            }            
+            }
         };
-
+        
         // kick off the required number of threads
         logger.debug("\n" +
                 "Starting " + threadCount +
                 " threads reading properties and children of " + children.size() +
-                " folder " + repetitions +
+                " folders " + repetitions +
                 " times.");
+        
+        long start = System.currentTimeMillis();
+        
         ThreadGroup threadGroup = new ThreadGroup(getName());
         Thread[] threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++)
@@ -346,65 +376,138 @@ public class FileFolderPerformanceTester extends TestCase
                 // not too serious - the worker threads are non-daemon
             }
         }
+        logger.debug("\nFinished reading in "+(System.currentTimeMillis()-start)+" msecs");
+    }
+
+/*
+    // Load and read: 100 ordered files (into 1 folder) using 1 thread
+    public void test_1_ordered_1_1_100() throws Exception
+    {
+        buildStructure(rootFolderRef, 1, false, 1, 1, 100, new double[] {0.25, 0.50, 0.75});
+        readStructure(rootFolderRef, 1, 3, new double[] {0.25, 0.50, 0.75});
     }
     
-//    /** Load 5000 files into a single folder using 2 threads */
-//    public void test_2_ordered_1_2500() throws Exception
-//    {
-//        buildStructure(rootFolderRef, 2, false, 1, 2500, new double[] {0.25, 0.50, 0.75});
-//    }
+    // Load and read: 300 ordered files per folder (into 2 folders) using 1 thread
+    public void test_1_ordered_2_3_100() throws Exception
+    {
+        buildStructure(rootFolderRef, 1, false, 2, 3, 100, new double[] {0.25, 0.50, 0.75});
+        readStructure(rootFolderRef, 1, 3, new double[] {0.25, 0.50, 0.75});
+    }
     
-//    public void test_4_ordered_10_100() throws Exception
-//    {
-//        buildStructure(rootFolderRef, 4, false, 10, 100, new double[] {0.25, 0.50, 0.75});
-//    }
-//    
-//    public void test_4_shuffled_10_100() throws Exception
-//    {
-//        buildStructure(rootFolderRef, 4, true, 10, 100, new double[] {0.25, 0.50, 0.75});
-//    }
-//    public void test_1_ordered_100_100() throws Exception
-//    {
-//        buildStructure(
-//                rootFolderRef,
-//                1,
-//                false,
-//                100,
-//                100,
-//                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-//    }
-//    public void test_1_shuffled_10_400() throws Exception
-//    {
-//        buildStructure(
-//                rootFolderRef,
-//                1,
-//                true,
-//                10,
-//                400,
-//                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-//    }
-    public void test_4_shuffled_10_100() throws Exception
+    // Load and read: 5000 files per folder (into 1 folder) using 2 threads
+    public void test_2_ordered_1_2500_1() throws Exception
+    {
+        buildStructure(rootFolderRef, 2, false, 1, 2500, 1, new double[] {0.25, 0.50, 0.75});
+        readStructure(rootFolderRef, 2, 3, new double[] {0.25, 0.50, 0.75});
+    }
+
+    // Load and read: 10000 files per folder (into 1 folder) using 2 threads
+    public void test_2_ordered_1_10_500() throws Exception
+    {
+        buildStructure(rootFolderRef, 2, false, 1, 10, 500, new double[] {0.25, 0.50, 0.75});
+        readStructure(rootFolderRef, 2, 3, new double[] {0.25, 0.50, 0.75}); // note: will list each folder up to configured max items (eg. default 5000)
+    }
+    
+    // Load and read: 1000 ordered files per folder (into 10 folders) using 4 threads
+    public void test_1_ordered_10_1_100() throws Exception
+    {
+        buildStructure(rootFolderRef, 1, false, 10, 1, 100, new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        readStructure(rootFolderRef, 1, 3, new double[] {0.25, 0.50, 0.75});
+    }
+    
+    // Load and read: 4000 ordered files per folder (into 10 folders) using 4 threads
+    public void test_4_ordered_10_1_100() throws Exception
+    {
+        buildStructure(rootFolderRef, 4, false, 10, 1, 100, new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        readStructure(rootFolderRef, 4, 3, new double[] {0.25, 0.50, 0.75});
+    }
+    
+    // Load and read: 4000 shuffled files per folder (into 10 folders) using 4 threads
+    public void test_4_shuffled_10_1_100() throws Exception
+    {
+        buildStructure(rootFolderRef, 4, true, 10, 1, 100, new double[] {0.25, 0.50, 0.75});
+        readStructure(rootFolderRef, 4, 1, new double[] {0.25, 0.50, 0.75});
+    }
+    
+    // Load: 100 shuffled files per folder (into 100 folders) using 1 thread
+    public void test_1_ordered_100_1_100() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                1,
+                false,
+                100,
+                1,
+                100,
+                new double[] {0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        readStructure(rootFolderRef, 1, 1, new double[] {0.25, 0.50, 0.75});
+    }
+    
+    // Load: 400 shuffled files per folder (into 10 folders) using 1 thread
+    public void test_1_shuffled_10_1_400() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                1,
+                true,
+                10,
+                1,
+                400,
+                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        
+        readStructure(rootFolderRef, 1, 1, new double[] {0.25, 0.50, 0.75});
+    }
+*/
+    // Load: 800 ordered files per folder (into 3 folders) using 4 threads
+    public void test_4_ordered_3_2_100() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                4,
+                false,
+                3,
+                2,
+                100,
+                new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        
+        System.out.println("rootFolderRef: "+rootFolderRef);
+        
+        readStructure(rootFolderRef, 4, 5, new double[] {0.25, 0.50, 0.75});
+    }
+    
+    // Load: 800 shuffled files per folder (into 3 folders) using 4 threads
+    public void test_4_shuffled_3_2_100() throws Exception
     {
         buildStructure(
                 rootFolderRef,
                 4,
                 true,
-                10,
+                3,
+                2,
                 100,
-                20,
                 new double[] {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        
+        System.out.println("rootFolderRef: "+rootFolderRef);
+        
+        readStructure(rootFolderRef, 4, 5, new double[] {0.25, 0.50, 0.75});
     }
-//    public void test_1_ordered_1_50000() throws Exception
-//    {
-//        buildStructure(
-//                rootFolderRef,
-//                1,
-//                false,
-//                1,
-//                50000,
-//                new double[] {0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
-//    }
-    
+
+/*
+    // Load: 50000 ordered files per folder (into 1 folder) using 1 thread
+    public void test_1_ordered_1_5000_10() throws Exception
+    {
+        buildStructure(
+                rootFolderRef,
+                1,
+                false,
+                1,
+                5000,
+                10,
+                new double[] {0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
+        
+        readStructure(rootFolderRef, 1, 1, new double[] {0.25, 0.50, 0.75});
+    }
+*/
     
     /**
      * Create a bunch of files and folders in a folder and then run multi-threaded directory
@@ -573,7 +676,7 @@ public class FileFolderPerformanceTester extends TestCase
         {
             public List<FileInfo> doWork() throws Exception
             {
-                return fileFolderService.search(folderNodeRef, "*", false);
+                return fileFolderService.list(folderNodeRef);
             }
         };
         

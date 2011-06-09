@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -128,7 +129,7 @@ public class FileFolderServiceImpl implements FileFolderService
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List<String> systemPaths;
     
-    // applies to list "all" methods - note: final result count also depends on "system.acl.maxPermissionCheckTimeMillis"
+    // default cutoff - applies to list "all" methods
     private int defaultListMaxResults = 5000;
     
     /**
@@ -213,7 +214,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public void init()
     {
     }
-
+    
     /**
      * Helper method to convert node reference instances to file info
      * 
@@ -331,7 +332,16 @@ public class FileFolderServiceImpl implements FileFolderService
     
     public List<FileInfo> list(NodeRef contextNodeRef)
     {
-        return list(contextNodeRef, true, true);
+        // execute the query
+        List<FileInfo> results = listSimple(contextNodeRef, true, true);
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Shallow search for files and folders: \n" +
+                    "   context: " + contextNodeRef + "\n" +
+                    "   results: " + results);
+        }
+        return results;
     }
     
     /* (non-Javadoc)
@@ -342,10 +352,20 @@ public class FileFolderServiceImpl implements FileFolderService
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
-        // execute query
-        CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, files, folders, ignoreQNameTypes, pagingRequest);
+        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
         
-        List<NodeRef> nodeRefs = results.getPages().get(0);
+        // execute query
+        CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, pagingRequest);
+        
+        List<NodeRef> nodeRefs = null;
+        if (results.getPageCount() > 0)
+        {
+            nodeRefs = results.getPages().get(0);
+        }
+        else
+        {
+            nodeRefs = Collections.emptyList();
+        }
         
         // set total count
         Pair<Integer, Integer> totalCount = null;
@@ -365,11 +385,21 @@ public class FileFolderServiceImpl implements FileFolderService
         return new PagingFileInfoResultsImpl(nodeInfos, hasMoreItems, totalCount, results.getQueryExecutionId(), true);
     }
     
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, PagingFileInfoRequest pagingRequest)
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
+    {
+        Set<QName> searchTypeQNames = buildTypes(files, folders, null);
+        return listImpl(contextNodeRef, searchTypeQNames);
+    }
+    
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames)
+    {
+        return listImpl(contextNodeRef, searchTypeQNames, new PagingFileInfoRequest(defaultListMaxResults, null));
+    }
+    
+    // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames, PagingFileInfoRequest pagingRequest)
     {
         long start = System.currentTimeMillis();
-        
-        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
@@ -394,28 +424,10 @@ public class FileFolderServiceImpl implements FileFolderService
         return results;
     }
     
-    private List<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders)
-    {
-        // execute the query
-        List<NodeRef> nodeRefs = listSimple(contextNodeRef, files, folders);
-        // convert the noderefs
-        List<FileInfo> results = toFileInfo(nodeRefs);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Shallow search for files and folders: \n" +
-                    "   context: " + contextNodeRef + "\n" +
-                    "   results: " + results);
-        }
-        return results;
-    }
-
     public List<FileInfo> listFiles(NodeRef contextNodeRef)
     {
         // execute the query
-        List<NodeRef> nodeRefs = listSimple(contextNodeRef, true, false);
-        // convert the noderefs
-        List<FileInfo> results = toFileInfo(nodeRefs);
+        List<FileInfo> results = listSimple(contextNodeRef, true, false);
         // done
         if (logger.isDebugEnabled())
         {
@@ -429,9 +441,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public List<FileInfo> listFolders(NodeRef contextNodeRef)
     {
         // execute the query
-        List<NodeRef> nodeRefs = listSimple(contextNodeRef, false, true);
-        // convert the noderefs
-        List<FileInfo> results = toFileInfo(nodeRefs);
+        List<FileInfo> results = listSimple(contextNodeRef, false, true);
         // done
         if (logger.isDebugEnabled())
         {
@@ -529,6 +539,7 @@ public class FileFolderServiceImpl implements FileFolderService
         List<NodeRef> nodeRefs = searchInternal(contextNodeRef, namePattern, fileSearch, folderSearch, includeSubFolders);
         
         List<FileInfo> results = toFileInfo(nodeRefs);
+        
         // eliminate unwanted files/folders
         Iterator<FileInfo> iterator = results.iterator(); 
         while (iterator.hasNext())
@@ -592,10 +603,10 @@ public class FileFolderServiceImpl implements FileFolderService
             }
             else
             {
-                nodeRefs = listSimple(contextNodeRef, fileSearch, folderSearch);
+                nodeRefs = listImpl(contextNodeRef, fileSearch, folderSearch).getPage();
             }
         }
-        else                
+        else
         {
             // TODO - we need to get rid of this xpath stuff
             // if the name pattern is null, then we use the ANY pattern
@@ -652,10 +663,15 @@ public class FileFolderServiceImpl implements FileFolderService
         return nodeRefs;
     }
     
-    private List<NodeRef> listSimple(NodeRef contextNodeRef, boolean files, boolean folders)
+    private List<FileInfo> listSimple(NodeRef contextNodeRef, boolean files, boolean folders) throws InvalidTypeException
     {
-        PagingFileInfoRequest pagingRequest = new PagingFileInfoRequest(0, defaultListMaxResults, null, null);
-        return listImpl(contextNodeRef, files, folders, null, pagingRequest).getPage();
+        CannedQueryResults<NodeRef> cq = listImpl(contextNodeRef, files, folders);
+        List<NodeRef> nodeRefs = cq.getPage();
+        
+        List<FileInfo> results = toFileInfo(nodeRefs);
+        
+        // avoid re-applying permissions (for "list" canned queries)
+        return new WrappedList<FileInfo>(results, cq.permissionsApplied(), cq.hasMoreItems());
     }
     
     private Set<QName> buildTypes(boolean files, boolean folders, Set<QName> ignoreQNameTypes)
@@ -665,23 +681,12 @@ public class FileFolderServiceImpl implements FileFolderService
         // Build a list of file and folder types
         if (folders)
         {
-            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_FOLDER);
+            searchTypeQNames.addAll(buildFolderTypes());
         }
         if (files)
         {
-            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
-            qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_LINK);
+            searchTypeQNames.addAll(buildFileTypes());
         }
-        // Remove 'system' folders
-        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-        searchTypeQNames.removeAll(qnames);
-        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
         
         if (ignoreQNameTypes != null)
         {
@@ -689,6 +694,38 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         return searchTypeQNames;
+    }
+    
+    private Set<QName> buildFolderTypes()
+    {
+        Set<QName> folderTypeQNames = new HashSet<QName>(50);
+        
+        // Build a list of folder types
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
+        folderTypeQNames.addAll(qnames);
+        folderTypeQNames.add(ContentModel.TYPE_FOLDER);
+        
+        // Remove 'system' folders
+        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        folderTypeQNames.removeAll(qnames);
+        folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+        
+        return folderTypeQNames;
+    }
+    
+    private Set<QName> buildFileTypes()
+    {
+        Set<QName> fileTypeQNames = new HashSet<QName>(50);
+        
+        // Build a list of file types
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+        fileTypeQNames.addAll(qnames);
+        fileTypeQNames.add(ContentModel.TYPE_CONTENT);
+        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
+        fileTypeQNames.addAll(qnames);
+        fileTypeQNames.add(ContentModel.TYPE_LINK);
+        
+        return fileTypeQNames;
     }
     
     /**
@@ -717,31 +754,12 @@ public class FileFolderServiceImpl implements FileFolderService
             logger.debug("searchSimpleDeep contextNodeRef:" + contextNodeRef);
         }
         
-        Set<QName> folderTypeQNames = new HashSet<QName>(10);
-        Set<QName> fileTypeQNames = new HashSet<QName>(10);
-        
         // To hold the results.
         List<NodeRef> result = new ArrayList<NodeRef>();
         
         // Build a list of folder types
-        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
-        folderTypeQNames.addAll(qnames);
-        folderTypeQNames.add(ContentModel.TYPE_FOLDER);
-        
-        // Remove 'system' folders and all descendants
-        Collection<QName> systemFolderQNames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-        folderTypeQNames.removeAll(systemFolderQNames);
-        folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
-        
-        if (files)
-        {
-            Collection<QName> fileQNames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
-            fileTypeQNames.addAll(fileQNames);
-            fileTypeQNames.add(ContentModel.TYPE_CONTENT);
-            Collection<QName> linkQNames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
-            fileTypeQNames.addAll(linkQNames);
-            fileTypeQNames.add(ContentModel.TYPE_LINK);
-        }
+        Set<QName> folderTypeQNames = buildFolderTypes();
+        Set<QName> fileTypeQNames = (files ? buildFileTypes() : new HashSet<QName>(0));
         
         if(!folders && !files)
         {
@@ -1091,7 +1109,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException
     {
         return createImpl(parentNodeRef, name, typeQName, null);
-    }
+    } 
     
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
     {

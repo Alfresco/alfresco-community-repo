@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
+import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,15 +63,15 @@ public class PublishingPackageImpl implements PublishingPackage
     {
         private final boolean publish; 
         private final NodeRef nodeRef;
-        private final TransferManifestNode payload;
+        private final TransferManifestNormalNode payload;
         
         /**
          * 
          */
-        public PublishingPackageEntryImpl(boolean publish, TransferManifestNode payload)
+        public PublishingPackageEntryImpl(boolean publish, NodeRef nodeRef, TransferManifestNormalNode payload)
         {
             this.publish = publish;
-            this.nodeRef = payload.getNodeRef();
+            this.nodeRef = nodeRef;
             this.payload = payload;
             
         }
@@ -83,9 +85,10 @@ public class PublishingPackageImpl implements PublishingPackage
             return nodeRef;
         }
 
-        /**
-         * @return the publish
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.publishing.PublishingPackageEntry#isPublish()
          */
+        @Override
         public boolean isPublish()
         {
             return publish;
@@ -97,6 +100,15 @@ public class PublishingPackageImpl implements PublishingPackage
         public TransferManifestNode getPayload()
         {
             return payload;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.publishing.PublishingPackageEntry#getSnapshot()
+         */
+        @Override
+        public NodeSnapshot getSnapshot()
+        {
+            return new NodeSnapshotTransferImpl(payload);
         }
     }
 }

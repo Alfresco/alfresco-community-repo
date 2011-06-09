@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -77,6 +78,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.service.transaction.TransactionService;
@@ -655,7 +657,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long aclId = aclDAO.createAccessControlList();
         
         // Create a root node
-        NodeEntity rootNode = newNodeImpl(store, null, ContentModel.TYPE_STOREROOT, aclId, false, null);
+        NodeEntity rootNode = newNodeImpl(store, null, ContentModel.TYPE_STOREROOT, null, aclId, false, null);
         Long rootNodeId = rootNode.getId();
         addNodeAspects(rootNodeId, Collections.singleton(ContentModel.ASPECT_ROOT));
 
@@ -859,6 +861,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return node.getAclId();
     }
     
+    @Override
     public ChildAssocEntity newNode(
             Long parentNodeId,
             QName assocTypeQName,
@@ -866,6 +869,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             StoreRef storeRef,
             String uuid,
             QName nodeTypeQName,
+            Locale nodeLocale,
             String childNodeName,
             Map<QName, Serializable> auditableProperties) throws InvalidTypeException
     {
@@ -905,7 +909,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Get the store
         StoreEntity store = getStoreNotNull(storeRef);
         // Create the node (it is not a root node)
-        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQName, childAclId, false, auditableProps);
+        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQName, nodeLocale, childAclId, false, auditableProps);
         Long nodeId = node.getId();
         
         // Protect the node's cm:auditable if it was explicitly set
@@ -947,6 +951,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     /**
      * @param uuid                          the node UUID, or <tt>null</tt> to auto-generate
+     * @param nodeTypeQName                 the node's type
+     * @param nodeLocale                    the node's locale or <tt>null</tt> to use the default locale
      * @param aclId                         an ACL ID if available
      * @param auditableProps                <tt>null</tt> to auto-generate or provide a value to explicitly set
      * @param deleted                       <tt>true</tt> to create an already-deleted node (used for leaving trails of moved nodes)
@@ -955,6 +961,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 StoreEntity store,
                 String uuid,
                 QName nodeTypeQName,
+                Locale nodeLocale,
                 Long aclId,
                 boolean deleted,
                 AuditablePropertiesEntity auditableProps) throws InvalidTypeException
@@ -974,6 +981,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // QName
         Long typeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
         node.setTypeQNameId(typeQNameId);
+        // Locale
+        final Long localeId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
+        node.setLocaleId(localeId);
         // ACL (may be null)
         node.setAclId(aclId);
         // Deleted
@@ -1163,7 +1173,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return assocPair;
     }
     
-    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName)
+    @Override
+    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName, Locale nodeLocale)
     {
         // Get the existing node; we need to check for a change in store or UUID
         Node oldNode = getNodeNotNull(nodeId);
@@ -1176,10 +1187,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             uuid = oldNode.getUuid();
         }
+        final Long nodeTypeQNameId;
         if (nodeTypeQName == null)
         {
-            Long nodeTypeQNameId = oldNode.getTypeQNameId();
-            nodeTypeQName = qnameDAO.getQName(nodeTypeQNameId).getSecond();
+            nodeTypeQNameId = oldNode.getTypeQNameId();
+        }
+        else
+        {
+            nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
+        }
+        final Long nodeLocaleId;
+        if (nodeLocale == null)
+        {
+            nodeLocaleId = oldNode.getLocaleId();
+        }
+        else
+        {
+            nodeLocaleId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
         }
         
         // Wrap all the updates into one
@@ -1207,11 +1231,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.setUuid(oldNode.getUuid());          // Need node reference
         }
         // TypeQName (if necessary)
-        Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
         if (!nodeTypeQNameId.equals(oldNode.getTypeQNameId()))
         {
             nodeUpdate.setTypeQNameId(nodeTypeQNameId);
             nodeUpdate.setUpdateTypeQNameId(true);
+        }
+        // Locale (if necessary)
+        if (!nodeLocaleId.equals(oldNode.getLocaleId()))
+        {
+            nodeUpdate.setLocaleId(nodeLocaleId);
+            nodeUpdate.setUpdateLocaleId(true);
         }
 
         updateNodeImpl(oldNode, nodeUpdate);
@@ -1219,21 +1248,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     /**
      * Updates the node's transaction and <b>cm:auditable</b> properties only.
-     * 
-     * @see #touchNodeImpl(Long, AuditablePropertiesEntity)
      */
     private void touchNodeImpl(Long nodeId)
-    {
-        touchNodeImpl(nodeId, null);
-    }
-    /**
-     * Updates the node's transaction and <b>cm:auditable</b> properties only.
-     * 
-     * @param auditableProps            optionally override the <b>cm:auditable</b> values
-     * 
-     * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
-     */
-    private void touchNodeImpl(Long nodeId, AuditablePropertiesEntity auditableProps)
     {
         Node node = null;
         try
@@ -1248,10 +1264,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
-        if (auditableProps != null)
-        {
-            nodeUpdate.setAuditableProperties(auditableProps);
-        }
+        // Update it
         updateNodeImpl(node, nodeUpdate);
     }
     
@@ -1289,6 +1302,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (!nodeUpdate.isUpdateTypeQNameId())
         {
             nodeUpdate.setTypeQNameId(oldNode.getTypeQNameId());
+        }
+        if (!nodeUpdate.isUpdateLocaleId())
+        {
+            nodeUpdate.setLocaleId(oldNode.getLocaleId());
         }
         if (!nodeUpdate.isUpdateAclId())
         {
@@ -1392,7 +1409,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     {
                         Long liveNodeId = liveNode.getId();
                         String liveNodeUuid = GUID.generate();
-                        updateNode(liveNodeId, null, liveNodeUuid, null);
+                        updateNode(liveNodeId, null, liveNodeUuid, null, null);
                     }
                     NodeEntity deletedNode = selectNodeByNodeRef(targetNodeRef, true);  // Only look for deleted nodes
                     if (deletedNode != null)
@@ -1443,7 +1460,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             StoreEntity oldStore = oldNode.getStore();
             String oldUuid = oldNode.getUuid();
-            newNodeImpl(oldStore, oldUuid, ContentModel.TYPE_CMOBJECT, null, true, null);
+            newNodeImpl(oldStore, oldUuid, ContentModel.TYPE_CMOBJECT, null, null, true, null);
         }
         
         // Ensure that cm:auditable values are propagated, if required
@@ -1731,6 +1748,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Node node = getNodeNotNull(nodeId);
         // Handle sys:referenceable
         ReferenceablePropertiesEntity.addReferenceableProperties(node, props);
+        // Handle sys:localized
+        LocalizedPropertiesEntity.addLocalizedProperties(localeDAO, node, props);
         // Handle cm:auditable
         if (hasNodeAspect(nodeId, ContentModel.ASPECT_AUDITABLE))
         {
@@ -1769,6 +1788,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             Node node = getNodeNotNull(nodeId);
             value = ReferenceablePropertiesEntity.getReferenceableProperty(node, propertyQName);
+        }
+        else if (LocalizedPropertiesEntity.isLocalizedProperty(propertyQName))          // sys:localized
+        {
+            Node node = getNodeNotNull(nodeId);
+            value = LocalizedPropertiesEntity.getLocalizedProperty(localeDAO, node, propertyQName);
         }
         else
         {
@@ -1811,16 +1835,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             return false;                       // No point adding nothing
         }
-        
+
+        // Get the current node
         Node node = getNodeNotNull(nodeId);
+        // Create an update node
+        NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
+        nodeUpdate.setId(nodeId);
+        
         // Copy inbound values
         newProps = new HashMap<QName, Serializable>(newProps);
 
         // Copy cm:auditable
-        AuditablePropertiesEntity auditableProps = null;
         if (!policyBehaviourFilter.isEnabled(node.getNodeRef(), ContentModel.ASPECT_AUDITABLE))
         {
-            auditableProps = node.getAuditableProperties();
+            AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
             if (auditableProps == null)
             {
                 auditableProps = new AuditablePropertiesEntity();
@@ -1831,13 +1859,35 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 // The behaviour is disabled, but no audit properties were passed in
                 auditableProps = null;
             }
+            nodeUpdate.setAuditableProperties(auditableProps);
+            // We DON'T set the update flag because the update depends on the aspect being enabled, etc.
+            // nodeUpdate.setUpdateAuditableProperties(true);
         }
         
         // Remove cm:auditable
         newProps.keySet().removeAll(AuditablePropertiesEntity.getAuditablePropertyQNames());
+        
+        // Check if the sys:localized property is being changed
+        Long oldNodeLocaleId = node.getLocaleId();
+        Locale newLocale = DefaultTypeConverter.INSTANCE.convert(
+                Locale.class,
+                newProps.get(ContentModel.PROP_LOCALE));
+        if (newLocale != null)
+        {
+            Long newNodeLocaleId = localeDAO.getOrCreateLocalePair(newLocale).getFirst();
+            if (!newNodeLocaleId.equals(oldNodeLocaleId))
+            {
+                nodeUpdate.setLocaleId(newNodeLocaleId);
+                nodeUpdate.setUpdateLocaleId(true);
+            }
+        }
+        // else: a 'null' new locale is completely ignored.  This is the behaviour we choose.
+        
+        // Remove sys:localized
+        LocalizedPropertiesEntity.removeLocalizedProperties(node, newProps);
+
         // Remove sys:referenceable
         ReferenceablePropertiesEntity.removeReferenceableProperties(node, newProps);
-
         // Load the current properties.
         // This means that we have to go to the DB during cold-write operations,
         // but usually a write occurs after a node has been fetched of viewed in
@@ -1910,10 +1960,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         
-        boolean updated = propsToDelete.size() > 0 || propsToAdd.size() > 0;
+        boolean modifyProps = propsToDelete.size() > 0 || propsToAdd.size() > 0;
+        boolean updated = modifyProps || nodeUpdate.isUpdateAnything();
         
         // Touch to bring into current txn
-        if (updated)
+        if (modifyProps)
         {
             // Clean up content properties
             try
@@ -1976,9 +2027,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             setNodePropertiesCached(nodeId, propsToCache);
         }
         // Touch to bring into current transaction
-        if (updated || auditableProps != null)
+        if (updated)
         {
-            touchNodeImpl(nodeId, auditableProps);
+            updateNodeImpl(node, nodeUpdate);
         }
         
         // Done
@@ -1986,8 +2037,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             logger.debug(
                     "Modified node properties: " + nodeId + "\n" +
-                    "   Removed: " + propsToDelete + "\n" +
-                    "   Added:   " + propsToAdd);
+                    "   Removed:     " + propsToDelete + "\n" +
+                    "   Added:       " + propsToAdd + "\n" +
+                    "   Node Update: " + nodeUpdate);
         }
         return updated;
     }
@@ -2029,6 +2081,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (propertyQNames.size() == 0)
         {
             return false;         // sys:referenceable properties cannot be removed
+        }
+        LocalizedPropertiesEntity.removeLocalizedProperties(propertyQNames);
+        if (propertyQNames.size() == 0)
+        {
+            return false;         // sys:localized properties cannot be removed
         }
         Set<Long> qnameIds = qnameDAO.convertQNamesToIds(propertyQNames, false);
         int deleteCount = deleteNodeProperties(nodeId, qnameIds);
@@ -2126,6 +2183,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Set<QName> nodeAspects = getNodeAspectsCached(nodeId);
         // Nodes are always referenceable
         nodeAspects.add(ContentModel.ASPECT_REFERENCEABLE);
+        // Nodes are always localized
+        nodeAspects.add(ContentModel.ASPECT_LOCALIZED);
         return nodeAspects;
     }
 
@@ -2134,6 +2193,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (aspectQName.equals(ContentModel.ASPECT_REFERENCEABLE))
         {
             // Nodes are always referenceable
+            return true;
+        }
+        if (aspectQName.equals(ContentModel.ASPECT_LOCALIZED))
+        {
+            // Nodes are always localized
             return true;
         }
         Set<QName> nodeAspects = getNodeAspectsCached(nodeId);
@@ -2153,6 +2217,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Find out what needs adding
         aspectQNamesToAdd.removeAll(existingAspectQNames);
         aspectQNamesToAdd.remove(ContentModel.ASPECT_REFERENCEABLE);            // Implicit
+        aspectQNamesToAdd.remove(ContentModel.ASPECT_LOCALIZED);                // Implicit
         if (aspectQNamesToAdd.isEmpty())
         {
             // Nothing to do
@@ -2533,7 +2598,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // node into the current transaction for secondary associations
         if (!isPrimary)
         {
-            updateNode(childNodeId, null, null, null);
+            updateNode(childNodeId, null, null, null, null);
         }
         
         // Done

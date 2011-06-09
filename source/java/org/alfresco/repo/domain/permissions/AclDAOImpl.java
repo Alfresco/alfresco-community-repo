@@ -480,6 +480,7 @@ public class AclDAOImpl implements AclDAO
             {
                 acl.setInheritsFrom(inheritsFrom);
             }
+            acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
             readersCache.remove(id);
@@ -977,6 +978,7 @@ public class AclDAOImpl implements AclDAO
         if (acl.isVersioned())
         {
             acl.setLatest(Boolean.FALSE);
+            acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
         }
         else
@@ -1162,6 +1164,8 @@ public class AclDAOImpl implements AclDAO
             inheritedAclId = acl.getId();
         }
 
+        // Does not cause the change set to change
+        //acl.setAclChangeSetId(getCurrentChangeSetId());
         aclCrudDAO.updateAcl(acl);
         return inheritedAclId;
     }
@@ -1328,6 +1332,7 @@ public class AclDAOImpl implements AclDAO
             throw new IllegalArgumentException("Fixed and global permissions can not inherit");
         case OLD:
             acl.setInherits(Boolean.TRUE);
+            acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
             readersCache.remove(id);
@@ -1346,6 +1351,7 @@ public class AclDAOImpl implements AclDAO
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
                 acl = aclCrudDAO.getAclForUpdate(changes.get(0).getAfter());
                 acl.setInherits(Boolean.TRUE);
+                acl.setAclChangeSetId(getCurrentChangeSetId());
                 aclCrudDAO.updateAcl(acl);
             }
             else
@@ -1376,6 +1382,7 @@ public class AclDAOImpl implements AclDAO
             return Collections.<AclChange> singletonList(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
         case OLD:
             acl.setInherits(Boolean.FALSE);
+            acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
             readersCache.remove(id);
@@ -1410,6 +1417,7 @@ public class AclDAOImpl implements AclDAO
         case COW:
             aclToCopy = aclCrudDAO.getAclForUpdate(toCopy);
             aclToCopy.setRequiresVersion(true);
+            aclToCopy.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(aclToCopy);
             aclCache.remove(toCopy);
             readersCache.remove(toCopy);
@@ -1418,6 +1426,7 @@ public class AclDAOImpl implements AclDAO
             {
                 AclUpdateEntity inheritedAcl = aclCrudDAO.getAclForUpdate(inheritedId);
                 inheritedAcl.setRequiresVersion(true);
+                inheritedAcl.setAclChangeSetId(getCurrentChangeSetId());
                 aclCrudDAO.updateAcl(inheritedAcl);
                 aclCache.remove(inheritedId);
                 readersCache.remove(inheritedId);
@@ -1594,6 +1603,7 @@ public class AclDAOImpl implements AclDAO
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(changes.get(0).getAfter());
         final Long inheritsFrom = acl.getInheritsFrom();
         acl.setInherits(Boolean.FALSE);
+        acl.setAclChangeSetId(getCurrentChangeSetId());
         aclCrudDAO.updateAcl(acl);
 
         // Keep inherits from so we can reinstate if required

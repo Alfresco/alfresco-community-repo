@@ -26,8 +26,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -52,9 +54,14 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyMap;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +84,16 @@ public class GetChildrenCannedQueryTest extends TestCase
     private ContentService contentService;
     private MimetypeService mimetypeService;
     
+    private PersonService personService;
+    private MutableAuthenticationService authenticationService;
+    private PermissionService permissionService;
+    
     private boolean setupOnce = false;
+    
+    private static final String TEST_USER = "GC-CQ-User-"+System.currentTimeMillis();
+    
+    private Set<NodeRef> hits = new HashSet<NodeRef>(100);
+    private Set<NodeRef> misses = new HashSet<NodeRef>(100);
     
     @SuppressWarnings("unchecked")
     private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
@@ -93,6 +109,10 @@ public class GetChildrenCannedQueryTest extends TestCase
             nodeService = (NodeService)ctx.getBean("NodeService");
             contentService = (ContentService)ctx.getBean("ContentService");
             mimetypeService = (MimetypeService)ctx.getBean("MimetypeService");
+            
+            personService = (PersonService)ctx.getBean("PersonService");
+            authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
+            permissionService = (PermissionService)ctx.getBean("PermissionService");
             
             cannedQueryRegistry = new NamedObjectRegistry<CannedQueryFactory>();
             cannedQueryRegistry.setStorageType(CannedQueryFactory.class);
@@ -117,34 +137,62 @@ public class GetChildrenCannedQueryTest extends TestCase
             
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
-            load(repositoryHelper.getCompanyHome(), "quick.jpg", "", "");
-            load(repositoryHelper.getCompanyHome(), "quick.txt", "ZZ title", "XX description");
-            load(repositoryHelper.getCompanyHome(), "quick.bmp", null, null);
-            load(repositoryHelper.getCompanyHome(), "quick.doc", "BB title", "BB description");
-            load(repositoryHelper.getCompanyHome(), "quick.pdf", "ZZ title", "YY description");
+            createUser(TEST_USER);
+            
+            boolean canRead = true;
+            
+            load(repositoryHelper.getCompanyHome(), "quick.jpg", "", "", canRead, hits);
+            load(repositoryHelper.getCompanyHome(), "quick.txt", "ZZ title", "ZZ description 1", canRead, hits);
+            load(repositoryHelper.getCompanyHome(), "quick.bmp", null, null, canRead, hits);
+            load(repositoryHelper.getCompanyHome(), "quick.doc", "BB title", "BB description", canRead, hits);
+            load(repositoryHelper.getCompanyHome(), "quick.pdf", "ZZ title", "ZZ description 2", canRead, hits);
+            
+            canRead = false;
+            
+            load(repositoryHelper.getCompanyHome(), "quick.ppt", "CC title", "CC description", canRead, misses);
+            load(repositoryHelper.getCompanyHome(), "quick.xls", "AA title", "AA description", canRead, misses);
+            load(repositoryHelper.getCompanyHome(), "quick.gif", "YY title", "BB description", canRead, misses);
             
             setupOnce = true;
+            
+            // double-check permissions - see testPermissions
+            
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+            
+            for (NodeRef nodeRef : hits)
+            {
+                assertTrue(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            }
+            
+            for (NodeRef nodeRef : misses)
+            {
+                // user CANNOT read
+                assertFalse(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            }
+            
+            // belts-and-braces
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            
+            for (NodeRef nodeRef : hits)
+            {
+                assertTrue(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            }
+            
+            for (NodeRef nodeRef : misses)
+            {
+                // admin CAN read
+                assertTrue(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+            }
         }
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
     }
     
     public void testSetup() throws Exception
     {
     }
     
-    public void testSanityCheck() throws Exception
-    {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
-        
-        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, null);
-        assertTrue(results.getPage().size() > 0);
-        
-        if (logger.isInfoEnabled())
-        {
-            logger.info("testSanityCheck: company home children = "+results.getPage().size());
-        }
-    }
-    
-    public void testSimpleMaxItems() throws Exception
+    public void testMaxItems() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
         
@@ -169,7 +217,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
-    public void testSimplePaging() throws Exception
+    public void testPaging() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
         
@@ -180,7 +228,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         int pageSize = 3;
         assertTrue(totalCnt > pageSize);
         
-        int pageCnt = (totalCnt / pageSize) + 1;
+        int pageCnt = new Double(totalCnt / pageSize).intValue(); // round-up
         assertTrue(pageCnt > 1);
         
         for (int i = 1; i <= pageCnt; i++)
@@ -213,7 +261,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
-    public void testSimpleSorting() throws Exception
+    public void testSorting() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
         
@@ -268,6 +316,47 @@ public class GetChildrenCannedQueryTest extends TestCase
         catch (AlfrescoRuntimeException are)
         {
             // expected
+        }
+    }
+    
+    public void testPermissions() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+        
+        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, null);
+        assertFalse(results.hasMoreItems());
+        assertTrue(results.permissionsApplied());
+        
+        List<NodeRef> nodeRefs = results.getPage();
+        
+        for (NodeRef nodeRef : hits)
+        {
+            assertTrue(nodeRefs.contains(nodeRef));
+        }
+        
+        for (NodeRef nodeRef : misses)
+        {
+            assertFalse(nodeRefs.contains(nodeRef));
+        }
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        results = list(parentNodeRef, -1, -1, 0, null);
+        assertFalse(results.hasMoreItems());
+        assertTrue(results.permissionsApplied());
+        
+        nodeRefs = results.getPage();
+        
+        for (NodeRef nodeRef : hits)
+        {
+            assertTrue(nodeRefs.contains(nodeRef));
+        }
+        
+        for (NodeRef nodeRef : misses)
+        {
+            assertTrue(nodeRefs.contains(nodeRef));
         }
     }
     
@@ -424,16 +513,20 @@ public class GetChildrenCannedQueryTest extends TestCase
     private class PagingNodeRefResultsImpl implements PagingResults<NodeRef>
     {
         private List<NodeRef> nodeRefs;
-        private Boolean hasMorePages; // null => unknown
+        
+        private boolean hasMorePages; 
+        private boolean permissionsApplied;
+        
         private Integer totalResultCount; // null => not requested (or unknown)
         private Boolean isTotalResultCountCutoff; // null => unknown
         
-        public PagingNodeRefResultsImpl(List<NodeRef> nodeRefs, Boolean hasMore, Integer totalResultCount, Boolean isTotalResultCountCutoff, boolean permissionsApplied)
+        public PagingNodeRefResultsImpl(List<NodeRef> nodeRefs, boolean hasMorePages, Integer totalResultCount, Boolean isTotalResultCountCutoff, boolean permissionsApplied)
         {
             this.nodeRefs = nodeRefs;
-            this.hasMorePages = hasMore;
+            this.hasMorePages = hasMorePages;
             this.totalResultCount= totalResultCount;
             this.isTotalResultCountCutoff = isTotalResultCountCutoff;
+            this.permissionsApplied = permissionsApplied;
         }
         
         public List<NodeRef> getPage()
@@ -441,9 +534,14 @@ public class GetChildrenCannedQueryTest extends TestCase
             return nodeRefs;
         }
         
-        public Boolean hasMoreItems()
+        public boolean hasMoreItems()
         {
             return hasMorePages;
+        }
+        
+        public boolean permissionsApplied()
+        {
+            return permissionsApplied;
         }
         
         public Pair<Integer, Integer> getTotalResultCount()
@@ -457,7 +555,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
-    private void load(NodeRef parentNodeRef, String fileName, String title, String description) throws IOException
+    private void load(NodeRef parentNodeRef, String fileName, String title, String description, boolean readAllowed, Set<NodeRef> results) throws IOException
     {
         // Create the node
         Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
@@ -497,5 +595,33 @@ public class GetChildrenCannedQueryTest extends TestCase
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(mimetypeService.guessMimetype(fileName));
         writer.putContent(file);
+        
+        if (! readAllowed)
+        {
+            // deny read (by explicitly breaking inheritance)
+            permissionService.setInheritParentPermissions(nodeRef, false);
+        }
+        
+        results.add(nodeRef);
+    }
+    
+    private void createUser(String userName)
+    {
+        if (! authenticationService.authenticationExists(userName))
+        {
+            authenticationService.createAuthentication(userName, "PWD".toCharArray());
+        }
+        
+        if (! personService.personExists(userName))
+        {
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            personService.createPerson(ppOne);
+        }
     }
 }

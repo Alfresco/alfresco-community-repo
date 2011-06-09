@@ -19,11 +19,15 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import java.util.Set;
+
 /**
  * @author Brian
  *
  */
 public interface PublishingEventFilter
 {
+    PublishingEventFilter setIds(String... ids);
 
+    Set<String> getIds();
 }

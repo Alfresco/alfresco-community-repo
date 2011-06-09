@@ -24,18 +24,19 @@ import java.util.Collection;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
+import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
- *
+ * 
  */
 public class MutablePublishingPackageImpl extends PublishingPackageImpl implements MutablePublishingPackage
 {
 
     private TransferManifestNodeFactory transferManifestNodeFactory;
-    
+
     /**
      * @param transferManifestNodeFactory
      */
@@ -46,15 +47,19 @@ public class MutablePublishingPackageImpl extends PublishingPackageImpl implemen
     }
 
     /**
-     * @param transferManifestNodeFactory the transferManifestNodeFactory to set
+     * @param transferManifestNodeFactory
+     *            the transferManifestNodeFactory to set
      */
     public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
     {
         this.transferManifestNodeFactory = transferManifestNodeFactory;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.MutablePublishingPackage#addNodesToPublish(org.alfresco.service.cmr.repository.NodeRef[])
+    /*
+     * (non-Javadoc)
+     * 
+     * @seeorg.alfresco.service.cmr.publishing.MutablePublishingPackage#
+     * addNodesToPublish(org.alfresco.service.cmr.repository.NodeRef[])
      */
     @Override
     public void addNodesToPublish(NodeRef... nodesToPublish)
@@ -62,8 +67,11 @@ public class MutablePublishingPackageImpl extends PublishingPackageImpl implemen
         addNodesToPublish(Arrays.asList(nodesToPublish));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.MutablePublishingPackage#addNodesToPublish(java.util.Collection)
+    /*
+     * (non-Javadoc)
+     * 
+     * @seeorg.alfresco.service.cmr.publishing.MutablePublishingPackage#
+     * addNodesToPublish(java.util.Collection)
      */
     @Override
     public void addNodesToPublish(Collection<NodeRef> nodesToPublish)
@@ -71,12 +79,19 @@ public class MutablePublishingPackageImpl extends PublishingPackageImpl implemen
         for (NodeRef nodeRef : nodesToPublish)
         {
             TransferManifestNode payload = transferManifestNodeFactory.createTransferManifestNode(nodeRef, null);
-            getEntryMap().put(nodeRef, new PublishingPackageEntryImpl(true, payload));
+            if (TransferManifestNormalNode.class.isAssignableFrom(payload.getClass()))
+            {
+                getEntryMap().put(nodeRef,
+                        new PublishingPackageEntryImpl(true, nodeRef, (TransferManifestNormalNode) payload));
+            }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.MutablePublishingPackage#addNodesToUnpublish(org.alfresco.service.cmr.repository.NodeRef[])
+    /*
+     * (non-Javadoc)
+     * 
+     * @seeorg.alfresco.service.cmr.publishing.MutablePublishingPackage#
+     * addNodesToUnpublish(org.alfresco.service.cmr.repository.NodeRef[])
      */
     @Override
     public void addNodesToUnpublish(NodeRef... nodesToRemove)
@@ -84,17 +99,18 @@ public class MutablePublishingPackageImpl extends PublishingPackageImpl implemen
         addNodesToUnpublish(Arrays.asList(nodesToRemove));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.MutablePublishingPackage#addNodesToUnpublish(java.util.Collection)
+    /*
+     * (non-Javadoc)
+     * 
+     * @seeorg.alfresco.service.cmr.publishing.MutablePublishingPackage#
+     * addNodesToUnpublish(java.util.Collection)
      */
     @Override
     public void addNodesToUnpublish(Collection<NodeRef> nodesToRemove)
     {
         for (NodeRef nodeRef : nodesToRemove)
         {
-            //FIXME: BJR: 20110513: Handle unpublish case correctly
-            TransferManifestNode payload = transferManifestNodeFactory.createTransferManifestNode(nodeRef, null);
-            getEntryMap().put(nodeRef, new PublishingPackageEntryImpl(false, payload));
+            getEntryMap().put(nodeRef, new PublishingPackageEntryImpl(false, nodeRef, null));
         }
     }
 }

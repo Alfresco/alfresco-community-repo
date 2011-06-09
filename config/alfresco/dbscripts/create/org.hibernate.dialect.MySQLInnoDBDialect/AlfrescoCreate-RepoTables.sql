@@ -23,6 +23,15 @@ CREATE TABLE alf_applied_patch
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE alf_locale
+(
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    version BIGINT NOT NULL,
+    locale_str VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY locale_str (locale_str)
+) ENGINE=InnoDB;
+
 CREATE TABLE alf_namespace
 (
     id BIGINT NOT NULL AUTO_INCREMENT,
@@ -196,6 +205,7 @@ CREATE TABLE alf_node
     transaction_id BIGINT NOT NULL,
     node_deleted bit NOT NULL,
     type_qname_id BIGINT NOT NULL,
+    locale_id BIGINT NOT NULL,
     acl_id BIGINT,
     audit_creator VARCHAR(255),
     audit_created VARCHAR(30),
@@ -209,10 +219,12 @@ CREATE TABLE alf_node
     KEY fk_alf_node_txn (transaction_id),
     KEY fk_alf_node_store (store_id),
     KEY fk_alf_node_tqn (type_qname_id),
+    KEY fk_alf_node_loc (locale_id),
     CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
     CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES alf_store (id),
     CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),
-    CONSTRAINT fk_alf_node_txn FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id)
+    CONSTRAINT fk_alf_node_txn FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id),
+    CONSTRAINT fk_alf_node_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id)
 ) ENGINE=InnoDB;
 
 ALTER TABLE alf_store ADD INDEX fk_alf_store_root (root_node_id), ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES alf_node (id);
@@ -243,15 +255,6 @@ CREATE TABLE alf_child_assoc
     CONSTRAINT fk_alf_cass_pnode FOREIGN KEY (parent_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_cass_qnns FOREIGN KEY (qname_ns_id) REFERENCES alf_namespace (id),
     CONSTRAINT fk_alf_cass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
-) ENGINE=InnoDB;
-
-CREATE TABLE alf_locale
-(
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    version BIGINT NOT NULL,
-    locale_str VARCHAR(20) NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY locale_str (locale_str)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_node_aspects

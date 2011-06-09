@@ -83,7 +83,7 @@
          </description>
          <parent>sys:base</parent>
          <associations>
-            <child-association name="pub:publishingEvent">
+            <child-association name="pub:publishingEventAssoc">
                <source>
                   <mandatory>false</mandatory>
                   <many>false</many>
@@ -169,6 +169,14 @@
             </property>
             <property name="pub:publishingEventComment">
                <title>Comment for the event</title>
+               <type>d:text</type>
+            </property>
+            <property name="pub:publishingEventChannel">
+               <title>Channel to publish to</title>
+               <type>d:text</type>
+            </property>
+            <property name="pub:publishingEventWorkflowId">
+               <title>The Id of the associated Publishing Event Workflow Instance</title>
                <type>d:text</type>
             </property>
          </properties>

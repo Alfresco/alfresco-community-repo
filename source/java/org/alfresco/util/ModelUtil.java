@@ -39,9 +39,11 @@ public class ModelUtil
     private static final String SHARE = "Share";
     private static final String TEAM = "Team";
 
-    public static final String PAGING_TOTAL_ITEMS = "totalItems";
     public static final String PAGING_MAX_ITEMS = "maxItems";
     public static final String PAGING_SKIP_COUNT = "skipCount";
+    public static final String PAGING_TOTAL_ITEMS = "totalItems";
+    public static final String PAGING_TOTAL_ITEMS_RANGE_END = "totalItemsRangeEnd";
+    public static final String PAGING_CONFIDENCE = "confidence";
 
     /**
      * Returns the name of the product currently running, determined
@@ -73,17 +75,39 @@ public class ModelUtil
      * @param totalItems all count of object
      * @param maxItems max count of object that should be returned
      * @param skipCount count of skipped objects
+     * @param confidence the confidence in the total, default is exact
+     * @param totalItemsRangeEnd if the total is a range, what is the upper end of it
+     * @return A model map of the details
+     */
+    public static Map<String, Object> buildPaging(int totalItems, int maxItems, int skipCount, 
+                    ScriptPagingDetails.ItemsSizeConfidence confidence, int totalItemsRangeEnd)
+    {
+        HashMap<String, Object> model = new HashMap<String, Object>();
+        if(confidence == null)
+        {
+           confidence = ScriptPagingDetails.ItemsSizeConfidence.EXACT;
+        }
+
+        model.put(PAGING_MAX_ITEMS, maxItems);
+        model.put(PAGING_SKIP_COUNT, skipCount);
+        model.put(PAGING_TOTAL_ITEMS, totalItems);
+        model.put(PAGING_TOTAL_ITEMS_RANGE_END, totalItemsRangeEnd);
+        model.put(PAGING_CONFIDENCE, confidence);
+        
+        return model;
+    }
+    
+    /**
+     * Returns representation of paging object
+     * 
+     * @param totalItems all count of object
+     * @param maxItems max count of object that should be returned
+     * @param skipCount count of skipped objects
      * @return A model map of the details
      */
     public static Map<String, Object> buildPaging(int totalItems, int maxItems, int skipCount)
     {
-        HashMap<String, Object> model = new HashMap<String, Object>();
-
-        model.put(PAGING_TOTAL_ITEMS, totalItems);
-        model.put(PAGING_MAX_ITEMS, maxItems);
-        model.put(PAGING_SKIP_COUNT, skipCount);
-        
-        return model;
+        return buildPaging(totalItems, maxItems, skipCount, null, -1);
     }
     
     /**
@@ -96,7 +120,9 @@ public class ModelUtil
         return buildPaging(
                 paging.getTotalItems(),
                 paging.getMaxItems(),
-                paging.getSkipCount()
+                paging.getSkipCount(),
+                paging.getConfidence(),
+                paging.getTotalItemsRangeMax()
         );
     }
     

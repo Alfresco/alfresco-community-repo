@@ -38,7 +38,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -441,7 +441,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          if (filterIndex == 0)
          {
             // Use lucene search to retrieve user details
-            String term = LuceneQueryParser.escape(search);
+            String term = AbstractLuceneQueryParser.escape(search);
             StringBuilder query = new StringBuilder(128);
             if (contains == null || contains.length() == 0)
             {

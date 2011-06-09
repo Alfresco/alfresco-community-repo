@@ -39,7 +39,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -256,7 +256,7 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
             if (filterIndex == 0)
             {
                 // Use lucene search to retrieve user details
-                String term = LuceneQueryParser.escape(contains.trim());
+                String term = AbstractLuceneQueryParser.escape(contains.trim());
                 StringBuilder query = new StringBuilder(128);
                 Utils.generatePersonSearch(query, term);
                 ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());

@@ -31,7 +31,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -204,7 +204,7 @@ public class AddUsersDialog extends BaseDialogBean
                SelectItem[] items = new SelectItem[0];
                
                // Use lucene search to retrieve user details
-               String term = LuceneQueryParser.escape(contains.trim());
+               String term = AbstractLuceneQueryParser.escape(contains.trim());
                if (term.length() != 0)
                {
                    StringBuilder query = new StringBuilder(128);

@@ -33,7 +33,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -346,8 +346,8 @@ public class SearchContext implements Serializable
          {
             String escapedName = Repository.escapeQName(qname);
             RangeProperties rp = rangeAttributes.get(qname);
-            String value1 = LuceneQueryParser.escape(rp.lower);
-            String value2 = LuceneQueryParser.escape(rp.upper);
+            String value1 = AbstractLuceneQueryParser.escape(rp.lower);
+            String value2 = AbstractLuceneQueryParser.escape(rp.upper);
             attributeQuery.append(" +@").append(escapedName)
                           .append(":").append(rp.inclusive ? "[" : "{").append(value1)
                           .append(" TO ").append(value2).append(rp.inclusive ? "]" : "}");

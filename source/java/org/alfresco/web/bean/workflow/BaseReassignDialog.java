@@ -29,7 +29,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
@@ -143,7 +143,7 @@ public abstract class BaseReassignDialog extends BaseDialogBean
          int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
          
          // Use lucene search to retrieve user details
-         String term = LuceneQueryParser.escape(contains.trim());
+         String term = AbstractLuceneQueryParser.escape(contains.trim());
          StringBuilder query = new StringBuilder(128);
          Utils.generatePersonSearch(query, term);
          

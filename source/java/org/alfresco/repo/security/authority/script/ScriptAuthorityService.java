@@ -27,7 +27,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.util.PagingDetails;
+import org.alfresco.util.ScriptPagingDetails;
 
 /**
  * Script object representing the authority service.
@@ -69,7 +69,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      */
     public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, int maxItems, int skipCount)
     {
-        return searchRootGroupsInZone(displayNamePattern, zone, new PagingDetails(maxItems, skipCount), null);
+        return searchRootGroupsInZone(displayNamePattern, zone, new ScriptPagingDetails(maxItems, skipCount), null);
     }
 	
     /**
@@ -79,7 +79,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      * @return The root groups (empty if there are no root groups)
      */
-    public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, PagingDetails paging, String sortBy)
+    public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, ScriptPagingDetails paging, String sortBy)
     {
         Set<String> authorities;
         try {
@@ -117,14 +117,14 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] getAllRootGroups(int maxItems, int skipCount)
 	{
-	    return getAllRootGroups(new PagingDetails(maxItems, skipCount));
+	    return getAllRootGroups(new ScriptPagingDetails(maxItems, skipCount));
 	}
 	
     /**
      * Search the root groups, those without a parent group.   Searches in all zones.
      * @return The root groups (empty if there are no root groups)
      */
-    public ScriptGroup[] getAllRootGroups(PagingDetails paging)
+    public ScriptGroup[] getAllRootGroups(ScriptPagingDetails paging)
     {
         Set<String> authorities;
         try{
@@ -166,7 +166,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             authorities = Collections.emptySet();
         }
 
-		return makeScriptGroups(authorities, new PagingDetails(maxItems, skipCount), null, authorityService);
+		return makeScriptGroups(authorities, new ScriptPagingDetails(maxItems, skipCount), null, authorityService);
 	}
     
     /**
@@ -176,7 +176,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      * @return The root groups (empty if there are no root groups)
      */
-    public ScriptGroup[] getAllRootGroupsInZone(String zone, PagingDetails paging, String sortBy)
+    public ScriptGroup[] getAllRootGroupsInZone(String zone, ScriptPagingDetails paging, String sortBy)
     {
         Set<String> authorities;
         try
@@ -271,7 +271,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      */
     public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, int maxItems, int skipCount)
     {
-        return searchGroupsInZone(shortNameFilter, zone, new PagingDetails(maxItems, skipCount), null);
+        return searchGroupsInZone(shortNameFilter, zone, new ScriptPagingDetails(maxItems, skipCount), null);
     }
 	
     /**
@@ -284,7 +284,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      * @return the groups matching the query
      */
-    public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, PagingDetails paging, String sortBy)
+    public ScriptGroup[] searchGroupsInZone(String shortNameFilter, String zone, ScriptPagingDetails paging, String sortBy)
     {
         String filter = shortNameFilter;
         

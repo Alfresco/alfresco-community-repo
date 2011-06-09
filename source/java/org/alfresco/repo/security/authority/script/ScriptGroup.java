@@ -34,7 +34,7 @@ import java.util.TreeSet;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.ModelUtil;
-import org.alfresco.util.PagingDetails;
+import org.alfresco.util.ScriptPagingDetails;
 
 /**
  * The Script group is a GROUP authority exposed to the scripting API.
@@ -186,7 +186,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptUser[] getChildUsers()
     {
-        return getChildUsers(new PagingDetails(), null);
+        return getChildUsers(new ScriptPagingDetails(), null);
     }
     
     /**
@@ -194,7 +194,7 @@ public class ScriptGroup implements Authority, Serializable
      * @param paging Paging object with max number to return, and items to skip
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      */
-    public ScriptUser[] getChildUsers(PagingDetails paging, String sortBy)
+    public ScriptUser[] getChildUsers(ScriptPagingDetails paging, String sortBy)
     {
         if (childUsers == null)
         {
@@ -216,7 +216,7 @@ public class ScriptGroup implements Authority, Serializable
     private ScriptGroup[] childGroups; 
     public ScriptGroup[] getChildGroups()
     {
-        return getChildGroups(new PagingDetails(), null);
+        return getChildGroups(new ScriptPagingDetails(), null);
     }
 
     /**
@@ -226,7 +226,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup[] getChildGroups(int maxItems, int skipCount)
     {
-        return getChildGroups(new PagingDetails(maxItems, skipCount), null);
+        return getChildGroups(new ScriptPagingDetails(maxItems, skipCount), null);
     }
 	
     /**
@@ -234,7 +234,7 @@ public class ScriptGroup implements Authority, Serializable
      * @param paging Paging object with max number to return, and items to skip
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      */
-    public ScriptGroup[] getChildGroups(PagingDetails paging, String sortBy)
+    public ScriptGroup[] getChildGroups(ScriptPagingDetails paging, String sortBy)
     {
         if (childGroups == null)
         {
@@ -250,7 +250,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public Authority[] getChildAuthorities()
     {
-        return getChildAuthorities(new PagingDetails(), null);
+        return getChildAuthorities(new ScriptPagingDetails(), null);
     }
     
     /**
@@ -258,7 +258,7 @@ public class ScriptGroup implements Authority, Serializable
      * @param paging Paging object with max number to return, and items to skip
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      */
-    public Authority[] getChildAuthorities(PagingDetails paging, String sortBy)
+    public Authority[] getChildAuthorities(ScriptPagingDetails paging, String sortBy)
     {
         Authority[] groups = getChildGroups();
         Authority[] users = getChildUsers();
@@ -282,7 +282,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup[] getParentGroups()
     {
-        return getParentGroups(new PagingDetails(), null);
+        return getParentGroups(new ScriptPagingDetails(), null);
     }
 
     /**
@@ -293,7 +293,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup[] getParentGroups(int maxItems, int skipCount)
     {
-        return getParentGroups(new PagingDetails(maxItems, skipCount), null);
+        return getParentGroups(new ScriptPagingDetails(maxItems, skipCount), null);
     }
 
     /**
@@ -302,7 +302,7 @@ public class ScriptGroup implements Authority, Serializable
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      * @return the immediate parents of this group
      */
-    public ScriptGroup[] getParentGroups(PagingDetails paging, String sortBy)
+    public ScriptGroup[] getParentGroups(ScriptPagingDetails paging, String sortBy)
     {
         if (parentCache == null)
         {
@@ -313,7 +313,7 @@ public class ScriptGroup implements Authority, Serializable
         return makePagedAuthority(paging, sortBy, parentCache);
     }
 
-    private <T extends Authority> T[] makePagedAuthority(PagingDetails paging, String sortBy, T[] groups)
+    private <T extends Authority> T[] makePagedAuthority(ScriptPagingDetails paging, String sortBy, T[] groups)
     {
         // Sort the groups
         Arrays.sort(groups, new AuthorityComparator(sortBy));
@@ -345,7 +345,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup[] getAllParentGroups()
     {
-        return getAllParentGroups(new PagingDetails(), null);
+        return getAllParentGroups(new ScriptPagingDetails(), null);
     }
 
     /**
@@ -357,7 +357,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup[] getAllParentGroups(int maxItems, int skipCount)
     {
-        return getAllParentGroups(new PagingDetails(maxItems, skipCount), null);
+        return getAllParentGroups(new ScriptPagingDetails(maxItems, skipCount), null);
     }
 	
     /**
@@ -367,7 +367,7 @@ public class ScriptGroup implements Authority, Serializable
      * @param sortBy What to sort on (authorityName, shortName or displayName)
      * @return all the parents of this group
      */
-    public ScriptGroup[] getAllParentGroups(PagingDetails paging, String sortBy)
+    public ScriptGroup[] getAllParentGroups(ScriptPagingDetails paging, String sortBy)
     {
         Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, false);
         return makeScriptGroups(parents, paging, sortBy, authorityService);
@@ -482,12 +482,12 @@ public class ScriptGroup implements Authority, Serializable
     }
 	
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
-                PagingDetails paging, AuthorityService authorityService)
+                ScriptPagingDetails paging, AuthorityService authorityService)
     {
         return makeScriptGroups(authorities, paging, null, authorityService);
     }
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
-            PagingDetails paging, final String sortBy, AuthorityService authorityService)
+            ScriptPagingDetails paging, final String sortBy, AuthorityService authorityService)
     {
         
         final ArrayList<String> authList = new ArrayList<String>(authorities);

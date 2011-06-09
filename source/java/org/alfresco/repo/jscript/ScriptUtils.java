@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PagingDetails;
+import org.alfresco.util.ScriptPagingDetails;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
@@ -173,9 +173,18 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
      * Builds a paging object, from the supplied
      *  Max Items and Skip Count
      */
-    public PagingDetails createPaging(int maxItems, int skipCount)
+    public ScriptPagingDetails createPaging(int maxItems, int skipCount)
     {
-        return new PagingDetails(maxItems, skipCount);
+        return new ScriptPagingDetails(maxItems, skipCount);
+    }
+
+    /**
+     * Builds a paging object, from the supplied
+     *  Max Items, Skip Count and Query Execution ID
+     */
+    public ScriptPagingDetails createPaging(int maxItems, int skipCount, String queryExecutionId)
+    {
+        return new ScriptPagingDetails(maxItems, skipCount, queryExecutionId);
     }
 
     /**
@@ -183,10 +192,12 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
      * Requires that the parameters have their standard names,
      *  i.e. "maxItems" and "skipCount"
      */
-    public PagingDetails createPaging(Map<String, String> args)
+    public ScriptPagingDetails createPaging(Map<String, String> args)
     {
         int maxItems = -1;
         int skipCount = -1;
+        String queryId = null;
+        
         if(args.containsKey("maxItems"))
         {
             try
@@ -206,7 +217,16 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
             {}
         }
         
-        return new PagingDetails(maxItems, skipCount);
+        if(args.containsKey("queryId"))
+        {
+            queryId = args.get("queryId");
+        }
+        else if(args.containsKey("queryExecutionId"))
+        {
+            queryId = args.get("queryExecutionId");
+        }
+        
+        return new ScriptPagingDetails(maxItems, skipCount, queryId);
     }
 
     /**

@@ -91,7 +91,7 @@ public class ModelUtil
      * 
      * @param paging The paging object with total, skip, max etc
      */
-    public static Map<String, Object> buildPaging(PagingDetails paging)
+    public static Map<String, Object> buildPaging(ScriptPagingDetails paging)
     {
         return buildPaging(
                 paging.getTotalItems(),
@@ -102,9 +102,9 @@ public class ModelUtil
     
     public static <T> List<T> page(Collection<T> objects, int maxItems, int skipCount)
     {
-        return page(objects, new PagingDetails(maxItems, skipCount));
+        return page(objects, new ScriptPagingDetails(maxItems, skipCount));
     }
-    public static <T> List<T> page(Collection<T> objects, PagingDetails paging)
+    public static <T> List<T> page(Collection<T> objects, ScriptPagingDetails paging)
     {
         int maxItems = paging.getMaxItems();
         int skipCount = paging.getSkipCount();

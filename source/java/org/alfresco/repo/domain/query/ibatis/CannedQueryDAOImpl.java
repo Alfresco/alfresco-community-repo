@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.domain.query.ibatis;
 
+import java.util.List;
+
 import org.alfresco.repo.domain.query.AbstractCannedQueryDAOImpl;
 import org.alfresco.repo.domain.query.QueryException;
 import org.alfresco.util.PropertyCheck;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -44,6 +48,15 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         super.init();
         PropertyCheck.mandatory(this, "template", template);
     }
+    
+    /**
+     * @return                      the compound query name
+     */
+    private final String makeQueryName(final String sqlNamespace, final String queryName)
+    {
+        return new StringBuilder(sqlNamespace.length() + queryName.length() + 1)
+            .append(sqlNamespace).append(".").append(queryName).toString();
+    }
 
     /**
      * {@inheritDoc}
@@ -53,9 +66,7 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
     @Override
     public Long executeCountQuery(String sqlNamespace, String queryName, Object parameterObj)
     {
-        String query = new StringBuilder(sqlNamespace.length() + queryName.length() + 1)
-            .append(sqlNamespace).append(".").append(queryName).toString();
-        
+        String query = makeQueryName(sqlNamespace, queryName);
         try
         {
             Long result = (Long) template.selectOne(query, parameterObj);
@@ -90,6 +101,147 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
                     "   Query:  " + query + "\n" +
                     "   Params: " + parameterObj,
                     e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <R> R executeQueryUnique(String sqlNamespace, String queryName, Object parameterObj)
+    {
+        String query = makeQueryName(sqlNamespace, queryName);
+        Object obj = template.selectOne(query, parameterObj);
+        try
+        {
+            return (R) obj;
+        }
+        catch (ClassCastException e)
+        {
+            throw new IllegalArgumentException("Return type of query does not match expected type.", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <R> List<R> executeQuery(
+            String sqlNamespace, String queryName, Object parameterObj,
+            int offset, int limit)
+    {
+        if (offset < 0 || offset == Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException("Query result offset must be zero or greater.");
+        }
+        if (limit <= 0 || limit == Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException("Query results must be constrained by a limit.");
+        }
+        String query = makeQueryName(sqlNamespace, queryName);
+        try
+        {
+            RowBounds bounds = new RowBounds(offset, limit);
+            return (List<R>) template.selectList(query, parameterObj, bounds);
+        }
+        catch (ClassCastException e)
+        {
+            throw new IllegalArgumentException("Return type of query does not match expected type.", e);
+        }
+        catch (Throwable e)
+        {
+            throw new QueryException(
+                    "Failed to execute query: \n" +
+                    "   Namespace: " + sqlNamespace + "\n" +
+                    "   queryName: " + queryName + "\n" +
+                    "   Parameter: " + parameterObj + "\n" +
+                    "   Offset:    " + offset + "\n" +
+                    "   Limit:     " + limit,
+                    e);
+        }
+    }
+
+    @Override
+    public <R> void executeQuery(
+            String sqlNamespace, String queryName, Object parameterObj,
+            int offset, int limit,
+            ResultHandler<R> handler)
+    {
+        if (offset < 0 || offset == Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException("Query result offset must be zero or greater.");
+        }
+        
+        // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
+        /*
+        if (limit <= 0 || limit == Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException("Query results must be constrained by a limit.");
+        }
+        */
+        
+        String query = makeQueryName(sqlNamespace, queryName);
+        ResultHandlerTranslator<R> resultHandler = new ResultHandlerTranslator<R>(handler);
+        try
+        {
+            // TODO MyBatis workaround
+            // http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
+            template.clearCache();
+            
+            if ((offset == 0) && (limit == Integer.MAX_VALUE))
+            {
+                // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also above)
+                // http://code.google.com/p/mybatis/issues/detail?id=129
+                template.select(query, parameterObj, resultHandler);
+            }
+            else
+            {
+                RowBounds bounds = new RowBounds(offset, limit);
+                template.select(query, parameterObj, bounds, resultHandler);
+            }
+        }
+        catch (ClassCastException e)
+        {
+            throw new IllegalArgumentException("Return type of query does not match expected type.", e);
+        }
+        catch (Throwable e)
+        {
+            throw new QueryException(
+                    "Failed to execute query: \n" +
+                    "   Namespace: " + sqlNamespace + "\n" +
+                    "   queryName: " + queryName + "\n" +
+                    "   Parameter: " + parameterObj + "\n" +
+                    "   Offset:    " + offset + "\n" +
+                    "   Limit:     " + limit,
+                    e);
+        }
+    }
+    
+    /**
+     * Helper class to translate MyBatis <tt>ResultHandler</tt> to Alfresco <tt>ResultHandler</tt>.
+     * 
+     * @author Derek Hulley
+     *
+     * @param <R>
+     */
+    private static class ResultHandlerTranslator<R> implements org.apache.ibatis.session.ResultHandler
+    {
+        private final ResultHandler<R> target;
+        boolean stopped = false;
+        private ResultHandlerTranslator(ResultHandler<R> target)
+        {
+            this.target = target;
+        }
+        @SuppressWarnings("unchecked")
+        @Override
+        public void handleResult(ResultContext ctx)
+        {
+            if (stopped || ctx.isStopped())
+            {
+                return;             // Fly through results without further callbacks
+            }
+            boolean more = this.target.handleResult((R)ctx.getResultObject());
+            if (!more)
+            {
+                ctx.stop();
+                stopped = true;
+            }
         }
     }
 }

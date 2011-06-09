@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,18 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.solr;
+
+package org.alfresco.repo.publishing;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.alfresco.service.cmr.publishing.PublishingPackage;
 
 /**
- * Interface for ACL ChangeSet entry details i.e. carries information about <b>alf_access_control_entry</b>.
- * 
- * @author Derek Hulley
- * @since 4.0
+ * @author Brian
+ *
  */
-public interface AclEntry
+public interface PublishingPackageSerializer
 {
-    Long getId();
-    Long getAclId();
-    Long getAclPermissionId();
-    String getAclAuthority();
+    void serialize(PublishingPackage publishingPackage, OutputStream output) throws Exception;
+    
+    PublishingPackage deserialize(InputStream input) throws Exception;
 }

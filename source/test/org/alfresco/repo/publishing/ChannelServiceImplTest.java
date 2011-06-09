@@ -19,15 +19,24 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-
+import static junit.framework.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.alfresco.repo.publishing.PublishingModel.*;
+    
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.alfresco.service.cmr.publishing.channels.ChannelService;
+import org.alfresco.repo.transfer.AbstractNodeFilter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.transfer.NodeFilter;
+import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -42,7 +51,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ChannelServiceImplTest
 {
     @Resource
-    ChannelService channelService;
+    ChannelServiceImpl channelService;
+
+    @Resource
+    NodeService nodeService;
+    
+    @Resource
+    ServiceRegistry serviceRegistry;
     
     @Resource
     MockChannelType mockChannelType;
@@ -54,7 +69,7 @@ public class ChannelServiceImplTest
         
         // Check the mock channel type is registered through Spring.
         assertTrue(types.contains(mockChannelType));
-        
+        channelService.getChannelType(MockChannelType.ID);
         try
         {
             channelService.register(null);
@@ -73,5 +88,69 @@ public class ChannelServiceImplTest
         {
             //NOOP
         }
+    }
+    
+    @Test
+    public void testGetChannelDependancyNodeFinder() throws Exception
+    {
+        when(serviceRegistry.getNodeService()).thenReturn(nodeService);
+        NodeRef node = new NodeRef("test://foo/bar");
+        NodeRef parent = new NodeRef("test://foo/barParent");
+        ChildAssociationRef assoc = new ChildAssociationRef(null, parent, null, node);
+        
+        NodeFinder nodeFinder = channelService.getChannelDependancyNodeFinder();
+        assertNotNull(nodeFinder);
+
+        // Initialize Node Finders
+        ChannelDependancyNodeFinder cdnf = (ChannelDependancyNodeFinder) nodeFinder;
+        cdnf.setServiceRegistry(serviceRegistry);
+        cdnf.init();
+        
+        // Need to call afterPropertiesSet() again to pick up nodeService.
+        mockChannelType.afterPropertiesSet();
+        
+        // Check no nodes found if NodeRef does not have a channel type.
+        Set<NodeRef> results = nodeFinder.findFrom(node);
+        assertTrue(results.isEmpty());
+        
+        // Check no nodes found if NodeRef has an unregistered channel type.
+        when(nodeService.getProperty(node, PROP_CHANNEL_TYPE))
+            .thenReturn("Foo");
+        results = nodeFinder.findFrom(node);
+        assertTrue(results.isEmpty());
+        
+        // Check returns parent if MockChannelType found.
+        when(nodeService.getProperty(node, PROP_CHANNEL_TYPE))
+            .thenReturn(MockChannelType.ID);
+        when(nodeService.getPrimaryParent(node))
+            .thenReturn(assoc);
+        results = nodeFinder.findFrom(node);
+        assertEquals(1, results.size());
+        assertTrue(results.contains(parent));
+    }
+    
+    @Test
+    public void testGetChannelDependancyNodeFilter() throws Exception
+    {
+        when(serviceRegistry.getNodeService()).thenReturn(nodeService);
+        NodeRef node = new NodeRef("test://foo/bar");
+        
+        NodeFilter nodeFinder = channelService.getChannelDependancyNodeFilter();
+        assertNotNull(nodeFinder);
+        
+        // Initialize Node Finders
+        ChannelDependancyNodeFilter cdnf = (ChannelDependancyNodeFilter) nodeFinder;
+        cdnf.setServiceRegistry(serviceRegistry);
+        cdnf.init();
+        
+        // Check no nodes filtered if NodeRef does not have a channel type.
+        assertTrue(nodeFinder.accept(node));
+        
+        // Check no nodes filtered if NodeRef has an unregistered channel type.
+        when(nodeService.getProperty(node, PROP_CHANNEL_TYPE))
+            .thenReturn("Foo");
+        assertTrue(nodeFinder.accept(node));
+        
+        // TODO Test other NodeFilter behaviour when added.
     }
 }

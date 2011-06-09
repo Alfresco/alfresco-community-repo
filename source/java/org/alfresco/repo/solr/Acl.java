@@ -18,10 +18,8 @@
  */
 package org.alfresco.repo.solr;
 
-import java.util.List;
-
 /**
- * Interface for SOLR changeset objects.
+ * Interface for SOLR ACL objects.
  * 
  * @author Derek Hulley
  * @since 4.0
@@ -30,5 +28,4 @@ public interface Acl
 {
     Long getId();
     Long getAclChangeSetId();
-    List<AclEntry> getEntries();
 }

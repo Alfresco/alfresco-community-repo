@@ -102,29 +102,12 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         try
         {
             ParameterCheck.mandatory("item", item);
-            String itemId = decodeId(item.getId());
-            return getTypedItemForDecodedId(itemId);
+            return getTypedItemForDecodedId(item.getId());
         }
         catch (Exception e)
         {
             throw new FormNotFoundException(item, e);
         }
-    }
-
-    /**
-     * The itemId may be in a URL/Webscript-friendly format. If so it must be converted
-     * back to the proper id format.
-     * 
-     * @param itemId
-     */
-    private String decodeId(String itemId)
-    {
-        String decodedId = itemId;
-        if (itemId.contains("$") == false)
-        {
-            decodedId = itemId.replaceFirst("_", Matcher.quoteReplacement("$"));
-        }
-        return decodedId;
     }
 
     /* (non-Javadoc)

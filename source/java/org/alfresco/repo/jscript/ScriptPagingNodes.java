@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,37 +23,45 @@ import java.io.Serializable;
 import org.mozilla.javascript.Scriptable;
 
 /**
- * TEMP
+ * Response for page of ScriptNode results
  * 
- * @deprecated for review (API is subject to change)
+ * @author janv
+ * @version 4.0
  */
 public class ScriptPagingNodes implements Serializable
 {
     private static final long serialVersionUID = -3252996649397737176L;
     
-    private Scriptable result; // array of script nodes
-    private Boolean hasMore;   // null => unknown
-    private Long totalCount;   // null => not requested (or unknown)
+    private Scriptable results;           // array of script nodes
+    private Boolean hasMoreItems;         // true if has more items (past this page) - note: could also indicate cutoff/trimmed page
+    private int totalResultCountLower;    // possible total count lower estimate (-1 => unknown)
+    private int totalResultCountUpper;    // possible total count upper estimate (-1 => unknown)
     
-    public ScriptPagingNodes(Scriptable result, Long totalCount, Boolean hasMore)
+    public ScriptPagingNodes(Scriptable results, Boolean hasMoreItems, int totalResultCountLower, int totalResultCountUpper)
     {
-        this.result = result;
-        this.totalCount = totalCount;
-        this.hasMore = hasMore;
+        this.results = results;
+        this.hasMoreItems = hasMoreItems;
+        this.totalResultCountLower = totalResultCountLower;
+        this.totalResultCountUpper = totalResultCountUpper;
     }
     
-    public Scriptable getResult()
+    public Scriptable getPage()
     {
-        return result;
+        return results;
     }
     
-    public Long getTotalCount()
+    public Boolean hasMoreItems()
     {
-        return totalCount;
+        return hasMoreItems;
     }
     
-    public Boolean hasMore()
+    public int getTotalResultCountLower()
     {
-        return hasMore;
+        return totalResultCountLower;
+    }
+    
+    public int getTotalResultCountUpper()
+    {
+        return totalResultCountUpper;
     }
 }

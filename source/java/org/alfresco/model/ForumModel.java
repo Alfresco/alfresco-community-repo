@@ -41,4 +41,7 @@ public interface ForumModel
     static final QName ASPECT_DISCUSSABLE = QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable");
     
     static final QName ASSOC_DISCUSSION = QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion");
+    
+    static final QName ASPECT_COMMENTS_ROLLUP = QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "commentsRollup");
+    static final QName PROP_COMMENT_COUNT = QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "commentCount");
 }

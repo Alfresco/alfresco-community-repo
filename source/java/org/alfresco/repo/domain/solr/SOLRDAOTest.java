@@ -104,7 +104,7 @@ public class SOLRDAOTest extends TestCase
         try
         {
             // No limit on results
-            solrDAO.getAcls(Collections.<Long>singletonList(1L), null, 0);
+            solrDAO.getAcls(Collections.singletonList(1L), null, 0);
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e)
@@ -142,13 +142,8 @@ public class SOLRDAOTest extends TestCase
         List<Long> aclChangeSetIds = toIds(aclChangeSets);
 
         // Now use those to query for details
-        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 10);
-        assertTrue("Results not limited", acls.size() <= 10);
+        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1000);
 
-        // Get again, but allow all results
-        acls = solrDAO.getAcls(aclChangeSetIds, null, aclTotal);
-        assertEquals("Expected exact results", aclTotal, acls.size());
-        
         // Check that the ACL ChangeSet IDs are correct
         Set<Long> aclChangeSetIdsSet = new HashSet<Long>(aclChangeSetIds);
         for (Acl acl : acls)
@@ -156,6 +151,45 @@ public class SOLRDAOTest extends TestCase
             Long aclChangeSetId = acl.getAclChangeSetId();
             assertTrue("ACL ChangeSet ID not in original list", aclChangeSetIdsSet.contains(aclChangeSetId));
         }
+    }
+    
+    public void testQueryAcls_Single()
+    {
+        List<AclChangeSet> aclChangeSets = solrDAO.getAclChangeSets(null, 0L, 1000);
+        // Find one with multiple ALCs
+        AclChangeSet aclChangeSet = null;
+        for (AclChangeSet aclChangeSetLoop : aclChangeSets)
+        {
+            if (aclChangeSetLoop.getAclCount() > 1)
+            {
+                aclChangeSet = aclChangeSetLoop;
+                break;
+            }
+        }
+        if (aclChangeSet == null)
+        {
+            // Nothing to test: Very unlikely
+            return;
+        }
+        
+        // Loop a few times and check that the count is correct
+        Long aclChangeSetId = aclChangeSet.getId();
+        List<Long> aclChangeSetIds = Collections.singletonList(aclChangeSetId);
+        int aclCount = aclChangeSet.getAclCount();
+        int totalAclCount = 0;
+        Long minAclId = null;
+        while (true)
+        {
+            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, 1);
+            if (acls.size() == 0)
+            {
+                break;
+            }
+            assertEquals("Expected exactly one result", 1, acls.size());
+            totalAclCount++;
+            minAclId = acls.get(0).getId() + 1;
+        }
+        assertEquals("Expected to page to exact number of results", aclCount, totalAclCount);
     }
     
     private List<Long> toIds(List<AclChangeSet> aclChangeSets)

@@ -21,9 +21,9 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -71,7 +71,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value), AnalysisMode.IDENTIFIER, luceneFunction);
     }
@@ -80,7 +80,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
      */
-    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException
+    public Query buildLuceneExists(AbstractLuceneQueryParser lqp, Boolean not) throws ParseException
     {
         if (not)
         {
@@ -96,7 +96,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneGreaterThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -107,7 +107,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -118,7 +118,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
         String field = getLuceneFieldName();
         
@@ -178,7 +178,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -189,7 +189,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneLessThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -200,7 +200,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneLessThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -211,7 +211,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
      */
-    public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
+    public Query buildLuceneLike(AbstractLuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -233,7 +233,7 @@ public abstract class AbstractSimpleProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
-    public String getLuceneSortField(LuceneQueryParser lqp)
+    public String getLuceneSortField(AbstractLuceneQueryParser lqp)
     {
         return getLuceneFieldName();
     }

@@ -65,6 +65,7 @@ Inbound settings from iBatis
         <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
         <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
         <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
+        <typeAlias alias="SortableNode" type="org.alfresco.repo.model.filefolder.SortableNodeEntity"/>
         
         <!-- Patch -->
         
@@ -108,7 +109,6 @@ Inbound settings from iBatis
         
         <typeAlias alias="SOLRAclChangeSet" type="org.alfresco.repo.domain.solr.AclChangeSetEntity"/>
         <typeAlias alias="SOLRAcl" type="org.alfresco.repo.domain.solr.AclEntity"/>
-        <typeAlias alias="SOLRAclEntry" type="org.alfresco.repo.domain.solr.AclEntryEntity"/>
         <typeAlias alias="SOLRTransaction" type="org.alfresco.repo.domain.solr.TransactionEntity"/>
         <typeAlias alias="SOLRNode" type="org.alfresco.repo.domain.node.NodeEntity"/>
         <typeAlias alias="SOLRTrackingParameters" type="org.alfresco.repo.domain.solr.SOLRTrackingParameters"/>

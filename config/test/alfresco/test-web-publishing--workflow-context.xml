@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Mock Publish Event  -->
+    <bean id="pub_publishEvent" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.action.executer.ActionExecuter" />
+    </bean>
+
+   <!-- Mock Check Publishing Dependencies -->
+    <bean id="pub_checkPublishingDependencies" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.action.executer.ActionExecuter" />
+    </bean>
+
+</beans>

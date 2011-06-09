@@ -52,6 +52,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Andy
@@ -112,7 +113,40 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
             url.append("&df=").append(searchParameters.getDefaultFieldName());
             url.append("&start=").append(searchParameters.getSkipCount());
             
-            // Authorities go over as filter queries
+            Locale locale = I18NUtil.getLocale();
+            if(searchParameters.getLocales().size() > 0)
+            {
+                locale = searchParameters.getLocales().get(0);
+            }
+            url.append("&locale=");
+            encoder = new URLCodec();
+            url.append(encoder.encode(locale.toString(), "UTF-8"));
+            
+            StringBuffer sortBuffer = new StringBuffer();
+            for(SortDefinition sortDefinition : searchParameters.getSortDefinitions())
+            {
+                if(sortBuffer.length() == 0)
+                {
+                    sortBuffer.append("&sort=");
+                }
+                else
+                {
+                    sortBuffer.append(", ");
+                }
+                sortBuffer.append(sortDefinition.getField()).append(" ");
+                if(sortDefinition.isAscending())
+                {
+                    sortBuffer.append("asc");
+                }
+                else
+                {
+                    sortBuffer.append("desc");
+                }
+               
+            }
+            url.append(sortBuffer);
+            
+            // Authorities go over in body
             
             StringBuilder authQuery = new StringBuilder();
             for(String authority : permissionService.getAuthorisations())
@@ -139,21 +173,11 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
             body.put("filter", authQuery);
             
             JSONArray locales = new JSONArray();
-            for(Locale locale : searchParameters.getLocales())
+            for(Locale currentLocale : searchParameters.getLocales())
             {
-                locales.put(DefaultTypeConverter.INSTANCE.convert(String.class, locale));
+                locales.put(DefaultTypeConverter.INSTANCE.convert(String.class, currentLocale));
             }
             body.put("locales", locales);
-            
-            JSONArray orderings = new JSONArray();
-            for(SortDefinition sortDefinition : searchParameters.getSortDefinitions())
-            {
-                JSONObject ordering = new JSONObject();
-                ordering.put("field", sortDefinition.getField());
-                ordering.put("isAscending", sortDefinition.isAscending());
-                orderings.put(ordering);
-            }
-            body.put("sort", orderings);
             
             JSONArray templates = new JSONArray();
             for(String templateName : searchParameters.getQueryTemplates().keySet())

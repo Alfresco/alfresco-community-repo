@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
  * This file is part of Alfresco
  *
  * Alfresco is free software: you can redistribute it and/or modify
@@ -35,13 +36,14 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -269,13 +271,29 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             {
                 return decide(authentication, object, config, (FileInfo) returnedObject);
             }
-            else if (PagingFileInfoResults.class.isAssignableFrom(returnedObject.getClass()))
+            else if (PagingResults.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
+                if (ResultsPermissionChecked.class.isAssignableFrom(returnedObject.getClass()) &&
+                    (! ((ResultsPermissionChecked)returnedObject).permissionsChecked()))
                 {
-                    log.debug("Controlled object (paged permissions already applied) - access allowed for " + object.getClass().getName());
+                    throw new AlfrescoRuntimeException("Not implemented yet");
+                    /*
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Paging Results access");
+                    }
+                    return decide(authentication, object, config, ((PagingResults<?>) returnedObject);
+                    */
                 }
-                return returnedObject;
+                else
+                {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Paging Results access - already checked permissions");
+                    }
+                    
+                    return returnedObject;
+                }
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -828,50 +846,69 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     }
 
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
-
     {
         if (returnedObject == null)
         {
             return null;
         }
-
+        
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
-
+        
         if (supportedDefinitions.size() == 0)
         {
             return returnedObject;
         }
-
+        
         Set<Object> removed = new HashSet<Object>();
-
+        
         if (log.isDebugEnabled())
         {
             log.debug("Entries are " + supportedDefinitions);
         }
-
+        
         // record search start time
         long startTimeMillis = System.currentTimeMillis();
         int count = 0;
-
+        
+        boolean cutoff = false;
+        
+        int maxChecks = Integer.MAX_VALUE;
+        if (returnedObject instanceof MaxChecksCollection)
+        {
+            maxChecks = ((MaxChecksCollection)returnedObject).getMaxChecks();
+        }
+        
         Iterator iterator = returnedObject.iterator();
         while (iterator.hasNext())
         {
             Object nextObject = iterator.next();
-
+            
             // if the maximum result size or time has been exceeded, then we have to remove only
             long currentTimeMillis = System.currentTimeMillis();
-            if (count >= maxPermissionChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            
+            // NOTE: for reference - the "maxPermissionChecks" has never been honoured by this loop (since previously the count was not being incremented)
+            if (count >= maxChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
             {
                 // just remove it
                 iterator.remove();
+                
+                if (! cutoff)
+                {
+                    cutoff = true;
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("decide (collection) cut-off: "+(count >= maxChecks ? " maxChecks="+maxChecks : " ")+((currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis ? " maxCheckTime="+maxPermissionCheckTimeMillis : ""));
+                    }
+                }
+                
                 continue;
             }
-
+            
             boolean allowed = true;
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
                 NodeRef testNodeRef = null;
-
+                
                 if (cad.typeString.equals(AFTER_ACL_NODE))
                 {
                     if (StoreRef.class.isAssignableFrom(nextObject.getClass()))
@@ -931,12 +968,12 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                                 "NodeRefs, FileInfos, ChildAssociationRefs or Pair<Long, NodeRef>");
                     }
                 }
-
+                
                 if (log.isDebugEnabled())
                 {
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                 }
-
+                
                 if(isUnfiltered(testNodeRef))
                 {
                     continue;
@@ -951,12 +988,22 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             {
                 removed.add(nextObject);
             }
+            else
+            {
+                count++;
+            }
         }
         for (Object toRemove : removed)
         {
             while (returnedObject.remove(toRemove))
                 ;
         }
+        
+        if (cutoff && (returnedObject instanceof MaxChecksCollection))
+        {
+            ((MaxChecksCollection)returnedObject).setCutoff(cutoff);
+        }
+        
         return returnedObject;
     }
 

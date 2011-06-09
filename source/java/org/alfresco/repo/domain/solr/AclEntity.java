@@ -18,10 +18,7 @@
  */
 package org.alfresco.repo.domain.solr;
 
-import java.util.List;
-
 import org.alfresco.repo.solr.Acl;
-import org.alfresco.repo.solr.AclEntry;
 
 /**
  * Interface for SOLR changeset objects.
@@ -33,7 +30,6 @@ public class AclEntity implements Acl
 {
     private Long id;
     private Long aclChangeSetId;
-    private List<AclEntry> entries;
 
     @Override
     public String toString()
@@ -41,7 +37,6 @@ public class AclEntity implements Acl
         return "AclEntity " +
         		"[id=" + id +
                 ", aclChangeSetId=" + aclChangeSetId +
-        		", entries=" + entries +
         		"]";
     }
 
@@ -63,15 +58,5 @@ public class AclEntity implements Acl
     public void setAclChangeSetId(Long aclChangeSetId)
     {
         this.aclChangeSetId = aclChangeSetId;
-    }
-
-    @Override
-    public List<AclEntry> getEntries()
-    {
-        return entries;
-    }
-    public void setEntries(List<AclEntry> entries)
-    {
-        this.entries = entries;
     }
 }

@@ -9,6 +9,7 @@
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/site/1.0" prefix="st" />
    </imports>
 
    <namespaces>
@@ -20,6 +21,13 @@
          <title>Delivery Channel</title>
          <description>The base type for all delivery channels</description>
          <parent>cm:folder</parent>
+         <properties>
+            <property name="pub:channelTypeId">
+               <title>Channel Type Id</title>
+               <type>d:text</type>
+               <multiple>false</multiple>
+            </property>
+         </properties>
          <associations>
             <child-association name="pub:deliveryServers">
                <source>
@@ -55,7 +63,7 @@
          <description>A container type that holds a set of delivery channels</description>
          <parent>cm:folder</parent>
          <associations>
-            <child-association name="pub:publishingQueue">
+            <child-association name="pub:publishingQueueAssoc">
                <source>
                   <mandatory>false</mandatory>
                   <many>false</many>
@@ -115,6 +123,11 @@
                <title>Payload</title>
                <type>d:content</type>
                <mandatory>false</mandatory>
+               <index enabled="false">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
             <property name="pub:publishingEventNodesToPublish">
                <title>Nodes to publish</title>
@@ -146,19 +159,49 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
+            <property name="pub:publishingEventTime">
+               <title>Scheduled time for the event</title>
+               <type>d:datetime</type>
+            </property>
+            <property name="pub:publishingEventTimeZone">
+               <title>Time zone of the scheduled time for the event</title>
+               <type>d:text</type>
+            </property>
+            <property name="pub:publishingEventComment">
+               <title>Comment for the event</title>
+               <type>d:text</type>
+            </property>
          </properties>
       </type>
 
    </types>
 
    <aspects>
-
+   
       <aspect name="pub:ContentRoot">
          <title>Content Root Aspect</title>
          <description>Applied to a node that represents the root of a delivery channel's content
             hierarchy</description>
       </aspect>
 
+      <aspect name="pub:channelInfo">
+         <title>Channel Info</title>
+         <description>Applied to a node that exists within a Delivery Channel</description>
+         <parent>cm:titled</parent>
+         <properties>
+            <property name="pub:channel">
+               <title>Containing Channel Node</title>
+               <type>d:noderef</type>
+               <multiple>false</multiple>
+           </property>
+           <property name="pub:channelType">
+              <title>Containing Channel Type</title>
+              <type>d:text</type>
+              <multiple>false</multiple>
+           </property>
+        </properties>
+    </aspect>
+   
    </aspects>
 
 </model>

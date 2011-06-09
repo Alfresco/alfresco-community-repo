@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,14 @@
  */
 package org.alfresco.repo.domain.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
 
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
+import org.alfresco.repo.domain.query.CannedQueryDAO.ResultHandler;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -39,6 +44,7 @@ public class CannedQueryDAOTest extends TestCase
 {
     private static final String QUERY_NS = "alfresco.query.test";
     private static final String QUERY_SELECT_MIMETYPE_COUNT = "select_CountMimetypes";
+    private static final String QUERY_SELECT_MIMETYPES = "select_Mimetypes";
     
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -205,5 +211,120 @@ public class CannedQueryDAOTest extends TestCase
         Long count = txnHelper.doInTransaction(selectCallback, true);
         assertNotNull(count);
         assertEquals("Incorrect result count.", 2L, count.longValue());
+    }
+    
+    public void testExecute_BadBounds() throws Throwable
+    {
+        try
+        {
+            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, -1, 10);
+            fail("Illegal parameter not detected");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+        try
+        {
+            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, -1);
+            fail("Illegal parameter not detected");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+        try
+        {
+            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, Integer.MAX_VALUE);
+            fail("Illegal parameter not detected");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+    }
+    
+    public void testExecute_ListMimetypes() throws Throwable
+    {
+        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>()
+        {
+            @Override
+            public List<String> execute() throws Throwable
+            {
+                TestOneParams params = new TestOneParams(null, false);
+                return cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2);
+            }
+        };
+        List<String> mimetypes = txnHelper.doInTransaction(selectCallback, true);
+        assertNotNull(mimetypes);
+        assertTrue("Too many results", mimetypes.size() <= 2);
+    }
+    
+    public void testExecute_ResultHandlerWithError() throws Throwable
+    {
+        final ResultHandler<String> resultHandler = new ResultHandler<String>()
+        {
+            @Override
+            public boolean handleResult(String result)
+            {
+                throw new UnsupportedOperationException();
+            }
+        };
+        
+        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>()
+        {
+            @Override
+            public List<String> execute() throws Throwable
+            {
+                TestOneParams params = new TestOneParams(null, false);
+                try
+                {
+                    cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2, resultHandler);
+                    fail("Expected UnsupportedOperationException");
+                }
+                catch (Exception e)
+                {
+                    // Expected, but make sure that our exception is the cause
+                    Throwable ee = ExceptionStackUtil.getCause(e, UnsupportedOperationException.class);
+                    if (ee == null)
+                    {
+                        throw e;
+                    }
+                }
+                // Now query again with success
+                return cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2);
+            }
+        };
+        List<String> mimetypes = txnHelper.doInTransaction(selectCallback, true);
+        assertNotNull(mimetypes);
+        assertTrue("Too many results", mimetypes.size() <= 2);
+    }
+    
+    public void testExecute_ResultHandlerWithEarlyTermination() throws Throwable
+    {
+        final List<String> results = new ArrayList<String>();
+        final ResultHandler<String> resultHandler = new ResultHandler<String>()
+        {
+            @Override
+            public boolean handleResult(String result)
+            {
+                // Only one result then stop
+                results.add(result);
+                return false;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> selectCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                TestOneParams params = new TestOneParams(null, false);
+                cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2, resultHandler);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(selectCallback, true);
+        assertEquals("ResultHandler did not terminate early", 1, results.size());
     }
 }

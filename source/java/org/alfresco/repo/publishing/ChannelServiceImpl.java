@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.transfer.NodeFilter;
+import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -47,19 +49,18 @@ import org.alfresco.util.ParameterCheck;
 /**
  * @author Nick Smith
  * @since 4.0
- * 
+ *
  */
 public class ChannelServiceImpl implements ChannelService
 {
     private static final String CHANNEL_CONTAINER_NAME = "channels";
+
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
     private SiteService siteService;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private EnvironmentHelper environmentHelper;
 
-    
-    
     /**
      * @param siteService the siteService to set
      */
@@ -67,7 +68,7 @@ public class ChannelServiceImpl implements ChannelService
     {
         this.siteService = siteService;
     }
-
+    
     /**
      * @param nodeService the nodeService to set
      */
@@ -91,32 +92,32 @@ public class ChannelServiceImpl implements ChannelService
     {
         this.environmentHelper = environmentHelper;
     }
-
+    
     /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
     public void register(ChannelType channelType)
     {
         ParameterCheck.mandatory("channelType", channelType);
         String id = channelType.getId();
-        if (channelTypes.containsKey(id))
+        if(channelTypes.containsKey(id))
         {
-            throw new IllegalArgumentException("Channel type " + id + " is already registered!");
+            throw new IllegalArgumentException("Channel type "+id+" is already registered!");
         }
         channelTypes.put(id, channelType);
     }
 
     /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
     public List<ChannelType> getChannelTypes()
     {
         return new ArrayList<ChannelType>(channelTypes.values());
     }
 
     /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
     public Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties)
     {
         NodeRef channelContainer = getChannelContainer(siteId);
@@ -125,8 +126,13 @@ public class ChannelServiceImpl implements ChannelService
         if (channelType != null)
         {
             QName channelNodeType = channelType.getChannelNodeType();
-            HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
-            actualProps.put(PublishingModel.PROP_CHANNEL_TYPE, channelType.getId());
+            HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>();
+            if (properties != null)
+            {
+                actualProps.putAll(properties);
+            }
+            actualProps.put(ContentModel.PROP_NAME, name);
+            actualProps.put(PublishingModel.PROP_CHANNEL_TYPE_ID, channelType.getId());
             QName channelQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
             ChildAssociationRef assoc = nodeService.createNode(channelContainer, ContentModel.ASSOC_CONTAINS,
                     channelQName, channelNodeType, actualProps);
@@ -149,17 +155,17 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
     public void deleteChannel(String siteId, String channelName)
     {
         // TODO Auto-generated method stub
-
+        
     }
 
     /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
     public List<Channel> getChannels(String siteId)
     {
         ParameterCheck.mandatory("siteId", siteId);
@@ -206,9 +212,28 @@ public class ChannelServiceImpl implements ChannelService
     private Channel buildChannelObject(NodeRef nodeRef)
     {
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-        ChannelType channelType = channelTypes.get((String) props.get(PublishingModel.PROP_CHANNEL_TYPE));
+        Serializable channelTypeId = props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
+        ChannelType channelType = channelTypes.get(channelTypeId);
         String name = (String) props.get(ContentModel.PROP_NAME);
         return new ChannelImpl(channelType, nodeRef, name, this);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public ChannelType getChannelType(String id)
+    {
+        return channelTypes.get(id);
+    }
+    
+    public NodeFinder getChannelDependancyNodeFinder()
+    {
+        return new ChannelDependancyNodeFinder(this);
+    }
+    
+    public NodeFilter getChannelDependancyNodeFilter()
+    {
+        return new ChannelDependancyNodeFilter(this);
     }
 
 }

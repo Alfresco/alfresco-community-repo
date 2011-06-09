@@ -141,12 +141,6 @@ public class WorkflowFormProcessorTest extends TestCase
         WorkflowDefinition result = processor.getTypedItem(item);
         assertNotNull(result);
         assertEquals(WF_DEF_NAME, result.getName());
-        
-        // Check URI-encoded id.
-        Item itemWith_ = new Item("workflow", WF_DEF_NAME.replace('$', '_'));
-        result = processor.getTypedItem(itemWith_);
-        assertNotNull(result);
-        assertEquals(WF_DEF_NAME, result.getName());
     }
 
     public void testGenerateSetsItemAndUrl() throws Exception

@@ -53,6 +53,22 @@
             </child-association>
          </associations>
       </aspect>
+      
+      <aspect name="fm:commentsRollup">
+         <properties>
+            <property name="fm:commentCount">
+               <title>Comment count rollup for this node</title>
+               <type>d:int</type>
+                <mandatory>true</mandatory>
+                <default>0</default>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
    
 </model>

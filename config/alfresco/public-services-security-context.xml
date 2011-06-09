@@ -388,6 +388,7 @@
                org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.createAssociation=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.removeAssociation=ACL_ALLOW
+               org.alfresco.service.cmr.repository.NodeService.setAssociations=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getAssoc=ACL_ALLOW
@@ -690,6 +691,7 @@
                 org.alfresco.service.cmr.security.PermissionService.getAllSetPermissions=ACL_NODE.0.sys:base.ReadPermissions
                 org.alfresco.service.cmr.security.PermissionService.getSettablePermissions=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.hasPermission=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getReaders=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PermissionService.deletePermissions=ACL_NODE.0.sys:base.ChangePermissions
                 org.alfresco.service.cmr.security.PermissionService.deletePermission=ACL_NODE.0.sys:base.ChangePermissions
                 org.alfresco.service.cmr.security.PermissionService.setPermission=ACL_NODE.0.sys:base.ChangePermissions

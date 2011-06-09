@@ -35,7 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -494,7 +494,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             sp.addStore(storeRef);
             // search for it in the index, sorting with youngest first, fetching only 1
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-            sp.setQuery("TX:" + LuceneQueryParser.escape(changeTxnId));
+            sp.setQuery("TX:" + AbstractLuceneQueryParser.escape(changeTxnId));
             sp.setLimit(1);
             
             results = searcher.query(sp);
@@ -575,7 +575,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 sp.addStore(storeRef);
                 // search for it in the index, sorting with youngest first, fetching only 1
                 sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+                sp.setQuery("ID:" + AbstractLuceneQueryParser.escape(nodeRef.toString()));
                 sp.setLimit(1);
 
                 results = searcher.query(sp);

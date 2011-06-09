@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -58,6 +59,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private SOLRDAO solrDAO;
+    private PermissionService permissionService;
     private OwnableService ownableService;
     private TenantService tenantService;
     private DictionaryService dictionaryService;
@@ -75,6 +77,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     public void setOwnableService(OwnableService ownableService)
@@ -100,6 +107,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "solrDAO", solrDAO);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
         PropertyCheck.mandatory(this, "ownableService", ownableService);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
@@ -110,6 +118,33 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxResults);
         return changesets;
+    }
+
+    @Override
+    public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults)
+    {
+        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
+        return acls;
+    }
+
+    @Override
+    public List<AclReaders> getAclsReaders(List<Long> aclIds)
+    {
+        /*
+         * This is an N+1 query that should, in theory, make use of cached ACL readers data.
+         */
+        
+        List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
+        for (Long aclId : aclIds)
+        {
+            Set<String> readersSet = permissionService.getReaders(aclId);
+            AclReaders readers = new AclReaders();
+            readers.setAclId(aclId);
+            readers.setReaders(readersSet);
+            aclsReaders.add(readers);
+        }
+        
+        return aclsReaders;
     }
 
     @Override

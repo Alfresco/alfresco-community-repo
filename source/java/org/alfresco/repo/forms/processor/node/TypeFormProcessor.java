@@ -80,30 +80,14 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 
         try
         {
-            // convert the prefix type into full QName representation
-            // the type name may be provided in the prefix form i.e.
-            // prefix:type, the : may be replaced with _ if the item id
-            // was passed on a URL or the full qname may be provided.
+            // the itemId could either be the full form qname i.e. {http://www.alfresco.org/model/content/1.0}content
+            // or it could be the prefix form i.e. cm:name
             QName type = null;
             String itemId = item.getId();
             if (itemId.startsWith("{"))
             {
                 // item id looks like a full qname
                 type = QName.createQName(itemId);
-            }
-            else if (itemId.indexOf(":") != -1)
-            {
-                // if a : is present the item id has not been escaped
-                // so leave it as it is
-                type = QName.createQName(itemId, this.namespaceService);
-            }
-            else if (itemId.indexOf("_") != -1)
-            {
-                // if item id contains _ change the first occurrence to :
-                // as it's more than likely been converted for URL use
-                int idx = itemId.indexOf("_");
-                String parsedItemId = itemId.substring(0, idx) + ":" + itemId.substring(idx + 1);
-                type = QName.createQName(parsedItemId, this.namespaceService);
             }
             else
             {

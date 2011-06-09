@@ -9,4 +9,46 @@
    <bean id="mockChannelType" class="org.alfresco.repo.publishing.MockChannelType"
    parent="baseChannelType" />
 
+   <!-- Mock Node Service -->
+    <bean id="nodeService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.repository.NodeService" />
+    </bean>
+
+   <!-- Mock Dictionary Service -->
+    <bean id="dictionaryService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.dictionary.DictionaryService" />
+    </bean>
+
+   <!-- Mock Site Service -->
+    <bean id="siteService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.site.SiteService" />
+    </bean>
+
+   <!-- Mock Dictionary Service -->
+    <bean id="dictionaryModelBootstrap" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.dictionary.DictionaryBootstrap" />
+    </bean>
+
+   <!-- Mock Content Service -->
+    <bean id="contentService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.repository.ContentService" />
+    </bean>
+
+   <!-- Mock Workflow Deployer -->
+    <bean id="workflowDeployer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.workflow.WorkflowDeployer" />
+    </bean>
+
+   <!-- Mock Transfer Manifest Node Factory -->
+    <bean id="transferManifestNodeFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory" />
+    </bean>
+
+   <!-- Mock Service Registry -->
+    <bean id="serviceRegistry" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.ServiceRegistry" />
+    </bean>
+
+   <bean id="dictionaryBootstrap" class="java.lang.Object" />
+   
 </beans>

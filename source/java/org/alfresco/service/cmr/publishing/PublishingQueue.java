@@ -30,9 +30,9 @@ public interface PublishingQueue
      * @param publishingPackage The publishing package that is to be enqueued
      * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
      * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
-     * @return A PublishingEvent object representing the newly scheduled event
+     * @return The identifier of the newly scheduled event
      */
-    PublishingEvent scheduleNewEvent(PublishingPackage publishingPackage, Calendar schedule, String comment);
+    String scheduleNewEvent(PublishingPackage publishingPackage, Calendar schedule, String comment);
     
     void cancelEvent(String eventId);
 }

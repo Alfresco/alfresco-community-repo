@@ -121,29 +121,13 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     @Override
     protected WorkflowDefinition getTypedItemForDecodedId(String itemId)
     {
-        String workflowDefName = decodeWorkflowDefinitionName(itemId);
-        WorkflowDefinition workflowDef = workflowService.getDefinitionByName(workflowDefName);
+        WorkflowDefinition workflowDef = workflowService.getDefinitionByName(itemId);
         if (workflowDef == null) 
         { 
             String msg = "Workflow definition does not exist: " + itemId;
             throw new IllegalArgumentException(msg);
         }
         return workflowDef;
-    }
-
-    /**
-     * The <code>name</code> may be in a URL/Webscript-friendly format. If so it must be converted
-     * back to the proper workflow definition name.
-     * @param name
-     * @return The decoded name
-     */
-    private String decodeWorkflowDefinitionName(String name)
-    {
-        if (name.contains(":") == false)
-        {
-            name = name.replaceFirst("_", ":");
-        }
-        return name;
     }
 
     /* (non-Javadoc)

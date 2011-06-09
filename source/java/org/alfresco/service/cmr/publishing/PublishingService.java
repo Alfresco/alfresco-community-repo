@@ -18,17 +18,16 @@
  */
 package org.alfresco.service.cmr.publishing;
 
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface PublishingService
 {
-    Set<Environment> getEnvironments(String siteId);
+    List<Environment> getEnvironments(String siteId);
     
     Environment getEnvironment(String siteId, String environmentName);
-    
-    Environment getEditorialEnvironment(String siteId);
     
     Set<NodeRef> getPublishingDependencies(NodeRef node);
     

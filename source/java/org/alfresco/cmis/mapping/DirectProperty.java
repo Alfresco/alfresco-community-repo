@@ -27,7 +27,7 @@ import java.util.Locale;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -91,7 +91,7 @@ public class DirectProperty extends AbstractSimpleProperty
      * @see org.alfresco.cmis.mapping.AbstractSimpleProperty#getLuceneSortField()
      */
     @Override
-    public String getLuceneSortField(LuceneQueryParser lqp)
+    public String getLuceneSortField(AbstractLuceneQueryParser lqp)
     {
 
         String field = getLuceneFieldName();
@@ -145,7 +145,7 @@ public class DirectProperty extends AbstractSimpleProperty
      * @param field
      * @return
      */
-    private String findSortField(LuceneQueryParser lqp, String field)
+    private String findSortField(AbstractLuceneQueryParser lqp, String field)
     {
         Locale sortLocale;
         List<Locale> locales = lqp.getSearchParameters().getLocales();

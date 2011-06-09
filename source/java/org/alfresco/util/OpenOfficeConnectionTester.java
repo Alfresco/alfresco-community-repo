@@ -38,7 +38,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.util.PropertyCheck;
 
 import com.sun.star.registry.RegistryValueType;
 import com.sun.star.registry.XRegistryKey;
@@ -195,6 +194,24 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
                         }
                     }
                     registry.close();
+                }
+                catch (com.sun.star.uno.RuntimeException oooRuntimeException)
+                {
+                    // ALF-5747 discusses an OOo problem whereby an interface component was not implemented & therefore version
+                    // information cannot be retrieved. This does not seem to affect the operation of the OOo process.
+                    // If we see this exception, which occurs in OOo 3.3.0, we'll shorten the exception log & make it friendlier.
+
+                    final String exceptionMessage = oooRuntimeException.getMessage();
+                    if (exceptionMessage != null && exceptionMessage.contains("com.sun.star.configuration.ConfigurationRegistry: not implemented"))
+                    {
+                        logger.warn("Error trying to query Open Office version information. " +
+                                    "OpenOffice.org's ConfigurationRegistry not implemented in this version of OOo. This should not affect the operation of OOo.");
+                        // We have intentionally not logged the exception object here.
+                    }
+                    else
+                    {
+                        logger.warn("Error trying to query Open Office version information", oooRuntimeException);
+                    }
                 }
                 catch (Exception e)
                 {

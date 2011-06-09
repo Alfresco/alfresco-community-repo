@@ -37,7 +37,7 @@
 
         <constraint name="bpm:allowedStatus" type="LIST">
             <parameter name="allowedValues">
-                <!--  TODO: Determine if status values can be mapped to human-readable strings -->
+                <!-- These status values have been localised in bpm-messages.properties -->
                 <list>
                     <value>Not Yet Started</value>
                     <value>In Progress</value>

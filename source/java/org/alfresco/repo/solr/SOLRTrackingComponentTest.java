@@ -94,10 +94,31 @@ public class SOLRTrackingComponentTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
     
-    public void testGetAclChangeSets_Simple()
+    public void testGetAcls_Simple()
     {
         List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, 50);
         assertTrue("Expected results to be limited in number", cs.size() <= 50);
+        List<Long> aclChangeSetIds = new ArrayList<Long>(50);
+        int totalAcls = 0;
+        for (AclChangeSet aclChangeSet : cs)
+        {
+            aclChangeSetIds.add(aclChangeSet.getId());
+            totalAcls += aclChangeSet.getAclCount();
+        }
+        int totalAclsCheck = 0;
+        Long fromAclId = null;
+        while (true)
+        {
+            List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, fromAclId, 2);
+            if (acls.size() == 0)
+            {
+                break;
+            }
+            totalAclsCheck += acls.size();
+            fromAclId = acls.get(acls.size() - 1).getId() + 1;
+        }
+        // Double check number of ACLs
+        assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
     }
     
     public void testGetNodeMetaData()

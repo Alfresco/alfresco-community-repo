@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,15 +58,14 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.PagingFileInfoRequest;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
-import org.alfresco.service.cmr.model.PagingSortRequest;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.PagingSortProp;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -77,6 +76,7 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Acl;
@@ -524,13 +524,11 @@ public class AlfrescoCmisService extends AbstractCmisService
         // get the children references
         NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
         
-        // TEMP - impl subject to change
-        
         // convert orderBy to sortProps
-        List<PagingSortProp> sortProps = null;
+        List<Pair<QName, Boolean>> sortProps = null;
         if (orderBy != null)
         {
-            sortProps = new ArrayList<PagingSortProp>(1);
+            sortProps = new ArrayList<Pair<QName, Boolean>>(1);
             
             String[] parts = orderBy.split(",");
             if (parts.length > 0)
@@ -548,7 +546,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                             if (sortProp != null)
                             {
                                 boolean sortAsc = ((sort.length == 1) || (sortAsc = (sort[1].equalsIgnoreCase("asc"))));
-                                sortProps.add(new PagingSortProp(sortProp, sortAsc));
+                                sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
                             }
                         }
                     }
@@ -556,9 +554,11 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
         
-        PagingSortRequest pageRequest = new PagingSortRequest(skipCount.intValue(), maxItems.intValue(), true, sortProps);
+        PagingFileInfoRequest pageRequest = new PagingFileInfoRequest(skipCount.intValue(), maxItems.intValue(), sortProps, null);
+        pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO make this optional/configurable - affects whether numItems may be returned
+        
         PagingFileInfoResults pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, pageRequest);
-        List<FileInfo> childrenList = pageOfNodeInfos.getResultsForPage();
+        List<FileInfo> childrenList = pageOfNodeInfos.getPage();
         
         if (max > 0)
         {
@@ -597,8 +597,21 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
         
-        result.setHasMoreItems(childrenList.size() - skip > result.getObjects().size());
-        result.setNumItems(BigInteger.valueOf(childrenList.size()));
+        if (pageOfNodeInfos.hasMoreItems() != null)
+        {
+            result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
+        }
+        
+        Pair<Integer, Integer> totalCounts = pageOfNodeInfos.getTotalResultCount();
+        if (totalCounts != null)
+        {
+            Integer totalCountLower = totalCounts.getFirst();
+            Integer totalCountUpper = totalCounts.getSecond();
+            if ((totalCountLower != null) && (totalCountLower.equals(totalCountUpper)))
+            {
+                result.setNumItems(BigInteger.valueOf(totalCountLower));
+            }
+        }
         
         if (logger.isDebugEnabled())
         {

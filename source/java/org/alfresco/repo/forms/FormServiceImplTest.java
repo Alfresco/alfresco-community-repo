@@ -952,7 +952,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // test different forms of itemId's
         data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
-        newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm_content"), data);
+        newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
         assertNotNull("Expected new node to be created using itemId cm_content", newNode);
         
         data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
@@ -1074,7 +1074,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(expectedContent, content);
     }
     
-    @SuppressWarnings({ "deprecation", "null" })
+    @SuppressWarnings({ "deprecation" })
     public void disabledTestFDKModel() throws Exception
     {
         // NOTE: The FDK is not loaded by default, for this test to work you must
@@ -1269,7 +1269,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         data = new FormData();
         data.addFieldData("prop_cm_name", nodeName);
         data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
-        NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "fdk_with_underscore"), data);
+        NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "fdk:with_underscore"), data);
         assertNotNull(newNode);
     }
     
@@ -1590,6 +1590,36 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         {
             this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, missingNode), new FormData());
             fail("Expecting saveForm for a missing node to fail");
+        }
+        catch (Exception e)
+        {
+            // expected
+        }
+        
+        
+        // Tests to make sure that form processors are no longer decoding _ in the itemId
+        
+        try
+        {
+            FormData data = new FormData();
+            data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+            this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm_content"), data);
+            fail("Expecting saveForm for a 'type' item kind containing an underscore to fail");
+        }
+        catch (Exception e)
+        {
+            // expected
+        }
+        
+        try
+        {
+            FormData data = new FormData();
+            data.addFieldData("prop_bpm_workflowDescription", "This is a new adhoc task");
+            data.addFieldData("assoc_bpm_assignee_added", 
+                        this.personManager.get(USER_ONE).toString());
+            data.addFieldData("assoc_packageItems_added", this.document.toString());
+            this.formService.saveForm(new Item(WORKFLOW_FORM_ITEM_KIND, "jbpm$wf_adhoc"), data);
+            fail("Expecting saveForm for a 'workflow' item kind containing an underscore to fail");
         }
         catch (Exception e)
         {

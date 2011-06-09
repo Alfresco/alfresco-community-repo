@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Workflow to support direct submit to staging sandbox -->
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="pubwf:publishWebContent">
+
+    <start-state name="start">
+        <task name="pubwf:startPublish" />
+        <transition name="" to="waitForScheduledTime" />
+    </start-state>
+    
+    <task-node name="waitForScheduledTime" end-tasks="true" >
+        <task name="pubwf:wait" >
+            <timer duedate="#{pubwf_scheduledPublishDate}"  transition="toCheckDependencies" >
+                <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                    <script>
+                        logger.log("Checking dependencies for PUblishing  Event: "+ pubwf_publishingEvent);
+                    </script>
+                </action>
+            </timer>
+        </task>
+        <transition name="toCheckDependencies" to="checkDependencies" />
+    </task-node>
+
+    <decision name="checkDependencies">
+         <event type="node-enter">
+             <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                 <script>
+                     <variable name="pubwf_eventStatus" access="write" />     
+                     <expression>
+                         var publishingDependenciesAction = actions.create("pub_checkPublishingDependencies");
+                         publishingDependenciesAction.execute(pubwf_publishingEvent);
+                         pubwf_publishingEvent.properties["pub:publishingEventStatus"];
+                     </expression>
+                 </script>
+             </action>
+        </event>
+        <transition name="retry" to="waitAndRetry" />
+        <transition name="publish" to="publish">
+             <condition>#{pubwf_eventStatus == "IN_PROGRESS"}</condition>
+        </transition>
+        <transition name="fail" to="end">
+            <condition>#{pubwf_eventStatus== "FAILED"}</condition>
+        </transition>
+        <transition name="alreadyCompleted" to="end">
+            <condition>#{pubwf_eventStatus== "COMPLETED"}</condition>
+            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                <script>
+                    logger.log("PUblishing Event already completed! Event: "+ pubwf_publishingEvent);
+                </script>
+            </action>
+        </transition>
+    </decision>   
+
+    <task-node name="waitAndRetry" end-tasks="true" >
+        <task name="pubwf:wait" >
+            <timer duedate="1 minute"  transition="toCheckDependencies" >
+                <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                    <script>
+                        logger.log("Checking dependencies for PUblishing  Event: "+ pubwf_publishingEvent);
+                    </script>
+                </action>
+            </timer>
+        </task>
+        <transition name="toCheckDependencies" to="checkDependencies" />
+    </task-node>
+
+    <node name="publish" >
+         <event type="node-enter">
+             <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                 <script>
+                     var publishEventAction = actions.create("pub_publishEvent");
+                     publishEventAction.execute(bpm_package);
+                 </script>
+             </action>
+        </event>
+        <transition name="" to="end" />
+    </node>
+
+    <end-state name="end"/>
+    
+</process-definition>

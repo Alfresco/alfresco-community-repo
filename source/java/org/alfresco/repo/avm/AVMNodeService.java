@@ -1817,12 +1817,22 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     /**
      * @throws UnsupportedOperationException always
      */
-    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName, Long insertAfter)
+    @Override
+    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
         throw new UnsupportedOperationException("AVM does not support arbitrary associations.");
     }
     
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
+    {
+        throw new UnsupportedOperationException("AVM does not support arbitrary associations.");
+    }
+
     /**
      * 
      * @param sourceRef the associaton source node

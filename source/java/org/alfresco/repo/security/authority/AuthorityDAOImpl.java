@@ -37,7 +37,7 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -58,8 +58,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
-import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.Pair;
+import org.alfresco.util.SearchLanguageConversion;
 
 public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
 {
@@ -321,9 +321,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             if (displayNamePattern != null)
             {
                 query.append(" AND @").append(
-                        LuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
+                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_USERNAME.getLocalName()))).append(":\"").append(
-                                        LuceneQueryParser.escape(displayNamePattern)).append("\"");
+                                        AbstractLuceneQueryParser.escape(displayNamePattern)).append("\"");
 
             }
             if (type == null)
@@ -337,21 +337,21 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             if (displayNamePattern != null)
             {
                 query.append(" AND (@").append(
-                        LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
                 // Allow for the appropriate type prefix in the authority name
                 if (type == null && !displayNamePattern.startsWith("*"))
                 {
-                    query.append("*").append(LuceneQueryParser.escape(displayNamePattern));
+                    query.append("*").append(AbstractLuceneQueryParser.escape(displayNamePattern));
                 }
                 else
                 {
-                    query.append(getName(type, LuceneQueryParser.escape(displayNamePattern)));
+                    query.append(getName(type, AbstractLuceneQueryParser.escape(displayNamePattern)));
                 }
                 query.append("\" OR @").append(
-                        LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
+                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(
-                        ":\"").append(LuceneQueryParser.escape(displayNamePattern)).append("\")");
+                        ":\"").append(AbstractLuceneQueryParser.escape(displayNamePattern)).append("\")");
             }
             if (type == null)
             {
@@ -366,7 +366,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                NodeRef parentAuthorityNodeRef = getAuthorityNodeRefOrNull(parentAuthority); 
                if(parentAuthorityNodeRef != null)
                {
-                   query.append(" AND PARENT:\"").append(LuceneQueryParser.escape(parentAuthorityNodeRef.toString())).append("\""); 
+                   query.append(" AND PARENT:\"").append(AbstractLuceneQueryParser.escape(parentAuthorityNodeRef.toString())).append("\""); 
                }
                else
                {
@@ -386,7 +386,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             NodeRef zoneNodeRef = getZone(zoneName);
             if (zoneNodeRef != null)
             {
-                query.append(" AND PARENT:\"").append(LuceneQueryParser.escape(zoneNodeRef.toString())).append("\"");
+                query.append(" AND PARENT:\"").append(AbstractLuceneQueryParser.escape(zoneNodeRef.toString())).append("\"");
             } 
             else
             {

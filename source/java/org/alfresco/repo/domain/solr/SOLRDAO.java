@@ -23,7 +23,6 @@ import java.util.List;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
-import org.alfresco.repo.solr.AclEntry;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 
@@ -45,24 +44,15 @@ public interface SOLRDAO
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults);
     
     /**
-     * Get the ACLs (no rollup count) with paging options for a specific change set
+     * Get the ACLs (no rollup count) for the given ACL ChangeSets
      * 
      * @param aclChangeSetIds           the ACL ChangeSet IDs
      * @param minAclId                  the minimum ACL ID - (inclusive and optional).
      * @param maxResults                the maximum number of results (must be greater than zero and less than MAX)
-     * @return                          list of detailed ACL ChangeSets (details included, no roll-up)
+     * @return                          list of ACLs
      */
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults);
 
-    /**
-     * Get the ACL entries for specific ACLs, optionally pulling back authority details.
-     * 
-     * @param aclIds                    the ACL IDs
-     * @param includeAuthorities        <tt>true</tt> to pull back authorities with read permission
-     * @return                          
-     */
-    public List<AclEntry> getAclEntries(List<Long> aclIds, boolean includeAuthorities);
-    
     /**
      * Get the transactions from either minTxnId or fromCommitTime, optionally limited to maxResults
      * 
@@ -81,32 +71,4 @@ public interface SOLRDAO
      * @return list of matching nodes
      */
 	public List<Node> getNodes(NodeParameters nodeParameters);
-	
-//    /**
-//     * The interface that will be used to give query results to the calling code.
-//     */
-//    public static interface NodeQueryCallback
-//    {
-//        /**
-//         * Handle a node.
-//         * 
-//         * @param node                      the node
-//         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
-//         */
-//        boolean handleNode(Node node);
-//    }
-//    
-//    /**
-//     * The interface that will be used to give query results to the calling code.
-//     */
-//    public static interface NodeMetaDataQueryCallback
-//    {
-//        /**
-//         * Handle a node.
-//         * 
-//         * @param node                      the node meta data
-//         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
-//         */
-//        boolean handleNodeMetaData(NodeMetaData nodeMetaData);
-//    }
 }

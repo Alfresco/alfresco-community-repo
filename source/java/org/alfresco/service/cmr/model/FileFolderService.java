@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -52,15 +52,16 @@ public interface FileFolderService
     public List<FileInfo> list(NodeRef contextNodeRef);
     
     /**
-     * TEMP
+     * Lists page of immediate child files and/or folders of the given context node
      * 
-     * @deprecated for review (API is subject to change)
+     * @author janv
+     * @since 4.0
      */
     public PagingFileInfoResults list(NodeRef contextNodeRef, 
                                       boolean files, 
                                       boolean folders, 
                                       Set<QName> ignoreTypeQNames, 
-                                      PagingSortRequest pagingRequest);
+                                      PagingFileInfoRequest pagingRequest);
     
     /**
      * Lists all immediate child files of the given context node

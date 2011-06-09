@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.transaction.UserTransaction;
 
@@ -2410,15 +2412,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      */
     private AssociationRef createAssociation() throws Exception
     {
-        return createAssociation(null, null);
+        return createAssociation(null);
     }
 
     /**
      * Creates an association between a given source and a new target
      */
-    private AssociationRef createAssociation(NodeRef sourceRef, Long insertAfter) throws Exception
+    private AssociationRef createAssociation(NodeRef sourceRef) throws Exception
     {
-        // TODO: Use insertAfter
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
@@ -2521,7 +2522,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
     }
     
-    public void testTargetAssoc_NaturalOrdering() throws Exception
+    public void testTargetAssoc_Ordering() throws Exception
     {
         AssociationRef assocRef = createAssociation();
         NodeRef sourceRef = assocRef.getSourceRef();
@@ -2529,7 +2530,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         for (int i = 0; i < 99; i++)
         {
-            assocRef = createAssociation(sourceRef, null);
+            assocRef = createAssociation(sourceRef);
         }
         
         // Now get the associations and ensure that they are in order of ID
@@ -2544,31 +2545,42 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             lastId = id;
         }
         
-        setComplete();
-        endTransaction();
-    }
-    
-    public void DISABLED_testTargetAssoc_InverseOrdering() throws Exception
-    {
-        AssociationRef assocRef = createAssociation();
-        NodeRef sourceRef = assocRef.getSourceRef();
-        QName qname = assocRef.getTypeQName();
-
-        for (int i = 0; i < 99; i++)
+        // Now invert the association list
+        Comparator<AssociationRef> descendingId = new Comparator<AssociationRef>()
         {
-            assocRef = createAssociation(sourceRef, 0L);
-        }
-        
-        // Now get the associations and ensure that they are in order of ID
-        // because they should have been inserted in natural order
-        List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
-        Long lastId = 0L;
+            @Override
+            public int compare(AssociationRef assoc1, AssociationRef assoc2)
+            {
+                return (assoc1.getId().compareTo(assoc2.getId()) * -1);
+            }
+        };
+        Collections.sort(assocs, descendingId);
+        // Build the target node refs
+        List<NodeRef> targetNodeRefs = new ArrayList<NodeRef>(100);
         for (AssociationRef associationRef : assocs)
         {
-            Long id = associationRef.getId();
-            assertNotNull("Null association ID: " + associationRef, id);
-            assertTrue("Results should be in reverse ID order", id < lastId);
-            lastId = id;
+            targetNodeRefs.add(associationRef.getTargetRef());
+        }
+
+        for (int i = targetNodeRefs.size(); i > 0; i--)
+        {
+            // Reset them
+            nodeService.setAssociations(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT, targetNodeRefs);
+            
+            // Recheck the order
+            assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
+            assertEquals("Incorrect number of results", i, assocs.size());
+            
+            lastId = Long.MAX_VALUE;
+            for (AssociationRef associationRef : assocs)
+            {
+                Long id = associationRef.getId();
+                assertNotNull("Null association ID: " + associationRef, id);
+                assertTrue("Results should be in inverse ID order", id < lastId);
+                lastId = id;
+            }
+            // Remove one of the targets
+            targetNodeRefs.remove(0);
         }
         
         setComplete();

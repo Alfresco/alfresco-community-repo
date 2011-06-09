@@ -43,4 +43,17 @@
         <if test="forceFail == true">JUNKED</if>
     </select>
 
+    <select id="select_Mimetypes" parameterType="TestOne" resultType="String">
+        select
+            mimetype_str
+        from
+            alf_mimetype
+        <if test="mimetypeMatch != null">
+            where
+                <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
+                <if test="exact == false">mimetype_str like #{mimetypeMatch}</if>
+        </if>
+        <if test="forceFail == true">JUNKED</if>
+    </select>
+
 </mapper>

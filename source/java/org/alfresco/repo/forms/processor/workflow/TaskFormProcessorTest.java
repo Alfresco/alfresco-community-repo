@@ -135,7 +135,7 @@ public class TaskFormProcessorTest extends TestCase
         assertEquals(TASK_ID, result.getId());
         
         // Check URI-encoded id.
-        item = new Item("task", TASK_ID.replace('$', '_'));
+        item = new Item("task", TASK_ID);
         result = processor.getTypedItem(item);
         assertNotNull(result);
         assertEquals(TASK_ID, result.getId());

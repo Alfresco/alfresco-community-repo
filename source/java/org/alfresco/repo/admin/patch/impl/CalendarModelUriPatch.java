@@ -24,7 +24,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -75,7 +75,7 @@ public class CalendarModelUriPatch extends AbstractPatch
         qnameDAO.updateNamespace(URI_BEFORE, URI_AFTER);
         
         // reindex the calendar entries
-        int count = reindex("TYPE:\\{" + LuceneQueryParser.escape(URI_BEFORE) + "\\}*", importerBootstrap.getStoreRef());
+        int count = reindex("TYPE:\\{" + AbstractLuceneQueryParser.escape(URI_BEFORE) + "\\}*", importerBootstrap.getStoreRef());
         return I18NUtil.getMessage(MSG_SUCCESS, count);
     }
     

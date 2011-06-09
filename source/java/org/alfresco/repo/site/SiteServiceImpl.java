@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -655,7 +656,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 
                 if (nameFilter != null && nameFilter.length() > 0)
                 {
-                    String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
+                    String escNameFilter = AbstractLuceneQueryParser.escape(nameFilter.replace('"', ' '));
                 
                     query.append(" @cm\\:name:\"*" + escNameFilter + "*\"")
                     .append(" @cm\\:title:\"" + escNameFilter + "\"")
@@ -664,7 +665,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
 
                 if (sitePresetFilter != null && sitePresetFilter.length() > 0)
                 {
-                    String escPresetFilter = LuceneQueryParser.escape(sitePresetFilter.replace('"', ' '));
+                    String escPresetFilter = AbstractLuceneQueryParser.escape(sitePresetFilter.replace('"', ' '));
                     query.append(" @st\\:sitePreset:\"" + escPresetFilter + "\"");
                 }
                 

@@ -18,13 +18,14 @@
  */
 package org.alfresco.service.cmr.model;
 
-import org.alfresco.service.cmr.repository.PagingResultsSPI;
+import org.alfresco.query.PagingResults;
 
 /**
- * TEMP
+ * Response for page of FileInfo results
  * 
- * @deprecated for review (API is subject to change)
+ * @author janv
+ * @since 4.0
  */
-public interface PagingFileInfoResults extends PagingResultsSPI<FileInfo>
+public interface PagingFileInfoResults extends PagingResults<FileInfo>
 {
 }

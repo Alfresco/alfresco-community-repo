@@ -44,6 +44,7 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This class provides services for translating exploded properties
@@ -79,6 +80,9 @@ public class NodePropertyHelper
 
     public Map<NodePropertyKey, NodePropertyValue> convertToPersistentProperties(Map<QName, Serializable> in)
     {
+        // Get the locale ID (the default will be overridden where necessary)
+        Long propertylocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
+
         Map<NodePropertyKey, NodePropertyValue> propertyMap = new HashMap<NodePropertyKey, NodePropertyValue>(
                 in.size() + 5);
         for (Map.Entry<QName, Serializable> entry : in.entrySet())
@@ -87,8 +91,6 @@ public class NodePropertyHelper
             // Get the qname ID
             QName propertyQName = entry.getKey();
             Long propertyQNameId = qnameDAO.getOrCreateQName(propertyQName).getFirst();
-            // Get the locale ID
-            Long propertylocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
             // Get the property definition, if available
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
             // Add it to the map

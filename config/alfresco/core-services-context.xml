@@ -1160,7 +1160,6 @@
                 
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>
-
             </list>
         </property>
         <property name="labels">
@@ -1192,6 +1191,7 @@
     <!-- SOLR Tracking   -->
     
     <bean id="solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+        <property name="permissionService" ref="permissionService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="ownableService" ref="ownableService"/>
         <property name="tenantService" ref="tenantService"/>
@@ -1287,6 +1287,7 @@
         </property>
     </bean>
 
+    <!-- Policies/behaviours for forum-related nodes  -->
     <bean id="discussableAspect" class="org.alfresco.repo.forum.DiscussableAspect" init-method="init">
         <property name="policyComponent">
             <ref bean="policyComponent" />
@@ -1296,6 +1297,14 @@
         </property>
         <property name="fileFolderService">
             <ref bean="fileFolderService" />
+        </property>
+    </bean>
+    <bean id="forumPostBehaviours" class="org.alfresco.repo.forum.ForumPostBehaviours" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
         </property>
     </bean>
 

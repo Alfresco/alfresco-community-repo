@@ -20,38 +20,57 @@ package org.alfresco.repo.model.filefolder;
 
 import java.util.List;
 
+import org.alfresco.repo.security.permissions.impl.acegi.ResultsPermissionChecked;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
+import org.alfresco.util.Pair;
 
 /**
- * TEMP
+ * Page of FileInfo results
  * 
- * @deprecated for review (API is subject to change)
+ * @author janv
+ * @since 4.0
  */
-/* package */ class PagingFileInfoResultsImpl implements PagingFileInfoResults
+/* package */ class PagingFileInfoResultsImpl implements PagingFileInfoResults, ResultsPermissionChecked
 {
     private List<FileInfo> nodeInfos;
-    private Boolean hasMore; // null => unknown
-    private Long totalCount; // null => not requested (or unknown)
     
-    public PagingFileInfoResultsImpl(List<FileInfo> nodeInfos, Boolean hasMore, Long totalCount)
+    private Boolean hasMoreItems;
+    private Pair<Integer, Integer> totalResultCount;
+    private String queryExecutionId;
+    private boolean permissionChecked;
+    
+    public PagingFileInfoResultsImpl(List<FileInfo> nodeInfos, Boolean hasMoreItems, Pair<Integer, Integer> totalResultCount, String queryExecutionId, boolean permissionChecked)
     {
         this.nodeInfos = nodeInfos;
-        this.hasMore = hasMore;
-        this.totalCount= totalCount;
+        this.hasMoreItems = hasMoreItems;
+        this.totalResultCount = totalResultCount;
+        this.queryExecutionId = queryExecutionId;
+        this.permissionChecked = permissionChecked;
     }
     
-    public List<FileInfo> getResultsForPage()
+    public List<FileInfo> getPage()
     {
         return nodeInfos;
     }
     
-    public Boolean hasMore()
+    public Boolean hasMoreItems()
     {
-        return hasMore;
+        return hasMoreItems;
     }
-    public Long getTotalCount()
+    
+    public Pair<Integer, Integer> getTotalResultCount()
     {
-        return totalCount;
+        return totalResultCount;
+    }
+    
+    public String getQueryExecutionId()
+    {
+        return queryExecutionId;
+    }
+    
+    public boolean permissionsChecked()
+    {
+        return permissionChecked;
     }
 }

@@ -201,7 +201,7 @@ public class RepoDictionaryDAOTest extends TestCase
         
         QName model = QName.createQName(TEST_URL, "dictionarydaotest");
         Collection<ConstraintDefinition> modelConstraints = service.getConstraints(model);
-        assertEquals(20, modelConstraints.size()); // 9 + 11
+        assertEquals(21, modelConstraints.size()); // 10 + 11
         
         QName conRegExp1QName = QName.createQName(TEST_URL, "regex1");
         boolean found1 = false;

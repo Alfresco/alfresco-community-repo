@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,6 +51,8 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.PagingFileInfoRequest;
+import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -68,6 +70,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -212,6 +215,28 @@ public class FileFolderServiceImplTest extends TestCase
         String[] expectedNames = new String[]
         { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
         checkFileList(files, 2, 3, expectedNames);
+    }
+    
+    public void testListPage() throws Exception
+    {
+        // sanity check only (see also GetChildrenCannedQueryTest)
+        
+        PagingFileInfoRequest pagingRequest = new PagingFileInfoRequest(100, null);
+        PagingFileInfoResults pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertTrue((pagingResults.getQueryExecutionId() != null) && (pagingResults.getQueryExecutionId().length() > 0));
+        assertNull(pagingResults.getTotalResultCount());
+        
+        List<FileInfo> files = pagingResults.getPage();
+        
+        // check
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        checkFileList(files, 2, 3, expectedNames);
+        
+        // TODO add more here
     }
 
     public void testShallowFilesOnlyList() throws Exception

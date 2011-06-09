@@ -600,8 +600,8 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName, Long insertAfter)
-            throws InvalidNodeRefException, AssociationExistsException
+    @Override
+    public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

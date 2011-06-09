@@ -62,8 +62,8 @@ import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.PagingFileInfoRequest;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
-import org.alfresco.service.cmr.model.PagingSortRequest;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -72,7 +72,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.PagingSortProp;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -94,6 +93,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -532,6 +532,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     /**
      * @param files     Return files extending from cm:content
      * @param folders   Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * 
      * @return Returns a JavaScript array of child file/folder nodes for this nodes.
      *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
      *         system folder types from the results.
@@ -543,22 +544,67 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * @param files     Return files extending from cm:content
-     * @param folders   Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @param files         Return files extending from cm:content
+     * @param folders       Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @param ignoreTypes   Also optionally removes additional type qnames. The additional type can be
+     *                      specified in short or long qname string form as a single string or an Array e.g. "fm:forum".
+     * 
      * @return Returns a JavaScript array of child file/folder nodes for this nodes.
      *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
      *         system folder types from the results.
-     *         Also optionally removes additional type qnames. The additional type can be
-     *         specified in short or long qname string form as a single string or an Array e.g. "fm:forum".
      *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
      */
     public Scriptable childFileFolders(boolean files, boolean folders, Object ignoreTypes)
     {
-        return childFileFolders(files, folders, ignoreTypes, -1, -1, null, true).getResult();
+        return childFileFolders(files, folders, ignoreTypes, -1, -1, 0, null, null, null).getPage();
+    }
+    
+    /**
+     * @param files         Return files extending from cm:content
+     * @param folders       Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @param ignoreTypes   Also optionally removes additional type qnames. The additional type can be
+     *                      specified in short or long qname string form as a single string or an Array e.g. "fm:forum".
+     * @param maxItems      Max number of items
+     *                      
+     * @return Returns ScriptPagingNodes which includes a JavaScript array of child file/folder nodes for this nodes.
+     *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
+     *         system folder types from the results.
+     *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
+     *         
+     * @deprecated API for review (subject to change prior to release)
+     *
+     * @author janv
+     * @since 4.0
+     */
+    public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int maxItems)
+    {
+        return childFileFolders(files, folders, ignoreTypes, 0, maxItems, 0, null, null, null);
     }
     
     @SuppressWarnings("unchecked")
-    public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int skipOffset, int maxItems, String sortProp, boolean ascending)
+    /**
+     * @param files                Return files extending from cm:content
+     * @param folders              Return folders extending from cm:folder - ignoring sub-types of cm:systemfolder
+     * @param ignoreTypes          Also optionally removes additional type qnames. The additional type can be
+     *                             specified in short or long qname string form as a single string or an Array e.g. "fm:forum".
+     * @param skipOffset           Items to skip (e.g. 0 or (num pages to skip * size of page)
+     * @param maxItems             Max number of items (eg. size of page)
+     * @param requestTotalCountMax Request total count (upto a given max total count)
+     *                             Note: if 0 then total count is not requested and the query may be able to optimise/cutoff for max items)
+     * @param sortProp             Optional sort property as a prefix qname string (e.g. "cm:name"). Also supports special 
+     *                             content case (i.e. "cm:content.size" and "cm:content.mimetype")
+     * @param sortAsc              Given a sort property, true => ascending, false => descending
+     * @param queryExecutionId     If paging then can pass back the previous query execution (as a hint for possible query optimisation)
+     *                             
+     * @return Returns ScriptPagingNodes which includes a JavaScript array of child file/folder nodes for this nodes.
+     *         Automatically retrieves all sub-types of cm:content and cm:folder, also removes
+     *         system folder types from the results.
+     *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
+     *         
+     * @author janv
+     * @since 4.0
+     */
+    public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int skipOffset, int maxItems, int requestTotalCountMax, String sortProp, Boolean sortAsc, String queryExecutionId)
     {
         Object[] results;
         
@@ -585,18 +631,19 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             ignoreTypeQNames.add(createQName(ignoreTypes.toString()));
         }
         
-        List<PagingSortProp> sortProps = null; // note: null sortProps => get all in default sort order
+        List<Pair<QName, Boolean>> sortProps = null; // note: null sortProps => get all in default sort order
         if (sortProp != null)
         {
-            sortProps = new ArrayList<PagingSortProp>(1);
-            sortProps.add(new PagingSortProp(createQName(sortProp), ascending));
+            sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+            sortProps.add(new Pair<QName, Boolean>(createQName(sortProp), sortAsc));
         }
         
-        PagingSortRequest pageRequest = new PagingSortRequest(skipOffset, maxItems, true, sortProps);
+        PagingFileInfoRequest pageRequest = new PagingFileInfoRequest(skipOffset, maxItems, sortProps, queryExecutionId);
+        pageRequest.setRequestTotalCountMax(requestTotalCountMax);
         
         PagingFileInfoResults pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, ignoreTypeQNames, pageRequest);
         
-        List<FileInfo> nodeInfos = pageOfNodeInfos.getResultsForPage();
+        List<FileInfo> nodeInfos = pageOfNodeInfos.getPage();
         
         int size = nodeInfos.size();
         results = new Object[size];
@@ -606,7 +653,17 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             results[i] = newInstance(nodeInfo, this.services, this.scope);
         }
         
-        return new ScriptPagingNodes(Context.getCurrentContext().newArray(this.scope, results), pageOfNodeInfos.getTotalCount(), pageOfNodeInfos.hasMore());
+        int totalResultCountLower = -1;
+        int totalResultCountUpper = -1;
+        
+        Pair<Integer, Integer> totalResultCount = pageOfNodeInfos.getTotalResultCount();
+        if (totalResultCount != null)
+        {
+            totalResultCountLower = (totalResultCount.getFirst() != null ? totalResultCount.getFirst() : -1);
+            totalResultCountUpper = (totalResultCount.getSecond() != null ? totalResultCount.getSecond() : -1);
+        }
+        
+        return new ScriptPagingNodes(Context.getCurrentContext().newArray(this.scope, results), pageOfNodeInfos.hasMoreItems(), totalResultCountLower, totalResultCountUpper);
     }
     
     /**
@@ -2922,7 +2979,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
        
        if (this.nodeService.exists(nodeRef))
        {
-           if(this.services.getPublicServiceAccessService().hasAccess(this.services.NODE_SERVICE.getLocalName(), "getProperties", this.nodeRef) == AccessStatus.ALLOWED)
+           if(this.services.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "getProperties", this.nodeRef) == AccessStatus.ALLOWED)
            {
                JSONObject json = new JSONObject();
               

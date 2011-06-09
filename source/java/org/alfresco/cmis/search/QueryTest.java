@@ -95,6 +95,7 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -554,6 +555,17 @@ public class QueryTest extends BaseCMISTest
             }
         }
         catch (FTSQueryException e)
+        {
+            if (shouldThrow)
+            {
+                return null;
+            }
+            else
+            {
+                throw e;
+            }
+        }
+        catch (CmisInvalidArgumentException e)
         {
             if (shouldThrow)
             {
@@ -2831,7 +2843,7 @@ public class QueryTest extends BaseCMISTest
         testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
         testOrderBy("SELECT cmis:parentId FROM cmis:folder ORDER BY cmis:parentId DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:parentId");
 
-        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE CONTAINS('cmis:name:*') AND cmis:name = 'compan home') ORDER BY SCORE() DESC", 1, false,
+        testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE CONTAINS('cmis:name:*') AND cmis:name = 'compan home' ORDER BY SCORE() DESC", 1, false,
                 "cmis:objectId", new String(), true);
         testQuery("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder WHERE CONTAINS('cmis:name:*') AND cmis:name IN ('company', 'home') ORDER BY MEEEP DESC", 1, false,
                 "cmis:objectId", new String(), true);
@@ -3173,8 +3185,6 @@ public class QueryTest extends BaseCMISTest
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) < 'FOLDER 1'", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) >= 'FOLDER 1'", 9, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), false);
-
-        testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), true);
     }
 
     public void testAllSimpleTextPredicates() throws Exception

@@ -1779,8 +1779,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return assocRef;
     }
 
-    public AssociationRef createAssociation(
-            NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName, Long insertAfter)
+    @Override
+    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
@@ -1788,18 +1788,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
         long targetNodeId = targetNodePair.getFirst();
 
-        // Check if ordering is allowed
-        if (insertAfter != null)
-        {
-            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
-            if (assocDef == null /*|| !assocDef.isOrdered()*/)
-            {
-                throw new IllegalArgumentException("Association type '" + assocTypeQName + "' is not ordered.");
-            }
-        }
-        
         // we are sure that the association doesn't exist - make it
-        Long assocId = nodeDAO.newNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName, insertAfter);
+        Long assocId = nodeDAO.newNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName, -1);
         AssociationRef assocRef = new AssociationRef(assocId, sourceRef, assocTypeQName, targetRef);
 
         // Invoke policy behaviours
@@ -1811,6 +1801,58 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return assocRef;
     }   
     
+    @Override
+    public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
+    {
+        Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
+        Long sourceNodeId = sourceNodePair.getFirst();
+        // First get the existing associations
+        Collection<Pair<Long, AssociationRef>> assocsBefore = nodeDAO.getTargetNodeAssocs(sourceNodeId, assocTypeQName);
+        Map<NodeRef, Long> targetRefsBefore = new HashMap<NodeRef, Long>(assocsBefore.size());
+        Map<NodeRef, Long> toRemoveMap = new HashMap<NodeRef, Long>(assocsBefore.size());
+        for (Pair<Long, AssociationRef> assocBeforePair : assocsBefore)
+        {
+            Long id = assocBeforePair.getFirst();
+            NodeRef nodeRef = assocBeforePair.getSecond().getTargetRef();
+            targetRefsBefore.put(nodeRef, id);
+            toRemoveMap.put(nodeRef, id);
+        }
+        // Work out which associations need to be removed
+        toRemoveMap.keySet().removeAll(targetRefs);
+        List<Long> toRemoveIds = new ArrayList<Long>(toRemoveMap.values());
+        nodeDAO.removeNodeAssocs(toRemoveIds);
+        
+        // Work out which associations need to be added
+        Set<NodeRef> toAdd = new HashSet<NodeRef>(targetRefs);
+        toAdd.removeAll(targetRefsBefore.keySet());
+        
+        // Iterate over the desired result and create new or reset indexes
+        int assocIndex = 1;
+        for (NodeRef targetNodeRef : targetRefs)
+        {
+            Long id = targetRefsBefore.get(targetNodeRef);
+            // Is this an existing assoc?
+            if (id != null)
+            {
+                // Update it
+                nodeDAO.setNodeAssocIndex(id, assocIndex);
+            }
+            else
+            {
+                Long targetNodeId = getNodePairNotNull(targetNodeRef).getFirst();
+                nodeDAO.newNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName, assocIndex);
+            }
+            assocIndex++;
+        }
+        
+        // Invoke policy behaviours
+        for (NodeRef targetNodeRef : toAdd)
+        {
+            AssociationRef assocRef = new AssociationRef(sourceRef, assocTypeQName, targetNodeRef);
+            invokeOnCreateAssociation(assocRef);
+        }
+    }
+
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         // Get the parent node
@@ -1916,9 +1958,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
-        long sourceNodeId = sourceNodePair.getFirst();
+        Long sourceNodeId = sourceNodePair.getFirst();
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
-        long targetNodeId = targetNodePair.getFirst();
+        Long targetNodeId = targetNodePair.getFirst();
 
         // delete it
         int assocsDeleted = nodeDAO.removeNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName);
@@ -1939,7 +1981,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
-        long sourceNodeId = sourceNodePair.getFirst();
+        Long sourceNodeId = sourceNodePair.getFirst();
 
         QName qnameFilter = null;
         if (qnamePattern instanceof QName)
@@ -1965,7 +2007,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern)
     {
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
-        long targetNodeId = targetNodePair.getFirst();
+        Long targetNodeId = targetNodePair.getFirst();
         
         QName qnameFilter = null;
         if (qnamePattern instanceof QName)

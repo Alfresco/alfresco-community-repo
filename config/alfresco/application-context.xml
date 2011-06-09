@@ -17,6 +17,7 @@
     <import resource="classpath:alfresco/application-context-highlevel.xml" />
 
     <import resource="classpath*:alfresco/transfer-service-context.xml"/>
+    <import resource="classpath*:alfresco/web-publishing-context.xml" />
 
     <!--
          Import activation extensions for Multi-Tenancy.

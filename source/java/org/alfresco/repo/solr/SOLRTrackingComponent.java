@@ -40,6 +40,24 @@ public interface SOLRTrackingComponent
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults);
     
     /**
+     * Get the ACLs with paging options for a specific ACL ChangeSet
+     * 
+     * @param aclChangeSetIds           the ACL ChangeSet IDs
+     * @param minAclId                  the minimum ACL ID - (inclusive and optional).
+     * @param maxResults                the maximum number of results (must be greater than zero and less than MAX)
+     * @return                          list of ACLs
+     */
+    public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults);
+    
+    /**
+     * Get the ACL readers ("authorities who can read this ACL") for a given set of ACL IDs
+     * 
+     * @param aclIds                    the ACL IDs
+     * @return                          Returns the list of ACL readers (includes original ACL IDs)
+     */
+    public List<AclReaders> getAclsReaders(List<Long> aclIds);
+    
+    /**
      * Get the transactions from either minTxnId or fromCommitTime, optionally limited to maxResults
      * 
      * @param minTxnId greater than or equal to minTxnId

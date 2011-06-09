@@ -25,12 +25,11 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -81,19 +80,19 @@ public class BaseTypeIdProperty extends AbstractProperty
     }
 
     @Override
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         return lqp.getFieldQuery("TYPE", getBaseType(getValueAsString(value)), AnalysisMode.IDENTIFIER, luceneFunction);     
     }
 
     @Override
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
         return lqp.getDoesNotMatchFieldQuery("TYPE", getBaseType(getValueAsString(value)), AnalysisMode.IDENTIFIER, luceneFunction);
     }
     
     @Override
-    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
         String field = "TYPE";
         
@@ -149,7 +148,7 @@ public class BaseTypeIdProperty extends AbstractProperty
     }
 
     @Override
-    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException
+    public Query buildLuceneExists(AbstractLuceneQueryParser lqp, Boolean not) throws ParseException
     {
         if (not)
         {

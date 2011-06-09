@@ -13,7 +13,9 @@
       <property name="searchService"><ref bean="admSearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
+      
       <property name="cannedQueryRegistry" ref="cannedQueryRegistry"/>
+      <property name="defaultListMaxResults" value="${system.filefolderservice.defaultListMaxResults}"/>
       
       <property name="systemNamespaces">
          <list>
@@ -143,8 +145,16 @@
    
    <bean name="getChildrenCannedQueryFactory" class="org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory">
       <property name="registry" ref="cannedQueryRegistry"/>
-      <property name="nodeService" ref="nodeService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+      
       <property name="methodSecurityInterceptor" ref="FileFolderService_security"/>
+      <property name="methodService" ref="fileFolderService"/>
+      <property name="methodName" value="list"/>
    </bean>
    
 </beans>

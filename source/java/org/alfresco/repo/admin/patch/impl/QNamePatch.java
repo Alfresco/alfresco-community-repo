@@ -24,7 +24,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -133,7 +133,7 @@ public class QNamePatch extends AbstractPatch
         if ("TYPE".equals(reindexClass) ||
                 "ASPECT".equals(reindexClass))
         {
-            reindex(reindexClass + ":" + LuceneQueryParser.escape(qnameStringBefore), importerBootstrap.getStoreRef());
+            reindex(reindexClass + ":" + AbstractLuceneQueryParser.escape(qnameStringBefore), importerBootstrap.getStoreRef());
         }
 
         return I18NUtil.getMessage(MSG_SUCCESS, qnameBefore, qnameAfter);

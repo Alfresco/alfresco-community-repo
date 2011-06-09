@@ -401,11 +401,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Test listSite methods.
      */
     public void testListSites() throws Exception
-    {    	
-        // Count sites
+    {
         List<SiteInfo> sites = this.siteService.listSites(null, null);
-        assertNotNull(sites);
-        int siteCount = sites.size();
+        assertNotNull("sites list was null.", sites);
+        final int preexistingSitesCount = sites.size();
         
         // Create some sites
         this.siteService.createSite(TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
@@ -417,31 +416,31 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Get all the sites
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
-        assertEquals(5 + siteCount, sites.size());
+        assertEquals(preexistingSitesCount + 5, sites.size());
         
         // Get sites by matching name
         sites = this.siteService.listSites("One", null);
         assertNotNull(sites);
-        assertEquals(1, sites.size());
+        assertEquals("Matched wrong number of sites named 'One'", 1, sites.size());
         
         // Get sites by matching title
         sites = this.siteService.listSites("title", null);
         assertNotNull(sites);
-        assertEquals(5, sites.size());
+        assertEquals("Matched wrong number of sites named 'title'", 5, sites.size());
 
         // Get sites by matching description
         sites = this.siteService.listSites("description", null);
         assertNotNull(sites);
-        assertEquals(5, sites.size());
+        assertEquals("Matched wrong number of sites named 'description'", 5, sites.size());
         
         // Get sites by matching sitePreset - see ALF-5620
         sites = this.siteService.listSites(null, TEST_SITE_PRESET);
         assertNotNull(sites);
-        assertEquals(2, sites.size());
+        assertEquals("Matched wrong number of sites with PRESET", 2, sites.size());
         
         sites = this.siteService.listSites(null, TEST_SITE_PRESET_2);
         assertNotNull(sites);
-        assertEquals(3, sites.size());
+        assertEquals("Matched wrong number of sites with PRESET_2", 3, sites.size());
 
         // Do detailed check of the site info objects
         for (SiteInfo site : sites)
@@ -710,11 +709,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testIsPublic()
     {
-        // Count sites
         List<SiteInfo> sites = this.siteService.listSites(null, null);
-        assertNotNull(sites);
-        int siteCount = sites.size();
-        
+        assertNotNull("initial sites list was null.", sites);
+        final int preexistingSiteCount = sites.size();
+       
         // Create a couple of sites as user one
         this.siteService.createSite(TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         this.siteService.createSite(TEST_SITE_PRESET, "isPublicFalse", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
@@ -722,14 +720,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Get the sites as user one
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
-        assertEquals(2 + siteCount, sites.size());
+        assertEquals(preexistingSiteCount + 2, sites.size());
         
         // Now get the sites as user two
         this.authenticationComponent.setCurrentUser(USER_TWO);
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
-        assertEquals(1 + siteCount, sites.size());
-//        checkSiteInfo(sites.get(0), TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        assertEquals(preexistingSiteCount + 1, sites.size());
+        SiteInfo userTwoSite = siteService.getSite("isPublicTrue");
+        checkSiteInfo(userTwoSite, TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         
         // Make user 2 a member of the site
         //TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
@@ -740,7 +739,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent.setCurrentUser(USER_TWO);
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
-        assertEquals(2 + siteCount, sites.size());
+        assertEquals(preexistingSiteCount + 2, sites.size());
     }
     
     public void testMembership()
@@ -1879,8 +1878,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
         
         // Create a model to pass to the unit test scripts
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<String, Object>();
         model.put("customSiteName", "mySiteWithCustomProperty");
+        model.put("preexistingSiteCount", siteService.listSites(null, null).size());
         
         // Execute the unit test script
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_siteService.js");

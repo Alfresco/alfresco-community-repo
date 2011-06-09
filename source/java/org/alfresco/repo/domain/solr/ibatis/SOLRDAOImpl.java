@@ -27,7 +27,6 @@ import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.SOLRTrackingParameters;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
-import org.alfresco.repo.solr.AclEntry;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.util.PropertyCheck;
@@ -43,7 +42,6 @@ public class SOLRDAOImpl implements SOLRDAO
 {
     private static final String SELECT_CHANGESETS_SUMMARY = "alfresco.solr.select_ChangeSets_Summary";
     private static final String SELECT_ACLS_BY_CHANGESET_IDS = "alfresco.solr.select_AclsByChangeSetIds";
-    private static final String SELECT_ACLENTRIESS_BY_ACL_IDS = "alfresco.solr.select_AclEntriessByAclIds";
     private static final String SELECT_TRANSACTIONS = "alfresco.solr.select_Txns";
     private static final String SELECT_NODES = "alfresco.solr.select_Txn_Nodes";
     
@@ -107,38 +105,12 @@ public class SOLRDAOImpl implements SOLRDAO
         {
             throw new IllegalArgumentException("'aclChangeSetIds' cannot have more than 512 entries.");
         }
-        if (minAclId != null)
-        {
-            throw new IllegalArgumentException("When 'minAclId' is specified then there should be only one 'aclChangeSetIds'.");
-        }
         
         SOLRTrackingParameters params = new SOLRTrackingParameters();
         params.setIds(aclChangeSetIds);
         params.setFromIdInclusive(minAclId);
 
         return (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<AclEntry> getAclEntries(List<Long> aclIds, boolean includeAuthorities)
-    {
-        if (aclIds == null || aclIds.size() == 0)
-        {
-            throw new IllegalArgumentException("'aclIds' must contain IDs.");
-        }
-        if (aclIds.size() > 512)
-        {
-            throw new IllegalArgumentException("'aclIds' cannot have more than 512 entries.");
-        }
-        SOLRTrackingParameters params = new SOLRTrackingParameters();
-        params.setIds(aclIds);
-        params.setTrueOrFalse(includeAuthorities);
-
-        return (List<AclEntry>) template.selectList(SELECT_ACLENTRIESS_BY_ACL_IDS, params);
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -206,6 +207,26 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
                 Constraint constraint = constraintDef.getConstraint();
                 String type = constraint.getType();
                 Map<String, Object> params = constraint.getParameters();
+                
+                // ListOfValuesConstraints have special handling for localising their allowedValues.
+                if (ListOfValuesConstraint.CONSTRAINT_TYPE.equals(constraint.getType()))
+                {
+                    ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint) constraint;
+                    List<String> allowedValues = lovConstraint.getAllowedValues();
+                    List<String> localisedValues = new ArrayList<String>(allowedValues.size());
+                    
+                    // Look up each localised display-label in turn.
+                    for (String value : allowedValues)
+                    {
+                        String displayLabel = lovConstraint.getDisplayLabel(value);
+                        // Change the allowedValue entry to the format the FormsService expects for localised strings: "value|label"
+                        // If there is no localisation defined for any value, then this will give us "value|value".
+                        localisedValues.add(value + "|" + displayLabel);
+                    }
+                    
+                    // Now replace the allowedValues param with our localised version.
+                    params.put(ListOfValuesConstraint.ALLOWED_VALUES_PARAM, localisedValues);
+                }
                 FieldConstraint fieldConstraint = new FieldConstraint(type, params);
                 fieldConstraints.add(fieldConstraint);
             }

@@ -18,10 +18,8 @@
  */
 package org.alfresco.cmis.mapping;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +62,6 @@ import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

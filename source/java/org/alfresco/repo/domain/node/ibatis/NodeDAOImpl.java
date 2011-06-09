@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.ChildPropertyEntity;
@@ -97,8 +98,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
     private static final String SELECT_NODES_WITH_ASPECT_ID = "alfresco.node.select_NodesWithAspectId";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
+    private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
     private static final String DELETE_NODE_ASSOCS_TO_AND_FROM = "alfresco.node.delete_NodeAssocsToAndFrom";
+    private static final String DELETE_NODE_ASSOCS = "alfresco.node.delete_NodeAssocs";
     private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
@@ -665,6 +668,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    protected int updateNodeAssoc(Long id, int assocIndex)
+    {
+        NodeAssocEntity assoc = new NodeAssocEntity();
+        assoc.setId(id);
+        assoc.setAssocIndex(assocIndex);
+        
+        return template.update(UPDATE_NODE_ASSOC, assoc);
+    }
+
+    @Override
     protected int deleteNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();
@@ -712,6 +725,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setTargetNode(targetNode);
         
         return template.delete(DELETE_NODE_ASSOCS_TO_AND_FROM, assoc);
+    }
+
+    @Override
+    protected int deleteNodeAssocs(List<Long> ids)
+    {
+        IdsEntity param = new IdsEntity();
+        param.setIds(ids);
+        return template.delete(DELETE_NODE_ASSOCS, param);
     }
 
     @SuppressWarnings("unchecked")

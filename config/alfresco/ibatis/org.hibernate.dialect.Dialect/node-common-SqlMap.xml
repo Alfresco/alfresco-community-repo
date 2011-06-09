@@ -57,7 +57,7 @@
         <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     <resultMap id="result_Node" type="Node">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.id" column="store_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -80,7 +80,7 @@
     <!--  TODO review groupBy nodeId ...
     <resultMap id="result_NodeAspects" type="NodeAspects" groupBy="nodeId"> -->
     <resultMap id="result_NodeAspects" type="NodeAspects">
-        <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <id property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <association property="aspectQNameIds" resultMap="alfresco.node.result_AspectQNameIds"/>
 <!--
         <result property="aspectQNameIds" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -130,6 +130,38 @@
         <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="isPrimary" column="is_primary" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    </resultMap>
+    
+    <resultMap id="result_SortableNode" type="SortableNode">
+        
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        
+        <result property="prop1.nodeId" column="prop1_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop1.key.qnameId" column="prop1_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop1.key.localeId" column="prop1_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop1.key.listIndex" column="prop1_list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop1.value.actualType" column="prop1_actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop1.value.persistedType" column="prop1_persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop1.value.booleanValue" column="prop1_boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="prop1.value.longValue" column="prop1_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop1.value.floatValue" column="prop1_float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <result property="prop1.value.doubleValue" column="prop1_double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
+        <result property="prop1.value.stringValue" column="prop1_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        
+        <result property="prop2.nodeId" column="prop2_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop2.key.qnameId" column="prop2_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop2.key.localeId" column="prop2_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop2.key.listIndex" column="prop2_list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop2.value.actualType" column="prop2_actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop2.value.persistedType" column="prop2_persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop2.value.booleanValue" column="prop2_boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="prop2.value.longValue" column="prop2_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop2.value.floatValue" column="prop2_float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <result property="prop2.value.doubleValue" column="prop2_double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
+        <result property="prop2.value.stringValue" column="prop2_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+        
     </resultMap>
   
     <!--                -->
@@ -361,6 +393,13 @@
             id = #{id}
     </update>
     
+    <update id="update_NodeAssoc" parameterType="NodeAssoc">
+        update alf_node_assoc set
+            assoc_index = #{assocIndex}
+        where
+            id = #{id}
+    </update>
+    
     <update id="update_ChildAssocsUniqueName" parameterType="ChildAssoc">
         update alf_child_assoc set
             child_node_name_crc = #{childNodeNameCrc},
@@ -473,6 +512,15 @@
                     #{item}
                 </foreach>
             </if>
+    </delete>
+    
+    <delete id="delete_NodeAssocs" parameterType="Ids">
+        delete from alf_node_assoc
+        where
+            id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
     </delete>
     
     <delete id="delete_ChildAssocById" parameterType="ChildAssoc">
@@ -713,7 +761,8 @@
             targetStore.protocol    as targetNodeProtocol,
             targetStore.identifier  as targetNodeIdentifier,
             targetNode.uuid         as targetNodeUuid,
-            assoc.type_qname_id     as type_qname_id
+            assoc.type_qname_id     as type_qname_id,
+            assoc.assoc_index       as assoc_index
         from
             alf_node_assoc assoc
             join alf_node sourceNode on (sourceNode.id = assoc.source_node_id)
@@ -721,14 +770,19 @@
             join alf_node targetNode on (targetNode.id = assoc.target_node_id)
             join alf_store targetStore on (targetStore.id = targetNode.store_id)
     </sql>
+    <sql id="select_NodeAssoc_OrderBy">
+        order by
+            assoc.assoc_index ASC
+    </sql>
     
     <select id="select_NodeAssocsBySource" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
             sourceNode.id = #{sourceNode.id}
-           <if test="typeQNameId != null">
-               <![CDATA[and assoc.type_qname_id = #{typeQNameId}]]>
-           </if>
+            <if test="typeQNameId != null">
+                <![CDATA[and assoc.type_qname_id = #{typeQNameId}]]>
+                <include refid="alfresco.node.select_NodeAssoc_OrderBy"/>
+            </if>
     </select>
 
     <select id="select_NodeAssocsByTarget" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
@@ -796,7 +850,95 @@
         where
             assoc.id = #{id}
     </select>
-
+    
+    <!-- GetChildren - with explicit sort order -->
+    <select id="select_GetChildrenSortedCannedQuery" parameterType="SortableNode" resultMap="result_SortableNode">
+       select
+            childNode.id             as id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid
+            <if test="prop1qnameId != null">
+          , prop1.node_id            as prop1_node_id,
+            prop1.qname_id           as prop1_qname_id,
+            prop1.locale_id          as prop1_locale_id,
+            prop1.list_index         as prop1_list_index,
+            prop1.actual_type_n      as prop1_actual_type_n,
+            prop1.persisted_type_n   as prop1_persisted_type_n,
+            prop1.boolean_value      as prop1_boolean_value,
+            prop1.long_value         as prop1_long_value,
+            prop1.float_value        as prop1_float_value,
+            prop1.double_value       as prop1_double_value,
+            prop1.string_value       as prop1_string_value
+            </if>
+            <if test="prop1qnameId != null and prop2qnameId != null">
+          , prop2.node_id            as prop2_node_id,
+            prop2.qname_id           as prop2_qname_id,
+            prop2.locale_id          as prop2_locale_id,
+            prop2.list_index         as prop2_list_index,
+            prop2.actual_type_n      as prop2_actual_type_n,
+            prop2.persisted_type_n   as prop2_persisted_type_n,
+            prop2.boolean_value      as prop2_boolean_value,
+            prop2.long_value         as prop2_long_value,
+            prop2.float_value        as prop2_float_value,
+            prop2.double_value       as prop2_double_value,
+            prop2.string_value       as prop2_string_value
+            </if>
+            <if test="auditableProps == true">
+          , childNode.audit_creator  as audit_creator,
+            childNode.audit_created  as audit_created,
+            childNode.audit_modifier as audit_modifier,
+            childNode.audit_modified as audit_modified,
+            childNode.audit_accessed as audit_accessed
+            </if>
+            <if test="nodeType == true">
+          , childNode.type_qname_id  as type_qname_id
+            </if>
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+            <if test="prop1qnameId != null">
+            left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
+            </if>
+            <if test="prop1qnameId != null and prop2qnameId != null">
+            left join alf_node_properties prop2 on (prop2.node_id = childNode.id and prop2.qname_id = #{prop2qnameId})
+            </if>
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            <if test="childNodeTypeQNameIds != null">
+            and childNode.type_qname_id in 
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        <if test="prop1qnameId == null and auditableProps == false">
+            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+        </if>
+    </select>
+    
+    <!-- GetChildren - with no explicit sort order -->
+    <select id="select_GetChildrenCannedQuery" parameterType="SortableNode" resultMap="result_NodeRef">
+       select
+            childNode.id             as id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            <if test="childNodeTypeQNameIds != null">
+            and childNode.type_qname_id in 
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+    </select>
+    
     <select id="select_ChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>

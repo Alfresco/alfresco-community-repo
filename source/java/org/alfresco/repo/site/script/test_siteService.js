@@ -52,7 +52,7 @@ function testListSites()
 	
 	// Check the list
 	test.assertNotNull(sites);
-	test.assertEquals(2 + sitesStart.length, sites.length);
+	test.assertEquals(preexistingSiteCount + 2, sites.length);
 	
 	// TODO .. check the filters
 }

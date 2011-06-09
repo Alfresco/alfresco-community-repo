@@ -23,14 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -173,7 +172,7 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
     {
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +
+        sp.setQuery("@" + AbstractLuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +
                 ".mimetype:\"" + oldMimetype + "\"");
         sp.addStore(store);
         Indexer indexer = indexerAndSearcher.getIndexer(store);

@@ -32,6 +32,7 @@ import org.alfresco.service.namespace.QName;
 public interface ChannelService
 {
     void register(ChannelType channelType);
+    ChannelType getChannelType(String id);
     List<ChannelType> getChannelTypes();
     Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties);
     void deleteChannel(String siteId, String channelName);

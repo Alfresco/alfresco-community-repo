@@ -18,9 +18,9 @@
  */
 package org.alfresco.service.cmr.publishing;
 
-import java.util.Set;
+import java.util.Collection;
 
 public interface PublishingPackage
 {
-    Set<PublishingPackageEntry> getEntries();
+    Collection<PublishingPackageEntry> getEntries();
 }

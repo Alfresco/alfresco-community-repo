@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="pubwf:workflowModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/publishingworkflow/1.0" prefix="pubwf"/>
+    </namespaces>
+
+    <types>
+
+    <!--                                  -->
+    <!-- Start Publish Task    -->
+    <!--                                  -->
+        <type name="pubwf:startPublish">
+            <parent>bpm:startTask</parent>
+            <properties>
+                <property name="pubwf:publishingEvent">
+                    <type>d:noderef</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pubwf:scheduledPublishDate">
+                    <type>d:datetime</type>
+                    <mandatory>true</mandatory>
+                </property>
+            </properties>
+        </type>
+
+  </types>
+</model>

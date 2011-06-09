@@ -81,9 +81,9 @@
     </resultMap>
     <resultMap id="result_PropertyIdSearchRow" type="PropertyIdSearchRow">
         <!-- If we use nested ResultMaps, then this ResultMap can't be embedded... -->
-        <result property="rootPropId" column="link_root_prop_id" jdbcType="BIGINT" javaType="long"/>
-        <result property="propIndex" column="link_prop_index" jdbcType="BIGINT" javaType="long"/>
-        <result property="containedIn" column="link_contained_in" jdbcType="BIGINT" javaType="long"/>
+        <id property="rootPropId" column="link_root_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <id property="propIndex" column="link_prop_index" jdbcType="BIGINT" javaType="long"/>
+        <id property="containedIn" column="link_contained_in" jdbcType="BIGINT" javaType="long"/>
         <result property="keyPropId" column="link_key_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="valuePropId" column="link_value_prop_id" jdbcType="BIGINT" javaType="long"/>
         <result property="actualTypeId" column="prop_actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -94,7 +94,7 @@
         <result property="serializableValue" column="prop_serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
     <resultMap id="result_PropertyIdQueryResult" type="PropertyIdQueryResult">
-        <result property="propId" column="prop_id" jdbcType="BIGINT" javaType="long"/>
+        <id property="propId" column="prop_id" jdbcType="BIGINT" javaType="long"/>
         <association property="propValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
   

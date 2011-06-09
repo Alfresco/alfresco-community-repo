@@ -21,35 +21,32 @@ package org.alfresco.repo.publishing;
 
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.transfer.NodeFilter;
+import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * For test purposes only.
  * @author Nick Smith
  * @since 4.0
  *
  */
 public class MockChannelType extends AbstractChannelType
 {
-    public final static String NAME = "MockChannelType";
-    
-    public MockChannelType()
-    {
-        super();
-    }
+    public final static String ID = "MockChannelType";
     
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getId()
     {
-        return NAME;
+        return ID;
     }
 
     /**
     * {@inheritDoc}
     */
-    @Override
     public Map<String, String> getCapabilities()
     {
         return null;
@@ -58,18 +55,16 @@ public class MockChannelType extends AbstractChannelType
     /**
     * {@inheritDoc}
     */
-    @Override
     public QName getChannelNodeType()
     {
-        return null;
+        return PublishingModel.TYPE_DELIVERY_CHANNEL;
     }
 
     /**
     * {@inheritDoc}
     */
-    @Override
     public QName getContentRootNodeType()
     {
-        return null;
+        return ContentModel.TYPE_FOLDER;
     }
 }

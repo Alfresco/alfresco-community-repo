@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -1106,35 +1107,51 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     }
 
     /**
-     * @param aclId
-     * @return set of authorities with read permission on the ACL
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<String> getReaders(Long aclId)
+    {
+        Set<String> aclReaders = readersCache.get(aclId);
+        if (aclReaders == null)
+        {
+            aclReaders = buildReaders(aclId);
+            readersCache.put(aclId, aclReaders);
+        }
+        return aclReaders;
+    }
+    
+    /**
+     * Builds the set of authorities who can read the given ACL.  No caching is done here.
+     * 
+     * @return              an <b>unmodifiable</b> set of authorities
      */
     private Set<String> buildReaders(Long aclId)
     {
-        HashSet<String> assigned = new HashSet<String>();
-        HashSet<String> readers = new HashSet<String>();
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
-
         if (acl == null)
         {
-            return readers;
+            return Collections.emptySet();
         }
+
+        HashSet<String> assigned = new HashSet<String>();
+        HashSet<String> readers = new HashSet<String>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
             assigned.add(ace.getAuthority());
         }
 
-        for(String authority : assigned)
+        for (String authority : assigned)
         {
             UnconditionalAclTest test = new UnconditionalAclTest(getPermissionReference(PermissionService.READ));
-            if(test.evaluate(authority, aclId))
+            if (test.evaluate(authority, aclId))
             {
                 readers.add(authority);
             }
         }
 
-        return readers;
+        return Collections.unmodifiableSet(readers);
     }
 
     private AccessStatus canRead(Long aclId)
@@ -1142,12 +1159,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         Set<String> authorities = getAuthorisations();
 
         // test acl readers
-        Set<String> aclReaders = readersCache.get(aclId);
-        if(aclReaders == null)
-        {
-            aclReaders = buildReaders(aclId);
-            readersCache.put(aclId, aclReaders);
-        }
+        Set<String> aclReaders = getReaders(aclId);
 
         // both lists are ordered so we can skip scan to find any overlap
         if(authorities.size() < aclReaders.size())
@@ -1253,9 +1265,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         /**
          * External hook point
-         * 
-         * @param authorisations
-         * @param nodeRef
          * @return true if allowed
          */
         boolean evaluate(Set<String> authorisations, NodeRef nodeRef)
@@ -1266,11 +1275,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         /**
          * Internal hook point for recursion
-         * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
-         * @param recursiveIn
          * @return true if allowed
          */
         boolean evaluate(Set<String> authorisations, NodeRef nodeRef, Set<Pair<String, PermissionReference>> denied, MutableBoolean recursiveIn)
@@ -1512,7 +1516,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authorisations
          * @return true if allowed
          */
         private boolean checkGlobalPermissions(Set<String> authorisations)
@@ -1530,7 +1533,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Get the list of permissions denied for this node.
          * 
-         * @param nodeRef
          * @return the list of denied permissions
          */
         Set<Pair<String, PermissionReference>> getDenied(NodeRef nodeRef)
@@ -1580,9 +1582,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
          * @return true if the check is required
          */
         boolean checkRequired(Set<String> authorisations, NodeRef nodeRef, Set<Pair<String, PermissionReference>> denied)
@@ -1642,28 +1641,28 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
             // any deny denies
 
-            if (false)
-            {
-                if (denied != null)
-                {
-                    for (String auth : authorisations)
-                    {
-                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
-                        if (denied.contains(specific))
-                        {
-                            return false;
-                        }
-                        for (PermissionReference perm : granters)
-                        {
-                            specific = new Pair<String, PermissionReference>(auth, perm);
-                            if (denied.contains(specific))
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
+//            if (false)
+//            {
+//                if (denied != null)
+//                {
+//                    for (String auth : authorisations)
+//                    {
+//                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
+//                        if (denied.contains(specific))
+//                        {
+//                            return false;
+//                        }
+//                        for (PermissionReference perm : granters)
+//                        {
+//                            specific = new Pair<String, PermissionReference>(auth, perm);
+//                            if (denied.contains(specific))
+//                            {
+//                                return false;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             // If the permission has a match in both the authorities and
             // granters list it is allowed
@@ -1919,28 +1918,28 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
             // any deny denies
 
-            if (false)
-            {
-                if (denied != null)
-                {
-                    for (String auth : authorisations)
-                    {
-                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
-                        if (denied.contains(specific))
-                        {
-                            return false;
-                        }
-                        for (PermissionReference perm : granters)
-                        {
-                            specific = new Pair<String, PermissionReference>(auth, perm);
-                            if (denied.contains(specific))
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
+//            if (false)
+//            {
+//                if (denied != null)
+//                {
+//                    for (String auth : authorisations)
+//                    {
+//                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
+//                        if (denied.contains(specific))
+//                        {
+//                            return false;
+//                        }
+//                        for (PermissionReference perm : granters)
+//                        {
+//                            specific = new Pair<String, PermissionReference>(auth, perm);
+//                            if (denied.contains(specific))
+//                            {
+//                                return false;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             // If the permission has a match in both the authorities and
             // granters list it is allowed
@@ -2269,57 +2268,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         }
     }
     
-    /**
-     * Helper class to store a pair of objects which may be null
-     * 
-     * @author Andy Hind
-     */
-    private static class Pair<A, B>
-    {
-        A a;
-
-        B b;
-
-        Pair(A a, B b)
-        {
-            this.a = a;
-            this.b = b;
-        }
-
-        A getA()
-        {
-            return a;
-        }
-
-        B getB()
-        {
-            return b;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
-                return true;
-            }
-            if (!(this instanceof Pair))
-            {
-                return false;
-            }
-            Pair other = (Pair) o;
-            return EqualsHelper.nullSafeEquals(this.getA(), other.getA()) && EqualsHelper.nullSafeEquals(this.getB(), other.getB());
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return (((a == null) ? 0 : a.hashCode()) * 37) + ((b == null) ? 0 : b.hashCode());
-        }
-
-    }
-
     private static class MutableBoolean
     {
         private boolean value;
@@ -2357,6 +2305,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
      * @param nodeRef - <b>always</b> version nodeRef (ie. in the 'version' store)
      * @return versioned nodeRef (ie.in the 'live' store)
      */
+    @SuppressWarnings("deprecation")
     private NodeRef convertVersionNodeRefToVersionedNodeRef(NodeRef versionNodeRef)
     {
         Map<QName, Serializable> properties = nodeService.getProperties(versionNodeRef);
@@ -2379,13 +2328,11 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         
         return nodeRef;
     }
-    
+
     /**
-     * Get the set of authorities for currently authenticated user,
-     * adding them to a transactional cache
-     * 
-     * @return
+     * {@inheritDoc}
      */
+    @Override
     public Set<String> getAuthorisations()
     {
         // Use TX cache 
@@ -2421,5 +2368,4 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         }
         return Collections.unmodifiableSet(auths);   
     }
-
 }

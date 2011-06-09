@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -48,12 +47,12 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
-
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Alfresco bootstrap Process deployment.
@@ -72,7 +71,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public static final String REDEPLOY = "redeploy";
     
     // Dependencies
-    private boolean allowWrite = true;
     private TransactionService transactionService;
     private WorkflowService workflowService;
     private AuthenticationContext authenticationContext;
@@ -91,16 +89,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public final static String CRITERIA_ALL = "/*"; // immediate children only
     public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
     
-    /**
-     * Set whether we write or not
-     * 
-     * @param write true (default) if the import must go ahead, otherwise no import will occur
-     */
-    public void setAllowWrite(boolean write)
-    {
-        this.allowWrite = write;
-    }
-
     /**
      * Sets the Transaction Service
      * 
@@ -224,27 +212,22 @@ public class WorkflowDeployer extends AbstractLifecycleBean
      */
     public void init()
     {
-        if (transactionService == null)
-        {
-            throw new ImporterException("Transaction Service must be provided");
-        }
-        if (authenticationContext == null)
-        {
-            throw new ImporterException("Authentication Component must be provided");
-        }
-        if (workflowService == null)
-        {
-            throw new ImporterException("Workflow Service must be provided");
-        }
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "authenticationContext", authenticationContext);
+        PropertyCheck.mandatory(this, "workflowService", workflowService);
 
         String currentUser = authenticationContext.getCurrentUserName();
         if (currentUser == null)
         {
             authenticationContext.setSystemUserAsCurrentUser();
         }
+        if (!transactionService.getAllowWrite())
+        {
+            logger.warn("Repository is in read-only mode; not deploying workflows.");
+            return;
+        }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
-
         try
         {
             userTransaction.begin();
@@ -283,10 +266,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     ClassPathResource workflowResource = new ClassPathResource(location);
                     
                     // deploy workflow definition
-                    if (!allowWrite)
+                    if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                     {
-                        // we're in read-only node
-                        logger.warn("Repository is in read-only mode; not deploying workflow " + location);
+                        if (logger.isDebugEnabled())
+                            logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
                     }
                     else
                     {

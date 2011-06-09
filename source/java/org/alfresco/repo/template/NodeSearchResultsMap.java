@@ -20,7 +20,7 @@ package org.alfresco.repo.template;
 
 import java.util.List;
 
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
 
 /**
@@ -49,7 +49,7 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
         TemplateNode result = null;
         if (key != null)
         {
-            String ref = "ID:" + LuceneQueryParser.escape(key.toString());
+            String ref = "ID:" + AbstractLuceneQueryParser.escape(key.toString());
             
             List<TemplateNode> results = query(ref);
             

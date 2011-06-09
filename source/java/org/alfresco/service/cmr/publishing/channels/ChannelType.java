@@ -21,6 +21,8 @@ package org.alfresco.service.cmr.publishing.channels;
 
 import java.util.Map;
 
+import org.alfresco.service.cmr.transfer.NodeFilter;
+import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -33,4 +35,6 @@ public interface ChannelType
     Map<String,String> getCapabilities();
     QName getChannelNodeType();
     QName getContentRootNodeType();
+    NodeFinder getNodeFinder();
+    NodeFilter getNodeFilter();
 }

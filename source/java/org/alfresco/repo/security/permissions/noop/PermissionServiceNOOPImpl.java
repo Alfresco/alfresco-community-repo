@@ -20,7 +20,6 @@ package org.alfresco.repo.security.permissions.noop;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -36,66 +35,48 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Dummy implementation of Permissions Service
- *
  */
-public class PermissionServiceNOOPImpl
-    implements PermissionServiceSPI
+public class PermissionServiceNOOPImpl implements PermissionServiceSPI
 {
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getOwnerAuthority()
-     */
+    @Override
     public String getOwnerAuthority()
     {
         return OWNER_AUTHORITY;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getAllAuthorities()
-     */
+    @Override
     public String getAllAuthorities()
     {
         return ALL_AUTHORITIES;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getAllPermission()
-     */
+    @Override
     public String getAllPermission()
     {
         return ALL_PERMISSIONS;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getPermissions(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public Set<AccessPermission> getPermissions(NodeRef nodeRef)
     {
         return Collections.<AccessPermission>emptySet();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getAllPermissions(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef)
     {
         return Collections.<AccessPermission>emptySet();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getSettablePermissions(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public Set<String> getSettablePermissions(NodeRef nodeRef)
     {
         return getSettablePermissions((QName)null);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#getSettablePermissions(org.alfresco.service.namespace.QName)
-     */
+    @Override
     public Set<String> getSettablePermissions(QName type)
     {
         HashSet<String> permissions = new HashSet<String>();
@@ -103,201 +84,190 @@ public class PermissionServiceNOOPImpl
         return permissions;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#hasPermission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.repo.security.permissions.PermissionReference)
-     */
+    @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         return AccessStatus.ALLOWED;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#deletePermissions(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public void deletePermissions(NodeRef nodeRef)
     {
         // Do Nothing.
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.repo.security.permissions.PermissionReference, boolean)
-     */
+    @Override
     public void deletePermission(NodeRef nodeRef, String authority, String perm)
     {
         // Do Nothing.
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#setPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.repo.security.permissions.PermissionReference, boolean)
-     */
+    @Override
     public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow)
     {
         // Do Nothing.
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.PermissionService#setInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
+    @Override
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
         // Do Nothing.
     }
 
-    /* (non-Javadoc)
-    * @see org.alfresco.service.cmr.security.PermissionService#getInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef)
-    */
-   public boolean getInheritParentPermissions(NodeRef nodeRef)
-   {
-      // TODO Auto-generated method stub
-      return true;
-   }
-
-   public void clearPermission(NodeRef nodeRef, String authority)
+    @Override
+    public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-       // Do Nothing.
+        // TODO Auto-generated method stub
+        return true;
     }
 
-    // SPI
+    @Override
+    public void clearPermission(NodeRef nodeRef, String authority)
+    {
+        // Do Nothing.
+    }
 
+    @Override
     public void deletePermission(PermissionEntry permissionEntry)
     {
         // Do Nothing.
     }
 
+    @Override
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
         // Do Nothing.
     }
 
+    @Override
     public void deletePermissions(String recipient)
     {
         // Do Nothing.
     }
 
+    @Override
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
     {
        throw new UnsupportedOperationException();
     }
 
+    @Override
     public PermissionReference getAllPermissionReference()
     {
         return getPermissionReference(ALL_PERMISSIONS);
     }
 
+    @Override
     public String getPermission(PermissionReference permissionReference)
     {
         return permissionReference.toString();
     }
 
+    @Override
     public PermissionReference getPermissionReference(QName qname, String permissionName)
     {
         return PermissionReferenceImpl.getPermissionReference(qname, permissionName);
     }
 
+    @Override
     public PermissionReference getPermissionReference(String permissionName)
     {
         return PermissionReferenceImpl.getPermissionReference(QName.createQName("uri", "local"), permissionName);
     }
 
+    @Override
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
         return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry>emptyList());
     }
 
+    @Override
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
         return Collections.<PermissionReference>emptySet();
     }
 
+    @Override
     public Set<PermissionReference> getSettablePermissionReferences(QName type)
     {
         return Collections.<PermissionReference>emptySet();
     }
 
+    @Override
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
     {
         return AccessStatus.ALLOWED;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String, java.lang.String)
-     */
-    public AccessStatus hasPermission(Long aclID, PermissionContext context,
-                                      String permission)
+    @Override
+    public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission)
     {
         return AccessStatus.ALLOWED;
     }
 
+    @Override
+    public Set<String> getReaders(Long aclId)
+    {
+        return Collections.emptySet();
+    }
+
+    @Override
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
         // Do Nothing.
     }
 
+    @Override
     public void setPermission(PermissionEntry permissionEntry)
     {
         // Do Nothing.
     }
 
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
-    {
-        return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
-    }
-
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority)
-    {
-        return Collections.<NodeRef, Set<AccessPermission>>emptyMap();
-    }
-
-    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
-    {
-        return Collections.<NodeRef>emptySet();
-    }
-
-    public Set<NodeRef> findNodesByAssignedPermission(String authority, String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
-    {
-        return Collections.<NodeRef>emptySet();
-    }
-
+    @Override
     public void clearPermission(StoreRef storeRef, String authority)
     {
         // Do Nothing.
     }
 
+    @Override
     public void deletePermission(StoreRef storeRef, String authority, String permission)
     {
         // Do Nothing.
     }
 
+    @Override
     public void deletePermissions(StoreRef storeRef)
     {
         // Do Nothing.
     }
 
+    @Override
     public void setPermission(StoreRef storeRef, String authority, String permission, boolean allow)
     {
         // Do Nothing.
     }
 
+    @Override
     public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef)
     {
-        return Collections.<AccessPermission>emptySet();
+        return Collections.emptySet();
     }
 
+    @Override
     public NodePermissionEntry getSetPermissions(StoreRef storeRef)
     {
         return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptyList());
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.PermissionService#canRead(java.lang.Long)
-     */
+    @Override
     public AccessStatus hasReadPermission(NodeRef nodeRef)
     {
         return AccessStatus.ALLOWED;
     }
 
-	public Set<String> getAuthorisations() {
-		// TODO Auto-generated method stub
+    @Override
+	public Set<String> getAuthorisations()
+	{
 		return new HashSet<String>();
 	}
 }

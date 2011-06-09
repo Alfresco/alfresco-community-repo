@@ -12,9 +12,6 @@
       <property name="authenticationContext" ref="authenticationContext" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="allowWrite">
-      	<value>${server.transaction.allow-writes}</value>
-      </property>
       <property name="nodeService" ref="NodeService"/>
       <property name="searchService" ref="SearchService"/>
       <property name="namespaceService" ref="NamespaceService"/>

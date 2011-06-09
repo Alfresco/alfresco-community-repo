@@ -29,5 +29,4 @@ import org.alfresco.service.cmr.version.Version;
 public interface PublishingPackageEntry
 {
     NodeRef getNodeRef();
-    Version getVersion();
 }

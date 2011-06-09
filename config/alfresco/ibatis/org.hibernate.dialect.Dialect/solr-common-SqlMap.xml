@@ -11,18 +11,9 @@
         <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclCount" column="acl_count" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
-    <resultMap id="result_Acl_NoEntries" type="SOLRAcl">
+    <resultMap id="result_Acl" type="SOLRAcl">
         <id property="id" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclChangeSetId" column="acl_changeset_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </resultMap>
-    <resultMap id="result_Acl_WithEntries" type="SOLRAcl" extends="result_Acl_NoEntries">
-        <association property="entries" resultMap="alfresco.solr.result_AclEntry"/>
-    </resultMap>
-    <resultMap id="result_AclEntry" type="SOLRAclEntry">
-        <id property="id" column="ace_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aclPermissionId" column="permission_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aclAuthority" column="authority" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     <resultMap id="result_Transaction" type="SOLRTransaction">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -65,49 +56,27 @@
         order by acs.commit_time_ms ASC, acs.id ASC
     </select>
 
-    <select id="select_AclsByChangeSetIds" parameterType="SOLRTrackingParameters" resultMap="result_Acl_NoEntries">
+    <select id="select_AclsByChangeSetIds" parameterType="SOLRTrackingParameters" resultMap="result_Acl">
         select
-            acs.id              as acl_changeset_id,
+            acl.acl_change_set  as acl_changeset_id,
             acl.id              as acl_id
         from
-            alf_acl_change_set acs
-            join alf_access_control_list acl on (acl.acl_change_set = acs.id)
+            alf_access_control_list acl
         <where>
-           <if test="ids != null">
-                acs.id in 
+            <if test="fromIdInclusive != null">
+               <![CDATA[acl.id >= #{fromIdInclusive}]]>
+            </if>
+            <if test="ids != null">
+                and acl.acl_change_set in 
                 <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-           </if>
+            </if>
         </where>
         order by
-            acs.id ASC,
             acl.id ASC
     </select>
 
-<!-- 
-    <select id="select_ChangeSets_Detail" parameterType="SOLRTrackingParameters" resultMap="result_AclChangeSetDetails">
-        select
-            acs.id              as id,
-            acs.commit_time_ms  as commit_time_ms,
-            0                   as acl_count,
-            acl.id              as acl_id,
-            ace.id              as ace_id,
-            ace.permission_id   as permission_id,
-            auth.authority      as authority
-        from
-            alf_acl_change_set acs
-            join alf_access_control_list acl on (acl.acl_change_set = acs.id)
-            join alf_acl_member acm on (acm.acl_id = acl.id)
-            join alf_access_control_entry ace on (ace.id = acm.ace_id)
-            join alf_authority auth on (auth.id = ace.authority_id)
-        order by
-            acs.id ASC,
-            acl.id ASC,
-            ace.id ASC
-    </select>
- -->
- 
     <select id="select_Txns" parameterType="SOLRTrackingParameters" resultMap="result_Transaction">
         select
             txn.id              as id,

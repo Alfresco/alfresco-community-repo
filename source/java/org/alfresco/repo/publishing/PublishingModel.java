@@ -31,15 +31,42 @@ public interface PublishingModel
     public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/1.0";
     public static final String PREFIX = "pub";
     
+    public static final String WF_NAMESPACE = "http://www.alfresco.org/model/publishingworkflow/1.0";
+    public static final String WF_PREFIX = "pubwf";
+    
     public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
     public static final QName TYPE_DELIVERY_SERVER = QName.createQName(NAMESPACE, "DeliveryServer");
     public static final QName TYPE_ENVIRONMENT= QName.createQName(NAMESPACE, "Environment");
     public static final QName TYPE_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "PublishingQueue");
     public static final QName TYPE_CHANNEL_CONTAINER = QName.createQName(NAMESPACE, "SiteChannelContainer");
+    public static final QName TYPE_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "PublishingEvent");
     
     public static final QName ASPECT_CONTENT_ROOT = QName.createQName(NAMESPACE, "ContentRoot");
+    public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
 
     public static final QName PROP_CHANNEL = QName.createQName(NAMESPACE, "channel");
     public static final QName PROP_CHANNEL_TYPE = QName.createQName(NAMESPACE, "channelType");
+    public static final QName PROP_CHANNEL_TYPE_ID = QName.createQName(NAMESPACE, "channelTypeId");
+    public static final QName PROP_PUBLISHING_EVENT_STATUS= QName.createQName(NAMESPACE, "publishingEventStatus");
+    public static final QName PROP_PUBLISHING_EVENT_TIME = QName.createQName(NAMESPACE, "publishingEventTime");
+    public static final QName PROP_PUBLISHING_EVENT_TIME_ZONE = QName.createQName(NAMESPACE, "publishingEventTimeZone");
+    public static final QName PROP_PUBLISHING_EVENT_COMMENT = QName.createQName(NAMESPACE, "publishingEventComment");
+    public static final QName PROP_PUBLISHING_EVENT_PAYLOAD = QName.createQName(NAMESPACE, "publishingEventPayload");
+    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH = QName.createQName(NAMESPACE,
+            "publishingEventNodesToPublish");
+    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH = QName.createQName(NAMESPACE,
+            "publishingEventNodesToUnpublish");
 
+    public static final String PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED = "SCHEDULED";
+    public static final String PROPVAL_PUBLISHING_EVENT_STATUS_IN_PROGRESS = "IN_PROGRESS";
+    public static final String PROPVAL_PUBLISHING_EVENT_STATUS_COMPLETED = "COMPLETED";
+    public static final String PROPVAL_PUBLISHING_EVENT_STATUS_FAILED = "FAILED";
+
+    public static final QName ASSOC_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "publishingQueueAssoc");
+    public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEvent");
+
+    // Workflow Properties
+    public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");
+    public static final QName PROP_WF_SCHEDULED_PUBLISH_DATE= QName.createQName(WF_NAMESPACE, "scheduledPublishDate");
+    
 }

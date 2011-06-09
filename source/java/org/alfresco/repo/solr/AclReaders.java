@@ -16,72 +16,41 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.domain.solr;
+package org.alfresco.repo.solr;
 
-import org.alfresco.repo.solr.AclEntry;
+import java.util.Set;
 
 /**
- * Interface for SOLR changeset objects.
+ * Bean for SOLR ACL readers.
  * 
  * @author Derek Hulley
  * @since 4.0
  */
-public class AclEntryEntity implements AclEntry
+public class AclReaders
 {
-    private Long id;
     private Long aclId;
-    private Long aclPermissionId;
-    private String aclAuthority;
+    private Set<String> readers;
 
     @Override
     public String toString()
     {
-        return "AclEntryEntity " +
-        		"[id=" + id +
-                ", aclId=" + aclId +
-        		", aclPermissionId=" + aclPermissionId +
-                ", aclAuthority=" + aclAuthority +
-        		"]";
+        return "AclReaders [aclId=" + aclId + ", readers=" + readers + "]";
     }
-
-    @Override
-    public Long getId()
-    {
-        return id;
-    }
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
-
-    @Override
+    
     public Long getAclId()
     {
         return aclId;
     }
-
     public void setAclId(Long aclId)
     {
         this.aclId = aclId;
     }
-
-    @Override
-    public Long getAclPermissionId()
+    public Set<String> getReaders()
     {
-        return aclPermissionId;
+        return readers;
     }
-    public void setAclPermissionId(Long aclPermissionId)
+    public void setReaders(Set<String> aclReaders)
     {
-        this.aclPermissionId = aclPermissionId;
-    }
-
-    @Override
-    public String getAclAuthority()
-    {
-        return aclAuthority;
-    }
-    public void setAclAuthority(String aclAuthority)
-    {
-        this.aclAuthority = aclAuthority;
+        this.readers = aclReaders;
     }
 }

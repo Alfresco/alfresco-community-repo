@@ -254,9 +254,17 @@ public interface NodeDAO extends NodeBulkLoader
      * @param sourceNodeId      the association source
      * @param targetNodeId      the association target
      * @param assocTypeQName    the type of the association (will be resolved to an ID)
-     * @param insertAfter       ID of the association to preceed the new one (optional - add last)
+     * @param assocIndex        the index of the new association (<tt>-1</tt> indicates next value)
      */
-    public Long newNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName, Long insertAfter);
+    public Long newNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName, int assocIndex);
+    
+    /**
+     * Update an existing assoc's index.
+     * 
+     * @param id                the association ID
+     * @param assocIndex        the new index (greater than 0)
+     */
+    public void setNodeAssocIndex(Long id, int assocIndex);
     
     /**
      * Remove a specific node association
@@ -282,6 +290,14 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                  Returns the number of associations removed
      */
     public int removeNodeAssocsToAndFrom(Long nodeId, Set<QName> assocTypeQNames);
+
+    /**
+     * Remove all node associations of given IDs
+     * 
+     * @param ids               the IDs of the associations to remove
+     * @return                  Returns the number of associations removed
+     */
+    public int removeNodeAssocs(List<Long> ids);
 
     /**
      * @param targetNodeId      the target of the association

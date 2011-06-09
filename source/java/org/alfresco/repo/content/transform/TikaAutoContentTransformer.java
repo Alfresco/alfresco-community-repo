@@ -54,42 +54,52 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
        parser = new AutoDetectParser(config);
 
        SUPPORTED_MIMETYPES = new ArrayList<String>();
-       for(MediaType mt : parser.getParsers().keySet()) {
-          if(mt.toString().startsWith("application/vnd.oasis.opendocument.formula")) {
-             // TODO Tika support for quick.odf, mimetype=application/vnd.oasis.opendocument.formula
-             // TODO Tika support for quick.otf, mimetype=application/vnd.oasis.opendocument.formula-template
-             continue;
-          }
-          if(mt.toString().startsWith("application/vnd.oasis.opendocument.graphics")) {
-             // TODO Tika support for quick.odg, mimetype=application/vnd.oasis.opendocument.graphics
-             // TODO Tika support for quick.otg, mimetype=application/vnd.oasis.opendocument.graphics-template
-             continue;
-          }
-          
-          if(mt.getType().equals("image") ||
-             mt.getType().equals("audio") ||
-             mt.getType().equals("video")) 
+       for(MediaType baseType : parser.getParsers().keySet()) 
+       {
+          // Register both the canonical type, and any alias it may have
+          // Alfresco sometimes uses the canonical type, and sometimes an alias
+          ArrayList<MediaType> types = new ArrayList<MediaType>();
+          types.add(baseType);
+          types.addAll( config.getMediaTypeRegistry().getAliases(baseType) );
+           
+          for(MediaType mt : types) 
           {
-             // Skip these, as Tika mostly just does
-             //  metadata rather than content
-          }
-          else if(mt.toString().equals("application/zip") ||
-                  mt.toString().equals("application/tar") || 
-                  mt.toString().equals("application/x-tar"))
-          {
-             // Skip these, as we handle container formats in a different
-             //  transformer to give the user control over recursion
-          }
-          else if(mt.toString().equals("message/rfc822") ||
-                  mt.toString().equals("application/vnd.ms-outlook"))
-          {
-             // Skip these, as we want our textual representations to include
-             //  parts of the metadata (eg people, subjects, dates) too
-          }
-          else
-          {
-             // Tika can probably do some useful text
-             SUPPORTED_MIMETYPES.add( mt.toString() );
+              if(mt.toString().startsWith("application/vnd.oasis.opendocument.formula")) {
+                  // TODO Tika support for quick.odf, mimetype=application/vnd.oasis.opendocument.formula
+                  // TODO Tika support for quick.otf, mimetype=application/vnd.oasis.opendocument.formula-template
+                  continue;
+              }
+              if(mt.toString().startsWith("application/vnd.oasis.opendocument.graphics")) {
+                  // TODO Tika support for quick.odg, mimetype=application/vnd.oasis.opendocument.graphics
+                  // TODO Tika support for quick.otg, mimetype=application/vnd.oasis.opendocument.graphics-template
+                  continue;
+              }
+
+              if(mt.getType().equals("image") ||
+                      mt.getType().equals("audio") ||
+                      mt.getType().equals("video")) 
+              {
+                  // Skip these, as Tika mostly just does
+                  //  metadata rather than content
+              }
+              else if(mt.toString().equals("application/zip") ||
+                      mt.toString().equals("application/tar") || 
+                      mt.toString().equals("application/x-tar"))
+              {
+                  // Skip these, as we handle container formats in a different
+                  //  transformer to give the user control over recursion
+              }
+              else if(mt.toString().equals("message/rfc822") ||
+                      mt.toString().equals("application/vnd.ms-outlook"))
+              {
+                  // Skip these, as we want our textual representations to include
+                  //  parts of the metadata (eg people, subjects, dates) too
+              }
+              else
+              {
+                  // Tika can probably do some useful text
+                  SUPPORTED_MIMETYPES.add( mt.toString() );
+              }
           }
        }
        return SUPPORTED_MIMETYPES;

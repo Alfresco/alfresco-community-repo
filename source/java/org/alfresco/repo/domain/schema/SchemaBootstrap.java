@@ -123,6 +123,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
     private static final String ERR_SCRIPT_NOT_RUN = "schema.update.err.update_script_not_run";
     private static final String ERR_SCRIPT_NOT_FOUND = "schema.update.err.script_not_found";
+    private static final String ERR_STATEMENT_INCLUDE_BEFORE_SQL = "schema.update.err.statement_include_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL = "schema.update.err.statement_var_assignment_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT = "schema.update.err.statement_var_assignment_format";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
@@ -1000,8 +1001,20 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 
                 // trim it
                 String sql = sqlOriginal.trim();
+                // Check of includes
+                if (sql.startsWith("--INCLUDE:"))
+                {
+                    if (sb.length() > 0)
+                    {
+                        // This can only be set before a new SQL statement
+                        throw AlfrescoRuntimeException.create(ERR_STATEMENT_INCLUDE_BEFORE_SQL, (line - 1), scriptUrl);
+                    }
+                    String includedScriptUrl = sql.substring(10, sql.length());
+                    // Execute the script in line
+                    executeScriptUrl(cfg, connection, includedScriptUrl);
+                }
                 // Check for variable assignment
-                if (sql.startsWith("--ASSIGN:"))
+                else if (sql.startsWith("--ASSIGN:"))
                 {
                     if (sb.length() > 0)
                     {

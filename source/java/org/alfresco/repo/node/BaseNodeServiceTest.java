@@ -2406,24 +2406,34 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
-     * Creates a named association between two nodes
-     * 
-     * @return Returns an array of [source real NodeRef][target reference NodeRef][assoc name String]
+     * Creates a named association between two new nodes
      */
     private AssociationRef createAssociation() throws Exception
     {
+        return createAssociation(null, null);
+    }
+
+    /**
+     * Creates an association between a given source and a new target
+     */
+    private AssociationRef createAssociation(NodeRef sourceRef, Long insertAfter) throws Exception
+    {
+        // TODO: Use insertAfter
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
         
+        if (sourceRef == null)
+        {
+            ChildAssociationRef childAssocRef = nodeService.createNode(
+                    rootNodeRef,
+                    ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                    QName.createQName(null, "N1"),
+                    TYPE_QNAME_TEST_CONTENT,
+                    properties);
+            sourceRef = childAssocRef.getChildRef();
+        }
         ChildAssociationRef childAssocRef = nodeService.createNode(
-                rootNodeRef,
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName(null, "N1"),
-                TYPE_QNAME_TEST_CONTENT,
-                properties);
-        NodeRef sourceRef = childAssocRef.getChildRef();
-        childAssocRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(null, "N2"),
@@ -2509,6 +2519,60 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             assertNotNull("Association does not have ID", targetAssoc.getId());
         }
+    }
+    
+    public void testTargetAssoc_NaturalOrdering() throws Exception
+    {
+        AssociationRef assocRef = createAssociation();
+        NodeRef sourceRef = assocRef.getSourceRef();
+        QName qname = assocRef.getTypeQName();
+
+        for (int i = 0; i < 99; i++)
+        {
+            assocRef = createAssociation(sourceRef, null);
+        }
+        
+        // Now get the associations and ensure that they are in order of ID
+        // because they should have been inserted in natural order
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
+        Long lastId = 0L;
+        for (AssociationRef associationRef : assocs)
+        {
+            Long id = associationRef.getId();
+            assertNotNull("Null association ID: " + associationRef, id);
+            assertTrue("Results should be in ID order", id > lastId);
+            lastId = id;
+        }
+        
+        setComplete();
+        endTransaction();
+    }
+    
+    public void DISABLED_testTargetAssoc_InverseOrdering() throws Exception
+    {
+        AssociationRef assocRef = createAssociation();
+        NodeRef sourceRef = assocRef.getSourceRef();
+        QName qname = assocRef.getTypeQName();
+
+        for (int i = 0; i < 99; i++)
+        {
+            assocRef = createAssociation(sourceRef, 0L);
+        }
+        
+        // Now get the associations and ensure that they are in order of ID
+        // because they should have been inserted in natural order
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
+        Long lastId = 0L;
+        for (AssociationRef associationRef : assocs)
+        {
+            Long id = associationRef.getId();
+            assertNotNull("Null association ID: " + associationRef, id);
+            assertTrue("Results should be in reverse ID order", id < lastId);
+            lastId = id;
+        }
+        
+        setComplete();
+        endTransaction();
     }
     
     public void testGetSourceAssocs() throws Exception

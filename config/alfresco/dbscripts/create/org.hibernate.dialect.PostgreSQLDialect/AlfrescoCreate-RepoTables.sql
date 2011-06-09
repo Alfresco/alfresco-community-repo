@@ -290,14 +290,15 @@ CREATE TABLE alf_node_assoc
     source_node_id INT8 NOT NULL,
     target_node_id INT8 NOT NULL,
     type_qname_id INT8 NOT NULL,
+    assoc_index INT8 NOT NULL,
     PRIMARY KEY (id),    
     CONSTRAINT fk_alf_nass_snode FOREIGN KEY (source_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nass_tnode FOREIGN KEY (target_node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
 );
 CREATE UNIQUE INDEX source_node_id ON alf_node_assoc (source_node_id, target_node_id, type_qname_id);
-CREATE INDEX fk_alf_nass_snode ON alf_node_assoc (source_node_id);
-CREATE INDEX fk_alf_nass_tnode ON alf_node_assoc (target_node_id);
+CREATE INDEX fk_alf_nass_snode ON alf_node_assoc (source_node_id, type_qname_id, assoc_index);
+CREATE INDEX fk_alf_nass_tnode ON alf_node_assoc (target_node_id, type_qname_id);
 CREATE INDEX fk_alf_nass_tqn ON alf_node_assoc (type_qname_id);
 
 CREATE TABLE alf_node_properties

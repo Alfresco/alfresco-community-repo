@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -800,5 +801,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     public final boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         return removeSecondaryChildAssociation(childAssocRef);
+    }
+
+    @Override
+    public final AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+        throws InvalidNodeRefException, AssociationExistsException
+    {
+        return createAssociation(sourceRef, targetRef, assocTypeQName, null);
     }
 }

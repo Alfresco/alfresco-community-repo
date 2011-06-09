@@ -1779,7 +1779,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return assocRef;
     }
 
-    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+    public AssociationRef createAssociation(
+            NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName, Long insertAfter)
             throws InvalidNodeRefException, AssociationExistsException
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
@@ -1787,8 +1788,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
         long targetNodeId = targetNodePair.getFirst();
 
+        // Check if ordering is allowed
+        if (insertAfter != null)
+        {
+            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+            if (assocDef == null /*|| !assocDef.isOrdered()*/)
+            {
+                throw new IllegalArgumentException("Association type '" + assocTypeQName + "' is not ordered.");
+            }
+        }
+        
         // we are sure that the association doesn't exist - make it
-        Long assocId = nodeDAO.newNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName);
+        Long assocId = nodeDAO.newNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName, insertAfter);
         AssociationRef assocRef = new AssociationRef(assocId, sourceRef, assocTypeQName, targetRef);
 
         // Invoke policy behaviours
@@ -1930,14 +1941,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         long sourceNodeId = sourceNodePair.getFirst();
 
-        // get all assocs to target
-        Collection<Pair<Long, AssociationRef>> assocPairs = nodeDAO.getTargetNodeAssocs(sourceNodeId);
+        QName qnameFilter = null;
+        if (qnamePattern instanceof QName)
+        {
+            qnameFilter = (QName) qnamePattern;
+        }
+        Collection<Pair<Long, AssociationRef>> assocPairs = nodeDAO.getTargetNodeAssocs(sourceNodeId, qnameFilter);
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocPairs.size());
         for (Pair<Long, AssociationRef> assocPair : assocPairs)
         {
             AssociationRef assocRef = assocPair.getSecond();
-            // check qname pattern
-            if (!qnamePattern.isMatch(assocRef.getTypeQName()))
+            // check qname pattern, if not already filtered
+            if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
             {
                 continue;   // the assoc name doesn't match the pattern given 
             }
@@ -1951,15 +1966,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
         long targetNodeId = targetNodePair.getFirst();
-
-        // get all assocs to target
-        Collection<Pair<Long, AssociationRef>> assocPairs = nodeDAO.getSourceNodeAssocs(targetNodeId);
+        
+        QName qnameFilter = null;
+        if (qnamePattern instanceof QName)
+        {
+            qnameFilter = (QName) qnamePattern;
+        }
+        Collection<Pair<Long, AssociationRef>> assocPairs = nodeDAO.getSourceNodeAssocs(targetNodeId, qnameFilter);
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocPairs.size());
         for (Pair<Long, AssociationRef> assocPair : assocPairs)
         {
             AssociationRef assocRef = assocPair.getSecond();
-            // check qname pattern
-            if (!qnamePattern.isMatch(assocRef.getTypeQName()))
+            // check qname pattern, if not already filtered
+            if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
             {
                 continue;   // the assoc name doesn't match the pattern given 
             }

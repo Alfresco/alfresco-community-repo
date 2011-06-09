@@ -2304,20 +2304,53 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Node assocs
      */
     
-    public Long newNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName)
+    private void reorderNodeAssocs()
     {
+        // TODO
+    }
+    
+    public Long newNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName, Long insertAfter)
+    {
+        // Touch to bring into current txn and ensure concurrency is maintained on the nodes
+        touchNodeImpl(sourceNodeId);
+
+        // Resolve type QName
         Long assocTypeQNameId = qnameDAO.getOrCreateQName(assocTypeQName).getFirst();
+        
+        // Do we allow ordering?
+        int assocIndex = 1;
+        // Only order if the association definition requires it
+        if (insertAfter != null)
+        {
+            if (insertAfter.longValue() == 0L)
+            {
+                assocIndex = 1;
+            }
+            else
+            {
+                // TODO: Figure out which index to use
+                // If the ID is invalid, we will get a concurrency condition
+                NodeAssocEntity afterAssoc =  selectNodeAssocById(insertAfter); // We have checked for null already
+                assocIndex = afterAssoc.getAssocIndex() + 1;
+            }
+            // Update existing associations to make room for this one
+            // TODO: Reorder
+        }
+        else
+        {
+            // Nothing specified so use (max + 1)
+            int maxIndex = selectNodeAssocMaxIndex(sourceNodeId, assocTypeQNameId);
+            assocIndex = maxIndex + 1;
+        }
+        
         try
         {
-            // Touch to bring into current txn
-            touchNodeImpl(sourceNodeId);
-
-            return insertNodeAssoc(sourceNodeId, targetNodeId, assocTypeQNameId);
+            return insertNodeAssoc(sourceNodeId, targetNodeId, assocTypeQNameId, assocIndex);
         }
         catch (Throwable e)
         {
             // Probably due to the association already existing.  We throw a well-known
-            // exception and let retrying take itparameterObjects course
+            // exception and let retrying take its course
             throw new AssociationExistsException(sourceNodeId, targetNodeId, assocTypeQName, e);
         }
     }
@@ -2359,9 +2392,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return deleteNodeAssocsToAndFrom(nodeId, assocTypeQNameIds);
     }
 
-    public Collection<Pair<Long, AssociationRef>> getSourceNodeAssocs(Long targetNodeId)
+    @Override
+    public Collection<Pair<Long, AssociationRef>> getSourceNodeAssocs(Long targetNodeId, QName typeQName)
     {
-        List<NodeAssocEntity> nodeAssocEntities = selectNodeAssocsByTarget(targetNodeId);
+        Long typeQNameId = null;
+        if (typeQName != null)
+        {
+            Pair<Long, QName> typeQNamePair = qnameDAO.getQName(typeQName);
+            if (typeQNamePair == null)
+            {
+                // No such QName
+                return Collections.emptyList();
+            }
+            typeQNameId = typeQNamePair.getFirst();
+        }
+        List<NodeAssocEntity> nodeAssocEntities = selectNodeAssocsByTarget(targetNodeId, typeQNameId);
         List<Pair<Long, AssociationRef>> results = new ArrayList<Pair<Long,AssociationRef>>(nodeAssocEntities.size());
         for (NodeAssocEntity nodeAssocEntity : nodeAssocEntities)
         {
@@ -2372,9 +2417,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return results;
     }
 
-    public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId)
+    @Override
+    public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId, QName typeQName)
     {
-        List<NodeAssocEntity> nodeAssocEntities = selectNodeAssocsBySource(sourceNodeId);
+        Long typeQNameId = null;
+        if (typeQName != null)
+        {
+            Pair<Long, QName> typeQNamePair = qnameDAO.getQName(typeQName);
+            if (typeQNamePair == null)
+            {
+                // No such QName
+                return Collections.emptyList();
+            }
+            typeQNameId = typeQNamePair.getFirst();
+        }
+        List<NodeAssocEntity> nodeAssocEntities = selectNodeAssocsBySource(sourceNodeId, typeQNameId);
         List<Pair<Long, AssociationRef>> results = new ArrayList<Pair<Long,AssociationRef>>(nodeAssocEntities.size());
         for (NodeAssocEntity nodeAssocEntity : nodeAssocEntities)
         {
@@ -3552,13 +3609,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract void insertNodeAspect(Long nodeId, Long qnameId);
     protected abstract int deleteNodeAspects(Long nodeId, Set<Long> qnameIds);
     protected abstract void selectNodesWithAspect(Long qnameId, Long minNodeId, NodeRefQueryCallback resultsCallback);
-    protected abstract Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId);
+    protected abstract Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex);
     protected abstract int deleteNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId);
     protected abstract int deleteNodeAssocsToAndFrom(Long nodeId);
     protected abstract int deleteNodeAssocsToAndFrom(Long nodeId, Set<Long> assocTypeQNameIds);
-    protected abstract List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId);
-    protected abstract List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId);
+    protected abstract List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId, Long typeQNameId);
+    protected abstract List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId, Long typeQNameId);
     protected abstract NodeAssocEntity selectNodeAssocById(Long assocId);
+    protected abstract int selectNodeAssocMaxIndex(Long sourceNodeId, Long assocTypeQNameId);
     protected abstract Long insertChildAssoc(ChildAssocEntity assoc);
     protected abstract int deleteChildAssocById(Long assocId);
     protected abstract int updateChildAssocIndex(

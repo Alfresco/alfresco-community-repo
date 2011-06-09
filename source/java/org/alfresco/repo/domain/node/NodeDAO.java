@@ -248,10 +248,15 @@ public interface NodeDAO extends NodeBulkLoader
      * Node Assocs
      */
     
-    public Long newNodeAssoc(
-            Long sourceNodeId,
-            Long targetNodeId,
-            QName assocTypeQName);
+    /**
+     * Create a new association
+     * 
+     * @param sourceNodeId      the association source
+     * @param targetNodeId      the association target
+     * @param assocTypeQName    the type of the association (will be resolved to an ID)
+     * @param insertAfter       ID of the association to preceed the new one (optional - add last)
+     */
+    public Long newNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName, Long insertAfter);
     
     /**
      * Remove a specific node association
@@ -279,14 +284,18 @@ public interface NodeDAO extends NodeBulkLoader
     public int removeNodeAssocsToAndFrom(Long nodeId, Set<QName> assocTypeQNames);
 
     /**
+     * @param targetNodeId      the target of the association
+     * @param typeQName         the type of the association (optional)
      * @return                  Returns all the node associations where the node is the </b>target</b>
      */
-    public Collection<Pair<Long, AssociationRef>> getSourceNodeAssocs(Long targetNodeId);
+    public Collection<Pair<Long, AssociationRef>> getSourceNodeAssocs(Long targetNodeId, QName typeQName);
 
     /**
+     * @param sourceNodeId      the source of the association
+     * @param typeQName         the type of the association (optional)
      * @return                  Returns all the node associations where the node is the <b>source</b>
      */
-    public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId);
+    public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId, QName typeQName);
 
     /**
      * @return                  Returns a specific node association with the given ID

@@ -37,6 +37,7 @@ public class NodeAssocEntity
     private NodeEntity sourceNode;
     private NodeEntity targetNode;
     private Long typeQNameId;
+    private int assocIndex;
     private List<Long> typeQNameIds;
     
     /**
@@ -55,6 +56,7 @@ public class NodeAssocEntity
           .append(", sourceNode=").append(sourceNode)
           .append(", targetNode=").append(targetNode)
           .append(", typeQNameId=").append(typeQNameId)
+          .append(", assocIndex=").append(assocIndex)
           .append(", typeQNameIds=").append(typeQNameIds)
           .append("]");
         return sb.toString();
@@ -122,6 +124,16 @@ public class NodeAssocEntity
     public void setTypeQNameId(Long typeQNameId)
     {
         this.typeQNameId = typeQNameId;
+    }
+
+    public int getAssocIndex()
+    {
+        return assocIndex;
+    }
+
+    public void setAssocIndex(int assocIndex)
+    {
+        this.assocIndex = assocIndex;
     }
 
     public List<Long> getTypeQNameIds()

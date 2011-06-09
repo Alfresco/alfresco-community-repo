@@ -1815,15 +1815,9 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
     
     /**
-     * 
-     * @param sourceRef a reference to a <b>real</b> node
-     * @param targetRef a reference to a node
-     * @param assocTypeQName the qualified name of the association type
-     * @return Returns a reference to the new association
-     * @throws InvalidNodeRefException if either of the nodes could not be found
-     * @throws AssociationExistsException
+     * @throws UnsupportedOperationException always
      */
-    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName, Long insertAfter)
             throws InvalidNodeRefException, AssociationExistsException
     {
         throw new UnsupportedOperationException("AVM does not support arbitrary associations.");

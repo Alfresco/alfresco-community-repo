@@ -102,6 +102,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
+    private static final String SELECT_NODE_ASSOCS_MAX_INDEX = "alfresco.node.select_NodeAssocsMaxId";
     private static final String SELECT_NODE_PRIMARY_CHILD_ACLS = "alfresco.node.select_NodePrimaryChildAcls";
     private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert.insert_ChildAssoc";
     private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
@@ -643,7 +644,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId)
+    protected Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();
         assoc.setVersion(1L);
@@ -656,6 +657,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeEntity targetNode = new NodeEntity();
         targetNode.setId(targetNodeId);
         assoc.setTargetNode(targetNode);
+        // Index
+        assoc.setAssocIndex(assocIndex);
         
         template.insert(INSERT_NODE_ASSOC, assoc);
         return assoc.getId();
@@ -713,26 +716,30 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId)
+    protected List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId, Long typeQNameId)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();
         // Source
         NodeEntity sourceNode = new NodeEntity();
         sourceNode.setId(sourceNodeId);
         assoc.setSourceNode(sourceNode);
+        // Type
+        assoc.setTypeQNameId(typeQNameId);
         
         return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId)
+    protected List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId, Long typeQNameId)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();
         // Target
         NodeEntity targetNode = new NodeEntity();
         targetNode.setId(targetNodeId);
         assoc.setTargetNode(targetNode);
+        // Type
+        assoc.setTypeQNameId(typeQNameId);
         
         return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
     }
@@ -744,6 +751,21 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setId(assocId);
         
         return (NodeAssocEntity) template.selectOne(SELECT_NODE_ASSOC_BY_ID, assoc);
+    }
+
+    @Override
+    protected int selectNodeAssocMaxIndex(Long sourceNodeId, Long assocTypeQNameId)
+    {
+        NodeAssocEntity assoc = new NodeAssocEntity();
+        // Source
+        NodeEntity sourceNode = new NodeEntity();
+        sourceNode.setId(sourceNodeId);
+        assoc.setSourceNode(sourceNode);
+        // Assoc
+        assoc.setTypeQNameId(assocTypeQNameId);
+        
+        Integer maxIndex = (Integer) template.selectOne(SELECT_NODE_ASSOCS_MAX_INDEX, assoc);
+        return maxIndex == null ? 0 : maxIndex.intValue();
     }
 
     @Override

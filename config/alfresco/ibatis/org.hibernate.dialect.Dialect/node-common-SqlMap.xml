@@ -111,6 +111,7 @@
         <result property="targetNode.store.identifier" column="targetNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="targetNode.uuid" column="targetNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
     <resultMap id="result_ChildAssoc" type="ChildAssoc">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -269,12 +270,12 @@
     </sql>
 
     <sql id="insert_NodeAssoc_AutoIncrement">
-        insert into alf_node_assoc (version, source_node_id, target_node_id, type_qname_id)
-        values (#{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId})
+        insert into alf_node_assoc (version, source_node_id, target_node_id, type_qname_id, assoc_index)
+        values (#{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId}, #{assocIndex})
     </sql>
     <sql id="insert_NodeAssoc_Sequence">
-        insert into alf_node_assoc (id, version, source_node_id, target_node_id, type_qname_id)
-        values (#{id}, #{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId})
+        insert into alf_node_assoc (id, version, source_node_id, target_node_id, type_qname_id, assoc_index)
+        values (#{id}, #{version}, #{sourceNode.id}, #{targetNode.id}, #{typeQNameId}, #{assocIndex})
     </sql>
     
     <!--                -->
@@ -725,18 +726,34 @@
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
             sourceNode.id = #{sourceNode.id}
+           <if test="typeQNameId != null">
+               <![CDATA[and assoc.type_qname_id = #{typeQNameId}]]>
+           </if>
     </select>
 
     <select id="select_NodeAssocsByTarget" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
             targetNode.id = #{targetNode.id}
+           <if test="typeQNameId != null">
+               <![CDATA[and assoc.type_qname_id = #{typeQNameId}]]>
+           </if>
     </select>
     
     <select id="select_NodeAssocById" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
             assoc.id = #{id}
+    </select>
+    
+    <select id="select_NodeAssocsMaxId" parameterType="NodeAssoc" resultType="java.lang.Integer">
+        select
+            max(assoc_index)
+        from
+            alf_node_assoc
+        where
+            source_node_id = #{sourceNode.id} and
+            type_qname_id = #{typeQNameId}
     </select>
     
     <!-- Common results for result_ChildAssoc -->

@@ -2849,4 +2849,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V4.0-NodeAssoc-Ordering" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-NodeAssoc-Ordering" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5008" />
+        <property name="targetSchema" value="5009" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/NodeAssoc-Ordering.sql</value>
+        </property>
+    </bean>
+    
 </beans>

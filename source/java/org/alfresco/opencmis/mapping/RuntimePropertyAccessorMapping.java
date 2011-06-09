@@ -43,10 +43,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-
 /**
- * Registry of property accessors which map the retrieval and setting of properties
- * within Alfresco.
+ * Registry of property accessors which map the retrieval and setting of
+ * properties within Alfresco.
  * 
  * @author davidc
  */
@@ -60,12 +59,13 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     private CMISConnector cmisConnector;
     private CMISMapping cmisMapping;
     private CMISDictionaryService cmisDictionaryService;
-    
+
     private Map<String, AbstractProperty> propertyAccessors = new HashMap<String, AbstractProperty>();
     private Map<BaseTypeId, Map<Action, CMISActionEvaluator<? extends Object>>> actionEvaluators = new HashMap<BaseTypeId, Map<Action, CMISActionEvaluator<? extends Object>>>();
 
     /**
-     * @param service registry
+     * @param service
+     *            registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -73,7 +73,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis connector
+     * @param cmis
+     *            connector
      */
     public void setCmisConnector(CMISConnector cmisConnector)
     {
@@ -81,7 +82,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis mapping
+     * @param cmis
+     *            mapping
      */
     public void setCmisMapping(CMISMapping cmisMapping)
     {
@@ -89,7 +91,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis mapping
+     * @param cmis
+     *            mapping
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -113,9 +116,12 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry, cmisDictionaryService));
         registerPropertyAccessor(new BaseTypeIdProperty(serviceRegistry, cmisDictionaryService));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.CREATED_BY, ContentModel.PROP_CREATOR));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.CREATION_DATE, ContentModel.PROP_CREATED));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.CREATION_DATE,
+                ContentModel.PROP_CREATED));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.LAST_MODIFIED_BY,
+                ContentModel.PROP_MODIFIER));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.LAST_MODIFICATION_DATE,
+                ContentModel.PROP_MODIFIED));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, PropertyIds.CHANGE_TOKEN, null));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.NAME, ContentModel.PROP_NAME)
         {
@@ -139,7 +145,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry));
         registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry));
         registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.CONTENT_STREAM_FILE_NAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, PropertyIds.CONTENT_STREAM_FILE_NAME,
+                ContentModel.PROP_NAME));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
         registerPropertyAccessor(new PathProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisMapping));
@@ -175,11 +182,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                         PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT), false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new CanCheckOutActionEvaluator(serviceRegistry), false));
-        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
-                new PermissionActionEvaluator(serviceRegistry, Action.CAN_CANCEL_CHECK_OUT,
-                        PermissionService.CANCEL_CHECK_OUT), false));
-        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new PermissionActionEvaluator(serviceRegistry, Action.CAN_CHECK_IN,
-                PermissionService.CHECK_IN));
+        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanCancelCheckOutActionEvaluator(serviceRegistry));
+        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanCheckInActionEvaluator(serviceRegistry));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_SET_CONTENT_STREAM,
                         PermissionService.WRITE_CONTENT), false));
@@ -290,7 +294,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Gets a property accessor
      * 
-     * @param propertyId property id
+     * @param propertyId
+     *            property id
      * @return property accessor
      */
     public CMISPropertyAccessor getPropertyAccessor(String propertyId)
@@ -301,15 +306,17 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Create a direct node property accessor
      * 
-     * @param propertyId  property id
-     * @param propertyName  node property name
-     * @return  property accessor
+     * @param propertyId
+     *            property id
+     * @param propertyName
+     *            node property name
+     * @return property accessor
      */
     public CMISPropertyAccessor createDirectPropertyAccessor(String propertyId, QName propertyName)
     {
         return new DirectProperty(serviceRegistry, propertyId, propertyName);
     }
-    
+
     /**
      * Register pre-defined Property Accessor
      * 

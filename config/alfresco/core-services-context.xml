@@ -1160,6 +1160,7 @@
                 
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>
+
             </list>
         </property>
         <property name="labels">
@@ -1174,6 +1175,7 @@
                 <value>alfresco/messages/email-server-model</value>
                 <value>alfresco/messages/data-list-model</value>
                  <value>alfresco/messages/transfer-model</value>
+                 <value>alfresco/messages/publishing-model</value>
             </list>
         </property>
     </bean>

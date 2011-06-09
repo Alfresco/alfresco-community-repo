@@ -100,7 +100,7 @@ CREATE TABLE alf_acl_change_set
 (
     id BIGINT NOT NULL AUTO_INCREMENT,
     commit_time_ms BIGINT,
-	KEY idx_alf_acs_ctms (commit_time_ms)
+	KEY idx_alf_acs_ctms (commit_time_ms),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

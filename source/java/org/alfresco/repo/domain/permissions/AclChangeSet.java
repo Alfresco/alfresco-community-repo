@@ -27,5 +27,6 @@ package org.alfresco.repo.domain.permissions;
  */
 public interface AclChangeSet
 {
-    public Long getId();
+    Long getId();
+    Long getCommitTimeMs();
 }

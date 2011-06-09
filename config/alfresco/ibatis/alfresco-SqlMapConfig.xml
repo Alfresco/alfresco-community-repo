@@ -106,6 +106,9 @@ Inbound settings from iBatis
         
         <!-- SOLR -->
         
+        <typeAlias alias="SOLRAclChangeSet" type="org.alfresco.repo.domain.solr.AclChangeSetEntity"/>
+        <typeAlias alias="SOLRAcl" type="org.alfresco.repo.domain.solr.AclEntity"/>
+        <typeAlias alias="SOLRAclEntry" type="org.alfresco.repo.domain.solr.AclEntryEntity"/>
         <typeAlias alias="SOLRTransaction" type="org.alfresco.repo.domain.solr.TransactionEntity"/>
         <typeAlias alias="SOLRNode" type="org.alfresco.repo.domain.node.NodeEntity"/>
         <typeAlias alias="SOLRTrackingParameters" type="org.alfresco.repo.domain.solr.SOLRTrackingParameters"/>

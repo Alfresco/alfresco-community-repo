@@ -95,14 +95,19 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
             StringBuilder url = new StringBuilder("http://localhost:8080/solr/test/alfresco/afts");
-            //url.append("?q=");
-            //URLCodec encoder = new URLCodec();
-            //url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
+            //duplicate the query in the URL
+            url.append("?q=");
+            URLCodec encoder = new URLCodec();
+            url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
             url.append("?wt=json");
             url.append("&fl=*,score");
             if(searchParameters.getMaxItems() > 0)
             {
                 url.append("&rows=").append(searchParameters.getMaxItems());
+            }
+            else
+            {
+                url.append("&rows=").append(Integer.MAX_VALUE);
             }
             url.append("&df=").append(searchParameters.getDefaultFieldName());
             url.append("&start=").append(searchParameters.getSkipCount());
@@ -119,15 +124,20 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
                 authQuery.append("AUTHORITY:\"").append(authority).append("\"");
             }
             
-            url.append("&fq=");
-            URLCodec encoder = new URLCodec();
-            url.append(encoder.encode(authQuery.toString(), "UTF-8"));
+            //url.append("&fq=");
+            //encoder = new URLCodec();
+            //url.append(encoder.encode(authQuery.toString(), "UTF-8"));
+            
+            url.append("&fq=AUTHORITY_FILTER_FROM_JSON");
             
             // facets would go on url?
             
             JSONObject body = new JSONObject();
             body.put("query", searchParameters.getQuery());
             //body.put("defaultField", searchParameters.getDefaultFieldName());
+            
+            body.put("filter", authQuery);
+            
             JSONArray locales = new JSONArray();
             for(Locale locale : searchParameters.getLocales())
             {

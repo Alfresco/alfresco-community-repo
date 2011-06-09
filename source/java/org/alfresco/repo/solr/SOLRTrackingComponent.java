@@ -21,8 +21,6 @@ package org.alfresco.repo.solr;
 import java.util.List;
 
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.solr.AclChangeSet;
-import org.alfresco.repo.domain.solr.Transaction;
 
 /**
  * Interface for component to provide tracking data for SOLR.

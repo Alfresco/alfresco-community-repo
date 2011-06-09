@@ -21,7 +21,11 @@ package org.alfresco.repo.domain.solr;
 import java.util.List;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.solr.Acl;
+import org.alfresco.repo.solr.AclChangeSet;
+import org.alfresco.repo.solr.AclEntry;
 import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.solr.Transaction;
 
 /**
  * DAO support for SOLR web scripts.
@@ -31,14 +35,33 @@ import org.alfresco.repo.solr.NodeParameters;
 public interface SOLRDAO
 {
     /**
-     * Get the ACL changesets for given range parameters
+     * Get the ACL changesets summary (rollup count) with paging options
      * 
      * @param minAclChangeSetId         minimum ACL changeset ID - (inclusive and optional)
      * @param fromCommitTime            minimum ACL commit time - (inclusive and optional)
-     * @param maxResults                limit the results. 0 or Integer.MAX_VALUE does not limit the results
-     * @return                          list of ACL changesets
+     * @param maxResults                limit the results (must be greater than zero and less than MAX)
+     * @return                          list of ACL changesets (no details)
      */
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults);
+    
+    /**
+     * Get the ACLs (no rollup count) with paging options for a specific change set
+     * 
+     * @param aclChangeSetIds           the ACL ChangeSet IDs
+     * @param minAclId                  the minimum ACL ID - (inclusive and optional).
+     * @param maxResults                the maximum number of results (must be greater than zero and less than MAX)
+     * @return                          list of detailed ACL ChangeSets (details included, no roll-up)
+     */
+    public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults);
+
+    /**
+     * Get the ACL entries for specific ACLs, optionally pulling back authority details.
+     * 
+     * @param aclIds                    the ACL IDs
+     * @param includeAuthorities        <tt>true</tt> to pull back authorities with read permission
+     * @return                          
+     */
+    public List<AclEntry> getAclEntries(List<Long> aclIds, boolean includeAuthorities);
     
     /**
      * Get the transactions from either minTxnId or fromCommitTime, optionally limited to maxResults

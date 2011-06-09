@@ -20,12 +20,12 @@ package org.alfresco.repo.security.permissions.impl;
 
 import org.alfresco.repo.security.permissions.PermissionReference;
 
-
 /**
  * This class provides common support for hash code and equality.
  * 
  * @author andyh
  */
+@SuppressWarnings("serial")
 public abstract class AbstractPermissionReference implements PermissionReference
 {
     private int hashcode = 0;

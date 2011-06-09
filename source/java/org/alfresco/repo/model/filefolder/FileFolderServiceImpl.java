@@ -127,7 +127,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private SearchService searchService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
-    private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
+    private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
     
     private Set<String> systemNamespaces;
     
@@ -180,7 +180,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /**
      * Set the registry of {@link CannedQueryFactory canned queries}
      */
-    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry)
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
     }

@@ -31,9 +31,6 @@ import org.alfresco.service.namespace.QName;
  */
 public final class SimplePermissionReference extends AbstractPermissionReference
 {   
-    /**
-     * 
-     */
     private static final long serialVersionUID = 637302438293417818L;
 
     private static ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -43,8 +40,6 @@ public final class SimplePermissionReference extends AbstractPermissionReference
     /**
      * Factory method to create simple permission refrences
      * 
-     * @param qName
-     * @param name
      * @return a simple permission reference
      */
     public static SimplePermissionReference getPermissionReference(QName qName, String name)

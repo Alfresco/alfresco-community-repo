@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="source/test"/>
 	<classpathentry exported="true" kind="lib" path="config"/>
 	<classpathentry exported="true" kind="lib" path="source/test-resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

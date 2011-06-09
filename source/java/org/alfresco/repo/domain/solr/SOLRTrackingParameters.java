@@ -33,10 +33,7 @@ public class SOLRTrackingParameters
     private List<Long> ids;
     private Long fromRelatedIdInclusive;
     private Long toRelatedIdExclusive;
-
-    public SOLRTrackingParameters()
-    {
-    }
+    private boolean trueOrFalse;
 
     public Long getFromIdInclusive()
     {
@@ -58,12 +55,12 @@ public class SOLRTrackingParameters
         this.fromCommitTimeInclusive = fromCommitTimeInclusive;
     }
 
-    public List<Long> getIdsx()
+    public List<Long> getIds()
     {
         return ids;
     }
 
-    public void setIdsx(List<Long> ids)
+    public void setIds(List<Long> ids)
     {
         this.ids = ids;
     }
@@ -108,7 +105,23 @@ public class SOLRTrackingParameters
 	    return false;
 	}
 
-	@Override
+	/**
+	 * Simple mutalbe cross-DB boolean value
+	 */
+	public boolean isTrueOrFalse()
+    {
+        return trueOrFalse;
+    }
+
+	/**
+     * Simple mutalbe cross-DB boolean value
+	 */
+    public void setTrueOrFalse(boolean trueOrFalse)
+    {
+        this.trueOrFalse = trueOrFalse;
+    }
+
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);

@@ -30,12 +30,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.solr.Transaction;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.solr.MetaDataResultsFilter;
-import org.alfresco.repo.solr.NodeMetaData;
-import org.alfresco.repo.solr.NodeMetaDataParameters;
-import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -97,6 +92,12 @@ public class SOLRTrackingComponentTest extends TestCase
         
         storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
+    }
+    
+    public void testGetAclChangeSets_Simple()
+    {
+        List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, 50);
+        assertTrue("Expected results to be limited in number", cs.size() <= 50);
     }
     
     public void testGetNodeMetaData()
@@ -554,64 +555,6 @@ public class SOLRTrackingComponentTest extends TestCase
 
             return true;
         }
-
-/*        private boolean compareProperties(Map<QName, Serializable> properties1, Map<QName, Serializable> properties2)
-        {
-            boolean match = true;
-            
-            if(properties1.size() != properties2.size())
-            {
-                match = false;
-            }
-            else
-            {
-                for(QName qname : properties1.keySet())
-                {
-                    Serializable value1 = properties1.get(qname);
-                    Serializable value2 = properties2.get(qname);
-                    if(value1 instanceof MLText)
-                    {
-                        if(!(value2 instanceof MLText))
-                        {
-                            match = false;
-                            break;
-                        }
-                        MLText ml1 = (MLText)value1;
-                        MLText ml2 = (MLText)value2;
-                        if(ml1.getDefaultValue().equals(ml2.getDefaultValue()))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    else if(value1 instanceof ContentDataWithId)
-                    {
-                        if(!(value2 instanceof ContentDataWithId))
-                        {
-                            match = false;
-                            break;
-                        }
-                        ContentDataWithId cd1 = (ContentDataWithId)value1;
-                        ContentDataWithId cd2 = (ContentDataWithId)value2;
-                        if(cd1.getDefaultValue().equals(ml2.getDefaultValue()))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if(!value1.equals(value2))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return match;
-        }*/
 
         @Override
         public boolean handleNodeMetaData(NodeMetaData nodeMetaData) {

@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <bean id="publishService_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/publishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+   <bean id="publishingResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.publish-service</value>
+         </list>
+      </property>
+   </bean>
+
+   <!--  Channel Service -->
+   <bean id="channelService" class="org.alfresco.repo.publishing.ChannelServiceImpl">
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="siteService" ref="siteService" />
+      <property name="environmentHelper" ref="environmentHelper" />
+   </bean>
+
+   <!--  Channel Type Implementations -->
+   <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
+      <property name="channelService" ref="channelService" />
+   </bean>
+   
+   <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
+      <property name="nodeService" ref="nodeService" />
+      <property name="siteService" ref="siteService" />
+   </bean>
+</beans>

@@ -19,13 +19,20 @@
 package org.alfresco.repo.domain.solr;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.solr.Acl;
+import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -51,7 +58,117 @@ public class SOLRDAOTest extends TestCase
         authenticationComponent.setSystemUserAsCurrentUser();
     }
     
-    public void testQueryTransactionsNoLimit()
+    public void testQueryChangeSets_NoLimit()
+    {
+        long startTime = System.currentTimeMillis() - (5 * 60000L);
+
+        try
+        {
+            solrDAO.getAclChangeSets(null, startTime, 0);
+            fail("Must have result limit");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+    }
+    
+    public void testQueryChangeSets_Time()
+    {
+        long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
+        List<AclChangeSet> results = solrDAO.getAclChangeSets(null, startTime, 50);
+        assertTrue("ChangeSet count not limited", results.size() == 0);
+    }
+    
+    public void testQueryChangeSets_Limit()
+    {
+        List<AclChangeSet> results = solrDAO.getAclChangeSets(null, 0L, 50);
+        assertTrue("Transaction count not limited", results.size() <= 50);
+    }
+    
+    /**
+     * Argument checks.
+     */
+    public void testQueryAcls_Arguments()
+    {
+        try
+        {
+            // No IDs
+            solrDAO.getAcls(Collections.<Long>emptyList(), null, 50);
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+        try
+        {
+            // No limit on results
+            solrDAO.getAcls(Collections.<Long>singletonList(1L), null, 0);
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+    }
+    
+    public void testQueryAcls_All()
+    {
+        // Do a query for some changesets
+        List<AclChangeSet> aclChangeSets = solrDAO.getAclChangeSets(null, 0L, 50);
+        
+        // Choose some changesets with changes
+        int aclTotal = 0;
+        Iterator<AclChangeSet> aclChangeSetsIterator = aclChangeSets.iterator();
+        while (aclChangeSetsIterator.hasNext())
+        {
+            AclChangeSet aclChangeSet = aclChangeSetsIterator.next();
+            if (aclChangeSet.getAclCount() == 0)
+            {
+                aclChangeSetsIterator.remove();
+            }
+            else
+            {
+                aclTotal += aclChangeSet.getAclCount();
+            }
+        }
+        // Stop if we don't have ACLs
+        if (aclTotal == 0)
+        {
+            return;
+        }
+        
+        List<Long> aclChangeSetIds = toIds(aclChangeSets);
+
+        // Now use those to query for details
+        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 10);
+        assertTrue("Results not limited", acls.size() <= 10);
+
+        // Get again, but allow all results
+        acls = solrDAO.getAcls(aclChangeSetIds, null, aclTotal);
+        assertEquals("Expected exact results", aclTotal, acls.size());
+        
+        // Check that the ACL ChangeSet IDs are correct
+        Set<Long> aclChangeSetIdsSet = new HashSet<Long>(aclChangeSetIds);
+        for (Acl acl : acls)
+        {
+            Long aclChangeSetId = acl.getAclChangeSetId();
+            assertTrue("ACL ChangeSet ID not in original list", aclChangeSetIdsSet.contains(aclChangeSetId));
+        }
+    }
+    
+    private List<Long> toIds(List<AclChangeSet> aclChangeSets)
+    {
+        List<Long> ids = new ArrayList<Long>(aclChangeSets.size());
+        for (AclChangeSet aclChangeSet : aclChangeSets)
+        {
+            ids.add(aclChangeSet.getId());
+        }
+        return ids;
+    }
+    
+    public void testQueryTransactions_NoLimit()
     {
         long startTime = System.currentTimeMillis() - (5 * 60000L);
 
@@ -66,17 +183,17 @@ public class SOLRDAOTest extends TestCase
         }
     }
     
-    public void testQueryTransactionsTime()
+    public void testQueryTransactions_Time()
     {
         long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
-        List<Transaction> txns = solrDAO.getTransactions(null, startTime, 50);
-        assertTrue("Transaction count not limited", txns.size() == 0);
+        List<Transaction> results = solrDAO.getTransactions(null, startTime, 50);
+        assertTrue("Transaction count not limited", results.size() == 0);
     }
     
-    public void testQueryTransactionsLimit()
+    public void testQueryTransactions_Limit()
     {
-        List<Transaction> txns = solrDAO.getTransactions(null, 0L, 50);
-        assertTrue("Transaction count not limited", txns.size() <= 50);
+        List<Transaction> results = solrDAO.getTransactions(null, 0L, 50);
+        assertTrue("Transaction count not limited", results.size() <= 50);
     }
     
     public void testGetNodesSimple()

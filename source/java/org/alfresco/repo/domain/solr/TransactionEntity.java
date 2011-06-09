@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.solr;
 
+import org.alfresco.repo.solr.Transaction;
+
 /**
  * Bean to represent SOLR transaction data.
  * 

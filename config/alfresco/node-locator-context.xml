@@ -4,44 +4,44 @@
 <beans>
 
    <!-- Node Locator Service Implementation -->
-   <bean id="nodeLocatorService" class="org.alfresco.repo.node.locator.NodeLocatorServiceImpl" />
+   <bean id="nodeLocatorService" class="org.alfresco.repo.nodelocator.NodeLocatorServiceImpl" />
    
    <!-- Base Node Locator Implementation -->
-   <bean id="baseNodeLocator" class="org.alfresco.repo.node.locator.AbstractNodeLocator" abstract="true">
+   <bean id="baseNodeLocator" class="org.alfresco.repo.nodelocator.AbstractNodeLocator" abstract="true">
       <property name="nodeLocatorService" ref="nodeLocatorService"/>
    </bean>
    
    <!-- Company Home Node Locator Implementation -->
-   <bean id="companyHomeNodeLocator" class="org.alfresco.repo.node.locator.CompanyHomeNodeLocator" parent="baseNodeLocator">
+   <bean id="companyHomeNodeLocator" class="org.alfresco.repo.nodelocator.CompanyHomeNodeLocator" parent="baseNodeLocator">
+      <property name="RepositoryHelper" ref="repositoryHelper" />
+   </bean>
+   
+   <!--  User Home Node Locator Implementation -->
+   <bean id="userHomeNodeLocator" class="org.alfresco.repo.nodelocator.UserHomeNodeLocator" parent="baseNodeLocator">
       <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
    
    <!-- Sites Home Node Locator Implementation -->
-   <bean id="sitesHomeNodeLocator" class="org.alfresco.repo.node.locator.SitesHomeNodeLocator" parent="baseNodeLocator">
+   <bean id="sitesHomeNodeLocator" class="org.alfresco.repo.nodelocator.SitesHomeNodeLocator" parent="baseNodeLocator">
       <property name="SiteService" ref="SiteService" />
-   </bean>
-   
-   <!--  Document Library Node Locator Implementation -->
-   <bean id="docLibNodeLocator" class="org.alfresco.repo.node.locator.DocLibNodeLocator" parent="baseNodeLocator">
-      <property name="SiteService" ref="SiteService" />
-      <property name="RepositoryHelper" ref="repositoryHelper" />
-   </bean>
-   
-   <!--  Document Library Node Locator Implementation -->
-   <bean id="userHomeNodeLocator" class="org.alfresco.repo.node.locator.UserHomeNodeLocator" parent="baseNodeLocator">
-      <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
    
    <!--  Ancestor Node Locator Implementation -->
-   <bean id="ancestorNodeLocator" class="org.alfresco.repo.node.locator.AncestorNodeLocator" parent="baseNodeLocator">
+   <bean id="ancestorNodeLocator" class="org.alfresco.repo.nodelocator.AncestorNodeLocator" parent="baseNodeLocator">
       <property name="NodeService" ref="NodeService" />
       <property name="NamespaceService" ref="NamespaceService" />
    </bean>
    
    <!--  XPath Node Locator Implementation -->
-   <bean id="xpathNodeLocator" class="org.alfresco.repo.node.locator.XPathNodeLocator" parent="baseNodeLocator">
+   <bean id="xpathNodeLocator" class="org.alfresco.repo.nodelocator.XPathNodeLocator" parent="baseNodeLocator">
       <property name="SearchService" ref="SearchService" />
       <property name="DefaultStore" value="workspace://SpacesStore" />
+   </bean>
+   
+   <!--  Document Library Node Locator Implementation -->
+   <bean id="docLibNodeLocator" class="org.alfresco.repo.site.DocLibNodeLocator" parent="baseNodeLocator">
+      <property name="SiteService" ref="SiteService" />
+      <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
    
 </beans>

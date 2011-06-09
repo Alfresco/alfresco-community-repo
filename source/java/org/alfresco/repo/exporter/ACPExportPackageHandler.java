@@ -121,7 +121,6 @@ public class ACPExportPackageHandler
         this.contentDir = contentDir;
         this.mimetypeService = mimetypeService;
     }
-
     
     /**
      * @param nodeService

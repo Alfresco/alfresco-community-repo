@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.solr;
 
+import org.alfresco.repo.solr.AclChangeSet;
+
 /**
  * Interface for SOLR changeset objects.
  * 
@@ -30,6 +32,17 @@ public class AclChangeSetEntity implements AclChangeSet
     private Long commitTimeMs;
     private int aclCount;
 
+    @Override
+    public String toString()
+    {
+        return "AclChangeSetEntity " +
+        		"[id=" + id +
+        		", commitTimeMs=" + commitTimeMs +
+        		", aclCount=" + aclCount +
+        		"]";
+    }
+    
+    @Override
     public Long getId()
     {
         return id;
@@ -38,6 +51,7 @@ public class AclChangeSetEntity implements AclChangeSet
     {
         this.id = id;
     }
+    @Override
     public Long getCommitTimeMs()
     {
         return commitTimeMs;
@@ -46,6 +60,7 @@ public class AclChangeSetEntity implements AclChangeSet
     {
         this.commitTimeMs = commitTimeMs;
     }
+    @Override
     public int getAclCount()
     {
         return aclCount;

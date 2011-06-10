@@ -447,7 +447,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
          List<Node> userNodes = Repository.getUsers(
                FacesContext.getCurrentInstance(),
                this.getNodeService(),
-               this.getSearchService());
+               this.getPersonService());
          this.users = new ArrayList<SelectItem>();
          for (Node user : userNodes)
          {

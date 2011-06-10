@@ -403,7 +403,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
       properties.getUsersRichList().setValue(null);
       
       this.users = Repository.getUsers(FacesContext.getCurrentInstance(), 
-            properties.getNodeService(), properties.getSearchService());
+            properties.getNodeService(), properties.getPersonService());
       
       for (Node node : this.users)
       {

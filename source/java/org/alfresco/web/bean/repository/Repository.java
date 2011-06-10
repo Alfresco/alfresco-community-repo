@@ -682,10 +682,26 @@ public final class Repository
     * 
     * @param context Faces Context
     * @param nodeService The node service
+    * @param searchService The search service, which is ignored
+    * @return List of Person node objects
+    * @deprecated Use {@link #getUsers(FacesContext, NodeService, PersonService)} instead
+    */
+   public static List<Node> getUsers(FacesContext context, NodeService nodeService, SearchService searchService)
+   {
+       PersonService personService = (PersonService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("personService");
+       return getUsers(context, nodeService, personService);
+   }
+   
+   /**
+    * Query a list of Person type nodes from the repo
+    * It is currently assumed that all Person nodes exist below the Repository root node
+    * 
+    * @param context Faces Context
+    * @param nodeService The node service
     * @param searchService used to perform the search
     * @return List of Person node objects
     */
-   public static List<Node> getUsers(FacesContext context, NodeService nodeService, SearchService searchService)
+   public static List<Node> getUsers(FacesContext context, NodeService nodeService, PersonService personService)
    {
       List<Node> personNodes = null;
       
@@ -695,7 +711,6 @@ public final class Repository
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         PersonService personService = (PersonService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("personService");
          NodeRef peopleRef = personService.getPeopleContainer();
          
          // TODO: better to perform an XPath search or a get for a specific child type here?

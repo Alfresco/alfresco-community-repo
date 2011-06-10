@@ -19,7 +19,9 @@
 
 package org.alfresco.repo.publishing;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,10 +48,26 @@ public class EnvironmentImpl implements Environment
     /**
      * {@inheritDoc}
      */
-    public Map<NodeRef, NodePublishStatus> checkPublishStatus(Collection<NodeRef> nodes)
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelName, Collection<NodeRef> nodes)
     {
-        // TODO Auto-generated method stub
-        return null;
+        
+        Map<NodeRef, NodePublishStatus> results = new HashMap<NodeRef, NodePublishStatus>();
+        for (NodeRef node : nodes)
+        {
+            if(node!=null && results.containsKey(node)==false)
+            {
+                results.put(node, environmentHelper.checkNodeStatus(node, this, channelName));
+            }
+        }
+        return results;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelName, NodeRef... nodes)
+    {
+        return checkPublishStatus(channelName, Arrays.asList(nodes));
     }
 
     /**
@@ -85,6 +103,11 @@ public class EnvironmentImpl implements Environment
          return new PublishingEventFilterImpl();
      }
 
+     public NodeRef getNodeRef()
+     {
+         return nodeRef;
+     }
+     
     /**
      * @param node
      */

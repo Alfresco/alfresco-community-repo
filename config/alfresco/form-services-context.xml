@@ -70,6 +70,16 @@
         <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
     </bean>
 
+   <bean id="actionFormProcessor" class="org.alfresco.repo.forms.processor.action.ActionFormProcessor" init-method="register">
+      <property name="processorRegistry" ref="formProcessorRegistry" />
+      <property name="matchPattern">
+         <value>action</value>
+      </property>
+      <property name="actionService" ref="ActionService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="namespaceService" ref="NamespaceService" />
+   </bean>
+   
    <bean id="nodeFormProcessor"
       class="org.alfresco.repo.forms.processor.node.NodeFormProcessor"
       parent="baseFormProcessor">

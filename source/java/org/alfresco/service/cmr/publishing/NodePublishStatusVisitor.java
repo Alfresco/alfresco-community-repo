@@ -20,6 +20,7 @@
 package org.alfresco.service.cmr.publishing;
 
 /**
+ * An interface that enables the use of the Visitor pattern on {@link NodePublishStatus} objects.
  * @author Brian
  *
  */

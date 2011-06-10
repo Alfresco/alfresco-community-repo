@@ -32,7 +32,6 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.alfresco.repo.publishing.PublishingPackageImpl.PublishingPackageEntryImpl;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -66,8 +65,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
 
         XMLTransferManifestReader xmlReader = new XMLTransferManifestReader(processor);
         parser.parse(input, xmlReader);
-        PublishingPackageImpl publishingPackage = new PublishingPackageImpl();
-        publishingPackage.setEntryMap(processor.getEntries());
+        PublishingPackageImpl publishingPackage = new PublishingPackageImpl(processor.getEntries());
         return publishingPackage;
     }
 
@@ -142,6 +140,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         @Override
         public void endTransferManifest()
         {
+            //NOOP
         }
 
         /* (non-Javadoc)
@@ -168,6 +167,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         @Override
         public void processTransferManifiestHeader(TransferManifestHeader header)
         {
+            //NOOP
         }
 
         /* (non-Javadoc)
@@ -176,6 +176,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         @Override
         public void startTransferManifest()
         {
+            //NOOP
         }
     }
 }

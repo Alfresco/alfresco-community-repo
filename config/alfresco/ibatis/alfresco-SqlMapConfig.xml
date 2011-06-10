@@ -65,7 +65,7 @@ Inbound settings from iBatis
         <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
         <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
         <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
-        <typeAlias alias="SortableNode" type="org.alfresco.repo.model.filefolder.SortableNodeEntity"/>
+        <typeAlias alias="FilterSortNode" type="org.alfresco.repo.node.getchildren.FilterSortNodeEntity"/>
         
         <!-- Patch -->
         

@@ -1343,6 +1343,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 100);
                 parameterValues.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, true);
                 parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, true);
+                parameterValues.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, false);
                 parameterValues.put(AbstractRenderingEngine.PARAM_PLACEHOLDER_RESOURCE_PATH,
                             "alfresco/thumbnail/thumbnail_placeholder_doclib.png");
                 parameterValues.put(AbstractRenderingEngine.PARAM_RUN_AS, AuthenticationUtil.getSystemUserName());
@@ -1367,6 +1368,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 480);
                 parameterValues.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, true);
                 parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, true);
+                parameterValues.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, false);
                 parameterValues.put(AbstractRenderingEngine.PARAM_PLACEHOLDER_RESOURCE_PATH,
                             "alfresco/thumbnail/thumbnail_placeholder_imgpreview.png");
                 parameterValues.put(AbstractRenderingEngine.PARAM_RUN_AS, AuthenticationUtil.getSystemUserName());

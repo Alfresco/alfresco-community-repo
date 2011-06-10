@@ -21,9 +21,7 @@ package org.alfresco.service.cmr.publishing;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Set;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
@@ -31,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface PublishingEvent
 {
-    enum Status {SCHEDULED, IN_PROGRESS, COMPLETE, FAILED}
+    enum Status {SCHEDULED, IN_PROGRESS, CANCEL_REQUESTED, COMPLETE, FAILED}
     
     String getId();
     
@@ -51,19 +49,7 @@ public interface PublishingEvent
     
     String getComment();
     
-    /**
-     * Retrieve those publishing events that depend on this one
-     * @return
-     */
-    Set<PublishingEvent> getDependingEvents();
-    
-    /**
-     * Retrieve those publishing events on which this one depends
-     * @return
-     */
-    Set<PublishingEvent> getEventsDependedOn();
-
-    Set<NodeRef> getNodesDependedOn();
-    
     MutablePublishingEvent edit();
+
+    String getChannelName();
 }

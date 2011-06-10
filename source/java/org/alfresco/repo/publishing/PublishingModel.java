@@ -43,6 +43,7 @@ public interface PublishingModel
     
     public static final QName ASPECT_CONTENT_ROOT = QName.createQName(NAMESPACE, "ContentRoot");
     public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
+    public static final QName ASPECT_PUBLISHED = QName.createQName(NAMESPACE, "published");
 
     public static final QName PROP_CHANNEL = QName.createQName(NAMESPACE, "channel");
     public static final QName PROP_CHANNEL_TYPE = QName.createQName(NAMESPACE, "channelType");
@@ -61,11 +62,14 @@ public interface PublishingModel
 
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED = "SCHEDULED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_IN_PROGRESS = "IN_PROGRESS";
+    public static final String PROPVAL_PUBLISHING_EVENT_STATUS_CANCEL_REQUESTED = "CANCEL_REQUESTED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_COMPLETED = "COMPLETED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_FAILED = "FAILED";
 
     public static final QName ASSOC_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "publishingQueueAssoc");
     public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEventAssoc");
+    public static final QName ASSOC_SOURCE = QName.createQName(NAMESPACE, "source");
+    public static final QName ASSOC_LAST_PUBLISHING_EVENT= QName.createQName(NAMESPACE, "lastPublishingEvent");
 
     // Workflow Properties
     public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");

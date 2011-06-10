@@ -16,38 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.model.filefolder;
+package org.alfresco.repo.node.getchildren;
 
-import java.util.Set;
+import java.io.Serializable;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * GetChildren CQ Parameters
+ * GetChildren - for property filtering
  *
  * @author janv
  * @since 4.0
  */
-public class GetChildrenCannedQueryParams
+public interface FilterProp
 {
-    private NodeRef parentRef;
-    private Set<QName> searchTypeQNames;
-    
-    public GetChildrenCannedQueryParams(NodeRef parentRef, Set<QName> searchTypeQNames)
-    {
-        this.parentRef = parentRef;
-        this.searchTypeQNames = searchTypeQNames;
-    }
-    
-    public NodeRef getParentRef()
-    {
-        return parentRef;
-    }
-    
-    public Set<QName> getSearchTypeQNames()
-    {
-        return searchTypeQNames;
-    }
-    
+    public QName getPropName();
+    public Serializable getPropVal();
+    public FilterType getFilterType();
 }

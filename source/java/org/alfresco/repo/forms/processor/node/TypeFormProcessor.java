@@ -59,8 +59,6 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 
     protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
 
-    public static final String DESTINATION = "alf_destination";
-
     /*
      * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
      */

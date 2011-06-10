@@ -37,7 +37,6 @@ public class ChannelImpl implements Channel
     private final NodeRef nodeRef;
     private final ChannelType channelType;
     private final String name;
-    private final ChannelServiceImpl channelService;
     private final NodeService nodeService;
 
     /**
@@ -45,46 +44,41 @@ public class ChannelImpl implements Channel
      * @param name
      * @param channelService
      */
-    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelServiceImpl channelService, NodeService nodeService)
+    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, NodeService nodeService)
     {
         this.nodeRef = nodeRef;
         this.channelType = channelType;
         this.name = name;
-        this.channelService = channelService;
         this.nodeService = nodeService;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.channels.Channel#getChannelType()
+    /**
+    * {@inheritDoc}
      */
-    @Override
     public ChannelType getChannelType()
     {
         return channelType;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.channels.Channel#getName()
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+    */
     public String getName()
     {
         return name;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.channels.Channel#getNodeRef()
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+    */
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.channels.Channel#getProperties()
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+    */
     public Map<QName, Serializable> getProperties()
     {
         return nodeService.getProperties(nodeRef);

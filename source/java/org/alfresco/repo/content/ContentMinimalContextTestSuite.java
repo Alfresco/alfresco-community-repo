@@ -29,6 +29,7 @@ import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
 import org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest;
+import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
@@ -115,6 +116,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite(TextToPdfContentTransformerTest.class);
        suite.addTestSuite(TikaAutoContentTransformerTest.class);
        suite.addTestSuite(ImageMagickContentTransformerTest.class);
+       suite.addTestSuite(AppleIWorksContentTransformerTest.class);
        
        return suite;
    }

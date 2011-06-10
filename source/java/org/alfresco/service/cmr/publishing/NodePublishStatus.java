@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface NodePublishStatus
 {
-    enum Status {NOT_PUBLISHED, ON_QUEUE, PUBLISHED, PUBLISHED_AND_ON_QUEUE};
+    enum Status {NOT_PUBLISHED, ON_QUEUE, PUBLISHED, PUBLISHED_AND_ON_QUEUE}
     
     <T> T visit(NodePublishStatusVisitor<T> visitor);
     
@@ -40,4 +40,6 @@ public interface NodePublishStatus
      * @return
      */
     Environment getEnvironment();
+    
+    String getChannelName();
 }

@@ -24,18 +24,45 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * An interface that describes a publishing environment.
+ * @author Brian
+ *
+ */
 public interface Environment
 {
+    /**
+     * Retrieve the identifier of this publishing environment
+     * @return The identifier of this publishing environment
+     */
     String getId();
     
+    /**
+     * Retrieve the publishing queue associated with this publishing environment
+     * @return A PublishingQueue object corresponding tho this environment's publishing queue
+     */
     PublishingQueue getPublishingQueue();
     
-    Map<NodeRef,NodePublishStatus> checkPublishStatus(Collection<NodeRef> nodes);
+    /**
+     * Discover the publishing status of each of the specified nodes
+     * @param channelName TODO
+     * @param nodes The identifiers of the nodes whose publishing status is being sought
+     * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
+     */
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelName, Collection<NodeRef> nodes);
+
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelName, NodeRef... nodes);
     
+    /**
+     * Retrieve a list of publishing events associated with this publishing environment, filtering them using the
+     * supplied PublishingEventFilter object (optional - may be <code>null</code>)
+     * @param filter The filter that is to be applied to the publishing events on this environment
+     * @return A list of PublishingEvent objects representing the publishing events that matched the supplied filter on this publishing environment
+     */
     List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter);
     
     /**
-     * Creates a {@link PublishingEventFilter}.
+     * A factory method that creates a {@link PublishingEventFilter} object.
      * @return a new {@link PublishingEventFilter}.
      */
     PublishingEventFilter createPublishingEventFilter();

@@ -19,6 +19,8 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Brian
  *
@@ -26,19 +28,27 @@ package org.alfresco.service.cmr.publishing;
 public class NodePublishStatusNotPublished extends BaseNodePublishStatus
 {
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#visit(org.alfresco.service.cmr.publishing.NodePublishStatusVisitor)
+    /**
+     * @param node
+     * @param environment
+     * @param channelName TODO
      */
-    @Override
+    public NodePublishStatusNotPublished(NodeRef node, Environment environment, String channelName)
+    {
+        super(node, environment, channelName);
+    }
+
+    /**
+    * {@inheritDoc}
+     */
     public <T> T visit(NodePublishStatusVisitor<T> visitor)
     {
         return visitor.accept(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#getStatus()
+    /**
+     * {@inheritDoc}
      */
-    @Override
     public Status getStatus()
     {
         return Status.NOT_PUBLISHED;

@@ -32,6 +32,7 @@ import net.sf.acegisecurity.context.security.SecureContext;
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
 import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -105,8 +106,14 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         };
         
         Context context = ContextHolder.getContext();
-        if ((context == null) || !(context instanceof SecureContext))
+        if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
+            }
+            System.out.println("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
+            
             return ret; // empty result
         }
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -95,6 +97,8 @@ public class MultiTDemoTest extends TestCase
     private DictionaryService dictionaryService;
     private UsageService usageService;
     private TransactionService transactionService;
+    private FileFolderService fileFolderService;
+    private Repository repositoryHelper;
     
     public static int NUM_TENANTS = 2;
     
@@ -156,6 +160,8 @@ public class MultiTDemoTest extends TestCase
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
         usageService = (UsageService) ctx.getBean("usageService");
         transactionService = (TransactionService) ctx.getBean("TransactionService");
+        fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         
         createTenants();
     }
@@ -1175,6 +1181,35 @@ public class MultiTDemoTest extends TestCase
                     return null;
                 }
             }, tenantAdminName);
+        }
+    }
+    
+    public void testFileFolder()
+    {
+        logger.info("test file/folder list");
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        for (final String tenantDomain : tenants)
+        {
+            final String tenantUserName = tenantService.getDomainUser(TEST_USER1, tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    List<String> pathElements = new ArrayList<String>(2);
+                    pathElements.add("Data Dictionary");
+                    pathElements.add("Presentation Templates");
+                    
+                    NodeRef chRef = repositoryHelper.getCompanyHome();
+                    NodeRef ddRef = fileFolderService.resolveNamePath(chRef, pathElements).getNodeRef();
+                    
+                    assertTrue(fileFolderService.list(ddRef).size() > 0);
+                    
+                    return null;
+                }
+            }, tenantUserName);
         }
     }
     

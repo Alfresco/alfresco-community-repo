@@ -19,21 +19,33 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.alfresco.repo.publishing.PublishingModel.*;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_STATUS;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.publishing.PublishingEventFilter;
+import org.alfresco.service.cmr.publishing.NodePublishStatus;
+import org.alfresco.service.cmr.publishing.NodePublishStatusNotPublished;
+import org.alfresco.service.cmr.publishing.NodePublishStatusOnQueue;
+import org.alfresco.service.cmr.publishing.NodePublishStatusPublished;
+import org.alfresco.service.cmr.publishing.NodePublishStatusPublishedAndOnQueue;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -52,14 +64,14 @@ import org.alfresco.util.ParameterCheck;
 public class EnvironmentHelper
 {
     private static final String ENVIRONMENT_CONTAINER_NAME = "environments";
-    public static final String LIVE_ENVIRONMENT_NAME = "live";
     private static final Set<QName> PUBLISHING_QUEUE_TYPE = new HashSet<QName>();
     private Set<QName> environmentNodeTypes;
-
+    
     private SiteService siteService;
     private NodeService nodeService;
-    private NodeRefMapper nodeRefMapper;
-
+    private PublishingEventHelper publishingEventHelper; 
+    private ChannelHelper channelHelper;
+    
     static
     {
         PUBLISHING_QUEUE_TYPE.add(PublishingModel.TYPE_PUBLISHING_QUEUE);
@@ -99,14 +111,21 @@ public class EnvironmentHelper
     }
 
     /**
-     * @param nodeRefMapper
-     *            the nodeRefMapper to set
+     * @param publishingEventHelper the publishingEventHelper to set
      */
-    public void setNodeRefMapper(NodeRefMapper nodeRefMapper)
+    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper)
     {
-        this.nodeRefMapper = nodeRefMapper;
+        this.publishingEventHelper = publishingEventHelper;
     }
-
+    
+    /**
+     * @param channelHelper the channelHelper to set
+     */
+    public void setChannelHelper(ChannelHelper channelHelper)
+    {
+        this.channelHelper = channelHelper;
+    }
+    
     public Map<String, NodeRef> getEnvironments(String siteId)
     {
         Map<String, NodeRef> results = new TreeMap<String, NodeRef>();
@@ -122,27 +141,6 @@ public class EnvironmentHelper
         return results;
     }
 
-    /**
-     * Given a noderef from the editorial space, this returns the corresponding noderef in the specified environment
-     * @param environmentNode
-     * @param nodeToMap
-     * @return
-     */
-    public NodeRef mapEditorialToEnvironment(NodeRef environmentNode, NodeRef nodeToMap)
-    {
-        return nodeRefMapper.mapSourceNodeRef(nodeToMap);
-    }
-
-    /**
-     * Given a noderef from the specified environment, this returns the corresponding noderef in the editorial space
-     * @param environmentNode
-     * @param nodeToMap
-     * @return
-     */
-    public NodeRef mapEnvironmentToEditorial(NodeRef environmentNode, NodeRef nodeToMap)
-    {
-        return nodeRefMapper.mapDestinationNodeRef(nodeToMap);
-    }
 
     public NodeRef getEnvironment(String siteId, String name)
     {
@@ -207,15 +205,98 @@ public class EnvironmentHelper
 
                     // Also create the default live environment
                     Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                    props.put(ContentModel.PROP_NAME, LIVE_ENVIRONMENT_NAME);
+                    props.put(ContentModel.PROP_NAME, PublishingService.LIVE_ENVIRONMENT_NAME);
                     nodeService.createNode(environmentContainer, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                            NamespaceService.CONTENT_MODEL_1_0_URI, LIVE_ENVIRONMENT_NAME),
+                            NamespaceService.CONTENT_MODEL_1_0_URI, PublishingService.LIVE_ENVIRONMENT_NAME),
                             PublishingModel.TYPE_ENVIRONMENT, props);
                 }
                 return environmentContainer;
             }
         }, AuthenticationUtil.getSystemUserName());
 
+    }
+
+    public NodePublishStatus checkNodeStatus(NodeRef node, EnvironmentImpl environment, String channelName)
+    {
+        PublishingEvent queuedEvent = getQueuedPublishingEvent(node, environment, channelName);
+        PublishingEvent lastEvent= getLastPublishingEvent(node, environment, channelName);
+        if(queuedEvent != null)
+        {
+            if(lastEvent != null)
+            {
+                return new NodePublishStatusPublishedAndOnQueue(node, environment, channelName, queuedEvent, lastEvent);
+            }
+            else
+            {
+                return  new NodePublishStatusOnQueue(node, environment, channelName, queuedEvent);
+            }
+        }
+        else
+        {
+            if(lastEvent != null)
+            {
+                return new NodePublishStatusPublished(node, environment, channelName, lastEvent);
+            }
+            else
+            {
+                return new NodePublishStatusNotPublished(node, environment, channelName);
+            }
+        }
+    }
+
+    private PublishingEvent getQueuedPublishingEvent(NodeRef node, EnvironmentImpl environment, String channelName)
+    {
+        NodeRef queue = getPublishingQueue(environment.getNodeRef());
+        Calendar nextPublishTime = null;
+        NodeRef nextEventNode = null;
+        List<ChildAssociationRef> results = nodeService.getChildAssocsByPropertyValue( queue, 
+                PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, node.toString());
+        for (ChildAssociationRef childAssoc : results)
+        {
+            NodeRef child = childAssoc.getChildRef();
+            if (isActiveEvent(child))
+            {
+                Serializable eventChannel = nodeService.getProperty(child, PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL);
+                if(channelName.equals(eventChannel))
+                {
+                    Calendar schedule = getScheduledTime(child);
+                    if (nextPublishTime == null || schedule.before(nextPublishTime))
+                    {
+                        nextPublishTime = schedule;
+                        nextEventNode = child;
+                    }
+                }
+            }
+        }
+        return publishingEventHelper.getPublishingEvent(nextEventNode);
+    }
+
+    private Calendar getScheduledTime(NodeRef child)
+    {
+        Date time = (Date) nodeService.getProperty( child, PROP_PUBLISHING_EVENT_TIME);
+        String timeZone = (String) nodeService.getProperty( child,PROP_PUBLISHING_EVENT_TIME_ZONE);
+        Calendar schedule = Calendar.getInstance();
+        schedule.setTimeZone(TimeZone.getTimeZone(timeZone));
+        schedule.setTime(time);
+        return schedule;
+    }
+
+    private boolean isActiveEvent(NodeRef eventNode)
+    {
+        String statusStr = (String) nodeService.getProperty( eventNode, PROP_PUBLISHING_EVENT_STATUS);
+        Status status = Status.valueOf(statusStr);
+        return status == Status.IN_PROGRESS || status == Status.SCHEDULED;
+    }
+
+    private PublishingEvent getLastPublishingEvent(NodeRef node, EnvironmentImpl environment, String channelName)
+    {
+        NodeRef mappedNode = channelHelper.mapSourceToEnvironment(node, environment.getNodeRef(), channelName);
+        if(mappedNode==null || nodeService.exists(mappedNode)==false)
+        {
+            return null; // Node is not published.
+        }
+        //TODO Find the publish event.
+        return null;
     }
 
 }

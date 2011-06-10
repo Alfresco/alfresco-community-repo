@@ -19,17 +19,26 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public class NodePublishStatusOnQueue extends BaseNodePublishStatus
 {
+    private final PublishingEvent queuedEvent;
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#visit(org.alfresco.service.cmr.publishing.NodePublishStatusVisitor)
+    public NodePublishStatusOnQueue(NodeRef nodeRef, Environment environment, String channelName, PublishingEvent queuedEvent)
+    {
+        super(nodeRef, environment, channelName);
+        this.queuedEvent =queuedEvent;
+    }
+
+    /**
+    * {@inheritDoc}
      */
-    @Override
     public <T> T visit(NodePublishStatusVisitor<T> visitor)
     {
         return visitor.accept(this);
@@ -37,13 +46,12 @@ public class NodePublishStatusOnQueue extends BaseNodePublishStatus
 
     public PublishingEvent getQueuedPublishingEvent()
     {
-        return null;
+        return queuedEvent;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#getStatus()
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+      */
     public Status getStatus()
     {
         return Status.ON_QUEUE;

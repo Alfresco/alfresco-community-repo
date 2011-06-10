@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.person;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -50,6 +52,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -57,6 +60,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 
@@ -107,7 +111,7 @@ public class PersonTest extends TestCase
         for (NodeRef nodeRef : personService.getAllPeople())
         {
             String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
-            if (!uid.equals("admin") && !uid.equals("guest") )
+            if (!uid.equals(AuthenticationUtil.getAdminUserName()) && !uid.equals(AuthenticationUtil.getGuestUserName()))
             {
                 personService.deletePerson(nodeRef);
             }
@@ -131,6 +135,40 @@ public class PersonTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
+    
+    
+    private int getPeopleCount()
+    {
+        // Can either get a large page with all results (up to a given max) ...
+        
+        PagingRequest pagingRequest = new PagingRequest(20000, null); // note: people (up to max of 20000)
+        int count = personService.getPeople(null, true, null, pagingRequest).getPage().size();
+        
+        // ... or request 1 item + total count (up to a given max)
+        
+        pagingRequest = new PagingRequest(0, 1, null);
+        pagingRequest.setRequestTotalCountMax(20000); // note: request total people count (up to max of 20000)
+        
+        PagingPersonResults ppr = personService.getPeople(null, true, null, pagingRequest);
+        
+        Pair<Integer, Integer> totalResultCount = ppr.getTotalResultCount();
+        assertNotNull(totalResultCount);
+        assertTrue(totalResultCount.getFirst() == totalResultCount.getSecond());
+        
+        assertEquals(count, totalResultCount.getFirst().intValue());
+        
+        return count;
+        
+    }
+    
+    private void checkPeopleContain(String userName)
+    {
+        PagingRequest pagingRequest = new PagingRequest(0, 20000, null);
+        PagingPersonResults ppr = personService.getPeople(null, true, null, pagingRequest);
+        
+        assertTrue(ppr.getPage().contains(personService.getPerson(userName)));
+    }
+    
     public void xtestLazyHomeFolderCreation() throws Exception
     {
         String firstName = "" + System.currentTimeMillis();
@@ -268,7 +306,7 @@ public class PersonTest extends TestCase
                 System.out.println("Exists : " + ((end - start) / 1000000.0f));
 
                 start = System.nanoTime();
-                int size = personService.getAllPeople().size();
+                int size = getPeopleCount();
                 end = System.nanoTime();
                 System.out.println("Size (" + size + ") : " + ((end - start) / 1000000.0f));
             }
@@ -349,8 +387,6 @@ public class PersonTest extends TestCase
 
     public void testCreateMissingPeople2()
     {
-        System.out.print(personService.getAllPeople());
-
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
 
@@ -393,26 +429,37 @@ public class PersonTest extends TestCase
 
     public void testCreateMissingPeople()
     {
+        assertEquals(2, getPeopleCount());
+        
+        checkPeopleContain(AuthenticationUtil.getAdminUserName());
+        checkPeopleContain(AuthenticationUtil.getGuestUserName());
+        
+        assertFalse(personService.personExists("andy"));
+        assertFalse(personService.personExists("derek"));
+        
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
-
+        
         personService.setCreateMissingPeople(true);
         assertTrue(personService.createMissingPeople());
-
+        
         NodeRef nodeRef = personService.getPerson("andy");
         assertNotNull(nodeRef);
         testProperties(nodeRef, "andy", "andy", "", "", "");
-
+        
         personService.setCreateMissingPeople(true);
         personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
-
+        
         testProperties(personService.getPerson("andy"), "andy", "andy", "", "", "");
-
-        assertEquals(4, personService.getAllPeople().size());
-        assertTrue(personService.getAllPeople().contains(personService.getPerson("andy")));
-        assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
-
+        
+        assertTrue(personService.personExists("andy"));
+        assertTrue(personService.personExists("derek"));
+        
+        checkPeopleContain("andy");
+        checkPeopleContain("derek");
+        
+        assertEquals(4, getPeopleCount());
     }
 
     public void testMutableProperties()
@@ -454,8 +501,8 @@ public class PersonTest extends TestCase
 
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(3, personService.getAllPeople().size());
-        assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
+        assertEquals(3, getPeopleCount());
+        checkPeopleContain("derek");
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco").size());
@@ -464,7 +511,7 @@ public class PersonTest extends TestCase
         assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft").size());
 
         personService.deletePerson("derek");
-        assertEquals(2, personService.getAllPeople().size());
+        assertEquals(2, getPeopleCount());
         try
         {
             personService.getPerson("derek");
@@ -490,8 +537,8 @@ public class PersonTest extends TestCase
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(3, personService.getAllPeople().size());
-        assertTrue(personService.getAllPeople().contains(personService.getPerson("Derek")));
+        assertEquals(3, getPeopleCount());
+        checkPeopleContain("Derek");
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco").size());
@@ -503,8 +550,108 @@ public class PersonTest extends TestCase
         assertEquals(personService.personExists("DEREK"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("DEREK"), "Derek"));
 
         personService.deletePerson("Derek");
-        assertEquals(2, personService.getAllPeople().size());
+        assertEquals(2, getPeopleCount());
 
+    }
+    
+    //TODO add getPeople tests here with filtering and (possibly) sorting ... !!
+    
+    public void testPeopleFiltering()
+    {
+        personService.setCreateMissingPeople(false);
+        
+        assertEquals(2, getPeopleCount());
+        
+        checkPeopleContain(AuthenticationUtil.getAdminUserName());
+        checkPeopleContain(AuthenticationUtil.getGuestUserName());
+        
+        personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("bc", "c", "C", "bc@bc", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("yy", "B", "D", "yy@yy", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("Yz", "yz", "B", "yz@yz", "alfresco", rootNodeRef));
+        
+        assertEquals(6, getPeopleCount());
+        
+        PagingRequest pr = new PagingRequest(100, null);
+        
+        List<Pair<QName, String>> filters = new ArrayList<Pair<QName, String>>(4);
+        
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "y"));
+        assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size());
+        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size());
+        
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "b"));
+        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, "b"));
+        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, "b"));
+        assertEquals(3, personService.getPeople(filters, true, null, pr).getPage().size());
+        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size());
+        
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "A"));
+        assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
+        assertEquals(0, personService.getPeople(filters, false, null, pr).getPage().size());
+        
+        personService.deletePerson("aa");
+        
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "a"));
+        assertEquals(1, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
+    }
+    
+    public void testPeopleSortingPaging()
+    {
+        personService.setCreateMissingPeople(false);
+        
+        assertEquals(2, getPeopleCount());
+        
+        NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName()); // admin - by default
+        NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName()); // guest - by default
+        
+        NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+        NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Cc", "Cc", "cc@cc", "alfresco", rootNodeRef));
+        NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Hh", "Hh", "hh@hh", "alfresco", rootNodeRef));
+        NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
+        NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
+        
+        
+        
+        assertEquals(7, getPeopleCount());
+        
+        List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
+        sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
+        
+        // page 1
+        PagingRequest pr = new PagingRequest(0, 2, null);
+        PagingPersonResults ppr = personService.getPeople(null, true, sort, pr);
+        List<NodeRef> results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p3, results.get(0));
+        assertEquals(p1, results.get(1));
+        
+        // page 2
+        pr = new PagingRequest(2, 2, null);
+        ppr = personService.getPeople(null, true, sort, pr);
+        results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p6, results.get(0));
+        assertEquals(p4, results.get(1));
+        
+        // page 3
+        pr = new PagingRequest(4, 2, null);
+        ppr = personService.getPeople(null, true, sort, pr);
+        results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p7, results.get(0));
+        assertEquals(p2, results.get(1));
+        
+        // page 4
+        pr = new PagingRequest(6, 2, null);
+        ppr = personService.getPeople(null, true, sort, pr);
+        results = ppr.getPage();
+        assertEquals(1, results.size());
+        assertEquals(p5, results.get(0));
     }
 
     private void testProperties(NodeRef nodeRef, String userName, String firstName, String lastName, String email, String orgId)

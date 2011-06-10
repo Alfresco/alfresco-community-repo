@@ -90,6 +90,7 @@
                                     <property name="height" value="100"/>
                                     <property name="maintainAspectRatio" value="true"/>
                                     <property name="resizeToThumbnail" value="true" />
+                                    <property name="allowEnlargement" value="false" />
                                 </bean> 
                             </property>
                         </bean>
@@ -125,6 +126,7 @@
                             <property name="height" value="480"/>
                             <property name="maintainAspectRatio" value="true"/>
                             <property name="resizeToThumbnail" value="true" />
+                            <property name="allowEnlargement" value="false" />
                          </bean>
                       </property>
                    </bean>

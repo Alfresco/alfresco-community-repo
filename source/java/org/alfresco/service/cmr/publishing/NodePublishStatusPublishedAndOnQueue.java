@@ -19,12 +19,32 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Brian
  *
  */
 public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
 {
+
+    private final PublishingEvent queuedPublishingEvent;
+    private final PublishingEvent latestPublishingEvent;
+
+    /**
+     * @param nodeRef
+     * @param environment
+     * @param channelName TODO
+     * @param queuedPublishingEvent The next scheduled {@link PublishingEvent} on the {@link PublishingQueue}
+     * @param latestPublishingEvent The last {@link PublishingEvent} to successfully publish the node.
+     */
+    public NodePublishStatusPublishedAndOnQueue(NodeRef nodeRef, Environment environment,
+            String channelName, PublishingEvent queuedPublishingEvent, PublishingEvent latestPublishingEvent)
+    {
+        super(nodeRef, environment, channelName);
+        this.queuedPublishingEvent = queuedPublishingEvent;
+        this.latestPublishingEvent = latestPublishingEvent;
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodePublishStatus#visit(org.alfresco.service.cmr.publishing.NodePublishStatusVisitor)
@@ -37,7 +57,7 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
 
     public PublishingEvent getQueuedPublishingEvent()
     {
-        return null;
+        return queuedPublishingEvent;
     }
 
     /**
@@ -46,7 +66,7 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
      */
     public PublishingEvent getLatestPublishingEvent()
     {
-        return null;
+        return latestPublishingEvent;
     }
 
     /* (non-Javadoc)

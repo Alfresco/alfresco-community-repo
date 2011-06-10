@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,7 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -73,6 +74,12 @@ public class ContentStreamMimetypeProperty extends AbstractProperty
         field.append(ContentModel.PROP_CONTENT);
         field.append(".mimetype");
         return field.toString();
+    }
+    
+    public QName getMappedProperty()
+    {
+        // spoof
+        return GetChildrenCannedQuery.SORT_QNAME_CONTENT_MIMETYPE;
     }
 
     protected String getValueAsString(Serializable value)

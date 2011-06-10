@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -58,6 +60,7 @@ public class NodePropertyHelper
     private static final Log logger = LogFactory.getLog(NodePropertyHelper.class);
     
     private final DictionaryService dictionaryService;
+    private final EncryptionEngine encryptionEngine;
     private final QNameDAO qnameDAO;
     private final LocaleDAO localeDAO;
     private final ContentDataDAO contentDataDAO;
@@ -69,12 +72,14 @@ public class NodePropertyHelper
             DictionaryService dictionaryService,
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
-            ContentDataDAO contentDataDAO)
+            ContentDataDAO contentDataDAO, 
+            EncryptionEngine encryptionEngine)
     {
         this.dictionaryService = dictionaryService;
         this.qnameDAO = qnameDAO;
         this.localeDAO = localeDAO;
         this.contentDataDAO = contentDataDAO;
+        this.encryptionEngine = encryptionEngine;
     }
 
     public Map<NodePropertyKey, NodePropertyValue> convertToPersistentProperties(Map<QName, Serializable> in)
@@ -92,6 +97,7 @@ public class NodePropertyHelper
             Long propertyQNameId = qnameDAO.getOrCreateQName(propertyQName).getFirst();
             // Get the property definition, if available
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            
             // Add it to the map
             addValueToPersistedProperties(
                     propertyMap,
@@ -260,7 +266,19 @@ public class NodePropertyHelper
                     // Get the Locale ID for the text
                     Long mlTextLocaleId = localeDAO.getOrCreateLocalePair(mlTextLocale).getFirst();
                     // This is persisted against the current locale, but as a d:text instance
-                    NodePropertyValue npValue = new NodePropertyValue(DataTypeDefinition.TEXT, mlTextStr);
+                    Serializable v = null;
+                    try
+                    {
+                        v = propertyDef.isEncrypted() ? encrypt(mlTextStr) : mlTextStr;
+                    }
+                    catch (UnsupportedEncodingException e)
+                    {
+                        // TODO check that throwing the exception preserves the original logic
+                        throw new TypeConversionException(
+                                "The property value could not be decoded as a UTF-8 string " + value.getClass(),
+                                e);
+                    }
+                    NodePropertyValue npValue = new NodePropertyValue(DataTypeDefinition.TEXT, v, propertyDef.isEncrypted());
                     NodePropertyKey npKey = new NodePropertyKey();
                     npKey.setListIndex(collectionIndex);
                     npKey.setQnameId(propertyQNameId);
@@ -271,6 +289,29 @@ public class NodePropertyHelper
             }
             else
             {
+                if(!propertyTypeQName.equals(DataTypeDefinition.ANY) && propertyDef.isEncrypted())
+                {
+                    if(propertyTypeQName.equals(DataTypeDefinition.TEXT))
+                    {
+                        try
+                        {
+                            // TODO check type of value
+                            value = propertyDef.isEncrypted() ? encrypt((String)value) : value;
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                            // TODO check that throwing the exception preserves the original logic
+                            throw new TypeConversionException(
+                                    "The property value could not be decoded as a UTF-8 string " + value.getClass(),
+                                    e);
+                        }
+                    }
+                    else
+                    {
+                        logger.warn("Encryption is not supported for type " + propertyTypeQName + ", encryption will not be performed");
+                    }
+                }
+
                 NodePropertyValue npValue = makeNodePropertyValue(propertyDef, value);
                 NodePropertyKey npKey = new NodePropertyKey();
                 npKey.setListIndex(collectionIndex);
@@ -282,6 +323,18 @@ public class NodePropertyHelper
         }
     }
 
+    protected byte[] encrypt(String input) throws UnsupportedEncodingException
+    {
+        byte[] bytes = encryptionEngine.encryptString(input);
+        return bytes;
+    }
+
+    protected String decrypt(byte[] input) throws UnsupportedEncodingException
+    {
+        String s = encryptionEngine.decryptAsString(input);
+        return s;
+    }
+    
     /**
      * Helper method to convert the <code>Serializable</code> value into a full, persistable {@link NodePropertyValue}.
      * <p>
@@ -310,7 +363,10 @@ public class NodePropertyHelper
         }
         try
         {
-            NodePropertyValue propertyValue = new NodePropertyValue(propertyTypeQName, value);
+            NodePropertyValue propertyValue = null;
+            boolean isEncrypted = propertyDef==null ? false : propertyDef.isEncrypted();
+            propertyValue = new NodePropertyValue(propertyTypeQName, value, isEncrypted);
+
             // done
             return propertyValue;
         }
@@ -360,6 +416,7 @@ public class NodePropertyHelper
         }
     }
 
+    // TODO decrypt TEXT and MLTEXT properties where necessary
     public Map<QName, Serializable> convertToPublicProperties(Map<NodePropertyKey, NodePropertyValue> propertyValues)
     {
         Map<QName, Serializable> propertyMap = new HashMap<QName, Serializable>(propertyValues.size(), 1.0F);
@@ -426,6 +483,7 @@ public class NodePropertyHelper
                     collection.add(collapsedValue);
                     collapsedValue = collection;
                 }
+                
                 // Store the value
                 propertyMap.put(currentQName, collapsedValue);
                 // Reset
@@ -639,14 +697,17 @@ public class NodePropertyHelper
         }
         // get property attributes
         final QName propertyTypeQName;
+        boolean encrypted;
         if (propertyDef == null)
         {
             // allow this for now
             propertyTypeQName = DataTypeDefinition.ANY;
+            encrypted = false;
         }
         else
         {
             propertyTypeQName = propertyDef.getDataType().getName();
+            encrypted = propertyDef.isEncrypted();
         }
         try
         {
@@ -665,6 +726,24 @@ public class NodePropertyHelper
                 Long contentDataId = (Long) value;
                 ContentData contentData = contentDataDAO.getContentData(contentDataId).getSecond();
                 value = new ContentDataWithId(contentData, contentDataId);
+            }
+            else if (encrypted)
+            {
+                if (propertyTypeQName.equals(DataTypeDefinition.TEXT) || propertyTypeQName.equals(DataTypeDefinition.MLTEXT))
+                {
+                    try
+                    {
+                        value = decrypt((byte[])value);
+                    }
+                    catch (UnsupportedEncodingException e)
+                    {
+                        throw new AlfrescoRuntimeException("Unexpected exception during decryption", e);
+                    }
+                }
+                else
+                {
+                    throw new AlfrescoRuntimeException("Encryption is not supported for " + propertyDef.getDataType().getName() + " types");
+                }
             }
             // done
             return value;

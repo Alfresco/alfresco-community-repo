@@ -1,0 +1,66 @@
+<model name="test:encryptiontestmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>VersionStoreBaseTest model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/encryptiontest/1.0" prefix="test"/>
+   </namespaces>
+
+   <types>
+      
+      <type name="test:testtype">
+         <title>Test type</title>
+         <description>The test type</description>
+         <parent>cm:content</parent>
+         
+         <properties>
+            <property name="test:prop1">
+               <type>d:text</type>
+               <protected>false</protected>
+               <default></default>
+               <encrypted>true</encrypted>
+            </property>
+            <property name="test:prop2">
+               <type>d:mltext</type>
+               <protected>false</protected>
+               <encrypted>true</encrypted>
+            </property>
+         </properties>
+         
+         <associations>
+         </associations>
+      </type>
+      
+    </types>
+   
+    <aspects>
+          <aspect name="test:testaspect">
+             <title>Test Aspect</title>
+             <description>The test aspect</description>
+             <parent></parent>
+             
+             <properties>
+                <property name="test:aspectprop1">
+                    <type>d:text</type>
+                    <protected>false</protected>
+                    <default></default>
+                    <encrypted>true</encrypted>
+                </property>
+                <property name="test:aspectprop2">
+                    <type>d:mltext</type>
+                    <protected>false</protected>
+                    <encrypted>true</encrypted>
+                </property>
+             </properties>
+          </aspect>
+       </aspects>
+   
+</model>

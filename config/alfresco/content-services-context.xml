@@ -281,6 +281,40 @@
          class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
          parent="baseContentTransformer" />     
 
+   <bean id="transformer.iWorksQuicklooks"
+         class="org.alfresco.repo.content.transform.AppleIWorksContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.keynote</value></property>
+                <property name="targetMimetype"><value>image/jpeg</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.pages</value></property>
+                <property name="targetMimetype"><value>image/jpeg</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.numbers</value></property>
+                <property name="targetMimetype"><value>image/jpeg</value></property>
+            </bean>
+            
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.keynote</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.pages</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.numbers</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
    <bean id="transformer.PdfBox"
          class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
          parent="baseContentTransformer" >
@@ -368,6 +402,39 @@
          </list>
       </property>
    </bean>
+   
+   <bean id="transformer.complex.iWorks.Image"
+         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+         parent="baseContentTransformer">
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.keynote</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.numbers</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/vnd.apple.pages</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+         </list>
+      </property>  
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.iWorksQuicklooks" />
+            <ref bean="transformer.ImageMagick" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>image/jpeg</value>
+         </list>
+      </property>
+   </bean>
+   
    
    <bean id="transformer.complex.OpenOffice.Image"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"

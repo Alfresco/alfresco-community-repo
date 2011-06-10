@@ -57,7 +57,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     
     public void init()
     {
-        
+        //NOOP
     }
     
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)

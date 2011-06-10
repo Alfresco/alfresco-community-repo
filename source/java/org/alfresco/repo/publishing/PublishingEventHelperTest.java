@@ -25,10 +25,11 @@ import static junit.framework.Assert.assertNull;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_COMMENT;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_PAYLOAD;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_STATUS;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE;
-import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_PAYLOAD;
-import static org.alfresco.repo.publishing.PublishingModel.*;
+import static org.alfresco.repo.publishing.PublishingModel.TYPE_PUBLISHING_EVENT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
@@ -40,10 +41,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.annotation.Resource;
 
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -140,7 +142,7 @@ public class PublishingEventHelperTest
         // Mock up node properties.
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(PROP_PUBLISHING_EVENT_COMMENT, comment);
-        props.put(PROP_PUBLISHING_EVENT_STATUS, status);
+        props.put(PROP_PUBLISHING_EVENT_STATUS, status.name());
         props.put(PROP_PUBLISHING_EVENT_TIME, scheduledTime);
         props.put(PROP_PUBLISHING_EVENT_TIME_ZONE, scheduledTimeZone);
         props.put(ContentModel.PROP_CREATED, created);
@@ -162,8 +164,8 @@ public class PublishingEventHelperTest
         assertEquals(modifierName, result.getModifier());
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testCreateNode() throws Exception
     {
         // Mock serializer since this behaviour is already tested in PublishingPackageSerializerTest.
@@ -182,7 +184,8 @@ public class PublishingEventHelperTest
         when(nodeService.createNode(any(NodeRef.class), any(QName.class), any(QName.class), any(QName.class), anyMap()))
             .thenReturn(childAssoc);
         
-        PublishingPackage pckg = null;
+        Map<NodeRef, PublishingPackageEntry> entires = Collections.emptyMap();
+        PublishingPackage pckg = new PublishingPackageImpl(entires);
         String channelName = "The channel";
         Calendar schedule = Calendar.getInstance();
         String comment = "The comment";

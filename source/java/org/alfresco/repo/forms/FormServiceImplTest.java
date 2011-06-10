@@ -32,8 +32,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.forms.processor.AbstractFormProcessor;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
-import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -934,7 +934,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         // supply the destination
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         
         // persist the data
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
@@ -951,11 +951,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     this.nodeService.hasAspect(this.document, ContentModel.ASPECT_TITLED));
         
         // test different forms of itemId's
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
         assertNotNull("Expected new node to be created using itemId cm_content", newNode);
         
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, ContentModel.TYPE_CONTENT.toString()), data);
         assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
     }
@@ -970,7 +970,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         FormData data = createContentFormData(name, title, mimetype, content);
         
         // supply the destination
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         
         // persist the data
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
@@ -993,7 +993,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // create another node without supplying the mimetype and check the details
         String name2 = "created2-" + this.documentName;
         data = createContentFormData(name2, title, null, content);
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         NodeRef newNode2 = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
         checkContentDetails(newNode2, name2, title, "text/plain", content);
         
@@ -1268,7 +1268,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String nodeName = GUID.generate() + ".txt";
         data = new FormData();
         data.addFieldData("prop_cm_name", nodeName);
-        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "fdk:with_underscore"), data);
         assertNotNull(newNode);
     }
@@ -1602,7 +1602,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         try
         {
             FormData data = new FormData();
-            data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+            data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
             this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm_content"), data);
             fail("Expecting saveForm for a 'type' item kind containing an underscore to fail");
         }

@@ -77,7 +77,7 @@
       <property name="namespaceCache" ref="immutableEntityCache"/>
       <property name="qnameCache" ref="immutableEntityCache"/>
    </bean>
-   
+
    <bean id="nodeDAO" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" init-method="init">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
@@ -96,6 +96,7 @@
       <property name="aspectsCache" ref="node.aspectsCache"/>
       <property name="propertiesCache" ref="node.propertiesCache"/>
       <property name="parentAssocsCache" ref="node.parentAssocsCache"/>
+      <property name="encryptionEngine" ref="encryptionEngine"/>
    </bean>
    
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
@@ -271,6 +272,10 @@
    <bean id="cannedQueryDAO" class="org.alfresco.repo.domain.query.ibatis.CannedQueryDAOImpl" init-method="init">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="controlDAO" ref="controlDAO"/>
+   </bean>
+   
+   <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
    </bean>
    
    <bean id="solrDAO" class="org.alfresco.repo.domain.solr.ibatis.SOLRDAOImpl" init-method="init">

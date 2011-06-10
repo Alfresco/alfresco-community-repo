@@ -22,8 +22,6 @@ package org.alfresco.repo.publishing;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.transfer.NodeFilter;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 
 /**

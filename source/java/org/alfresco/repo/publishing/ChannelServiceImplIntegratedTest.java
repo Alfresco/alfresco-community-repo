@@ -20,9 +20,10 @@
 package org.alfresco.repo.publishing;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,82 +33,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-@Transactional
-public class ChannelServiceImplIntegratedTest
+public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
 {
+    private static final String channelName = "Test Channel - Name";
+    private static final String channelTypeName = "MockedChannelType";
     private static boolean channelTypeRegistered = false;
-    private static String channelName = "Test Channel - Name";
 
-    @Autowired
-    protected ApplicationContext applicationContext;
-    protected ServiceRegistry serviceRegistry;
-    protected RetryingTransactionHelper retryingTransactionHelper;
-    protected NodeService nodeService;
-    protected WorkflowService workflowService;
-    protected FileFolderService fileFolderService;
-    protected SiteService siteService;
+    @Resource(name="channelService")
     private ChannelServiceImpl channelService;
 
-    protected AuthenticationComponent authenticationComponent;
-    private String siteId;
-    private ChannelType mockedChannelType = mock(ChannelType.class);
-    private String channelTypeName;
-
+    @Resource(name="environmentHelper")
     private EnvironmentHelper environmentHelper;
 
-    /**
-     * @throws java.lang.Exception
-     */
+    private ChannelType mockedChannelType = mock(ChannelType.class);
+
     @Before
+    @Override
     public void setUp() throws Exception
     {
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        serviceRegistry.getAuthenticationService().authenticate("admin", "admin".toCharArray());
-
-        retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
-        fileFolderService = serviceRegistry.getFileFolderService();
-        workflowService = serviceRegistry.getWorkflowService();
-        nodeService = serviceRegistry.getNodeService();
-        siteService = serviceRegistry.getSiteService();
-
-        environmentHelper = (EnvironmentHelper) applicationContext.getBean("environmentHelper");
-        channelService = (ChannelServiceImpl) applicationContext.getBean("channelService");
-        siteId = GUID.generate();
-        siteService.createSite("test", siteId, "Test site created by ChannelServiceImplIntegratedTest",
-                "Test site created by ChannelServiceImplIntegratedTest", SiteVisibility.PUBLIC);
-
-        channelTypeName = "MockedChannelType";
+        super.setUp();
         when(mockedChannelType.getId()).thenReturn(channelTypeName);
         when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
         when(mockedChannelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
@@ -212,9 +172,9 @@ public class ChannelServiceImplIntegratedTest
         Set<String> channelNames = new HashSet<String>();
         for (int i = 0; i < channelCount; ++i)
         {
-            String channelName = GUID.generate();
-            channelNames.add(channelName);
-            channelService.createChannel(siteId, channelTypeName, channelName, null);
+            String name = GUID.generate();
+            channelNames.add(name);
+            channelService.createChannel(siteId, channelTypeName, name, null);
 
             channels = channelService.getChannels(siteId);
             assertEquals(i + 1, channels.size());
@@ -225,5 +185,47 @@ public class ChannelServiceImplIntegratedTest
             }
             assertTrue(names.isEmpty());
         }
+    }
+    
+    @Test
+    public void testGetChannel() throws Exception
+    {
+        try
+        {
+            channelService.getChannel(null, channelName);
+            fail("Should throw an Exception if siteId is null!");
+        }
+        catch (IllegalArgumentException e) {
+            // NOOP
+        }
+        try
+        {
+            channelService.getChannel(siteId, null);
+            fail("Should throw an Exception if channelName is null!");
+        }
+        catch (IllegalArgumentException e) {
+            // NOOP
+        }
+        Channel channel = channelService.getChannel(siteId, channelName);
+        assertNull("Should return null if unknown channelName", channel);
+        
+        // Create channel
+        Channel createdChannel = channelService.createChannel(siteId, channelTypeName, channelName, null);
+        
+        try
+        {
+            channel = channelService.getChannel("No Site", channelName);
+            fail("Should throw exception if site does not exist!");
+        }
+        catch (SiteServiceException e)
+        {
+            // NOOP
+        }
+        
+        channel = channelService.getChannel(siteId, channelName);
+        assertNotNull("Should return created channel!", channel);
+        assertEquals(channelName, channel.getName());
+        assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
+        assertEquals(createdChannel.getNodeRef(), channel.getNodeRef());
     }
 }

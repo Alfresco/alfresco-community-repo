@@ -54,6 +54,11 @@
         <constructor-arg value="org.alfresco.service.cmr.workflow.WorkflowService" />
     </bean>
 
+   <!-- Mock Workflow Service-->
+    <bean id="policyBehaviourFilter" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.policy.BehaviourFilter" />
+    </bean>
+
    <bean id="dictionaryBootstrap" class="java.lang.Object" />
    
 </beans>

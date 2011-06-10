@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,12 +18,15 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
@@ -44,7 +47,9 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ValueDerivingMapFactory;
 import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
@@ -70,6 +75,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
     private PersonService personService;
+    private NamespaceService namespaceService;
     private MutableAuthenticationService authenticationService;
     private ContentUsageService contentUsageService;
     private TenantService tenantService;
@@ -183,6 +189,11 @@ public final class People extends BaseScopableProcessorExtension implements Init
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
     
     /**
@@ -475,6 +486,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
      * @param filter filter query string by which to filter the collection of people.
      *          If <pre>null</pre> then all people stored in the repository are returned
      *          
+     * @deprecate see getPeople(filter, maxResults)
+     *          
      * @return people collection as a JavaScript array
      */
     public Scriptable getPeople(String filter)
@@ -498,154 +511,158 @@ public final class People extends BaseScopableProcessorExtension implements Init
     {
         Object[] people = null;
         
+        // TODO - remove open-ended query (eg cutoff at default/configurable max, eg. 5000 people)
+        if (maxResults <= 0)
+        {
+            maxResults = Integer.MAX_VALUE;
+        }
+        
         if (filter == null || filter.length() == 0)
         {
-            people = personService.getAllPeople().toArray();
-            if (maxResults > 0 && people.length > maxResults)
-            {
-                Object[] dest = new Object[maxResults];
-                System.arraycopy(people, 0, dest, 0, maxResults);
-                people = dest;
-            }
+            PagingRequest pagingRequest = new PagingRequest(maxResults, null);
+            people = personService.getPeople(null, true, null, pagingRequest).getPage().toArray();
         }
         else
         {
             filter = filter.trim();
             if (filter.length() != 0)
             {
-                SearchParameters params = new SearchParameters();
-                
-                // define the query to find people by their first or last name
-                StringBuilder query = new StringBuilder(256);
-                
-                query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
-                
                 String term = filter.replace("\\", "").replace("\"", "");
                 StringTokenizer t = new StringTokenizer(term, " ");
-                if (t.countTokens() == 1)
+                int propIndex = term.indexOf(':');
+                
+                if ((t.countTokens() == 1) && (propIndex == -1))
                 {
-                    int propIndex = term.indexOf(':');
-                    if (propIndex == -1)
-                    {
-                        // simple search: first name, last name and username starting with term
-                        query.append("firstName:\"");
-                        query.append(term);
-                        query.append("*\" lastName:\"");
-                        query.append(term);
-                        query.append("*\" userName:\"");
-                        query.append(term);
-                        query.append("*\"");
-                    }
-                    else
-                    {
+                    // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
+                    
+                    String propVal = term;
+                    
+                    List<Pair<QName, String>> filterProps = new ArrayList<Pair<QName, String>>(3);
+                    filterProps.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, propVal));
+                    filterProps.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, propVal));
+                    filterProps.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, propVal));
+                    
+                    PagingRequest pagingRequest = new PagingRequest(maxResults, null);
+                    people = personService.getPeople(filterProps, true, null, pagingRequest).getPage().toArray();
+                 }
+                 else
+                 {
+                     SearchParameters params = new SearchParameters();
+                     
+                     StringBuilder query = new StringBuilder(256);
+                     
+                     query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
+                     
+                     if (t.countTokens() == 1)
+                     {
                         // fts-alfresco property search i.e. location:"maidenhead"
                         query.append(term.substring(0, propIndex+1))
                              .append('"')
                              .append(term.substring(propIndex+1))
                              .append('"');
                     }
-                }
-                else
-                {
-                    // scan for non-fts-alfresco property search tokens
-                    int nonFtsTokens = 0;
-                    while (t.hasMoreTokens())
+                    else
                     {
-                        if (t.nextToken().indexOf(':') == -1) nonFtsTokens++;
-                    }
-                    t = new StringTokenizer(term, " ");
-                    
-                    // multiple terms supplied - look for first and second name etc.
-                    // assume first term is first name, any more are second i.e. "Fraun van de Wiels"
-                    // also allow fts-alfresco property search to reduce results
-                    params.setDefaultOperator(SearchParameters.Operator.AND);
-                    boolean firstToken = true;
-                    boolean tokenSurname = false;
-                    boolean propertySearch = false;
-                    while (t.hasMoreTokens())
-                    {
-                        term = t.nextToken();
-                        if (!propertySearch && term.indexOf(':') == -1)
+                        // scan for non-fts-alfresco property search tokens
+                        int nonFtsTokens = 0;
+                        while (t.hasMoreTokens())
                         {
-                            if (nonFtsTokens == 1)
+                            if (t.nextToken().indexOf(':') == -1) nonFtsTokens++;
+                        }
+                        t = new StringTokenizer(term, " ");
+                        
+                        // multiple terms supplied - look for first and second name etc.
+                        // assume first term is first name, any more are second i.e. "Fraun van de Wiels"
+                        // also allow fts-alfresco property search to reduce results
+                        params.setDefaultOperator(SearchParameters.Operator.AND);
+                        boolean firstToken = true;
+                        boolean tokenSurname = false;
+                        boolean propertySearch = false;
+                        while (t.hasMoreTokens())
+                        {
+                            term = t.nextToken();
+                            if (!propertySearch && term.indexOf(':') == -1)
                             {
-                                // simple search: first name, last name and username starting with term
-                                query.append("(firstName:\"");
-                                query.append(term);
-                                query.append("*\" OR lastName:\"");
-                                query.append(term);
-                                query.append("*\" OR userName:\"");
-                                query.append(term);
-                                query.append("*\") ");
-                            }
-                            else
-                            {
-                                if (firstToken)
+                                if (nonFtsTokens == 1)
                                 {
-                                    query.append("firstName:\"");
+                                    // simple search: first name, last name and username starting with term
+                                    query.append("(firstName:\"");
                                     query.append(term);
-                                    query.append("*\" ");
-                                    
-                                    firstToken = false;
+                                    query.append("*\" OR lastName:\"");
+                                    query.append(term);
+                                    query.append("*\" OR userName:\"");
+                                    query.append(term);
+                                    query.append("*\") ");
                                 }
                                 else
                                 {
-                                    if (tokenSurname)
+                                    if (firstToken)
                                     {
-                                        query.append("OR ");
+                                        query.append("firstName:\"");
+                                        query.append(term);
+                                        query.append("*\" ");
+                                        
+                                        firstToken = false;
                                     }
-                                    query.append("lastName:\"");
-                                    query.append(term);
-                                    query.append("*\" ");
-                                    
-                                    tokenSurname = true;
+                                    else
+                                    {
+                                        if (tokenSurname)
+                                        {
+                                            query.append("OR ");
+                                        }
+                                        query.append("lastName:\"");
+                                        query.append(term);
+                                        query.append("*\" ");
+                                        
+                                        tokenSurname = true;
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            // fts-alfresco property search i.e. "location:maidenhead"
-                            int propIndex = term.indexOf(':');
-                            query.append(term.substring(0, propIndex+1))
-                                 .append('"')
-                                 .append(term.substring(propIndex+1))
-                                 .append('"');
-                            
-                            propertySearch = true;
+                            else
+                            {
+                                // fts-alfresco property search i.e. "location:maidenhead"
+                                propIndex = term.indexOf(':');
+                                query.append(term.substring(0, propIndex+1))
+                                     .append('"')
+                                     .append(term.substring(propIndex+1))
+                                     .append('"');
+                                
+                                propertySearch = true;
+                            }
                         }
                     }
-                }
-                query.append(")");
-                
-                // define the search parameters
-                params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                params.addStore(this.storeRef);
-                params.setQuery(query.toString());
-                if (maxResults > 0)
-                {
-                    params.setLimitBy(LimitBy.FINAL_SIZE);
-                    params.setLimit(maxResults);
-                }
-                
-                ResultSet results = null;
-                try
-                {
-                    results = services.getSearchService().query(params);
-                    people = results.getNodeRefs().toArray();
-                }
-                catch (Throwable err)
-                {
-                    // hide query parse error from users
-                    if (logger.isDebugEnabled())
-                        logger.debug("Failed to execute people search: " + query.toString(), err);
-                }
-                finally
-                {
-                    if (results != null)
+                    query.append(")");
+                    
+                    // define the search parameters
+                    params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                    params.addStore(this.storeRef);
+                    params.setQuery(query.toString());
+                    if (maxResults > 0)
                     {
-                        results.close();
+                        params.setLimitBy(LimitBy.FINAL_SIZE);
+                        params.setLimit(maxResults);
                     }
-                }
+                    
+                    ResultSet results = null;
+                    try
+                    {
+                        results = services.getSearchService().query(params);
+                        people = results.getNodeRefs().toArray();
+                    }
+                    catch (Throwable err)
+                    {
+                        // hide query parse error from users
+                        if (logger.isDebugEnabled())
+                            logger.debug("Failed to execute people search: " + query.toString(), err);
+                    }
+                    finally
+                    {
+                        if (results != null)
+                        {
+                            results.close();
+                        }
+                    }
+                 }
             }
         }
         

@@ -41,6 +41,22 @@
       </property>
    </bean>
    
+   <bean id="transformer.complex.iWorks.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.iWorksQuicklooks" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+   </bean>
+   
    <bean id="transformer.complex.Text.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
         parent="baseContentTransformer" >

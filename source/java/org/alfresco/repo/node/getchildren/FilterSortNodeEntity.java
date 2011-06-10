@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.model.filefolder;
+package org.alfresco.repo.node.getchildren;
 
 import java.util.List;
 
@@ -24,23 +24,27 @@ import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
 
 /**
- * Sortable Node Entity - can be optionally sorted by (up to) two sort properties (prop1 followed by prop2)
+ * Filterable/Sortable Node Entity
+ *
+ * Can be optionally filtered/sorted by (up to) three properties - note: sort properties are applied in order
  * 
  * @author jan
  * @since 4.0
  */
-public class SortableNodeEntity
+public class FilterSortNodeEntity
 {
     private Long id; // node id
     
     private NodeEntity node;
     private NodePropertyEntity prop1;
     private NodePropertyEntity prop2;
+    private NodePropertyEntity prop3;
     
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long prop1qnameId;
     private Long prop2qnameId;
+    private Long prop3qnameId;
     private List<Long> childNodeTypeQNameIds;
     private boolean auditableProps;
     private boolean nodeType;
@@ -48,7 +52,7 @@ public class SortableNodeEntity
     /**
      * Default constructor
      */
-    public SortableNodeEntity()
+    public FilterSortNodeEntity()
     {
         auditableProps = false;
     }
@@ -81,6 +85,16 @@ public class SortableNodeEntity
     public void setProp2(NodePropertyEntity prop2)
     {
         this.prop2 = prop2;
+    }
+    
+    public NodePropertyEntity getProp3()
+    {
+        return prop3;
+    }
+    
+    public void setProp3(NodePropertyEntity prop3)
+    {
+        this.prop3 = prop3;
     }
     
     public NodeEntity getNode()
@@ -123,6 +137,16 @@ public class SortableNodeEntity
     public void setProp2qnameId(Long prop2qnameId)
     {
         this.prop2qnameId = prop2qnameId;
+    }
+    
+    public Long getProp3qnameId()
+    {
+        return prop3qnameId;
+    }
+    
+    public void setProp3qnameId(Long prop3qnameId)
+    {
+        this.prop3qnameId = prop3qnameId;
     }
     
     public List<Long> getChildNodeTypeQNameIds()

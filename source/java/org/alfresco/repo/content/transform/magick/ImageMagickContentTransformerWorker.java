@@ -243,6 +243,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     {
         StringBuilder builder = new StringBuilder(32);
         
+        // These are ImageMagick options. See http://www.imagemagick.org/script/command-line-processing.php#geometry for details.
         if (imageResizeOptions.isResizeToThumbnail() == true)
         {
             builder.append("-thumbnail ");
@@ -266,6 +267,11 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         if (imageResizeOptions.isPercentResize() == true)
         {
             builder.append("%");
+        }
+        // ALF-7308. Disallow the enlargement of small images e.g. within imgpreview thumbnail.
+        if (!imageResizeOptions.getAllowEnlargement())
+        {
+            builder.append(">");
         }
         
         if (imageResizeOptions.isMaintainAspectRatio() == false)

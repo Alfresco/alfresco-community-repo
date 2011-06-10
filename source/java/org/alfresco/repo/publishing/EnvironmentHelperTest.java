@@ -21,76 +21,31 @@ package org.alfresco.repo.publishing;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertTrue;
 
 import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.util.GUID;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-@Transactional
-public class EnvironmentHelperTest
+public class EnvironmentHelperTest extends AbstractPublishingIntegrationTest
 {
-    @Resource(name = "ServiceRegistry")
-    protected ServiceRegistry serviceRegistry;
-    protected NodeService nodeService;
-    protected WorkflowService workflowService;
-    protected FileFolderService fileFolderService;
-    protected SiteService siteService;
-
     @Resource(name="environmentHelper")
     private EnvironmentHelper environmentHelper;
-    private String siteId;
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-
-        fileFolderService = serviceRegistry.getFileFolderService();
-        workflowService = serviceRegistry.getWorkflowService();
-        nodeService = serviceRegistry.getNodeService();
-        siteService = serviceRegistry.getSiteService();
-
-        siteId = GUID.generate();
-        siteService.createSite("test", siteId, "Test site created by ChannelServiceImplIntegratedTest",
-                "Test site created by ChannelServiceImplIntegratedTest", SiteVisibility.PUBLIC);
-    }
 
     @Test
     public void testGetEnvironments() throws Exception
     {
         Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
         assertTrue(environments.size() == 1);
-        NodeRef liveEnvironment = environments.get(EnvironmentHelper.LIVE_ENVIRONMENT_NAME);
+        NodeRef liveEnvironment = environments.get(PublishingService.LIVE_ENVIRONMENT_NAME);
         assertNotNull(liveEnvironment);
         assertTrue(nodeService.exists(liveEnvironment));
         assertEquals(PublishingModel.TYPE_ENVIRONMENT, nodeService.getType(liveEnvironment));
@@ -99,7 +54,7 @@ public class EnvironmentHelperTest
     @Test
     public void testGetEnvironmentByName() throws Exception
     {
-        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, EnvironmentHelper.LIVE_ENVIRONMENT_NAME);
+        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
         assertNotNull(liveEnvironment);
         assertTrue(nodeService.exists(liveEnvironment));
         assertEquals(PublishingModel.TYPE_ENVIRONMENT, nodeService.getType(liveEnvironment));
@@ -108,7 +63,7 @@ public class EnvironmentHelperTest
     @Test
     public void testGetPublishingQueue() throws Exception
     {
-        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, EnvironmentHelper.LIVE_ENVIRONMENT_NAME);
+        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
         NodeRef publishingQueue = environmentHelper.getPublishingQueue(liveEnvironment);
         assertNotNull(publishingQueue);
         assertTrue(nodeService.exists(publishingQueue));
@@ -117,15 +72,4 @@ public class EnvironmentHelperTest
                 .getTypeQName());
     }
 
-    @Test
-    public void testMapNodeRef() throws Exception
-    {
-        String guid = GUID.generate();
-        NodeRef testNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, guid);
-        NodeRef liveEnvironmentNode = environmentHelper.getEnvironment(siteId, EnvironmentHelper.LIVE_ENVIRONMENT_NAME);
-        NodeRef mappedNodeRef = environmentHelper.mapEditorialToEnvironment(liveEnvironmentNode, testNodeRef);
-        assertNotSame(mappedNodeRef, testNodeRef);
-        NodeRef unmappedNodeRef = environmentHelper.mapEnvironmentToEditorial(liveEnvironmentNode, mappedNodeRef);
-        assertEquals(testNodeRef, unmappedNodeRef);
-    }
 }

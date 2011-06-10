@@ -35,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractFormProcessor implements FormProcessor
 {
+    public static final String DESTINATION = "alf_destination";
+    
     private static final Log logger = LogFactory.getLog(AbstractFormProcessor.class);
 
     protected FormProcessorRegistry processorRegistry;

@@ -41,7 +41,15 @@ public class ImageResizeOptions
     private boolean resizeToThumbnail = false;
     
     /**
-     * Defatult constructor
+     * Indicates that scaling operations should scale up or down to the specified dimensions, as requested.
+     * If this argument is false, only resizings that scale the image down will be performed. Scaling up will result in
+     * an unchanged image.
+     * @since 4.0
+     */
+    private boolean allowEnlargement = true;
+    
+    /**
+     * Default constructor
      */
     public ImageResizeOptions()
     {
@@ -96,4 +104,14 @@ public class ImageResizeOptions
     {
         return resizeToThumbnail;
     }    
+    
+    public void setAllowEnlargement(boolean allowEnlargement)
+    {
+        this.allowEnlargement = allowEnlargement;
+    }
+    
+    public boolean getAllowEnlargement()
+    {
+        return allowEnlargement;
+    }
 }

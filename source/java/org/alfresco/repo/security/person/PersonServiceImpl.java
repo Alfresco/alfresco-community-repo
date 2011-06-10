@@ -32,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
@@ -40,6 +43,11 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropString;
+import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -71,13 +79,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -87,7 +95,10 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ModelUtil;
+import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -100,6 +111,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                                                                              
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
+    
+    private static final String CANNED_QUERY_PEOPLE_LIST = "peopleGetChildrenCannedQueryFactory";
 
     private static final String DELETE = "DELETE";
     private static final String SPLIT = "SPLIT";
@@ -137,6 +150,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private String duplicateMode = LEAVE;
     private boolean lastIsBest = true;
     private boolean includeAutoCreated = false;
+    
+    private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
     
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
@@ -351,7 +366,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.permissionsManager = permissionsManager;
     }
-
+    
+    /**
+     * Set the registry of {@link CannedQueryFactory canned queries}
+     */
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
     /**
      * Set the username to person cache.
      */
@@ -957,6 +980,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     private NodeRef getNotifyEmailTemplateNodeRef()
     {
+        /*
+         * TODO: Use selectNodes
+         */
+        
         StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:new-user-email.html.ftl\"";
 
@@ -1133,21 +1160,85 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     /**
      * {@inheritDoc}
+     * 
+     * @deprecated see getPeople
      */
     public Set<NodeRef> getAllPeople()
     {
-        List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(getPeopleContainer(),
-                ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL, false);
-        Set<NodeRef> refs = new HashSet<NodeRef>(childRefs.size()*2);
-        for (ChildAssociationRef childRef : childRefs)
-        {
-            refs.add(childRef.getChildRef());
-        }
+        PagingPersonResults pagingResults = getPeople(null, true, null, new PagingRequest(Integer.MAX_VALUE, null));
+        List<NodeRef> nodeRefs = pagingResults.getPage();
+        Set<NodeRef> refs = new HashSet<NodeRef>(nodeRefs.size());
+        refs.addAll(nodeRefs);
         return refs;
     }
     
     /**
      * {@inheritDoc}
+     */
+    public PagingPersonResults getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        
+        NodeRef contextNodeRef = getPeopleContainer();
+        
+        Set<QName> childTypeQNames = new HashSet<QName>(1);
+        childTypeQNames.add(ContentModel.TYPE_PERSON);
+        
+        // get canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
+        
+        List<FilterProp> filterProps = null;
+        if (stringPropFilters != null)
+        {
+            filterProps = new ArrayList<FilterProp>(stringPropFilters.size());
+            for (Pair<QName, String> filterProp : stringPropFilters)
+            {
+                filterProps.add(new FilterPropString(filterProp.getFirst(), filterProp.getSecond(), (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
+            }
+        }
+        
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, childTypeQNames, filterProps, sortProps, pagingRequest);
+        
+        // execute canned query
+        CannedQueryResults<NodeRef> results = cq.execute();
+        
+        List<NodeRef> nodeRefs = null;
+        if (results.getPageCount() > 0)
+        {
+            nodeRefs = results.getPages().get(0);
+        }
+        else
+        {
+            nodeRefs = Collections.emptyList();
+        }
+        
+        // set total count
+        Pair<Integer, Integer> totalCount = null;
+        if (pagingRequest.getRequestTotalCountMax() > 0)
+        {
+            totalCount = results.getTotalResultCount();
+        }
+        
+        if (start != null)
+        {
+            int cnt = results.getPagedResultCount();
+            int skipCount = pagingRequest.getSkipCount();
+            int maxItems = pagingRequest.getMaxItems();
+            boolean hasMoreItems = results.hasMoreItems();
+            int pageNum = (skipCount / maxItems) + 1;
+            
+            logger.debug("getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",filters="+stringPropFilters+",filtersIgnoreCase="+filterIgnoreCase+"]");
+        }
+        
+        return new PagingPersonResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, results.getQueryExecutionId(), true);
+    }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * @deprecated see getPeople
      */
     public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue)
     {
@@ -1157,43 +1248,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Property '" + propertyKey + "' is not defined " + "for content model type cm:person");
         }
-
-        LinkedHashSet<NodeRef> people = new LinkedHashSet<NodeRef>();
-
-        //
-        // Search for people using the given property
-        //
-
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@cm\\:" + propertyKey.getLocalName() + ":\"" + propertyValue + "\"");
-        sp.addStore(tenantService.getName(storeRef));
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        ResultSet rs = null;
-
-        try
-        {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
-            {
-                NodeRef nodeRef = row.getNodeRef();
-                if (nodeService.exists(nodeRef))
-                {
-                    people.add(nodeRef);
-                }
-            }
-        }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
-
-        return people;
+        
+        List<Pair<QName, String>> filterProps = new ArrayList<Pair<QName, String>>(1);
+        filterProps.add(new Pair<QName, String>(propertyKey, (String)propertyValue));
+        
+        PagingRequest pagingRequest = new PagingRequest(Integer.MAX_VALUE, null);
+        List<NodeRef> people = getPeople(filterProps, true, null, pagingRequest).getPage();
+        
+        Set<NodeRef> result = new HashSet<NodeRef>(people.size());
+        result.addAll(people);
+        
+        return result;
     }
 
     // Policies

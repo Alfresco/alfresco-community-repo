@@ -35,13 +35,13 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoRequest;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -102,7 +101,6 @@ public class FileFolderServiceImplTest extends TestCase
     private FileFolderService fileFolderService;
     private PermissionService permissionService;
     private MutableAuthenticationService authenticationService;
-    private AuthenticationComponent authenticationComponent;
     private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
@@ -219,8 +217,8 @@ public class FileFolderServiceImplTest extends TestCase
     {
         // sanity checks only (see also GetChildrenCannedQueryTest)
         
-        PagingFileInfoRequest pagingRequest = new PagingFileInfoRequest(100, null);
-        PagingFileInfoResults pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, pagingRequest);
+        PagingRequest pagingRequest = new PagingRequest(100, null);
+        PagingFileInfoResults pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -236,8 +234,8 @@ public class FileFolderServiceImplTest extends TestCase
         
         
         // empty list if skip count greater than number of results (ALF-7884)
-        pagingRequest = new PagingFileInfoRequest(1000, 3, null, null);
-        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, pagingRequest);
+        pagingRequest = new PagingRequest(1000, 3, null);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -538,7 +536,7 @@ public class FileFolderServiceImplTest extends TestCase
                 PermissionService.ALL_PERMISSIONS,
                 true);
         AuthenticationUtil.clearCurrentSecurityContext();
-        authenticationComponent.authenticate(username, password);
+        AuthenticationUtil.setFullyAuthenticatedUser(username);
 
         // Check that we can write to the target while permissions allow it
         fileFolderService.create(

@@ -21,12 +21,15 @@ package org.alfresco.service.cmr.model;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -43,7 +46,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public interface FileFolderService
 {
     /**
-     * Lists immediate child files and folders of the given context node
+     * Lists immediate child files and folders of the given context node.
+     * <p/>
+     * Note: this could be a long list (and will be trimmed at a pre-configured maximum).  You should consider using a paging request.
      * 
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching files and folders
@@ -53,27 +58,33 @@ public interface FileFolderService
     
     /**
      * Lists page of immediate child files and/or folders of the given context node
+     * with optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * 
      * @author janv
      * @since 4.0
      */
-    public PagingFileInfoResults list(NodeRef contextNodeRef, 
-                                      boolean files, 
-                                      boolean folders, 
-                                      Set<QName> ignoreTypeQNames, 
-                                      PagingFileInfoRequest pagingRequest);
+    public PagingFileInfoResults list(NodeRef contextNodeRef,
+                                      boolean files,
+                                      boolean folders,
+                                      Set<QName> ignoreTypeQNames,
+                                      List<Pair<QName, Boolean>> sortProps,
+                                      PagingRequest pagingRequest);
     
     /**
      * Lists all immediate child files of the given context node
+     * 
+     * Note: this could be a long list (and will be trimmed at a pre-configured maximum).  You should consider using a paging request.
      * 
      * @param folderNodeRef the folder to start searching in
      * @return Returns a list of matching files
      */
     @Auditable(parameters = {"folderNodeRef"})
-    public List<FileInfo> listFiles(NodeRef folderNodeRef);
+    public List<FileInfo> listFiles(NodeRef contextNodeRef);
     
     /**
      * Lists all immediate child folders of the given context node
+     * 
+     * Note: this could be a long list (and will be trimmed at a pre-configured maximum).  You should consider using a paging request.
      * 
      * @param contextNodeRef the node to start searching in
      * @return Returns a list of matching folders
@@ -88,6 +99,8 @@ public interface FileFolderService
      * 
      * @param contextNodeRef the node to start searching in
      * @param filter - may be null in which case all sub-folders will be searched
+     * 
+     * @deprecated
      */
     @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> listDeepFolders(NodeRef contextNodeRef, SubFolderFilter filter);

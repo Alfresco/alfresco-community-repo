@@ -23,29 +23,43 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public abstract class BaseNodePublishStatus implements NodePublishStatus
 {
-    private NodeRef nodeRef;
+    private final NodeRef nodeRef;
+    private final Environment environment;
+    private final String channelName;
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#getNodeRef()
+    public BaseNodePublishStatus(NodeRef nodeRef, Environment environment, String channelName)
+    {
+        this.nodeRef = nodeRef;
+        this.environment = environment;
+        this.channelName = channelName;
+    }
+    
+    /**
+    * {@inheritDoc}
      */
-    @Override
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodePublishStatus#getEnvironment()
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+      */
     public Environment getEnvironment()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return environment;
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    public String getChannelName()
+    {
+        return channelName;
+    }
 }

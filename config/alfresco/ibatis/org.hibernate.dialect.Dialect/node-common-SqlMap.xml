@@ -133,7 +133,7 @@
         <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
     
-    <resultMap id="result_SortableNode" type="SortableNode">
+    <resultMap id="result_FilterSortNode" type="FilterSortNode">
         
         <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         
@@ -160,6 +160,18 @@
         <result property="prop2.value.floatValue" column="prop2_float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="prop2.value.doubleValue" column="prop2_double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
         <result property="prop2.value.stringValue" column="prop2_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        
+        <result property="prop3.nodeId" column="prop3_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop3.key.qnameId" column="prop3_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop3.key.localeId" column="prop3_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop3.key.listIndex" column="prop3_list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop3.value.actualType" column="prop3_actual_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop3.value.persistedType" column="prop3_persisted_type_n" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="prop3.value.booleanValue" column="prop3_boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="prop3.value.longValue" column="prop3_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="prop3.value.floatValue" column="prop3_float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <result property="prop3.value.doubleValue" column="prop3_double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
+        <result property="prop3.value.stringValue" column="prop3_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         
         <association property="node" resultMap="alfresco.node.result_Node"/>
         
@@ -853,8 +865,8 @@
             assoc.id = #{id}
     </select>
     
-    <!-- GetChildren - with explicit sort order -->
-    <select id="select_GetChildrenSortedCannedQuery" parameterType="SortableNode" resultMap="result_SortableNode">
+    <!-- GetChildren - with explicit prop filtering and/or sorting -->
+    <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
        select
             childNode.id             as id,
             childStore.protocol      as protocol,
@@ -886,6 +898,19 @@
             prop2.double_value       as prop2_double_value,
             prop2.string_value       as prop2_string_value
             </if>
+            <if test="prop1qnameId != null and prop2qnameId != null and prop3qnameId != null">
+          , prop3.node_id            as prop3_node_id,
+            prop3.qname_id           as prop3_qname_id,
+            prop3.locale_id          as prop3_locale_id,
+            prop3.list_index         as prop3_list_index,
+            prop3.actual_type_n      as prop3_actual_type_n,
+            prop3.persisted_type_n   as prop3_persisted_type_n,
+            prop3.boolean_value      as prop3_boolean_value,
+            prop3.long_value         as prop3_long_value,
+            prop3.float_value        as prop3_float_value,
+            prop3.double_value       as prop3_double_value,
+            prop3.string_value       as prop3_string_value
+            </if>
             <if test="auditableProps == true">
           , childNode.audit_creator  as audit_creator,
             childNode.audit_created  as audit_created,
@@ -906,6 +931,9 @@
             <if test="prop1qnameId != null and prop2qnameId != null">
             left join alf_node_properties prop2 on (prop2.node_id = childNode.id and prop2.qname_id = #{prop2qnameId})
             </if>
+            <if test="prop1qnameId != null and prop2qnameId != null and prop3qnameId != null">
+            left join alf_node_properties prop3 on (prop3.node_id = childNode.id and prop3.qname_id = #{prop3qnameId})
+            </if>
         where
             assoc.parent_node_id = #{parentNodeId}
             <if test="childNodeTypeQNameIds != null">
@@ -919,8 +947,8 @@
         </if>
     </select>
     
-    <!-- GetChildren - with no explicit sort order -->
-    <select id="select_GetChildrenCannedQuery" parameterType="SortableNode" resultMap="result_NodeRef">
+    <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type -->
+    <select id="select_GetChildrenCannedQueryWithoutProps" parameterType="FilterSortNode" resultMap="result_NodeRef">
        select
             childNode.id             as id,
             childStore.protocol      as protocol,
@@ -979,6 +1007,15 @@
         <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
         </if>
+    </select>
+    
+    <select id="select_ChildAssocOfParentByName" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            parentNode.id = #{parentNode.id}
+            and assoc.child_node_name = #{childNodeName}
+            and assoc.child_node_name_crc = #{childNodeNameCrc}
     </select>
     
     <select id="select_ChildAssocsOfParentWithoutParentAssocsOfType" parameterType="ChildAssoc" resultMap="result_ChildAssoc">

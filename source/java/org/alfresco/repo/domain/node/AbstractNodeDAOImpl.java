@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Savepoint;
@@ -52,6 +53,7 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -134,6 +136,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ContentDataDAO contentDataDAO;
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
+    private EncryptionEngine encryptionEngine;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -213,6 +216,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    public void setEncryptionEngine(EncryptionEngine encryptionEngine)
+    {
+        this.encryptionEngine = encryptionEngine;
     }
 
     /**
@@ -360,8 +368,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "usageDAO", usageDAO);
-        
-        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
+//        PropertyCheck.mandatory(this, "encryptionEngine", encryptionEngine);
+
+        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptionEngine);
     }
     
     /*

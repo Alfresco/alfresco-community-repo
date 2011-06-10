@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.alfresco.repo.publishing.PublishingModel.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +57,7 @@ import org.alfresco.util.ParameterCheck;
  */
 public class ChannelServiceImpl implements ChannelService
 {
+
     private static final String CHANNEL_CONTAINER_NAME = "channels";
 
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
@@ -62,7 +65,8 @@ public class ChannelServiceImpl implements ChannelService
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private EnvironmentHelper environmentHelper;
-
+    private ChannelHelper channelHelper;
+    
     /**
      * @param siteService
      *            the siteService to set
@@ -100,6 +104,14 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
+     * @param channelHelper the channelHelper to set
+     */
+    public void setChannelHelper(ChannelHelper channelHelper)
+    {
+        this.channelHelper = channelHelper;
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public void register(ChannelType channelType)
@@ -131,21 +143,15 @@ public class ChannelServiceImpl implements ChannelService
         Channel channel = null;
         if (channelType != null)
         {
-            QName channelNodeType = channelType.getChannelNodeType();
             HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>();
             if (properties != null)
             {
                 actualProps.putAll(properties);
             }
             actualProps.put(ContentModel.PROP_NAME, name);
-            actualProps.put(PublishingModel.PROP_CHANNEL_TYPE_ID, channelType.getId());
-            QName channelQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
-            ChildAssociationRef assoc = nodeService.createNode(channelContainer, ContentModel.ASSOC_CONTAINS,
-                    channelQName, channelNodeType, actualProps);
-            channel = buildChannelObject(assoc.getChildRef());
-            QName rootNodeType = channelType.getContentRootNodeType();
-            nodeService.createNode(assoc.getChildRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
-                    NamespaceService.CONTENT_MODEL_1_0_URI, "root"), rootNodeType);
+            actualProps.put(PROP_CHANNEL_TYPE_ID, channelType.getId());
+            NodeRef channelNode = channelHelper.createChannelNode(channelContainer, channelType, name, actualProps);
+            channel = channelHelper.buildChannelObject(channelNode, this);
 
             // Now create the corresponding channel nodes in each of the
             // configured environments
@@ -154,8 +160,7 @@ public class ChannelServiceImpl implements ChannelService
             Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
             for (NodeRef environment : environments.values())
             {
-                nodeService.createNode(environment, ContentModel.ASSOC_CONTAINS, channelQName, channelNodeType,
-                        actualProps);
+                channelHelper.addChannelToEnvironment(environment, channel, actualProps);
             }
         }
         return channel;
@@ -188,17 +193,45 @@ public class ChannelServiceImpl implements ChannelService
         ParameterCheck.mandatory("siteId", siteId);
 
         NodeRef channelContainer = getChannelContainer(siteId);
-        Collection<QName> channelNodeTypes = dictionaryService.getSubTypes(PublishingModel.TYPE_DELIVERY_CHANNEL, true);
-        List<ChildAssociationRef> channelAssocs = nodeService.getChildAssocs(channelContainer, new HashSet<QName>(
-                channelNodeTypes));
+        Collection<QName> channelNodeTypes = dictionaryService.getSubTypes(TYPE_DELIVERY_CHANNEL, true);
+        HashSet<QName> childNodeTypeQNames = new HashSet<QName>(channelNodeTypes);
+        List<ChildAssociationRef> channelAssocs = nodeService.getChildAssocs(channelContainer, childNodeTypeQNames);
         List<Channel> channelList = new ArrayList<Channel>(channelAssocs.size());
         for (ChildAssociationRef channelAssoc : channelAssocs)
         {
-            channelList.add(buildChannelObject(channelAssoc.getChildRef()));
+            NodeRef channelNode = channelAssoc.getChildRef();
+            Channel channel = channelHelper.buildChannelObject(channelNode, this);
+            channelList.add(channel);
         }
         return Collections.unmodifiableList(channelList);
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    public Channel getChannel(String siteId, String channelName)
+    {
+        ParameterCheck.mandatory("siteId", siteId);
+        ParameterCheck.mandatory("channelName", channelName);
+
+        NodeRef channelContainer = getChannelContainer(siteId);
+        if(channelContainer == null)
+        {
+            return null;
+        }
+        
+        NodeRef child = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
+        if(child!=null)
+        {
+            QName type = nodeService.getType(child);
+            if(dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
+            {
+                return channelHelper.buildChannelObject(child, this);
+            }
+        }
+        return null;
+    }
+    
     /**
      * @param siteId
      * @return
@@ -220,19 +253,6 @@ public class ChannelServiceImpl implements ChannelService
             }
         }, AuthenticationUtil.getSystemUserName());
 
-    }
-
-    /**
-     * @param childRef
-     * @return
-     */
-    private Channel buildChannelObject(NodeRef nodeRef)
-    {
-        Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-        Serializable channelTypeId = props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
-        ChannelType channelType = channelTypes.get(channelTypeId);
-        String name = (String) props.get(ContentModel.PROP_NAME);
-        return new ChannelImpl(channelType, nodeRef, name, this, nodeService);
     }
 
     /**

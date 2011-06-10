@@ -44,7 +44,9 @@ import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -58,7 +60,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoRequest;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -531,11 +532,23 @@ public class AlfrescoCmisService extends AbstractCmisService
             sortProps = new ArrayList<Pair<QName, Boolean>>(1);
             
             String[] parts = orderBy.split(",");
-            if (parts.length > 0)
+            int len = parts.length;
+            final int origLen = len;
+            
+            if (origLen > 0)
             {
-                for (int i = 0; i < parts.length; i++)
+                int maxSortProps = GetChildrenCannedQuery.MAX_FILTER_SORT_PROPS;
+                if (len > maxSortProps)
                 {
-                    String[] sort = parts[i].split(" "); // TODO support multiple spaces
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Too many sort properties in 'orderBy' - ignore those above max (max="+maxSortProps+",actual="+len+")");
+                    }
+                    len = maxSortProps;
+                }
+                for (int i = 0; i < len; i++)
+                {
+                    String[] sort = parts[i].split(" +");
                     
                     if (sort.length > 0)
                     {
@@ -548,16 +561,37 @@ public class AlfrescoCmisService extends AbstractCmisService
                                 boolean sortAsc = ((sort.length == 1) || (sortAsc = (sort[1].equalsIgnoreCase("asc"))));
                                 sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
                             }
+                            else
+                            {
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Ignore sort property '"+sort[0]+" - mapping not found");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Ignore sort property '"+sort[0]+" - query name not found");
+                            }
                         }
                     }
                 }
             }
+            
+            if (sortProps.size() < origLen)
+            {
+                logger.warn("Sort properties trimmed - either too many and/or not found: \n" +
+                        "   orig:  " + orderBy + "\n" +
+                        "   final: " + sortProps);
+            }
         }
         
-        PagingFileInfoRequest pageRequest = new PagingFileInfoRequest(skipCount.intValue(), maxItems.intValue(), sortProps, null);
+        PagingRequest pageRequest = new PagingRequest(skipCount.intValue(), maxItems.intValue(), null);
         pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO make this optional/configurable - affects whether numItems may be returned
         
-        PagingFileInfoResults pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, pageRequest);
+        PagingFileInfoResults pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, sortProps, pageRequest);
         List<FileInfo> childrenList = pageOfNodeInfos.getPage();
         
         if (max > 0)

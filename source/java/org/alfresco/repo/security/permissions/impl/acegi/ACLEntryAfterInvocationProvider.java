@@ -41,6 +41,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.query.PermissionedResults;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
+import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
@@ -307,6 +308,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("Child Association access");
                 }
                 return decide(authentication, object, config, (ChildAssociationRef) returnedObject);
+            }
+            else if (SolrJSONResultSet.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("SolrJSONResultSet - already checked permissions for " + object.getClass().getName());
+                }
+                return returnedObject;
             }
             else if (CMISResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {

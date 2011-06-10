@@ -154,4 +154,5 @@ public class ChannelServiceImplTest
         
         // TODO Test other NodeFilter behaviour when added.
     }
+    
 }

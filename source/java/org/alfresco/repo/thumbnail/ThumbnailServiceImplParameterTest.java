@@ -130,6 +130,7 @@ public class ThumbnailServiceImplParameterTest
         parametersUnderTest.put(ImageRenderingEngine.PARAM_COMMAND_OPTIONS, "foo");
         parametersUnderTest.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, Boolean.TRUE);
         parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, Boolean.FALSE);
+        parametersUnderTest.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, Boolean.TRUE);
         parametersUnderTest.put(AbstractRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY, ContentModel.PROP_CONTENT);
         parametersUnderTest.put(RenditionService.PARAM_DESTINATION_NODE, dummyNodeRef2);
         
@@ -145,6 +146,7 @@ public class ThumbnailServiceImplParameterTest
         resizeOptions.setWidth((Integer) parametersUnderTest.get(ImageRenderingEngine.PARAM_RESIZE_WIDTH));
         resizeOptions.setMaintainAspectRatio((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO));
         resizeOptions.setResizeToThumbnail((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL));
+        resizeOptions.setAllowEnlargement((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT));
         imageTransOpts.setResizeOptions(resizeOptions);
         
         ThumbnailParentAssociationDetails assocDetails = new ThumbnailParentAssociationDetails(dummyNodeRef3,

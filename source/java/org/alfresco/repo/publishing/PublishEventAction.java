@@ -34,14 +34,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class PublishEventAction extends ActionExecuterAbstractBase 
 {
-
+    private PublishingEventProcessor processor;
+    
     /**
     * {@inheritDoc}
     */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(Action action, NodeRef eventNode)
     {
-        // TODO Implement execute method.
+        processor.processEventNode(eventNode);
     }
 
     /**
@@ -50,8 +51,15 @@ public class PublishEventAction extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        // TODO Implement parameter definitions.
-        
+        //NOOP
+    }
+    
+    /**
+     * @param processor the processor to set
+     */
+    public void setPublishingEventProcessor(PublishingEventProcessor processor)
+    {
+        this.processor = processor;
     }
 
 }

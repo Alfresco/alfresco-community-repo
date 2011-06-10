@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -32,7 +33,9 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -729,6 +732,8 @@ public class NodePropertyValue implements Cloneable, Serializable
     private Double doubleValue;
     private String stringValue;
     private Serializable serializableValue;
+
+    private boolean encrypted;
     
     /**
      * default constructor
@@ -736,20 +741,23 @@ public class NodePropertyValue implements Cloneable, Serializable
     public NodePropertyValue()
     {
     }
-    
+
     /**
      * Construct a new property value.
      * 
      * @param typeQName         the dictionary-defined property type to store the property as
      * @param value             the value to store.  This will be converted into a format compatible
      *                          with the type given
+     * @param isEncrypted       true if value should be encrypted when persisted
      * 
      * @throws java.lang.UnsupportedOperationException if the value cannot be converted to the type given
      */
-    public NodePropertyValue(QName typeQName, Serializable value)
+    public NodePropertyValue(QName typeQName, Serializable value, boolean encrypted)
     {
         ParameterCheck.mandatory("typeQName", typeQName);
-        
+
+        this.encrypted = encrypted;
+
         if (value == null)
         {
             this.actualType = NodePropertyValue.getActualType(value);
@@ -757,17 +765,38 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         else
         {
-            // Convert the value to the type required.  This ensures that any type conversion issues
-            // are caught early and prevent the scenario where the data in the DB cannot be given
-            // back out because it is unconvertable.
-            ValueType valueType = makeValueType(typeQName);
-            value = valueType.convert(value);
+            ValueType persistedValueType = null;
 
-            this.actualType = NodePropertyValue.getActualType(value);
-            // get the persisted type
-            ValueType persistedValueType = this.actualType.getPersistedType(value);
-            // convert to the persistent type
-            value = persistedValueType.convert(value);
+            if(encrypted)
+            {
+                // this constructor doesn't appear to get called for type DataTypeDefinition.MLTEXT because MLTEXT is
+                // split out into strings in NodePropertyHelper
+                if(typeQName.equals(DataTypeDefinition.TEXT))
+                {
+                    this.actualType = ValueType.STRING;
+                    persistedValueType = ValueType.SERIALIZABLE;
+                }
+                else
+                {
+                    throw new AlfrescoRuntimeException("Can encrypt only TEXT and MLTEXT types, this type is " + typeQName);
+                }
+            }
+            else
+            {
+                // Convert the value to the type required.  This ensures that any type conversion issues
+                // are caught early and prevent the scenario where the data in the DB cannot be given
+                // back out because it is unconvertable.
+                ValueType valueType = makeValueType(typeQName);
+                value = valueType.convert(value);
+                
+                this.actualType = NodePropertyValue.getActualType(value);
+    
+                // get the persisted type
+                persistedValueType = this.actualType.getPersistedType(value);
+                // convert to the persistent type
+                value = persistedValueType.convert(value);
+            }
+
             setPersistedValue(persistedValueType, value);
         }
     }
@@ -897,6 +926,9 @@ public class NodePropertyValue implements Cloneable, Serializable
             case SERIALIZABLE:
                 this.serializableValue = cloneSerializable(value);
                 break;
+//            case ENCRYPTED_STRING:
+//                this.serializableValue = encrypt(value);
+//                break;
             default:
                 throw new AlfrescoRuntimeException("Unrecognised value type: " + persistedType);
         }
@@ -1037,6 +1069,10 @@ public class NodePropertyValue implements Cloneable, Serializable
                 // We assume that the collection contained the correct type values.  They would
                 // have been converted on the way in.
                 ret = (Serializable) persistedValue;
+            }
+            else if(encrypted)
+            {
+                ret = persistedValue;
             }
             else
             {

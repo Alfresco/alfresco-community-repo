@@ -105,6 +105,16 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * the resulting image will usually be of better quality.
      */
     public static final String PARAM_RESIZE_TO_THUMBNAIL = "resizeToThumbnail";
+    
+    /**
+     * This optional {@link Boolean} flag parameter specifies whether image resizing
+     * should produce an enlarged image, based on the resizing parameters and the size
+     * of the original image. If true (the default), images may be enlarged.
+     * If false, resize operations that would enlarge the image will instead produce a copy
+     * of the original image at the same size.
+     * @since 4.0
+     */
+    public static final String PARAM_ALLOW_ENLARGEMENT = "allowEnlargement";
 
     // Crop params
     /**
@@ -265,12 +275,14 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
         }
         boolean isPercentResize = context.getParamWithDefault(PARAM_IS_PERCENT_RESIZE, false);
         boolean maintainAspectRatio = context.getParamWithDefault(PARAM_MAINTAIN_ASPECT_RATIO, false);
+        boolean allowEnlargement = context.getParamWithDefault(PARAM_ALLOW_ENLARGEMENT, true);
 
         ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
         imageResizeOptions.setMaintainAspectRatio(maintainAspectRatio);
         imageResizeOptions.setWidth(newHeight);
         imageResizeOptions.setHeight(newWidth);
         imageResizeOptions.setPercentResize(isPercentResize);
+        imageResizeOptions.setAllowEnlargement(allowEnlargement);
         return imageResizeOptions;
     }
 
@@ -358,7 +370,10 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
         paramList.add(new ParameterDefinitionImpl(PARAM_MAINTAIN_ASPECT_RATIO, DataTypeDefinition.BOOLEAN, false,
                     getParamDisplayLabel(PARAM_MAINTAIN_ASPECT_RATIO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_RESIZE_TO_THUMBNAIL, DataTypeDefinition.BOOLEAN, false,
-                    getParamDisplayLabel(PARAM_RESIZE_TO_THUMBNAIL)));
+                getParamDisplayLabel(PARAM_RESIZE_TO_THUMBNAIL)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_ALLOW_ENLARGEMENT, DataTypeDefinition.BOOLEAN, false,
+                getParamDisplayLabel(PARAM_ALLOW_ENLARGEMENT)));
+        
         
         //Crop Params
         paramList.add(new ParameterDefinitionImpl(PARAM_CROP_GRAVITY, DataTypeDefinition.TEXT, false,

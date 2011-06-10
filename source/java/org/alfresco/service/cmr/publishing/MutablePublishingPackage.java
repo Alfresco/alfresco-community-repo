@@ -22,6 +22,11 @@ import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * An extension of the {@link PublishingPackage} interface that permits changes to be made
+ * @author Brian
+ *
+ */
 public interface MutablePublishingPackage extends PublishingPackage
 {
     void addNodesToUnpublish(NodeRef... nodesToRemove);

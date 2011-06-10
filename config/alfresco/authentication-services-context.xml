@@ -309,6 +309,9 @@
         <property name="permissionsManager">
             <ref bean="personServicePermissionsManager" />
         </property>
+        <property name="cannedQueryRegistry">
+            <ref bean="cannedQueryRegistry" />
+        </property>
         <property name="aclDAO">
             <ref bean="aclDAO" />
         </property>
@@ -362,7 +365,22 @@
             <value>false</value>
         </property>
     </bean>
-
+    
+    <bean name="peopleGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="cannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="encryptionEngine" ref="encryptionEngine"/>
+        <property name="methodSecurityInterceptor" ref="PersonService_security"/>
+        <property name="methodService" ref="personService"/>
+        <property name="methodName" value="getPeople"/>
+    </bean>
+   
     <bean name="personServicePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
         <property name="permissionService">
             <ref bean="permissionServiceImpl" />

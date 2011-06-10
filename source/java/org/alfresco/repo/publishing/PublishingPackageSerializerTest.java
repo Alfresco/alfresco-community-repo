@@ -38,89 +38,46 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.publishing.PublishingPackageImpl.PublishingPackageEntryImpl;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
-import org.alfresco.service.cmr.publishing.PublishingQueue;
-import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-@Transactional
-public class PublishingPackageSerializerTest
+public class PublishingPackageSerializerTest extends AbstractPublishingIntegrationTest
 {
     @Autowired
-    protected ServiceRegistry serviceRegistry;
     protected RetryingTransactionHelper retryingTransactionHelper;
-    protected NodeService nodeService;
-    protected WorkflowService workflowService;
-    protected FileFolderService fileFolderService;
-    protected SiteService siteService;
-
-    @Resource(name="publishingService")
-    private PublishingService publishingService;
-    
-    @Resource(name="authenticationComponent")
-    protected AuthenticationComponent authenticationComponent;
 
     @Resource(name="publishingPackageSerializer")
     private StandardPublishingPackageSerializer serializer;
 
-    private String siteId;
     private TransferManifestNormalNode normalNode1;
-//    private EnvironmentHelper environmentHelper;
 
     /**
      * @throws java.lang.Exception
      */
     @Before
+    @Override
     public void setUp() throws Exception
     {
-        String adminUser = AuthenticationUtil.getAdminUserName();
-        AuthenticationUtil.setFullyAuthenticatedUser(adminUser);
-        retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
-        fileFolderService = serviceRegistry.getFileFolderService();
-        workflowService = serviceRegistry.getWorkflowService();
-        nodeService = serviceRegistry.getNodeService();
-        siteService = serviceRegistry.getSiteService();
-
-//        environmentHelper = (EnvironmentHelper) applicationContext.getBean("environmentHelper");
-        siteId = GUID.generate();
-        siteService.createSite("test", siteId, "Test site created by PublishingPackageSerializerTest",
-                "Test site created by PublishingPackageSerializerTest", SiteVisibility.PUBLIC);
-
+        super.setUp();
+        
         normalNode1 = new TransferManifestNormalNode();
         normalNode1.setAccessControl(null);
 
@@ -170,12 +127,8 @@ public class PublishingPackageSerializerTest
     @Test
     public void testSerializer() throws Exception
     {
-        PublishingQueue queue = publishingService.getEnvironment(siteId, EnvironmentHelper.LIVE_ENVIRONMENT_NAME)
-                .getPublishingQueue();
-
-        MutablePublishingPackageImpl packageImpl = (MutablePublishingPackageImpl) queue.createPublishingPackage();
         TransferManifestNodeFactory mockTMNFactory = mock(TransferManifestNodeFactory.class);
-        packageImpl.setTransferManifestNodeFactory(mockTMNFactory);
+        MutablePublishingPackageImpl packageImpl = new MutablePublishingPackageImpl(mockTMNFactory);
 
        when(mockTMNFactory.createTransferManifestNode(any(NodeRef.class), any(TransferDefinition.class)))
                .thenReturn(normalNode1);

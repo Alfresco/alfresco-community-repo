@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
@@ -86,8 +87,9 @@ public class NodePropertyHelperTest extends TestCase
         QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
         LocaleDAO localeDAO = (LocaleDAO) ctx.getBean("localeDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
+        EncryptionEngine encryptionEngine = (EncryptionEngine) ctx.getBean("encryptionEngine");
 
-        helper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
+        helper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptionEngine);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setMinRetryWaitMs(10);

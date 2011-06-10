@@ -354,6 +354,31 @@ public class RepoDictionaryDAOTest extends TestCase
                 propertyDef.isMandatoryEnforced());
     }
     
+    public void testEncrypted()
+    {
+        // get the properties for the test type
+        QName testEncryptedQName = QName.createQName(TEST_URL, "encrypted");
+        ClassDefinition testEncryptedClassDef = service.getClass(testEncryptedQName);
+        Map<QName, PropertyDefinition> testEncryptedPropertyDefs = testEncryptedClassDef.getProperties();
+        
+        PropertyDefinition propertyDef = null;
+
+        QName testTextEncryptedQName = QName.createQName(TEST_URL, "text_encrypted");
+        propertyDef = testEncryptedPropertyDefs.get(testTextEncryptedQName);
+        assertNotNull("Property not found: " + testTextEncryptedQName,
+                propertyDef);
+        assertTrue("Expected property to be encrypted: " + testTextEncryptedQName,
+                propertyDef.isEncrypted());
+
+        QName testMLTextEncryptedQName = QName.createQName(TEST_URL, "mltext_encrypted");
+        propertyDef = testEncryptedPropertyDefs.get(testMLTextEncryptedQName);
+        assertNotNull("Property not found: " + testMLTextEncryptedQName,
+                propertyDef);
+        assertTrue("Expected property to be encrypted: " + testMLTextEncryptedQName,
+                propertyDef.isEncrypted());
+// TODO test for encrypted == false?
+    }
+    
     public void testSubClassOf()
     {
         QName invalid = QName.createQName(TEST_URL, "invalid");

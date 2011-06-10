@@ -43,20 +43,6 @@ public class PublishingQueueImpl implements PublishingQueue
      * (non-Javadoc)
      * 
      * @see
-     * org.alfresco.service.cmr.publishing.PublishingQueue#cancelEvent(java.
-     * lang.String)
-     */
-    @Override
-    public void cancelEvent(String eventId)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
      * org.alfresco.service.cmr.publishing.PublishingQueue#createPublishingPackage
      * ()
      */

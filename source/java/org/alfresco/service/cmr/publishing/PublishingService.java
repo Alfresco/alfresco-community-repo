@@ -19,17 +19,52 @@
 package org.alfresco.service.cmr.publishing;
 
 import java.util.List;
-import java.util.Set;
-
-import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface PublishingService
 {
+    /**
+     * The name of the live environment. This environment is always available.
+     */
+    public static final String LIVE_ENVIRONMENT_NAME = "live";
+
+    /**
+     * Retrieve a list of all the target publishing environments defined on the
+     * specified Share site
+     * 
+     * @param siteId
+     *            The identifier of the Share site
+     * @return
+     */
     List<Environment> getEnvironments(String siteId);
-    
+
+    /**
+     * Retrieve the named publishing environment on the specified Share site
+     * 
+     * @param siteId
+     *            The identifier of the Share site
+     * @param environmentName
+     *            The name of the required publishing environment
+     * @return
+     */
     Environment getEnvironment(String siteId, String environmentName);
-    
-    Set<NodeRef> getPublishingDependencies(NodeRef node);
-    
+
+    /**
+     * Retrieve the publishing event that has the specified identifier
+     * 
+     * @param id The identifier of the required publishing event
+     * @return The PublishingEvent object that corresponds to the requested
+     *         identifier or <code>null</code> if no such publishing event can
+     *         be located
+     */
     PublishingEvent getPublishingEvent(String id);
+
+    /**
+     * Request that the specified publishing event be cancelled. This call will
+     * cancel the identified publishing event immediately if it hasn't been
+     * started. If it has been started but not yet completed then the request
+     * for cancellation will be recorded, and acted upon when (and if) possible.
+     * 
+     * @param id The identifier of the publishing event that is to be cancelled.
+     */
+    void cancelPublishingEvent(String id);
 }

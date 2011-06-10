@@ -54,6 +54,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     private boolean isProtected = false;
     private boolean mandatory = false;
     private boolean multiValued = false;
+    private boolean isEncrypted = false;
 
     private MockClassAttributeDefinition(QName name)
     {
@@ -347,6 +348,12 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     public boolean isTargetMany()
     {
         return targetMany;
+    }
+
+    @Override
+    public boolean isEncrypted()
+    {
+        return isEncrypted;
     }
 
 }

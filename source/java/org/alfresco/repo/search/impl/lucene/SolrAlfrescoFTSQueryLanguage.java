@@ -95,12 +95,12 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
             httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
-            StringBuilder url = new StringBuilder("http://localhost:8080/solr/test/alfresco/afts");
+            StringBuilder url = new StringBuilder("http://localhost:8080/solr/alfresco/afts");
             //duplicate the query in the URL
             url.append("?q=");
             URLCodec encoder = new URLCodec();
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
-            url.append("?wt=json");
+            url.append("&wt=json");
             url.append("&fl=*,score");
             if(searchParameters.getMaxItems() > 0)
             {
@@ -176,6 +176,10 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
             for(Locale currentLocale : searchParameters.getLocales())
             {
                 locales.put(DefaultTypeConverter.INSTANCE.convert(String.class, currentLocale));
+            }
+            if(locales.length() == 0)
+            {
+                locales.put(I18NUtil.getLocale());
             }
             body.put("locales", locales);
             

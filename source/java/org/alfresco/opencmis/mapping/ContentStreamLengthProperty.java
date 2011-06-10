@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,10 +21,12 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
@@ -62,5 +64,11 @@ public class ContentStreamLengthProperty extends AbstractProperty
         {
             return 0L;
         }
+    }
+    
+    public QName getMappedProperty()
+    {
+        // spoof
+        return GetChildrenCannedQuery.SORT_QNAME_CONTENT_SIZE;
     }
 }

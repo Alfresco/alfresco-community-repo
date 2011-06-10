@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.model.filefolder;
+package org.alfresco.repo.node.getchildren;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,7 +38,9 @@ import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -60,6 +62,9 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     private LocaleDAO localeDAO;
     private ContentDataDAO contentDataDAO;
     private CannedQueryDAO cannedQueryDAO;
+    private TenantService tenantService;
+    
+    private EncryptionEngine encryptionEngine;
     
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private String methodName;
@@ -95,6 +100,15 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         this.cannedQueryDAO = cannedQueryDAO;
     }
     
+    public void setEncryptionEngine(EncryptionEngine encryptionEngine)
+    {
+        this.encryptionEngine = encryptionEngine;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }    
     
     public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
     {
@@ -114,7 +128,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
-        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
+        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptionEngine);
         
         Method method = null;
         for (Method m : methodService.getClass().getMethods())
@@ -135,28 +149,31 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         // if not passed in (TODO or not in future cache) then generate a new query execution id
         String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
         
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, methodSecurityInterceptor, method, parameters, queryExecutionId);
+        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurityInterceptor, method, parameters, queryExecutionId);
     }
     
     /**
-     * Retrieve a sorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
+     * Retrieve an optionally filtered/sorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
+     * 
+     * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
      *
-     * @param contextNodeRef     parent node ref
-     * @param searchTypeQNames   search type qnames of children nodes
+     * @param parentRef          parent node ref
+     * @param childTypeQNames    type qnames of children nodes (pre-filter)
+     * @param filterProps        filter properties
+     * @param sortProps          sort property pairs (QName and Boolean - true if ascending)
      * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
-     * @param sortProps          up to two sort property pairs (QName and Boolean - true if ascending)
-     * @param queryExecutionId   optional query execution id from previous paging request
+     * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef contextNodeRef, Set<QName> searchTypeQNames, PagingRequest pagingRequest, List<Pair<QName, Boolean>> sortProps)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-        ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
+        ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
         
-        // specific query params
-        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(contextNodeRef, searchTypeQNames);
+        // specific query params - context (parent) and inclusive filters (child types, property values)
+        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), childTypeQNames, filterProps);
         
         int skipCount = pagingRequest.getSkipCount();
         if (skipCount == -1)
@@ -173,9 +190,8 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems, CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
         
-        CannedQuerySortDetails cqsd = null;
-        
         // sort details
+        CannedQuerySortDetails cqsd = null;
         if (sortProps != null)
         {
             List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(sortProps.size());
@@ -197,15 +213,15 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     /**
      * Retrieve an unsorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      *
-     * @param contextNodeRef     parent node ref
-     * @param searchTypeQNames   search type qnames of children nodes
+     * @param parentRef          parent node ref
+     * @param childTypeQNames    type qnames of children nodes
      * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
-     * @param queryExecutionId   optional query execution id from previous paging request
+     * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef contextNodeRef, Set<QName> searchTypeQNames, PagingRequest pagingRequest)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, Set<QName> childTypeQNames, PagingRequest pagingRequest)
     {
-        return getCannedQuery(contextNodeRef, searchTypeQNames, pagingRequest, null);
+        return getCannedQuery(parentRef, childTypeQNames, null, null, pagingRequest);
     }
     
     @Override
@@ -214,12 +230,15 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         super.afterPropertiesSet();
         
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
         
+        //PropertyCheck.mandatory(this, "encryptionEngine", encryptionEngine);
+
         PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
         PropertyCheck.mandatory(this, "methodService", methodService);
         PropertyCheck.mandatory(this, "methodName", methodName);

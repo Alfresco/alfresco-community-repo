@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,14 +19,17 @@
 package org.alfresco.service.cmr.security;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * This service encapsulates the management of people and groups.
@@ -212,9 +215,23 @@ public interface PersonService
      * Get all the people we know about.
      * 
      * @return a set of people in no specific order.
+     * 
+     * @deprecated see getPeople
      */
     @Auditable
     public Set<NodeRef> getAllPeople();
+    
+    /**
+     * Get paged list of people optionally filtered and/or sorted
+     
+     * @param filterProps       list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
+     * @param filterIgnoreCase  true to ignore case when filtering, false to be case-sensitive when filtering
+     * @param sortProps         sort property, eg. cm:username ascending
+     * @param pagingRequest     skip, max + optional query execution id
+     * @since 4.0
+     */
+    @Auditable(parameters = {"stringPropFilters", "filterIgnoreCase", "sortProps", "pagingRequest"})
+    public PagingPersonResults getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
      * Get people filtered by the given property name/value pair
@@ -222,6 +239,8 @@ public interface PersonService
      * @param propertyKey property key of property to filter people by 
      * @param propertyValue property value of property to filter people by
      * @return people filtered by the given property name/value pair
+     * 
+     * @deprecated see getPeople
      */
     @Auditable
     public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue);

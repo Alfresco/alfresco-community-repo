@@ -22,11 +22,10 @@ package org.alfresco.repo.publishing;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import org.alfresco.repo.transfer.manifest.TransferManifestNode;
-import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,16 +36,38 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class PublishingPackageImpl implements PublishingPackage
 {
-    private Map<NodeRef, PublishingPackageEntry> entries = new HashMap<NodeRef,PublishingPackageEntry>(23);
+    private final Map<NodeRef, PublishingPackageEntry> entries;
+    private final Set<NodeRef> nodesToPublish;
+    private final Set<NodeRef> nodesToUnpublish;
     
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingPackage#getEntries()
+    public PublishingPackageImpl(Map<NodeRef, PublishingPackageEntry> entries)
+    {
+        Set<NodeRef> toPublish = new HashSet<NodeRef>();
+        Set<NodeRef> toUnpublish = new HashSet<NodeRef>();
+        for (PublishingPackageEntry entry : entries.values())
+        {
+            NodeRef node = entry.getNodeRef();
+            if(entry.isPublish())
+            {
+                toPublish.add(node);
+            }
+            else
+            {
+                toUnpublish.add(node);
+            }
+        }
+        HashMap<NodeRef, PublishingPackageEntry> entryMap = new HashMap<NodeRef, PublishingPackageEntry>(entries);
+        this.entries = Collections.unmodifiableMap(entryMap);
+        this.nodesToPublish = Collections.unmodifiableSet(toPublish);
+        this.nodesToUnpublish = Collections.unmodifiableSet(toUnpublish);
+    }
+    
+    /**
+    * {@inheritDoc}
      */
-    @Override
     public Collection<PublishingPackageEntry> getEntries()
     {
-        return Collections.unmodifiableCollection(entries.values());
+        return entries.values();
     }
 
     public Map<NodeRef,PublishingPackageEntry> getEntryMap()
@@ -54,61 +75,21 @@ public class PublishingPackageImpl implements PublishingPackage
         return entries;
     }
     
-    public void setEntryMap(Map<NodeRef,PublishingPackageEntry> entryMap)
-    {
-        entries = new HashMap<NodeRef, PublishingPackageEntry>(entryMap);
-    }
-    
-    protected static class PublishingPackageEntryImpl implements PublishingPackageEntry
-    {
-        private final boolean publish; 
-        private final NodeRef nodeRef;
-        private final TransferManifestNormalNode payload;
-        
-        /**
-         * 
-         */
-        public PublishingPackageEntryImpl(boolean publish, NodeRef nodeRef, TransferManifestNormalNode payload)
-        {
-            this.publish = publish;
-            this.nodeRef = nodeRef;
-            this.payload = payload;
-            
-        }
-        
-        /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.publishing.PublishingPackageEntry#getNodeRef()
-         */
-        @Override
-        public NodeRef getNodeRef()
-        {
-            return nodeRef;
-        }
+    /**
+     * {@inheritDoc}
+     */
+     public Set<NodeRef> getNodesToPublish()
+     {
+         return nodesToPublish;
+     }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.publishing.PublishingPackageEntry#isPublish()
-         */
-        @Override
-        public boolean isPublish()
-        {
-            return publish;
-        }
+     /**
+     * {@inheritDoc}
+     */
+     @Override
+     public Set<NodeRef> getNodesToUnpublish()
+     {
+         return nodesToUnpublish;
+     }
 
-        /**
-         * @return the payload
-         */
-        public TransferManifestNode getPayload()
-        {
-            return payload;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.publishing.PublishingPackageEntry#getSnapshot()
-         */
-        @Override
-        public NodeSnapshot getSnapshot()
-        {
-            return new NodeSnapshotTransferImpl(payload);
-        }
-    }
 }

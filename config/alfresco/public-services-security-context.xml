@@ -828,6 +828,7 @@
                 org.alfresco.service.cmr.security.PersonService.deletePerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.notifyPerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.getAllPeople=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleFilteredByProperty=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getUserNamesAreCaseSensitive=ACL_ALLOW

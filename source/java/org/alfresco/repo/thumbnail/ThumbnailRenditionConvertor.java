@@ -171,6 +171,9 @@ public class ThumbnailRenditionConvertor
 
                 boolean resizeToThumbnail = imgResizeOptions.isResizeToThumbnail();
                 parameters.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, resizeToThumbnail);
+                
+                boolean allowEnlargement = imgResizeOptions.getAllowEnlargement();
+                parameters.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, allowEnlargement);
             }
         }
         // TODO Handle RuntimeExecutableTransformationOptions
@@ -240,6 +243,12 @@ public class ThumbnailRenditionConvertor
             if (resizeToThumbnail != null)
             {
                 resizeOptions.setResizeToThumbnail((Boolean) resizeToThumbnail);
+            }
+
+            Serializable allowEnlargement = renditionDefinition.getParameterValue(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT);
+            if (allowEnlargement != null)
+            {
+                resizeOptions.setAllowEnlargement((Boolean) allowEnlargement);
             }
 
             imgTrOpts.setResizeOptions(resizeOptions);

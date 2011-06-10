@@ -20,14 +20,11 @@
 package org.alfresco.repo.publishing;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Set;
 
 import org.alfresco.service.cmr.publishing.MutablePublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Nick Smith
@@ -38,37 +35,29 @@ public class PublishingEventImpl implements PublishingEvent
 {
     private final String id;
     private final Status status;
+    private final String channelName;
     private final PublishingPackage publishingPackage;
     private final Date createdTime;
     private final String creator;
     private final Date modifiedTime;
     private final String modifier;
-    private final Set<PublishingEvent> dependingEvents;
-    private final Set<PublishingEvent> eventsDependedOn;
-    private final Set<NodeRef> nodesDependedOn;
     protected final Calendar scheduledTime;
     protected String comment;
     
-    
     public PublishingEventImpl(String id,
-            Status status, PublishingPackage publishingPackage,
-            Date createdTime,String creator,
-            Date modifiedTime, String modifier,
-            Set<PublishingEvent> dependingEvents,
-            Set<PublishingEvent> eventsDependedOn,
-            Set<NodeRef> nodesDependedOn,
-            Calendar scheduledTime, String comment)
+            Status status, String channelName,
+            PublishingPackage publishingPackage,Date createdTime,
+            String creator, Date modifiedTime,
+            String modifier, Calendar scheduledTime, String comment)
     {
         this.id = id;
         this.status = status;
+        this.channelName = channelName;
         this.publishingPackage = publishingPackage;
         this.createdTime = createdTime;
         this.creator = creator;
         this.modifiedTime = modifiedTime;
         this.modifier = modifier;
-        this.dependingEvents = Collections.unmodifiableSet(dependingEvents);
-        this.eventsDependedOn = Collections.unmodifiableSet(eventsDependedOn);
-        this.nodesDependedOn = Collections.unmodifiableSet(nodesDependedOn);
         this.scheduledTime = scheduledTime;
         this.comment = comment;
     }
@@ -76,12 +65,10 @@ public class PublishingEventImpl implements PublishingEvent
     public PublishingEventImpl(PublishingEvent event)
     {
         this(event.getId(),
-                event.getStatus(), event.getPackage(),
-                event.getCreatedTime(), event.getCreator(),
-                event.getModifiedTime(), event.getModifier(),
-                event.getDependingEvents(), event.getEventsDependedOn(),
-                event.getNodesDependedOn(),
-                event.getScheduledTime(), event.getComment());
+                event.getStatus(), event.getChannelName(),
+                event.getPackage(), event.getCreatedTime(),
+                event.getCreator(), event.getModifiedTime(),
+                event.getModifier(), event.getScheduledTime(), event.getComment());
     }
 
     /**
@@ -102,6 +89,14 @@ public class PublishingEventImpl implements PublishingEvent
         return status;
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    public String getChannelName()
+    {
+        return channelName;
+    }
+    
     /**
     * {@inheritDoc}
     */
@@ -163,33 +158,6 @@ public class PublishingEventImpl implements PublishingEvent
     public String getComment()
     {
         return comment;
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    @Override
-    public Set<PublishingEvent> getDependingEvents()
-    {
-        return dependingEvents;
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    @Override
-    public Set<PublishingEvent> getEventsDependedOn()
-    {
-        return eventsDependedOn;
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    @Override
-    public Set<NodeRef> getNodesDependedOn()
-    {
-        return nodesDependedOn;
     }
 
     /**

@@ -66,6 +66,7 @@ public class SolrJSONResultSet implements ResultSet
      */
     public SolrJSONResultSet(JSONObject json, NodeDAO nodeDAO, SearchParameters searchParameters)
     {
+        // Note all properties are returned as multi-valued from the WildcardField "*" definition in the SOLR schema.xml
         this.nodeDAO = nodeDAO;
         this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         try
@@ -86,7 +87,8 @@ public class SolrJSONResultSet implements ResultSet
             for(int i = 0; i < numDocs; i++)
             {
                 JSONObject doc = docs.getJSONObject(i);
-                Long dbid = doc.getLong("DBID");
+                JSONArray dbids = doc.getJSONArray("DBID");
+                Long dbid = dbids.getLong(0);
                 Float score = Float.valueOf(doc.getString("score"));
                 page.add(new Pair<Long, Float>(dbid, score));
                 

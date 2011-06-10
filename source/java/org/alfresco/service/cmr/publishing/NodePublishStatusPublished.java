@@ -19,12 +19,22 @@
 
 package org.alfresco.service.cmr.publishing;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Brian
  *
  */
 public class NodePublishStatusPublished extends BaseNodePublishStatus
 {
+
+    private final PublishingEvent lastEvent;
+
+    public NodePublishStatusPublished(NodeRef node, Environment environment, String channelName, PublishingEvent lastEvent)
+    {
+        super(node, environment, channelName);
+        this.lastEvent = lastEvent;
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodePublishStatus#visit(org.alfresco.service.cmr.publishing.NodePublishStatusVisitor)
@@ -41,7 +51,7 @@ public class NodePublishStatusPublished extends BaseNodePublishStatus
      */
     public PublishingEvent getLatestPublishingEvent()
     {
-        return null;
+        return lastEvent;
     }
 
     /* (non-Javadoc)

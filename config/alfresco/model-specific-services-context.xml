@@ -139,19 +139,16 @@
      </property>
    </bean>
    
-   <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
-      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
-   </bean>
-   
-   <bean name="getChildrenCannedQueryFactory" class="org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory">
+   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
       <property name="registry" ref="cannedQueryRegistry"/>
       <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="tenantService" ref="tenantService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-      
+      <property name="encryptionEngine" ref="encryptionEngine"/>
       <property name="methodSecurityInterceptor" ref="FileFolderService_security"/>
       <property name="methodService" ref="fileFolderService"/>
       <property name="methodName" value="list"/>

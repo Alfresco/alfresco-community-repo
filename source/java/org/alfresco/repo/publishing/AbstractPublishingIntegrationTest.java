@@ -19,17 +19,24 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import javax.annotation.Resource;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.publishing.Environment;
-import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -45,40 +52,44 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
-public class PublishQueueImplTest
+public abstract class AbstractPublishingIntegrationTest
 {
-    private static final String environmentName = "live";
+    protected static final String environmentName = "live";
+
+    protected static final String channelTypeId = "MockChannelType";
     
     @Resource(name="publishingObjectFactory")
-    private PublishingObjectFactory factory;
+    protected PublishingObjectFactory factory;
     
-    @Resource(name="SiteService")
-    private SiteService siteService;
+    @Resource(name="ServiceRegistry")
+    protected ServiceRegistry serviceRegistry;
     
-    private PublishingQueue queue;
+    protected SiteService siteService;
+    protected FileFolderService fileFolderService;
+    protected NodeService nodeService;
+    
+    protected String siteId;
+    protected PublishingQueueImpl queue;
+    protected EnvironmentImpl environment;
+    protected NodeRef docLib;
 
-    private String siteId;
-    
-    @Test
-    public void testSchedulePublishingEvent() throws Exception
-    {
-        
-    }
-    
     @Before
-    public void setUp()
+    public void setUp() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        this.siteService = serviceRegistry.getSiteService();
+        this.fileFolderService = serviceRegistry.getFileFolderService();
+        this.nodeService = serviceRegistry.getNodeService();
         
-
         this.siteId = GUID.generate();
         siteService.createSite("test", siteId,
                 "Test site created by ChannelServiceImplIntegratedTest",
                 "Test site created by ChannelServiceImplIntegratedTest",
                 SiteVisibility.PUBLIC);
+        this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        Environment environment = factory.createEnvironmentObject(siteId, environmentName);
-        this.queue = environment.getPublishingQueue();
+        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId, environmentName);
+        this.queue = (PublishingQueueImpl) environment.getPublishingQueue();
     }
     
     @After
@@ -86,4 +97,14 @@ public class PublishQueueImplTest
     {
         siteService.deleteSite(siteId);
     }
+
+    protected ChannelType mockChannelType()
+    {
+        ChannelType channelType = mock(ChannelType.class);
+        when(channelType.getId()).thenReturn(channelTypeId);
+        when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
+        when(channelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
+        return channelType;
+    }
+
 }

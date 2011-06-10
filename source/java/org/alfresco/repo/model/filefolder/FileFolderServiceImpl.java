@@ -36,6 +36,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -46,7 +49,6 @@ import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoRequest;
 import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -82,6 +84,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FileFolderServiceImpl implements FileFolderService
 {
+    private static final String CANNED_QUERY_FILEFOLDER_LIST = "fileFolderGetChildrenCannedQueryFactory";
+    
     /** Shallow search for files and folders with a name pattern */
     private static final String XPATH_QUERY_SHALLOW_ALL =
         "./*" +
@@ -335,9 +339,9 @@ public class FileFolderServiceImpl implements FileFolderService
         // execute the query
         List<FileInfo> results = listSimple(contextNodeRef, true, true);
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Shallow search for files and folders: \n" +
+            logger.trace("List files and folders: \n" +
                     "   context: " + contextNodeRef + "\n" +
                     "   results: " + results);
         }
@@ -347,7 +351,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
      */
-    public PagingFileInfoResults list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, PagingFileInfoRequest pagingRequest)
+    public PagingFileInfoResults list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
@@ -355,7 +359,7 @@ public class FileFolderServiceImpl implements FileFolderService
         Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
         
         // execute query
-        CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, pagingRequest);
+        CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, sortProps, pagingRequest);
         
         List<NodeRef> nodeRefs = null;
         if (results.getPageCount() > 0)
@@ -393,23 +397,23 @@ public class FileFolderServiceImpl implements FileFolderService
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames)
     {
-        return listImpl(contextNodeRef, searchTypeQNames, new PagingFileInfoRequest(defaultListMaxResults, null));
+        return listImpl(contextNodeRef, searchTypeQNames, null, new PagingRequest(defaultListMaxResults, null));
     }
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames, PagingFileInfoRequest pagingRequest)
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-        long start = System.currentTimeMillis();
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
         // get canned query
-        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
         
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, searchTypeQNames, pagingRequest, pagingRequest.getSortProps());
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, searchTypeQNames, null, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
         
-        if (logger.isInfoEnabled())
+        if (start != null)
         {
             int cnt = results.getPagedResultCount();
             int skipCount = pagingRequest.getSkipCount();
@@ -418,7 +422,7 @@ public class FileFolderServiceImpl implements FileFolderService
             Pair<Integer, Integer> totalCount = (pagingRequest.getRequestTotalCountMax() > 0 ? results.getTotalResultCount() : null);
             int pageNum = (skipCount / maxItems) + 1;
             
-            logger.info("List: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",parentNodeRef="+contextNodeRef+"]");
+            logger.debug("List: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",parentNodeRef="+contextNodeRef+"]");
         }
         
         return results;
@@ -429,9 +433,9 @@ public class FileFolderServiceImpl implements FileFolderService
         // execute the query
         List<FileInfo> results = listSimple(contextNodeRef, true, false);
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Shallow search for files: \n" +
+            logger.trace("List files: \n" +
                     "   context: " + contextNodeRef + "\n" +
                     "   results: " + results);
         }
@@ -443,9 +447,9 @@ public class FileFolderServiceImpl implements FileFolderService
         // execute the query
         List<FileInfo> results = listSimple(contextNodeRef, false, true);
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Shallow search for folders: \n" +
+            logger.trace("List for folders: \n" +
                     "   context: " + contextNodeRef + "\n" +
                     "   results: " + results);
         }
@@ -460,9 +464,9 @@ public class FileFolderServiceImpl implements FileFolderService
         List<FileInfo> results = toFileInfo(nodeRefs);
         
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Deep search for files: \n" +
+            logger.trace("Deep search for files: \n" +
                     "   context: " + contextNodeRef + "\n" +
                     "   results: " + results.size());
         }
@@ -504,9 +508,9 @@ public class FileFolderServiceImpl implements FileFolderService
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug(
+            logger.trace(
                     "Simple name search results: \n" +
                     "   parent: " + contextNodeRef + "\n" +
                     "   name: " + name + "\n" +
@@ -555,9 +559,9 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Deep search: \n" +
+            logger.trace("Deep search: \n" +
                     "   context: " + contextNodeRef + "\n" +
                     "   pattern: " + namePattern + "\n" +
                     "   files: " + fileSearch + "\n" +
@@ -749,11 +753,6 @@ public class FileFolderServiceImpl implements FileFolderService
     */  
     private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean files, boolean folders, SubFolderFilter folderFilter)
     {
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("searchSimpleDeep contextNodeRef:" + contextNodeRef);
-        }
-        
         // To hold the results.
         List<NodeRef> result = new ArrayList<NodeRef>();
         
@@ -819,11 +818,6 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("searchSimpleDeep finished size:" + result.size());
-        }
- 
         // Done
         return result;
     }

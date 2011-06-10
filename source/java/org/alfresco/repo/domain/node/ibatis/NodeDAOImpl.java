@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -115,6 +115,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_ChildAssocsOfParent";
+    private static final String SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME = "alfresco.node.select_ChildAssocOfParentByName";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
@@ -1080,9 +1081,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         // Child name
         assoc.setChildNodeNameAll(null, assocTypeQName, childName);
-
+        
         // Note: This single results was assumed from inception of the original method.  It's correct.
-        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
+        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME, assoc);
     }
 
     @Override

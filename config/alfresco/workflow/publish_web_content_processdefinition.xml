@@ -2,7 +2,7 @@
 
 <!-- Workflow to support direct submit to staging sandbox -->
 
-<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="pubwf:publishWebContent">
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="publishWebContent">
 
     <start-state name="start">
         <task name="pubwf:startPublish" />

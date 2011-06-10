@@ -23,17 +23,20 @@ import java.util.Calendar;
 
 public interface PublishingQueue
 {
+    /**
+     * A factory method to create an empty publishing package that can be populated before being passed into
+     * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingPackage, String, Calendar, String)} operation.
+     * @return A publishing package that can be populated before being placed on the publishing queue.
+     */
     MutablePublishingPackage createPublishingPackage();
     
     /**
      * Adds the supplied publishing package onto the queue.
      * @param publishingPackage The publishing package that is to be enqueued
-     * @param channelName The name of the channel to be published to.
+     * @param channelName The name of the channel that the package is to be published to
      * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
      * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
      * @return The identifier of the newly scheduled event
      */
     String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment);
-    
-    void cancelEvent(String eventId);
 }

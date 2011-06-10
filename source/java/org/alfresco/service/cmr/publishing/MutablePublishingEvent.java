@@ -22,6 +22,7 @@ package org.alfresco.service.cmr.publishing;
 import java.util.Calendar;
 
 /**
+ * An extension of the {@link PublishingEvent} interface that allows some changes to be made. 
  * @author Brian
  *
  */

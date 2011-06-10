@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Brian
@@ -88,4 +89,14 @@ public class PublishServiceImpl implements PublishingService
      {
          return publishingEventHelper.getPublishingEvent(id);
      }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.publishing.PublishingService#cancelPublishingEvent(java.lang.String)
+     */
+    @Override
+    public void cancelPublishingEvent(String id)
+    {
+        ParameterCheck.mandatory("id", id);
+        publishingEventHelper.cancelEvent(id);
+    }
 }

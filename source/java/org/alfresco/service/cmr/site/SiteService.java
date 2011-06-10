@@ -293,6 +293,14 @@ public interface SiteService
     String getSiteRoleGroup(String shortName, String role);
     
     /**
+     * Gets the reference to the folder that is the Site root node.
+     * 
+     * @return site root node.
+     */
+    @NotAuditable
+    NodeRef getSiteRoot();
+    
+    /**
      * This method cleans the permissions on the specified node. It is intended to be used after a
      * node is moved or copied from one site to another. Permissions relating to the former site are
      * removed and the node is given the default permissions for its new site.

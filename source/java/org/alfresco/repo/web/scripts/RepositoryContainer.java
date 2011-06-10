@@ -561,8 +561,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public void reset() 
     {
-        destroy();
-        init();
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                destroy();
+                init();
+                
+                return null;
+            }
+        }, true, false);
     }
     
     /* (non-Javadoc)

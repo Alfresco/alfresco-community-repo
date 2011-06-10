@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Remote ADM Store</shortname>
+  <description>Remote service mirroring the Store interface - to an ADM store</description>
+  <url>/remoteadm/{method}/{path}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <format default="">argument</format>
+</webscript>

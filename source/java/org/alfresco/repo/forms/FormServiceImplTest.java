@@ -1420,12 +1420,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testJbpmWorkflowForm() throws Exception
     {
-        checkWorkflowForms("jbpm_wf_adhoc", "|Task Done");
+        checkWorkflowForms("jbpm$wf:adhoc", "|Task Done");
     }
     
     public void testActivitiWorkflowForm() throws Exception
     {
-        checkWorkflowForms("activiti_activitiAdhoc", "Next|Next");
+        checkWorkflowForms("activiti$activitiAdhoc", "Next|Next");
     }
     
     private void checkWorkflowForms(String workflowDefName, String transitionLabels) throws Exception
@@ -1502,8 +1502,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue("Expecting there to be more tasks", tasksAfter > tasksBefore);
         
         // check workflow instance details
-        String actualWfName = workflow.getDefinition().getName();
-        assertEquals(workflowDefName, actualWfName.replace('$', '_').replace(':', '_'));
+        assertEquals(workflowDefName, workflow.getDefinition().getName());
         
         // get the task form and verify data
         String taskId = tasks.get(0).getId();

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<definitions id="adhoc-definitions"
-             typeLanguage="http://www.w3.org/2001/XMLSchema"
-             expressionLanguage="http://www.w3.org/1999/XPath"
-             targetNamespace="http://activiti.org/bpmn20" 
-             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:activiti="http://activiti.org/bpmn">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org">
 
     <process id="activitiAdhoc" name="Adhoc Activiti Process">
 
@@ -77,6 +75,42 @@
 
         <endEvent id="theEnd" />
 
-    </process>
+   </process>
+
+   <!-- Graphical representaion of diagram -->
+   <bpmndi:BPMNDiagram id="BPMNDiagram_activitiAdhoc">
+      <bpmndi:BPMNPlane bpmnElement="activitiAdhoc" id="BPMNPlane_activitiAdhoc">
+         <bpmndi:BPMNShape bpmnElement="start"
+            id="BPMNShape_start">
+            <omgdc:Bounds height="35" width="35" x="30" y="200"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="adhocTask"
+            id="BPMNShape_adhocTask">
+            <omgdc:Bounds height="55" width="105" x="130"
+               y="190"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="verifyTaskDone"
+            id="BPMNShape_verifyTaskDone">
+            <omgdc:Bounds height="55" width="105" x="290"
+               y="190"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="theEnd"
+            id="BPMNShape_theEnd">
+            <omgdc:Bounds height="35" width="35" x="455" y="200"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+            <omgdi:waypoint x="65" y="217"></omgdi:waypoint>
+            <omgdi:waypoint x="130" y="217"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+            <omgdi:waypoint x="235" y="217"></omgdi:waypoint>
+            <omgdi:waypoint x="290" y="217"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+            <omgdi:waypoint x="395" y="217"></omgdi:waypoint>
+            <omgdi:waypoint x="455" y="217"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
 
 </definitions>

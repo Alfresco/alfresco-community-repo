@@ -680,6 +680,25 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         assertEquals(0, timers.size());
     }
     
+    @Test
+    public void testGetWorkflowImage() {
+        WorkflowDefinition definitionWithoutImage = deployTestAdhocDefinition();
+        WorkflowDefinition definitionWithImage = deployTestDiagramDefinition();
+        
+        // Start process-instance that shouldn't have an image
+        ProcessInstance processInstance = runtime.startProcessInstanceById(BPMEngineRegistry.getLocalId(definitionWithoutImage.getId()));
+        String worklfowId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, processInstance.getId());
+        
+        assertNull(workflowEngine.getWorkflowImage(worklfowId));
+        
+        // Start process-instance that SHOULD have an image
+        ProcessInstance processInstanceWithImage = runtime.startProcessInstanceById(BPMEngineRegistry.getLocalId(definitionWithImage.getId()));
+        String worklfowWithImageId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, processInstanceWithImage.getId());
+        
+        assertNotNull(workflowEngine.getWorkflowImage(worklfowWithImageId));
+    }
+    
+    
     private void putVariable(Map<String, Object> variables, QName varName, Object value)
     {
         String variableName = mapQNameToName(varName);

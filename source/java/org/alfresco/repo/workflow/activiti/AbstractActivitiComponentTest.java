@@ -101,6 +101,7 @@ public class AbstractActivitiComponentTest
     protected static final String TEST_ADHOC_KEY = "testAdhoc";
     protected static final String TEST_JOB_KEY = "testAdhoc";
     protected static final String TEST_JOB_DEF = "activiti/testJob.bpmn20.xml";
+    protected static final String TEST_DIAGRAM_DEF = "activiti/testDiagram.bpmn20.xml";
     
     protected static final String XML = MimetypeMap.MIMETYPE_XML;
 
@@ -177,6 +178,11 @@ public class AbstractActivitiComponentTest
     protected WorkflowDefinition deployTestJobDefinition()
     {
         return deployDefinition(TEST_JOB_DEF);
+    }
+    
+    protected WorkflowDefinition deployTestDiagramDefinition()
+    {
+        return deployDefinition(TEST_DIAGRAM_DEF);
     }
     
     protected WorkflowDefinition deployDefinition(String resource)

@@ -45,5 +45,7 @@ public interface ActivitiConstants
     
 	public static final String SERVICE_REGISTRY_BEAN_KEY = "services";
 	
+	public static final String PROCESS_INSTANCE_IMAGE_FORMAT = "png";
+	
    
 }

@@ -48,9 +48,12 @@ import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
+import org.activiti.engine.impl.bpmn.diagram.ProcessDiagramGenerator;
 import org.activiti.engine.impl.form.DefaultTaskFormHandler;
 import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.identity.Authentication;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TimerEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
@@ -986,8 +989,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
                 .processDefinitionId(procDefId)
                 .singleResult();
-            if(procDef == null)
-            {
+            if(procDef == null)     {
                 String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW_UNEXISTING, workflowDefinitionId);
                 throw new WorkflowException(msg);
             }
@@ -1007,7 +1009,27 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     @Override
     public InputStream getWorkflowImage(String workflowInstanceId)
     {
-        // TODO: Link this up with the underlying Activiti instance diagram API
+        String processInstanceId = createLocalId(workflowInstanceId);
+        ExecutionEntity pi = (ExecutionEntity) runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(processInstanceId).singleResult();
+
+        // If the process is finished, there is no diagram available
+        if (pi != null)
+        {
+            // Fetch the process-definition. Not using query API, since the
+            // returned
+            // processdefinition isn't initialized with all activities
+            ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repoService)
+                        .getDeployedProcessDefinition(pi.getProcessDefinitionId());
+
+            if (processDefinition != null && processDefinition.isGraphicalNotationDefined()) 
+            { 
+                return ProcessDiagramGenerator
+                        .generateDiagram(processDefinition,
+                                    ActivitiConstants.PROCESS_INSTANCE_IMAGE_FORMAT,
+                                    runtimeService.getActiveActivityIds(processInstanceId)); 
+            }
+        }
         return null;
     }
 

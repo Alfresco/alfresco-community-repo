@@ -10,7 +10,7 @@
             select nextVal('alf_lock_resource_seq')
         </selectKey>
         
-        <include refid="insert_LockResource_Sequence"/>
+        <include refid="alfresco.lock.insert_LockResource_Sequence"/>
         
     </insert>
 
@@ -20,7 +20,7 @@
             select nextVal('alf_lock_seq')
         </selectKey>
         
-        <include refid="insert_Lock_Sequence"/>
+        <include refid="alfresco.lock.insert_Lock_Sequence"/>
         
     </insert>
 

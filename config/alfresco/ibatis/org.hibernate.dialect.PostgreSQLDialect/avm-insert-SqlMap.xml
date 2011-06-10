@@ -14,7 +14,7 @@
         
     </insert>
     
-    <insert id="insert_AVMStoreProperty" parameterMap="parameter_IdStorePropertyPatternMap">
+    <insert id="insert_AVMStoreProperty" parameterMap="alfresco.avm.parameter_IdStorePropertyPatternMap">
     
         <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('avm_store_properties_seq')

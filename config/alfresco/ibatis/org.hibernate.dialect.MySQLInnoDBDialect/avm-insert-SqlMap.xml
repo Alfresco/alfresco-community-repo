@@ -5,19 +5,19 @@
 <mapper namespace="alfresco.avm.insert">
 
     <insert id="insert_AVMStore" parameterType="AVMStore" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AVMStore_AutoIncrement"/>
+        <include refid="alfresco.avm.insert_AVMStore_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_AVMStoreProperty" parameterMap="parameter_StorePropertyPatternMap" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AVMStoreProperty_AutoIncrement"/>
+    <insert id="insert_AVMStoreProperty" parameterMap="alfresco.avm.parameter_StorePropertyPatternMap" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.avm.insert_AVMStoreProperty_AutoIncrement"/>
     </insert>
     
     <insert id="insert_AVMNode" parameterType="AVMNode" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AVMNode_AutoIncrement"/>
+        <include refid="alfresco.avm.insert_AVMNode_AutoIncrement"/>
     </insert>
     
     <insert id="insert_AVMVersionRoot" parameterType="AVMVersionRoot" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AVMVersionRoot_AutoIncrement"/>
+        <include refid="alfresco.avm.insert_AVMVersionRoot_AutoIncrement"/>
     </insert>
     
 </mapper>

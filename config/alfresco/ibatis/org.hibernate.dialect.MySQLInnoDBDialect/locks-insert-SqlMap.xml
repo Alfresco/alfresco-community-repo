@@ -5,11 +5,11 @@
 <mapper namespace="alfresco.lock.insert">
 
     <insert id="insert_LockResource" parameterType="LockResource" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_LockResource_AutoIncrement"/>
+        <include refid="alfresco.lock.insert_LockResource_AutoIncrement"/>
     </insert>
 
     <insert id="insert_Lock" parameterType="Lock" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_Lock_AutoIncrement"/>
+        <include refid="alfresco.lock.insert_Lock_AutoIncrement"/>
     </insert>
 
 </mapper>

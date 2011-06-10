@@ -5,7 +5,7 @@
 <mapper namespace="alfresco.usage.insert">
 
     <insert id="insert_UsageDelta" parameterType="UsageDelta" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_UsageDelta_AutoIncrement"/>
+        <include refid="alfresco.usage.insert_UsageDelta_AutoIncrement"/>
     </insert>
     
 </mapper>

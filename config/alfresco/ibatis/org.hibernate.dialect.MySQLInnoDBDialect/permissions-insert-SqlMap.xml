@@ -4,36 +4,36 @@
 
 <mapper namespace="alfresco.permissions.insert">
 
-    <insert id="insert_Acl" parameterType="Acl" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_Acl_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_Acl" parameterType="Acl" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_Acl_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_AclMember" parameterType="AclMember" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AclMember_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_AclMember" parameterType="AclMember" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_AclMember_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_AclChangeSet" parameterType="AclChangeSet" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AclChangeSet_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_AclChangeSet" parameterType="AclChangeSet" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_AclChangeSet_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_Ace" parameterType="Ace" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_Ace_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_Ace" parameterType="Ace" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_Ace_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_AceContext" parameterType="AceContext" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AceContext_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_AceContext" parameterType="AceContext" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_AceContext_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_Permission" parameterType="Permission" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_Permission_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_Permission" parameterType="Permission" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_Permission_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_Authority" parameterType="Authority" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_Authority_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_Authority" parameterType="Authority" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_Authority_AutoIncrement"/>
     </insert>
     
-    <insert id="insert_AuthorityAlias" parameterType="AuthorityAlias" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AuthorityAlias_AutoIncrement"/>
+    <insert id="alfresco.permissions.insert_AuthorityAlias" parameterType="AuthorityAlias" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.permissions.insert_AuthorityAlias_AutoIncrement"/>
     </insert>
     
 </mapper>

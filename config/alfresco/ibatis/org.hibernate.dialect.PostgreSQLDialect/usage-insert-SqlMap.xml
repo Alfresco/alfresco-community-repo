@@ -9,7 +9,7 @@
             select nextVal('alf_usage_delta_seq')
         </selectKey>
     
-        <include refid="insert_UsageDelta_Sequence"/>
+        <include refid="alfresco.usage.insert_UsageDelta_Sequence"/>
     </insert>
     
 </mapper>

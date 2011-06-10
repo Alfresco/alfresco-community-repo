@@ -10,7 +10,7 @@
             select nextVal('alf_audit_model_seq')
         </selectKey>
         
-        <include refid="insert_AuditModel_Sequence"/>
+        <include refid="alfresco.audit.insert_AuditModel_Sequence"/>
         
     </insert>
     
@@ -20,7 +20,7 @@
             select nextVal('alf_audit_app_seq')
         </selectKey>
         
-        <include refid="insert_AuditApplication_Sequence"/>
+        <include refid="alfresco.audit.insert_AuditApplication_Sequence"/>
         
     </insert>
     
@@ -30,7 +30,7 @@
             select nextVal('alf_audit_entry_seq')
         </selectKey>
         
-        <include refid="insert_AuditEntry_Sequence"/>
+        <include refid="alfresco.audit.insert_AuditEntry_Sequence"/>
         
     </insert>
     

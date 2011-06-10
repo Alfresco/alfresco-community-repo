@@ -5,15 +5,15 @@
 <mapper namespace="alfresco.audit.insert">
 
     <insert id="insert_AuditModel" parameterType="AuditModel" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AuditModel_AutoIncrement"/>
+        <include refid="alfresco.audit.insert_AuditModel_AutoIncrement"/>
     </insert>
     
     <insert id="insert_AuditApplication" parameterType="AuditApplication" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AuditApplication_AutoIncrement"/>
+        <include refid="alfresco.audit.insert_AuditApplication_AutoIncrement"/>
     </insert>
     
     <insert id="insert_AuditEntry" parameterType="AuditEntry" useGeneratedKeys="true" keyProperty="id">
-        <include refid="insert_AuditEntry_AutoIncrement"/>
+        <include refid="alfresco.audit.insert_AuditEntry_AutoIncrement"/>
     </insert>
     
 </mapper>

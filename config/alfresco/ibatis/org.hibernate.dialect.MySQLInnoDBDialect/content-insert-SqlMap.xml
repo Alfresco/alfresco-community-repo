@@ -12,11 +12,11 @@
         <include refid="alfresco.content.insert_Encoding_AutoIncrement"/>
     </insert>
 
-    <insert id="insert_ContentUrl" parameterMap="parameter_ContentUrl" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert_ContentUrl" parameterMap="alfresco.content.parameter_ContentUrl" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_ContentUrl_AutoIncrement"/>
     </insert>
 
-    <insert id="insert_ContentData" parameterMap="parameter_ContentData" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert_ContentData" parameterMap="alfresco.content.parameter_ContentData" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.content.insert_ContentData_AutoIncrement"/>
     </insert>
 

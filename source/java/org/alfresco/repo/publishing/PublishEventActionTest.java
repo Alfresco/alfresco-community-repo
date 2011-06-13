@@ -32,9 +32,11 @@ import static org.alfresco.model.ContentModel.PROP_LONGITUDE;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -56,6 +59,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Test;
+import org.mockito.exceptions.verification.NeverWantedButInvoked;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,6 +91,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     private NodeRef root;
     private NodeRef channel;
     private String eventId;
+    private ChannelType channelType;
 
     @Test
     public void testPublishNodes() throws Exception
@@ -166,6 +171,8 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Update published node.
         publishEventNode = publishNode(source);
+        NodeRef newPublishNode = channelHelper.mapSourceToEnvironment(source, channel);
+        assertEquals(publishedNode, newPublishNode);
         
         // Published node shoudl still exist.
         assertNotNull(publishedNode);
@@ -193,13 +200,123 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Update publish node
         publishNode(source);
-        
+        newPublishNode = channelHelper.mapSourceToEnvironment(source, channel);
+        assertEquals(publishedNode, newPublishNode);
+
         aspects = nodeService.getAspects(source);
         assertFalse(aspects.contains(ASPECT_GEOGRAPHIC));
         
         publishedProps = nodeService.getProperties(publishedNode);
         assertFalse(publishedProps.containsKey(PROP_LATITUDE));
         assertFalse(publishedProps.containsKey(PROP_LONGITUDE));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testChannelTypePublishIsCalledOnPublish() throws Exception
+    {
+        // Create content node with appropriate aspects added.
+        NodeRef source = createContentNode(contentNodeName, content);
+        
+        // Enable publishing on ChannelType.
+        when(channelType.canPublish()).thenReturn(true);
+        
+        publishNode(source);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        
+        // Check publish was called
+        verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
+    }
+    
+    public void testChannelTypePublishIsCalledOnUpdate() throws Exception
+    {
+        // Create content node with appropriate aspects added.
+        NodeRef source = createContentNode(contentNodeName, content);
+        
+        // Publish source node but dont' call ChannelType.publish().
+        publishNode(source);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+
+        // Check publish was not called.
+        verify(channelType, never()).publish(eq(publishedNode), anyMap());
+
+        // Enable publishing on ChannelType.
+        when(channelType.canPublish()).thenReturn(true);
+
+        // Update publish node
+        publishNode(source);
+        
+        // Check publish was called on update
+        verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testSupportedContentTypes() throws Exception
+    {
+        // Create content node with appropriate aspects added.
+        NodeRef source = createContentNode(contentNodeName, content);
+        
+        // Enable publishing on ChannelType.
+        when(channelType.canPublish()).thenReturn(true);
+
+        // Set supported type to cm:folder
+        Set<QName> contentTypes = Collections.singleton(ContentModel.TYPE_FOLDER);
+        when(channelType.getSupportedContentTypes()).thenReturn(contentTypes);
+
+        // Publish source node but don't call ChannelType.publish().
+        publishNode(source);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        
+        verify(channelType, never()).publish(eq(publishedNode), anyMap());
+        
+        // Change supported type to cm:content
+        contentTypes = Collections.singleton(ContentModel.TYPE_CONTENT);
+        when(channelType.getSupportedContentTypes()).thenReturn(contentTypes);
+        
+        // Publish source node
+        publishNode(source);
+        
+        verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
+        
+        // Change supported type to cm:cmobject
+        contentTypes = Collections.singleton(ContentModel.TYPE_CMOBJECT);
+        when(channelType.getSupportedContentTypes()).thenReturn(contentTypes);
+        
+        // Publish source node
+        publishNode(source);
+        
+        verify(channelType, times(2)).publish(eq(publishedNode), anyMap());
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testSupportedMimeTypes() throws Exception
+    {
+        // Create content node with appropriate aspects added.
+        NodeRef source = createContentNode(contentNodeName, content);
+        
+        // Enable publishing on ChannelType.
+        when(channelType.canPublish()).thenReturn(true);
+
+        // Set supported type to XML
+        Set<String> mimeTypes = Collections.singleton(MimetypeMap.MIMETYPE_XML);
+        when(channelType.getSupportedMimetypes()).thenReturn(mimeTypes);
+
+        // Publish source node but don't call ChannelType.publish().
+        publishNode(source);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        
+        verify(channelType, never()).publish(eq(publishedNode), anyMap());
+        
+        // Change supported type to plain text.
+        mimeTypes = Collections.singleton(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        when(channelType.getSupportedMimetypes()).thenReturn(mimeTypes);
+        
+        // Publish source node
+        publishNode(source);
+        
+        verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
     }
     
     private NodeRef publishNode(NodeRef source)
@@ -238,10 +355,6 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         return source;
     }
 
-    /**
-     * @param source
-     * @param theContent
-     */
     private void writeContent(NodeRef source, String theContent)
     {
         ContentWriter writer = contentService.getWriter(source, PROP_CONTENT, true);
@@ -260,8 +373,12 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void setUp() throws Exception
     {
         super.setUp();
-        ChannelType channelType = mockChannelType();
+        this.channelType = channelService.getChannelType(channelTypeId);
+        if(channelType == null)
+        {
+            this.channelType = mockChannelType();
         channelService.register(channelType);
+        }
         channelService.createChannel(siteId, channelTypeId, channelName, null);
         
         this.channel = channelHelper.getChannelNodeForEnvironment(environment.getNodeRef(), channelName);

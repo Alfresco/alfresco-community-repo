@@ -19,9 +19,12 @@
 
 package org.alfresco.repo.publishing;
 
+import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -64,5 +67,78 @@ public class MockChannelType extends AbstractChannelType
     public QName getContentRootNodeType()
     {
         return ContentModel.TYPE_FOLDER;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
+    {
+        // NOOP
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
+    {
+        //NOOP
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void updateStatus(String status, Map<QName, Serializable> properties)
+    {
+        //NOOP
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public boolean canPublish()
+    {
+        return false;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public boolean canUnpublish()
+    {
+        return false;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public Set<String> getSupportedMimetypes()
+    {
+        return null;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public Set<QName> getSupportedContentTypes()
+    {
+        return null;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public boolean canPublishStatusUpdates()
+    {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

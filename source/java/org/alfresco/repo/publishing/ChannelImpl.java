@@ -25,7 +25,6 @@ import java.util.Map;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -37,19 +36,19 @@ public class ChannelImpl implements Channel
     private final NodeRef nodeRef;
     private final ChannelType channelType;
     private final String name;
-    private final NodeService nodeService;
+    private final ChannelHelper channelHelper;
 
     /**
      * @param channelType
      * @param name
      * @param channelService
      */
-    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, NodeService nodeService)
+    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelHelper channelHelper)
     {
         this.nodeRef = nodeRef;
         this.channelType = channelType;
         this.name = name;
-        this.nodeService = nodeService;
+        this.channelHelper = channelHelper;
     }
 
     /**
@@ -81,7 +80,39 @@ public class ChannelImpl implements Channel
     */
     public Map<QName, Serializable> getProperties()
     {
-        return nodeService.getProperties(nodeRef);
+        return channelHelper.getChannelProperties(nodeRef);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void publish(NodeRef nodeToPublish)
+    {
+        if(channelHelper.canPublish(nodeToPublish, channelType))
+        {
+            channelType.publish(nodeToPublish, getProperties());
+        }
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void unPublish(NodeRef nodeToUnpublish)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public void updateStatus(String status)
+    {
+        // TODO Auto-generated method stub
+        
     }
 
 }

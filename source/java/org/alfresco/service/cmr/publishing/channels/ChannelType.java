@@ -19,8 +19,11 @@
 
 package org.alfresco.service.cmr.publishing.channels;
 
+import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
@@ -32,9 +35,18 @@ import org.alfresco.service.namespace.QName;
 public interface ChannelType
 {
     String getId();
-    Map<String,String> getCapabilities();
     QName getChannelNodeType();
     QName getContentRootNodeType();
     NodeFinder getNodeFinder();
     NodeFilter getNodeFilter();
+    void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties);
+    void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties);
+    void updateStatus(String status, Map<QName, Serializable> properties);
+    
+    boolean canPublish();
+    boolean canUnpublish();
+    boolean canPublishStatusUpdates();
+    
+    Set<String> getSupportedMimetypes();
+    Set<QName> getSupportedContentTypes();
 }

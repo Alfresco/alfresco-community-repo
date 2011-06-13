@@ -35,7 +35,8 @@ import org.junit.runners.Suite;
     EnvironmentImplTest.class,
     PublishingQueueImplTest.class,
     PublishingPackageSerializerTest.class,
-    PublishingIntegratedTest.class
+    PublishingIntegratedTest.class,
+    PublishEventActionTest.class
     })
 public class WebPublishingTestSuite
 {

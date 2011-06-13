@@ -20,7 +20,10 @@
 package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.model.ContentModel.PROP_CONTENT_PROPERTY_NAME;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_CONTENT_ROOT;
+import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_SOURCE;
 import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL;
@@ -31,6 +34,7 @@ import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -40,6 +44,8 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -59,6 +65,7 @@ public class ChannelHelper
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private ContentService contentService;
 
     public ChannelHelper()
     {
@@ -92,7 +99,7 @@ public class ChannelHelper
         String channelTypeId = (String) props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
         ChannelType channelType = channelService.getChannelType(channelTypeId);
         String name = (String) props.get(ContentModel.PROP_NAME);
-        return new ChannelImpl(channelType, nodeRef, name, nodeService);
+        return new ChannelImpl(channelType, nodeRef, name, this);
     }
 
     public NodeRef addChannelToEnvironment(NodeRef environment, Channel channel, Map<QName, Serializable> properties)
@@ -196,10 +203,69 @@ public class ChannelHelper
         return result;
     }
 
+    public Map<QName, Serializable> getChannelProperties(NodeRef channel)
+    {
+        return nodeService.getProperties(channel);
+    }
+    
     public ChildAssociationRef createMapping(NodeRef source, NodeRef publishedNode)
     {
         QName qName = QName.createQName(NAMESPACE, GUID.generate());
-        return nodeService.addChild(publishedNode, source, ASSOC_SOURCE, qName);
+        ChildAssociationRef assoc = nodeService.addChild(publishedNode, source, ASSOC_SOURCE, qName);
+        nodeService.addAspect(source, ASPECT_PUBLISHED, null);
+        return assoc;
+    }
+
+    /**
+     * @param nodeToPublish
+     * @param channelType
+     * @return
+     */
+    public boolean canPublish(NodeRef nodeToPublish, ChannelType type)
+    {
+        if(type.canPublish() == false)
+        {
+            return false;
+        }
+        boolean isContentTypeSupported = isContentTypeSupported(nodeToPublish, type);
+        boolean isMimetypeSupported = isMimetypeSupported(nodeToPublish, type);
+        return isContentTypeSupported && isMimetypeSupported;
+    }
+
+    private boolean isMimetypeSupported(NodeRef nodeToPublish, ChannelType type)
+    {
+        Set<String> supportedMimetypes = type.getSupportedMimetypes();
+        if (supportedMimetypes == null || supportedMimetypes.isEmpty())
+        {
+            return true;
+        }
+        QName contentProp = (QName) nodeService.getProperty(nodeToPublish, PROP_CONTENT_PROPERTY_NAME);
+        if (contentProp == null)
+        {
+            String defaultValue = dictionaryService.getProperty(PROP_CONTENT_PROPERTY_NAME).getDefaultValue();
+            contentProp = defaultValue == null ? PROP_CONTENT : QName.createQName(defaultValue);
+        }
+        ContentReader reader = contentService.getReader(nodeToPublish, contentProp);
+        return supportedMimetypes.contains(reader.getMimetype());
+    }
+
+    private boolean isContentTypeSupported(NodeRef nodeToPublish, ChannelType type)
+    {
+        Set<QName> supportedContentTypes = type.getSupportedContentTypes();
+        if(supportedContentTypes == null || supportedContentTypes.isEmpty())
+        {
+            return true;
+        }
+        QName contentType = nodeService.getType(nodeToPublish);
+        for (QName supportedType : supportedContentTypes)
+        {
+            if(contentType.equals(supportedType) 
+                    || dictionaryService.isSubClass(contentType, supportedType))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private QName getChannelQName(String channelName)
@@ -248,6 +314,12 @@ public class ChannelHelper
         return null;
     }
 
+    public void sendStatusUpdates(NodeRef nodeToPublish, NodeRef channelNode, ChannelType channelType)
+    {
+        //TODO
+        
+    }
+
     /**
      * @param nodeService the nodeService to set
      */
@@ -263,4 +335,13 @@ public class ChannelHelper
     {
         this.dictionaryService = dictionaryService;
     }
+
+    /**
+     * @param contentService the contentService to set
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+    
 }

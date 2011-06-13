@@ -20,6 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
 
@@ -113,18 +114,19 @@ public class PublishingEventProcessor
 
      public NodeRef publishEntry(Channel channel, PublishingPackageEntry entry, NodeRef eventNode)
      {
-         NodeRef mappedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
-         if(mappedNode == null)
+         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
+         if(publishedNode == null)
          {
-             mappedNode = publishNewNode(channel.getNodeRef(),  entry.getSnapshot());
+             publishedNode = publishNewNode(channel.getNodeRef(),  entry.getSnapshot());
          }
          else
          {
-             updatePublishedNode(mappedNode, entry);
+             updatePublishedNode(publishedNode, entry);
          }
          QName qName = QName.createQName(NAMESPACE, eventNode.getId());
-         nodeService.addChild(mappedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT, qName);
-         return mappedNode; 
+         nodeService.addChild(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT, qName);
+         channel.publish(publishedNode);
+         return publishedNode; 
      }
 
      /**
@@ -190,6 +192,7 @@ public class PublishingEventProcessor
     {
         Set<QName> aspectsToRemove = nodeService.getAspects(publishedNode);
         aspectsToRemove.removeAll(newAspects);
+        aspectsToRemove.remove(ASPECT_PUBLISHED);
         for (QName aspectToRemove : aspectsToRemove)
         {
             nodeService.removeAspect(publishedNode, aspectToRemove);

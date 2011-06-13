@@ -55,6 +55,7 @@
    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">
       <property name="nodeService" ref="nodeService" />
       <property name="dictionaryService" ref="dictionaryService" />
+      <property name="contentService" ref="contentService" />
    </bean>
 
    <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">

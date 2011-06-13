@@ -19,8 +19,14 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.mockito.Mockito.*;
+import static junit.framework.Assert.*;
+
+import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -33,6 +39,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = { "classpath:test/alfresco/test-web-publishing-context.xml"})
 public class ChannelHelperTest
 {
+    @Autowired
+    private ChannelHelper helper;
+    
     @Test
     public void testMapNodeRef() throws Exception
     {
@@ -44,5 +53,4 @@ public class ChannelHelperTest
 //        NodeRef unmappedNodeRef = environmentHelper.mapEnvironmentToEditorial(liveEnvironmentNode, mappedNodeRef);
 //        assertEquals(testNodeRef, unmappedNodeRef);
     }
-
 }

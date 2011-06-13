@@ -46,4 +46,9 @@ public interface Channel
     String getName();
     
     Map<QName, Serializable> getProperties();
+    
+    void publish(NodeRef nodeToPublish);
+    void unPublish(NodeRef nodeToUnpublish);
+    void updateStatus(String status);
+    
 }

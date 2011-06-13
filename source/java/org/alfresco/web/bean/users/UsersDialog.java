@@ -30,11 +30,10 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -296,35 +295,23 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             
             // define the query to find people by their first or last name
             String search = properties.getSearchCriteria();
-            StringBuilder query = new StringBuilder(128);
-            Utils.generatePersonSearch(query, search);
-            
             if (logger.isDebugEnabled())
-               logger.debug("Query: " + query.toString());
+               logger.debug("Query term: " + search);
    
-            // define the search parameters
-            SearchParameters params = new SearchParameters();
-            params.setLanguage(SearchService.LANGUAGE_LUCENE);
-            params.addStore(Repository.getStoreRef());
-            params.setQuery(query.toString());
-            
-            ResultSet results = properties.getSearchService().query(params);
-            List<NodeRef> people;
-            try
-            {
-               people = results.getNodeRefs();
-            }
-            finally
-            {
-               results.close();
-            }
+            PagingPersonResults people = properties.getPersonService().getPeople(
+                  Utils.generatePersonFilter(search),
+                  true,
+                  Utils.generatePersonSort(),
+                  new PagingRequest(Utils.getPersonMaxResults(), null)
+            );
+            List<NodeRef> nodes = people.getPage();
             
             if (logger.isDebugEnabled())
-               logger.debug("Found " + people.size() + " users");
+               logger.debug("Found " + nodes.size() + " users");
             
-            this.users = new ArrayList<Node>(people.size());
+            this.users = new ArrayList<Node>(nodes.size());
             
-            for (NodeRef nodeRef : people)
+            for (NodeRef nodeRef : nodes)
             {
                // create our Node representation
                MapNode node = new MapNode(nodeRef);

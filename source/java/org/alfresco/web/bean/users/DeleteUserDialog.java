@@ -28,14 +28,16 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
@@ -122,36 +124,28 @@ public class DeleteUserDialog extends BaseDialogBean
 
             // define the query to find people by their first or last name
             String search = ISO9075.encode(this.searchCriteria);
-            String query = "( TYPE:\"{http://www.alfresco.org/model/content/1.0}person\") AND " + "((@\\{http\\://www.alfresco.org/model/content/1.0\\}firstName:" + search
-                  + "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}lastName:" + search + "*) OR (@\\{http\\://www.alfresco.org/model/content/1.0\\}userName:" + search
-                  + "*)))";
-
-            if (logger.isDebugEnabled())
-               logger.debug("Query: " + query);
-
-            // define the search parameters
-            SearchParameters params = new SearchParameters();
-            params.setLanguage(SearchService.LANGUAGE_LUCENE);
-            params.addStore(Repository.getStoreRef());
-            params.setQuery(query);
-            
-            ResultSet results = this.getSearchService().query(params);
-            List<NodeRef> people;
-            try
-            {
-               people = results.getNodeRefs();
-            }
-            finally
-            {
-               results.close();
-            }
+            List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
+            filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, search));
+            filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, search));
             
             if (logger.isDebugEnabled())
-               logger.debug("Found " + people.size() + " users");
+               logger.debug("Query filter: " + filter);
 
-            this.users = new ArrayList<Node>(people.size());
+            // Perform the search
+            PagingPersonResults people = getPersonService().getPeople(
+                  filter,
+                  true,
+                  Utils.generatePersonSort(),
+                  new PagingRequest(Utils.getPersonMaxResults(), null)
+            );
+            List<NodeRef> nodes = people.getPage();
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Found " + nodes.size() + " users");
 
-            for (NodeRef nodeRef : people)
+            this.users = new ArrayList<Node>(nodes.size());
+
+            for (NodeRef nodeRef : nodes)
             {
                // create our Node representation
                MapNode node = new MapNode(nodeRef);

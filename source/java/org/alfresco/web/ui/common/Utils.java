@@ -21,6 +21,7 @@ package org.alfresco.web.ui.common;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
@@ -61,7 +62,10 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
@@ -1047,11 +1051,52 @@ public final class Utils extends StringUtils
    }
    
    /**
+    * Generate the QName sort for a standard Person lookup. The filter is
+    * standardised across multiple JSF components and beans, and used with
+    * {@link PersonService#getPeople(List, boolean, List, org.alfresco.query.PagingRequest)}
+    */
+   public static List<Pair<QName,Boolean>> generatePersonSort()
+   {
+      List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
+      sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
+      sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
+      sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+      return sort;
+   }
+   
+   /**
+    * Generate the QName filter for a standard Person lookup. The filter is
+    * standardised across multiple JSF components and beans, and used with
+    * {@link PersonService#getPeople(List, boolean, List, org.alfresco.query.PagingRequest)}
+    *  
+    * @param term    Search term
+    */
+   public static List<Pair<QName,String>> generatePersonFilter(String term)
+   {
+      List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
+      filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, term));
+      filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, term));
+      filter.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, term));
+      return filter;
+   }
+   
+   /**
+    * How many results should a person search return up to? This is needed
+    * because the JSF components do paging differently.
+    * For now, hard coded at 1000, may be configurable later
+    */
+   public static int getPersonMaxResults()
+   {
+      return 1000;
+   }
+   
+   /**
     * Generate the Lucene query for a standard Person search. The query used is standardised
     * across multiple JSF components and beans.
     * 
     * @param query   Buffer for the query
     * @param term    Search term
+    * @deprecated Use {@link #generatePersonFilter(String)} and {@link PersonService#getPeople(List, boolean, List, org.alfresco.query.PagingRequest)} instead
     */
    public static void generatePersonSearch(StringBuilder query, String term)
    {

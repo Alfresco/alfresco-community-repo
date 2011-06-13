@@ -31,14 +31,13 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -203,25 +202,17 @@ public class AddUsersDialog extends BaseDialogBean
             {
                SelectItem[] items = new SelectItem[0];
                
-               // Use lucene search to retrieve user details
-               String term = AbstractLuceneQueryParser.escape(contains.trim());
+               // Use the Person Service to retrieve user details
+               String term = contains.trim();
                if (term.length() != 0)
                {
-                   StringBuilder query = new StringBuilder(128);
-                   Utils.generatePersonSearch(query, term);
-                   List<NodeRef> nodes;
-                   ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
-                           Repository.getStoreRef(),
-                           SearchService.LANGUAGE_LUCENE,
-                           query.toString());
-                   try
-                   {
-                      nodes = resultSet.getNodeRefs();
-                   }
-                   finally
-                   {
-                      resultSet.close();
-                   }
+                   PagingPersonResults people = getPersonService().getPeople(
+                        Utils.generatePersonFilter(contains.trim()),
+                        true,
+                        Utils.generatePersonSort(),
+                        new PagingRequest(Utils.getPersonMaxResults(), null)
+                   );
+                   List<NodeRef> nodes = people.getPage();
                    
                    ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
                    for (NodeRef personRef : nodes)

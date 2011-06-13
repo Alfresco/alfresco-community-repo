@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,8 @@ import java.util.List;
 import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.repo.admin.patch.impl.MigrateAttrTenantsPatch;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
@@ -37,6 +39,7 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
     private TenantAdminService tenantAdminService;
     private PatchService patchService;
     private MigrateAttrTenantsPatch migrateAttrTenantsPatch;
+    private DescriptorService descriptorService;
     
     /**
      * @param tenantAdminService        the service that will perform the bootstrap
@@ -51,6 +54,11 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
         this.patchService = patchService;
     }
     
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+    
     public void setMigrateAttrTenantsPatch(MigrateAttrTenantsPatch migrateAttrTenantsPatch)
     {
         this.migrateAttrTenantsPatch = migrateAttrTenantsPatch;
@@ -61,12 +69,15 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
     {
         PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);
         PropertyCheck.mandatory(this, "patchService", patchService);
+        PropertyCheck.mandatory(this, "descriptorService", descriptorService);
         
         if (tenantAdminService.isEnabled())
         {
-            // Upgrade to 3.4 (chicken & egg)
-            if (tenantAdminService.getAllTenants().size() == 0)
+            // note: alf*attributes* tables do not exist from Alfresco 4.0.0 schema 5007
+            Descriptor desc = descriptorService.getInstalledRepositoryDescriptor();
+            if ((desc != null) && (desc.getSchema() < 5007) && (tenantAdminService.getAllTenants().size() == 0))
             {
+                // could be an upgrade (from before 3.4)
                 boolean applied = false;
                 List<AppliedPatch> appliedPatches = patchService.getPatches(null, null);
                 for (AppliedPatch appliedPatch : appliedPatches)
@@ -80,6 +91,7 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
                 
                 if (! applied)
                 {
+                    // upgrade to 3.4 or higher (chicken & egg)
                     migrateAttrTenantsPatch.apply();
                 }
             }
@@ -87,7 +99,7 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
             tenantAdminService.startTenants();
         }
     }
-
+    
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

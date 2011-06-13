@@ -370,6 +370,7 @@
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="patchService" ref="PatchService"/>
+        <property name="descriptorService" ref="descriptorComponent"/>
         <property name="migrateAttrTenantsPatch" ref="patch.migrateAttrTenants"/>
     </bean>
        

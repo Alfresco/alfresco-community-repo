@@ -83,7 +83,7 @@ public class WorkflowObjectFactory
     
     public boolean isGlobalId(String globalId)
     {
-        return BPMEngineRegistry.isGlobalId(globalId, globalId);
+        return BPMEngineRegistry.isGlobalId(globalId, engineId);
     }
 
     /**
@@ -109,22 +109,20 @@ public class WorkflowObjectFactory
      * @return
      */
     public WorkflowDefinition createDefinition(String defId,
-                String defName,int version, 
+                String defName, int version, 
                 String defaultTitle, String defaultDescription,
                 WorkflowTaskDefinition startTaskDef)
     {
         checkDomain(defName);
         String actualId = buildGlobalId(defId);
         
-        String actualName = getWorkflowDefinitionName(defName);
         String actualVersion = Integer.toString(version);
         
-        String baseName= tenantService.getBaseName(defName);
-        String displayId = baseName + ".workflow";
+        String displayId = getProcessKey(defName) + ".workflow";
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, title);
         return new WorkflowDefinition(
-                    actualId, actualName, actualVersion, title, description, startTaskDef);
+                    actualId, buildGlobalId(defName), actualVersion, title, description, startTaskDef);
     }
     
     public String getWorkflowDefinitionName(String defName)
@@ -133,14 +131,14 @@ public class WorkflowObjectFactory
         String actualName = buildGlobalId(baseName);
         return actualName;
     }
-
+    
     public WorkflowInstance createInstance(String id,
                 WorkflowDefinition definition, Map<String, Object> variables,
                 boolean isActive, Date startDate, Date endDate)
     {
+        checkDomain(definition.getName());
         String actualId = buildGlobalId(id);
-        checkDomain(getLocalEngineId(definition.getName()));
-
+        
         String description = (String) getVariable(variables, WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
         
         NodeRef initiator = null;
@@ -207,11 +205,10 @@ public class WorkflowObjectFactory
                 Map<QName, Serializable> properties)
     {
         String defName = path.getInstance().getDefinition().getName();
-        String processKey = getLocalEngineId(defName);
-        checkDomain(processKey);
-
+        checkDomain(defName);
         String actualId = buildGlobalId(id);
-        String displayId = processKey + ".task." + name;
+        
+        String displayId =  getProcessKey(defName) + ".task." + name;
         TypeDefinition metadata = taskDef.getMetadata();
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle, metadata.getTitle(), name);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, metadata.getDescription(), title);
@@ -227,25 +224,25 @@ public class WorkflowObjectFactory
         return new WorkflowTimer(actualId, name, workflowPath, workflowTask, dueDate, error);
     }
     
-    public String getTaskTitle(TypeDefinition typeDefinition, String defName, String defaultTitle, String name)
+    private String getProcessKey(String defName)
     {
         String processKey = defName;
-        if(isGlobalId(defName))
+        if (isGlobalId(defName))
         {
             processKey = getLocalEngineId(defName);
         }
-        String displayId = processKey + ".task." + name;
+        return tenantService.getBaseName(processKey);
+    }
+    
+    public String getTaskTitle(TypeDefinition typeDefinition, String defName, String defaultTitle, String name)
+    {
+        String displayId = getProcessKey(defName) + ".task." + name;
         return getLabel(displayId, TITLE_LABEL, defaultTitle, typeDefinition.getTitle(), name);
     }
     
     public String getTaskDescription(TypeDefinition typeDefinition, String defName, String defaultDescription, String title)
     {
-        String processKey = defName;
-        if(isGlobalId(defName))
-        {
-            processKey = getLocalEngineId(defName);
-        }
-        String displayId = processKey + ".task." + title;
+        String displayId = getProcessKey(defName) + ".task." + title;
         return getLabel(displayId, DESC_LABEL, defaultDescription, typeDefinition.getTitle(), title);
     }
     
@@ -305,14 +302,18 @@ public class WorkflowObjectFactory
     
     /**
      * Throws exception if domain mismatch
-     * @param definitionKey
+     * @param defName
      */
-    private void checkDomain(String definitionKey)
+    private void checkDomain(String defName)
     {
         if (tenantService.isEnabled())
         {
-            
-            tenantService.checkDomain(definitionKey); 
+            String processKey = defName;
+            if (isGlobalId(defName))
+            {
+                processKey = getLocalEngineId(defName);
+            }
+            tenantService.checkDomain(processKey);
         }
     }
 

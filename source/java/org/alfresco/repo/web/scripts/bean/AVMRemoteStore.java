@@ -159,10 +159,10 @@ public class AVMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 ContentReader reader;
                 try
@@ -251,10 +251,10 @@ public class AVMRemoteStore extends BaseRemoteStore
     @Override
     protected void createDocument(final WebScriptResponse res, final String store, final String path, final InputStream content)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 String avmPath = buildAVMPath(store, path);
                 try
@@ -298,10 +298,10 @@ public class AVMRemoteStore extends BaseRemoteStore
     @Override
     protected void createDocuments(final WebScriptResponse res, final String store, final InputStream in)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 try
                 {
@@ -384,10 +384,10 @@ public class AVMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 try
                 {
@@ -420,10 +420,10 @@ public class AVMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 try
                 {

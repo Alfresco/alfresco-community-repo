@@ -82,7 +82,8 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("Approve", outcome);
     }
 
-    protected void testTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
+    @Override
+    protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {
     	// In activiti, start-tasks only show up when the workflowInstanceId or taskId is passed
 		List<String> expectedTasks = Arrays.asList(startTask.getId());
@@ -98,7 +99,8 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
 	    checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
 	}
     
-    protected void testTaskQueryTaskCompleted(String workflowInstanceId,
+    @Override
+    protected void checkTaskQueryTaskCompleted(String workflowInstanceId,
 			WorkflowTask theTask, WorkflowTask startTask) 
 	{
 		List<String> bothTasks = Arrays.asList(theTask.getId(), startTask.getId());
@@ -124,7 +126,8 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         checkProcessPropsQuery(withoutStartTask, WorkflowTaskState.COMPLETED);
 	}
     
-    protected void testQueryTasksInactiveWorkflow(String workflowInstanceId) {
+    @Override
+    protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) {
 		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
 		taskQuery.setActive(false);
 		

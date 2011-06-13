@@ -176,6 +176,7 @@ public class WorkflowTaskQuery
     }
 
     /**
+     * Filters ont he {@link WorkflowInstance} Id.
      * @param processId
      */
     public void setProcessId(String processId)
@@ -192,6 +193,7 @@ public class WorkflowTaskQuery
     }
 
     /**
+     * Filters on the {@link WorkflowDefinition} name.
      * @param processName
      */
     public void setProcessName(QName processName)

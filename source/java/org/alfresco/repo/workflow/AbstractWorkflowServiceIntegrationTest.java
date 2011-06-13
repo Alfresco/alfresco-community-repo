@@ -73,6 +73,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected final static String USER3 = "WFUser3" + GUID.generate();
     protected final static String GROUP = "WFGroup" + GUID.generate();
     protected final static String SUB_GROUP = "WFSubGroup" + GUID.generate();
+    protected final static QName customStringProp = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "customStringProp");
     
     protected WorkflowService workflowService;
     protected AuthenticationComponent authenticationComponent;
@@ -576,26 +577,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         WorkflowDefinition workflowDef = deployDefinition(getAdhocDefinitionPath());
         assertNotNull(workflowDef);
         
-        // Create params
-        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        Serializable wfPackage = workflowService.createPackage(null);
-        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
-        Date dueDate = new Date();
-        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
-        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
-        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test workflow description");
-        QName customStringProp = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "customStringProp");
-        params.put(customStringProp, "stringValue");
-        
-        // Assign to USER2
-        NodeRef assignee = personManager.get(USER2);
-        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee); 
-        
-        // Start a workflow instance
-        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
-        assertNotNull(path);
-        assertTrue(path.isActive());
-        String workflowInstanceId = path.getInstance().getId();
+        String workflowInstanceId = startAdhocWorkflow(workflowDef, USER2);
         
         // End start task to progress workflow
         WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
@@ -605,30 +587,54 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         WorkflowTask theTask = getNextTaskForWorkflow(workflowInstanceId);
         
         // Set some custom properties on the task
-        params = new HashMap<QName, Serializable>();
+        HashMap<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(customStringProp, "stringValue");
         workflowService.updateTask(theTask.getId(), params, null, null);
         
         // Test all query features for running tasks
-        testTaskQueryInProgress(workflowInstanceId, theTask);
+        checkTaskQueryInProgress(workflowInstanceId, theTask);
 
         // Test all query features for the start-task
-        testTaskQueryStartTaskCompleted(workflowInstanceId, startTask);
+        checkTaskQueryStartTaskCompleted(workflowInstanceId, startTask);
         
         // Finish the task adhoc-task
         workflowService.endTask(theTask.getId(), null);
         
         // Test all query features for completed tasks
-        testTaskQueryTaskCompleted(workflowInstanceId, theTask, startTask);
+        checkTaskQueryTaskCompleted(workflowInstanceId, theTask, startTask);
         
         // Finally end the workflow and check the querying isActive == false
         WorkflowTask lastTask = getNextTaskForWorkflow(workflowInstanceId);
         workflowService.endTask(lastTask.getId(), null);
         
-        testQueryTasksInactiveWorkflow(workflowInstanceId);
+        checkQueryTasksInactiveWorkflow(workflowInstanceId);
     }
     
-	protected void testQueryTasksInactiveWorkflow(String workflowInstanceId) {
+    public void testQueryTaskLimit() throws Exception
+    {
+        WorkflowDefinition workflowDef = deployDefinition(getAdhocDefinitionPath());
+        
+        // execute 5 instances of the adhoc workflow
+        for (int x = 0; x < 5; x++)
+        {
+            executeAdhocWorkflow(workflowDef);
+        }
+        
+        // ensure there more than 5 tasks returned.
+        WorkflowTaskQuery query = new WorkflowTaskQuery();
+        query.setActive(false);
+        query.setActorId(USER3);
+        query.setTaskState(WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> tasks = workflowService.queryTasks(query);
+        assertTrue(tasks.size()>5);
+        
+        // limit the results and ensure we get the correct number of results back
+        query.setLimit(5);
+        tasks = workflowService.queryTasks(query);
+        assertEquals(5, tasks.size());
+    }
+
+	protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) {
 		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
 		taskQuery.setActive(false);
 		
@@ -641,7 +647,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 		checkNoTasksFoundUsingQuery(taskQuery);
 	}
 
-	protected void testTaskQueryTaskCompleted(String workflowInstanceId,
+	protected void checkTaskQueryTaskCompleted(String workflowInstanceId,
 			WorkflowTask theTask, WorkflowTask startTask) 
 	{
 		List<String> expectedTasks = Arrays.asList(theTask.getId(), startTask.getId());
@@ -661,7 +667,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
 	}
 
-	protected void testTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask)
+	protected void checkTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask)
     {
 		List<String> expectedTasks = Arrays.asList(expectedTask.getId());
 		
@@ -676,7 +682,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkProcessPropsQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS);
     }
 	
-	protected void testTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) {
+	protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) {
 		List<String> expectedTasks = Arrays.asList(startTask.getId());
 		
 		checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
@@ -928,7 +934,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     		String optionalProcessId) 
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
-        QName customStringProp = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "customStringProp");
         Map<QName, Object> taskProps = new HashMap<QName, Object>();
         
         taskProps.put(customStringProp, "stringValue");
@@ -1068,6 +1073,52 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertEquals(expDef.getDescription(), actualDef.getDescription());
         assertEquals(expDef.getTitle(), actualDef.getTitle());
         assertEquals(expDef.getVersion(), actualDef.getVersion());
+    }
+
+    private void executeAdhocWorkflow(WorkflowDefinition workflowDef)
+    {
+        personManager.setUser(USER3);
+        String workflowId = startAdhocWorkflow(workflowDef, USER3);
+        
+        // End start task to progress workflow
+        WorkflowTask startTask = workflowService.getStartTask(workflowId);
+        String startTaskId = startTask.getId();
+        workflowService.endTask(startTaskId, null);
+        
+        // finish the adhoc task
+        WorkflowTask adhocTask = getNextTaskForWorkflow(workflowId);
+        workflowService.endTask(adhocTask.getId(), null);
+        
+        // finish the workflow
+        WorkflowTask lastTask = getNextTaskForWorkflow(workflowId);
+        workflowService.endTask(lastTask.getId(), null);
+        
+        // ensure the workflow has completed
+        assertFalse(workflowService.getWorkflowById(workflowId).isActive());
+    }
+    
+    private String startAdhocWorkflow(WorkflowDefinition workflowDef, String assigneeId)
+    {
+        // Create params
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test workflow description");
+        
+        params.put(customStringProp, "stringValue");
+        
+        // Assign to USER2
+        NodeRef assignee = personManager.get(assigneeId);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee); 
+        
+        // Start a workflow instance
+        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
+        assertNotNull(path);
+        assertTrue(path.isActive());
+        return path.getInstance().getId();
     }
 
     @SuppressWarnings("deprecation")

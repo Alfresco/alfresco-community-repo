@@ -111,7 +111,6 @@ import org.xml.sax.InputSource;
  * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
- *
  */
 public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 {
@@ -1002,7 +1001,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             throw new WorkflowException(msg, ae);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1419,60 +1418,72 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      
      private List<WorkflowTask> queryRuntimeTasks(WorkflowTaskQuery query)
      {
-         // Runtime-tasks only exist on process-instances that are active
-         // so no use in querying runtime tasks if not active
-         if(!Boolean.FALSE.equals(query.isActive())) 
-         {
-              // Add task name
-             TaskQuery taskQuery = taskService.createTaskQuery();
-             if(query.getTaskName() != null) {
-                 // Task 'key' is stored as variable on task
-                 String formKey = query.getTaskName().toPrefixString(namespaceService);
-                 taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
-             }
-             
-             if(query.getProcessId() != null) {
-                 String processInstanceId = createLocalId(query.getProcessId());
-                 taskQuery.processInstanceId(processInstanceId);
-             }
+        // Runtime-tasks only exist on process-instances that are active
+        // so no use in querying runtime tasks if not active
+        if (!Boolean.FALSE.equals(query.isActive()))
+        {
+            // Add task name
+            TaskQuery taskQuery = taskService.createTaskQuery();
+            if (query.getTaskName() != null)
+            {
+                // Task 'key' is stored as variable on task
+                String formKey = query.getTaskName().toPrefixString(namespaceService);
+                taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
+            }
 
-             if(query.getProcessName() != null)
-             {
-                  String processName = getProcessNameMTSafe(query.getProcessName());
-                  taskQuery.processDefinitionKey(processName);
-             }
-             
-             
-             if(query.getActorId() != null) {
-                 taskQuery.taskAssignee(query.getActorId());
-             }
-             
-             if(query.getTaskId() != null) {
-                 String taskId = createLocalId(query.getTaskId());
-                 taskQuery.taskId(taskId);
-             }
-             
-             // Custom task properties
-             if(query.getTaskCustomProps() != null)
-             {
-                 addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
-             }
+            if (query.getProcessId() != null)
+            {
+                String processInstanceId = createLocalId(query.getProcessId());
+                taskQuery.processInstanceId(processInstanceId);
+            }
 
-             if(query.getProcessCustomProps() != null)
-             {
-                 addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
-             }
-             // Add ordering
-             if (query.getOrderBy() != null)
-             {
-                 WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
-                 orderQuery(taskQuery, orderBy);
-             }
-             
-             List<WorkflowTask> currentTasks = typeConverter.convert(taskQuery.list());
-             return currentTasks;
-         }
-         return new ArrayList<WorkflowTask>();
+            if (query.getProcessName() != null)
+            {
+                String processName = getProcessNameMTSafe(query.getProcessName());
+                taskQuery.processDefinitionKey(processName);
+            }
+
+            if (query.getActorId() != null)
+            {
+                taskQuery.taskAssignee(query.getActorId());
+            }
+
+            if (query.getTaskId() != null)
+            {
+                String taskId = createLocalId(query.getTaskId());
+                taskQuery.taskId(taskId);
+            }
+
+            // Custom task properties
+            if (query.getTaskCustomProps() != null)
+            {
+                addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
+            }
+
+            if (query.getProcessCustomProps() != null)
+            {
+                addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
+            }
+            // Add ordering
+            if (query.getOrderBy() != null)
+            {
+                WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
+                orderQuery(taskQuery, orderBy);
+            }
+
+            List<Task> results;
+            int limit = query.getLimit();
+            if (limit > 0)
+            {
+                results = taskQuery.listPage(0, limit);
+            }
+            else
+            {
+                results = taskQuery.list();
+            }
+            return typeConverter.convert(results);
+        }
+        return new ArrayList<WorkflowTask>();
      }
      
      private void addProcessPropertiesToQuery(
@@ -1611,78 +1622,87 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
      private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
      {
-         HistoricTaskInstanceQuery historicQuery = historyService
-             .createHistoricTaskInstanceQuery()
-             .finished();
-         
-         if(query.getTaskId() != null) {
-             String taskId = createLocalId(query.getTaskId());
-             historicQuery.taskId(taskId);
-         }
-         
-         if(query.getProcessId() != null) 
-         {
-             String processInstanceId = createLocalId(query.getProcessId());
-             historicQuery.processInstanceId(processInstanceId);
-         }
-         
-         if(query.getTaskName() != null) 
-         {
-             historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
-         }
-         
-         if(query.getActorId() != null)
-         {
-             historicQuery.taskAssignee(query.getActorId());
-         }
-         
-         if(query.getProcessName() != null)
-         {
-             String processName = getProcessNameMTSafe(query.getProcessName());
-             historicQuery.processDefinitionKey(processName);
-         }
-         
-         if(query.getTaskCustomProps() != null) 
-         {
-        	 addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
-         }
-         
-         if(query.getProcessCustomProps() != null) 
-         {
-        	 addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
-         }
-         
-         if(query.isActive() != null) 
-         {
-        	 if(query.isActive()) {
-        		 historicQuery.processUnfinished();
-        	 }
-        	 else 
-        	 {
-        		 historicQuery.processFinished();
-        	 }
-         }
-         
-         // Order query
-         if(query.getOrderBy() != null)
-         {
-             orderQuery(historicQuery, query.getOrderBy());
-         }
-         
-         List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>();
-         List<HistoricTaskInstance> historicTasks = historicQuery.list();
-         
-         for(HistoricTaskInstance historicTask : historicTasks)
-         {
-             WorkflowTask wfTask = typeConverter.convert(historicTask);
-             if(wfTask != null)
-             {
-                 // Converter returns null if the task belongs to deleted/cancelled WF
-                 workflowTasks.add(wfTask);
-             }
-         }
-         return workflowTasks;
-       
+        HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
+
+        if (query.getTaskId() != null)
+        {
+            String taskId = createLocalId(query.getTaskId());
+            historicQuery.taskId(taskId);
+        }
+
+        if (query.getProcessId() != null)
+        {
+            String processInstanceId = createLocalId(query.getProcessId());
+            historicQuery.processInstanceId(processInstanceId);
+        }
+
+        if (query.getTaskName() != null)
+        {
+            historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
+        }
+
+        if (query.getActorId() != null)
+        {
+            historicQuery.taskAssignee(query.getActorId());
+        }
+
+        if (query.getProcessName() != null)
+        {
+            String processName = getProcessNameMTSafe(query.getProcessName());
+            historicQuery.processDefinitionKey(processName);
+        }
+
+        if (query.getTaskCustomProps() != null)
+        {
+            addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
+        }
+
+        if (query.getProcessCustomProps() != null)
+        {
+            addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
+        }
+
+        if (query.isActive() != null)
+        {
+            if (query.isActive())
+            {
+                historicQuery.processUnfinished();
+            }
+            else
+            {
+                historicQuery.processFinished();
+            }
+        }
+
+        // Order query
+        if (query.getOrderBy() != null)
+        {
+            orderQuery(historicQuery, query.getOrderBy());
+        }
+
+        List<HistoricTaskInstance> results;
+        int limit = query.getLimit();
+        if (limit > 0)
+        {
+            results = historicQuery.listPage(0, limit);
+        }
+        else
+        {
+            results = historicQuery.list();
+        }
+
+        List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>();
+        for (HistoricTaskInstance historicTask : results)
+        {
+            WorkflowTask wfTask = typeConverter.convert(historicTask);
+            if (wfTask != null)
+            {
+                // Converter returns null if the task belongs to
+                // deleted/cancelled WF
+                workflowTasks.add(wfTask);
+            }
+        }
+        return workflowTasks;
      }
      
      private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, 

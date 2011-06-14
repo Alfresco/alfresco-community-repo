@@ -19,39 +19,18 @@
 
 package org.alfresco.service.cmr.publishing;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Set;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @author Brian
+ * @author Nick Smith
+ * @since 4.0
  *
  */
-public interface PublishingEvent
+public interface StatusUpdate
 {
-    enum Status {SCHEDULED, IN_PROGRESS, CANCEL_REQUESTED, COMPLETE, FAILED}
-    
-    String getId();
-    
-    Status getStatus();
-    
-    Calendar getScheduledTime();
-    
-    PublishingPackage getPackage();
-    
-    Date getCreatedTime();
-    
-    String getCreator();
-    
-    Date getModifiedTime();
-    
-    String getModifier();
-    
-    String getComment();
-    
-    MutablePublishingEvent edit();
-
-    String getChannelName();
-    
-    StatusUpdate getStatusUpdate();
+    String getMessage();
+    Set<String> getChannelNames();
+    NodeRef getNodeToLinkTo();
 }

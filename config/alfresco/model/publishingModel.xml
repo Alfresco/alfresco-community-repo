@@ -180,6 +180,19 @@
                <title>The Id of the associated Publishing Event Workflow Instance</title>
                <type>d:text</type>
             </property>
+            <property name="pub:statusUpdateMessage">
+               <title>The status update message</title>
+               <type>d:text</type>
+            </property>
+            <property name="pub:statusUpdateNodeRef">
+               <title>The status update NodeRef used to generate a URL</title>
+               <type>d:text</type>
+            </property>
+            <property name="pub:statusUpdateChannelNames">
+               <title>The names of the channels to be notified of this status update.</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
          </properties>
          <mandatory-aspects>
             <aspect>cm:auditable</aspect>

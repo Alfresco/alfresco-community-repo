@@ -36,6 +36,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -67,14 +68,15 @@ public class PublishingEventProcessor
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             NodeRef environment = eventHelper.getEnvironmentNodeForPublishingEvent(eventNode);
             String channelName = event.getChannelName();
-            NodeRef channelNode = channelHelper.getChannelNodeForEnvironment(environment, channelName);
-            if (channelNode == null)
+            Channel channel = channelHelper.getChannel(environment, channelName, channelService);
+            if (channel == null)
             {
                 fail(event, "No channel found");
             }
             else
             {
-                publishEvent(channelNode, event);
+                publishEvent(channel, event);
+                updateStatus(channel, environment, event.getStatusUpdate());
             }
         }
         finally
@@ -83,9 +85,35 @@ public class PublishingEventProcessor
         }
      }
 
-     public void publishEvent(NodeRef channelNode, PublishingEvent event)
+    public void updateStatus(Channel publishChannel, NodeRef environment, StatusUpdate update)
+    {
+        if(update == null)
+        {
+            return;
+        }
+        String message = update.getMessage();
+        NodeRef node = update.getNodeToLinkTo();
+        if(node!= null)
+        {
+            String nodeUrl = publishChannel.getChannelType().getNodeUrl(node);
+            if(nodeUrl != null)
+            {
+                message += nodeUrl;
+            }
+        }
+        Set<String> channels = update.getChannelNames();
+        for (String channelName : channels)
+        {
+            Channel channel = channelHelper.getChannel(environment, channelName, channelService);
+            if(channel != null && channel.getChannelType().canPublishStatusUpdates())
+            {
+                channel.updateStatus(message);
+            }
+        }
+    }
+
+    public void publishEvent(Channel channel, PublishingEvent event)
      {
-         Channel channel = channelHelper.buildChannelObject(channelNode, channelService);
          NodeRef eventNode = eventHelper.getPublishingEventNode(event.getId());
          for (PublishingPackageEntry entry : event.getPackage().getEntries())
          {

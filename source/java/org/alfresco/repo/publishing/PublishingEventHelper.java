@@ -30,6 +30,9 @@ import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_WORKFLOW_ID;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_CHANNEL_NAMES;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_NODE_REF;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_MESSAGE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_SCHEDULED_PUBLISH_DATE;
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_PUBLISHING_EVENT;
@@ -54,6 +57,7 @@ import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -150,10 +154,26 @@ public class PublishingEventHelper
         Calendar scheduledTime = getScheduledTime(props);
 
         String channel = (String) props.get(PROP_PUBLISHING_EVENT_CHANNEL);
+        StatusUpdate statusUpdate = buildStatusUpdate(props);
         return new PublishingEventImpl(eventNode.toString(),
                 status, channel,
                 publishingPackage, createdTime,
-                creator,modifiedTime, modifier, scheduledTime, comment);
+                creator,modifiedTime, modifier,
+                scheduledTime, comment, statusUpdate);
+    }
+
+    @SuppressWarnings("unchecked")
+    private StatusUpdate buildStatusUpdate(Map<QName, Serializable> props)
+    {
+        String message = (String) props.get(PROP_STATUS_UPDATE_MESSAGE);
+        Collection<String> channelNames = (Collection<String>) props.get(PROP_STATUS_UPDATE_CHANNEL_NAMES);
+        if(channelNames == null || channelNames.isEmpty())
+        {
+            return null;
+        }
+        String nodeId = (String) props.get(PROP_STATUS_UPDATE_NODE_REF);
+        NodeRef nodeToLinkTo = nodeId==null ? null : new NodeRef(nodeId);
+        return new StatusUpdateImpl(message, nodeToLinkTo, channelNames);
     }
 
     public List<PublishingEvent> getPublishingEvents(List<NodeRef> eventNodes)
@@ -167,15 +187,29 @@ public class PublishingEventHelper
                 });
     }
     
-    public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment)
+    public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate)
         throws Exception
     {
         if (schedule == null)
         {
             schedule = Calendar.getInstance();
         }
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         String name = GUID.generate();
+        Map<QName, Serializable> props = 
+            buildPublishingEventProperties(publishingPackage, channelName, schedule, comment, statusUpdate, name);
+        ChildAssociationRef newAssoc = nodeService.createNode(queueNode, 
+                ASSOC_PUBLISHING_EVENT,
+                QName.createQName(NAMESPACE, name),
+                TYPE_PUBLISHING_EVENT, props);
+        NodeRef eventNode = newAssoc.getChildRef();
+        setPayload(eventNode, publishingPackage);
+        return eventNode;
+    }
+
+    private Map<QName, Serializable> buildPublishingEventProperties(PublishingPackage publishingPackage,
+            String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate, String name)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, name);
         props.put(PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());
         props.put(PROP_PUBLISHING_EVENT_TIME, schedule.getTime());
@@ -190,13 +224,13 @@ public class PublishingEventHelper
         props.put(PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, (Serializable) publshStrings);
         Collection<String> unpublshStrings = mapNodesToStrings(publishingPackage.getNodesToUnpublish());
         props.put(PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH, (Serializable) unpublshStrings);
-        ChildAssociationRef newAssoc = nodeService.createNode(queueNode, 
-                ASSOC_PUBLISHING_EVENT,
-                QName.createQName(NAMESPACE, name),
-                TYPE_PUBLISHING_EVENT, props);
-        NodeRef eventNode = newAssoc.getChildRef();
-        setPayload(eventNode, publishingPackage);
-        return eventNode;
+        if(statusUpdate != null)
+        {
+            props.put(PROP_STATUS_UPDATE_MESSAGE, statusUpdate.getMessage());
+            props.put(PROP_STATUS_UPDATE_NODE_REF, statusUpdate.getNodeToLinkTo().toString());
+            props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusUpdate.getChannelNames());
+        }
+        return props;
     }
 
     private Collection<String> mapNodesToStrings(Collection<NodeRef> nodes)

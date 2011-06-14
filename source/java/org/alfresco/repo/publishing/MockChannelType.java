@@ -138,7 +138,15 @@ public class MockChannelType extends AbstractChannelType
     @Override
     public boolean canPublishStatusUpdates()
     {
-        // TODO Auto-generated method stub
         return false;
     }
+
+    /**
+    * {@inheritDoc}
+    */
+    public String getNodeUrl(NodeRef node)
+    {
+        return null;
+    }
+
 }

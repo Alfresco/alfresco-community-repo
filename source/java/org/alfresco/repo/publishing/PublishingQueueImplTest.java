@@ -20,6 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_WORKFLOW_ID;
@@ -28,9 +29,11 @@ import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_SCHEDULED_PUB
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -42,6 +45,7 @@ import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingService;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -56,6 +60,9 @@ import org.junit.Test;
  */
 public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 {
+    private static final String channelName = "TheChannel";
+    private static final String comment = "The Comment";
+    
     @Resource(name="publishingService")
     protected PublishingService publishingService;
     
@@ -66,8 +73,8 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     @Test
     public void testScheduleNewPublishingEvent() throws Exception
     {
-        NodeRef firstNode = fileFolderService.create(docLib, "First", ContentModel.TYPE_CONTENT).getNodeRef();
-        NodeRef secondNode = fileFolderService.create(docLib, "second", ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef firstNode = createContent("First");
+        NodeRef secondNode = createContent("second");
         
         MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
@@ -76,13 +83,10 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 //        NodeRef thirdNode = fileFolderService.create(docLib, "third", ContentModel.TYPE_CONTENT).getNodeRef();
 //        publishingPackage.addNodesToUnpublish(thirdNode);
         
-        String channelName = "The channel";
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
         
-        String comment = "The Comment";
-        
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment);
+        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, null);
         
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         assertEquals(eventId, event.getId());
@@ -90,6 +94,8 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertEquals(Status.SCHEDULED, event.getStatus());
         assertEquals(AuthenticationUtil.getAdminUserName(), event.getCreator());
         assertEquals(schedule, event.getScheduledTime());
+        assertEquals(channelName, event.getChannelName());
+        assertNull(event.getStatusUpdate());
         
         PublishingPackage pckg = event.getPackage();
         ArrayList<NodeRef> toPublish = new ArrayList<NodeRef>(2);
@@ -124,8 +130,36 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         Map<QName, Serializable> props = workflowService.getPathProperties(paths.get(0).getId());
         assertEquals(eventNode, props.get(PROP_WF_PUBLISHING_EVENT));
         assertEquals(schedule.getTime(), props.get(PROP_WF_SCHEDULED_PUBLISH_DATE));
+    }
+
+    public void testScheduleNewPublishingEventWithStatusUpdate() throws Exception
+    {
+        NodeRef firstNode = createContent("First");
+        NodeRef secondNode = createContent("Second");
         
+        List<String> channelNames = Arrays.asList("Channel1", "Channel2", "Channel3" );
+        String message = "The message";
+        queue.createStatusUpdate(message, secondNode, channelNames);
         
+        // Publish an event with the StatusUpdate
+        MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
+        publishingPackage.addNodesToPublish(firstNode, secondNode);
+        Calendar schedule = Calendar.getInstance();
+        schedule.add(Calendar.HOUR, 2);
+        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, null);
+
+        PublishingEvent event = publishingService.getPublishingEvent(eventId);
+        StatusUpdate update = event.getStatusUpdate();
+        assertEquals(message, update.getMessage());
+        assertEquals(secondNode, update.getNodeToLinkTo());
+        Set<String> names = update.getChannelNames();
+        assertEquals(3, names.size());
+        assertTrue(names.containsAll(channelNames));
+    }
+    
+    private NodeRef createContent(String name)
+    {
+        return fileFolderService.create(docLib, name, ContentModel.TYPE_CONTENT).getNodeRef();
     }
     
     /**

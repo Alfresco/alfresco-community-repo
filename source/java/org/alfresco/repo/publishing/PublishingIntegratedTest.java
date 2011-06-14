@@ -139,7 +139,7 @@ public class PublishingIntegratedTest
 
         Calendar scheduleTime = Calendar.getInstance();
         scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null);
+        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null, null);
         
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         
@@ -174,7 +174,7 @@ public class PublishingIntegratedTest
 
         Calendar scheduleTime = Calendar.getInstance();
         scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null);
+        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null, null);
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         Assert.assertNotNull(event);
         publishingService.cancelPublishingEvent(eventId);

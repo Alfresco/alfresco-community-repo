@@ -19,17 +19,21 @@
 
 package org.alfresco.repo.publishing;
 
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
+ * @author Nick Smith
  * 
  */
 public class PublishingQueueImpl implements PublishingQueue
@@ -39,33 +43,38 @@ public class PublishingQueueImpl implements PublishingQueue
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private PublishingEventHelper publishingEventHelper;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.service.cmr.publishing.PublishingQueue#createPublishingPackage
-     * ()
-     */
-    @Override
-    public MutablePublishingPackage createPublishingPackage()
+    /**
+     * {@inheritDoc}
+    */
+        public MutablePublishingPackage createPublishingPackage()
     {
         return new MutablePublishingPackageImpl(transferManifestNodeFactory);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.service.cmr.publishing.PublishingQueue#scheduleNewEvent(
-     * org.alfresco.service.cmr.publishing.PublishingPackage,
-     * java.util.Calendar, java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    @Override
-    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment)
+     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelNames)
+     {
+         return createStatusUpdate(message, nodeToLinkTo, Arrays.asList(channelNames));
+     }
+
+     /**
+     * {@inheritDoc}
+     */
+     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelNames)
+     {
+         return new StatusUpdateImpl(message, nodeToLinkTo, channelNames);
+     }
+
+     /**
+     * {@inheritDoc}
+    */
+    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate)
     {
         try
         {
-            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelName, schedule, comment);
+            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelName, schedule, comment, statusUpdate);
             publishingEventHelper.startPublishingWorkflow(eventNode, schedule);
             return eventNode.toString();
         }

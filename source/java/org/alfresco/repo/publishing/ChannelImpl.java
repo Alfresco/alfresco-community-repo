@@ -111,8 +111,7 @@ public class ChannelImpl implements Channel
     @Override
     public void updateStatus(String status)
     {
-        // TODO Auto-generated method stub
-        
+        channelType.updateStatus(status, getProperties());
     }
 
 }

@@ -25,6 +25,7 @@ import java.util.Date;
 import org.alfresco.service.cmr.publishing.MutablePublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 
 /**
  * @author Nick Smith
@@ -41,6 +42,7 @@ public class PublishingEventImpl implements PublishingEvent
     private final String creator;
     private final Date modifiedTime;
     private final String modifier;
+    private final StatusUpdate statusUpdate;
     protected final Calendar scheduledTime;
     protected String comment;
     
@@ -48,7 +50,8 @@ public class PublishingEventImpl implements PublishingEvent
             Status status, String channelName,
             PublishingPackage publishingPackage,Date createdTime,
             String creator, Date modifiedTime,
-            String modifier, Calendar scheduledTime, String comment)
+            String modifier, Calendar scheduledTime, String comment,
+            StatusUpdate statusUpdate)
     {
         this.id = id;
         this.status = status;
@@ -60,6 +63,7 @@ public class PublishingEventImpl implements PublishingEvent
         this.modifier = modifier;
         this.scheduledTime = scheduledTime;
         this.comment = comment;
+        this.statusUpdate = statusUpdate;
     }
     
     public PublishingEventImpl(PublishingEvent event)
@@ -68,7 +72,8 @@ public class PublishingEventImpl implements PublishingEvent
                 event.getStatus(), event.getChannelName(),
                 event.getPackage(), event.getCreatedTime(),
                 event.getCreator(), event.getModifiedTime(),
-                event.getModifier(), event.getScheduledTime(), event.getComment());
+                event.getModifier(), event.getScheduledTime(), event.getComment(),
+                event.getStatusUpdate());
     }
 
     /**
@@ -158,6 +163,15 @@ public class PublishingEventImpl implements PublishingEvent
     public String getComment()
     {
         return comment;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public StatusUpdate getStatusUpdate()
+    {
+        return statusUpdate;
     }
 
     /**

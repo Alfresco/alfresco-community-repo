@@ -109,6 +109,16 @@ public class ChannelHelper
         return createChannelNode(environment, channelType, channelName, properties);
     }
 
+    public Channel getChannel(NodeRef environment, String channelName, ChannelService channelService)
+    {
+        NodeRef channelNode = getChannelNodeForEnvironment(environment, channelName);
+        if(channelNode != null)
+        {
+            return buildChannelObject(channelNode, channelService);
+        }
+        return null;
+    }
+
     public NodeRef getChannelNodeForEnvironment(NodeRef environment, String channelName)
     {
         QName channelQName = getChannelQName(channelName);
@@ -343,5 +353,5 @@ public class ChannelHelper
     {
         this.contentService = contentService;
     }
-    
+
 }

@@ -104,7 +104,7 @@ public class PublishWebContentJbpmTest
     public void testProcessTimers() throws Exception
     {
         final Calendar scheduledTime = Calendar.getInstance();
-        scheduledTime.add(Calendar.SECOND, 10);
+        scheduledTime.add(Calendar.SECOND, 5);
         
         startWorkflowAndCommit(scheduledTime);
         
@@ -112,7 +112,7 @@ public class PublishWebContentJbpmTest
         checkNode("waitForScheduledTime");
 
         // Wait for scheduled time to elapse.
-        Thread.sleep(11000);
+        Thread.sleep(10000);
         
         // Check the Publish Event Action was called
         verify(checkPublishingDependenciesAction).execute(any(Action.class), any(NodeRef.class));

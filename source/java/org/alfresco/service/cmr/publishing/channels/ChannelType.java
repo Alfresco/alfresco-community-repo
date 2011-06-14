@@ -49,4 +49,5 @@ public interface ChannelType
     
     Set<String> getSupportedMimetypes();
     Set<QName> getSupportedContentTypes();
+    String getNodeUrl(NodeRef node);
 }

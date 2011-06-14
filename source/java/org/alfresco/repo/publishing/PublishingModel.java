@@ -55,10 +55,11 @@ public interface PublishingModel
     public static final QName PROP_PUBLISHING_EVENT_CHANNEL= QName.createQName(NAMESPACE, "publishingEventChannel");
     public static final QName PROP_PUBLISHING_EVENT_WORKFLOW_ID= QName.createQName(NAMESPACE, "publishingEventWorkflowId");
     public static final QName PROP_PUBLISHING_EVENT_PAYLOAD = QName.createQName(NAMESPACE, "publishingEventPayload");
-    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH = QName.createQName(NAMESPACE,
-            "publishingEventNodesToPublish");
-    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH = QName.createQName(NAMESPACE,
-            "publishingEventNodesToUnpublish");
+    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH = QName.createQName(NAMESPACE, "publishingEventNodesToPublish");
+    public static final QName PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH = QName.createQName(NAMESPACE, "publishingEventNodesToUnpublish");
+    public static final QName PROP_STATUS_UPDATE_CHANNEL_NAMES = QName.createQName(NAMESPACE, "statusUpdateChannelNames");
+    public static final QName PROP_STATUS_UPDATE_NODE_REF = QName.createQName(NAMESPACE, "statusUpdateNodeRef");
+    public static final QName PROP_STATUS_UPDATE_MESSAGE = QName.createQName(NAMESPACE, "statusUpdateMessage");
 
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED = "SCHEDULED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_IN_PROGRESS = "IN_PROGRESS";

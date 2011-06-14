@@ -190,7 +190,7 @@ public class PublishingEventHelperTest
         Calendar schedule = Calendar.getInstance();
         String comment = "The comment";
         
-        NodeRef result = helper.createNode(queue, pckg, channelName, schedule, comment);
+        NodeRef result = helper.createNode(queue, pckg, channelName, schedule, comment, null);
         assertEquals(event, result);
         
         ArgumentCaptor<Map> argument = ArgumentCaptor.forClass(Map.class);

@@ -63,7 +63,7 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
         schedule.add(Calendar.YEAR, 1);
         MutablePublishingPackage pckg =queue.createPublishingPackage();
         pckg.addNodesToPublish(first);
-        queue.scheduleNewEvent(pckg, channel1Name, schedule, null);
+        queue.scheduleNewEvent(pckg, channel1Name, schedule, null, null);
         
         results = environment.checkPublishStatus(channel1Name, first, second);
         assertEquals(2, results.size());

@@ -461,7 +461,7 @@ public class ADMRemoteStore extends BaseRemoteStore
      * 
      * @param store     the store id
      * @param path      document path
-     * @param pattern   file pattern to match - allows wildcards e.g. *.xml or site*.xml
+     * @param pattern   file pattern to match - allows wildcards e.g. page.*.site.xml
      * 
      * @throws IOException if an error occurs listing the documents
      */
@@ -476,17 +476,19 @@ public class ADMRemoteStore extends BaseRemoteStore
             {
                 res.setContentType("text/plain;charset=UTF-8");
                 
-                final FileInfo fileInfo = resolveNodePath(path, false, true);
-                if (fileInfo == null || !fileInfo.isFolder())
-                {
-                    res.setStatus(Status.STATUS_NOT_FOUND);
-                    return null;
-                }
-                
                 String filePattern = pattern;
                 if (filePattern == null || filePattern.length() == 0)
                 {
                     filePattern = "*";
+                }
+                
+                // ensure we pass in the file pattern as it is used as part of the folder match - i.e.
+                // for a site component set e.g. /alfresco/site-data/components/page.*.site~xyz~dashboard.xml
+                final FileInfo fileInfo = resolveNodePath(path, pattern, false, true);
+                if (fileInfo == null || !fileInfo.isFolder())
+                {
+                    res.setStatus(Status.STATUS_NOT_FOUND);
+                    return null;
                 }
                 
                 if (logger.isDebugEnabled())
@@ -494,7 +496,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                 
                 try
                 {
-                    outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(path, false), pattern, false);
+                    outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(path + "/" + pattern, false), pattern, false);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -521,7 +523,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         return resolveNodePath(path, false, false);
     }
     
-    /**
+   /**
      * @param path      cm:name based root relative path
      *                  example: /alfresco/site-data/pages/customise-user-dashboard.xml
      *                           /alfresco/site-data/components
@@ -534,6 +536,25 @@ public class ADMRemoteStore extends BaseRemoteStore
      *         parameter above) or null if the supplied path does not exist in the store.
      */
     private FileInfo resolveNodePath(final String path, final boolean create, final boolean isFolder)
+    {
+        return resolveNodePath(path, null, create, isFolder);
+    }
+    
+    /**
+     * @param path      cm:name based root relative path
+     *                  example: /alfresco/site-data/pages/customise-user-dashboard.xml
+     *                           /alfresco/site-data/components
+     * @param pattern   optional pattern that is used as part of the match to aquire the surf-config
+     *                  folder under the appropriate sites or user location.
+     * @param create    if true create the config and folder dirs for the given path returning
+     *                  the FileInfo for the last parent in the path, if false only attempt to
+     *                  resolve the folder path if it exists returning the last element.
+     * @param isFolder  True if the path is for a folder, false if it ends in a filename
+     * 
+     * @return FileInfo representing the file/folder at the specified path location (see create
+     *         parameter above) or null if the supplied path does not exist in the store.
+     */
+    private FileInfo resolveNodePath(final String path, final String pattern, final boolean create, final boolean isFolder)
     {
         if (logger.isDebugEnabled())
             logger.debug("Resolving path: " + path);
@@ -554,7 +575,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     pathElements.add(t.nextToken());
                 }
                 
-                NodeRef surfConfigRef = aquireSurfConfigRef(path, create);
+                NodeRef surfConfigRef = aquireSurfConfigRef(path + (pattern != null ? ("/" + pattern) : ""), create);
                 try
                 {
                     if (create)

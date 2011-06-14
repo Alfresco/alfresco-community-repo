@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -605,7 +605,7 @@ public class SiteActivitySystemTest extends TestCase
         person.put("userName", userName);
         membership.put("person", person);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId + URL_MEMBERSHIPS + "/" + userName;
+        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId + URL_MEMBERSHIPS;
         String response = callPutWebScript(url, ticket, membership.toString());
         
         if (logger.isDebugEnabled())

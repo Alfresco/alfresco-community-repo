@@ -38,19 +38,18 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.TemplateMailHelperBean;
 import org.alfresco.web.bean.repository.Node;
@@ -435,52 +434,39 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          tx.begin();
          
          int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
+         if(maxResults <=0)
+         {
+            maxResults = Utils.getPersonMaxResults();
+         }
          
          List<SelectItem> results;
          
          if (filterIndex == 0)
          {
             // Use lucene search to retrieve user details
-            String term = AbstractLuceneQueryParser.escape(search);
-            StringBuilder query = new StringBuilder(128);
-            if (contains == null || contains.length() == 0)
+            List<Pair<QName,String>> filter = null;
+            if (search == null || search.length() == 0)
             {
                // if there is no search term, search for all people
-               query.append("+TYPE:\"");
-               query.append(ContentModel.TYPE_PERSON.toString());
-               query.append("\"");
             }
             else
             {
-               Utils.generatePersonSearch(query, term);
+               filter = Utils.generatePersonFilter(search);
             }
                
             if (logger.isDebugEnabled())
             {
                logger.debug("Maximum invite users results size: " + maxResults);
-               logger.debug("Using query to find users: " + query.toString());
+               logger.debug("Using query filter to find users: " + filter);
             }
             
-            SearchParameters searchParams = new SearchParameters();
-            searchParams.addStore(Repository.getStoreRef());
-            searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
-            searchParams.setQuery(query.toString());
-            if (maxResults > 0)
-            {
-               searchParams.setLimit(maxResults);
-               searchParams.setLimitBy(LimitBy.FINAL_SIZE);
-            }
-            
-            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
-            List<NodeRef> nodes;
-            try
-            {
-               nodes = resultSet.getNodeRefs();
-            }
-            finally
-            {
-                resultSet.close();
-            }
+            PagingPersonResults people = getPersonService().getPeople(
+                  filter,
+                  true,
+                  Utils.generatePersonSort(),
+                  new PagingRequest(maxResults, null)
+            );
+            List<NodeRef> nodes = people.getPage();
             
             results = new ArrayList<SelectItem>(nodes.size());
             for (int index=0; index<nodes.size(); index++)

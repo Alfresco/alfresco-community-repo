@@ -38,14 +38,13 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
@@ -256,19 +255,13 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
             if (filterIndex == 0)
             {
                 // Use lucene search to retrieve user details
-                String term = AbstractLuceneQueryParser.escape(contains.trim());
-                StringBuilder query = new StringBuilder(128);
-                Utils.generatePersonSearch(query, term);
-                ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
-                List<NodeRef> nodes;
-                try
-                {
-                   nodes = resultSet.getNodeRefs();
-                }
-                finally
-                {
-                    resultSet.close();
-                }
+                PagingPersonResults people = getPersonService().getPeople(
+                      Utils.generatePersonFilter(contains.trim()),
+                      true,
+                      Utils.generatePersonSort(),
+                      new PagingRequest(Utils.getPersonMaxResults(), null)
+                );
+                List<NodeRef> nodes = people.getPage();
                 
                 for (int index = 0; index < nodes.size(); index++)
                 {

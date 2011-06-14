@@ -1,26 +1,20 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.web.scripts.bean;
 
@@ -324,7 +318,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         try
         {
-            // TODO: don't need to support filenames at the root?
+            // do not support filenames directly at the root - all objectypes must exist in a named child folder
             final int off = path.lastIndexOf('/');
             if (off != -1)
             {
@@ -693,15 +687,6 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         NodeRef surfConfigRef = this.unprotNodeService.getChildByName(
                 rootRef, ContentModel.ASSOC_CONTAINS, SURF_CONFIG);
-        //
-        // TODO: Does this need protecting with RRW - keyed from rootRef?
-        //       As given the use cases, only the surf-config folder in Sites has the potential
-        //       for multi-user WRITE access e.g. 2 users creating their dashboards at same time
-        //       - which could be solved by creating the surf-config folder as part of the patch code
-        //       and on bootstrap for new repo also.
-        //       As the site level surf-config folders will be created by which ever user creates the
-        //       site - no READ access will be possible until then anyway...
-        //
         if (create && surfConfigRef == null)
         {
             if (logger.isDebugEnabled())

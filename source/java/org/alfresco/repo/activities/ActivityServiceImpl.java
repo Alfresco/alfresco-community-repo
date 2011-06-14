@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -212,9 +212,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         
         String currentUser = getCurrentUser();
         if (! ((currentUser == null) || 
-               (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
                (authorityService.isAdminAuthority(currentUser)) ||
-               (currentUser.equals(feedUserId))))
+               (currentUser.equals(feedUserId)) ||
+               (AuthenticationUtil.getSystemUserName().equals(this.tenantService.getBaseNameUser(currentUser)))))
         {
             throw new AccessDeniedException("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
         }
@@ -353,7 +353,10 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         
         String currentUser = getCurrentUser();
         
-        if ((currentUser == null) || ((! currentUser.equals(AuthenticationUtil.getSystemUserName())) && (! currentUser.equals(userId)) && (! authorityService.isAdminAuthority(currentUser))))
+        if ((currentUser == null) || 
+            (! ((authorityService.isAdminAuthority(currentUser)) ||
+                (currentUser.equals(userId)) ||
+                (AuthenticationUtil.getSystemUserName().equals(this.tenantService.getBaseNameUser(currentUser))))))
         {
             throw new AlfrescoRuntimeException("Current user " + currentUser + " is not permitted to get feed controls for " + userId);
         }
@@ -435,7 +438,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     private String getCurrentUser()
     {
         String userId = AuthenticationUtil.getFullyAuthenticatedUser();
-        if ((userId != null) && (! userId.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
+        if ((userId != null) &&
+            (! userNamesAreCaseSensitive) &&
+            (! AuthenticationUtil.getSystemUserName().equals(this.tenantService.getBaseNameUser(userId))))
         {
             // user names are not case-sensitive
             userId = userId.toLowerCase();

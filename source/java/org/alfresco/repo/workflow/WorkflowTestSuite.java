@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
-import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
@@ -62,7 +61,8 @@ public class WorkflowTestSuite extends TestSuite
         // Add the Activiti tests to be run
         suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ActivitiSpringTransactionTest.class );
-        suite.addTestSuite( ActivitiTimerExecutionTest.class );
+        // TODO: ALF-9096
+        // suite.addTestSuite( ActivitiTimerExecutionTest.class );
 
         // This test will force the application context properly, which avoids
         // periodic wierd build failures

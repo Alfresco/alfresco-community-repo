@@ -130,9 +130,9 @@ public class TextFieldGenerator extends BaseComponentGenerator
             // create the list of choices
             UISelectItems itemsComponent = (UISelectItems)context.getApplication().
                createComponent("javax.faces.SelectItems");
-            
-            List<SelectItem> items = new ArrayList<SelectItem>(3);
+
             List<String> values = constraint.getAllowedValues();
+            List<SelectItem> items = new ArrayList<SelectItem>(values.size());
             for (String value : values)
             {
                Object obj = null;
@@ -159,7 +159,14 @@ public class TextFieldGenerator extends BaseComponentGenerator
                   obj = value;
                }
                
-               items.add(new SelectItem(obj, value));
+               // retrieve the display label
+               String label = constraint.getDisplayLabel(value);
+               if (label == null)
+               {
+                  label = value;
+               }
+               
+               items.add(new SelectItem(obj, label));
             }
             
             itemsComponent.setValue(items);

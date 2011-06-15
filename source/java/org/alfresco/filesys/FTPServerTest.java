@@ -21,35 +21,29 @@ package org.alfresco.filesys;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 
-import org.alfresco.filesys.repo.ContentDiskDriverTest;
+import junit.framework.TestCase;
+
+import org.alfresco.jlan.ftp.FTPConfigSection;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
-
-import java.io.InputStream;
-
-import junit.framework.TestCase;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.PrintCommandListener;
@@ -90,6 +84,7 @@ public class FTPServerTest extends TestCase
     private TransactionService transactionService;
     private Repository repositoryHelper;
     private PermissionService permissionService;
+    private FTPConfigSection ftpConfigSection;
     
     @Override
     protected void setUp() throws Exception
@@ -103,6 +98,9 @@ public class FTPServerTest extends TestCase
         transactionService = (TransactionService)applicationContext.getBean("transactionService");
         repositoryHelper = (Repository)applicationContext.getBean("repositoryHelper");
         permissionService = (PermissionService)applicationContext.getBean("permissionService");
+        ServerConfigurationAccessor fileServerConfiguration = (ServerConfigurationAccessor)applicationContext.getBean("fileServerConfiguration");
+        ftpConfigSection = (FTPConfigSection) fileServerConfiguration.getConfigSection( FTPConfigSection.SectionName);
+        
         
         assertNotNull("nodeService is null", nodeService);
         assertNotNull("reporitoryHelper is null", repositoryHelper);
@@ -604,10 +602,7 @@ public class FTPServerTest extends TestCase
             ftp.addProtocolCommandListener(new PrintCommandListener(
                                        new PrintWriter(System.out)));
         }
-
-        String server = HOSTNAME;
-    
-        ftp.connect(server);
+        ftp.connect(HOSTNAME, ftpConfigSection.getFTPPort());
         return ftp;
     }
     

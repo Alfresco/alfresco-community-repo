@@ -73,10 +73,8 @@
                     <type>d:text</type>
                     <default>Reject</default>
                     <constraints>
-                        <constraint type="LIST">
+                        <constraint name="wf:reviewOutcomeOptions" type="LIST">
                             <parameter name="allowedValues">
-                                <!-- TODO: Determine if priority values can 
-                                    be mapped to human-readable strings -->
                                 <list>
                                     <value>Approve</value>
                                     <value>Reject</value>

@@ -16,7 +16,6 @@
     
     <constraint name="wcmwf:reviewType" type="LIST">
       <parameter name="allowedValues">
-        <!--  TODO: Determine if priority values can be mapped to human-readable strings -->
         <list>
           <value>Serial</value>
           <value>Parallel</value>

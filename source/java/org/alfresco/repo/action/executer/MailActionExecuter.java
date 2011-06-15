@@ -80,6 +80,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_FROM = "from";
     public static final String PARAM_TEMPLATE = "template";
     public static final String PARAM_TEMPLATE_MODEL = "template_model";
+    public static final String PARAM_IGNORE_SEND_FAILURE = "ignore_send_failure";
        
     /**
      * From address
@@ -533,9 +534,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                }
             }
             
+            // always log the failure
             logger.error("Failed to send email to " + to, e);
             
-            throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);   
+            // optionally ignore the throwing of the exception
+            Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
+            if (ignoreError == null || ignoreError.booleanValue() == false)
+            {
+                throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);
+            }   
         }
     }
     
@@ -630,6 +637,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE), false, "ac-email-templates"));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE_MODEL, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TEMPLATE_MODEL), true));
+        paramList.add(new ParameterDefinitionImpl(PARAM_IGNORE_SEND_FAILURE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_IGNORE_SEND_FAILURE)));
     }
 
     public void setTestMode(boolean testMode)

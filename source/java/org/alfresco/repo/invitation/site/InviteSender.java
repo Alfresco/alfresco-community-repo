@@ -133,6 +133,7 @@ public class InviteSender
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef());
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
                 (Serializable)buildMailTextModel(properties, inviter, invitee));
+        mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);
         actionService.executeAction(mail, getWorkflowPackage(properties));
     }
 

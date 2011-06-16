@@ -82,30 +82,39 @@ public class ScriptPagingDetails extends PagingRequest
      */
     public <R> void setTotalItems(PagingResults<R> results)
     {
-        Integer min = results.getTotalResultCount().getFirst();
-        Integer max = results.getTotalResultCount().getSecond();
-     
-        // Get the total count and confidence 
-        if(min == null)
+        if(results.getTotalResultCount() == null)
         {
+           // No count calculated
            this.totalItems = -1;
            this.confidence = ItemsSizeConfidence.UNKNOWN;
         }
-        else if(max == null)
-        {
-           this.totalItems = min;
-           this.confidence = ItemsSizeConfidence.AT_LEAST;
-        }
-        else if(min == max)
-        {
-           this.totalItems = min;
-           this.confidence = ItemsSizeConfidence.EXACT;
-        }
         else
         {
-           this.totalItems = min;
-           this.totalItemsRangeMax = max;
-           this.confidence = ItemsSizeConfidence.RANGE;
+           // Get the total count and confidence 
+           Integer min = results.getTotalResultCount().getFirst();
+           Integer max = results.getTotalResultCount().getSecond();
+        
+           if(min == null)
+           {
+              this.totalItems = -1;
+              this.confidence = ItemsSizeConfidence.UNKNOWN;
+           }
+           else if(max == null)
+           {
+              this.totalItems = min;
+              this.confidence = ItemsSizeConfidence.AT_LEAST;
+           }
+           else if(min == max)
+           {
+              this.totalItems = min;
+              this.confidence = ItemsSizeConfidence.EXACT;
+           }
+           else
+           {
+              this.totalItems = min;
+              this.totalItemsRangeMax = max;
+              this.confidence = ItemsSizeConfidence.RANGE;
+           }
         }
         
         // Finally record the query execution ID

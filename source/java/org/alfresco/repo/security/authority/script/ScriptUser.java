@@ -20,8 +20,10 @@ package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
  * The Script user is a USER authority exposed to the scripting API
@@ -30,51 +32,104 @@ import org.alfresco.service.cmr.security.AuthorityType;
  */
 public class ScriptUser implements Authority, Serializable
 {
-	private transient AuthorityService authorityService;
+    private static final long serialVersionUID = 7865300693011208293L;
+    private transient ServiceRegistry serviceRegistry;
+    private transient AuthorityService authorityService;
     private ScriptAuthorityType authorityType = ScriptAuthorityType.USER;
+    private String userName;
     private String shortName;
-    private String fullName;
     private String displayName;
+    private NodeRef personNodeRef;
     
-    public ScriptUser(String fullName, AuthorityService authorityService)
+    public ScriptUser(String userName, NodeRef personNodeRef, ServiceRegistry serviceRegistry)
     {
-    	this.authorityService = authorityService;
-        this.fullName = fullName;	
-        shortName = authorityService.getShortName(fullName);
-        displayName = authorityService.getAuthorityDisplayName(fullName);
-        //isInternal = authorityService.
+       this.serviceRegistry = serviceRegistry;
+       this.authorityService = serviceRegistry.getAuthorityService();
+       
+       this.personNodeRef = personNodeRef;
+       this.userName = userName; 
+       shortName = authorityService.getShortName(userName);
+       displayName = authorityService.getAuthorityDisplayName(userName);
     }
     
-	public void setAuthorityType(ScriptAuthorityType authorityType) {
-		this.authorityType = authorityType;
-	}
+    /**
+     * @deprecated The ServiceRegistry is now needed
+     */
+    public ScriptUser(String userName, AuthorityService authorityService)
+    {
+       this.authorityService = authorityService;
+       this.userName = userName; 
+       shortName = authorityService.getShortName(userName);
+       displayName = authorityService.getAuthorityDisplayName(userName);
+    }
+    
+    public void setAuthorityType(ScriptAuthorityType authorityType) 
+    {
+       this.authorityType = authorityType;
+    }
 
-	public ScriptAuthorityType getAuthorityType() {
-		return authorityType;
-	}
+    public ScriptAuthorityType getAuthorityType() 
+    {
+       return authorityType;
+    }
 
-	public void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
+    public void setShortName(String shortName) 
+    {
+       this.shortName = shortName;
+    }
 
-	public String getShortName() {
-		return shortName;
-	}
+    public String getShortName() 
+    {
+       return shortName;
+    }
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+    public void setFullName(String fullName) 
+    {
+       this.userName = fullName;
+    }
 
-	public String getFullName() {
-		return fullName;
-	}
+    public String getFullName() 
+    {
+       return userName;
+    }
 
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
+    /**
+     * Return the User Name, also known as the 
+     *  Authority Full Name 
+     */
+    public String getUserName() 
+    {
+       return userName;
+    }
 
-	public String getDisplayName() {
-		return displayName;
-	}
-	
+    public void setDisplayName(String displayName) 
+    {
+       this.displayName = displayName;
+    }
+
+    public String getDisplayName() 
+    {
+       return displayName;
+    }
+
+    /**
+     * Return the NodeRef of the person
+     */
+    public NodeRef getPersonNodeRef()
+    {
+       if (personNodeRef == null)
+       {
+          // Lazy lookup for Authority based creation
+          personNodeRef = authorityService.getAuthorityNodeRef(userName);
+       }
+       return personNodeRef;
+    }
+
+    /**
+     * Return a ScriptNode wrapping the person
+     */
+    public ScriptNode getPerson()
+    {
+       return new ScriptNode(getPersonNodeRef(), serviceRegistry);
+    }
 }

@@ -100,7 +100,9 @@
         <property name="extensionName">
             <value>groups</value>
         </property>
-        <property name="authorityService" ref="AuthorityService"/>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
     </bean>
 
 </beans>

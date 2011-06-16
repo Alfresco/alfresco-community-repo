@@ -20,13 +20,23 @@ package org.alfresco.repo.security.authority.script;
 
 import static org.alfresco.repo.security.authority.script.ScriptGroup.makeScriptGroups;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PagingPersonResults;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
 
 /**
@@ -38,18 +48,24 @@ import org.alfresco.util.ScriptPagingDetails;
  */
 public class ScriptAuthorityService extends BaseScopableProcessorExtension
 {    
-    /** The service */
+    /** The group/authority service */
     private AuthorityService authorityService;
+    /** The person service */
+    private PersonService personService;
+    
+    private ServiceRegistry serviceRegistry;
 
-	public void setAuthorityService(AuthorityService authorityService)
-	{
-		this.authorityService = authorityService;
-	}
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+       this.serviceRegistry = serviceRegistry;
+       this.authorityService = serviceRegistry.getAuthorityService();
+       this.personService = serviceRegistry.getPersonService();
+    }
 
-	public AuthorityService getAuthorityService()
-	{
-		return authorityService;
-	}
+    public AuthorityService getAuthorityService()
+    {
+       return authorityService;
+    }
 	
 	/**
 	 * Search the root groups, those without a parent group.
@@ -306,5 +322,83 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             authorities = Collections.emptySet();
         }
         return makeScriptGroups(authorities, paging, sortBy, authorityService);
+    }
+    
+    /**
+     * Get a user given their username
+     * @param username, the username of the user
+     * @return the user or null if they can't be found
+     */
+    public ScriptUser getUser(String username)
+    {
+       try
+       {
+          NodeRef person = personService.getPerson(username, false);
+          return new ScriptUser(username, person, serviceRegistry);
+       }
+       catch(NoSuchPersonException e)
+       {
+          return null;
+       }
+    }
+    
+    /**
+     * Search for users
+     * Includes paging parameters to limit size of results returned.
+     * 
+     * @param nameFilter partial match of the name (username, first name, last name). If empty then matches everyone.
+     * @param paging Paging object with max number to return, and items to skip
+     * @param sortBy What to sort on (firstName, lastName or userName)
+     * @return the users matching the query
+     */
+    public ScriptUser[] searchUsers(String nameFilter, ScriptPagingDetails paging, String sortBy)
+    {
+       // Build the filter
+       List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
+       filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, nameFilter));
+       filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, nameFilter));
+       filter.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, nameFilter));
+       
+       // Build the sorting. The user controls the primary sort, we supply
+       // additional ones automatically
+       List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
+       if("lastName".equals(sortBy))
+       {
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+       }
+       else if("firstName".equals(sortBy))
+       {
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+       }
+       else
+       {
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
+          sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
+       }
+       
+       // Do the search
+       PagingPersonResults results = personService.getPeople(filter, true, sort, paging);
+       
+       // Record the size of the results
+       paging.setTotalItems(results);
+       
+       // Now wrap up the users
+       List<NodeRef> nodes = results.getPage();
+       ScriptUser[] users = new ScriptUser[nodes.size()];
+       for(int i=0; i<users.length; i++)
+       {
+          NodeRef node = nodes.get(i);
+          String username = (String)serviceRegistry.getNodeService().getProperty(
+                node, ContentModel.PROP_USERNAME
+          );
+          users[i] = new ScriptUser(username, node, serviceRegistry);
+       }
+       
+       return users;
     }
 }

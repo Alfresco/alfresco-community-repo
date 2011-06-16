@@ -38,6 +38,7 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
@@ -50,9 +51,11 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.DataDictionary;
 import org.alfresco.web.bean.repository.Node;
@@ -1013,6 +1016,46 @@ public abstract class BaseAssociationEditor extends UIInput
                try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
             }
          }
+         else if(type.equals(ContentModel.TYPE_PERSON.toString()))
+         {
+            // If the association's target is the person type search on the 
+            // firstName and lastName properties instead of the name property
+            List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
+            if (contains != null && contains.length() > 0)
+            {
+               String search = contains.trim();
+               filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, search));
+               filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, search));
+            }
+            
+            // Always sort by last name, then first name
+            List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
+            sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
+            sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
+            
+            // Log the filtering
+            if (logger.isDebugEnabled())
+               logger.debug("Query filter: " + filter);
+            
+            // How many to limit too?
+            int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
+            if (maxResults <= 0)
+            {
+               maxResults = Utils.getPersonMaxResults();
+            }
+
+            // Perform the search
+            PagingPersonResults people = Repository.getServiceRegistry(context).getPersonService().getPeople(
+                  filter,
+                  true,
+                  sort,
+                  new PagingRequest(maxResults, null)
+            );
+            
+            // Save the results
+            List<NodeRef> nodes = people.getPage();
+            this.availableOptions = nodes;
+         }
          else
          {
             // for all other types/aspects perform a lucene search
@@ -1038,22 +1081,11 @@ public abstract class BaseAssociationEditor extends UIInput
                   safeContains = safeContains.toLowerCase();
                }
                
-               // if the association's target is the person type search on the 
-               // firstName and lastName properties instead of the name property
-               if (type.equals(ContentModel.TYPE_PERSON.toString()))
-               {                
-                   query.append(" AND (");
-                   Utils.generatePersonSearch(query, safeContains);
-                   query.append(")");
-               }
-               else
-               {
-                  query.append(" AND +@");
-                  String nameAttr = Repository.escapeQName(QName.createQName(
-                        NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
-                  query.append(nameAttr);
-                  query.append(":\"*" + safeContains + "*\"");
-               }
+               query.append(" AND +@");
+               String nameAttr = Repository.escapeQName(QName.createQName(
+                     NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
+               query.append(nameAttr);
+               query.append(":\"*" + safeContains + "*\"");
             }
             
             int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();
@@ -1072,14 +1104,6 @@ public abstract class BaseAssociationEditor extends UIInput
             {
                searchParams.setLimit(maxResults);
                searchParams.setLimitBy(LimitBy.FINAL_SIZE);
-            }
-            
-            if (type.equals(ContentModel.TYPE_PERSON.toString()))
-            {
-               searchParams.addSort("@" + ContentModel.PROP_LASTNAME, true);
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("Added lastname as sort column to query for people");
             }
             
             ResultSet results = null;

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:crypt="http://code.google.com/p/spring-crypto-utils/schema/crypt"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.google.com/p/spring-crypto-utils/schema/crypt
+        http://code.google.com/p/spring-crypto-utils/schema/crypt.xsd">
+
+    <!-- Beans to initilize encryption -->
+    <bean id="keyProvider" class="org.alfresco.repo.security.encryption.KeystoreKeyProvider" init-method="init">
+       <property name="location" value="${encryption.keystore.location}"/>
+       <property name="provider" value="${encryption.keystore.provider}"/>
+       <property name="type"     value="${encryption.keystore.type}"/>
+       <property name="passwords">
+           <map>
+               <entry key="keystore" value="${encryption.keystore.password}"></entry>
+               <entry key="keystore.METADATA" value="${encryption.keystore.password.METADATA}"></entry>
+               <entry key="keystore.SOLR" value="${encryption.keystore.password.SOLR}"></entry>
+           </map>
+       </property>
+    </bean>
+
+    <bean id="encryptor" class="org.alfresco.repo.security.encryption.DefaultEncryptor" init-method="init">
+        <property name="keyProvider" ref="keyProvider"/>
+        <property name="cipherAlgorithm" value="${encryption.encryption.cipherAlgorithm}" />
+    </bean>
+    
+</beans>

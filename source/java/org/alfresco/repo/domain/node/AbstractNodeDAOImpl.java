@@ -19,7 +19,6 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Savepoint;
@@ -53,12 +52,12 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.encryption.EncryptionEngine;
+import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -136,7 +135,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ContentDataDAO contentDataDAO;
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
-    private EncryptionEngine encryptionEngine;
+    private Encryptor encryptor;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -218,9 +217,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         this.dictionaryService = dictionaryService;
     }
 
-    public void setEncryptionEngine(EncryptionEngine encryptionEngine)
+    /**
+     * @param encryptor                 helper to do symmetric property encryption
+     */
+    public void setEncryptor(Encryptor encryptor)
     {
-        this.encryptionEngine = encryptionEngine;
+        this.encryptor = encryptor;
     }
 
     /**
@@ -368,9 +370,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "usageDAO", usageDAO);
-//        PropertyCheck.mandatory(this, "encryptionEngine", encryptionEngine);
+        PropertyCheck.mandatory(this, "encryptor", encryptor);
 
-        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptionEngine);
+        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptor);
     }
     
     /*

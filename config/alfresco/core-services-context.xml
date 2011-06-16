@@ -1549,35 +1549,19 @@
        </property>
     </bean>
 
-   <!-- Import the sys admin params from the sysAdmin subsystem -->
-   <bean id="sysAdminParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="sysAdmin" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.admin.SysAdminParams</value>
-         </list>
-      </property>
-   </bean>
+    <!-- Import the sys admin params from the sysAdmin subsystem -->
+    <bean id="sysAdminParams" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="sysAdmin" />
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.admin.SysAdminParams</value>
+           </list>
+        </property>
+    </bean>
     
     <!-- Replacement for Spring's multicaster, that queues up events until the application is started -->
     <bean id="applicationEventMulticaster" class="org.alfresco.repo.management.SafeApplicationEventMulticaster"/>
    
-   <!--
-     Encryption engine (used by node DAO to encrypt and decrypt encryptable node properties)
-    -->
-   <bean id="defaultKeyProvider" class="org.alfresco.repo.security.encryption.KeystoreKeyProvider" init-method="init">
-      <property name="keyStorePassword" value="${encryption.keystore.keystore_password}"/>
-      <property name="secretKeyPassword" value="${encryption.keystore.secret_Key_password}"/>
-      <property name="keyStoreFile" value="${dir.root}/alf_keystore"/>
-      <property name="passwordGenerator" ref="passwordGenerator"/>
-   </bean>
-
-   <bean id="testKeyProvider" class="org.alfresco.repo.security.encryption.TestKeyProvider">
-   </bean>
-   
-   <bean id="encryptionEngine" class="org.alfresco.repo.security.encryption.AESEncryptionEngine" init-method="init">
-      <property name="keyProvider" ref="defaultKeyProvider"/>
-   </bean>
 </beans>

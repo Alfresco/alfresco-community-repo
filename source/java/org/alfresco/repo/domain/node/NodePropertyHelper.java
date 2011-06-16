@@ -19,7 +19,6 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.security.encryption.EncryptionEngine;
+import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -60,7 +59,7 @@ public class NodePropertyHelper
     private static final Log logger = LogFactory.getLog(NodePropertyHelper.class);
     
     private final DictionaryService dictionaryService;
-    private final EncryptionEngine encryptionEngine;
+    private final Encryptor encryptor;
     private final QNameDAO qnameDAO;
     private final LocaleDAO localeDAO;
     private final ContentDataDAO contentDataDAO;
@@ -73,13 +72,13 @@ public class NodePropertyHelper
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
             ContentDataDAO contentDataDAO, 
-            EncryptionEngine encryptionEngine)
+            Encryptor encryptor)
     {
         this.dictionaryService = dictionaryService;
         this.qnameDAO = qnameDAO;
         this.localeDAO = localeDAO;
         this.contentDataDAO = contentDataDAO;
-        this.encryptionEngine = encryptionEngine;
+        this.encryptor = encryptor;
     }
 
     public Map<NodePropertyKey, NodePropertyValue> convertToPersistentProperties(Map<QName, Serializable> in)
@@ -148,14 +147,17 @@ public class NodePropertyHelper
 
         // Get or spoof the property datatype
         QName propertyTypeQName;
+        boolean isEncrypted;
         if (propertyDef == null) // property not recognised
         {
             // allow it for now - persisting excess properties can be useful sometimes
             propertyTypeQName = DataTypeDefinition.ANY;
+            isEncrypted = false;
         }
         else
         {
             propertyTypeQName = propertyDef.getDataType().getName();
+            isEncrypted = propertyDef.isEncrypted();
         }
 
         // A property may appear to be multi-valued if the model definition is loose and
@@ -266,19 +268,8 @@ public class NodePropertyHelper
                     // Get the Locale ID for the text
                     Long mlTextLocaleId = localeDAO.getOrCreateLocalePair(mlTextLocale).getFirst();
                     // This is persisted against the current locale, but as a d:text instance
-                    Serializable v = null;
-                    try
-                    {
-                        v = propertyDef.isEncrypted() ? encrypt(mlTextStr) : mlTextStr;
-                    }
-                    catch (UnsupportedEncodingException e)
-                    {
-                        // TODO check that throwing the exception preserves the original logic
-                        throw new TypeConversionException(
-                                "The property value could not be decoded as a UTF-8 string " + value.getClass(),
-                                e);
-                    }
-                    NodePropertyValue npValue = new NodePropertyValue(DataTypeDefinition.TEXT, v, propertyDef.isEncrypted());
+                    // This is persisted against the current locale, but as a d:text instance
+                    NodePropertyValue npValue = new NodePropertyValue(DataTypeDefinition.TEXT, mlTextStr);
                     NodePropertyKey npKey = new NodePropertyKey();
                     npKey.setListIndex(collectionIndex);
                     npKey.setQnameId(propertyQNameId);
@@ -289,29 +280,6 @@ public class NodePropertyHelper
             }
             else
             {
-                if(!propertyTypeQName.equals(DataTypeDefinition.ANY) && propertyDef.isEncrypted())
-                {
-                    if(propertyTypeQName.equals(DataTypeDefinition.TEXT))
-                    {
-                        try
-                        {
-                            // TODO check type of value
-                            value = propertyDef.isEncrypted() ? encrypt((String)value) : value;
-                        }
-                        catch (UnsupportedEncodingException e)
-                        {
-                            // TODO check that throwing the exception preserves the original logic
-                            throw new TypeConversionException(
-                                    "The property value could not be decoded as a UTF-8 string " + value.getClass(),
-                                    e);
-                        }
-                    }
-                    else
-                    {
-                        logger.warn("Encryption is not supported for type " + propertyTypeQName + ", encryption will not be performed");
-                    }
-                }
-
                 NodePropertyValue npValue = makeNodePropertyValue(propertyDef, value);
                 NodePropertyKey npKey = new NodePropertyKey();
                 npKey.setListIndex(collectionIndex);
@@ -323,18 +291,6 @@ public class NodePropertyHelper
         }
     }
 
-    protected byte[] encrypt(String input) throws UnsupportedEncodingException
-    {
-        byte[] bytes = encryptionEngine.encryptString(input);
-        return bytes;
-    }
-
-    protected String decrypt(byte[] input) throws UnsupportedEncodingException
-    {
-        String s = encryptionEngine.decryptAsString(input);
-        return s;
-    }
-    
     /**
      * Helper method to convert the <code>Serializable</code> value into a full, persistable {@link NodePropertyValue}.
      * <p>
@@ -364,8 +320,7 @@ public class NodePropertyHelper
         try
         {
             NodePropertyValue propertyValue = null;
-            boolean isEncrypted = propertyDef==null ? false : propertyDef.isEncrypted();
-            propertyValue = new NodePropertyValue(propertyTypeQName, value, isEncrypted);
+            propertyValue = new NodePropertyValue(propertyTypeQName, value);
 
             // done
             return propertyValue;
@@ -697,17 +652,17 @@ public class NodePropertyHelper
         }
         // get property attributes
         final QName propertyTypeQName;
-        boolean encrypted;
+        boolean isEncrypted;
         if (propertyDef == null)
         {
             // allow this for now
             propertyTypeQName = DataTypeDefinition.ANY;
-            encrypted = false;
+            isEncrypted = false;
         }
         else
         {
             propertyTypeQName = propertyDef.getDataType().getName();
-            encrypted = propertyDef.isEncrypted();
+            isEncrypted = propertyDef.isEncrypted();
         }
         try
         {
@@ -726,24 +681,6 @@ public class NodePropertyHelper
                 Long contentDataId = (Long) value;
                 ContentData contentData = contentDataDAO.getContentData(contentDataId).getSecond();
                 value = new ContentDataWithId(contentData, contentDataId);
-            }
-            else if (encrypted)
-            {
-                if (propertyTypeQName.equals(DataTypeDefinition.TEXT) || propertyTypeQName.equals(DataTypeDefinition.MLTEXT))
-                {
-                    try
-                    {
-                        value = decrypt((byte[])value);
-                    }
-                    catch (UnsupportedEncodingException e)
-                    {
-                        throw new AlfrescoRuntimeException("Unexpected exception during decryption", e);
-                    }
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException("Encryption is not supported for " + propertyDef.getDataType().getName() + " types");
-                }
             }
             // done
             return value;

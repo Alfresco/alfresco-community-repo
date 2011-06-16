@@ -49,4 +49,12 @@ public class BasicPasswordGenerator implements PasswordGenerator
     {
         return RandomStringUtils.randomAlphanumeric(passwordLength);
     }
+    
+    public static void main(String ... args)
+    {
+        BasicPasswordGenerator pwdGen = new BasicPasswordGenerator();
+        pwdGen.setPasswordLength(10);
+        
+        System.out.println("A password: " + pwdGen.generatePassword());
+    }
 }

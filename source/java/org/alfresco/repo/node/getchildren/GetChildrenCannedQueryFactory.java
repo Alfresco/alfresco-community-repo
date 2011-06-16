@@ -29,8 +29,8 @@ import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -38,7 +38,7 @@ import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.encryption.EncryptionEngine;
+import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -64,7 +64,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
     
-    private EncryptionEngine encryptionEngine;
+    private Encryptor encryptor;
     
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private String methodName;
@@ -100,9 +100,9 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         this.cannedQueryDAO = cannedQueryDAO;
     }
     
-    public void setEncryptionEngine(EncryptionEngine encryptionEngine)
+    public void setEncryptor(Encryptor encryptor)
     {
-        this.encryptionEngine = encryptionEngine;
+        this.encryptor = encryptor;
     }
 
     public void setTenantService(TenantService tenantService)
@@ -128,7 +128,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
-        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptionEngine);
+        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptor);
         
         Method method = null;
         for (Method m : methodService.getClass().getMethods())

@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -31,11 +30,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.crypto.SealedObject;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
-import org.alfresco.repo.security.encryption.EncryptionEngine;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -527,6 +526,37 @@ public class NodePropertyValue implements Cloneable, Serializable
                 }
             }
         },
+        SEALED_OBJECT
+        {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(22);
+            }
+            
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.SERIALIZABLE;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+                else if (value instanceof SealedObject)
+                {
+                    return value;
+                }
+                else
+                {
+                    throw new IllegalArgumentException("SealedObject value not supported: " + value);
+                }
+            }
+        },
         ;
         
         /**
@@ -637,6 +667,10 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.CONTENT;
         }
+        else if (value instanceof SealedObject)
+        {
+            return ValueType.SEALED_OBJECT;
+        }
         else
         {
             // type is not recognised as belonging to any particular slot
@@ -732,8 +766,6 @@ public class NodePropertyValue implements Cloneable, Serializable
     private Double doubleValue;
     private String stringValue;
     private Serializable serializableValue;
-
-    private boolean encrypted;
     
     /**
      * default constructor
@@ -748,15 +780,12 @@ public class NodePropertyValue implements Cloneable, Serializable
      * @param typeQName         the dictionary-defined property type to store the property as
      * @param value             the value to store.  This will be converted into a format compatible
      *                          with the type given
-     * @param isEncrypted       true if value should be encrypted when persisted
      * 
      * @throws java.lang.UnsupportedOperationException if the value cannot be converted to the type given
      */
-    public NodePropertyValue(QName typeQName, Serializable value, boolean encrypted)
+    public NodePropertyValue(QName typeQName, Serializable value)
     {
         ParameterCheck.mandatory("typeQName", typeQName);
-
-        this.encrypted = encrypted;
 
         if (value == null)
         {
@@ -765,38 +794,17 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         else
         {
-            ValueType persistedValueType = null;
-
-            if(encrypted)
-            {
-                // this constructor doesn't appear to get called for type DataTypeDefinition.MLTEXT because MLTEXT is
-                // split out into strings in NodePropertyHelper
-                if(typeQName.equals(DataTypeDefinition.TEXT))
-                {
-                    this.actualType = ValueType.STRING;
-                    persistedValueType = ValueType.SERIALIZABLE;
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException("Can encrypt only TEXT and MLTEXT types, this type is " + typeQName);
-                }
-            }
-            else
-            {
-                // Convert the value to the type required.  This ensures that any type conversion issues
-                // are caught early and prevent the scenario where the data in the DB cannot be given
-                // back out because it is unconvertable.
-                ValueType valueType = makeValueType(typeQName);
-                value = valueType.convert(value);
-                
-                this.actualType = NodePropertyValue.getActualType(value);
-    
-                // get the persisted type
-                persistedValueType = this.actualType.getPersistedType(value);
-                // convert to the persistent type
-                value = persistedValueType.convert(value);
-            }
-
+            // Convert the value to the type required.  This ensures that any type conversion issues
+            // are caught early and prevent the scenario where the data in the DB cannot be given
+            // back out because it is unconvertable.
+            ValueType valueType = makeValueType(typeQName);
+            value = valueType.convert(value);
+            
+            this.actualType = NodePropertyValue.getActualType(value);
+            // get the persisted type
+            ValueType persistedValueType = this.actualType.getPersistedType(value);
+            // convert to the persistent type
+            value = persistedValueType.convert(value);
             setPersistedValue(persistedValueType, value);
         }
     }
@@ -1070,9 +1078,9 @@ public class NodePropertyValue implements Cloneable, Serializable
                 // have been converted on the way in.
                 ret = (Serializable) persistedValue;
             }
-            else if(encrypted)
+            else if(persistedValue instanceof SealedObject)
             {
-                ret = persistedValue;
+                ret = (Serializable) persistedValue;
             }
             else
             {

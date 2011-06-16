@@ -41,6 +41,13 @@
       <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
    </bean>
    
+   <bean id="subscriptionsDAO" class="org.alfresco.repo.domain.subscriptions.ibatis.SubscriptionsDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="personService" ref="personService"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="QNameDAO" ref="qnameDAO"/>
+   </bean>
+   
    <bean id="patchDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
       <property name="targetBeanName">
          <value>patchDAO.#bean.dialect#</value>

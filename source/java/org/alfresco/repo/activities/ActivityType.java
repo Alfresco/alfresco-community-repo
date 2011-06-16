@@ -19,12 +19,12 @@
 package org.alfresco.repo.activities;
 
 public interface ActivityType
-{   
+{
     // pre-defined alfresco activity types
-    
+
     // generic fallback (if specific template is missing)
     public final String GENERIC_FALLBACK = "org.alfresco.generic";
-    
+
     // site membership
     public final String SITE_USER_JOINED = "org.alfresco.site.user-joined";
     public final String SITE_USER_REMOVED = "org.alfresco.site.user-left";
@@ -32,4 +32,6 @@ public interface ActivityType
     public final String SITE_GROUP_ADDED = "org.alfresco.site.group-added";
     public final String SITE_GROUP_REMOVED = "org.alfresco.site.group-removed";
     public final String SITE_GROUP_ROLE_UPDATE = "org.alfresco.site.group-role-changed";
+    public final String SUBSCRIPTIONS_SUBSCRIBE = "org.alfresco.subscriptions.subscribed";
+    public final String SUBSCRIPTIONS_FOLLOW = "org.alfresco.subscriptions.followed";
 }

@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- Subscription service bean -->
+    <bean id="SubscriptionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.subscriptions.SubscriptionService</value>
+        </property>
+        <property name="target">
+            <ref bean="subscriptionService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Subscription implementation bean -->
+    <bean id="subscriptionService" class="org.alfresco.repo.subscriptions.SubscriptionServiceImpl" >
+        <property name="subscriptionsDAO"  ref="subscriptionsDAO" />
+        <property name="nodeService"       ref="nodeService" />
+        <property name="personService"     ref="personService" />
+        <property name="activityService"   ref="activityService" />
+    </bean>
+
+</beans>

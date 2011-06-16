@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.activities.feed.RepoCtx;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
@@ -46,6 +47,8 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
+import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -64,117 +67,123 @@ import freemarker.template.DefaultObjectWrapper;
 public class LocalFeedTaskProcessor extends FeedTaskProcessor implements ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(LocalFeedTaskProcessor.class);
-    
+
     private ActivityPostDAO postDAO;
     private ActivityFeedDAO feedDAO;
     private FeedControlDAO feedControlDAO;
-    
+
     // can call locally (instead of remote repo callback)
     private SiteService siteService;
     private NodeService nodeService;
     private ContentService contentService;
     private PermissionService permissionService;
-    
+    private SubscriptionService subscriptionService;
+
     private String defaultEncoding;
     private List<String> templateSearchPaths;
     private boolean useRemoteCallbacks;
     private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    
+
     public void setPostDAO(ActivityPostDAO postDAO)
     {
         this.postDAO = postDAO;
     }
-    
+
     public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
         this.feedDAO = feedDAO;
     }
-    
+
     public void setFeedControlDAO(FeedControlDAO feedControlDAO)
     {
         this.feedControlDAO = feedControlDAO;
     }
-    
+
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
+    public void setSubscriptionService(SubscriptionService subscriptionService)
+    {
+        this.subscriptionService = subscriptionService;
+    }
+
     public void setDefaultEncoding(String defaultEncoding)
     {
         this.defaultEncoding = defaultEncoding;
     }
-    
+
     public void setTemplateSearchPaths(List<String> templateSearchPaths)
     {
         this.templateSearchPaths = templateSearchPaths;
     }
-    
+
     public void setUseRemoteCallbacks(boolean useRemoteCallbacks)
     {
         this.useRemoteCallbacks = useRemoteCallbacks;
     }
-    
+
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.resolver = applicationContext;
     }
-    
+
     public void startTransaction() throws SQLException
     {
         // NOOP
     }
-    
+
     public void commitTransaction() throws SQLException
     {
         // NOOP
     }
-    
+
     public void rollbackTransaction() throws SQLException
     {
         // NOOP
     }
-    
+
     public void endTransaction() throws SQLException
     {
-         // NOOP
+        // NOOP
     }
-    
+
     public List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException
     {
         return postDAO.selectPosts(selector);
     }
-    
+
     public long insertFeedEntry(ActivityFeedEntity feed) throws SQLException
     {
         return feedDAO.insertFeedEntry(feed);
     }
-    
+
     public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
     {
         return postDAO.updatePostStatus(id, status);
     }
-    
+
     public List<FeedControlEntity> selectUserFeedControls(String userId) throws SQLException
     {
-       return feedControlDAO.selectFeedControls(userId);
+        return feedControlDAO.selectFeedControls(userId);
     }
-    
+
     @Override
     protected Set<String> getSiteMembers(final RepoCtx ctx, final String siteId) throws Exception
     {
@@ -182,7 +191,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getSiteMembers(ctx, siteId);
-        }
+        } 
         else
         {
             // optimise for non-remote implementation - override remote repo callback (to "List Site Memberships" web script) with embedded call
@@ -194,12 +203,12 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     if ((siteId != null) && (siteId.length() != 0))
                     {
                         Map<String, String> mapResult = siteService.listMembers(siteId, null, null, 0, true);
-                        
+
                         if ((mapResult != null) && (mapResult.size() != 0))
                         {
                             for (String userName : mapResult.keySet())
                             {
-                                if (! ctx.isUserNamesAreCaseSensitive())
+                                if (!ctx.isUserNamesAreCaseSensitive())
                                 {
                                     userName = userName.toLowerCase();
                                 }
@@ -207,13 +216,13 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                             }
                         }
                     }
-                    
+
                     return members;
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
     }
-    
+
     protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
     {
         if (useRemoteCallbacks)
@@ -228,17 +237,17 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                 // if permission service not configured then fallback (ie. no read permission check)
                 return true;
             }
-            
-            String nodeRefStr = (String)model.get(PostLookup.JSON_NODEREF);
+
+            String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
             if (nodeRefStr == null)
             {
-                nodeRefStr = (String)model.get(PostLookup.JSON_NODEREF_PARENT);
+                nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF_PARENT);
             }
-            
+
             if (nodeRefStr != null)
             {
                 final NodeRef nodeRef = new NodeRef(nodeRefStr);
-                
+
                 return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
                 {
                     public Boolean doWork() throws Exception
@@ -247,16 +256,16 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     }
                 }, AuthenticationUtil.getSystemUserName());
             }
-            
+
             return true;
         }
     }
-    
+
     private boolean canReadImpl(final String connectedUser, final NodeRef nodeRef) throws Exception
     {
         // check for read permission
         long start = System.currentTimeMillis();
-        
+
         try
         {
             // note: deleted node does not exist (hence no permission, although default permission check would return true which is problematic)
@@ -264,34 +273,34 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             if (nodeService.exists(nodeRef))
             {
                 checkNodeRef = nodeRef;
-            }
+            } 
             else
             {
                 // TODO: require ghosting - this is temp workaround (we should not rely on archive - may be permanently deleted, ie. not archived or already purged)
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeRef.getId());
-                if (! nodeService.exists(archiveNodeRef))
+                if (!nodeService.exists(archiveNodeRef))
                 {
                     return false;
                 }
                 checkNodeRef = archiveNodeRef;
             }
-            
+
             if (connectedUser.equals(""))
             {
                 // site feed (public site)
                 Set<AccessPermission> perms = permissionService.getAllSetPermissions(checkNodeRef);
                 for (AccessPermission perm : perms)
                 {
-                    if (perm.getAuthority().equals(PermissionService.ALL_AUTHORITIES) &&
-                        perm.getAuthorityType().equals(AuthorityType.EVERYONE) &&
-                        perm.getPermission().equals(PermissionService.READ_PERMISSIONS) &&
+                    if (perm.getAuthority().equals(PermissionService.ALL_AUTHORITIES) && 
+                        perm.getAuthorityType().equals(AuthorityType.EVERYONE) && 
+                        perm.getPermission().equals(PermissionService.READ_PERMISSIONS) && 
                         perm.getAccessStatus().equals(AccessStatus.ALLOWED))
                     {
                         return true;
                     }
                 }
                 return false;
-            }
+            } 
             else
             {
                 // user feed
@@ -308,11 +317,11 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("canRead: " + nodeRef + " in "+(System.currentTimeMillis()-start)+" msecs");
+                logger.debug("canRead: " + nodeRef + " in " + (System.currentTimeMillis() - start) + " msecs");
             }
         }
     }
-    
+
     @Override
     protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception
     {
@@ -320,32 +329,32 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getActivityTypeTemplates(repoEndPoint, ticket, subPath);
-        }
+        } 
         else
         {
             // optimisation - override remote repo callback (to "Activities Templates" web script) with local/embedded call
-            
+
             String path = "/";
             String templatePattern = "*.ftl";
-            
+
             if ((subPath != null) && (subPath.length() > 0))
             {
                 subPath = subPath + "*";
-                
+
                 int idx = subPath.lastIndexOf("/");
                 if (idx != -1)
                 {
                     path = subPath.substring(0, idx);
-                    templatePattern = subPath.substring(idx+1) + ".ftl";
+                    templatePattern = subPath.substring(idx + 1) + ".ftl";
                 }
             }
-            
+
             List<String> allTemplateNames = getDocumentPaths(path, false, templatePattern);
-            
+
             return getActivityTemplates(allTemplateNames);
         }
     }
-    
+
     @Override
     protected Configuration getFreemarkerConfiguration(RepoCtx ctx)
     {
@@ -353,21 +362,21 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getFreemarkerConfiguration(ctx);
-        }
+        } 
         else
         {
             Configuration cfg = new Configuration();
             cfg.setObjectWrapper(new DefaultObjectWrapper());
-            
+
             cfg.setTemplateLoader(new ClassPathRepoTemplateLoader(nodeService, contentService, defaultEncoding));
-            
+
             // TODO review i18n
             cfg.setLocalizedLookup(false);
-            
+
             return cfg;
         }
     }
-    
+
     // Helper to get template document paths
     private List<String> getDocumentPaths(String path, boolean includeSubPaths, String documentPattern)
     {
@@ -375,24 +384,24 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             path = "/";
         }
-        
-        if (! path.startsWith("/"))
+
+        if (!path.startsWith("/"))
         {
             path = "/" + path;
         }
-        
-        if (! path.endsWith("/"))
+
+        if (!path.endsWith("/"))
         {
             path = path + "/";
         }
-        
+
         if ((documentPattern == null) || (documentPattern.length() == 0))
         {
             documentPattern = "*";
         }
-        
+
         List<String> documentPaths = new ArrayList<String>(0);
-        
+
         for (String classPath : templateSearchPaths)
         {
             final StringBuilder pattern = new StringBuilder(128);
@@ -400,20 +409,20 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                    .append(path)
                    .append((includeSubPaths ? "**/" : ""))
                    .append(documentPattern);
-            
+
             try
             {
                 documentPaths.addAll(getPaths(pattern.toString(), classPath));
-            }
+            } 
             catch (IOException e)
             {
                 // Note: Ignore: no documents found
             }
         }
-        
+
         return documentPaths;
     }
-    
+
     // Helper to return a list of resource document paths based on a search pattern.
     private List<String> getPaths(String pattern, String classPath) throws IOException
     {
@@ -422,7 +431,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         for (Resource resource : resources)
         {
             String resourcePath = resource.getURL().toExternalForm();
-            
+
             int idx = resourcePath.lastIndexOf(classPath);
             if (idx != -1)
             {
@@ -436,5 +445,22 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             }
         }
         return documentPaths;
+    }
+
+    protected Set<String> getFollowers(String userId) throws Exception
+    {
+        Set<String> result = new HashSet<String>();
+
+        if (!subscriptionService.isSubscriptionListPrivate(userId))
+        {
+            PagingFollowingResults fr = subscriptionService.getFollowers(userId, new PagingRequest(1000000, null));
+
+            if (fr.getPage() != null)
+            {
+                result.addAll(fr.getPage());
+            }
+        }
+
+        return result;
     }
 }

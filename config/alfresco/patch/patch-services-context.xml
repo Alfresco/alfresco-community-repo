@@ -2871,4 +2871,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V4.0-SubscriptionTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.0-SubscriptionTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5010</value></property>
+        <property name="targetSchema"><value>5011</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
+        </property>
+    </bean>
+    
 </beans>

@@ -235,7 +235,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
     
     private String getCurrentUser()
     {
-        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userId = AuthenticationUtil.getRunAsUser();
         if ((userId != null) && (! userId.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
         {
             // user names are not case-sensitive

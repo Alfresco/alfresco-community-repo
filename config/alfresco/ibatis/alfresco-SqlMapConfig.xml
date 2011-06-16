@@ -137,6 +137,11 @@ Inbound settings from iBatis
         <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
         
+        <!-- Subscriptions -->
+        
+        <typeAlias alias="Subscription" type="org.alfresco.repo.domain.subscriptions.SubscriptionEntity"/>
+        <typeAlias alias="SubscriptionNode" type="org.alfresco.repo.domain.subscriptions.SubscriptionNodeEntity"/>
+ 
     </typeAliases>
     
     <typeHandlers> 
@@ -168,6 +173,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/subscriptions-common-SqlMap.xml"/>
         <!-- Canned queries -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>

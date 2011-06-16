@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -374,13 +374,13 @@ public interface AuthorityService
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
     
     /**
-     * Gets the names of all authorities in a zone, optionally filtered by type.
+     * Gets the names of all root authorities in a zone, optionally filtered by type.
      * 
      * @param zoneName
      *            the zone name
      * @param type
      *            the authority type to filter by or <code>null</code> for all authority types
-     * @return the names of all authorities in a zone, optionally filtered by type
+     * @return the names of all root authorities in a zone, optionally filtered by type
      */
     @Auditable(parameters = {"zoneName", "type"})
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type);
@@ -408,9 +408,10 @@ public interface AuthorityService
     @NotAuditable
     public Set<String> getDefaultZones();
     
-
     /**
-     * Find authorities by pattern matching (* and ?) against the authority name.   
+     * Search for authorities by pattern matching (* and ?) against the authority name. 
+     * Note: This will use a search index to find the results (eg. via Lucene / SOLR).
+     * 
      * @param type
      * @param parentAuthority if non-null, will look only for authorities who are a child of the named parent
      * @param immediate if <code>true</code> then only search root groups if parentAuthority is null, or immediate children of parentAuthority if it is non-null.
@@ -419,6 +420,5 @@ public interface AuthorityService
      * @return
      */
     @Auditable(parameters = {"type"})
-    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
-               String displayNamePattern, String zoneName);
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate, String displayNamePattern, String zoneName);
 }

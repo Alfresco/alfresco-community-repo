@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -279,7 +279,18 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         return authorities;
     }
-
+    
+    public Set<String> getRootAuthorities(AuthorityType type, String zoneName)
+    {
+        NodeRef container = (zoneName == null ? getAuthorityContainer() : getZone(zoneName));
+        if (container == null)
+        {
+            // The zone doesn't even exist so there are no root authorities
+            return Collections.emptySet();
+        }
+        
+        return getRootAuthoritiesUnderContainer(container, type);
+    }
     
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
             String displayNamePattern, String zoneName)
@@ -287,24 +298,18 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         Pattern pattern = displayNamePattern == null ? null : Pattern.compile(SearchLanguageConversion.convert(
                 SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, displayNamePattern),
                 Pattern.CASE_INSENSITIVE);
-
+        
         // Use SQL to determine root authorities
         Set<String> rootAuthorities = null;
         if (parentAuthority == null && immediate)
         {
-            NodeRef container = zoneName == null ? getAuthorityContainer() : getZone(zoneName);
-            if (container == null)
-            {
-                // The zone doesn't even exist so there are no root authorities
-                return Collections.emptySet();
-            }
-            rootAuthorities = getRootAuthoritiesUnderContainer(container, type);
+            rootAuthorities = getRootAuthorities(type, zoneName);
             if (pattern == null)
             {
                 return rootAuthorities;
             }
         }
-
+        
         // Use a Lucene search for other criteria
         Set<String> authorities = new TreeSet<String>();
         SearchParameters sp = new SearchParameters();
@@ -441,9 +446,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
-
+            
             Set<String> authorities = new TreeSet<String>();
-            findAuthorities(type, nodeRef, authorities, false, !immediate, false);
+            listAuthorities(type, nodeRef, authorities, false, !immediate, false);
             return authorities;
         }
     }
@@ -481,8 +486,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             if (authorities == null)
             {
                 authorities = new TreeSet<String>();
-                findAuthorities(null, name, authorities, true, true);
-                userAuthorityCache.put(name, authorities);            
+                listAuthorities(null, name, authorities, true, true);
+                userAuthorityCache.put(name, authorities);
             }
             // If we wanted the unfiltered set we are done
             if (type == null)
@@ -500,8 +505,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         // Otherwise, crawl the DB for the answer
         else
         {
-            Set<String> authorities = new TreeSet<String>();        
-            findAuthorities(type, name, authorities, true, !immediate);
+            Set<String> authorities = new TreeSet<String>();
+            listAuthorities(type, name, authorities, true, !immediate);
             return authorities;
         }
     }
@@ -565,8 +570,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
         }
     }
-
-    private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents, boolean recursive)
+    
+    private void listAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents, boolean recursive)
     {
         AuthorityType localType = AuthorityType.getAuthorityType(name);
         if (localType.equals(AuthorityType.GUEST))
@@ -576,10 +581,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         else
         {
             NodeRef ref = getAuthorityOrNull(name);
-
+            
             if (ref != null)
             {
-                findAuthorities(type, ref, authorities, parents, recursive, false);
+                listAuthorities(type, ref, authorities, parents, recursive, false);
             }
             else if (!localType.equals(AuthorityType.USER))
             {
@@ -589,8 +594,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
         }
     }
-
-    private void findAuthorities(AuthorityType type, NodeRef nodeRef, Set<String> authorities, boolean parents, boolean recursive, boolean includeNode)
+    
+    private void listAuthorities(AuthorityType type, NodeRef nodeRef, Set<String> authorities, boolean parents, boolean recursive, boolean includeNode)
     {
         if (includeNode)
         {
@@ -600,24 +605,24 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                             : ContentModel.PROP_USERNAME));
             addAuthorityNameIfMatches(authorities, authorityName, type, null);
         }
-
+        
         // Loop over children if we want immediate children or are in recursive mode
         if (!includeNode || recursive)
         {
             if (parents)
             {
                 List<ChildAssociationRef> cars = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_MEMBER, RegexQNamePattern.MATCH_ALL);
-    
+                
                 for (ChildAssociationRef car : cars)
                 {
-                    findAuthorities(type, car.getParentRef(), authorities, true, recursive, true);
+                    listAuthorities(type, car.getParentRef(), authorities, true, recursive, true);
                 }
             }
             else
             {
                 List<ChildAssociationRef> cars = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
                         RegexQNamePattern.MATCH_ALL, false);
-
+                
                 // Take advantage of the fact that the authority name is on the child association
                 for (ChildAssociationRef car : cars)
                 {
@@ -625,14 +630,14 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     AuthorityType childType = AuthorityType.getAuthorityType(childName);
                     addAuthorityNameIfMatches(authorities, childName, type, null);
                     if (recursive && childType != AuthorityType.USER)
-                    {                    
-                        findAuthorities(type, car.getChildRef(), authorities, false, true, false);
+                    {
+                        listAuthorities(type, car.getChildRef(), authorities, false, true, false);
                     }
-                }                
+                }
             }
         }
     }
-
+    
     private NodeRef getAuthorityOrNull(String name)
     {
         try
@@ -902,16 +907,16 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         if (type != null && type.equals(AuthorityType.USER))
         {
             return Collections.<String> emptySet();
-        }        
+        }
         Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
         Set<String> authorities = new TreeSet<String>();
         for (ChildAssociationRef childRef : childRefs)
         {
             addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
         }
-        return authorities;        
+        return authorities;
     }
-
+    
     // Listen out for person removals so that we can clear cached authorities
     public void beforeDeleteNode(NodeRef nodeRef)
     {

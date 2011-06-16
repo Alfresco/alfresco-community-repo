@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -125,7 +125,16 @@ public interface AuthorityDAO
      * @param authorityDisplayName
      */
     void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
-
+    
+    /**
+     * Get root authorities
+     * 
+     * @param type
+     * @param zoneName
+     * @return
+     */
+    public Set<String> getRootAuthorities(AuthorityType type, String zoneName);
+    
     /**
      * Find authorities by display name pattern.
      * 

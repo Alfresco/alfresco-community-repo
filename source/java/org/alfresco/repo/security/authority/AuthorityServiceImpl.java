@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -296,7 +296,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return authorities;
     }
-            
+    
     public void addAuthority(String parentName, String childName)
     {
         addAuthority(Collections.singleton(parentName), childName);
@@ -377,7 +377,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
     {
-        return authorityDAO.findAuthorities(type, null, true, null, null);
+        return getAllRootAuthoritiesInZone(null, type);
     }
 
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
@@ -469,7 +469,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
     {
-        return authorityDAO.findAuthorities(type, null, true, null, zoneName);
+        return authorityDAO.getRootAuthorities(type, zoneName);
     }
 
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,

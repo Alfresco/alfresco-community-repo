@@ -219,12 +219,32 @@ public class ScriptAuthorityServiceTest extends TestCase
     
     public void testFindGroups()
     {
-       
+//       service.searchGroups(shortNameFilter, paging, sortBy);
+//       service.searchGroupsInZone(shortNameFilter, zone, paging, sortBy);
+//       service.searchRootGroups(displayNamePattern, paging, sortBy);
+//       service.searchRootGroupsInZone(displayNamePattern, paging, sortBy);
     }
     
     public void testGroupUsers()
     {
+       ScriptGroup groupA = service.getGroup(GROUP_A);
        
+       // Check on a group with no users
+       assertEquals(0, groupA.getUserCount());
+       ScriptUser[] users = groupA.getAllUsers();
+       assertEquals(0, users.length);
+       
+       // Add some users to the group
+       authorityService.addAuthority(GROUP_A_FULL, USER_A);
+       authorityService.addAuthority(GROUP_A_FULL, USER_B);
+       
+       // Now look for the users on that group
+       groupA = service.getGroup(GROUP_A);
+       assertEquals(2, groupA.getUserCount());
+       
+       users = groupA.getAllUsers();
+       assertEquals(2, users.length);
+       // TODO check
     }
     
     public void testUsers()

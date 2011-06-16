@@ -29,6 +29,9 @@
 		<property name="javaMailProperties">
         <props>
             <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+            <prop key="mail.smtp.debug">${mail.smtp.debug}</prop>
+            <prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+            
             <prop key="mail.smtps.auth">${mail.smtps.auth}</prop>
             <prop key="mail.smtps.starttls.enable">${mail.smtps.starttls.enable}</prop>
         </props>

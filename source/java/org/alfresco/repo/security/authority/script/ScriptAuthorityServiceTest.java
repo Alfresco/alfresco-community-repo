@@ -20,7 +20,9 @@ package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -219,10 +221,93 @@ public class ScriptAuthorityServiceTest extends TestCase
     
     public void testFindGroups()
     {
-//       service.searchGroups(shortNameFilter, paging, sortBy);
-//       service.searchGroupsInZone(shortNameFilter, zone, paging, sortBy);
-//       service.searchRootGroups(displayNamePattern, paging, sortBy);
-//       service.searchRootGroupsInZone(displayNamePattern, paging, sortBy);
+       // Put one group inside another
+       pubAuthorityService.addAuthority(GROUP_A_FULL, GROUP_B_FULL);
+
+       // Check groups
+       ScriptGroup[] groups = service.searchGroups(
+             GROUP_A, new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       
+       groups = service.searchGroups(
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(3, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       assertEquals(GROUP_B, groups[1].getShortName());
+       assertEquals(GROUP_C, groups[2].getShortName());
+       
+       // Check groups with paging
+       groups = service.searchGroups(
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2,0), "default"
+       );
+       assertEquals(2, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       assertEquals(GROUP_B, groups[1].getShortName());
+       
+       groups = service.searchGroups(
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2, 2), "default"
+       );
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_C, groups[0].getShortName());
+       
+       
+       // Check root groups
+       groups = service.searchRootGroups(
+             GROUP_A, new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       
+       groups = service.searchRootGroups(
+             GROUP_A.substring(0, GROUP_A.length()-1)+"*", new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(2, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       assertEquals(GROUP_C, groups[1].getShortName());
+       
+       
+       // Now with zones
+       Set<String> zones = new HashSet<String>();
+       zones.add(AuthorityService.ZONE_APP_SHARE);
+       pubAuthorityService.addAuthorityToZones(GROUP_A_FULL, zones);
+       zones.add(AuthorityService.ZONE_APP_WCM);
+       pubAuthorityService.addAuthorityToZones(GROUP_B_FULL, zones);
+       
+       groups = service.searchGroupsInZone(
+             GROUP_A.substring(0, GROUP_A.length()-1), AuthorityService.ZONE_APP_SHARE,  
+             new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(2, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       assertEquals(GROUP_B, groups[1].getShortName());
+       
+       groups = service.searchGroupsInZone(
+             GROUP_A.substring(0, GROUP_A.length()-1), AuthorityService.ZONE_APP_WCM,  
+             new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_B, groups[0].getShortName());
+
+       
+       // And root groups in zones 
+       groups = service.searchRootGroupsInZone(
+             GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_SHARE,  
+             new ScriptPagingDetails(10,0), "default"
+       );
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_A, groups[0].getShortName());
+       
+       groups = service.searchRootGroupsInZone(
+             GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_WCM,  
+             new ScriptPagingDetails(10,0), "default"
+       );
+       // B apparently counts as a root group in the WCM zone as it's
+       //  parent group A isn't in that zone too
+       assertEquals(1, groups.length);
+       assertEquals(GROUP_B, groups[0].getShortName());
     }
     
     public void testGroupUsers()
@@ -244,7 +329,19 @@ public class ScriptAuthorityServiceTest extends TestCase
        
        users = groupA.getAllUsers();
        assertEquals(2, users.length);
-       // TODO check
+       
+       ScriptUser userA = null;
+       ScriptUser userB = null;
+       for(ScriptUser user : users)
+       {
+          if(user.getFullName().equals(USER_A)) userA = user;
+          if(user.getFullName().equals(USER_B)) userB = user;
+       }
+       assertNotNull(userA);
+       assertNotNull(userB);
+       
+       assertEquals(USER_A, userA.getPerson().getProperties().get("userName"));
+       assertEquals(USER_B, userB.getPerson().getProperties().get("userName"));
     }
     
     public void testUsers()

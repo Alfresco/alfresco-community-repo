@@ -1195,7 +1195,20 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             filterProps = new ArrayList<FilterProp>(stringPropFilters.size());
             for (Pair<QName, String> filterProp : stringPropFilters)
             {
-                filterProps.add(new FilterPropString(filterProp.getFirst(), filterProp.getSecond(), (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
+                String filterStr = filterProp.getSecond();
+                if("*".equals(filterStr))
+                {
+                   // The wildcard means no filtering is needed on this property
+                   continue;
+                }
+                else if(filterStr.endsWith("*"))
+                {
+                   // The trailing * is implicit
+                   filterStr = filterStr.substring(0, filterStr.length()-1);
+                }
+                
+                // Turn this into a canned query filter
+                filterProps.add(new FilterPropString(filterProp.getFirst(), filterStr, (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
             }
         }
         

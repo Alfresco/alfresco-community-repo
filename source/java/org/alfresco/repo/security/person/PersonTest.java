@@ -598,6 +598,17 @@ public class PersonTest extends TestCase
         filters.clear();
         filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "a"));
         assertEquals(1, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
+        
+        // a* is the same as a
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "a*"));
+        assertEquals(1, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
+        
+        // * means everyone
+        filters.clear();
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "*"));
+        assertEquals(5, getPeopleCount());
+        assertEquals(5, personService.getPeople(filters, true, null, pr).getPage().size());
     }
     
     public void testPeopleSortingPaging()

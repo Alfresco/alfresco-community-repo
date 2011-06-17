@@ -218,15 +218,14 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     
     /**
      * Builds the results model, applying pagination to the results if necessary.
-     * 
-     * @param modelBuilder WorkflowModelBuilder instance to use
      * @param req The WebScript request
      * @param dataPropertyName The name of the property to use in the model
      * @param results The full set of results
+     * 
      * @return List of results to return to the callee
      */
-    protected Map<String, Object> createResultModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, 
-                String dataPropertyName, List<Map<String, Object>> results)
+    protected Map<String, Object> createResultModel(WebScriptRequest req, String dataPropertyName, 
+                List<Map<String, Object>> results)
     {
         int totalItems = results.size();
         int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);

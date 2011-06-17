@@ -1024,6 +1024,17 @@
           parent="abstractWorkflowWebScript"></bean>
 
     <!--                                   -->
+    <!--      Publishing Service REST API    -->
+    <!--                                   -->
+
+    <!-- Get Channels web script -->
+    <bean id="webscript.org.alfresco.repository.publishing.channels.get"
+          class="org.alfresco.repo.web.scripts.publishing.ChannelsGet"
+          parent="webscript">
+        <property name="channelService" ref="channelService" />
+    </bean>
+
+    <!--                                   -->
     <!--      Audit Service REST API    -->
     <!--                                   -->
 

@@ -12,6 +12,7 @@
   <dt>title</dt><dd>the title of the web site</dd>
   <dt>description</dt><dd>the description for the web site</dd>
   <dt>visibility</dt><dd>the site visibility, one of (PUBLIC,MODERATED,PRIVATE), defaults to PUBLIC</dd>
+  <dt>type</dt><dd>the type of site to create, optional</dd>
   </dl>
   ]]></description>
   <url>/api/sites</url>

@@ -54,6 +54,12 @@ function main()
       description = json.get("description");
    }
    
+   var sitetype = null;
+   if (json.has("type") == true)
+   {
+	   sitetype = json.get("type");
+   }
+   
    // Use the visibility flag before the isPublic flag
    var visibility = siteService.PUBLIC_SITE;
    if (json.has("visibility"))
@@ -74,7 +80,15 @@ function main()
    }
    
    // Create the site 
-   var site = siteService.createSite(sitePreset, shortName, title, description, visibility);
+   var site = null;   
+   if (sitetype == null)
+   {
+	   site = siteService.createSite(sitePreset, shortName, title, description, visibility);
+   }
+   else
+   {
+	   site = siteService.createSite(sitePreset, shortName, title, description, visibility, sitetype);
+   }
    
    // Put the created site into the model
    model.site = site;

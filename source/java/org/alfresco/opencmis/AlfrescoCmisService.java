@@ -2550,7 +2550,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                     if (CMISConnector.PWC_VERSION_LABEL.equals(versionLabel))
                     {
                         info.setIsCurrentVersion(false);
-                        info.setWorkingCopyId(null);
+                        info.setWorkingCopyId(object.getId());
 
                         // get latest version
                         List<ObjectData> versions = getAllVersions(repositoryId, null, info.getVersionSeriesId(), null,

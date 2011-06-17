@@ -34,7 +34,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-
 /**
  * Provide a Repository Startup Log
  *  
@@ -170,10 +169,10 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             Long maxDocs = license.getMaxDocs();
             if (maxDocs != null)
             {
-                msg += "  Document limit is " + maxDocs + ".";
+                msg += "  Content Object limit is " + maxDocs + ".";
             }
             
-            /**
+            /*
              * This is an important information logging since it logs the license
              */
             logger.info(msg);
@@ -195,7 +194,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             String installedRepoVersion = installedRepoDescriptor.getVersion();
             int installedSchemaVersion = installedRepoDescriptor.getSchema();
             
-            /**
+            /*
              * Alfresco started 
              */
             Object[] params = new Object[] {

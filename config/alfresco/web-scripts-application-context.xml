@@ -595,7 +595,46 @@
       </property>
    </bean>
 
+   <!--                            -->
+   <!-- Subscriptions Web Scripts  -->
+   <!--                            -->
 
+   <bean id="webscript.org.alfresco.repository.subscriptions.followers.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceFollowersGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.subscriptions.followerscount.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceFollowersCountGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.subscriptions.following.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceFollowingGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.subscriptions.followingcount.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceFollowingCountGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.subscriptions.follow.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceFollowGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.subscriptions.unfollow.get" class="org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceUnfollowGet" parent="webscript">
+      <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="personService" ref="PersonService"/>
+   </bean>
+   
    <!--                         -->
    <!-- Invite Service REST API -->
    <!--                         -->

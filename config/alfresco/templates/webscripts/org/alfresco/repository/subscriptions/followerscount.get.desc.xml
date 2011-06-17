@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Followers Count</shortname>
+  <description>Returns the size of followers list</description>
+  <url>/api/subscriptions/{userid}/followers/count</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

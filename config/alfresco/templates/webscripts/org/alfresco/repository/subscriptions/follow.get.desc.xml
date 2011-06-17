@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Follow</shortname>
+  <description>Follow a user</description>
+  <url>/api/subscriptions/{userid}/follow/{otheruserid}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

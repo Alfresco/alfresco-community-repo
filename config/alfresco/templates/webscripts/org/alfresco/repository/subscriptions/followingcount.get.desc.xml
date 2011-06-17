@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Following Count</shortname>
+  <description>Returns size of the following list</description>
+  <url>/api/subscriptions/{userid}/following/count</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

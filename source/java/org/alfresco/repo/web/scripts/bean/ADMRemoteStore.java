@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -157,10 +158,11 @@ public class ADMRemoteStore extends BaseRemoteStore
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-                final FileInfo fileInfo = resolveFilePath(path);
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveFilePath(encpath);
                 if (fileInfo == null)
                 {
-                    throw new WebScriptException("Unable to locate file: " + path);
+                    throw new WebScriptException("Unable to locate file: " + encpath);
                 }
                 
                 Writer out = res.getWriter();
@@ -191,7 +193,8 @@ public class ADMRemoteStore extends BaseRemoteStore
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-                final FileInfo fileInfo = resolveFilePath(path);
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveFilePath(encpath);
                 if (fileInfo == null || fileInfo.isFolder())
                 {
                     res.setStatus(Status.STATUS_NOT_FOUND);
@@ -204,7 +207,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     reader = contentService.getReader(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
                     if (reader == null || !reader.exists())
                     {
-                        throw new WebScriptException("No content found for file: " + path);
+                        throw new WebScriptException("No content found for file: " + encpath);
                     }
                     
                     // establish mimetype
@@ -212,10 +215,10 @@ public class ADMRemoteStore extends BaseRemoteStore
                     if (mimetype == null || mimetype.length() == 0)
                     {
                         mimetype = MimetypeMap.MIMETYPE_BINARY;
-                        int extIndex = path.lastIndexOf('.');
+                        int extIndex = encpath.lastIndexOf('.');
                         if (extIndex != -1)
                         {
-                            String ext = path.substring(extIndex + 1);
+                            String ext = encpath.substring(extIndex + 1);
                             String mt = mimetypeService.getMimetypesByExtension().get(ext);
                             if (mt != null)
                             {
@@ -244,19 +247,19 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         // the client cut the connection - our mission was accomplished apart from a little error message
                         if (logger.isDebugEnabled())
-                            logger.debug("Client aborted stream read:\n\tnode: " + path + "\n\tcontent: " + reader);
+                            logger.debug("Client aborted stream read:\n\tnode: " + encpath + "\n\tcontent: " + reader);
                     }
                     catch (ContentIOException e2)
                     {
                         if (logger.isInfoEnabled())
-                            logger.info("Client aborted stream read:\n\tnode: " + path + "\n\tcontent: " + reader);
+                            logger.info("Client aborted stream read:\n\tnode: " + encpath + "\n\tcontent: " + reader);
                     }
                     catch (Throwable err)
                     {
                        if (err.getCause() instanceof SocketException)
                        {
                           if (logger.isDebugEnabled())
-                              logger.debug("Client aborted stream read:\n\tnode: " + path + "\n\tcontent: " + reader);
+                              logger.debug("Client aborted stream read:\n\tnode: " + encpath + "\n\tcontent: " + reader);
                        }
                        else
                        {
@@ -291,7 +294,8 @@ public class ADMRemoteStore extends BaseRemoteStore
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-                final FileInfo fileInfo = resolveFilePath(path);
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveFilePath(encpath);
                 
                 Writer out = res.getWriter();
                 out.write(Boolean.toString(fileInfo != null && !fileInfo.isFolder()));
@@ -319,12 +323,13 @@ public class ADMRemoteStore extends BaseRemoteStore
         try
         {
             // do not support filenames directly at the root - all objectypes must exist in a named child folder
-            final int off = path.lastIndexOf('/');
+            final String encpath = encodePath(path);
+            final int off = encpath.lastIndexOf('/');
             if (off != -1)
             {
-                FileInfo parentFolder = resolveNodePath(path, true, false);
+                FileInfo parentFolder = resolveNodePath(encpath, true, false);
                 FileInfo fileInfo = this.fileFolderService.create(
-                        parentFolder.getNodeRef(), encodePath(path.substring(off + 1)), ContentModel.TYPE_CONTENT);
+                        parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
                 this.contentService.getWriter(
                         fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
                 if (logger.isDebugEnabled())
@@ -363,7 +368,8 @@ public class ADMRemoteStore extends BaseRemoteStore
     @Override
     protected void updateDocument(final WebScriptResponse res, String store, final String path, final InputStream content)
     {
-        final FileInfo fileInfo = resolveFilePath(path);
+        final String encpath = encodePath(path);
+        final FileInfo fileInfo = resolveFilePath(encpath);
         if (fileInfo == null || fileInfo.isFolder())
         {
             res.setStatus(Status.STATUS_NOT_FOUND);
@@ -388,7 +394,8 @@ public class ADMRemoteStore extends BaseRemoteStore
     @Override
     protected void deleteDocument(final WebScriptResponse res, final String store, final String path)
     {
-        final FileInfo fileInfo = resolveFilePath(path);
+        final String encpath = encodePath(path);
+        final FileInfo fileInfo = resolveFilePath(encpath);
         if (fileInfo == null || fileInfo.isFolder())
         {
             res.setStatus(Status.STATUS_NOT_FOUND);
@@ -423,7 +430,8 @@ public class ADMRemoteStore extends BaseRemoteStore
             {
                 res.setContentType("text/plain;charset=UTF-8");
                 
-                final FileInfo fileInfo = resolveNodePath(path, false, true);
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveNodePath(encpath, false, true);
                 if (fileInfo == null || !fileInfo.isFolder())
                 {
                     res.setStatus(Status.STATUS_NOT_FOUND);
@@ -432,7 +440,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                 
                 try
                 {
-                    outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(path, false), "*", recurse);
+                    outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(encpath, false), "*", recurse);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -470,15 +478,31 @@ public class ADMRemoteStore extends BaseRemoteStore
             {
                 res.setContentType("text/plain;charset=UTF-8");
                 
-                String filePattern = pattern;
-                if (filePattern == null || filePattern.length() == 0)
+                String filePattern;
+                if (pattern == null || pattern.length() == 0)
                 {
                     filePattern = "*";
+                }
+                else
+                {
+                    // need to ensure match pattern is path encoded - but don't encode * character!
+                    StringBuilder buf = new StringBuilder(pattern.length());
+                    for (StringTokenizer t = new StringTokenizer(pattern, "*"); t.hasMoreTokens(); /**/)
+                    {
+                        buf.append(encodePath(t.nextToken()));
+                        if (t.hasMoreTokens())
+                        {
+                            buf.append('*');
+                        }
+                    }
+                    // ensure the escape character is itself escaped
+                    filePattern = buf.toString().replace("\\", "\\\\");
                 }
                 
                 // ensure we pass in the file pattern as it is used as part of the folder match - i.e.
                 // for a site component set e.g. /alfresco/site-data/components/page.*.site~xyz~dashboard.xml
-                final FileInfo fileInfo = resolveNodePath(path, pattern, false, true);
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveNodePath(encpath, filePattern, false, true);
                 if (fileInfo == null || !fileInfo.isFolder())
                 {
                     res.setStatus(Status.STATUS_NOT_FOUND);
@@ -486,11 +510,14 @@ public class ADMRemoteStore extends BaseRemoteStore
                 }
                 
                 if (logger.isDebugEnabled())
-                    logger.debug("listDocuments() pattern: " + pattern);
+                    logger.debug("listDocuments() pattern: " + filePattern);
                 
                 try
                 {
-                    outputFileNodes(res.getWriter(), fileInfo, aquireSurfConfigRef(path + "/" + pattern, false), pattern, false);
+                    outputFileNodes(
+                            res.getWriter(), fileInfo,
+                            aquireSurfConfigRef(encpath + "/" + filePattern, false),
+                            filePattern, false);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -557,7 +584,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         {
             // break down the path into its component elements
             List<String> pathElements = new ArrayList<String>(4);
-            final StringTokenizer t = new StringTokenizer(encodePath(path), "/");
+            final StringTokenizer t = new StringTokenizer(path, "/");
             // the store requires paths of the form /alfresco/site-data/<objecttype>[/<folder>]/<file>.xml
             if (t.countTokens() >= 3)
             {
@@ -757,8 +784,8 @@ public class ADMRemoteStore extends BaseRemoteStore
             }
             
             out.write("/alfresco/site-data/");
-            out.write(displayPath.toString());
-            out.write(file.getName());
+            out.write(URLDecoder.decode(displayPath.toString()));
+            out.write(URLDecoder.decode(file.getName()));
             out.write('\n');
             if (debug) logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
         }

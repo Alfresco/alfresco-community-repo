@@ -77,6 +77,7 @@ public class ADMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(ADMRemoteStore.class);
     
+    // name of the surf config folder
     private static final String SURF_CONFIG = "surf-config";
     
     // patterns used to match site and user specific configuration locations
@@ -85,6 +86,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     private static final Pattern SITE_PATTERN_1 = Pattern.compile(".*/components/.*\\.site~(.*)~.*");
     private static final Pattern SITE_PATTERN_2 = Pattern.compile(".*/pages/site/(.*?)(/.*)?$");
     
+    // service beans
     private NodeService nodeService;
     private NodeService unprotNodeService;
     private FileFolderService fileFolderService;
@@ -143,10 +145,9 @@ public class ADMRemoteStore extends BaseRemoteStore
 
     /**
      * Gets the last modified timestamp for the document.
-     * 
+     * <p>
      * The output will be the last modified date as a long toString().
      * 
-     * @param store the store id
      * @param path  document path to an existing document
      */
     @Override
@@ -177,17 +178,14 @@ public class ADMRemoteStore extends BaseRemoteStore
 
     /**
      * Gets a document.
-     * 
+     * <p>
      * The output will be the document content stream.
      * 
-     * @param store the store id
      * @param path  document path
      */
     @Override
     protected void getDocument(final WebScriptResponse res, final String store, final String path)
     {
-        // TODO: could only allow appropriate users to read config docs i.e. site specific...
-        //       but currently GET requests need to run unauthenticated before user login occurs.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
@@ -283,7 +281,6 @@ public class ADMRemoteStore extends BaseRemoteStore
      * 
      * The output will be either the string "true" or the string "false".
      * 
-     * @param store the store id
      * @param path  document path
      */
     @Override
@@ -313,7 +310,6 @@ public class ADMRemoteStore extends BaseRemoteStore
      * Create methods are user authenticated, so the creation of site config must be
      * allowed for the current user.
      * 
-     * @param store         the store id
      * @param path          document path
      * @param content       content of the document to write
      */
@@ -345,9 +341,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Creates multiple XML documents encapsulated in a single one. 
      * 
-     * @param store         the store id
-     * @param path          document path
-     * @param content       content of the document to write
+     * @param content       XML document containing multiple document contents to write
      */
     @Override
     protected void createDocuments(WebScriptResponse res, String store, InputStream content)
@@ -361,8 +355,7 @@ public class ADMRemoteStore extends BaseRemoteStore
      * Update methods are user authenticated, so the modification of site config must be
      * allowed for the current user.
      * 
-     * @param store the store id
-     * @param path  document path
+     * @param path          document path to update
      * @param content       content to update the document with
      */
     @Override
@@ -376,19 +369,25 @@ public class ADMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        writer.putContent(content);
-        if (logger.isDebugEnabled())
-            logger.debug("updateDocument: " + fileInfo.toString());
+        try
+        {
+            ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            writer.putContent(content);
+            if (logger.isDebugEnabled())
+                logger.debug("updateDocument: " + fileInfo.toString());
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
     }
     
     /**
      * Deletes an existing document.
      * <p>
-     * Delete methods are user authenticated, so the deletion of site config must be
+     * Delete methods are user authenticated, so the deletion of the document must be
      * allowed for the current user.
      * 
-     * @param store the store id
      * @param path  document path
      */
     @Override
@@ -402,9 +401,16 @@ public class ADMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        this.nodeService.deleteNode(fileInfo.getNodeRef());
-        if (logger.isDebugEnabled())
-            logger.debug("deleteDocument: " + fileInfo.toString());
+        try
+        {
+            this.nodeService.deleteNode(fileInfo.getNodeRef());
+            if (logger.isDebugEnabled())
+                logger.debug("deleteDocument: " + fileInfo.toString());
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
     }
 
     /**
@@ -413,7 +419,6 @@ public class ADMRemoteStore extends BaseRemoteStore
      * The output will be the list of relative document paths found under the path.
      * Separated by newline characters.
      * 
-     * @param store     the store id
      * @param path      document path
      * @param recurse   true to peform a recursive list, false for direct children only.
      * 
@@ -461,7 +466,6 @@ public class ADMRemoteStore extends BaseRemoteStore
      * The output will be the list of relative document paths found under the path that
      * match the given file pattern. Separated by newline characters.
      * 
-     * @param store     the store id
      * @param path      document path
      * @param pattern   file pattern to match - allows wildcards e.g. page.*.site.xml
      * 

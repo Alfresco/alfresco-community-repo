@@ -75,12 +75,14 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
+        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems());
+
         @SuppressWarnings("unchecked")
         List<SubscriptionNodeEntity> nodeList = (List<SubscriptionNodeEntity>) template.selectList(
                 "alfresco.subscriptions.select_Subscriptions", map, new RowBounds(pagingRequest.getSkipCount(),
-                        pagingRequest.getMaxItems() + 1));
+                        maxItems + 1));
 
-        boolean hasMore = nodeList.size() > pagingRequest.getMaxItems();
+        boolean hasMore = nodeList.size() > maxItems;
 
         List<NodeRef> result = new ArrayList<NodeRef>(nodeList.size());
         for (SubscriptionNodeEntity sne : nodeList)
@@ -217,11 +219,13 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
+        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems() + 1);
+
         @SuppressWarnings("unchecked")
         List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Following", map,
-                new RowBounds(pagingRequest.getSkipCount(), pagingRequest.getMaxItems() + 1));
+                new RowBounds(pagingRequest.getSkipCount(), maxItems + 1));
 
-        boolean hasMore = userList.size() > pagingRequest.getMaxItems();
+        boolean hasMore = userList.size() > maxItems;
         if (hasMore && userList.size() > 0)
         {
             userList.remove(userList.size() - 1);
@@ -230,7 +234,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         Integer totalCount = null;
         if (pagingRequest.getRequestTotalCountMax() > 0)
         {
-            totalCount = countFollowers(userId);
+            totalCount = countSubscriptions(userId, SubscriptionItemTypeEnum.USER);
         }
 
         return new PagingFollowingResultsImpl(userList, hasMore, totalCount);
@@ -252,11 +256,13 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
+        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems() + 1);
+
         @SuppressWarnings("unchecked")
         List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Followers", map,
-                new RowBounds(pagingRequest.getSkipCount(), pagingRequest.getMaxItems() + 1));
+                new RowBounds(pagingRequest.getSkipCount(), maxItems + 1));
 
-        boolean hasMore = userList.size() > pagingRequest.getMaxItems();
+        boolean hasMore = userList.size() > maxItems;
         if (hasMore && userList.size() > 0)
         {
             userList.remove(userList.size() - 1);

@@ -95,6 +95,10 @@ public class ChannelHelper
 
     public Channel buildChannelObject(NodeRef nodeRef, ChannelService channelService)
     {
+        if(nodeRef == null || nodeService.exists(nodeRef)==false)
+        {
+            return null;
+        }
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
         String channelTypeId = (String) props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
         ChannelType channelType = channelService.getChannelType(channelTypeId);

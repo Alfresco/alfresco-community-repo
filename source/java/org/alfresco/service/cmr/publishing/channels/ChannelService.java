@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -99,4 +100,11 @@ public interface ChannelService
      * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
      */
     Channel getChannel(String siteId, String channelName);
+    
+    /**
+     * Retrieve the channel with the given id.
+     * @param id The string value of the channel {@link NodeRef}.
+     * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
+     */
+    Channel getChannel(String id);
 }

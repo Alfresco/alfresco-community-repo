@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 
@@ -105,6 +106,28 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         ParameterCheck.mandatoryString("visibility", visibility);
         SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
         SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, siteVisibility);
+        return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
+    }
+    
+    /**
+     * Create a new site.
+     * <p>
+     * The site short name will be used to uniquely identify the site so it must be unique.
+     * 
+     * @param sitePreset    site preset
+     * @param shortName     site short name
+     * @param title         site title
+     * @param description   site description
+     * @param visibility    visibility of the site (public|moderated|private)
+     * @param siteType      qname of site type to create
+     * @return Site         the created site
+     */
+    public Site createSite(String sitePreset, String shortName, String title, String description, String visibility, String siteType)
+    {     	
+        ParameterCheck.mandatoryString("visibility", visibility);
+        SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
+        QName siteTypeQName = QName.createQName(siteType);
+        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, siteVisibility, siteTypeQName);
         return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
     

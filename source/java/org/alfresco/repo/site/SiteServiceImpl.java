@@ -117,6 +117,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     private static final String MSG_DO_NOT_CHANGE_MGR = "site_service.do_not_change_manager";
     private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_membership";
     private static final String MSG_SITE_CONTAINER_NOT_FOLDER = "site_service.site_container_not_folder";
+    private static final String MSG_INVALID_SITE_TYPE = "site_service.invalid_site_type";
 
     /* Services */
     private NodeService nodeService;
@@ -356,6 +357,23 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                                final String description, 
                                final SiteVisibility visibility)
     {
+    	return createSite(sitePreset, passedShortName, title, description, visibility, SiteModel.TYPE_SITE);
+    }
+    
+    public SiteInfo createSite(final String sitePreset, 
+                			   String passedShortName, 
+                			   final String title, 
+                               final String description, 
+                               final SiteVisibility visibility,
+                               final QName siteType)
+    {	
+    	// Check that the provided site type is a subtype of TYPE_SITE
+    	if (SiteModel.TYPE_SITE.equals(siteType) == false &&
+    	    dictionaryService.isSubClass(siteType, TYPE_SITE) == false)
+    	{
+    		throw new SiteServiceException(MSG_INVALID_SITE_TYPE, new Object[]{siteType});
+    	}
+    	
         // Remove spaces from shortName
         final String shortName = passedShortName.replaceAll(" ", "");
         
@@ -388,9 +406,9 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         final NodeRef siteNodeRef = this.nodeService.createNode(
                 siteParent,
                 ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                        shortName), SiteModel.TYPE_SITE, properties)
-                .getChildRef();
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName), 
+                siteType, 
+                properties).getChildRef();
 
         // Make the new site a tag scope
         this.taggingService.addTagScope(siteNodeRef);

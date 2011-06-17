@@ -69,6 +69,20 @@ public interface SiteService
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility);
     
     /**
+     * Create a new site.
+     * 
+     * @param sitePreset    site preset name
+     * @param shortName     site short name, must be unique
+     * @param title         site title
+     * @param description   site description
+     * @param visibility    site visibility (public|moderated|private)
+     * @param siteType	    type of site to create, must be a sub-type of st:site
+     * @return SiteInfo     information about the created site
+     */
+    @Auditable(parameters = {"sitePreset", "shortName"})
+    SiteInfo createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, QName siteType);
+    
+    /**
      * This method checks if the currently authenticated user has permission to create sites.
      * 
      * @return <code>true</code> if current user can create sites, else <code>false</code>.

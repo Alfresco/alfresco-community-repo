@@ -92,7 +92,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * If this parameter is <code>false</code> then the image will be stretched
      * or compressed to fit the given height and width, regardless of the
      * original aspect ratio. <br>
-     * This parameter defaults to <code>true</code>
+     * This parameter defaults to <code>false</code>
      */
     public static final String PARAM_MAINTAIN_ASPECT_RATIO = "maintainAspectRatio";
 

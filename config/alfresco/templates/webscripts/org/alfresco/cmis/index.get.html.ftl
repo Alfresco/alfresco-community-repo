@@ -46,9 +46,9 @@
       <h3>Alfresco CMIS Content Repository</h3>
       <p>Point your CMIS client to one of the following Alfresco CMIS bindings (with <strong>user=admin</strong> and <strong>password=admin</strong>).</p>
       <ul>
-        <li>CMIS AtomPub Binding: <a href="${url.serviceContext}/cmis">AtomPub Service Document</a> (<a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">API reference</a>)</li>
+        <li>CMIS AtomPub Binding: <a href="${url.context}/cmisatom">AtomPub Service Document</a></li>
         </li>
-        <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
+        <li>CMIS Web Services Binding: <a href="${url.context}/cmisws/RepositoryService">WSDL Documents</a></li>
       </ul>
       
       <h5><span id="repoinfo" class="toggle" onclick="return toggleDisplay(this)">[+]</span> CMIS Repository Information</h5>
@@ -83,7 +83,15 @@
         <tr><td>PermissionPropagation</td><td>${aclPropagation}</td></tr>
       </table>
 
-      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">OpenCMIS Browser</a>.</p>
+      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.context)}/cmisatom">OpenCMIS Browser</a>.</p>
+
+      <h3>Alfresco 3.x CMIS Content Repository (obsolete)</h3>
+      <p>The Alfresco 3.x CMIS URLs are still available but should not be used.</p>
+      <ul>
+        <li>CMIS AtomPub Binding: <a href="${url.serviceContext}/cmis">AtomPub Service Document</a> (<a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">API reference</a>)</li>
+        </li>
+        <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
+      </ul>
 
       <a name="testatompub"></a>
       <h3>Apache Chemistry CMIS AtomPub TCK</h3>
@@ -92,7 +100,7 @@
       <form action="${url.serviceContext}/cmis/test" method="post" class="hform">
       <fieldset>
         <legend>CMIS Repository</legend>
-        <p><label>Service Document</label><input type="text" name="chemistry.tck.serviceUrl" size="50" value="${absurl(url.serviceContext)}/cmis"></p>
+        <p><label>Service Document</label><input type="text" name="chemistry.tck.serviceUrl" size="50" value="${absurl(url.context)}/cmisatom"></p>
         <p><label>Username</label><input type="text" name="chemistry.tck.user" value="admin"></p>
         <p><label>Password</label><input type="text" name="chemistry.tck.password" value="admin"></p>
       </fieldset>
@@ -141,9 +149,9 @@
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>
-        <li><a href="http://incubator.apache.org/chemistry/">Home Page</a></li>
-        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/tck/trunk/">Source Code</a> for TCK</li>
-        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/opencmis/trunk/chemistry-opencmis-test/chemistry-opencmis-test-browser/">Source Code</a> for Browser</li>
+        <li><a href="http://chemistry.apache.org/">Home Page</a></li>
+        <li><a href="http://svn.apache.org/viewvc/chemistry/tck/trunk/">Source Code</a> for TCK</li>
+        <li><a href="http://svn.apache.org/viewvc/chemistry/opencmis/trunk/chemistry-opencmis-test/chemistry-opencmis-test-browser/">Source Code</a> for Browser</li>
       </ul>
       <h3>Provide Feedback</h3>
       <ul>

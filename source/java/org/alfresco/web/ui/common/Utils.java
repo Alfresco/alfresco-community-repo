@@ -54,6 +54,7 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webdav.WebDAVHelper;
 import org.alfresco.repo.webdav.WebDAVServlet;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -388,13 +389,15 @@ public final class Utils extends StringUtils
             // calculate a CIFS path for the given node
             
             // get hold of the node service, cifsServer and navigation bean
-            NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+            ServiceRegistry serviceRegistry = Repository.getServiceRegistry(context); 
+            NodeService nodeService = serviceRegistry.getNodeService();
+            FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
             NavigationBean navBean = (NavigationBean)context.getExternalContext().
                   getSessionMap().get(NavigationBean.BEAN_NAME);
             ServerConfigurationAccessor serverConfiguration = (ServerConfigurationAccessor)FacesContextUtils.getRequiredWebApplicationContext(
                   context).getBean("fileServerConfiguration");
             
-            if (nodeService != null && navBean != null && serverConfiguration != null)
+            if (nodeService != null && fileFolderService != null && navBean != null && serverConfiguration != null)
             {
                // Resolve CIFS network folder location for this node
                FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)serverConfiguration.getConfigSection(FilesystemsConfigSection.SectionName); 
@@ -403,13 +406,39 @@ public final class Utils extends StringUtils
                SharedDeviceList shares = filesysConfig.getShares();
                Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
                
-               while (shareEnum.hasMoreElements() && diskShare == null)
-               {
-                  SharedDevice curShare = shareEnum.nextElement();
-                  if (curShare.getContext() instanceof ContentContext)
-                  {
-                     diskShare = (DiskSharedDevice)curShare;
-                  }
+               while (shareEnum.hasMoreElements() && diskShare == null) 
+               { 
+                  SharedDevice curShare = shareEnum.nextElement(); 
+                  if (curShare.getContext() instanceof ContentContext) 
+                  { 
+                     // ALF-6863: Check if the node has a path beneath contentContext.getRootNode() 
+                     ContentContext contentContext = (ContentContext) curShare.getContext(); 
+                     NodeRef rootNode = contentContext.getRootNode(); 
+                     if (node.getNodeRef().equals(rootNode)) 
+                     { 
+                         diskShare = (DiskSharedDevice) curShare; 
+                         break; 
+                     } 
+                     try 
+                     { 
+                         fileFolderService.getNamePath(rootNode, node.getNodeRef()); 
+                         if (logger.isDebugEnabled()) 
+                         { 
+                             logger.debug(" Node " + node.getName() + " HAS been found on " + contentContext.getDeviceName()); 
+                         } 
+                         diskShare = (DiskSharedDevice) curShare; 
+                         break; 
+                     } 
+                     catch (FileNotFoundException ex) 
+                     { 
+                         if (logger.isDebugEnabled()) 
+                         { 
+                             logger.debug(" Node " + node.getName() + " HAS NOT been found on " + contentContext.getDeviceName()); 
+                         } 
+                         // There is no such node on this SharedDevice, continue 
+                         continue; 
+                     } 
+                  } 
                }
                
                if (diskShare != null)

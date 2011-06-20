@@ -21,7 +21,6 @@ package org.alfresco.web.bean;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +31,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskInterface;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
-import org.alfresco.jlan.server.core.SharedDevice;
-import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
-import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -52,7 +47,6 @@ import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -75,6 +69,7 @@ import org.alfresco.web.bean.spaces.SpaceDetailsDialog;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIModeList;
@@ -752,42 +747,9 @@ public class NavigationBean implements Serializable
          }
          String icon = (String)props.get("app:icon");
          props.put("icon", icon != null ? icon : CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
-         Path path = node.getNodePath();
-         
-         // resolve CIFS network folder location for this node
-         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)getServerConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
-         DiskSharedDevice diskShare = null;
-         
-         SharedDeviceList shares = filesysConfig.getShares();
-         Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
-         
-         while (shareEnum.hasMoreElements() && diskShare == null)
-         {
-            SharedDevice curShare = shareEnum.nextElement();
-            if (curShare.getContext() instanceof ContentContext)
-            {
-               diskShare = (DiskSharedDevice)curShare;
-            }
-         }
-         
-         if (diskShare != null)
-         {
-            ContentContext contentCtx = (ContentContext) diskShare.getContext();
-            NodeRef rootNode = contentCtx.getRootNode();
-            try
-            {
-               String cifsPath = Repository.getNamePath(this.getNodeService(), path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
-               
-               node.getProperties().put("cifsPath", cifsPath);
-               node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
-            }
-            catch(AccessDeniedException ade)
-            {
-               node.getProperties().put("cifsPath", "");
-               node.getProperties().put("cifsPathLabel","");  // strip file:/// part
-            }
-         }
-         
+         String cifsPath = Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.CIFS); 
+         node.getProperties().put("cifsPath", cifsPath == null ? "" : cifsPath); 
+         node.getProperties().put("cifsPathLabel", cifsPath == null ? "" : cifsPath.substring(8)); // strip file:/// part          
          this.currentNode = node;
       }
       

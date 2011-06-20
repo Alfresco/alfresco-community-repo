@@ -355,12 +355,11 @@ public class XFormsBean implements Serializable
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
 
-      readLock.lock();
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      readLock.unlock();
       writeLock.lock();
       try
       {
+         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+
          if (chibaBean.getContainer().lookup(id) instanceof Upload)
          {
             chibaBean.updateControlValue(id, null, value, value.getBytes("UTF-8"));
@@ -495,7 +494,7 @@ public class XFormsBean implements Serializable
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
 
-      readLock.lock();
+      writeLock.lock();
       try
       {
          final ChibaBean chibaBean = this.xformsSession.chibaBean;
@@ -509,18 +508,12 @@ public class XFormsBean implements Serializable
          {
             throw new NullPointerException("unable to find destination repeat item " + toItemId);
          }
-         readLock.unlock();
-         writeLock.lock();
+
          this.swapRepeatItems(from, to);
          
          final ResponseWriter out = context.getResponseWriter();
          XMLUtil.print(this.getEventLog(), out);
          out.close();
-      }
-      catch (NullPointerException e)
-      {
-         readLock.unlock();
-         throw e;
       }
       finally
       {

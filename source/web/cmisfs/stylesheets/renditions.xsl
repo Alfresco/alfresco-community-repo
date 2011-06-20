@@ -26,7 +26,6 @@
 
 	<xsl:param name="browseUrl"/>
 	<xsl:param name="auxRoot"/>
-	<xsl:param name="browseOverrideStylesheet"/>
 
 	<xsl:template match="/">
 		<html>
@@ -86,7 +85,7 @@
 						</xsl:for-each>
 					</xsl:if>
 					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']">
-						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']/@href}&amp;relationshipDirection=either{$browseOverrideStylesheet}relationships">Relationships</a> -
+						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/relationships']/@href}">Relationships</a> -
 					</xsl:if>
 					<xsl:if test="atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']">
 						<a href="{$browseUrl}{atom:entry/atom:link[@rel='http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions']/@href}">Allowable Actions</a> -
@@ -109,80 +108,53 @@
 				</div>
 				</xsl:if>
 
-				<xsl:if test="contains(atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:baseTypeId'],'cmis:relationship')">
-				<h2>Relationship</h2>
-				<table class="entrytable">
-					<tr>
-						<th>Source Id</th>
-						<th>Target Id</th>
-					</tr>
-					<tr>
-						<xsl:variable name="objectId">
-							<xsl:value-of select="atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:objectId']/cmis:value"></xsl:value-of>
-						</xsl:variable>
-						<xsl:variable name="entryUrl">
-							<xsl:value-of select="atom:entry/atom:link[@rel='self']/@href"></xsl:value-of>
-						</xsl:variable>
-						<xsl:variable name="sourceId">
-							<xsl:value-of select="atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:sourceId']/cmis:value"></xsl:value-of>
-						</xsl:variable>
-						<xsl:variable name="targetId">
-							<xsl:value-of select="atom:entry/cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId='cmis:targetId']/cmis:value"></xsl:value-of>
-						</xsl:variable>
-						<xsl:variable name="sourceEntryUrl">
-							<xsl:value-of select="substring-before($entryUrl, $objectId)"></xsl:value-of>
-							<xsl:value-of select="$sourceId"></xsl:value-of>
-						</xsl:variable>
-						<xsl:variable name="targetEntryUrl">
-							<xsl:value-of select="substring-before($entryUrl, $objectId)"></xsl:value-of>
-							<xsl:value-of select="$targetId"></xsl:value-of>
-						</xsl:variable>
 
-						<td style="font-weight: bold;"><a href="{$browseUrl}{$sourceEntryUrl}"><xsl:value-of select="$sourceId"></xsl:value-of></a></td>
-						<td style="font-weight: bold;"><a href="{$browseUrl}{$targetEntryUrl}"><xsl:value-of select="$targetId"></xsl:value-of></a></td>
-					</tr>
-				</table>
-				</xsl:if>
-
-				<h2>Properties</h2>
-				<table class="entrytable">
-				<xsl:for-each select="atom:entry/cmisra:object/cmis:properties/*">
+				<xsl:if test="atom:entry/atom:link[@rel='alternate']">
+				<h2>Renditions</h2>
+				<table>
 					<tr>
-						<td style="font-weight: bold;"><xsl:value-of select="@propertyDefinitionId" /></td>
 						<td>
-						<xsl:for-each select="cmis:value">
-							<xsl:value-of select="current()" /><br/>
-						</xsl:for-each>
+						<xsl:if test="atom:entry/atom:link[@rel='alternate' and @cmisra:renditionKind='cmis:thumbnail']">
+							<img src="{atom:entry/atom:link[@rel='alternate' and @cmisra:renditionKind='cmis:thumbnail']/@href}" />
+						</xsl:if>
+						</td>
+						<td>
+							<table class="entrytable">
+								<tr>
+									<th>Kind</th>
+									<th>MIME Type</th>
+									<th>Size</th>
+									<th>Height</th>
+									<th>Width</th>
+								</tr>
+							<xsl:for-each select="atom:entry/cmisra:object/cmis:rendition">
+								<xsl:variable name="odd">
+									<xsl:if test="(position() mod 2) != 1"></xsl:if>
+									<xsl:if test="(position() mod 2) = 1">-odd</xsl:if>
+								</xsl:variable>
+								<xsl:variable name="renditionKind">
+									<xsl:value-of select="cmis:kind"></xsl:value-of>
+								</xsl:variable>
+								<xsl:variable name="renditionURL">
+									<xsl:for-each select="//atom:entry/atom:link[@rel='alternate']">
+										<xsl:if test="@cmisra:renditionKind = $renditionKind">
+											<xsl:value-of select="@href"></xsl:value-of>
+										</xsl:if>
+									</xsl:for-each>
+								</xsl:variable>
+
+								<tr>
+									<td class="tdlinks{$odd}"><a href="{$renditionURL}"><xsl:value-of select="$renditionKind"></xsl:value-of></a></td>
+									<td class="tdlinks{$odd}"><xsl:value-of select="cmis:mimetype"></xsl:value-of></td>
+									<td class="tdlinks{$odd}"><xsl:value-of select="cmis:length"></xsl:value-of></td>
+									<td class="tdlinks{$odd}"><xsl:value-of select="cmis:height"></xsl:value-of></td>
+									<td class="tdlinks{$odd}"><xsl:value-of select="cmis:width"></xsl:value-of></td>
+								</tr>
+							</xsl:for-each>
+							</table>
 						</td>
 					</tr>
-				</xsl:for-each>
-				<xsl:for-each select="atom:entry/cmisra:type/*[not(*)]">
-					<tr>
-						<td style="font-weight: bold;"><xsl:value-of select="local-name()" /></td>
-						<td><xsl:value-of select="current()" /></td>
-					</tr>
-				</xsl:for-each>
-				<xsl:if test="atom:entry/cmisra:pathSegment">
-					<tr>
-						<td style="font-weight: bold; font-style:italic;">Path Segment</td>
-						<td style="font-style:italic;"><xsl:value-of select="atom:entry/cmisra:pathSegment" /></td>
-					</tr>
-				</xsl:if>
 				</table>
-
-				<xsl:if test="atom:entry/cmisra:type">
-					<h2>Property Definitions</h2>
-					<xsl:for-each select="atom:entry/cmisra:type/*[*]">
-						<h3><xsl:value-of select="cmis:id"/></h3>
-						<table class="entrytable">
-						<xsl:for-each select="*">
-							<tr>
-								<td><xsl:value-of select="local-name()" /></td>
-								<td><xsl:value-of select="current()" /></td>
-							</tr>
-						</xsl:for-each>
-						</table>
-					</xsl:for-each>
 				</xsl:if>
 			</body>
 		</html>

@@ -463,7 +463,7 @@
 
    <servlet>
       <servlet-name>CMISFileShareServlet</servlet-name>
-      <servlet-class>org.apache.opencmis.browser.BrowseServlet</servlet-class>
+      <servlet-class>org.apache.chemistry.opencmis.browser.BrowseServlet</servlet-class>
       <init-param>
          <param-name>auxroot</param-name>
          <param-value>cmisfs/browser/</param-value>
@@ -495,6 +495,18 @@
       <init-param>
          <param-name>stylesheet:application/cmisacl+xml</param-name>
          <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:renditions</param-name>
+         <param-value>/cmisfs/stylesheets/renditions.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:relationships</param-name>
+         <param-value>/cmisfs/stylesheets/relationships.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:thumbnails</param-name>
+         <param-value>/cmisfs/stylesheets/thumbnails.xsl</param-value>
       </init-param>
    </servlet>
 

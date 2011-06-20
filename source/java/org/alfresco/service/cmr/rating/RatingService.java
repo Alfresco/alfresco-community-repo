@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Neil McErlean
  * @since 3.4
  */
-@PublicService
 public interface RatingService
 {
     /**

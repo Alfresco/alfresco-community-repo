@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Andy Hind
  */
-@PublicService
 public interface AuthorityService
 {   
     /**

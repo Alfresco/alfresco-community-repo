@@ -30,11 +30,32 @@
         <property name="auditDAO" ref="auditDAO"/>
         <property name="auditModelRegistry" ref="Audit"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
+	    <property name="auditFilter">
+		    <bean class="org.alfresco.repo.audit.PropertyAuditFilter">
+		        <property name="properties" ref="global-properties" />
+		    </bean>
+	    </property>
     </bean>
+    
+    <!--  Access Auditor -->
+
+   <bean id="accessAuditor" class="org.alfresco.repo.audit.access.AccessAuditor">
+       <property name="properties" ref="global-properties" />
+       <property name="policyComponent" ref="policyComponent" />
+       <property name="auditComponent" ref="auditComponent" />
+       <property name="transactionService" ref="transactionService" />
+       <property name="namespaceService" ref="namespaceService" />
+       <property name="nodeInfoFactory">
+           <bean class="org.alfresco.repo.audit.access.NodeInfoFactory">
+               <constructor-arg ref="nodeService" />
+               <constructor-arg ref="namespaceService" />
+           </bean>
+       </property>
+   </bean>
     
     <!-- Public service identifier -->
     
-    <bean id="publicServiceIdentifier" class="org.alfresco.repo.audit.PublicServiceIdentifierImpl"/>
+    <bean id="beanIdentifier" class="org.alfresco.repo.audit.BeanIdentifierImpl"/>
     
     <!--                           -->
     <!-- Audit V3.2 implementation -->
@@ -74,7 +95,7 @@
         <property name="personService" ref="personService" />
         <property name="nodeService" ref="nodeService" />
     </bean>
-
+   
     <!-- Reference in the audit registry managed bean -->
     <alias name="Audit" alias="auditModel.modelRegistry"/>
       

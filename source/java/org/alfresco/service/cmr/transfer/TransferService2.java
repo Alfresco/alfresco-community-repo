@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,6 @@ import org.alfresco.service.PublicService;
  * 
  * @author davidc
  */
-@PublicService
 public interface TransferService2
 {
 

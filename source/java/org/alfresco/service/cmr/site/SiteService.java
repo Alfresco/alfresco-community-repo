@@ -36,7 +36,6 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-@PublicService
 public interface SiteService
 {
     static String DOCUMENT_LIBRARY = "documentLibrary";

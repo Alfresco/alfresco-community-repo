@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1568,6 +1568,9 @@ public class AVMServiceImpl implements AVMService
                 removeNode(newPath);
                 existing = null;
             }
+            
+            Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc);
+            
             if (existing == null)
             {
                 createDirectory(path, name);
@@ -1577,7 +1580,7 @@ public class AVMServiceImpl implements AVMService
                     setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getAclCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
                 }
             }
-            Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 
+            
             for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
             {
                 recursiveCopy(version, entry.getValue(), newPath, entry.getKey()); 

@@ -31,8 +31,8 @@
     <!-- AuditMethodInterceptor -->
 
     <bean id="AuditMethodInterceptor" class="org.alfresco.repo.audit.AuditMethodInterceptor">
-        <property name="publicServiceIdentifier">
-            <ref bean="publicServiceIdentifier"/>
+        <property name="beanIdentifier">
+            <ref bean="beanIdentifier"/>
         </property>
         <property name="auditComponent">
             <ref bean="auditComponent"/>

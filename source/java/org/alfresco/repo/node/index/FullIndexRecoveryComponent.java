@@ -19,7 +19,6 @@
 package org.alfresco.repo.node.index;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -319,6 +318,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     }
     
     private static final int MAX_TRANSACTIONS_PER_ITERATION = 1000;
+    private static final long MIN_SAMPLE_TIME = 10000L;
     private void performFullRecovery()
     {
         RetryingTransactionCallback<Void> deleteWork = new RetryingTransactionCallback<Void>()
@@ -346,11 +346,19 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         
         // count the transactions
         int processedCount = 0;
-        long fromTimeInclusive = Long.MIN_VALUE;
-        long toTimeExclusive = Long.MAX_VALUE;
-        List<Long> lastTxnIds = Collections.<Long>emptyList();
+        long fromTimeInclusive = nodeDAO.getMinTxnCommitTime();
+        long maxToTimeExclusive = nodeDAO.getMaxTxnCommitTime() + 1;
+        // Our first sample will be 10 seconds long (as we often hit 'fake' transactions with time zero). We'll rebalance intervals from there...
+        long toTimeExclusive = fromTimeInclusive + MIN_SAMPLE_TIME;       
+        long sampleStartTimeInclusive = fromTimeInclusive;
+        long sampleEndTimeExclusive = -1;
+        long txnsPerSample = 0;
+        List<Long> lastTxnIds = new ArrayList<Long>(MAX_TRANSACTIONS_PER_ITERATION);
         while(true)
-        {
+        {            
+
+            boolean startedSampleForQuery = false;
+
             List<Transaction> nextTxns = nodeDAO.getTxnsByCommitTimeAscending(
                     fromTimeInclusive,
                     toTimeExclusive,
@@ -358,7 +366,16 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                     lastTxnIds,
                     false);
 
-            lastTxnIds = new ArrayList<Long>(nextTxns.size());
+            // have we finished?
+            if (nextTxns.size() == 0)
+            {
+                if (toTimeExclusive >= maxToTimeExclusive)
+                {
+                    // there are no more
+                    break;
+                }
+            }
+
             // reindex each transaction
             List<Long> txnIdBuffer = new ArrayList<Long>(maxTransactionsPerLuceneCommit);
             Iterator<Transaction> txnIterator = nextTxns.iterator();
@@ -366,8 +383,27 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             {
                 Transaction txn = txnIterator.next();
                 Long txnId = txn.getId();
-                // Keep it to ensure we exclude it from the next iteration
+                // Remember the IDs of the last simultaneous transactions so they can be excluded from the next query
+                long txnCommitTime = txn.getCommitTimeMs();
+                if (lastTxnIds.isEmpty() || txnCommitTime != fromTimeInclusive)
+                {                    
+					if (!startedSampleForQuery)
+                    {
+                        sampleStartTimeInclusive = txnCommitTime;
+						sampleEndTimeExclusive = -1;
+                        txnsPerSample = 0;
+                        startedSampleForQuery = true;
+                    }
+                    else
+					{
+					    txnsPerSample += lastTxnIds.size();
+						sampleEndTimeExclusive = txnCommitTime;
+					}
+                    lastTxnIds.clear();
+					fromTimeInclusive = txnCommitTime;
+                }
                 lastTxnIds.add(txnId);
+                    
                 // check if we have to terminate
                 if (isShuttingDown())
                 {
@@ -399,11 +435,8 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                         // Clear the buffer
                         txnIdBuffer = new ArrayList<Long>(maxTransactionsPerLuceneCommit);
                     }
-                }
-                // Although we use the same time as this transaction for the next iteration, we also
-                // make use of the exclusion list to ensure that it doesn't get pulled back again.
-                fromTimeInclusive = txn.getCommitTimeMs();
-                
+                }                
+
                 // dump a progress report every 10% of the way
                 double before = (double) processedCount / (double) txnCount * 10.0;     // 0 - 10 
                 processedCount++;
@@ -419,12 +452,31 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             // Wait for the asynchronous process to catch up
             waitForAsynchronousReindexing();
             
-            // have we finished?
-            if (nextTxns.size() == 0)
+            // Move the start marker on and extend the sample time if we have completed results
+            if (nextTxns.size() < MAX_TRANSACTIONS_PER_ITERATION)
             {
-                // there are no more
-                break;
+                // Move past the query end
+				if (!lastTxnIds.isEmpty())
+				{
+				    txnsPerSample += lastTxnIds.size();
+	                lastTxnIds.clear();
+				}
+                fromTimeInclusive = toTimeExclusive;
+                sampleEndTimeExclusive = toTimeExclusive;
             }
+            
+            // Move the end marker on based on the current transaction rate
+            long sampleTime;
+            if (txnsPerSample == 0)
+            {
+                sampleTime = MIN_SAMPLE_TIME;
+            }
+            else
+            {
+                sampleTime = Math.max(MIN_SAMPLE_TIME, MAX_TRANSACTIONS_PER_ITERATION
+                        * (sampleEndTimeExclusive - sampleStartTimeInclusive) / txnsPerSample);
+            }
+            toTimeExclusive = fromTimeInclusive + sampleTime;
         }
         // done
         String msgDone = I18NUtil.getMessage(MSG_RECOVERY_COMPLETE);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,6 @@ import org.alfresco.service.NotAuditable;
  * @author Nick Smith
  * @author Neil McErlean
  */
-@PublicService
 public interface RenditionService extends RenditionDefinitionPersister
 {
     /**

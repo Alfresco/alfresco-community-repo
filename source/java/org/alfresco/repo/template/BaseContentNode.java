@@ -617,7 +617,7 @@ public abstract class BaseContentNode implements TemplateContent
                 ContentReader reader = contentService.getReader(getNodeRef(), property);
                 
                 // get the writer and set it up for text convert
-                ContentWriter writer = contentService.getWriter(null, ContentModel.PROP_CONTENT, true);
+                ContentWriter writer = contentService.getTempWriter();
                 writer.setMimetype("text/plain"); 
                 writer.setEncoding(reader.getEncoding());
                 

@@ -43,7 +43,6 @@ import org.alfresco.util.Pair;
  * 
  * @author Andy Hind
  */
-@PublicService
 public interface PersonService
 {
     /**

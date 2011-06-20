@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1561,6 +1561,38 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace();
             throw e;
+        }
+    }
+    
+    public void testCopy_ALF_835() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "www");
+            
+            AVMNodeDescriptor desc = fService.lookup(-1, "mainA:/a/www");
+            assertTrue(desc.isDirectory());
+            
+            desc = fService.lookup(-1, "mainA:/a/www/www");
+            assertNull(desc);
+            
+            // copy empty directory into itself
+            fService.copy(-1, "mainA:/a/www", "mainA:/a/www", "www");
+            
+            desc = fService.lookup(-1, "mainA:/a/www/www");
+            assertTrue(desc.isDirectory());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
         }
     }
 

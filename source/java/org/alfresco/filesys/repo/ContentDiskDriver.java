@@ -2566,6 +2566,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
                         if (permissionService.hasPermission((NodeRef) finalFileState.getFilesystemObject(), PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED)
                         { 
+                            nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
                             Date modifyDate = new Date(finalFileState.getModifyDateTime());
                             nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
                             

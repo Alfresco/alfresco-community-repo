@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -89,7 +89,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
     
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptor.class);
 
-    private PublicServiceIdentifier publicServiceIdentifier;
+    private BeanIdentifier beanIdentifier;
     private AuditComponent auditComponent;
     private TransactionService transactionService;
     
@@ -112,9 +112,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
         logger.warn("Property 'useNewConfig' is no longer used.");
     }
 
-    public void setPublicServiceIdentifier(PublicServiceIdentifier serviceIdentifier)
+    public void setBeanIdentifier(BeanIdentifier beanIdentifier)
     {
-        this.publicServiceIdentifier = serviceIdentifier;
+        this.beanIdentifier = beanIdentifier;
     }
 
     public void setAuditComponent(AuditComponent auditComponent)
@@ -185,7 +185,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             Object[] args = mi.getArguments();
             Map<String, Serializable> namedArguments = getInvocationArguments(auditableDef, args);
             // Get the service name
-            String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
+            String serviceName = beanIdentifier.getBeanName(mi);
             if (serviceName == null)
             {
                 // Not a public service
@@ -338,10 +338,22 @@ public class AuditMethodInterceptor implements MethodInterceptor
             final String methodName,
             final Map<String, Serializable> namedArguments)
     {
-        final String rootPath = AuditApplication.buildPath(AUDIT_PATH_API_PRE, serviceName, methodName, AUDIT_SNIPPET_ARGS);
+        String rootPath;
+        Map<String, Serializable> auditData;
+        if (namedArguments == null || namedArguments.isEmpty())
+        {
+            rootPath = AuditApplication.buildPath(AUDIT_PATH_API_PRE, serviceName, methodName);
+            auditData = new HashMap<String, Serializable>(1);
+            auditData.put(AUDIT_SNIPPET_ARGS, null);
+        }
+        else
+        {
+            rootPath = AuditApplication.buildPath(AUDIT_PATH_API_PRE, serviceName, methodName, AUDIT_SNIPPET_ARGS);
+            auditData = namedArguments;
+        }
         
         // Audit in a read-write txn
-        Map<String, Serializable> auditedData = auditComponent.recordAuditValues(rootPath, namedArguments);
+        Map<String, Serializable> auditedData = auditComponent.recordAuditValues(rootPath, auditData);
         // Done
         if (logger.isDebugEnabled() && auditedData.size() > 0)
         {
@@ -369,13 +381,20 @@ public class AuditMethodInterceptor implements MethodInterceptor
         final String rootPath = AuditApplication.buildPath(AUDIT_PATH_API_POST, serviceName, methodName);
         
         final Map<String, Serializable> auditData = new HashMap<String, Serializable>(23);
-        for (Map.Entry<String, Serializable> entry : namedArguments.entrySet())
+        if (namedArguments.isEmpty())
         {
-            String argName = entry.getKey();
-            Serializable argValue = entry.getValue();
-            auditData.put(
-                    AuditApplication.buildPath(AUDIT_SNIPPET_ARGS, argName),
-                    argValue);
+            auditData.put(AUDIT_SNIPPET_ARGS, null);
+        }
+        else
+        {
+            for (Map.Entry<String, Serializable> entry : namedArguments.entrySet())
+            {
+                String argName = entry.getKey();
+                Serializable argValue = entry.getValue();
+                auditData.put(
+                        AuditApplication.buildPath(AUDIT_SNIPPET_ARGS, argName),
+                        argValue);
+            }
         }
         if (ret != null)
         {

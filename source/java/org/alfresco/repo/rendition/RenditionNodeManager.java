@@ -333,7 +333,12 @@ public class RenditionNodeManager
         }
         else
         {
-            result = createNewRendition(renditionName);
+            QName nodeType = null;
+            if (null != tempRenditionNode)
+            {
+                nodeType = nodeService.getType(tempRenditionNode);
+            }
+            result = createNewRendition(renditionName, nodeType);
         }
         
         if (logger.isDebugEnabled())
@@ -375,15 +380,19 @@ public class RenditionNodeManager
      * a child of the source node.
      * 
      * @param renditionName
+     * @param nodeTypeQName
      * @return the primary parent association of the newly created rendition node.
      */
-    private ChildAssociationRef createNewRendition(QName renditionName)
+    private ChildAssociationRef createNewRendition(QName renditionName, QName nodeTypeQName)
     {
         NodeRef parentRef = location.getParentRef();
         boolean parentIsSource = parentRef.equals(sourceNode);
         QName renditionType = RenditionModel.ASSOC_RENDITION;
         QName assocTypeQName = parentIsSource ? renditionType : ContentModel.ASSOC_CONTAINS;
-        QName nodeTypeQName = ContentModel.TYPE_CONTENT;
+        if (null == nodeTypeQName)
+        {
+            nodeTypeQName = ContentModel.TYPE_CONTENT;
+        }
         
         QName assocName = getAssociationName(parentIsSource, renditionName);
         
@@ -482,9 +491,12 @@ public class RenditionNodeManager
             logger.debug(msg.toString());
         }
 
-        // Copy the type from the temporary rendition to the real rendition
+        // Copy the type from the temporary rendition to the real rendition, if required
         QName type = nodeService.getType(tempRenditionNode);
-        nodeService.setType(targetNode, type);
+        if ((null != type) && !type.equals(nodeService.getType(targetNode)))
+        {
+            nodeService.setType(targetNode, type);
+        }
         
         // Copy over all regular properties from the temporary rendition
         Map<QName, Serializable> newProps = new HashMap<QName, Serializable>();

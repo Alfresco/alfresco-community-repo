@@ -67,15 +67,12 @@
 		<property name="batchSize">
 		    <value>50</value>
 		</property>
-		<property name="maxQueueLength">
-			<value>1000</value>
-		</property>
 		<property name="transactionService">
 			<ref bean="transactionService"/>
 		</property>
-        <property name="controlDAO">
-            <ref bean="controlDAO" />
-        </property>
+		<property name="jobLockService">
+			<ref bean="jobLockService" /> 
+		</property>
 	</bean>
 
 	<bean id="createStoreTxnListener" class="org.alfresco.repo.avm.CreateStoreTxnListener"/>

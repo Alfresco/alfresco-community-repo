@@ -36,7 +36,7 @@ public class PurgeTestP extends AVMServiceTestBase
     {
         super.setUp();
         
-        runOrphanReaper(1000, 1000, 0);
+        runOrphanReaper(1000, 0);
     }
     
     public void testRemoveNodes() throws Throwable
@@ -191,21 +191,16 @@ public class PurgeTestP extends AVMServiceTestBase
     private void runOrphanReaper()
     {
         // use configured defaults (eg. 50, 1000, 1000)
-        runOrphanReaper(-1, -1, -1);
+        runOrphanReaper(-1, -1);
     }
     
-    private void runOrphanReaper(int batchSize, int maxQueueLength, int activeBaseSleep)
+    private void runOrphanReaper(int batchSize, int activeBaseSleep)
     {
         logger.info("Reaper started");
         
         if (batchSize != -1)
         {
             fReaper.setBatchSize(batchSize);
-        }
-        
-        if (maxQueueLength != -1)
-        {
-            fReaper.setMaxQueueLength(maxQueueLength);
         }
         
         if (activeBaseSleep != -1)
@@ -243,11 +238,6 @@ public class PurgeTestP extends AVMServiceTestBase
         if (batchSize != -1)
         {
             fReaper.setBatchSize(50);
-        }
-        
-        if (maxQueueLength != -1)
-        {
-            fReaper.setMaxQueueLength(1000);
         }
         
         if (activeBaseSleep != -1)

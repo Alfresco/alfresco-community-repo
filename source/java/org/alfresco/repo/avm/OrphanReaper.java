@@ -18,20 +18,21 @@
 
 package org.alfresco.repo.avm;
 
-import java.sql.Savepoint;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
-import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.permissions.Acl;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * This is the background thread for reaping no longer referenced nodes in the AVM repository. These orphans arise from
@@ -107,13 +108,14 @@ public class OrphanReaper
 
     private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
 
+    private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "OrphanReaper");
+    private JobLockService jobLockService;
+
     /**
      * The Transaction Service
      */
     private TransactionService fTransactionService;
     
-    private ControlDAO controlDAO;
-
     /**
      * Active base sleep interval.
      */
@@ -129,16 +131,6 @@ public class OrphanReaper
      */
     private boolean fActive;
 
-    /**
-     * The maximum length of the queue.
-     */
-    private int fQueueLength;
-
-    /**
-     * The linked list containing ids of nodes that are purgable.
-     */
-    private LinkedList<Long> fPurgeQueue;
-
     private boolean fDone = false;
 
     private boolean fRunning = false;
@@ -150,7 +142,6 @@ public class OrphanReaper
     {
         fActiveBaseSleep = 1000;
         fBatchSize = 50;
-        fQueueLength = 1000;
         fActive = false;
     }
 
@@ -190,19 +181,11 @@ public class OrphanReaper
     }
 
     /**
-     * Set the maximum size of the queue of purgeable nodes.
-     * 
-     * @param queueLength
-     *            The max length.
+     * @param jobLockService service used to ensure that reaper runs are not duplicated
      */
-    public void setMaxQueueLength(int queueLength)
+    public void setJobLockService(JobLockService jobLockService)
     {
-        fQueueLength = queueLength;
-    }
-    
-    public void setControlDAO(ControlDAO controlDAO)
-    {
-        this.controlDAO = controlDAO;
+        this.jobLockService = jobLockService;
     }
 
     /**
@@ -220,6 +203,38 @@ public class OrphanReaper
     {
         fDone = true;
     }
+
+    /**
+     * Attempts to get the lock. If the lock couldn't be taken, then <tt>null</tt> is returned.
+     * 
+     * @return Returns the lock token or <tt>null</tt>
+     */
+    private String getLock(long time)
+    {
+        try
+        {
+            return jobLockService.getLock(LOCK, time);
+        }
+        catch (LockAcquisitionException e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Attempts to get the lock. If it fails, the current transaction is marked for rollback.
+     * 
+     * @return Returns the lock token
+     */
+    private void refreshLock(String lockToken, long time)
+    {
+        if (lockToken == null)
+        {
+            throw new IllegalArgumentException("Must provide existing lockToken");
+        }
+        jobLockService.refreshLock(lockToken, LOCK, time);
+    }
+
 
     /**
      * Sit in a loop, periodically querying for orphans. When orphans are found, unhook them in bite sized batches.
@@ -270,14 +285,21 @@ public class OrphanReaper
         {
             public Object execute() throws Exception
             {
+                String lockToken = getLock(20000L);
+                if (lockToken == null)
+                {
+                    fgLogger.warn("Can't get lock. Assume multiple reapers ...");
+                    fActive = false;
+                    return null;
+                }
+
                 if (fgLogger.isTraceEnabled())
                 {
-                    fgLogger.trace("Orphan reaper doBatch: batchSize="+fBatchSize+", maxQueueLength="+fQueueLength+", fActiveBaseSleep="+fActiveBaseSleep);
+                    fgLogger.trace("Orphan reaper doBatch: batchSize="+fBatchSize+", fActiveBaseSleep="+fActiveBaseSleep);
                 }
                 
-                if (fPurgeQueue == null)
-                {
-                    List<AVMNode> nodes = AVMDAOs.Instance().fAVMNodeDAO.getOrphans(fQueueLength);
+                    refreshLock(lockToken, fBatchSize * 100L);
+                    List<AVMNode> nodes = AVMDAOs.Instance().fAVMNodeDAO.getOrphans(fBatchSize);
                     if (nodes.size() == 0)
                     {
                         if (fgLogger.isTraceEnabled())
@@ -289,7 +311,8 @@ public class OrphanReaper
                         return null;
                     }
                     
-                    fPurgeQueue = new LinkedList<Long>();
+                    refreshLock(lockToken, nodes.size() * 100L);
+                    LinkedList<Long> fPurgeQueue = new LinkedList<Long>();
                     for (AVMNode node : nodes)
                     {
                         fPurgeQueue.add(node.getId());
@@ -299,14 +322,6 @@ public class OrphanReaper
                     {
                         fgLogger.debug("Queue was empty so got more orphans from DB. Orphan queue size = "+fPurgeQueue.size());
                     }
-                }
-                else
-                {
-                    if (fgLogger.isDebugEnabled())
-                    {
-                        fgLogger.debug("Queue was not empty. Orphan queue size = "+fPurgeQueue.size());
-                    }
-                }
                 
                 fActive = true;
                 
@@ -327,16 +342,9 @@ public class OrphanReaper
                         break;
                     }
                     
+                        refreshLock(lockToken, 10000L);
                     Long nodeId = fPurgeQueue.removeFirst();
                     AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeId);
-                    if (node == null)
-                    {
-                        // eg. cluster, multiple reapers
-                        
-                        fgLogger.warn("Node ["+nodeId+"] not found - assume multiple reapers ...");
-                        
-                        continue;
-                    }
                     
                     // Save away the ancestor and merged from fields from this node.
                     
@@ -418,30 +426,13 @@ public class OrphanReaper
                         }
                     }
                     
-                    Savepoint savepoint = controlDAO.createSavepoint("OrphanReaper");
-                    
-                    try
-                    {
                         // Finally, delete it
                         AVMDAOs.Instance().fAVMNodeDAO.delete(node);
-                        controlDAO.releaseSavepoint(savepoint);
                         
                         if (fgLogger.isTraceEnabled())
                         {
                             fgLogger.trace("Deleted Node ["+node.getId()+"]");
                         }
-                    }
-                    catch (ConcurrencyFailureException e)
-                    {
-                        // Since we are deleting the row, it doesn't matter
-                        // if it is deleted here or not.
-                        controlDAO.rollbackToSavepoint(savepoint);
-                        
-                        if (fgLogger.isTraceEnabled())
-                        {
-                            fgLogger.trace("Node already deleted ["+node.getId()+"]");
-                        }
-                    }
                     
                     reapCnt++;
                 }

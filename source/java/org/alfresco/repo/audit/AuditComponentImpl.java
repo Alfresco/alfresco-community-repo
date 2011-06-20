@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -71,6 +71,7 @@ public class AuditComponentImpl implements AuditComponent
     private PropertyValueDAO propertyValueDAO;
     private AuditDAO auditDAO;
     private TransactionService transactionService;
+    private AuditFilter auditFilter;
     
     /**
      * Default constructor
@@ -112,6 +113,14 @@ public class AuditComponentImpl implements AuditComponent
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    /**
+     * Set the component used to filter which audit events to record
+     */
+    public void setAuditFilter(AuditFilter auditFilter)
+    {
+        this.auditFilter = auditFilter;
     }
 
     /**
@@ -487,7 +496,7 @@ public class AuditComponentImpl implements AuditComponent
         ParameterCheck.mandatory("rootPath", rootPath);
         AuditApplication.checkPathFormat(rootPath);
         
-        if (values == null || values.isEmpty() || !areAuditValuesRequired())
+        if (values == null || values.isEmpty() || !areAuditValuesRequired() || !auditFilter.accept(rootPath, values))
         {
             return Collections.emptyMap();
         }

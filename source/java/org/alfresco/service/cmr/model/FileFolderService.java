@@ -42,7 +42,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Derek Hulley
  */
-@PublicService
 public interface FileFolderService
 {
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,7 +30,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author janv
  * @since 2.9, 3.0
  */
-@PublicService
 public interface UsageService
 {
     /**

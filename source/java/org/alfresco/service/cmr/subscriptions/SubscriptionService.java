@@ -144,7 +144,7 @@ public interface SubscriptionService
     int getFollowersCount(String userId);
 
     /**
-     * Follows another
+     * Follows a user.
      * 
      * @param userId
      *            the id of the user
@@ -154,6 +154,14 @@ public interface SubscriptionService
     @Auditable(parameters = { "userId", "userToFollow" })
     void follow(String userId, String userToFollow);
 
+    /**
+     * Unfollows a user.
+     * 
+     * @param userId
+     *            the id of the user
+     * @param userToUnfollow
+     *            the id of the user to unfollow
+     */
     @Auditable(parameters = { "userId", "userToUnfollow" })
     void unfollow(String userId, String userToUnfollow);
 
@@ -191,4 +199,10 @@ public interface SubscriptionService
      */
     @NotAuditable
     boolean isSubscriptionListPrivate(String userId);
+
+    /**
+     * Returns if subscription are enabled for this system.
+     */
+    @NotAuditable
+    boolean subscriptionsEnabled();
 }

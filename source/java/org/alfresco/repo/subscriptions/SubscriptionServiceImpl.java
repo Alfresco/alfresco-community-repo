@@ -19,7 +19,6 @@
 package org.alfresco.repo.subscriptions;
 
 import java.io.Serializable;
-import java.util.Collections;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -32,12 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
-import org.alfresco.service.cmr.subscriptions.PagingFollowingResultsImpl;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResults;
-import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResultsImpl;
 import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
 import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
+import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -93,16 +91,11 @@ public class SubscriptionServiceImpl implements SubscriptionService
         this.activityService = activictyService;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public PagingSubscriptionResults getSubscriptions(String userId, SubscriptionItemTypeEnum type,
             PagingRequest pagingRequest)
     {
-        if (!subscriptionsEnabled())
-        {
-            return new PagingSubscriptionResultsImpl(Collections.EMPTY_LIST, false, 0);
-        }
-
+        checkEnabled();
         checkRead(userId);
         return subscriptionsDAO.selectSubscriptions(userId, type, pagingRequest);
     }
@@ -110,22 +103,15 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public int getSubscriptionCount(String userId, SubscriptionItemTypeEnum type)
     {
-        if (!subscriptionsEnabled())
-        {
-            return 0;
-        }
-
+        checkEnabled();
+        checkRead(userId);
         return subscriptionsDAO.countSubscriptions(userId, type);
     }
 
     @Override
     public void subscribe(String userId, NodeRef node)
     {
-        if (!subscriptionsEnabled())
-        {
-            return;
-        }
-
+        checkEnabled();
         checkWrite(userId);
         checkUserNode(node);
         subscriptionsDAO.insertSubscription(userId, node);
@@ -152,11 +138,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public void unsubscribe(String userId, NodeRef node)
     {
-        if (!subscriptionsEnabled())
-        {
-            return;
-        }
-
+        checkEnabled();
         checkWrite(userId);
         subscriptionsDAO.deleteSubscription(userId, node);
     }
@@ -164,75 +146,47 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public boolean hasSubscribed(String userId, NodeRef node)
     {
-        if (!subscriptionsEnabled())
-        {
-            return false;
-        }
-
+        checkEnabled();
         checkRead(userId);
         return subscriptionsDAO.hasSubscribed(userId, node);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public PagingFollowingResults getFollowing(String userId, PagingRequest pagingRequest)
     {
-        if (!subscriptionsEnabled())
-        {
-            return new PagingFollowingResultsImpl(Collections.EMPTY_LIST, false, 0);
-        }
-
+        checkEnabled();
         checkRead(userId);
         return subscriptionsDAO.selectFollowing(userId, pagingRequest);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public PagingFollowingResults getFollowers(String userId, PagingRequest pagingRequest)
     {
-        if (!subscriptionsEnabled())
-        {
-            return new PagingFollowingResultsImpl(Collections.EMPTY_LIST, false, 0);
-        }
-
-        if (userId == null)
-        {
-            throw new IllegalArgumentException("User Id may not be null!");
-        }
-
+        checkEnabled();
+        checkRead(userId);
         return subscriptionsDAO.selectFollowers(userId, pagingRequest);
     }
 
     @Override
     public int getFollowersCount(String userId)
     {
-        if (!subscriptionsEnabled())
-        {
-            return 0;
-        }
-
+        checkEnabled();
+        checkRead(userId);
         return subscriptionsDAO.countFollowers(userId);
     }
 
     @Override
     public int getFollowingCount(String userId)
     {
-        if (!subscriptionsEnabled())
-        {
-            return 0;
-        }
-
+        checkEnabled();
+        checkRead(userId);
         return getSubscriptionCount(userId, SubscriptionItemTypeEnum.USER);
     }
 
     @Override
     public void follow(String userId, String userToFollow)
     {
-        if (!subscriptionsEnabled())
-        {
-            return;
-        }
-
+        checkEnabled();
         checkWrite(userId);
         subscriptionsDAO.insertSubscription(userId, getUserNodeRef(userToFollow));
 
@@ -258,11 +212,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public void unfollow(String userId, String userToUnfollow)
     {
-        if (!subscriptionsEnabled())
-        {
-            return;
-        }
-
+        checkEnabled();
         checkWrite(userId);
         subscriptionsDAO.deleteSubscription(userId, getUserNodeRef(userToUnfollow));
     }
@@ -270,11 +220,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public boolean follows(String userId, String userToFollow)
     {
-        if (!subscriptionsEnabled())
-        {
-            return false;
-        }
-
+        checkEnabled();
         checkRead(userId);
         return subscriptionsDAO.hasSubscribed(userId, getUserNodeRef(userToFollow));
     }
@@ -282,6 +228,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public void setSubscriptionListPrivate(String userId, boolean isPrivate)
     {
+        checkEnabled();
         checkWrite(userId);
         nodeService.setProperty(getUserNodeRef(userId), ContentModel.PROP_SUBSCRIPTIONS_PRIVATE, isPrivate);
     }
@@ -289,6 +236,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
     @Override
     public boolean isSubscriptionListPrivate(String userId)
     {
+        checkEnabled();
+
         if (userId == null)
         {
             throw new IllegalArgumentException("User Id may not be null!");
@@ -309,9 +258,21 @@ public class SubscriptionServiceImpl implements SubscriptionService
         return true;
     }
 
-    protected boolean subscriptionsEnabled()
+    @Override
+    public boolean subscriptionsEnabled()
     {
         return true;
+    }
+
+    /**
+     * Checks if the subscription service is enabled.
+     */
+    protected void checkEnabled()
+    {
+        if (!subscriptionsEnabled())
+        {
+            throw new SubscriptionsDisabledException("subscription_service.err.disabled");
+        }
     }
 
     /**

@@ -681,7 +681,8 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
     }
     
     @Test
-    public void testGetWorkflowImage() {
+    public void testGetWorkflowImage() 
+    {
         WorkflowDefinition definitionWithoutImage = deployTestAdhocDefinition();
         WorkflowDefinition definitionWithImage = deployTestDiagramDefinition();
         
@@ -689,12 +690,14 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         ProcessInstance processInstance = runtime.startProcessInstanceById(BPMEngineRegistry.getLocalId(definitionWithoutImage.getId()));
         String worklfowId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, processInstance.getId());
         
+        assertFalse(workflowEngine.hasWorkflowImage(worklfowId));
         assertNull(workflowEngine.getWorkflowImage(worklfowId));
         
         // Start process-instance that SHOULD have an image
         ProcessInstance processInstanceWithImage = runtime.startProcessInstanceById(BPMEngineRegistry.getLocalId(definitionWithImage.getId()));
         String worklfowWithImageId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, processInstanceWithImage.getId());
         
+        assertTrue(workflowEngine.hasWorkflowImage(worklfowWithImageId));
         assertNotNull(workflowEngine.getWorkflowImage(worklfowWithImageId));
     }
     

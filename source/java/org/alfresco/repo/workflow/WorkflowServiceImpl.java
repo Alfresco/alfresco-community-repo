@@ -556,6 +556,19 @@ public class WorkflowServiceImpl implements WorkflowService
     /*
      * (non-Javadoc)
      * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#hasWorkflowImage(
+     * java.lang.String)
+     */
+    public boolean hasWorkflowImage(String workflowInstanceId)
+    {
+        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceId);
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.hasWorkflowImage(workflowInstanceId);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see
      * org.alfresco.service.cmr.workflow.WorkflowService#getWorkflowImage(
      * java.lang.String)
      */

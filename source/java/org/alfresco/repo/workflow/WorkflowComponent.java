@@ -249,6 +249,15 @@ public interface WorkflowComponent
     public List<WorkflowTimer> getTimers(String workflowId);
     
     /**
+     * Determines if a graphical view of the workflow instance exists
+     * 
+     * @param workflowInstanceId  the workflow instance id
+     * @return true if there is a workflow instance diagram available
+     * @since 4.0
+     */
+    public boolean hasWorkflowImage(String workflowInstanceId);
+    
+    /**
      * Gets a graphical view of the workflow instance
      * 
      * @param workflowInstanceId  the workflow instance id

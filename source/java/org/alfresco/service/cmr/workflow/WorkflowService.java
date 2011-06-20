@@ -308,6 +308,16 @@ public interface WorkflowService
     public WorkflowTask getStartTask(String workflowInstanceId);
 
     /**
+     * Determines if a graphical view of the workflow instance exists
+     * 
+     * @param workflowInstanceId  the workflow instance id
+     * @return true if there is a workflow instance diagram available
+     * @since 4.0
+     */
+    @Auditable(parameters = {"workflowInstanceId"})
+    public boolean hasWorkflowImage(String workflowInstanceId);
+    
+    /**
      * Gets a graphical view of the workflow instance
      * 
      * @param workflowInstanceId  the workflow instance id

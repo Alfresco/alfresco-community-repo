@@ -1291,6 +1291,17 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     /*
      * (non-Javadoc)
      * 
+     * @see org.alfresco.repo.workflow.WorkflowComponent#hasWorkflowImage(java.lang.String)
+     */
+    public boolean hasWorkflowImage(final String workflowInstanceId)
+    {
+        // we don't support workflow instance diagrams in JBPM so return false
+        return false;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflowImage(java.lang.String)
      */
     public InputStream getWorkflowImage(final String workflowInstanceId)

@@ -1006,6 +1006,32 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      * {@inheritDoc}
      */
     @Override
+    public boolean hasWorkflowImage(String workflowInstanceId)
+    {
+        boolean hasImage = false;
+        
+        String processInstanceId = createLocalId(workflowInstanceId);
+        ExecutionEntity pi = (ExecutionEntity) runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(processInstanceId).singleResult();
+
+        // If the process is finished, there is no diagram available
+        if (pi != null)
+        {
+            // Fetch the process-definition. Not using query API, since the returned
+            // processdefinition isn't initialized with all activities
+            ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repoService)
+                        .getDeployedProcessDefinition(pi.getProcessDefinitionId());
+
+            hasImage = (processDefinition != null && processDefinition.isGraphicalNotationDefined()); 
+        }
+        
+        return hasImage;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public InputStream getWorkflowImage(String workflowInstanceId)
     {
         String processInstanceId = createLocalId(workflowInstanceId);
@@ -1015,8 +1041,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // If the process is finished, there is no diagram available
         if (pi != null)
         {
-            // Fetch the process-definition. Not using query API, since the
-            // returned
+            // Fetch the process-definition. Not using query API, since the returned
             // processdefinition isn't initialized with all activities
             ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repoService)
                         .getDeployedProcessDefinition(pi.getProcessDefinitionId());

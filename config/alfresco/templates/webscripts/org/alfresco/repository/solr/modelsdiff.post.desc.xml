@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Get Model Diffs</shortname>
+  <description>Get a diff of models given parameters passed in.</description>
+  <url>/api/solr/modelsdiff</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+  <args>
+ </args>
+</webscript>

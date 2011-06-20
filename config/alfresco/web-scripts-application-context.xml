@@ -1355,6 +1355,19 @@
       <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
 
+   <bean id="webscript.org.alfresco.repository.solr.model.get"
+         class="org.alfresco.repo.web.scripts.solr.AlfrescoModelGet"
+         parent="webscript">
+      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.solr.modelsdiff.post"
+         class="org.alfresco.repo.web.scripts.solr.AlfrescoModelsDiff"
+         parent="webscript">
+      <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+   </bean>
+   
    <!--                                                                                                       -->
    <!-- Node Locator                                                                                          -->
    <!--                                                                                                       -->

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Follows</shortname>
+  <description>Returns if people follow a person</description>
+  <url>/api/subscriptions/{userid}/follows</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

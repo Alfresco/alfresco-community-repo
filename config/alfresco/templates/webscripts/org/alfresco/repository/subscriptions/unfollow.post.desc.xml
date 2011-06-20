@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Unfollow</shortname>
+  <description>Unfollow a user</description>
+  <url>/api/subscriptions/{userid}/unfollow</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

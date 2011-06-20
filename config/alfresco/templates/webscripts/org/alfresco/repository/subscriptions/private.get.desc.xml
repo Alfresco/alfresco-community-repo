@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Private Following List</shortname>
+  <description>Returns (or sets) if a following list is private</description>
+  <url>/api/subscriptions/{userid}/private</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

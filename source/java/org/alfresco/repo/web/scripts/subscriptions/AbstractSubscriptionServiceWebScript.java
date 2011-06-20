@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
+import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
 import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,17 +67,28 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         try
         {
             String userId = req.getServiceMatch().getTemplateVars().get("userid");
-            JSONObject obj = executeImpl(userId, req, res);
+            Object obj = executeImpl(userId, req, res);
 
-            if (obj == null)
+            if (obj instanceof JSONObject || obj instanceof JSONArray)
             {
-                res.setStatus(204);
+                res.setContentEncoding("UTF-8");
+
+                Writer writer = res.getWriter();
+                if (obj instanceof JSONObject)
+                {
+                    ((JSONObject) obj).write(writer);
+                } else
+                {
+                    ((JSONArray) obj).write(writer);
+                }
+                writer.flush();
             } else
             {
-                Writer writer = res.getWriter();
-                obj.write(writer);
-                writer.flush();
+                res.setStatus(204);
             }
+        } catch (SubscriptionsDisabledException sde)
+        {
+            throw new WebScriptException(400, "Subscription service is disabled!", sde);
         } catch (NoSuchPersonException nspe)
         {
             throw new WebScriptException(400, "Unknown user '" + nspe.getUserName() + "'!", nspe);
@@ -85,12 +97,12 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             throw new WebScriptException(403, "Subscription list is private!", psle);
         } catch (JSONException je)
         {
-            throw new WebScriptException(500, "Unable to serialize JSON!", je);
+            throw new WebScriptException(500, "Unable to parse or serialize JSON!", je);
         }
     }
 
-    public abstract JSONObject executeImpl(String userId, WebScriptRequest req, WebScriptResponse res)
-            throws IOException, JSONException;
+    public abstract Object executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
+            JSONException;
 
     protected int parseNumber(String name, String number, int def)
     {
@@ -141,7 +153,7 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         if (statusTime != null)
         {
             JSONObject statusTimeJson = new JSONObject();
-            statusTimeJson.put("iso8601", ISO8601DateFormat.format(statusTime));            
+            statusTimeJson.put("iso8601", ISO8601DateFormat.format(statusTime));
             result.put("userStatusTime", statusTimeJson);
         }
 

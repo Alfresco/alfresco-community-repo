@@ -25,15 +25,26 @@ import org.json.JSONObject;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
-public class SubscriptionServiceUnfollowGet extends AbstractSubscriptionServiceWebScript
+public class SubscriptionServicePrivateListPut extends SubscriptionServicePrivateListGet
 {
     public JSONObject executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
             JSONException
     {
-        String otherUser = req.getServiceMatch().getTemplateVars().get("otheruserid");
+        JSONObject obj = new JSONObject(req.getContent().getContent());
 
-        subscriptionService.unfollow(userId, otherUser);
+        String setPrivate = obj.getString("private");
 
-        return null;
+        if (setPrivate != null)
+        {
+            if (setPrivate.equalsIgnoreCase("true"))
+            {
+                subscriptionService.setSubscriptionListPrivate(userId, true);
+            } else if (setPrivate.equalsIgnoreCase("false"))
+            {
+                subscriptionService.setSubscriptionListPrivate(userId, false);
+            }
+        }
+
+        return super.executeImpl(userId, req, res);
     }
 }

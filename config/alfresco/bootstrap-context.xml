@@ -85,6 +85,7 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AvmTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
           </list>
        </property>
        <property name="postCreateScriptUrls">

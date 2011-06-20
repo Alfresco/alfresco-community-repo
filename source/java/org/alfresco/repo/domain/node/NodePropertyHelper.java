@@ -371,7 +371,6 @@ public class NodePropertyHelper
         }
     }
 
-    // TODO decrypt TEXT and MLTEXT properties where necessary
     public Map<QName, Serializable> convertToPublicProperties(Map<NodePropertyKey, NodePropertyValue> propertyValues)
     {
         Map<QName, Serializable> propertyMap = new HashMap<QName, Serializable>(propertyValues.size(), 1.0F);

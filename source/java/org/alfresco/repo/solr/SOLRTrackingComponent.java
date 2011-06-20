@@ -19,8 +19,11 @@
 package org.alfresco.repo.solr;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Interface for component to provide tracking data for SOLR.
@@ -84,7 +87,24 @@ public interface SOLRTrackingComponent
 	 * @param callback a callback to receive the results
 	 */
 	public void getNodesMetadata(NodeMetaDataParameters nodeMetaDataParameters, MetaDataResultsFilter resultFilter, NodeMetaDataQueryCallback callback);
-	
+
+	/**
+	 * Returns the Alfresco model given by the name modelName
+	 * 
+	 * @param modelName the name of the model
+     * @return the model plus a checksum
+	 */
+	public AlfrescoModel getModel(QName modelName);
+
+	/**
+	 * Returns a list of diffs representing differences between the current Repository models
+	 * and those passed in the models parameter.
+	 * 
+	 * @param models a set of mappings of model names to checksums
+     * @return a list of diffs between those in the repository and those passed in the models parameter
+	 */
+    public List<AlfrescoModelDiff> getModelDiffs(Map<QName, Long> models);
+
     /**
      * The interface that will be used to give query results to the calling code.
      */

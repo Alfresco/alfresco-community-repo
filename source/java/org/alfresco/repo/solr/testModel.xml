@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd" -->
+<model name="testcm:contentmodel" 
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+   <description>Alfresco Content Domain Model</description>
+   <author>Alfresco</author>
+   <published>2009-06-04</published>
+   <version>1.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/solrtest/1.0" prefix="testcm"/>
+   </namespaces>
+
+   <constraints>
+      <constraint name="testcm:filename" type="REGEX">
+         <parameter name="expression"><value><![CDATA[(.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)]]></value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
+      </constraint>
+      <constraint name="testcm:userNameConstraint" type="org.alfresco.repo.dictionary.constraint.UserNameConstraint" />
+      <constraint name="testcm:authorityNameConstraint" type="org.alfresco.repo.dictionary.constraint.AuthorityNameConstraint" />
+      <constraint name="testcm:storeSelectorConstraint" type="REGISTERED">
+         <parameter name="registeredName"><value>defaultStoreSelector</value></parameter>
+      </constraint>
+   </constraints>
+   
+   <types>
+   
+      <type name="testcm:testobject">
+         <title>Object</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="testcm:name">
+               <title>Name</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+               <constraints>
+                  <constraint ref="testcm:filename" />
+               </constraints>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>testcm:testaspect</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="testcm:folder">
+         <title>Folder</title>
+         <parent>testcm:testobject</parent>
+         <archive>true</archive>
+         <associations>
+            <child-association name="testcm:contains">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>sys:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+               <propagateTimestamps>true</propagateTimestamps>
+            </child-association>
+         </associations>
+      </type>
+      
+      <type name="testcm:content">
+         <title>Content</title>
+         <parent>testcm:testobject</parent>
+         <archive>true</archive>
+         <properties>
+            <property name="testcm:content">
+               <type>d:content</type>
+               <mandatory>false</mandatory>
+               <!-- Although content is marked as indexed atomically it may end up asynchronous -->
+               <!-- if the content conversion will take too long. Content that does not require conversion -->
+               <!-- to UTF8 test/plain will always be indexed atomically -->
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+
+   </types>
+
+   <aspects>
+   
+      <aspect name="testcm:testaspect">
+         <title>Titled</title>
+         <properties>
+            <property name="testcm:title">
+               <title>Title</title>
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="testcm:description">
+               <title>Description</title>
+               <type>d:mltext</type>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+   </aspects>
+
+</model>

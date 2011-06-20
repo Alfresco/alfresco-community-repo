@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
@@ -37,6 +38,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -59,6 +61,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private SOLRDAO solrDAO;
+    private DictionaryDAO dictionaryDAO;
     private PermissionService permissionService;
     private OwnableService ownableService;
     private TenantService tenantService;
@@ -523,6 +526,62 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
  
             rowHandler.processResult(nodeMetaData);
         }
+    }
+   
+    /**
+     * {@inheritDoc}
+     */
+    public AlfrescoModel getModel(QName modelName)
+    {
+        ModelDefinition modelDef = dictionaryService.getModel(modelName);
+        return (modelDef != null ? new AlfrescoModel(modelDef) : null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<AlfrescoModelDiff> getModelDiffs(Map<QName, Long> models)
+    {
+        List<AlfrescoModelDiff> diffs = new ArrayList<AlfrescoModelDiff>();
+
+        // get all models the repository knows about and add each to a list with its checksum
+        Collection<QName> allModels = dictionaryService.getAllModels();
+
+        // look for changed and removed models
+        for(QName modelName : models.keySet())
+        {
+            if(allModels.contains(modelName))
+            {
+                Long checksum = models.get(modelName);
+                AlfrescoModel serverModel = getModel(modelName);
+                if(serverModel.getChecksum() != checksum.longValue())
+                {
+                    // model has changed, add the changed server model
+                    diffs.add(new AlfrescoModelDiff(modelName,
+                            AlfrescoModelDiff.TYPE.CHANGED, checksum, serverModel.getChecksum()));
+                }
+            }
+            else
+            {
+                // model no longer exists, just add it's name
+            	diffs.add(new AlfrescoModelDiff(modelName,
+                        AlfrescoModelDiff.TYPE.REMOVED, null, null));
+            }
+        }
+
+        // look for new models
+        for(QName modelName : allModels)
+        {
+            if(!models.containsKey(modelName))
+            {
+                // new model, add the model xml and checksum
+                AlfrescoModel model = getModel(modelName);
+                diffs.add(new AlfrescoModelDiff(modelName,
+                        AlfrescoModelDiff.TYPE.NEW, null, model.getChecksum()));
+            }
+        }
+
+        return diffs;
     }
     
     /**

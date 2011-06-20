@@ -18,8 +18,10 @@
  */
 package org.alfresco.repo.solr;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,10 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -36,11 +42,13 @@ import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -66,10 +74,13 @@ public class SOLRTrackingComponentTest extends TestCase
 
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
+    private DictionaryService dictionaryService;
+    private NamespaceService namespaceService;
     private RetryingTransactionHelper txnHelper;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private NodeDAO nodeDAO;
+    private DictionaryDAO dictionaryDAO;
     private SOLRTrackingComponent solrTrackingComponent;
     
     private StoreRef storeRef;
@@ -84,8 +95,11 @@ public class SOLRTrackingComponentTest extends TestCase
         
         solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        dictionaryDAO =  (DictionaryDAO)ctx.getBean("dictionaryDAO");
         nodeService = (NodeService)ctx.getBean("NodeService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
+        dictionaryService = serviceRegistry.getDictionaryService();
+        namespaceService = serviceRegistry.getNamespaceService();
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -302,7 +316,138 @@ public class SOLRTrackingComponentTest extends TestCase
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
+    
+    public void testModelDiffs()
+    {
+        Collection<QName> allModels = dictionaryService.getAllModels();
+        
+        ModelDiffsTracker tracker = new ModelDiffsTracker();
+        ModelDiffResults diffResults = tracker.diff();
 
+        // number of diffs should equal the number of models in the repository
+        assertEquals("Unexpected number of new models", allModels.size(), diffResults.getNewModels().size());
+        assertEquals("Expected no removed models", 0, diffResults.getRemovedModels().size());
+        assertEquals("Expected no changed models", 0, diffResults.getChangedModels().size());
+
+        // create a new model
+        InputStream modelStream = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/solr/testModel.xml");
+        M2Model testModel = M2Model.createModel(modelStream);
+        dictionaryDAO.putModel(testModel);
+
+        // call model diffs - should detect new model
+        ModelDiffResults diffResults1 = tracker.diff();
+        assertEquals("Expected 1 new model", 1, diffResults1.getNewModels().size());
+        assertEquals("Unexpected number of changed models", 0, diffResults1.getChangedModels().size());
+        assertEquals("Unexpected number of removed models", 0, diffResults1.getRemovedModels().size());
+        AlfrescoModelDiff diff = diffResults1.getNewModels().get(0);
+        assertEquals("Unexpected model name change", QName.createQName(testModel.getName(), namespaceService), diff.getModelName());
+
+        // get current checksum for the test model
+        Long testModelChecksum = tracker.getChecksum(QName.createQName(testModel.getName(), namespaceService));
+        assertNotNull("", testModelChecksum);
+
+        // create a new type and add it to the new test model
+        M2Type anotherType = testModel.createType("anothertype");
+        M2Property prop1 = anotherType.createProperty("prop1");
+        prop1.setType("d:text");
+        
+        // call model diffs - should detect test model changes
+        ModelDiffResults diffResults2 = tracker.diff();
+        List<AlfrescoModelDiff> changedModels = diffResults2.getChangedModels();
+        assertEquals("Expected no new models", 0, diffResults2.getNewModels().size());
+        assertEquals("Expected no removed models", 0, diffResults2.getRemovedModels().size());
+        assertEquals("Expected detection of changed testmodel", 1, changedModels.size());
+
+        AlfrescoModelDiff changedModel = changedModels.get(0);
+        assertEquals("Unexpected changed model name", QName.createQName(testModel.getName(), namespaceService),
+                changedModel.getModelName());
+        assertNotNull("", changedModel.getOldChecksum().longValue());
+        assertEquals("Old checksum value is incorrect", testModelChecksum.longValue(), changedModel.getOldChecksum().longValue());
+        assertNotSame("Expected checksums to be different", changedModel.getOldChecksum(), changedModel.getNewChecksum());
+        
+        // remove the model        
+        dictionaryDAO.removeModel(QName.createQName(testModel.getName(), namespaceService));
+        
+        // call model diffs - check that the model has been removed
+        ModelDiffResults diffResults3 = tracker.diff();
+        List<AlfrescoModelDiff> removedModels = diffResults3.getRemovedModels();
+        assertEquals("Expected 1 removed model", 1, removedModels.size());
+        QName removedModelName = removedModels.get(0).getModelName();
+        String removedModelNamespace = removedModelName.getNamespaceURI();
+        String removedModelLocalName = removedModelName.getLocalName();
+        assertEquals("Removed model namespace is incorrect", "http://www.alfresco.org/model/solrtest/1.0", removedModelNamespace);
+        assertEquals("Removed model name is incorrect", "contentmodel", removedModelLocalName);
+        assertEquals("Expected no new models", 0, diffResults3.getNewModels().size());
+        assertEquals("Expected no changed modeks", 0, diffResults3.getChangedModels().size());
+    }
+
+    private static class ModelDiffResults
+    {
+        private List<AlfrescoModelDiff> newModels;
+        private List<AlfrescoModelDiff> changedModels;
+        private List<AlfrescoModelDiff> removedModels;
+
+        public ModelDiffResults(List<AlfrescoModelDiff> newModels, List<AlfrescoModelDiff> changedModels, List<AlfrescoModelDiff> removedModels)
+        {
+            super();
+            this.newModels = newModels;
+            this.changedModels = changedModels;
+            this.removedModels = removedModels;
+        }
+
+        public List<AlfrescoModelDiff> getNewModels()
+        {
+            return newModels;
+        }
+
+        public List<AlfrescoModelDiff> getChangedModels()
+        {
+            return changedModels;
+        }
+
+        public List<AlfrescoModelDiff> getRemovedModels()
+        {
+            return removedModels;
+        }
+    }
+
+    private class ModelDiffsTracker
+    {
+        private Map<QName, Long> trackedModels = new HashMap<QName, Long>();
+        
+        public ModelDiffResults diff()
+        {
+            List<AlfrescoModelDiff> modelDiffs = solrTrackingComponent.getModelDiffs(trackedModels);
+            List<AlfrescoModelDiff> newModels = new ArrayList<AlfrescoModelDiff>();
+            List<AlfrescoModelDiff> changedModels = new ArrayList<AlfrescoModelDiff>();
+            List<AlfrescoModelDiff> removedModels = new ArrayList<AlfrescoModelDiff>();
+
+            for(AlfrescoModelDiff diff : modelDiffs)
+            {
+                if(diff.getType().equals(AlfrescoModelDiff.TYPE.NEW))
+                {
+                    newModels.add(diff);
+                    trackedModels.put(diff.getModelName(), diff.getNewChecksum());
+                }
+                else if(diff.getType().equals(AlfrescoModelDiff.TYPE.CHANGED))
+                {
+                    changedModels.add(diff);
+                }
+                else if(diff.getType().equals(AlfrescoModelDiff.TYPE.REMOVED))
+                {
+                    removedModels.add(diff);
+                }
+            }
+
+            return new ModelDiffResults(newModels, changedModels, removedModels);
+        }
+        
+        public Long getChecksum(QName modelName)
+        {
+            return trackedModels.get(modelName);
+        }
+    }
+    
     private static class NodeAssertions
     {
         private Set<QName> aspects;

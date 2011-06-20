@@ -1046,6 +1046,13 @@
     <bean id="webscript.org.alfresco.repository.workflow.workflow-instance.get"
           class="org.alfresco.repo.web.scripts.workflow.WorkflowInstanceGet"
           parent="abstractWorkflowWebScript"></bean>
+          
+    <!-- Retrieves the diagram for a specific workflow instance -->
+    <bean id="webscript.org.alfresco.repository.workflow.workflow-instance-diagram.get"
+          class="org.alfresco.repo.web.scripts.workflow.WorkflowInstanceDiagramGet"
+          parent="webscript">
+       <property name="workflowService" ref="WorkflowService" />
+    </bean>
 
     <!-- Retrieves all workflow instances. -->
     <bean id="webscript.org.alfresco.repository.workflow.workflow-instances.get"

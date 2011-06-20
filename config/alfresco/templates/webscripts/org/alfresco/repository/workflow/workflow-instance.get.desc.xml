@@ -44,6 +44,7 @@
                      "lastName": string
                   },
                   "definitionUrl": string,
+                  "diagramUrl": string,
                   "startTaskInstanceId": string,
                   "definition":
                   {

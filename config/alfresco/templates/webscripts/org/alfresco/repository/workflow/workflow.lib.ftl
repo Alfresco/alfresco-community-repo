@@ -125,6 +125,7 @@
    null,
    </#if>
    "definitionUrl": "${workflowInstance.definitionUrl}"<#if detailed>,
+   "diagramUrl": <#if workflowInstance.diagramUrl??>"${workflowInstance.diagramUrl}"<#else>null</#if>,
    "startTaskInstanceId": "${workflowInstance.startTaskInstanceId}",
    "definition": 
    <@workflowDefinitionJSON workflowDefinition=workflowInstance.definition detailed=true/>

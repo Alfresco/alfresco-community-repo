@@ -108,6 +108,7 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_DEFINITION = "definition";
     public static final String TASK_WORKFLOW_INSTANCE_TASKS = "tasks";
     public static final String TASK_WORKFLOW_INSTANCE_DEFINITION_URL = "definitionUrl";
+    public static final String TASK_WORKFLOW_INSTANCE_DIAGRAM_URL = "diagramUrl";
 
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_USERNAME = "userName";
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_FIRSTNAME = "firstName";
@@ -295,6 +296,11 @@ public class WorkflowModelBuilder
         if (startTask != null)
         {
             startTaskId = startTask.getId();
+        }
+        
+        if (workflowService.hasWorkflowImage(workflowInstance.getId()))
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_DIAGRAM_URL, getDiagramUrl(workflowInstance));
         }
         
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
@@ -625,6 +631,11 @@ public class WorkflowModelBuilder
     private String getUrl(WorkflowInstance workflowInstance)
     {
         return "api/workflow-instances/" + workflowInstance.getId();
+    }
+    
+    private String getDiagramUrl(WorkflowInstance workflowInstance)
+    {
+        return "api/workflow-instances/" + workflowInstance.getId() + "/diagram";
     }
 
     private String getAvatarUrl(NodeRef avatarRef)

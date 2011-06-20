@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Get Workflow Instance Diagram</shortname>
+   <description>Streams an image representing the current state of a workflow instance, if one is present</description>
+   <url>/api/workflow-instances/{workflow_instance_id}/diagram</url>
+   <format default="">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>workflow_instance_id</shortname>
+         <description>The id of workflow process instance to retrieve a diagram for.</description>
+      </arg>
+   </args>
+</webscript>

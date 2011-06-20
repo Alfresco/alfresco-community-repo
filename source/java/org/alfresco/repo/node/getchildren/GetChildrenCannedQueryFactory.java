@@ -38,7 +38,6 @@ import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -63,8 +62,6 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     private ContentDataDAO contentDataDAO;
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
-    
-    private Encryptor encryptor;
     
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private String methodName;
@@ -100,11 +97,6 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         this.cannedQueryDAO = cannedQueryDAO;
     }
     
-    public void setEncryptor(Encryptor encryptor)
-    {
-        this.encryptor = encryptor;
-    }
-
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -128,7 +120,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
-        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptor);
+        NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         
         Method method = null;
         for (Method m : methodService.getClass().getMethods())

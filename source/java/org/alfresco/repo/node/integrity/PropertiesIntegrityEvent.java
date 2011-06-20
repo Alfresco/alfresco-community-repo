@@ -24,11 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.crypto.SealedObject;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -76,9 +79,6 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
 
     /**
      * Checks the properties for the type and aspects of the given node.
-     * 
-     * @param nodeRef
-     * @param eventResults
      */
     private void checkAllProperties(NodeRef nodeRef, List<IntegrityRecord> eventResults)
     {
@@ -163,6 +163,19 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 continue;
             }
             Serializable propertyValue = nodeProperties.get(propertyQName);
+            // Check for encryption first
+            if (propertyDef.getDataType().getName().equals(DataTypeDefinition.ENCRYPTED))
+            {
+                if (propertyValue != null && !(propertyValue instanceof SealedObject))
+                {
+                    IntegrityRecord result = new IntegrityRecord(
+                            "Property must be encrypted: \n" +
+                            "   Node: " + nodeRef + "\n" +
+                            "   Type: " + typeQName + "\n" +
+                            "   Property: " + propertyQName);
+                    eventResults.add(result);
+                }
+            }
             // check constraints
             List<ConstraintDefinition> constraintDefs = propertyDef.getConstraints();
             for (ConstraintDefinition constraintDef : constraintDefs)

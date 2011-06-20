@@ -148,7 +148,6 @@
       <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-      <property name="encryptor" ref="encryptor"/>
       <property name="methodSecurityInterceptor" ref="FileFolderService_security"/>
       <property name="methodService" ref="fileFolderService"/>
       <property name="methodName" value="list"/>

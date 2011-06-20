@@ -248,4 +248,10 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
+    
+    <!-- Encryptor for node properties -->
+    <bean id="metadataEncryptor" class="org.alfresco.repo.node.encryption.MetadataEncryptor">
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="encryptor" ref="encryptor" />
+    </bean>
 </beans>

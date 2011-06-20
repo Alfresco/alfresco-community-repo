@@ -375,7 +375,6 @@
         <property name="localeDAO" ref="localeDAO"/>
         <property name="contentDataDAO" ref="contentDataDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-        <property name="encryptor" ref="encryptor"/>
         <property name="methodSecurityInterceptor" ref="PersonService_security"/>
         <property name="methodService" ref="personService"/>
         <property name="methodName" value="getPeople"/>

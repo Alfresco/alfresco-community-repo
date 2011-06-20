@@ -553,7 +553,7 @@ public class NodePropertyValue implements Cloneable, Serializable
                 }
                 else
                 {
-                    throw new IllegalArgumentException("SealedObject value not supported: " + value);
+                    throw new IllegalArgumentException("Encrypted properties must be encrypted by the client.");
                 }
             }
         },
@@ -689,6 +689,7 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         valueTypesByPropertyType = new HashMap<QName, ValueType>(37);
         valueTypesByPropertyType.put(DataTypeDefinition.ANY, ValueType.SERIALIZABLE);
+        valueTypesByPropertyType.put(DataTypeDefinition.ENCRYPTED, ValueType.SEALED_OBJECT);
         valueTypesByPropertyType.put(DataTypeDefinition.BOOLEAN, ValueType.BOOLEAN);
         valueTypesByPropertyType.put(DataTypeDefinition.INT, ValueType.INTEGER);
         valueTypesByPropertyType.put(DataTypeDefinition.LONG, ValueType.LONG);

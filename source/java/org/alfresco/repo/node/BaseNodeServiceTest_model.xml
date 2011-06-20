@@ -296,7 +296,8 @@
                <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
-   	</type>
+   	  </type>
+
    </types>
    
    <aspects>
@@ -455,6 +456,16 @@
                </target>
             </child-association>
          </associations>
+      </aspect>
+      
+      <aspect name="test:withEncrypted">
+         <title>Aspect with encrypted properties</title>
+         <properties>
+            <property name="test:encryptedValue">
+               <type>d:encrypted</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
       </aspect>
             
    </aspects>

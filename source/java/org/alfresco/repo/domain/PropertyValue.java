@@ -592,6 +592,7 @@ public class PropertyValue implements Cloneable, Serializable
     {
         valueTypesByPropertyType = new HashMap<QName, ValueType>(37);
         valueTypesByPropertyType.put(DataTypeDefinition.ANY, ValueType.SERIALIZABLE);
+        valueTypesByPropertyType.put(DataTypeDefinition.ENCRYPTED, ValueType.SERIALIZABLE);
         valueTypesByPropertyType.put(DataTypeDefinition.BOOLEAN, ValueType.BOOLEAN);
         valueTypesByPropertyType.put(DataTypeDefinition.INT, ValueType.INTEGER);
         valueTypesByPropertyType.put(DataTypeDefinition.LONG, ValueType.LONG);

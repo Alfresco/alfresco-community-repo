@@ -52,7 +52,6 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -135,7 +134,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ContentDataDAO contentDataDAO;
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
-    private Encryptor encryptor;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -215,14 +213,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @param encryptor                 helper to do symmetric property encryption
-     */
-    public void setEncryptor(Encryptor encryptor)
-    {
-        this.encryptor = encryptor;
     }
 
     /**
@@ -370,9 +360,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "usageDAO", usageDAO);
-        PropertyCheck.mandatory(this, "encryptor", encryptor);
 
-        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO, encryptor);
+        this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
     }
     
     /*

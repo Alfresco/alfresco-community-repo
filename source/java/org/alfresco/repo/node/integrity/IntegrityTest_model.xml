@@ -38,6 +38,24 @@
             </property>
          </properties>
       </type>
+      <!-- Type with encrypted properties -->
+      <type name="test:typeWithEncryptedProperties">
+         <title>Type With Encrypted Properties</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:prop-encrypted-a">
+               <type>d:encrypted</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:prop-encrypted-b">
+               <type>d:encrypted</type>
+            </property>
+            <property name="test:prop-encrypted-c">
+               <type>d:encrypted</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+         </properties>
+      </type>
       <!-- Type with mandatory aspect -->
       <type name="test:typeWithAspect">
          <title>Type With Aspect</title>

@@ -176,14 +176,57 @@ public abstract class AbstractEncryptor implements Encryptor
     }
 
     @Override
-    public SealedObject sealObject(String keyAlias, AlgorithmParameters params, Serializable input)
+    public Serializable sealObject(String keyAlias, AlgorithmParameters params, Serializable input)
     {
-        throw new UnsupportedOperationException();
+        if (input == null)
+        {
+            return null;
+        }
+        Cipher cipher = getCipher(keyAlias, params, Cipher.ENCRYPT_MODE);
+        if (cipher == null)
+        {
+            return input;
+        }
+        try
+        {
+            return new SealedObject(input, cipher);
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to seal object", e);
+        }
     }
 
     @Override
-    public Serializable unsealObject(String keyAlias, SealedObject input)
+    public Serializable unsealObject(String keyAlias, Serializable input)
     {
-        throw new UnsupportedOperationException();
-    }    
+        if (input == null)
+        {
+            return input;
+        }
+        // Don't unseal it if it is not sealed
+        if (!(input instanceof SealedObject))
+        {
+            return input;
+        }
+        // Get the Key, rather than a Cipher
+        Key key = keyProvider.getKey(keyAlias);
+        if (key == null)
+        {
+            // The client will be expecting to unseal the object
+            throw new IllegalStateException("No key matching " + keyAlias + ".  Cannot unseal object.");
+        }
+        // Unseal it using the key
+        SealedObject sealedInput = (SealedObject) input;
+        try
+        {
+            Serializable output = (Serializable) sealedInput.getObject(key);
+            // Done
+            return output;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to unseal object", e);
+        }
+    }
 }

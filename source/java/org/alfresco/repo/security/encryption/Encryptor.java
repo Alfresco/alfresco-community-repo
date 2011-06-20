@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.security.AlgorithmParameters;
 
 import javax.crypto.Cipher;
-import javax.crypto.SealedObject;
 
 import org.alfresco.util.Pair;
 
@@ -64,23 +63,31 @@ public interface Encryptor
     Object decryptObject(String keyAlias, AlgorithmParameters params, byte[] input);
     
     /**
-     * Convenience method to seal on object up cryptographically
+     * Convenience method to seal on object up cryptographically.
+     * <p/>
+     * Note that the original object may be returned directly if there is no key associated with
+     * the alias.
      * 
      * @param keyAlias              the encryption key alias
      * @param input                 the object to encrypt and seal
      * @return                      the sealed object that can be decrypted with the original key
      */
-    SealedObject sealObject(String keyAlias, AlgorithmParameters params, Serializable input);
+    Serializable sealObject(String keyAlias, AlgorithmParameters params, Serializable input);
     
     /**
-     * Convenience method to unseal on object up cryptographically.
+     * Convenience method to unseal on object sealed up cryptographically.
      * <p/>
-     * Note that the algorithm parameters are stored in the sealed object and are
-     * not therefore required for decryption.
+     * Note that the algorithm parameters not provided on the assumption that a symmetric key
+     * algorithm is in use - only the key is required for unsealing.
+     * <p/>
+     * Note that the original object may be returned directly if there is no key associated with
+     * the alias or if the input object is not a <code>SealedObject</code>.
      * 
      * @param keyAlias              the encryption key alias
      * @param input                 the object to decrypt and unseal
      * @return                      the original unsealed object that was encrypted with the original key
+     * @throws IllegalStateException    if the key alias is not valid <b>and</b> the input is a
+     *                                  <tt>SealedObject</tt>
      */
-    Serializable unsealObject(String keyAlias, SealedObject input);
+    Serializable unsealObject(String keyAlias, Serializable input);
 }

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.crypto.SealedObject;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -41,6 +42,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -100,6 +102,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
     public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
+    public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES_ENCRYPTED = QName.createQName(NAMESPACE, "many-properties-encrypted");
     public static final QName TYPE_QNAME_TEST_MANY_ML_PROPERTIES = QName.createQName(NAMESPACE, "many-ml-properties");
     public static final QName TYPE_QNAME_EXTENDED_CONTENT = QName.createQName(NAMESPACE, "extendedcontent");
     public static final QName ASPECT_QNAME_TEST_TITLED = QName.createQName(NAMESPACE, "titled");
@@ -135,7 +138,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
     public static final QName ASSOC_TYPE_QNAME_TEST_CONTAINS = ContentModel.ASSOC_CONTAINS;
     public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
-    
+
     public static final QName ASPECT_WITH_ASSOCIATIONS = QName.createQName(NAMESPACE, "withAssociations");
     public static final QName ASSOC_ASPECT_CHILD_ASSOC = QName.createQName(NAMESPACE, "aspect-child-assoc");
     public static final QName ASSOC_ASPECT_NORMAL_ASSOC = QName.createQName(NAMESPACE, "aspect-normal-assoc");
@@ -152,12 +155,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_ANY_PROP_SINGLE = QName.createQName(NAMESPACE, "anyprop-single");
     public static final QName PROP_QNAME_ANY_PROP_MULTIPLE = QName.createQName(NAMESPACE, "anyprop-multiple");
     
+    public static final QName ASPECT_WITH_ENCRYPTED = QName.createQName(NAMESPACE, "withEncrypted");
+    public static final QName PROP_QNAME_ENCRYPTED_VALUE = QName.createQName(NAMESPACE, "encryptedValue");
+
     protected PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
     protected TransactionService transactionService;
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthenticationComponent authenticationComponent;
     protected NodeService nodeService;
+    protected MetadataEncryptor metadataEncryptor;
     protected Dialect dialect;
     /** populated during setup */
     protected NodeRef rootNodeRef;
@@ -169,6 +176,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         super.onSetUpInTransaction();
         
         dialect = (Dialect) applicationContext.getBean("dialect");
+        metadataEncryptor = (MetadataEncryptor) applicationContext.getBean("metadataEncryptor");
         
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
@@ -1707,8 +1715,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
-     * Ensures that the type you get out of a <b>d:any</b> property is the type that you
-     * put in.
+     * Ensures that the type you get out of a <b>d:any</b> property is the type that you put in.
      */
     public void testSerializableProperties() throws Exception
     {
@@ -1734,6 +1741,43 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable checkPropertyQname = checkProperties.get(PROP_QNAME_SERIALIZABLE_VALUE);
         assertTrue("Serialization/deserialization of ContentData failed", checkPropertyContentData instanceof ContentData);
         assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
+    }
+    
+    /**
+     * Check that <b>d:encrypted</b> properties work correctly.
+     */
+    public void testEncryptedProperties() throws Exception
+    {
+        QName property = PROP_QNAME_CONTENT_VALUE;
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
+        properties.put(PROP_QNAME_ENCRYPTED_VALUE, property);
+        
+        // We have encrypted properties, so encrypt them
+        properties = metadataEncryptor.encrypt(properties);
+        Serializable checkProperty = properties.get(PROP_QNAME_ENCRYPTED_VALUE);
+        assertTrue("Properties not encrypted", checkProperty instanceof SealedObject);
+        
+        // create node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTAINER,
+                properties).getChildRef();
+        // persist
+        setComplete();
+        endTransaction();
+        
+        // get the properties back
+        Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
+        checkProperty = checkProperties.get(PROP_QNAME_ENCRYPTED_VALUE);
+        assertTrue("Encrypted property not persisted", checkProperty instanceof SealedObject);
+        
+        // Now make sure that the value can be null
+        nodeService.setProperty(nodeRef, PROP_QNAME_ENCRYPTED_VALUE, null);
+        
+        // Finally, make sure that it fails if we don't encrypt
     }
     
     @SuppressWarnings("unchecked")
@@ -1932,7 +1976,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, "GHI");
         Serializable checkProperty = nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertTrue("Property not converted to a Collection", checkProperty instanceof Collection);
-        assertTrue("Collection doesn't contain value", ((Collection)checkProperty).contains("GHI"));
+        assertTrue("Collection doesn't contain value", ((Collection<?>)checkProperty).contains("GHI"));
     }
     
     public void testPropertyLocaleBehaviour() throws Exception

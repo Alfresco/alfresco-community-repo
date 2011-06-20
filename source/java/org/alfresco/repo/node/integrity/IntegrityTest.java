@@ -62,6 +62,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_TYPE_WITHOUT_ANYTHING = QName.createQName(NAMESPACE, "typeWithoutAnything");
     public static final QName TEST_TYPE_WITH_ASPECT = QName.createQName(NAMESPACE, "typeWithAspect");
     public static final QName TEST_TYPE_WITH_PROPERTIES = QName.createQName(NAMESPACE, "typeWithProperties");
+    public static final QName TEST_TYPE_WITH_ENCRYPTED_PROPERTIES = QName.createQName(NAMESPACE, "typeWithEncryptedProperties");
     public static final QName TEST_TYPE_WITH_ASSOCS = QName.createQName(NAMESPACE, "typeWithAssocs");
     public static final QName TEST_TYPE_WITH_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithChildAssocs");
     public static final QName TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithNonEnforcedChildAssocs");
@@ -82,6 +83,9 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_PROP_INT_A = QName.createQName(NAMESPACE, "prop-int-a");
     public static final QName TEST_PROP_INT_B = QName.createQName(NAMESPACE, "prop-int-b");
     public static final QName TEST_PROP_INT_C = QName.createQName(NAMESPACE, "prop-int-c");
+    public static final QName TEST_PROP_ENCRYPTED_A = QName.createQName(NAMESPACE, "prop-encrypted-a");
+    public static final QName TEST_PROP_ENCRYPTED_B = QName.createQName(NAMESPACE, "prop-encrypted-b");
+    public static final QName TEST_PROP_ENCRYPTED_C = QName.createQName(NAMESPACE, "prop-encrypted-c");
     
     public static ApplicationContext ctx;
     static
@@ -135,6 +139,8 @@ public class IntegrityTest extends TestCase
         allProperties.put(TEST_PROP_TEXT_B, "DEF");
         allProperties.put(TEST_PROP_INT_A, "123");
         allProperties.put(TEST_PROP_INT_B, "456");
+        allProperties.put(TEST_PROP_ENCRYPTED_A, "ABC");
+        allProperties.put(TEST_PROP_ENCRYPTED_B, "DEF");
     }
     
     public void tearDown() throws Exception
@@ -239,6 +245,12 @@ public class IntegrityTest extends TestCase
         checkIntegrityExpectFailure("Failed to detect missing removed properties", 1);
     }
     
+    public void testCreateWithoutEncryption() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ENCRYPTED_PROPERTIES, allProperties);
+        checkIntegrityExpectFailure("Failed to detect unencrypted properties", 2);
+    }
+
     public void testCreateWithoutPropertiesForAspect() throws Exception
     {
         NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ASPECT, null);

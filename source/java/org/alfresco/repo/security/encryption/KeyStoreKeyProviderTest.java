@@ -28,12 +28,11 @@ public class KeyStoreKeyProviderTest extends TestCase
     private static final String ALIAS_TWO = "mykey2";
     private static final String ALIAS_THREE = "mykey3";
     
-    public void setUp() throws Exception
-    {
-    }
-    
     /**
      * Helper utility to create a two-alias keystore.
+     * <p/>
+     * TODO: Allow the required aliases and key types to be specified and generate
+     *       a keystore on the fly
      */
     /* package */ static KeystoreKeyProvider getTestKeyStoreProvider()
     {
@@ -47,6 +46,10 @@ public class KeyStoreKeyProviderTest extends TestCase
                 "JCEKS",
                 passwords);
         return ks;
+    }
+    
+    public void setUp() throws Exception
+    {
     }
     
     public void testNoKeyStorePasswords() throws Exception

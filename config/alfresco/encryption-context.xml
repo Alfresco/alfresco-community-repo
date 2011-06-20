@@ -17,8 +17,8 @@
        <property name="passwords">
            <map>
                <entry key="keystore" value="${encryption.keystore.password}"></entry>
-               <entry key="keystore.METADATA" value="${encryption.keystore.password.METADATA}"></entry>
-               <entry key="keystore.SOLR" value="${encryption.keystore.password.SOLR}"></entry>
+               <entry key="metadata" value="${encryption.keystore.password.metadata}"></entry>
+               <entry key="solr" value="${encryption.keystore.password.solr}"></entry>
            </map>
        </property>
     </bean>

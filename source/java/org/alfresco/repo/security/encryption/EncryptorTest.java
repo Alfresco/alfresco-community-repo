@@ -1,5 +1,6 @@
 package org.alfresco.repo.security.encryption;
 
+import java.io.Serializable;
 import java.security.AlgorithmParameters;
 
 import junit.framework.TestCase;
@@ -56,6 +57,15 @@ public class EncryptorTest extends TestCase
                 "mykey2",
                 encryptedPair.getSecond(),
                 encryptedPair.getFirst());
+        assertEquals("Encryption round trip failed. ", testObject, output);
+    }
+    
+    public void testSealedObject()
+    {
+        Serializable testObject = "   This is a string, but will be serialized    ";
+
+        Serializable sealedObject = encryptor.sealObject("mykey2", null, testObject);
+        Object output = encryptor.unsealObject("mykey2", sealedObject);
         assertEquals("Encryption round trip failed. ", testObject, output);
     }
 }

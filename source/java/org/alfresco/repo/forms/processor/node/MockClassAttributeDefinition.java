@@ -54,7 +54,6 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     private boolean isProtected = false;
     private boolean mandatory = false;
     private boolean multiValued = false;
-    private boolean isEncrypted = false;
 
     private MockClassAttributeDefinition(QName name)
     {
@@ -133,227 +132,165 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         when(mock.targetClass.getName()).thenReturn(targetClassName);
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints()
-     */
+    @Override
     public List<ConstraintDefinition> getConstraints()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getContainerClass
-     * ()
-     */
+    @Override
     public ClassDefinition getContainerClass()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getDataType()
-     */
+    @Override
     public DataTypeDefinition getDataType()
     {
         return dataType;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getDefaultValue()
-     */
+    @Override
     public String getDefaultValue()
     {
         return defaultValue;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getDescription()
-     */
+    @Override
     public String getDescription()
     {
         return description;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getIndexTokenisationMode()
-     */
+    @Override
     public IndexTokenisationMode getIndexTokenisationMode()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getModel()
-     */
+    @Override
     public ModelDefinition getModel()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getName()
-     */
+    @Override
     public QName getName()
     {
         return name;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getTitle()
-     */
+    @Override
     public String getTitle()
     {
         return title;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isIndexed()
-     */
+    @Override
     public boolean isIndexed()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isIndexedAtomically()
-     */
+    @Override
     public boolean isIndexedAtomically()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isMandatory()
-     */
+    @Override
     public boolean isMandatory()
     {
         return mandatory;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isMandatoryEnforced()
-     */
+    @Override
     public boolean isMandatoryEnforced()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isMultiValued()
-     */
+    @Override
     public boolean isMultiValued()
     {
         return multiValued;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isOverride()
-     */
+    @Override
     public boolean isOverride()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isProtected()
-     */
+    @Override
     public boolean isProtected()
     {
         return isProtected;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isStoredInIndex()
-     */
+    @Override
     public boolean isStoredInIndex()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceClass()
-     */
+    @Override
     public ClassDefinition getSourceClass()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getSourceRoleName()
-     */
+    @Override
     public QName getSourceRoleName()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetClass()
-     */
+    @Override
     public ClassDefinition getTargetClass()
     {
         return targetClass;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#getTargetRoleName()
-     */
+    @Override
     public QName getTargetRoleName()
     {
         return null;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isChild()
-     */
+    @Override
     public boolean isChild()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMandatory()
-     */
+    @Override
     public boolean isSourceMandatory()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isSourceMany()
-     */
+    @Override
     public boolean isSourceMany()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatory()
-     */
+    @Override
     public boolean isTargetMandatory()
     {
         return targetMandatory;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMandatoryEnforced()
-     */
+    @Override
     public boolean isTargetMandatoryEnforced()
     {
         return false;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.dictionary.AssociationDefinition#isTargetMany()
-     */
+    @Override
     public boolean isTargetMany()
     {
         return targetMany;
     }
-
-    @Override
-    public boolean isEncrypted()
-    {
-        return isEncrypted;
-    }
-
 }

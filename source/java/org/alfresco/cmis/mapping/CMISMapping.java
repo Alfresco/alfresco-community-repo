@@ -144,6 +144,7 @@ public class CMISMapping implements InitializingBean
         //
         
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.ANY, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.ENCRYPTED, null);
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.ASSOC_REF, null);
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.BOOLEAN, CMISDataTypeEnum.BOOLEAN);
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.CATEGORY, CMISDataTypeEnum.ID);

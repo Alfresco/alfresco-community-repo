@@ -90,7 +90,6 @@
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
       <property name="transactionService" ref="transactionService" />
       <property name="dictionaryService" ref="dictionaryService"/>
-      <property name="encryptor" ref="encryptor"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="aclDAO" ref="aclDAO"/>
       <property name="accessControlListDAO" ref="admNodeACLDAO"/>

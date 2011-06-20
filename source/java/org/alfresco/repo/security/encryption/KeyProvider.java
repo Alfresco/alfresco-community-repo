@@ -9,17 +9,15 @@ import java.security.Key;
  */
 public interface KeyProvider
 {
+    // TODO: Allow the aliases to be configured i.e. include an alias mapper
     /**
-     * Enumeration of key aliases supported internally by Alfresco
-     * 
-     * @author derekh
-     * @since 4.0
+     * Constant representing the keystore alias for keys to encrypt/decrype node metadata
      */
-    public static enum AlfrescoKeyAlias
-    {
-        METADATA,
-        SOLR
-    }
+    public static final String ALIAS_METADATA = "metadata";
+    /**
+     * Constant representing the keystore alias for keys to encrypt/decrype SOLR transfer data
+     */
+    public static final String ALIAS_SOLR = "solr";
     
     /**
      * Get an encryption key if available.
@@ -28,12 +26,4 @@ public interface KeyProvider
      * @return                  the encryption key or <tt>null</tt> if there is no associated key
      */
     public Key getKey(String keyAlias);
-    
-    /**
-     * Get an encryption key if available, using a convenience constant.
-     * 
-     * @param keyAlias          the key alias
-     * @return                  the encryption key or <tt>null</tt> if there is no associated key
-     */
-    public Key getKey(AlfrescoKeyAlias keyAlias);
 }

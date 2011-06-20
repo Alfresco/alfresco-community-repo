@@ -32,7 +32,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.security.encryption.Encryptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -59,7 +58,6 @@ public class NodePropertyHelper
     private static final Log logger = LogFactory.getLog(NodePropertyHelper.class);
     
     private final DictionaryService dictionaryService;
-    private final Encryptor encryptor;
     private final QNameDAO qnameDAO;
     private final LocaleDAO localeDAO;
     private final ContentDataDAO contentDataDAO;
@@ -71,14 +69,12 @@ public class NodePropertyHelper
             DictionaryService dictionaryService,
             QNameDAO qnameDAO,
             LocaleDAO localeDAO,
-            ContentDataDAO contentDataDAO, 
-            Encryptor encryptor)
+            ContentDataDAO contentDataDAO)
     {
         this.dictionaryService = dictionaryService;
         this.qnameDAO = qnameDAO;
         this.localeDAO = localeDAO;
         this.contentDataDAO = contentDataDAO;
-        this.encryptor = encryptor;
     }
 
     public Map<NodePropertyKey, NodePropertyValue> convertToPersistentProperties(Map<QName, Serializable> in)
@@ -147,19 +143,16 @@ public class NodePropertyHelper
 
         // Get or spoof the property datatype
         QName propertyTypeQName;
-        boolean isEncrypted;
         if (propertyDef == null) // property not recognised
         {
             // allow it for now - persisting excess properties can be useful sometimes
             propertyTypeQName = DataTypeDefinition.ANY;
-            isEncrypted = false;
         }
         else
         {
             propertyTypeQName = propertyDef.getDataType().getName();
-            isEncrypted = propertyDef.isEncrypted();
         }
-
+        
         // A property may appear to be multi-valued if the model definition is loose and
         // an unexploded collection is passed in. Otherwise, use the model-defined behaviour
         // strictly.
@@ -651,17 +644,14 @@ public class NodePropertyHelper
         }
         // get property attributes
         final QName propertyTypeQName;
-        boolean isEncrypted;
         if (propertyDef == null)
         {
             // allow this for now
             propertyTypeQName = DataTypeDefinition.ANY;
-            isEncrypted = false;
         }
         else
         {
             propertyTypeQName = propertyDef.getDataType().getName();
-            isEncrypted = propertyDef.isEncrypted();
         }
         try
         {

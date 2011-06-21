@@ -19,9 +19,8 @@
 package org.alfresco.util;
 
 
-import junit.framework.TestCase;
-
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -38,7 +37,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Roy Wetherall
  */
-public abstract class BaseAlfrescoTestCase extends TestCase
+public abstract class BaseAlfrescoTestCase extends RetryingTransactionHelperTestCase
 {
     /**
      * This context will be fetched each time, but almost always
@@ -64,9 +63,14 @@ public abstract class BaseAlfrescoTestCase extends TestCase
     /** The root node reference */
     protected NodeRef rootNodeRef;
     
-    
+    /** Action service */
     protected ActionService actionService;
+    
+    /** Transaction service */
     protected TransactionService transactionService;
+    
+    /** Retrying transaction helper */
+    protected RetryingTransactionHelper retryingTransactionHelper;
     
     /**
      * By default will return the full context.
@@ -78,20 +82,25 @@ public abstract class BaseAlfrescoTestCase extends TestCase
        ctx = ApplicationContextHelper.getApplicationContext();
     }
     
+    /**
+     * @see junit.framework.TestCase#setUp()
+     */
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         setUpContext();
 
-        // get the service register
+        // Get the service register
         this.serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        //Get a reference to the node service
+        
+        // Get content services
         this.nodeService = serviceRegistry.getNodeService();
         this.contentService = serviceRegistry.getContentService();
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.actionService = (ActionService)ctx.getBean("actionService");
         this.transactionService = serviceRegistry.getTransactionService();
+        this.retryingTransactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
         
         // Authenticate as the system user - this must be done before we create the store
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -99,11 +108,21 @@ public abstract class BaseAlfrescoTestCase extends TestCase
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
-        
-       
+
     }
     
+    /**
+     * @see org.alfresco.util.RetryingTransactionHelperTestCase#getRetryingTransactionHelper()
+     */
+    @Override
+    public RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        return this.retryingTransactionHelper;
+    }
     
+    /** 
+     * @see junit.framework.TestCase#tearDown()
+     */
     @Override
     protected void tearDown() throws Exception
     {
@@ -117,6 +136,5 @@ public abstract class BaseAlfrescoTestCase extends TestCase
             // Don't let this mask any previous exceptions
         }
         super.tearDown();
-    }
-    
+    }       
 }

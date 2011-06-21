@@ -31,7 +31,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Utility class containing some useful methods to help when writing tets that require authenticated users
+ * Utility class containing some useful methods to help when writing tests that require authenticated users
  * 
  * @author Roy Wetherall
  */
@@ -77,7 +77,7 @@ public abstract class TestWithUserUtils
     }
 
     /**
-     * Autneticate the user with the specified password
+     * Authenticate the user with the specified password
      * 
      * @param userName                  the user name
      * @param password                  the password

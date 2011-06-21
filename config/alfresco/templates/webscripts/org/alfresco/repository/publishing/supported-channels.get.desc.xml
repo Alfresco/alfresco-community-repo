@@ -7,7 +7,7 @@
    <transaction allow="readonly">required</transaction>
    <lifecycle>public_api</lifecycle>
    <args>
-      <arg>
+      <arg> 
          <shortname>store_protocol</shortname>
          <description>The Store protocol.</description>
       </arg>
@@ -33,7 +33,14 @@
                      {
                         "url": string,
                         "name": string,
-                        "icon": string,
+                        "maxStatusLength": number,
+                        "channelType":
+                        {
+                           "id": string,
+                           "url": string,
+                           "maxStatusLength": number,
+                           "icon": string
+                        }
                      },
                      ...
                   ],
@@ -43,10 +50,16 @@
                      "statusChannels":
                      [
                         {
-                           "url": string,
+                                                   "url": string,
                            "name": string,
-                           "icon": string,
-                           "maxStatusLength": number
+                           "maxStatusLength": number,
+                           "channelType":
+                           {
+                              "id": string,
+                              "url": string,
+                              "maxStatusLength": number,
+                              "icon": string
+                           }
                         },
                         ...
                      ]

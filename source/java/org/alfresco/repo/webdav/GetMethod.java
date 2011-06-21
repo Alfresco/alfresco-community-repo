@@ -468,6 +468,10 @@ public class GetMethod extends WebDAVMethod
                     if (reader != null)
                     {
                         mimetype = mimeTypeService.getDisplaysByMimetype().get(reader.getMimetype());
+                        if (mimetype == null)
+                        {
+                           mimetype = reader.getMimetype();
+                        }
                     }
                     writer.write(mimetype);
                 }

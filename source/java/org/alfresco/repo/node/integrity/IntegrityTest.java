@@ -19,6 +19,8 @@
 package org.alfresco.repo.node.integrity;
 
 import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -28,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -97,7 +100,7 @@ public class IntegrityTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private NodeService nodeService;
     private NodeRef rootNodeRef;
-    private PropertyMap allProperties;
+    private Map<QName, Serializable> allProperties;
     private UserTransaction txn;
     private AuthenticationComponent authenticationComponent;
     
@@ -116,6 +119,8 @@ public class IntegrityTest extends TestCase
         integrityChecker.setFailOnViolation(true);
         integrityChecker.setTraceOn(true);
         integrityChecker.setMaxErrorsPerTransaction(100);   // we want to count the correct number of errors
+        
+        MetadataEncryptor encryptor = (MetadataEncryptor) ctx.getBean("metadataEncryptor");
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
@@ -141,6 +146,7 @@ public class IntegrityTest extends TestCase
         allProperties.put(TEST_PROP_INT_B, "456");
         allProperties.put(TEST_PROP_ENCRYPTED_A, "ABC");
         allProperties.put(TEST_PROP_ENCRYPTED_B, "DEF");
+        allProperties = encryptor.encrypt(allProperties);
     }
     
     public void tearDown() throws Exception
@@ -166,7 +172,7 @@ public class IntegrityTest extends TestCase
     /**
      * Create a node of the given type, and hanging off the root node
      */
-    private NodeRef createNode(String name, QName type, PropertyMap properties)
+    private NodeRef createNode(String name, QName type, Map<QName, Serializable> properties)
     {
         return nodeService.createNode(
                 rootNodeRef,
@@ -247,8 +253,17 @@ public class IntegrityTest extends TestCase
     
     public void testCreateWithoutEncryption() throws Exception
     {
-        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ENCRYPTED_PROPERTIES, allProperties);
-        checkIntegrityExpectFailure("Failed to detect unencrypted properties", 2);
+        allProperties.put(TEST_PROP_ENCRYPTED_A, "Not encrypted");
+        try
+        {
+            NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_ENCRYPTED_PROPERTIES, allProperties);
+            fail("Current detection of unencrypted properties is done by NodeService.");
+        }
+        catch (Throwable e)
+        {
+            // Expected
+        }
+        // checkIntegrityExpectFailure("Failed to detect unencrypted properties", 2);
     }
 
     public void testCreateWithoutPropertiesForAspect() throws Exception

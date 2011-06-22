@@ -2,7 +2,9 @@ package org.alfresco.repo.node.encryption;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.crypto.SealedObject;
 
@@ -76,7 +78,36 @@ public class MetadataEncryptor
         {
             return inbound;
         }
+        if (inbound instanceof SealedObject)
+        {
+            return inbound;
+        }
         Serializable outbound = encryptor.sealObject(KeyProvider.ALIAS_METADATA, null, inbound);
+        // Done
+        return outbound;
+    }
+    
+    /**
+     * Decrypt a property if the data definition (model-specific) requires it.
+     * <p/>
+     * This method can only be called by the 'system' user.
+     * 
+     * @param propertyQName             the property qualified name
+     * @param inbound                   the property to decrypt
+     * @return                          the decrypted property or the original if it wasn't encrypted
+     */
+    public Serializable decrypt(QName propertyQName, Serializable inbound)
+    {
+        PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+        if (inbound == null || propertyDef == null || !(propertyDef.getDataType().getName().equals(DataTypeDefinition.ENCRYPTED)))
+        {
+            return inbound;
+        }
+        if (!(inbound instanceof SealedObject))
+        {
+            return inbound;
+        }
+        Serializable outbound = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, inbound);
         // Done
         return outbound;
     }
@@ -93,36 +124,35 @@ public class MetadataEncryptor
      */
     public Map<QName, Serializable> encrypt(Map<QName, Serializable> inbound)
     {
-        boolean encrypt = false;
+        Set<QName> encryptedProperties = new HashSet<QName>(5);
         for (Map.Entry<QName, Serializable> entry : inbound.entrySet())
         {
-            QName key = entry.getKey();
-            PropertyDefinition propertyDef = dictionaryService.getProperty(key);
+            QName qname = entry.getKey();
+            Serializable value = entry.getValue();
+            PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
             if (propertyDef != null && (propertyDef.getDataType().getName().equals(DataTypeDefinition.ENCRYPTED)))
             {
-                encrypt = true;
-                break;
+                if (value != null && !(value instanceof SealedObject))
+                {
+                    encryptedProperties.add(qname);
+                }
             }
         }
-        if (!encrypt)
+        if (encryptedProperties.isEmpty())
         {
             // Nothing to do
             return inbound;
         }
         // Encrypt, in place, using a copied map
         Map<QName, Serializable> outbound = new HashMap<QName, Serializable>(inbound);
-        for (Map.Entry<QName, Serializable> entry : inbound.entrySet())
+        for (QName propertyQName : encryptedProperties)
         {
-            Serializable value = entry.getValue();
-            if (value != null && (value instanceof SealedObject))
-            {
-                // Straight copy, i.e. do nothing
-                continue;
-            }
-            // Have to decrypt the value
+            // We have already checked for nulls and conversions
+            Serializable value = inbound.get(propertyQName);
+            // Have to encrypt the value
             Serializable encryptedValue = encryptor.sealObject(KeyProvider.ALIAS_METADATA, null, value);
             // Store it back
-            outbound.put(entry.getKey(), encryptedValue);
+            outbound.put(propertyQName, encryptedValue);
         }
         // Done
         return outbound;
@@ -142,35 +172,35 @@ public class MetadataEncryptor
     {
         checkAuthentication();
         
-        boolean decrypt = false;
+        Set<QName> encryptedProperties = new HashSet<QName>(5);
         for (Map.Entry<QName, Serializable> entry : inbound.entrySet())
         {
+            QName qname = entry.getKey();
             Serializable value = entry.getValue();
-            if (value != null && (value instanceof SealedObject))
+            PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+            if (propertyDef != null && (propertyDef.getDataType().getName().equals(DataTypeDefinition.ENCRYPTED)))
             {
-                decrypt = true;
-                break;
+                if (value != null && (value instanceof SealedObject))
+                {
+                    encryptedProperties.add(qname);
+                }
             }
         }
-        if (!decrypt)
+        if (encryptedProperties.isEmpty())
         {
             // Nothing to do
             return inbound;
         }
         // Decrypt, in place, using a copied map
         Map<QName, Serializable> outbound = new HashMap<QName, Serializable>(inbound);
-        for (Map.Entry<QName, Serializable> entry : inbound.entrySet())
+        for (QName propertyQName : encryptedProperties)
         {
-            Serializable value = entry.getValue();
-            if (value != null && (value instanceof SealedObject))
-            {
-                // Straight copy, i.e. do nothing
-                continue;
-            }
+            // We have already checked for nulls and conversions
+            Serializable value = inbound.get(propertyQName);
             // Have to decrypt the value
-            Serializable decryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
+            Serializable unencryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
             // Store it back
-            outbound.put(entry.getKey(), decryptedValue);
+            outbound.put(propertyQName, unencryptedValue);
         }
         // Done
         return outbound;

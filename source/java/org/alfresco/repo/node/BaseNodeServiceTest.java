@@ -73,6 +73,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.TestWithUserUtils;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
@@ -1743,6 +1744,48 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
     }
     
+    public void testEncryptionAndDecryptionOfProperties()
+    {
+        QName valueToEncrypt = PROP_QNAME_CONTENT_VALUE;
+        QName value = PROP_QNAME_CONTENT_VALUE;
+
+        // Test single property encryption/decryption
+        Serializable encryptedProperty = metadataEncryptor.encrypt(PROP_QNAME_ENCRYPTED_VALUE, valueToEncrypt);
+        assertTrue("Not a SealedObject", encryptedProperty instanceof SealedObject);
+        Serializable encryptedPropertyAgain = metadataEncryptor.encrypt(PROP_QNAME_ENCRYPTED_VALUE, encryptedProperty);
+        assertTrue("Re-encryption not expected", encryptedProperty == encryptedPropertyAgain);
+        Serializable decryptedProperty = metadataEncryptor.decrypt(PROP_QNAME_ENCRYPTED_VALUE, encryptedProperty);
+        assertEquals("Value not decrypted correctly", valueToEncrypt, decryptedProperty);
+        
+        // Test mass property encryption/decryption
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
+        properties.put(PROP_QNAME_ENCRYPTED_VALUE, valueToEncrypt);
+        properties.put(PROP_QNAME_QNAME_VALUE, value);
+        Map<QName, Serializable> encryptedProperties = metadataEncryptor.encrypt(properties);
+        assertTrue("Not a SealedObject", encryptedProperties.get(PROP_QNAME_ENCRYPTED_VALUE) instanceof SealedObject);
+        assertTrue("Should not encrypt", encryptedProperties.get(PROP_QNAME_QNAME_VALUE) instanceof QName);
+        Map<QName, Serializable> encryptedPropertiesAgain = metadataEncryptor.encrypt(encryptedProperties);
+        assertTrue("Map should not change", encryptedProperties == encryptedPropertiesAgain);
+        assertTrue(
+                "Re-encryption not expected",
+                encryptedProperties.get(PROP_QNAME_ENCRYPTED_VALUE) == encryptedPropertiesAgain.get(PROP_QNAME_ENCRYPTED_VALUE));
+        assertTrue("Should not encrypt", encryptedProperties.get(PROP_QNAME_QNAME_VALUE) instanceof QName);
+        Map<QName, Serializable> decryptedProperties = metadataEncryptor.decrypt(encryptedProperties);
+        assertEquals("Values not decrypted correctly", valueToEncrypt, decryptedProperties.get(PROP_QNAME_ENCRYPTED_VALUE));
+        assertEquals("Values not decrypted correctly", value, decryptedProperties.get(PROP_QNAME_QNAME_VALUE));
+        
+        // Check that nulls are handled
+        Map<QName, Serializable> propertiesNull = new HashMap<QName, Serializable>(5);
+        propertiesNull.put(PROP_QNAME_ENCRYPTED_VALUE, null);
+        propertiesNull.put(PROP_QNAME_QNAME_VALUE, null);
+        Map<QName, Serializable> encryptedPropertiesNull = metadataEncryptor.encrypt(propertiesNull);
+        assertTrue("Map should not change", encryptedPropertiesNull == propertiesNull);
+        assertNull("Null should remain", encryptedPropertiesNull.get(PROP_QNAME_ENCRYPTED_VALUE));
+        Map<QName, Serializable> decryptedPropertiesNull = metadataEncryptor.decrypt(encryptedPropertiesNull);
+        assertTrue("Map should not change", encryptedPropertiesNull == decryptedPropertiesNull);
+        assertNull("Null should remain", decryptedPropertiesNull.get(PROP_QNAME_ENCRYPTED_VALUE));
+    }
+    
     /**
      * Check that <b>d:encrypted</b> properties work correctly.
      */
@@ -1759,7 +1802,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Properties not encrypted", checkProperty instanceof SealedObject);
         
         // create node
-        NodeRef nodeRef = nodeService.createNode(
+        final NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
@@ -1774,10 +1817,46 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         checkProperty = checkProperties.get(PROP_QNAME_ENCRYPTED_VALUE);
         assertTrue("Encrypted property not persisted", checkProperty instanceof SealedObject);
         
+        // Decrypt individual property
+        checkProperty = metadataEncryptor.decrypt(PROP_QNAME_ENCRYPTED_VALUE, checkProperty);
+        assertEquals("Bulk property decryption failed", property, checkProperty);
+        
+        // Now decrypt en-masse
+        checkProperties = metadataEncryptor.decrypt(checkProperties);
+        checkProperty = checkProperties.get(PROP_QNAME_ENCRYPTED_VALUE);
+        assertEquals("Bulk property decryption failed", property, checkProperty);
+        
         // Now make sure that the value can be null
-        nodeService.setProperty(nodeRef, PROP_QNAME_ENCRYPTED_VALUE, null);
+        RetryingTransactionCallback<Void> setNullPropCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.setProperty(nodeRef, PROP_QNAME_ENCRYPTED_VALUE, null);
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(setNullPropCallback);
         
         // Finally, make sure that it fails if we don't encrypt
+        try
+        {
+            RetryingTransactionCallback<Void> setUnencryptedPropCallback = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    nodeService.setProperty(nodeRef, PROP_QNAME_ENCRYPTED_VALUE, "No encrypted");
+                    return null;
+                }
+            };
+            retryingTransactionHelper.doInTransaction(setUnencryptedPropCallback);
+            fail("Failed to detect unencrypted property");      // This behaviour may change
+        }
+        catch (RuntimeException e)
+        {
+            // Expected
+        }
     }
     
     @SuppressWarnings("unchecked")

@@ -48,6 +48,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -573,7 +575,7 @@ import org.alfresco.service.namespace.QName;
             // Audit QNames with the prefix set. The key can be used in original Set and
             // Map operations as only the namesapace and local name are used in equals and
             // hashcode methods.
-            QName key = entry.getKey().getPrefixedQName(namespaceService);
+            QName key = getPrefixedQName(entry.getKey());
             
             String name = replaceInvalidPathChars(key.toPrefixString());
             Serializable beforeValue = entry.getValue();
@@ -612,7 +614,9 @@ import org.alfresco.service.namespace.QName;
         newKeys.removeAll(fromProperties.keySet());
         for (QName key: newKeys)
         {
-            key = key.getPrefixedQName(namespaceService); // Audit QNames with the prefix set.
+            // Audit QNames with the prefix set.
+            key = getPrefixedQName(key);
+
             Serializable afterValue = toProperties.get(key);
             String name = replaceInvalidPathChars(key.toPrefixString());
             auditMap.put(buildPath(PROPERTIES, ADD, name), afterValue);
@@ -648,7 +652,9 @@ import org.alfresco.service.namespace.QName;
         HashSet<QName> prefixedAspects = new HashSet<QName>(aspects.size());
         for (QName aspect: aspects)
         {
-            aspect = aspect.getPrefixedQName(namespaceService); // Audit QNames with the prefix set.
+            // Audit QNames with the prefix set.
+            aspect = getPrefixedQName(aspect);
+            
             prefixedAspects.add(aspect);
             String name = replaceInvalidPathChars(aspect.toPrefixString());
             auditMap.put(buildPath(ASPECTS, addOrDelete, name), null);
@@ -664,7 +670,25 @@ import org.alfresco.service.namespace.QName;
     {
         for (Map.Entry<String, Serializable> entry: properties.entrySet())
         {
-            auditMap.put(buildPath(VERSION_PROPERTIES, entry.getKey()), entry.getValue());
+            // The key may be the string version ({URI}localName) of a QName.
+            // If so get the prefixed version.
+            String key = entry.getKey();
+            if (key.indexOf(QName.NAMESPACE_PREFIX) == 0)
+            {
+                try
+                {
+                    QName qNameKey = QName.createQName(key);
+                    qNameKey = getPrefixedQName(qNameKey);
+                    key = qNameKey.toPrefixString();
+                }
+                catch (InvalidQNameException e)
+                {
+                    // Its just a String.
+                }
+            }
+            
+            String name = replaceInvalidPathChars(key);
+            auditMap.put(buildPath(VERSION_PROPERTIES, name), entry.getValue());
         }
         if (!subAction)
         {
@@ -723,6 +747,22 @@ import org.alfresco.service.namespace.QName;
             sb.append(component);
         }
         return sb.toString();
+    }
+    
+    /**
+     * @return a new QName that has the prefix set or the original if it is unknown.
+     */
+    private QName getPrefixedQName(QName qName)
+    {
+        try
+        {
+            qName = qName.getPrefixedQName(namespaceService);
+        }
+        catch (NamespaceException e)
+        {
+            // ignore - go with what we have
+        }
+        return qName;
     }
     
     /**

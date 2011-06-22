@@ -179,33 +179,28 @@ public abstract class AbstractVersionServiceImpl
 			Map<String, Serializable> versionProperties,
 			PolicyScope nodeDetails)
 	{
-		Collection<OnCreateVersionPolicy> policies = this.onCreateVersionDelegate.getList(classRef);
-		if (policies.size() == 0)
-		{
-			// Call the default implementation
-			defaultOnCreateVersion(
-					classRef,
-					nodeRef,
-					versionProperties,
-					nodeDetails);
-		}
-		else
-		{
-			// Call the policy definitions
-			for (VersionServicePolicies.OnCreateVersionPolicy policy : policies) 
-			{
-				policy.onCreateVersion(
-						classRef,
-						nodeRef,
-						versionProperties,
-						nodeDetails);
-			}
-		}
+	    // Call the default implementation
+	    defaultOnCreateVersion(
+	            classRef,
+	            nodeRef,
+	            versionProperties,
+	            nodeDetails);
+	    
+	    // Call the policy definitions
+            Collection<OnCreateVersionPolicy> policies = this.onCreateVersionDelegate.getList(classRef);
+	    for (VersionServicePolicies.OnCreateVersionPolicy policy : policies) 
+	    {
+	        policy.onCreateVersion(
+	                classRef,
+	                nodeRef,
+	                versionProperties,
+	                nodeDetails);
+	    }
 	}
 	
 	/**
-	 * Default implementation of the on create version policy.  Called if no behaviour is registered for the 
-	 * policy for the specified type.
+	 * Default implementation of the on create version policy.
+	 * Override if you wish to supply your own policy.
 	 * 
 	 * @param nodeRef
 	 * @param versionProperties

@@ -141,7 +141,7 @@ public class AccessAuditorTest
 
         // Mock up an auditComponent to see the results of our tests
         AuditComponent auditComponent = mock(AuditComponent.class);
-        when(auditComponent.areAuditValuesRequired()).thenReturn(true);
+        when(auditComponent.areAuditValuesRequired(anyString())).thenReturn(true);
         when(auditComponent.recordAuditValues(anyString(), anyMap())).thenAnswer(new Answer<Map<String, Serializable>>()
                 {
                     public Map<String, Serializable> answer(InvocationOnMock invocation) throws Throwable

@@ -18,17 +18,19 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.Cache;
+import org.alfresco.util.TempFileProvider;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -40,7 +42,7 @@ import org.springframework.util.FileCopyUtils;
  * @author Gavin Cornwell
  * @since 4.0
  */
-public class WorkflowInstanceDiagramGet extends AbstractWebScript
+public class WorkflowInstanceDiagramGet extends StreamContent
 {
     protected WorkflowService workflowService;
     
@@ -71,26 +73,13 @@ public class WorkflowInstanceDiagramGet extends AbstractWebScript
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find diagram for workflow instance with id: " + workflowInstanceId);
         }
         
-        // set mimetype for the content and the character encoding + length for the stream
-        res.setContentType(MimetypeMap.MIMETYPE_IMAGE_PNG);
-        
-        // set caching (never cache)
-        Cache cache = new Cache();
-        cache.setNeverCache(true);
-        cache.setMustRevalidate(true);
-        cache.setMaxAge(0L);
-        res.setCache(cache);
-        
-        // stream image back to client
+        // copy image data into temporary file
+        File file = TempFileProvider.createTempFile("workflow-diagram-", ".png");
         InputStream imageData = workflowService.getWorkflowImage(workflowInstanceId);
-        try
-        {
-            FileCopyUtils.copy(imageData, res.getOutputStream());     // both streams are closed
-        }
-        catch (IOException e)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error occurred streaming diagram for workflow instance with id '" + 
-                        workflowInstanceId + "' " + e.getMessage());
-        }
+        OutputStream os = new FileOutputStream(file);
+        FileCopyUtils.copy(imageData, os);
+        
+        // stream temporary file back to client
+        streamContent(req, res, file, false);
     }
 }

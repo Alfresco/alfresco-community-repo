@@ -451,7 +451,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     {
         Set<String> result = new HashSet<String>();
 
-        if (!subscriptionService.isSubscriptionListPrivate(userId))
+        if (subscriptionService.subscriptionsEnabled())
         {
             PagingFollowingResults fr = subscriptionService.getFollowers(userId, new PagingRequest(1000000, null));
 

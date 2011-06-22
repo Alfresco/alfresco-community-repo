@@ -29,6 +29,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResults;
@@ -50,14 +51,23 @@ public class SubscriptionServiceImpl implements SubscriptionService
     private static final String ACTIVITY_TOOL = "subscriptionService";
 
     /** Activity values */
-    private static final String SUB_USER = "user";
-    private static final String SUB_USER_TO_FOLLOW = "userToFollow";
-    private static final String SUB_NODE = "node";
+    private static final String FOLLOWER_FIRSTNAME = "followerFirstName";
+    private static final String FOLLOWER_LASTNAME = "followerLastName";
+    private static final String FOLLOWER_USERNAME = "followerUserName";
+    private static final String USER_FIRSTNAME = "userFirstName";
+    private static final String USER_LASTNAME = "userLastName";
+    private static final String USER_USERNAME = "userUserName";
+
+    private static final String SUBSCRIBER_FIRSTNAME = "subscriberFirstName";
+    private static final String SUBSCRIBER_LASTNAME = "subscriberLastName";
+    private static final String SUBSCRIBER_USERNAME = "subscriberUserName";
+    private static final String NODE = "node";
 
     protected SubscriptionsDAO subscriptionsDAO;
     protected NodeService nodeService;
     protected PersonService personService;
     protected ActivityService activityService;
+    protected AuthorityService authorityService;
 
     /**
      * Sets the subscriptions DAO.
@@ -91,12 +101,20 @@ public class SubscriptionServiceImpl implements SubscriptionService
         this.activityService = activictyService;
     }
 
+    /**
+     * Sets the authority service.
+     */
+    public final void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
     @Override
     public PagingSubscriptionResults getSubscriptions(String userId, SubscriptionItemTypeEnum type,
             PagingRequest pagingRequest)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, true);
         return subscriptionsDAO.selectSubscriptions(userId, type, pagingRequest);
     }
 
@@ -104,7 +122,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public int getSubscriptionCount(String userId, SubscriptionItemTypeEnum type)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, true);
         return subscriptionsDAO.countSubscriptions(userId, type);
     }
 
@@ -121,9 +139,14 @@ public class SubscriptionServiceImpl implements SubscriptionService
             String activityDataJSON = null;
             try
             {
+                NodeRef subscriberNode = personService.getPerson(userId, false);
                 JSONObject activityData = new JSONObject();
-                activityData.put(SUB_USER, userId);
-                activityData.put(SUB_NODE, node.toString());
+                activityData.put(SUBSCRIBER_USERNAME, userId);
+                activityData.put(SUBSCRIBER_FIRSTNAME,
+                        nodeService.getProperty(subscriberNode, ContentModel.PROP_FIRSTNAME));
+                activityData.put(SUBSCRIBER_LASTNAME,
+                        nodeService.getProperty(subscriberNode, ContentModel.PROP_LASTNAME));
+                activityData.put(NODE, node.toString());
                 activityDataJSON = activityData.toString();
             } catch (JSONException je)
             {
@@ -147,7 +170,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public boolean hasSubscribed(String userId, NodeRef node)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, true);
         return subscriptionsDAO.hasSubscribed(userId, node);
     }
 
@@ -155,15 +178,23 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public PagingFollowingResults getFollowing(String userId, PagingRequest pagingRequest)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, true);
         return subscriptionsDAO.selectFollowing(userId, pagingRequest);
+    }
+
+    @Override
+    public int getFollowingCount(String userId)
+    {
+        checkEnabled();
+        checkRead(userId, true);
+        return getSubscriptionCount(userId, SubscriptionItemTypeEnum.USER);
     }
 
     @Override
     public PagingFollowingResults getFollowers(String userId, PagingRequest pagingRequest)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, false);
         return subscriptionsDAO.selectFollowers(userId, pagingRequest);
     }
 
@@ -171,16 +202,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public int getFollowersCount(String userId)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, false);
         return subscriptionsDAO.countFollowers(userId);
-    }
-
-    @Override
-    public int getFollowingCount(String userId)
-    {
-        checkEnabled();
-        checkRead(userId);
-        return getSubscriptionCount(userId, SubscriptionItemTypeEnum.USER);
     }
 
     @Override
@@ -195,9 +218,16 @@ public class SubscriptionServiceImpl implements SubscriptionService
             String activityDataJSON = null;
             try
             {
+                NodeRef followerNode = personService.getPerson(userId, false);
+                NodeRef userNode = personService.getPerson(userToFollow, false);
                 JSONObject activityData = new JSONObject();
-                activityData.put(SUB_USER, userId);
-                activityData.put(SUB_USER_TO_FOLLOW, userToFollow);
+                activityData.put(FOLLOWER_USERNAME, userId);
+                activityData
+                        .put(FOLLOWER_FIRSTNAME, nodeService.getProperty(followerNode, ContentModel.PROP_FIRSTNAME));
+                activityData.put(FOLLOWER_LASTNAME, nodeService.getProperty(followerNode, ContentModel.PROP_LASTNAME));
+                activityData.put(USER_USERNAME, userToFollow);
+                activityData.put(USER_FIRSTNAME, nodeService.getProperty(userNode, ContentModel.PROP_FIRSTNAME));
+                activityData.put(USER_LASTNAME, nodeService.getProperty(userNode, ContentModel.PROP_LASTNAME));
                 activityDataJSON = activityData.toString();
             } catch (JSONException je)
             {
@@ -221,7 +251,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public boolean follows(String userId, String userToFollow)
     {
         checkEnabled();
-        checkRead(userId);
+        checkRead(userId, true);
         return subscriptionsDAO.hasSubscribed(userId, getUserNodeRef(userToFollow));
     }
 
@@ -278,11 +308,16 @@ public class SubscriptionServiceImpl implements SubscriptionService
     /**
      * Checks if the current user is allowed to get subscription data.
      */
-    protected void checkRead(String userId)
+    protected void checkRead(String userId, boolean checkPrivate)
     {
         if (userId == null)
         {
             throw new IllegalArgumentException("User Id may not be null!");
+        }
+
+        if (!checkPrivate)
+        {
+            return;
         }
 
         String currentUser = AuthenticationUtil.getRunAsUser();
@@ -291,7 +326,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
             throw new IllegalArgumentException("No current user!");
         }
 
-        if (currentUser.equalsIgnoreCase(userId) || currentUser.equalsIgnoreCase(AuthenticationUtil.getAdminUserName())
+        if (currentUser.equalsIgnoreCase(userId) || authorityService.isAdminAuthority(currentUser)
                 || AuthenticationUtil.isRunAsUserTheSystemUser() || !isSubscriptionListPrivate(userId))
         {
             return;
@@ -316,7 +351,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
             throw new IllegalArgumentException("No current user!");
         }
 
-        if (currentUser.equalsIgnoreCase(userId) || currentUser.equalsIgnoreCase(AuthenticationUtil.getAdminUserName())
+        if (currentUser.equalsIgnoreCase(userId) || authorityService.isAdminAuthority(currentUser)
                 || AuthenticationUtil.isRunAsUserTheSystemUser())
         {
             return;

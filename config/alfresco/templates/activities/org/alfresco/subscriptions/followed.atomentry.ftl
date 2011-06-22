@@ -1,5 +1,5 @@
 <#include "../slingshot-common.lib.ftl">
-<#assign title>${user?xml} is now following ${userToFollow?xml}</#assign>
+<#assign title>${followerUserName?xml} is now following ${userUserName?xml}</#assign>
 <entry xmlns='http://www.w3.org/2005/Atom'>
    <title>${title}</title>
    <link rel="alternate" type="text/html"/>
@@ -10,6 +10,6 @@
       <![CDATA[${title}.]]>
    </summary>
    <author>
-      <name>${user?xml}</name>
+      <name>${followerUserName?xml}</name>
    </author>
 </entry>

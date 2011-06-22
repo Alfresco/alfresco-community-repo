@@ -268,48 +268,19 @@ function sortByName(a, b)
 
 function findUsers(searchTerm, maxResults, results)
 {
-   // construct query string
-   var query = '+TYPE:"cm:person"';
+   var paging = utils.createPaging(maxResults, -1);
+   var searchResults = groups.searchUsers(searchTerm, paging, "lastName");
    
-   if (searchTerm != null && searchTerm.length > 0)
+   // create person object for each result
+   for each(var user in searchResults)
    {
-      searchTerm = searchTerm.replace(/\"/g, "");
-         
-      query += ' AND (@cm\\:firstName:"' + searchTerm + '*" @cm\\:lastName:"' + searchTerm +
-         '*" @cm\\:userName:"' + searchTerm + '*" )';
-   }
-   
-   if (logger.isLoggingEnabled())
-      logger.log("user query = " + query);
-   
-   // do the query
-   var searchResults = search.query(
-   {
-      query: query,
-      page:
-      {
-         maxItems: maxResults
-      },
-      sort:
-      [
-      {
-         column: "cm:lastName",
-         ascending: true
-      },
-      {
-         column: "cm:firstName",
-         ascending: true
-      }
-      ]
-   });
-   
-   // create person objet for each result
-   for each(var node in searchResults)
-   {
+      if (logger.isLoggingEnabled())
+         logger.log("found user = " + user.userName);
+      
       // add to results
       results.push(
       {
-         item: createPersonResult(node),
+         item: createPersonResult(user.person),
          selectable: true 
       });
    }

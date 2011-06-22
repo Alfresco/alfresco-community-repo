@@ -39,9 +39,6 @@ import org.springframework.dao.DataAccessException;
 public class NullMutableAuthenticationDao implements MutableAuthenticationDao
 {
     /**
-     * Method kept just for backward compatibility with older configurations that
-     * might have been passing in a value.
-     * 
      * @param nodeService ignored
      */
     public void setNodeService(NodeService nodeService)
@@ -50,278 +47,202 @@ public class NullMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Create a user with the given userName and password
-     * 
-     * @param userName
-     * @param rawPassword
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void createUser(String userName, char[] rawPassword) throws AuthenticationException
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
-     * Update a user's password.
-     * 
-     * @param userName
-     * @param rawPassword
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void updateUser(String userName, char[] rawPassword) throws AuthenticationException
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
-     * Delete a user.
-     * 
-     * @param userName
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void deleteUser(String userName) throws AuthenticationException
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
      * Check is a user exists.
      * 
-     * @param userName
-     * @return
+     * @return              <tt>true</tt> always
      */
+    @Override
     public boolean userExists(String userName)
     {
         return true;
     }
     
     /**
-     * Enable/disable a user.
-     * 
-     * @param userName
-     * @param enabled
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setEnabled(String userName, boolean enabled)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
-     * Getter for user enabled
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public boolean getEnabled(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return true;
     }
     
     /**
-     * Set if the account should expire
-     * 
-     * @param userName
-     * @param expires
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setAccountExpires(String userName, boolean expires)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
-     * Does the account expire?
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
-            
+    @Override
     public boolean getAccountExpires(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
     }
     
     /**
-     * Has the account expired?
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public boolean getAccountHasExpired(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
     }
   
     /**
-     * Set if the password expires.
-     * 
-     * @param userName
-     * @param expires
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setCredentialsExpire(String userName, boolean expires)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
   
     /**
-     * Do the credentials for the user expire?
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public boolean getCredentialsExpire(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
     }
     
     /**
-     * Have the credentials for the user expired?
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public boolean getCredentialsHaveExpired(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
     }
     
     /**
-     * Set if the account is locked.
-     * 
-     * @param userName
-     * @param locked
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setLocked(String userName, boolean locked)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
-    
+
     /**
-     * Is the account locked?
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
+    public boolean getLocked(String userName)
+    {
+        throw new AlfrescoRuntimeException("Not implemented");
+    }
+
+    /**
+     * @throws AlfrescoRuntimeException Not implemented
+     */
+    @Override
     public boolean getAccountlocked(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return false;
     }
     
     /**
-     * Set the date on which the account expires
-     * 
-     * @param userName
-     * @param exipryDate
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setAccountExpiryDate(String userName, Date exipryDate)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
-    /** 
-     * Get the date when this account expires.
-     * 
-     * @param userName
-     * @return
+    /**
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public Date getAccountExpiryDate(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return null;
     }
     
     /**
-     * Set the date when credentials expire.
-     * 
-     * @param userName
-     * @param exipryDate
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public void setCredentialsExpiryDate(String userName, Date exipryDate)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-        // Nothing to do
     }
     
     /**
-     * Get the date when the credentials/password expire.
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public Date getCredentialsExpiryDate(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return null;
     }
     
     /**
-     * Get the MD4 password hash
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public String getMD4HashedPassword(String userName)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return null;
     }
 
     /**
-     * Return the user details for the specified user
-     * 
-     * @param user String
-     * @return UserDetails
-     * @exception UsernameNotFoundException
-     * @exception DataAccessException
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public UserDetails loadUserByUsername(String arg0) throws UsernameNotFoundException, DataAccessException
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return null;
     }
 
     /**
-     * Return salt for user
-     * 
-     * @param user UserDetails
-     * @return Object
+     * @throws AlfrescoRuntimeException Not implemented
      */
+    @Override
     public Object getSalt(UserDetails user)
     {
         throw new AlfrescoRuntimeException("Not implemented");
-        
-//        return null;
     }
 }

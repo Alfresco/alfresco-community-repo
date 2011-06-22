@@ -48,7 +48,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
-import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -57,6 +56,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
@@ -75,45 +75,27 @@ public class AuthenticationTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
-
+    private AuthorityService authorityService;
     private TenantService tenantService;
-
-    private NodeRef rootNodeRef;
-
-    private NodeRef systemNodeRef;
-
-    private NodeRef typesNodeRef;
-
-    private NodeRef personAndyNodeRef;
-
     private MD4PasswordEncoder passwordEncoder;
-
     private MutableAuthenticationDao dao;
-
     private AuthenticationManager authenticationManager;
-
     private TicketComponent ticketComponent;
-
     private SimpleCache<String, Ticket> ticketsCache;
-
     private MutableAuthenticationService authenticationService;
-
     private MutableAuthenticationService pubAuthenticationService;
-
     private AuthenticationComponent authenticationComponent;
-
-    private UserTransaction userTransaction;
-
     private AuthenticationComponent authenticationComponentImpl;
-
     private TransactionService transactionService;
-
     private PersonService pubPersonService;
-
     private PersonService personService;
 
-    private UserNameMatcher userNameMatcher;
-    
+    private UserTransaction userTransaction;
+    private NodeRef rootNodeRef;
+    private NodeRef systemNodeRef;
+    private NodeRef typesNodeRef;
+    private NodeRef personAndyNodeRef;
+
     // TODO: pending replacement
     private Dialect dialect;
 
@@ -143,6 +125,7 @@ public class AuthenticationTest extends TestCase
         dialect = (Dialect) ctx.getBean("dialect");
         
         nodeService = (NodeService) ctx.getBean("nodeService");
+        authorityService = (AuthorityService) ctx.getBean("authorityService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
@@ -152,7 +135,6 @@ public class AuthenticationTest extends TestCase
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         pubPersonService =  (PersonService) ctx.getBean("PersonService");
         personService =  (PersonService) ctx.getBean("personService");
-        userNameMatcher = (UserNameMatcher) ctx.getBean("userNameMatcher");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         authenticationCache = (SimpleCache<String, NodeRef>) ctx.getBean("authenticationCache");
         // permissionServiceSPI = (PermissionServiceSPI)
@@ -193,11 +175,11 @@ public class AuthenticationTest extends TestCase
     private void deleteAndy()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
+        dao.setAuthorityService(authorityService);
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
-        dao.setUserNameMatcher(userNameMatcher);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
 
@@ -262,9 +244,9 @@ public class AuthenticationTest extends TestCase
         // get Person
         assertTrue(pubPersonService.personExists(userName));
         
-        AuthenticationUtil.runAs(new RunAsWork() {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
 
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 // TODO Auto-generated method stub
                 assertEquals("andy", ticketComponent.getAuthorityForTicket(pubAuthenticationService.getCurrentTicket()));
@@ -412,9 +394,9 @@ public class AuthenticationTest extends TestCase
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
+        dao.setAuthorityService(authorityService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
-        dao.setUserNameMatcher(userNameMatcher);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.createUser("Andy", "cabbage".toCharArray());

@@ -77,27 +77,13 @@
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
-      <property name="nodeService">
-         <ref bean="nodeService" />
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService" />
-      </property>
-      <property name="namespaceService">
-         <ref bean="namespaceService" />
-      </property>
-      <property name="userNameMatcher">
-         <ref bean="userNameMatcher" />
-      </property>
-      <property name="passwordEncoder">
-         <ref bean="passwordEncoder" />
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent" />
-      </property>
-      <property name="authenticationCache">
-         <ref bean="authenticationCache" />
-      </property>
+      <property name="nodeService" ref="nodeService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="passwordEncoder" ref="passwordEncoder" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="authenticationCache" ref="authenticationCache" />
    </bean>
 
    <!-- Authentication service for chaining -->

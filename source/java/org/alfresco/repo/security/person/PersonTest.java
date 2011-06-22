@@ -39,6 +39,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -1331,12 +1332,53 @@ public class PersonTest extends TestCase
                 "orgId",
                 null);
         NodeRef personNodeRef = personService.createPerson(properties);
+        assertTrue("Person should be enabled.", authenticationDAO.getEnabled(userName));
         assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
         
         authenticationDAO.setEnabled(userName, true);
+        assertTrue("Person should be enabled.", authenticationDAO.getEnabled(userName));
         assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
         
         authenticationDAO.setEnabled(userName, false);
+        assertFalse("Person should be disabled.", authenticationDAO.getEnabled(userName));
         assertTrue("Person should be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
+    }
+    
+    public void testDisableEnableAdmin()
+    {
+        String admin = AuthenticationUtil.getAdminUserName();
+        
+        assertTrue("Admin must be enabled", authenticationDAO.getEnabled(admin));
+        authenticationDAO.setEnabled(admin, true);
+        assertTrue("Admin must be enabled", authenticationDAO.getEnabled(admin));
+        authenticationDAO.setEnabled(admin, false);
+        assertTrue("Admin must STILL be enabled", authenticationDAO.getEnabled(admin));
+        
+        assertFalse("Admin must be unlocked", authenticationDAO.getLocked(admin));
+        authenticationDAO.setLocked(admin, false);
+        assertFalse("Admin must be unlocked", authenticationDAO.getLocked(admin));
+        authenticationDAO.setLocked(admin, true);
+        assertFalse("Admin must STILL be enabled", authenticationDAO.getLocked(admin));
+        
+        assertFalse("Admin account does not expire", authenticationDAO.getAccountExpires(admin));
+        authenticationDAO.setAccountExpires(admin, false);
+        assertFalse("Admin account does not expire", authenticationDAO.getAccountExpires(admin));
+        authenticationDAO.setAccountExpires(admin, true);
+        assertFalse("Admin account STILL does not expire", authenticationDAO.getAccountExpires(admin));
+    }
+    
+    public void testNotifyPerson()
+    {
+        String userName = GUID.generate();
+        authenticationDAO.createUser(userName, "abc".toCharArray());
+        Map<QName, Serializable> properties = createDefaultProperties(
+                userName,
+                "firstName",
+                "lastName",
+                "email@orgId",
+                "orgId",
+                null);
+        personService.createPerson(properties);
+        personService.notifyPerson(userName, "abc");
     }
 }

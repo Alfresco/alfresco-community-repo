@@ -78,8 +78,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -317,11 +315,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.storeRef = new StoreRef(storeUrl);
     }
     
-    public UserNameMatcher getUserNameMatcher()
-    {
-        return userNameMatcher;
-    }
-
     public void setUserNameMatcher(UserNameMatcher userNameMatcher)
     {
         this.userNameMatcher = userNameMatcher;
@@ -384,9 +377,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     }
     
     /**
-     * You can't inject the {@link FileFolderService} directly,
-     *  otherwise spring gets all confused with cyclic dependencies.
-     * So, look it up from the Service Registry as required
+     * Avoid injection issues: Look it up from the Service Registry as required
      */
     private FileFolderService getFileFolderService()
     {
@@ -394,9 +385,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     }
     
     /**
-     * You can't inject the {@link ActionService} directly,
-     *  otherwise spring gets all confused with cyclic dependencies.
-     * So, look it up from the Service Registry as required
+     * Avoid injection issues: Look it up from the Service Registry as required
+     */
+    private NamespaceService getNamespaceService()
+    {
+        return serviceRegistry.getNamespaceService();
+    }
+    
+    /**
+     * Avoid injection issues: Look it up from the Service Registry as required
      */
     private ActionService getActionService()
     {
@@ -860,9 +857,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public NodeRef createPerson(Map<QName, Serializable> properties, Set<String> zones)
     {
+        ParameterCheck.mandatory("properties", properties);
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
+        if (userName == null)
+        {
+            throw new IllegalArgumentException("No username specified when creating the person.");
+        }
 
-        /**
+        /*
          * Check restrictions on the number of users
          */
         Long maxUsers = repoAdminService.getRestrictions().getUsers();
@@ -978,47 +980,39 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         getActionService().executeAction(mailAction, noderef, false, true);
     }
     
+    /**
+     * Finds the email template and then attempts to find a localized version
+     */
     private NodeRef getNotifyEmailTemplateNodeRef()
     {
-        /*
-         * TODO: Use selectNodes
-         */
-        
-        StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:new-user-email.html.ftl\"";
-
-        SearchParameters searchParams = new SearchParameters();
-        searchParams.addStore(spacesStore);
-        searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
-        searchParams.setQuery(query);
-
-        ResultSet results = null;
+        // Find the new user email template
+        String xpath = "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:new-user-email.html.ftl";
         try
         {
-            results = searchService.query(searchParams);
-            List<NodeRef> nodeRefs = results.getNodeRefs();
-            if (nodeRefs.size() == 1)
+            NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            List<NodeRef> nodeRefs = searchService.selectNodes(
+                    rootNodeRef,
+                    xpath,
+                    null,
+                    getNamespaceService(),
+                    false);
+            if (nodeRefs.size() > 1)
             {
-                // Now localise this
-                NodeRef base = nodeRefs.get(0);
-                NodeRef local = getFileFolderService().getLocalizedSibling(base);
-                return local;
+                logger.error("Found too many email templates using: " + xpath);
+                nodeRefs = Collections.singletonList(nodeRefs.get(0));
             }
-            else
+            else if (nodeRefs.size() == 0)
             {
-                throw new InvitationException("Cannot find the email template!");
+                throw new InvitationException("Cannot find the email template using " + xpath);
             }
+            // Now localise this
+            NodeRef base = nodeRefs.get(0);
+            NodeRef local = getFileFolderService().getLocalizedSibling(base);
+            return local;
         }
         catch (SearcherException e)
         {
             throw new InvitationException("Cannot find the email template!", e);
-        }
-        finally
-        {
-            if (results != null)
-            {
-                results.close();
-            }
         }
     }
     
@@ -1242,7 +1236,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             boolean hasMoreItems = results.hasMoreItems();
             int pageNum = (skipCount / maxItems) + 1;
             
-            logger.debug("getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",filters="+stringPropFilters+",filtersIgnoreCase="+filterIgnoreCase+"]");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs " +
+                        		"[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
+                        		",totalCount="+totalCount+",filters="+stringPropFilters+
+                        		",filtersIgnoreCase="+filterIgnoreCase+"]");
+            }
         }
         
         return new PagingPersonResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, results.getQueryExecutionId(), true);

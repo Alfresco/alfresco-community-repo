@@ -79,13 +79,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     private boolean allowGetCredentialsExpiryDate = false;
     
     /**
-     * Create a user with the given userName and password
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param rawPassword
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void createUser(String userName, char[] rawPassword) throws AuthenticationException
     {
@@ -96,13 +94,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Update a user's password.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param rawPassword
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void updateUser(String userName, char[] rawPassword) throws AuthenticationException
     {
@@ -113,12 +109,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Delete a user.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @throws AuthenticationException
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void deleteUser(String userName) throws AuthenticationException
     {
@@ -129,12 +124,9 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Check is a user exists.
+     * {@inheritDoc}
      * 
-     * If enabled returns true.
-     * 
-     * @param userName
-     * @return
+     * @return          <tt>true</tt> always
      */
     public boolean userExists(String userName)
     {
@@ -143,12 +135,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Enable/disable a user.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param enabled
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setEnabled(String userName, boolean enabled)
     {
@@ -159,12 +150,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Getter for user enabled
+     * {@inheritDoc}
      * 
-     * If enabled returns true.
+     * @return          <tt>true</tt> if enabled
      * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public boolean getEnabled(String userName)
     {
@@ -176,12 +166,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Set if the account should expire
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param expires
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setAccountExpires(String userName, boolean expires)
     {
@@ -192,14 +181,12 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Does the account expire?
+     * {@inheritDoc}
      * 
-     * If enabled returns false.
+     * @return      <tt>false</tt> if enabled
      * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
-
     public boolean getAccountExpires(String userName)
     {
         if (!allowSetAccountExpires)
@@ -210,12 +197,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Has the account expired?
+     * {@inheritDoc}
      * 
-     * If enabled returns false.
+     * @return      <tt>false</tt> if enabled
      * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public boolean getAccountHasExpired(String userName)
     {
@@ -227,12 +213,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Set if the password expires.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param expires
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setCredentialsExpire(String userName, boolean expires)
     {
@@ -243,12 +228,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Do the credentials for the user expire?
+     * {@inheritDoc}
      * 
-     * If enabled returns false.
+     * @return      <tt>false</tt> if enabled
      * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public boolean getCredentialsExpire(String userName)
     {
@@ -260,12 +244,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Have the credentials for the user expired?
+     * {@inheritDoc}
      * 
-     * If enabled returns false.
+     * @return      <tt>false</tt> if enabled
      * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public boolean getCredentialsHaveExpired(String userName)
     {
@@ -277,12 +260,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Set if the account is locked.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param locked
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setLocked(String userName, boolean locked)
     {
@@ -293,14 +275,14 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Is the account locked?
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled returns false.
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
-    public boolean getAccountlocked(String userName)
+    @Override
+    public boolean getLocked(String userName)
     {
         if (!allowGetAccountLocked)
         {
@@ -310,12 +292,19 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Set the date on which the account expires
+     * @see #getLocked(String)
+     */
+    public boolean getAccountlocked(String userName)
+    {
+        return getLocked(userName);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param exipryDate
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setAccountExpiryDate(String userName, Date exipryDate)
     {
@@ -326,12 +315,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Get the date when this account expires.
+     * {@inheritDoc}
+     * <p/>
+     * @return      <tt>null</tt> if enabled
      * 
-     * If enabled returns null.
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public Date getAccountExpiryDate(String userName)
     {
@@ -343,12 +331,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Set the date when credentials expire.
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
      * 
-     * If enabled does nothing.
-     * 
-     * @param userName
-     * @param exipryDate
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public void setCredentialsExpiryDate(String userName, Date exipryDate)
     {
@@ -359,12 +346,11 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Get the date when the credentials/password expire.
+     * {@inheritDoc}
+     * <p/>
+     * @return      <tt>null</tt> if enabled
      * 
-     * If enabled returns null.
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
      */
     public Date getCredentialsExpiryDate(String userName)
     {
@@ -376,12 +362,7 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Get the MD4 password hash
-     * 
-     * Always throws an exception.
-     * 
-     * @param userName
-     * @return
+     * @throws AlfrescoRuntimeException always
      */
     public String getMD4HashedPassword(String userName)
     {
@@ -389,15 +370,7 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Return the user details for the specified user
-     * 
-     *  Always throws an exception.
-     * 
-     * @param user
-     *            String
-     * @return UserDetails
-     * @exception UsernameNotFoundException
-     * @exception DataAccessException
+     * @throws AlfrescoRuntimeException always
      */
     public UserDetails loadUserByUsername(String arg0) throws UsernameNotFoundException, DataAccessException
     {
@@ -405,13 +378,7 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
-     * Return salt for user
-     * 
-     * Always throws an exception.
-     * 
-     * @param user
-     *            UserDetails
-     * @return Object
+     * @throws AlfrescoRuntimeException always
      */
     public Object getSalt(UserDetails user)
     {

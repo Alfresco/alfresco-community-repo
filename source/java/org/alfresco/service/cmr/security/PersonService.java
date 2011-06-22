@@ -26,7 +26,6 @@ import java.util.Set;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;

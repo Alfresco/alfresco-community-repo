@@ -24,6 +24,7 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * The Script user is a USER authority exposed to the scripting API
@@ -40,20 +41,31 @@ public class ScriptUser implements Authority, Serializable
     private String shortName;
     private String displayName;
     private NodeRef personNodeRef;
+    private Scriptable scope;
     
-    public ScriptUser(String userName, NodeRef personNodeRef, ServiceRegistry serviceRegistry)
+    /**
+     * Constructs a scriptable object representing a user.
+     * 
+     * @param userName The username
+     * @param personNodeRef The NodeRef
+     * @param serviceRegistry A ServiceRegistry instance
+     * @param scope Script scope
+     * @since 4.0
+     */
+    public ScriptUser(String userName, NodeRef personNodeRef, ServiceRegistry serviceRegistry, Scriptable scope)
     {
        this.serviceRegistry = serviceRegistry;
        this.authorityService = serviceRegistry.getAuthorityService();
-       
+       this.scope = scope;
        this.personNodeRef = personNodeRef;
-       this.userName = userName; 
+       this.userName = userName;
+       
        shortName = authorityService.getShortName(userName);
        displayName = authorityService.getAuthorityDisplayName(userName);
     }
     
     /**
-     * @deprecated The ServiceRegistry is now needed
+     * @deprecated The ServiceRegistry and a Scriptable scope are now required
      */
     public ScriptUser(String userName, AuthorityService authorityService)
     {
@@ -114,6 +126,8 @@ public class ScriptUser implements Authority, Serializable
 
     /**
      * Return the NodeRef of the person
+     * 
+     * @since 4.0
      */
     public NodeRef getPersonNodeRef()
     {
@@ -127,9 +141,11 @@ public class ScriptUser implements Authority, Serializable
 
     /**
      * Return a ScriptNode wrapping the person
+     * 
+     * @since 4.0
      */
     public ScriptNode getPerson()
     {
-       return new ScriptNode(getPersonNodeRef(), serviceRegistry);
+       return new ScriptNode(getPersonNodeRef(), serviceRegistry, this.scope);
     }
 }

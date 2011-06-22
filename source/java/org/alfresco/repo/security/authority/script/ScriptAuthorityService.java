@@ -98,15 +98,16 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone, ScriptPagingDetails paging, String sortBy)
     {
         Set<String> authorities;
-        try {
-         authorities = authorityService.findAuthorities(AuthorityType.GROUP,
+        try 
+        {
+            authorities = authorityService.findAuthorities(AuthorityType.GROUP,
                     null, true, displayNamePattern, zone);
         }
-        catch(UnknownAuthorityException e)
+        catch (UnknownAuthorityException e)
         {
             authorities = Collections.emptySet();
         }
-        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry);
+        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry, this.getScope());
     }
     
     /**
@@ -155,14 +156,15 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     public ScriptGroup[] getAllRootGroups(ScriptPagingDetails paging)
     {
         Set<String> authorities;
-        try{
+        try
+        {
             authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
         }
         catch(UnknownAuthorityException e)
         {
             authorities = Collections.emptySet();
         }
-        return makeScriptGroups(authorities, paging, serviceRegistry);
+        return makeScriptGroups(authorities, paging, serviceRegistry, this.getScope());
     }
     
     /**
@@ -194,7 +196,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             authorities = Collections.emptySet();
         }
 
-		return makeScriptGroups(authorities, new ScriptPagingDetails(maxItems, skipCount), null, serviceRegistry);
+		return makeScriptGroups(authorities, new ScriptPagingDetails(maxItems, skipCount), 
+		            null, serviceRegistry, this.getScope());
 	}
     
     /**
@@ -216,7 +219,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             authorities = Collections.emptySet();
         }
 
-        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry);
+        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry, this.getScope());
     }
     
 	/**
@@ -230,7 +233,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		
 		if (authorityService.authorityExists(fullName))
 		{
-		    ScriptGroup group = new ScriptGroup(fullName, serviceRegistry);
+		    ScriptGroup group = new ScriptGroup(fullName, serviceRegistry, this.getScope());
 		    return group;		
 		}
 		// group not found.
@@ -246,7 +249,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	{
 		if (authorityService.authorityExists(fullAuthorityName))
 		{
-		    ScriptGroup group = new ScriptGroup(fullAuthorityName, serviceRegistry);
+		    ScriptGroup group = new ScriptGroup(fullAuthorityName, serviceRegistry, this.getScope());
 		    return group;		
 		}
 		// group not found.
@@ -338,7 +341,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
         }
         
         Set<String> authorities;
-        try {
+        try 
+        {
             authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, zone);
         }
         catch(UnknownAuthorityException e)
@@ -346,7 +350,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             // Return an empty set if unrecognised authority.
             authorities = Collections.emptySet();
         }
-        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry);
+        return makeScriptGroups(authorities, paging, sortBy, serviceRegistry, this.getScope());
     }
     
     /**
@@ -359,9 +363,9 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        try
        {
           NodeRef person = personService.getPerson(username, false);
-          return new ScriptUser(username, person, serviceRegistry);
+          return new ScriptUser(username, person, serviceRegistry, this.getScope());
        }
-       catch(NoSuchPersonException e)
+       catch (NoSuchPersonException e)
        {
           return null;
        }
@@ -387,13 +391,13 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        // Build the sorting. The user controls the primary sort, we supply
        // additional ones automatically
        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
-       if("lastName".equals(sortBy))
+       if ("lastName".equals(sortBy))
        {
           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
        }
-       else if("firstName".equals(sortBy))
+       else if ("firstName".equals(sortBy))
        {
           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, true));
           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, true));
@@ -415,13 +419,12 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        // Now wrap up the users
        List<NodeRef> nodes = results.getPage();
        ScriptUser[] users = new ScriptUser[nodes.size()];
-       for(int i=0; i<users.length; i++)
+       for (int i=0; i<users.length; i++)
        {
           NodeRef node = nodes.get(i);
           String username = (String)serviceRegistry.getNodeService().getProperty(
-                node, ContentModel.PROP_USERNAME
-          );
-          users[i] = new ScriptUser(username, node, serviceRegistry);
+                node, ContentModel.PROP_USERNAME);
+          users[i] = new ScriptUser(username, node, serviceRegistry, this.getScope());
        }
        
        return users;

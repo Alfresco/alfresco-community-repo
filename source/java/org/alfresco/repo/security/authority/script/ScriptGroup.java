@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.ModelUtil;
 import org.alfresco.util.ScriptPagingDetails;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * The Script group is a GROUP authority exposed to the scripting API.
@@ -54,15 +55,16 @@ public class ScriptGroup implements Authority, Serializable
     private String displayName;
     private Set<String> childAuthorityNames;
     private Boolean isAdmin; 
+    private Scriptable scope;
     
     /**
      * New script group
      * @param fullName
      * @param serviceRegistry
      */
-    public ScriptGroup(String fullName, ServiceRegistry serviceRegistry)
+    public ScriptGroup(String fullName, ServiceRegistry serviceRegistry, Scriptable scope)
     {
-       this(fullName, serviceRegistry, serviceRegistry.getAuthorityService());
+       this(fullName, serviceRegistry, serviceRegistry.getAuthorityService(), scope);
     }
     
     /**
@@ -73,7 +75,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup(String fullName, AuthorityService authorityService)
     {
-       this(fullName, null, authorityService);
+       this(fullName, null, authorityService, null);
     }
     
     /**
@@ -81,11 +83,12 @@ public class ScriptGroup implements Authority, Serializable
      * @param fullName
      * @param authorityService
      */
-    private ScriptGroup(String fullName, ServiceRegistry serviceRegistry, AuthorityService authorityService)
+    private ScriptGroup(String fullName, ServiceRegistry serviceRegistry, AuthorityService authorityService, Scriptable scope)
     {
        this.authorityService = authorityService;
        this.serviceRegistry = serviceRegistry;
-       this.fullName = fullName;   
+       this.fullName = fullName;
+       this.scope = scope;
        shortName = authorityService.getShortName(fullName);
        displayName = authorityService.getAuthorityDisplayName(fullName);
     }
@@ -155,7 +158,7 @@ public class ScriptGroup implements Authority, Serializable
         Set<ScriptUser> users = new LinkedHashSet<ScriptUser>();
         for (String authority : children)
         {
-            ScriptUser user = new ScriptUser(authority, null, serviceRegistry);
+            ScriptUser user = new ScriptUser(authority, null, serviceRegistry, this.scope);
             users.add(user);
         }
         return users.toArray(new ScriptUser[users.size()]);
@@ -171,7 +174,7 @@ public class ScriptGroup implements Authority, Serializable
         Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
         for (String authority : children)
         {
-            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService);
+            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService, this.scope);
             groups.add(group);	
         }
         return groups.toArray(new ScriptGroup[groups.size()]);
@@ -226,7 +229,7 @@ public class ScriptGroup implements Authority, Serializable
             Set<ScriptUser> users = new LinkedHashSet<ScriptUser>();
             for (String authority : children)
             {
-                ScriptUser user = new ScriptUser(authority, null, serviceRegistry);
+                ScriptUser user = new ScriptUser(authority, null, serviceRegistry, this.scope);
                 users.add(user);
             }
             childUsers = users.toArray(new ScriptUser[users.size()]);
@@ -356,7 +359,7 @@ public class ScriptGroup implements Authority, Serializable
         LinkedHashSet<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
         for (String authority : sortedParents)
         {
-            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService);
+            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService, this.scope);
             groups.add(group);
 
         }
@@ -394,7 +397,7 @@ public class ScriptGroup implements Authority, Serializable
     public ScriptGroup[] getAllParentGroups(ScriptPagingDetails paging, String sortBy)
     {
         Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, false);
-        return makeScriptGroups(parents, paging, sortBy, serviceRegistry);
+        return makeScriptGroups(parents, paging, sortBy, serviceRegistry, this.scope);
     }
     
     /**
@@ -446,7 +449,7 @@ public class ScriptGroup implements Authority, Serializable
     {
         String authorityName = authorityService.createAuthority(AuthorityType.GROUP, newShortName, newDisplayName, authorityService.getDefaultZones());
         authorityService.addAuthority(fullName, authorityName);
-        ScriptGroup childGroup = new ScriptGroup(authorityName, serviceRegistry, authorityService);
+        ScriptGroup childGroup = new ScriptGroup(authorityName, serviceRegistry, authorityService, this.scope);
         clearCaches();
         return childGroup;
     }
@@ -506,12 +509,15 @@ public class ScriptGroup implements Authority, Serializable
     }
 	
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
-                ScriptPagingDetails paging, ServiceRegistry serviceRegistry)
+                ScriptPagingDetails paging, ServiceRegistry serviceRegistry,
+                Scriptable scope)
     {
-        return makeScriptGroups(authorities, paging, null, serviceRegistry);
+        return makeScriptGroups(authorities, paging, null, serviceRegistry, scope);
     }
+    
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
-            ScriptPagingDetails paging, final String sortBy, ServiceRegistry serviceRegistry)
+            ScriptPagingDetails paging, final String sortBy, ServiceRegistry serviceRegistry, 
+            Scriptable scope)
     {
         
         final ArrayList<String> authList = new ArrayList<String>(authorities);
@@ -519,11 +525,11 @@ public class ScriptGroup implements Authority, Serializable
         
         // Depending on what we're sorting on, we may
         //  need to get the details now
-        if("shortName".equals(sortBy) || "displayName".equals(sortBy))
+        if ("shortName".equals(sortBy) || "displayName".equals(sortBy))
         {
-            for(String authority : authorities)
+            for (String authority : authorities)
             {
-                scriptGroupCache.put(authority, new ScriptGroup(authority, serviceRegistry));
+                scriptGroupCache.put(authority, new ScriptGroup(authority, serviceRegistry, scope));
             }
             final AuthorityComparator c2 = new AuthorityComparator(sortBy);
             Collections.sort(authList, new Comparator<String>() {
@@ -562,7 +568,7 @@ public class ScriptGroup implements Authority, Serializable
             } 
             else 
             {
-                group = new ScriptGroup(authority, serviceRegistry);
+                group = new ScriptGroup(authority, serviceRegistry, scope);
             }
             groups[i] = group;
         }

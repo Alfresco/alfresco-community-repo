@@ -82,6 +82,7 @@ public class AdminNodeBrowseBean implements Serializable
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_CMIS_STRICT));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_CMIS_ALFRESCO));
         queryLanguages.add(new SelectItem(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO));
+        queryLanguages.add(new SelectItem(SearchService.LANGUAGE_SOLR_CMIS));
         queryLanguages.add(new SelectItem("selectnodes"));
     }
 

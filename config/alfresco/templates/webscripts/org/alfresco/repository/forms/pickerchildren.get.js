@@ -299,28 +299,17 @@ function findGroups(searchTerm, maxResults, results)
       logger.log("Finding groups matching pattern: " + searchTermPattern);
    
    var searchResults = groups.searchGroupsInZone(searchTermPattern, "APP.DEFAULT");
-   for each(var node in searchResults)
+   for each(var group in searchResults)
    {
-      // find the actual node that represents the group
-      var query = '+TYPE:"cm:authorityContainer" AND @cm\\:authorityName:' + node.fullName;
-      
       if (logger.isLoggingEnabled())
-         logger.log("group query = " + query);
-      
-      var searchResults = search.query(
+         logger.log("found group = " + group.fullName);
+         
+      // add to results
+      results.push(
       {
-         query: query
+         item: createGroupResult(group.groupNode),
+         selectable: true 
       });
-
-      if (searchResults.length > 0)
-      {
-         // add to results
-         results.push(
-         {
-            item: createGroupResult(searchResults[0]),
-            selectable: true 
-         });
-      }
    }
    
    // sort the groups by name alphabetically

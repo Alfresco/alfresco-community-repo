@@ -34,6 +34,7 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.AbstractFormProcessor;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
+import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.permissions.AccessDeniedException;

@@ -2,10 +2,11 @@
 <#import "publishing.lib.ftl" as publishLib />
 {
    "data": 
-   [
-      <#list data as channel>
-      <@publishLib.channelJSON channel=channel />
-      <#if channel_has_next>,</#if>
-      </#list>
-   ]
+   {
+      urlLength: ${data.urlLength},
+      "publishChannels":
+      <@publishLib.channelsJSON channels=data.publishChannels />,
+      "statusUpdateChannels":
+      <@publishLib.channelsJSON channels=data.statusUpdateChannels />
+   }
 }

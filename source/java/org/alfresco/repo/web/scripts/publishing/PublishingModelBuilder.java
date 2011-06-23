@@ -42,28 +42,31 @@ public class PublishingModelBuilder
     // General Keys
     public static final String ID = "id";
     public static final String URL = "url";
+    public static final String ICON = "icon";
+    public static final String TITLE = "title";
 
     // Channel Type Keys
-    public static final String CHANNEL_NODE_TYP = "channelNodeType";
-    public static final String CONTENT_ROOT_NODE_TYP = "contentRootNodeType";
+    public static final String CHANNEL_NODE_TYPE = "channelNodeType";
+    public static final String CONTENT_ROOT_NODE_TYPE = "contentRootNodeType";
     public static final String SUPPORTED_CONTENT_TYPES = "supportedContentTypes";
     public static final String SUPPORTED_MIME_TYPES = "supportedMimeTypes";
     public static final String CAN_PUBLISH = "canPublish";
     public static final String CAN_PUBLISH_STATUS_UPDATES = "canPublishStatusUpdates";
     public static final String CAN_UNPUBLISH = "canUnpublish";
+    public static final String MAX_STATUS_LENGTH = "maxStatusLength";
 
     // Channel Keys
-    public static final String CHANNEL_TYPE = "channelType";
     public static final String NAME = "name";
+    public static final String CHANNEL_TYPE = "channelType";
     
     public Map<String, Object> buildChannel(Channel channel)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
-        model.put(NAME, channel.getName());
         model.put(URL, getUrl(channel));
+        model.put(NAME, channel.getName());
+        //TODO Localize the title.
+        model.put(TITLE, channel.getName());
         model.put(CHANNEL_TYPE, buildChannelType(channel.getChannelType()));
-
         return model;
     }
 
@@ -82,16 +85,22 @@ public class PublishingModelBuilder
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(ID, type.getId());
+        //TODO Localize the title.
+        model.put(TITLE, type.getId());
         model.put(URL, getUrl(type));
         
-        model.put(CHANNEL_NODE_TYP, type.getChannelNodeType().toString());
-        model.put(CONTENT_ROOT_NODE_TYP, type.getContentRootNodeType().toString());
+        model.put(CHANNEL_NODE_TYPE, type.getChannelNodeType().toString());
+        model.put(CONTENT_ROOT_NODE_TYPE, type.getContentRootNodeType().toString());
+
         model.put(SUPPORTED_CONTENT_TYPES, toListOfStrings(type.getSupportedContentTypes()));
         model.put(SUPPORTED_MIME_TYPES, type.getSupportedMimetypes());
+
         model.put(CAN_PUBLISH, toString(type.canPublish()));
         model.put(CAN_PUBLISH_STATUS_UPDATES, toString(type.canPublishStatusUpdates()));
         model.put(CAN_UNPUBLISH, toString(type.canUnpublish()));
 
+        model.put(MAX_STATUS_LENGTH, type.getMaximumStatusLength());
+        model.put(ICON, "");
         return model;
     }
     

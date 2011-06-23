@@ -39,9 +39,11 @@
                      {
                         "url": string,
                         "name": string,
+                        "title": string,
                         "channelType":
                         {
                            "id": string,
+                           "title": string,
                            "url": string,
                            "channelNodeType": string,
                            "contentRootNodeType": string,
@@ -61,9 +63,11 @@
                      {
                         "url": string,
                         "name": string,
+                        "title": string,
                         "channelType":
                         {
                            "id": string,
+                           "title": string,
                            "url": string,
                            "channelNodeType": string,
                            "contentRootNodeType": string,

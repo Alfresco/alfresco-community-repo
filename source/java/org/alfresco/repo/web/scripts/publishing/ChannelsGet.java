@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -40,18 +41,25 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ChannelsGet extends DeclarativeWebScript
 {
-    public static final String DATA_KEY = "data";
     public static final String SITE_ID = "site_id";
+    public static final String STORE_PROTOCOL = "store_protocol";
+    public static final String STORE_ID = "store_id";
+    public static final String NODE_ID = "node_id";
+
+    // Model Keys
+    public static final String DATA_KEY = "data";
+    public static final String URL_LENGTH = "urlLength";
+    public static final String PUBLISHING_CHANNELS = "publishChannels";
+    public static final String STATUS_UPDATE_CHANNELS = "statusUpdateChannels";
     
     private ChannelService channelService;
-    
+
     /**
     * {@inheritDoc}
     */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        
         PublishingModelBuilder builder = new PublishingModelBuilder();
         return buildModel(builder, req, status, cache);
     }
@@ -61,14 +69,46 @@ public class ChannelsGet extends DeclarativeWebScript
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         String siteId = params.get(SITE_ID);
-        if (siteId== null)
+        
+        List<Channel> publishingChannels;
+        List<Channel> statusUpdateChannels;
+        if (siteId!= null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "A Site ID must be specified!");
+            publishingChannels = channelService.getPublishingChannels(siteId);
+            statusUpdateChannels = channelService.getStatusUpdateChannels(siteId);
+        }
+        else
+        {
+            NodeRef node = getNodeRef(params);
+            if(node == null)
+            {
+                String msg = "Either a Site ID or valid NodeRef must be specified!";
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+            }
+            publishingChannels = channelService.getRelevantPublishingChannels(node);
+            statusUpdateChannels = channelService.getStatusUpdateChannels(node);
         }
 
-        List<Channel> channels = channelService.getChannels(siteId);
-        List<Map<String, Object>> results = builder.buildChannels(channels);
-        return createBaseModel(results);
+        Map<String, Object> model = new HashMap<String, Object>();
+        
+        //TODO Implement URL shortening.
+        model.put(URL_LENGTH, 20);
+        
+        model.put(PUBLISHING_CHANNELS, builder.buildChannels(publishingChannels));
+        model.put(STATUS_UPDATE_CHANNELS, builder.buildChannels(statusUpdateChannels));
+        return createBaseModel(model);
+    }
+
+    private NodeRef getNodeRef(Map<String, String> params)
+    {
+        String protocol = params.get(STORE_PROTOCOL);
+        String storeId= params.get(STORE_ID);
+        String nodeId= params.get(NODE_ID);
+        if(protocol == null || storeId == null || nodeId==null )
+        {
+            return null;
+        }
+        return new NodeRef(protocol, storeId, nodeId);
     }
 
     protected Map<String, Object> createBaseModel(Map<String, Object> result)

@@ -1,20 +1,31 @@
+<#-- Renders a List of Channel.s -->
+<#macro channelsJSON channels>
+<#escape x as jsonUtils.encodeJSONString(x)>
+      [
+         <#list channels as channel>
+         <@channelJSON channel=channel />
+         <#if channel_has_next>,</#if>
+         </#list>
+      ]
+</#escape>
+</#macro>
+
 <#-- Renders a Channel. -->
 <#macro channelJSON channel>
-<#escape x as jsonUtils.encodeJSONString(x)>
       {
          "url": "${channel.url}",
          "name": "${channel.name}",
+         "title": "${channel.title}",
          "channelType":
          <@channelTypeJSON type=channel.channelType />
       }
-</#escape>
 </#macro>
 
 <#-- Renders a Channel Type. -->
 <#macro channelTypeJSON type>
-<#escape x as jsonUtils.encodeJSONString(x)>
       {
          "id": "${type.id}",
+         "title": "${type.title}",
          "url": "${type.url}",
          "channelNodeType": "${type.channelNodeType}",
          "contentRootNodeType": "${type.contentRootNodeType}",
@@ -22,21 +33,20 @@
          <@iterateStringsJSON strings=type.supportedContentTypes />,
          "supportedMimeTypes":
          <@iterateStringsJSON strings=type.supportedMimeTypes/>,
-         "canPublish": "${type.canPublish}",
-         "canPublishStatusUpdates": "${type.canPublishStatusUpdates}",
-         "canUnpublish": "${type.canUnpublish}"
+         "canPublish": ${type.canPublish},
+         "canPublishStatusUpdates": ${type.canPublishStatusUpdates},
+         "canUnpublish": ${type.canUnpublish},
+         "maxStatusLength": ${type.maxStatusLength},
+         "icon": "${type.icon}"
       }
-</#escape>
 </#macro>
 
 <#-- Renders a List of Strings. -->
 <#macro iterateStringsJSON strings>
-<#escape x as jsonUtils.encodeJSONString(x)>
       [
          <#list strings as string>
          "${string}"
          <#if string_has_next>,</#if>
          </#list>
       ]
-</#escape>
 </#macro>

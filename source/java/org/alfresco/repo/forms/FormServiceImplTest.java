@@ -1253,13 +1253,13 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(1, assocs.size());
         
         // request a form for a type with an underscore in it's name
-        fields = new ArrayList<String>(4);
+        fields = new ArrayList<String>(1);
         fields.add("cm:name");
 
         form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "fdk:with_underscore"), fields);
         assertNotNull(form);
         
-        // make sure there are 3 fields
+        // make sure there is 1 fields
         fieldDefs = form.getFieldDefinitions();
         assertNotNull(fieldDefs);
         assertEquals(1, fieldDefs.size());
@@ -1271,6 +1271,34 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         data.addFieldData(AbstractFormProcessor.DESTINATION, this.folder.toString());
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "fdk:with_underscore"), data);
         assertNotNull(newNode);
+        
+        // get and save a form for a type and property that has a dash in the namespace prefix 
+        fields = new ArrayList<String>(2);
+        fields.add("cm:name");
+        fields.add("my-fdk:more_text");
+
+        form = this.formService.getForm(new Item(TYPE_FORM_ITEM_KIND, "my-fdk:namespace-with-dash"), fields);
+        assertNotNull(form);
+        
+        // make sure there are 2 fields
+        fieldDefs = form.getFieldDefinitions();
+        assertNotNull(fieldDefs);
+        assertEquals(2, fieldDefs.size());
+        
+        // save the form to ensure persistence works too
+        nodeName = GUID.generate() + ".txt";
+        data = new FormData();
+        data.addFieldData("prop_cm_name", nodeName);
+        data.addFieldData("prop_my-fdk_more_text", "This is some text");
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "my-fdk_namespace-with-dash"), data);
+        assertNotNull(newNode);
+        
+        // retrieve the properties and check the values
+        Map<QName, Serializable> props = nodeService.getProperties(newNode);
+        assertEquals(nodeName, (String)props.get(ContentModel.PROP_NAME));
+        assertEquals("This is some text", (String)props.get(
+                    QName.createQName("http://www.alfresco.org/model/my-fdk/1.0", "more_text")));
     }
     
     public void testGetFormForJbpmTask() throws Exception

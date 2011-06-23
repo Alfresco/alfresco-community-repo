@@ -471,8 +471,11 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_MLVALUE, PREFIX + ":"
                                 + ManifestModel.LOCALNAME_ELEMENT_MLVALUE, attributes);
-        String strValue = (String) DefaultTypeConverter.INSTANCE.convert(String.class, value);
-        writer.characters(strValue.toCharArray(), 0, strValue.length());
+        if (value != null)
+        {
+            String strValue = (String) DefaultTypeConverter.INSTANCE.convert(String.class, value);
+            writer.characters(strValue.toCharArray(), 0, strValue.length());
+        }
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_MLVALUE, PREFIX + ":"
                                 + ManifestModel.LOCALNAME_ELEMENT_MLVALUE);

@@ -29,6 +29,7 @@ import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
 import org.alfresco.repo.domain.permissions.Acl;
+import org.alfresco.service.cmr.avm.AVMException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -145,17 +146,18 @@ class AVMStoreDAOIbatis implements AVMStoreDAO
             {
                 logger.warn("Root node id is null for store: "+storeEntity);
             }
-            return null;
+            throw new AVMException(storeEntity.toString());
         }
         
         DirectoryNode rootNode = (DirectoryNode) ((AVMNodeDAOIbatis)AVMDAOs.Instance().fAVMNodeDAO).getRootNodeByID(store, rootNodeId);
         if (rootNode == null)
         {
+            // belts-and-braces
             if (logger.isWarnEnabled())
             {
                 logger.warn("Root node ("+rootNodeId+") not found for store: "+storeEntity);
             }
-            return null;
+            throw new AVMException(storeEntity.toString());
         }
         
         store.setRoot(rootNode);

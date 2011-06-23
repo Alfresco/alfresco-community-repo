@@ -156,7 +156,10 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
         Pair<Long, AVMNodeEntity> entityPair = avmNodeCache.getByKey(nodeId);
         if (entityPair == null)
         {
-            return null;
+            // cache-only operation: belts-and-braces
+            avmNodeCache.removeByKey(nodeId);
+            
+            throw new ConcurrencyFailureException("getNode: "+nodeId);
         }
         return entityPair.getSecond();
     }

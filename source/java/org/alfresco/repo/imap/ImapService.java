@@ -54,7 +54,7 @@ public interface ImapService
         }
         public String getSubtype()
         {
-            return name().toLowerCase().substring(name().indexOf("_") + 1 + "TEXT".length());
+            return name().toLowerCase().substring(name().indexOf("_") + 2 + "TEXT".length());
         }
 
         public String getTypeSubtype()

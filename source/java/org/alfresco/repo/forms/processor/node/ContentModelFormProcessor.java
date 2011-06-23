@@ -97,7 +97,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * names will look like <code>"prop_cm_name"</code>. The pattern can also be
      * used to extract the "cm" and the "name" parts.
      */
-    protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)");
+    protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "([a-zA-Z0-9-]+)_(.*)");
 
     /**
      * A regular expression which can be used to match tranisent property names.
@@ -112,7 +112,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * pattern can also be used to extract the "cm", the "name" and the suffix
      * parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)(_[a-zA-Z]+)");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9-]+)_(.*)(_[a-zA-Z]+)");
 
     /**
      * Sets the node service

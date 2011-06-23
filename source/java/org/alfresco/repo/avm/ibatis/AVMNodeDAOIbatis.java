@@ -50,6 +50,8 @@ import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
 import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * iBATIS DAO wrapper for AVMNode
@@ -59,6 +61,8 @@ import org.alfresco.service.namespace.QName;
  */
 class AVMNodeDAOIbatis implements AVMNodeDAO
 {
+    private static Log logger = LogFactory.getLog(AVMNodeDAO.class);
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNodeDAO#save(org.alfresco.repo.avm.AVMNode)
      */
@@ -150,11 +154,19 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
     
     /* package */ AVMNode getRootNodeByID(AVMStore store, long rootNodeId)
     {
-        AVMNodeEntity rootNodeEntity = AVMDAOs.Instance().newAVMNodeDAO.getNode(rootNodeId);
+        AVMNodeEntity rootNodeEntity = null;
         
-        if (rootNodeEntity == null)
+        try
         {
-            return null;
+            rootNodeEntity = AVMDAOs.Instance().newAVMNodeDAO.getNode(rootNodeId);
+        }
+        catch (RuntimeException re)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Root node ("+rootNodeId+") not found for store: "+store);
+            }
+            throw re;
         }
         
         AVMNode rootNode = null;

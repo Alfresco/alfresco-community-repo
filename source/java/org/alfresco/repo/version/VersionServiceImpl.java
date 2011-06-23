@@ -21,6 +21,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -921,10 +923,10 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
         }
         
-        // Do we need to create the initial version history entry?
+        // Do we need to create the initial version history entry? By convention this is always a major version.
         if(getVersionHistory(nodeRef) == null)
         {
-            createVersion(nodeRef, null);
+            createVersion(nodeRef, Collections.<String,Serializable>singletonMap(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR));
         }
         
         // Put Auditable back

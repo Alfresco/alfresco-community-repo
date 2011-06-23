@@ -91,6 +91,13 @@
       <property name="transactionService" ref="transactionService" />
       <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
       <property name="replicationParams" ref="replicationParams" />
+      <property name="excludedAspects">
+         <list>
+            <value>{http://www.alfresco.org/model/rule/1.0}rules</value>
+            <value>{http://www.alfresco.org/model/content/1.0}versionable</value>
+            <value>{http://www.alfresco.org/model/content/1.0}mlDocument</value>
+         </list>
+      </property>
    </bean>
 
    <!-- JavaScript API support -->

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.replication;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,6 @@ import org.alfresco.repo.action.ActionCancelledException;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.ChildAssociatedNodeFinder;
 import org.alfresco.repo.transfer.ContentClassFilter;
@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.transfer.TransferEventEnterState;
 import org.alfresco.service.cmr.transfer.TransferEventError;
 import org.alfresco.service.cmr.transfer.TransferFailureException;
 import org.alfresco.service.cmr.transfer.TransferService2;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +74,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
    private TransactionService transactionService;
    private ReplicationDefinitionPersisterImpl replicationDefinitionPersister;
    private ReplicationParams replicationParams;
+   private List<QName> excludedAspects = new ArrayList<QName>();
    
    /**
     * By default, we lock for a minute, so if this server is shutdown another can take over a 
@@ -159,6 +161,14 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
        this.replicationParams = replicationParams;
    }
    
+   public void setExcludedAspects(String[] excludedAspects)
+   {
+       for (String aspect : excludedAspects)
+       {
+           this.excludedAspects.add(QName.createQName(aspect));
+       }
+   }
+
    @Override
    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
       // Not used - our definitions hold everything on them
@@ -218,8 +228,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       // Exclude aspects from transfer
       // NOTE: this list of aspects should be synced up with the NodeCrawler in expandPayload to
       //       ensure a coherent set of nodes are transferred
-      transferDefinition.setExcludedAspects(RuleModel.ASPECT_RULES,
-          ContentModel.ASPECT_VERSIONABLE);
+      transferDefinition.setExcludedAspects(excludedAspects);
             
       return transferDefinition;
    }

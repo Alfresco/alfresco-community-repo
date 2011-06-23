@@ -1980,7 +1980,14 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             extractScriptableProperties((ScriptableObject)props, aspectProps);
         }
         QName aspectQName = createQName(type);
-        this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
+        if (aspectQName.equals(ContentModel.ASPECT_VERSIONABLE))
+        {
+            ensureVersioningEnabled(true, true);
+        }
+        else
+        {
+            this.nodeService.addAspect(this.nodeRef, aspectQName, aspectProps);
+        }
         
         // reset the relevant cached node members
         reset();

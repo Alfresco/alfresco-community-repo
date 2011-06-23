@@ -199,6 +199,44 @@
          </mandatory-aspects>
       </type>
 
+      <type name="pub:Connection">
+         <title>Publishing Connectiont</title>
+         <description>Holds details of an OAuth connection</description>
+         <parent>cm:cmobject</parent>
+         <properties>
+            <property name="pub:accountId">
+               <title>Account Id</title>
+               <type>d:any</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="pub:providerId">
+               <title>Provider Id</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="pub:providerAccountId">
+               <title>Provider Account Id</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="pub:accessToken">
+               <title>Access Token</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="pub:secret">
+               <title>Access Secret</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="pub:refreshToken">
+               <title>Refresh Token</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+
    </types>
 
    <aspects>

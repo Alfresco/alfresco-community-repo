@@ -39,9 +39,9 @@
 
    <!--  Channel Service -->
    <bean id="channelService" class="org.alfresco.repo.publishing.ChannelServiceImpl">
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="siteService" ref="siteService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="siteService" ref="SiteService" />
       <property name="environmentHelper" ref="environmentHelper" />
       <property name="channelHelper" ref="channelHelper" />
    </bean>
@@ -53,21 +53,21 @@
    </bean>
    
    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">
-      <property name="nodeService" ref="nodeService" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="contentService" ref="contentService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="fileFolderService" ref="FileFolderService" />
    </bean>
 
    <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
-      <property name="nodeService" ref="nodeService" />
-      <property name="siteService" ref="siteService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="siteService" ref="SiteService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="channelHelper" ref="channelHelper" />
    </bean>
 
    <bean id="publishingEventHelper" class="org.alfresco.repo.publishing.PublishingEventHelper">
-      <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="contentService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="contentService" ref="ContentService" />
       <property name="serializer" ref="publishingPackageSerializer" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="workflowEngineId" value="jbpm" />
@@ -87,7 +87,7 @@
       <property name="channelHelper" ref="channelHelper" />
       <property name="channelService" ref="channelService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
-      <property name="nodeService" ref="nodeService" />
+      <property name="nodeService" ref="NodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 

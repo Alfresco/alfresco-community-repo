@@ -40,6 +40,7 @@ public interface PublishingModel
     public static final QName TYPE_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "PublishingQueue");
     public static final QName TYPE_CHANNEL_CONTAINER = QName.createQName(NAMESPACE, "SiteChannelContainer");
     public static final QName TYPE_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "PublishingEvent");
+    public static final QName TYPE_PUBLISHING_CONNECTION = QName.createQName(NAMESPACE, "Connection");
     
     public static final QName ASPECT_CONTENT_ROOT = QName.createQName(NAMESPACE, "ContentRoot");
     public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
@@ -60,12 +61,20 @@ public interface PublishingModel
     public static final QName PROP_STATUS_UPDATE_CHANNEL_NAMES = QName.createQName(NAMESPACE, "statusUpdateChannelNames");
     public static final QName PROP_STATUS_UPDATE_NODE_REF = QName.createQName(NAMESPACE, "statusUpdateNodeRef");
     public static final QName PROP_STATUS_UPDATE_MESSAGE = QName.createQName(NAMESPACE, "statusUpdateMessage");
+    // Publishing Connection Properties
+    public static final QName PROP_ACCOUNT_ID= QName.createQName(NAMESPACE, "accountId");
+    public static final QName PROP_PROVIDER_ID= QName.createQName(NAMESPACE, "providerId");
+    public static final QName PROP_PROVIDER_ACCOUNT_ID= QName.createQName(NAMESPACE, "providerAccountId");
+    public static final QName PROP_ACCESS_TOKEN= QName.createQName(NAMESPACE, "accessToken");
+    public static final QName PROP_ACCESS_SECRET= QName.createQName(NAMESPACE, "secret");
+    public static final QName PROP_REFRESH_TOKEN= QName.createQName(NAMESPACE, "refreshToken");
 
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED = "SCHEDULED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_IN_PROGRESS = "IN_PROGRESS";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_CANCEL_REQUESTED = "CANCEL_REQUESTED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_COMPLETED = "COMPLETED";
     public static final String PROPVAL_PUBLISHING_EVENT_STATUS_FAILED = "FAILED";
+    
 
     public static final QName ASSOC_PUBLISHING_QUEUE = QName.createQName(NAMESPACE, "publishingQueueAssoc");
     public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEventAssoc");

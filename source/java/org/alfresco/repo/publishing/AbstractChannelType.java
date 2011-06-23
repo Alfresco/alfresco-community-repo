@@ -101,7 +101,7 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     @Override
     public NodeFilter getNodeFilter()
     {
-        return null;
+        return nodeFilter;
     }
     /**
     * {@inheritDoc}
@@ -111,5 +111,13 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     {
         return nodeFinder;
     }
-    
+ 
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public int getMaximumStatusLength()
+    {
+        return -1;
+    }
 }

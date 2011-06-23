@@ -10,17 +10,22 @@
    parent="baseChannelType" />
 
    <!-- Mock Node Service -->
-    <bean id="nodeService" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="NodeService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.cmr.repository.NodeService" />
     </bean>
 
+   <!-- File Folder Service -->
+    <bean id="FileFolderService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.model.FileFolderService" />
+    </bean>
+
    <!-- Mock Dictionary Service -->
-    <bean id="dictionaryService" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="DictionaryService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.cmr.dictionary.DictionaryService" />
     </bean>
 
    <!-- Mock Site Service -->
-    <bean id="siteService" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="SiteService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.cmr.site.SiteService" />
     </bean>
 
@@ -30,7 +35,7 @@
     </bean>
 
    <!-- Mock Content Service -->
-    <bean id="contentService" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="ContentService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.cmr.repository.ContentService" />
     </bean>
 

@@ -78,10 +78,10 @@ public class PublishingEventHelperTest
     @Resource(name="publishingEventHelper")
     PublishingEventHelper helper;
     
-    @Resource(name="nodeService")
+    @Resource(name="NodeService")
     NodeService nodeService;
     
-    @Resource(name="contentService")
+    @Resource(name="ContentService")
     ContentService contentService;
     
     @Test

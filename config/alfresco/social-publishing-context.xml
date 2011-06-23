@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Stores OAuth and similar credentials in protected -->
+    <!--  parts of the Data Dictionary -->
+    <bean id="socialConnectionRepository" class="org.alfresco.repo.publishing.authorization.NodeBasedConnectionRepository">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="searchService" ref="SearchService"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+    </bean>
+
+    <!-- Configure a Twitter service provider -->
+    <bean id="social.connect.twitter" class="org.springframework.social.twitter.connect.TwitterServiceProvider">
+        <constructor-arg value="${twitter.consumerKey}" />
+        <constructor-arg value="${twitter.consumerSecret}" />
+    </bean>
+
+    <!-- Configure a Facebook service provider -->
+    <bean id="social.connect.facebook" class="org.springframework.social.facebook.connect.FacebookServiceProvider">
+        <constructor-arg value="${facebook.appId}" />
+        <constructor-arg value="${facebook.appSecret}" />
+    </bean>
+
+    <!-- Configure a Linked In service provider -->
+    <bean id="social.connect.linkedin" class="org.springframework.social.linkedin.connect.LinkedInServiceProvider">
+        <constructor-arg value="${linkedIn.consumerKey}" />
+        <constructor-arg value="${linkedIn.consumerSecret}" />
+    </bean>
+
+</beans>

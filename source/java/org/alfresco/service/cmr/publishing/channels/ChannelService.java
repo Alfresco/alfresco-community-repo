@@ -107,4 +107,33 @@ public interface ChannelService
      * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
      */
     Channel getChannel(String id);
+    
+    /**
+     * Returns a list of all the channels that are capable of publishing the specified NodeRef.
+     * @param nodeToPublish
+     * @return
+     */
+    List<Channel> getRelevantPublishingChannels(NodeRef nodeToPublish);
+    
+    /**
+     * Returns a list of all the channels that are capable of publishing in the specified Share site.
+     * @param siteId
+     * @return
+     */
+    List<Channel> getPublishingChannels(String siteId);
+    
+    /**
+     * Returns all {@link Channel}s cpaable of performing a status update for the given Share Site.
+     * @param siteId
+     * @return
+     */
+    List<Channel> getStatusUpdateChannels(String siteId);
+    
+    /**
+     * Returns all {@link Channel}s cpaable of performing a status update for the Share Site in which the specified <code>nodeToPublish</code> exists.
+     * @param siteId
+     * @return
+     */
+    List<Channel> getStatusUpdateChannels(NodeRef nodeToPublish);
+    
 }

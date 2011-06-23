@@ -20,8 +20,6 @@
 package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.model.ContentModel.PROP_CONTENT_PROPERTY_NAME;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_CONTENT_ROOT;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_SOURCE;
@@ -32,6 +30,8 @@ import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL_TYPE_ID;
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,12 +40,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -53,6 +54,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
+import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -65,8 +69,8 @@ public class ChannelHelper
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
-    private ContentService contentService;
-
+    private FileFolderService fileFolderService;
+    
     public ChannelHelper()
     {
         super();
@@ -230,47 +234,37 @@ public class ChannelHelper
         return assoc;
     }
 
-    /**
-     * @param nodeToPublish
-     * @param channelType
-     * @return
-     */
     public boolean canPublish(NodeRef nodeToPublish, ChannelType type)
     {
         if(type.canPublish() == false)
         {
             return false;
         }
-        boolean isContentTypeSupported = isContentTypeSupported(nodeToPublish, type);
-        boolean isMimetypeSupported = isMimetypeSupported(nodeToPublish, type);
+        FileInfo file = fileFolderService.getFileInfo(nodeToPublish);
+        ContentData contentData = file.getContentData();
+        String mimetype = contentData == null ? null : contentData.getMimetype();
+        boolean isContentTypeSupported = isContentTypeSupported(file.getType(), type);
+        boolean isMimetypeSupported = isMimetypeSupported(mimetype, type);
         return isContentTypeSupported && isMimetypeSupported;
     }
 
-    private boolean isMimetypeSupported(NodeRef nodeToPublish, ChannelType type)
+    private boolean isMimetypeSupported(String mimetype, ChannelType type)
     {
         Set<String> supportedMimetypes = type.getSupportedMimetypes();
         if (supportedMimetypes == null || supportedMimetypes.isEmpty())
         {
             return true;
         }
-        QName contentProp = (QName) nodeService.getProperty(nodeToPublish, PROP_CONTENT_PROPERTY_NAME);
-        if (contentProp == null)
-        {
-            String defaultValue = dictionaryService.getProperty(PROP_CONTENT_PROPERTY_NAME).getDefaultValue();
-            contentProp = defaultValue == null ? PROP_CONTENT : QName.createQName(defaultValue);
-        }
-        ContentReader reader = contentService.getReader(nodeToPublish, contentProp);
-        return supportedMimetypes.contains(reader.getMimetype());
+        return supportedMimetypes.contains(mimetype);
     }
 
-    private boolean isContentTypeSupported(NodeRef nodeToPublish, ChannelType type)
+    private boolean isContentTypeSupported(QName contentType, ChannelType type)
     {
         Set<QName> supportedContentTypes = type.getSupportedContentTypes();
         if(supportedContentTypes == null || supportedContentTypes.isEmpty())
         {
             return true;
         }
-        QName contentType = nodeService.getType(nodeToPublish);
         for (QName supportedType : supportedContentTypes)
         {
             if(contentType.equals(supportedType) 
@@ -306,6 +300,60 @@ public class ChannelHelper
         }
         return null;
     }
+
+    public List<Channel> getChannels(NodeRef channelContainer, final ChannelService channelService)
+    {
+        List<ChildAssociationRef> channelAssocs = getChannelAssocs(channelContainer);
+        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService));
+    }
+
+    public List<Channel> getChannelsByType(NodeRef containerNode, String channelTypeId, ChannelService channelService)
+    {
+        List<ChildAssociationRef> channelAssocs = getChannelAssocsByType(containerNode, channelTypeId);
+        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService));
+    }
+    
+    public List<ChannelType> getReleventChannelTypes(final NodeRef nodeToPublish, Collection<ChannelType> channelTypes)
+    {
+        return CollectionUtils.filter(channelTypes, new Filter<ChannelType>()
+        {
+            public Boolean apply(ChannelType type)
+            {
+                return canPublish(nodeToPublish, type);
+            }
+        });
+    }
+    
+    public List<ChannelType> getStatusUpdateChannelTypes(Collection<ChannelType> channelTypes)
+    {
+        return CollectionUtils.filter(channelTypes, new Filter<ChannelType>()
+        {
+            public Boolean apply(ChannelType type)
+            {
+                return type.canPublishStatusUpdates();
+            }
+        });
+    }
+
+    private List<ChildAssociationRef> getChannelAssocs(NodeRef channelContainer)
+    {
+        if(channelContainer == null)
+        {
+            return null;
+        }
+        Collection<QName> channelNodeTypes = dictionaryService.getSubTypes(TYPE_DELIVERY_CHANNEL, true);
+        HashSet<QName> childNodeTypeQNames = new HashSet<QName>(channelNodeTypes);
+        return nodeService.getChildAssocs(channelContainer, childNodeTypeQNames);
+    }
+    
+    private List<ChildAssociationRef> getChannelAssocsByType(NodeRef channelContainer, String channelTypeId)
+    {
+        if(channelContainer == null)
+        {
+            return null;
+        }
+        return nodeService.getChildAssocsByPropertyValue(channelContainer, PROP_CHANNEL_TYPE_ID, channelTypeId);
+    }
     
     private Pair<NodeRef, String> getChannelAndType(NodeRef node)
     {
@@ -328,10 +376,16 @@ public class ChannelHelper
         return null;
     }
 
-    public void sendStatusUpdates(NodeRef nodeToPublish, NodeRef channelNode, ChannelType channelType)
+    private Function<ChildAssociationRef, Channel> getChannelTransformer(final ChannelService channelService)
     {
-        //TODO
-        
+        return new Function<ChildAssociationRef, Channel>()
+        {
+            public Channel apply(ChildAssociationRef value)
+            {
+                NodeRef channelNode = value.getChildRef();
+                return buildChannelObject(channelNode, channelService);
+            }
+        };
     }
 
     /**
@@ -351,11 +405,11 @@ public class ChannelHelper
     }
 
     /**
-     * @param contentService the contentService to set
+     * @param fileFolderService the fileFolderService to set
      */
-    public void setContentService(ContentService contentService)
+    public void setFileFolderService(FileFolderService fileFolderService)
     {
-        this.contentService = contentService;
+        this.fileFolderService = fileFolderService;
     }
 
 }

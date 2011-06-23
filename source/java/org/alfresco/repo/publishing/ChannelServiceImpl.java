@@ -24,7 +24,6 @@ import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,15 +39,18 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
+import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -60,6 +62,8 @@ public class ChannelServiceImpl implements ChannelService
 {
 
     private static final String CHANNEL_CONTAINER_NAME = "channels";
+
+    public static final String NAME = "channelService";
 
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
     private SiteService siteService;
@@ -194,23 +198,8 @@ public class ChannelServiceImpl implements ChannelService
     public List<Channel> getChannels(String siteId)
     {
         ParameterCheck.mandatory("siteId", siteId);
-
         NodeRef channelContainer = getChannelContainer(siteId);
-        if(channelContainer == null)
-        {
-            return Collections.emptyList();
-        }
-        Collection<QName> channelNodeTypes = dictionaryService.getSubTypes(TYPE_DELIVERY_CHANNEL, true);
-        HashSet<QName> childNodeTypeQNames = new HashSet<QName>(channelNodeTypes);
-        List<ChildAssociationRef> channelAssocs = nodeService.getChildAssocs(channelContainer, childNodeTypeQNames);
-        List<Channel> channelList = new ArrayList<Channel>(channelAssocs.size());
-        for (ChildAssociationRef channelAssoc : channelAssocs)
-        {
-            NodeRef channelNode = channelAssoc.getChildRef();
-            Channel channel = channelHelper.buildChannelObject(channelNode, this);
-            channelList.add(channel);
-        }
-        return Collections.unmodifiableList(channelList);
+        return channelHelper.getChannels(channelContainer, this);
     }
 
     /**
@@ -239,6 +228,82 @@ public class ChannelServiceImpl implements ChannelService
         return null;
     }
     
+    /**
+    * {@inheritDoc}
+    */
+    public List<Channel> getRelevantPublishingChannels(NodeRef nodeToPublish)
+    {
+        SiteInfo siteInfo = siteService.getSite(nodeToPublish);
+        if(siteInfo != null)
+        {
+            final NodeRef containerNode = getChannelContainer(siteInfo.getShortName());
+            if(containerNode != null)
+            {
+                List<ChannelType> types = channelHelper.getReleventChannelTypes(nodeToPublish, channelTypes.values());
+                return getChannelsForTypes(containerNode, types);
+            }
+        }
+        return Collections.emptyList();
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    public List<Channel> getPublishingChannels(String siteId)
+    {
+        final NodeRef containerNode = getChannelContainer(siteId);
+        if(containerNode != null)
+        {
+            List<ChannelType> types = CollectionUtils.filter(channelTypes.values(), new Filter<ChannelType>()
+            {
+                public Boolean apply(ChannelType type)
+                {
+                    return type.canPublish();
+                }
+            });
+            return getChannelsForTypes(containerNode, types);
+        }
+        return Collections.emptyList();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public List<Channel> getStatusUpdateChannels(String siteId)
+    {
+        final NodeRef containerNode = getChannelContainer(siteId);
+        if (containerNode != null)
+        {
+            List<ChannelType> types = channelHelper.getStatusUpdateChannelTypes(channelTypes.values());
+            return getChannelsForTypes(containerNode, types);
+        }
+        return Collections.emptyList();
+    }    
+    
+    /**
+    * {@inheritDoc}
+    */
+    public List<Channel> getStatusUpdateChannels(NodeRef nodeToPublish)
+    {
+        SiteInfo site = siteService.getSite(nodeToPublish);
+        if(site!=null)
+        {
+            return getStatusUpdateChannels(site.getShortName());
+        }
+        return Collections.emptyList();
+    }
+    
+    private List<Channel> getChannelsForTypes(final NodeRef containerNode, List<ChannelType> types)
+    {
+        return CollectionUtils.transformFlat(types, new Function<ChannelType, List<Channel>>()
+        {
+            public List<Channel> apply(ChannelType channelType)
+            {
+                return channelHelper.getChannelsByType(containerNode, channelType.getId(), ChannelServiceImpl.this);
+            }
+        });
+    }
+
     private NodeRef getChannelContainer(final String siteId)
     {
         return siteService.getContainer(siteId, CHANNEL_CONTAINER_NAME);

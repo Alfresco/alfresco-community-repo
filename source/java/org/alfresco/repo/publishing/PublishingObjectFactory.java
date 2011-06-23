@@ -34,6 +34,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class PublishingObjectFactory implements EnvironmentFactory, PublishingQueueFactory
 {
+    public static final String NAME = "publishingObjectFactory";
+    
     private EnvironmentHelper environmentHelper;
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private PublishingEventHelper publishingEventHelper;

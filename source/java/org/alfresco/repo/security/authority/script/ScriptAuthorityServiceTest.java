@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.permissions.AclDAO;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -140,15 +141,15 @@ public class ScriptAuthorityServiceTest extends TestCase
         }
         
         // And the group
-        if(authorityService.authorityExists(GROUP_A_FULL))
+        if (authorityService.authorityExists(GROUP_A_FULL))
         {
            authorityService.deleteAuthority(GROUP_A_FULL);
         }
-        if(authorityService.authorityExists(GROUP_B_FULL))
+        if (authorityService.authorityExists(GROUP_B_FULL))
         {
            authorityService.deleteAuthority(GROUP_B_FULL);
         }
-        if(authorityService.authorityExists(GROUP_C_FULL))
+        if (authorityService.authorityExists(GROUP_C_FULL))
         {
            authorityService.deleteAuthority(GROUP_C_FULL);
         }
@@ -201,9 +202,9 @@ public class ScriptAuthorityServiceTest extends TestCase
        ScriptGroup groupC = null;
        for(ScriptGroup group : groups)
        {
-          if(group.getShortName().equals(GROUP_A)) groupA = group;
-          if(group.getShortName().equals(GROUP_B)) groupB = group;
-          if(group.getShortName().equals(GROUP_C)) groupC = group;
+          if (group.getShortName().equals(GROUP_A)) groupA = group;
+          if (group.getShortName().equals(GROUP_B)) groupB = group;
+          if (group.getShortName().equals(GROUP_C)) groupC = group;
        }
        assertNotNull(GROUP_A + " not found in " + groups, groupA);
        assertNotNull(GROUP_B + " not found in " + groups, groupB);
@@ -213,6 +214,11 @@ public class ScriptAuthorityServiceTest extends TestCase
        assertEquals(GROUP_A, groupA.getShortName());
        assertEquals(GROUP_A, groupA.getDisplayName());
        assertEquals(GROUP_A_FULL, groupA.getFullName());
+       
+       // return the NodeRef for the group and check
+       ScriptNode groupANode = groupA.getGroupNode();
+       assertEquals(groupA.getDisplayName(), groupANode.getProperties().get("authorityDisplayName"));
+       assertEquals(groupA.getFullName(), groupANode.getProperties().get("authorityName"));
     }
 
     public void testZones()
@@ -226,14 +232,14 @@ public class ScriptAuthorityServiceTest extends TestCase
 
        // Check groups
        ScriptGroup[] groups = service.searchGroups(
-             GROUP_A, new ScriptPagingDetails(10,0), "default"
-       );
+             GROUP_A, new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(1, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        
        groups = service.searchGroups(
-             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(10,0), "default"
-       );
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(3, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        assertEquals(GROUP_B, groups[1].getShortName());
@@ -241,29 +247,29 @@ public class ScriptAuthorityServiceTest extends TestCase
        
        // Check groups with paging
        groups = service.searchGroups(
-             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2,0), "default"
-       );
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2,0), "default");
+       
        assertEquals(2, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        assertEquals(GROUP_B, groups[1].getShortName());
        
        groups = service.searchGroups(
-             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2, 2), "default"
-       );
+             GROUP_A.substring(0, GROUP_A.length()-1), new ScriptPagingDetails(2, 2), "default");
+       
        assertEquals(1, groups.length);
        assertEquals(GROUP_C, groups[0].getShortName());
        
        
        // Check root groups
        groups = service.searchRootGroups(
-             GROUP_A, new ScriptPagingDetails(10,0), "default"
-       );
+             GROUP_A, new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(1, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        
        groups = service.searchRootGroups(
-             GROUP_A.substring(0, GROUP_A.length()-1)+"*", new ScriptPagingDetails(10,0), "default"
-       );
+             GROUP_A.substring(0, GROUP_A.length()-1)+"*", new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(2, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        assertEquals(GROUP_C, groups[1].getShortName());
@@ -278,16 +284,16 @@ public class ScriptAuthorityServiceTest extends TestCase
        
        groups = service.searchGroupsInZone(
              GROUP_A.substring(0, GROUP_A.length()-1), AuthorityService.ZONE_APP_SHARE,  
-             new ScriptPagingDetails(10,0), "default"
-       );
+             new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(2, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        assertEquals(GROUP_B, groups[1].getShortName());
        
        groups = service.searchGroupsInZone(
              GROUP_A.substring(0, GROUP_A.length()-1), AuthorityService.ZONE_APP_WCM,  
-             new ScriptPagingDetails(10,0), "default"
-       );
+             new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(1, groups.length);
        assertEquals(GROUP_B, groups[0].getShortName());
 
@@ -295,15 +301,15 @@ public class ScriptAuthorityServiceTest extends TestCase
        // And root groups in zones 
        groups = service.searchRootGroupsInZone(
              GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_SHARE,  
-             new ScriptPagingDetails(10,0), "default"
-       );
+             new ScriptPagingDetails(10,0), "default");
+       
        assertEquals(1, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
        
        groups = service.searchRootGroupsInZone(
              GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_WCM,  
-             new ScriptPagingDetails(10,0), "default"
-       );
+             new ScriptPagingDetails(10,0), "default");
+       
        // B apparently counts as a root group in the WCM zone as it's
        //  parent group A isn't in that zone too
        assertEquals(1, groups.length);
@@ -334,8 +340,8 @@ public class ScriptAuthorityServiceTest extends TestCase
        ScriptUser userB = null;
        for(ScriptUser user : users)
        {
-          if(user.getFullName().equals(USER_A)) userA = user;
-          if(user.getFullName().equals(USER_B)) userB = user;
+          if (user.getFullName().equals(USER_A)) userA = user;
+          if (user.getFullName().equals(USER_B)) userB = user;
        }
        assertNotNull(userA);
        assertNotNull(userB);
@@ -377,16 +383,16 @@ public class ScriptAuthorityServiceTest extends TestCase
        ScriptUser[] users = service.searchUsers(
              AuthenticationUtil.getAdminUserName(),
              new ScriptPagingDetails(10, 0),
-             "userName"
-       );
+             "userName");
+       
        assertTrue("Admin not found", users.length > 0);
        
        // Try to find our test users
        users = service.searchUsers(
              USER_A.substring(0, USER_A.length()-1),
              new ScriptPagingDetails(10, 0),
-             "userName"
-       );
+             "userName");
+       
        assertEquals("Users count wrong " + users, 3, users.length);
        
        // Check on the username sorting
@@ -404,8 +410,8 @@ public class ScriptAuthorityServiceTest extends TestCase
        users = service.searchUsers(
              USER_A.substring(0, USER_A.length()-1),
              new ScriptPagingDetails(10, 0),
-             "userName"
-       );
+             "userName");
+       
        assertEquals("Users count wrong " + users, 3, users.length);
        assertEquals(USER_A, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_B, users[1].getPerson().getProperties().get("userName"));
@@ -415,8 +421,8 @@ public class ScriptAuthorityServiceTest extends TestCase
        users = service.searchUsers(
              USER_A.substring(0, USER_A.length()-1),
              new ScriptPagingDetails(10, 0),
-             "firstName"
-       );
+             "firstName");
+       
        assertEquals("Users count wrong " + users, 3, users.length);
        assertEquals(USER_B, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_A, users[1].getPerson().getProperties().get("userName"));
@@ -426,8 +432,8 @@ public class ScriptAuthorityServiceTest extends TestCase
        users = service.searchUsers(
              USER_A.substring(0, USER_A.length()-1),
              new ScriptPagingDetails(10, 0),
-             "lastName"
-       );
+             "lastName");
+       
        assertEquals("Users count wrong " + users, 3, users.length);
        assertEquals(USER_C, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_A, users[1].getPerson().getProperties().get("userName"));

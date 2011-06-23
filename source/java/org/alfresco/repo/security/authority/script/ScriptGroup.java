@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.ModelUtil;
@@ -55,6 +57,7 @@ public class ScriptGroup implements Authority, Serializable
     private String displayName;
     private Set<String> childAuthorityNames;
     private Boolean isAdmin; 
+    private NodeRef groupNodeRef;
     private Scriptable scope;
     
     /**
@@ -101,26 +104,31 @@ public class ScriptGroup implements Authority, Serializable
         authorityService.deleteAuthority(fullName);
     }
 	
-    public void setAuthorityType(ScriptAuthorityType authorityType) {
+    public void setAuthorityType(ScriptAuthorityType authorityType) 
+    {
         this.authorityType = authorityType;
     }
 
-    public ScriptAuthorityType getAuthorityType() {
+    public ScriptAuthorityType getAuthorityType() 
+    {
         return authorityType;
     }
 
-    public void setShortName(String shortName) {
+    public void setShortName(String shortName) 
+    {
         this.shortName = shortName;
     }
 
     /**
      * Get the short name
      */
-    public String getShortName() {
+    public String getShortName() 
+    {
         return shortName;
     }
 
-    public void setFullName(String fullName) {
+    public void setFullName(String fullName) 
+    {
         this.fullName = fullName;
     }
 
@@ -128,7 +136,8 @@ public class ScriptGroup implements Authority, Serializable
      * Get the full internal name, also known
      *  as the Authority Name
      */
-    public String getFullName() {
+    public String getFullName() 
+    {
         return fullName;
     }
 
@@ -136,7 +145,8 @@ public class ScriptGroup implements Authority, Serializable
      * Change the display name for this group.    Need administrator permission to call this method to change a display name.
      * @param displayName
      */
-    public void setDisplayName(String displayName) {
+    public void setDisplayName(String displayName) 
+    {
         if (this.displayName != null && !this.displayName.equals(displayName))
         {
             authorityService.setAuthorityDisplayName(fullName, displayName);
@@ -144,7 +154,8 @@ public class ScriptGroup implements Authority, Serializable
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
+    public String getDisplayName() 
+    {
         return displayName;
     }
 	
@@ -496,6 +507,32 @@ public class ScriptGroup implements Authority, Serializable
     {
         authorityService.removeAuthority(fullName, fullAuthorityName);
         clearCaches();
+    }
+    
+    /**
+     * Return the NodeRef of the group
+     * 
+     * @since 4.0
+     */
+    public NodeRef getGroupNodeRef()
+    {
+        if (groupNodeRef == null)
+        {
+            // Lazy lookup for Authority based creation
+            groupNodeRef = authorityService.getAuthorityNodeRef(fullName);
+        }
+        
+        return groupNodeRef;
+    }
+
+    /**
+     * Return a ScriptNode wrapping the group
+     * 
+     * @since 4.0
+     */
+    public ScriptNode getGroupNode()
+    {
+       return new ScriptNode(getGroupNodeRef(), serviceRegistry, this.scope);
     }
 	
     /**

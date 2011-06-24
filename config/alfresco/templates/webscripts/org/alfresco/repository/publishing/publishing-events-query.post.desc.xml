@@ -1,0 +1,85 @@
+<webscript>
+   <shortname>Query Publishing Events</shortname>
+   <description>Queries for Publishing Events on an Environment.</description>
+   <url>/api/publishing/{environment_id}/events/query</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>environment_id</shortname>
+         <description>The id of the environment to query.</description>
+      </arg>
+   </args>
+   <requests>
+      <request>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "publishNodes": [string, ... ]
+               "unpublishNodes": [string, ... ]
+            }
+            ]]>
+         </type>
+      </request>
+   </requests>
+      <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               [
+                  {
+                     "id": string,
+                     "url": string,
+                     "status": string,
+                     "comment": string,
+                     "version": string,
+                     "scheduledTime":
+                     {
+                        "dateTime": string,
+                        "format": string,
+                        "timeZone": string
+                     }
+                     "creator": string,
+                     "createdTime":
+                     {
+                        "dateTime": string,
+                        "format": string
+                     },
+                     "publishNodes": [string, ... ],
+                     "unpublishNodes": [string, ... ],
+                     "channel":
+                     {
+                        "url": string,
+                        "name": string,
+                        "title": string,
+                        "channelType":
+                        {
+                           "id": string,
+                           "title": string,
+                           "url": string,
+                           "channelNodeType": string,
+                           "contentRootNodeType": string,
+                           "supportedContentTypes": [string, ...],
+                           "supportedMimeTypes": [string, ...],
+                           "canPublish": boolean,
+                           "canPublishStatusUpdates": boolean,
+                           "canUnpublish": boolean,
+                           "maxStatusLength": number,
+                           "icon": string
+                        }
+                     }
+                  },
+                  ...
+               ]
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

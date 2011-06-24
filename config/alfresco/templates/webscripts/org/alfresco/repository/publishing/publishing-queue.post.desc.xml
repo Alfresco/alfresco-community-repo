@@ -1,0 +1,36 @@
+<webscript>
+   <shortname>Post Content to Publishing Queue</shortname>
+   <description>Place a new Publishing Event on the Publishing Queue for the specified Environment.</description>
+   <url>/api/publishing/{environment_id}/queue</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>environment_id</shortname>
+         <description>The id of the environment to publish to.</description>
+      </arg>
+   </args>
+   <requests>
+      <request>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "channelName": string,
+               "comment": string,
+               "schedule":
+               {
+                  "dateTime": string,
+                  "format": string,
+                  "timeZone": string,
+               },
+               "publishNodes": [string, ... ],
+               "unpublishNodes": [string, ... ]
+            }
+            ]]>
+         </type>
+      </request>
+   </requests>
+</webscript>

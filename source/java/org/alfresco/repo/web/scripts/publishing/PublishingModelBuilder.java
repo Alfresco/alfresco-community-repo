@@ -90,8 +90,6 @@ public class PublishingModelBuilder
         model.put(URL, getUrl(type));
         
         model.put(CHANNEL_NODE_TYPE, type.getChannelNodeType().toString());
-        model.put(CONTENT_ROOT_NODE_TYPE, type.getContentRootNodeType().toString());
-
         model.put(SUPPORTED_CONTENT_TYPES, toListOfStrings(type.getSupportedContentTypes()));
         model.put(SUPPORTED_MIME_TYPES, type.getSupportedMimetypes());
 

@@ -231,7 +231,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String expUrl = "api/publishing/channelTypes/"+URLEncoder.encode(channelType.getId());
         check(URL, jsonType, expUrl);
         check(CHANNEL_NODE_TYPE, jsonType, channelType.getChannelNodeType().toString());
-        check(CONTENT_ROOT_NODE_TYPE, jsonType, channelType.getContentRootNodeType().toString());
         
         List<String> contentTypes = CollectionUtils.toListOfStrings(channelType.getSupportedContentTypes());
         checkStrings(jsonType.getJSONArray(SUPPORTED_CONTENT_TYPES), contentTypes);
@@ -327,7 +326,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         channelType = mock(ChannelType.class);
         when(channelType.getId()).thenReturn(channelTypeId);
         when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
-        when(channelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
         channelService.register(channelType);
         return channelType;
     }

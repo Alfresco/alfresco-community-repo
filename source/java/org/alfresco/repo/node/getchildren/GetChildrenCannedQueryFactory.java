@@ -167,20 +167,8 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         // specific query params - context (parent) and inclusive filters (child types, property values)
         GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), childTypeQNames, filterProps);
         
-        int skipCount = pagingRequest.getSkipCount();
-        if (skipCount == -1)
-        {
-            skipCount = CannedQueryPageDetails.DEFAULT_SKIP_RESULTS;
-        }
-        
-        int maxItems = pagingRequest.getMaxItems();
-        if (maxItems == -1)
-        {
-            maxItems  = CannedQueryPageDetails.DEFAULT_PAGE_SIZE;
-        }
-        
         // page details
-        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems, CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
+        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
         
         // sort details
         CannedQuerySortDetails cqsd = null;

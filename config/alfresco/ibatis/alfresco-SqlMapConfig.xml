@@ -65,7 +65,10 @@ Inbound settings from iBatis
         <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
         <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
         <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
+        
+        <!-- Node - used by Canned Queries -->
         <typeAlias alias="FilterSortNode" type="org.alfresco.repo.node.getchildren.FilterSortNodeEntity"/>
+        <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>
         
         <!-- Patch -->
         

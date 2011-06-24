@@ -21,6 +21,8 @@ package org.alfresco.service.cmr.security;
 import java.util.Collection;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -124,15 +126,37 @@ public interface AuthorityService
     public Set<String> getAuthoritiesForUser(String userName);
     
     /**
-     * Get all authorities by type.
+     * Get all authorities by type
      * 
-     * @param type -
-     *            the type of authorities.
-     * @return all authorities by type.
+     * See also "getAuthorities" (paged) alternative
+     * 
+     * @param type  the type of authorities - cannot be null
+     * @return all authorities by type
+     * 
+     * @see getAuthorities (paged)
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
-            
+    
+    /**
+     * Get authorities by type and/or zone
+     * 
+     * @param type                the type of authorities (note: mandatory if zoneName is null)
+     * @param zoneName            the zoneName (note: mandatory if type is null)
+     * @param displayNameFilter   optional filter (startsWith / ignoreCase) for authority display name (note: implied trailing "*")
+     * @param sortByDisplayName   if true then sort (ignoring case) by the authority display name, if false then unsorted
+     *                            note: for users, displayName/shortName is equivalent to the userName, for groups if the display is null then use the short name
+     * @param sortAscending       if true then sort ascending else sort descending (ignore if sortByDisplayName is false)
+     * @param pagingRequest       the requested page (skipCount, maxItems, queryExectionId)
+     * 
+     * @throws UnknownAuthorityException - if zoneName is not null and does not exist
+     * 
+     * @author janv
+     * @since 4.0
+     */
+    @Auditable(parameters = {"type", "zoneName", "displayNameFilter", "sortByDisplayName", "sortAscending", "pagingRequest"})
+    public PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest);
+    
     /**
      * Get all root authorities by type. Root authorities are ones that were
      * created without an authority as the parent authority;
@@ -360,13 +384,15 @@ public interface AuthorityService
     public Set<String> getAuthorityZones(String name);
     
     /**
-     * Gets the names of all authorities in a zone, optionally filtered by type.
+     * Gets the names of all authorities in a zone, optionally filtered by type
      * 
-     * @param zoneName
-     *            the zone name
-     * @param type
-     *            the authority type to filter by or <code>null</code> for all authority types
+     * See also "getAuthorities" paged alternative (note: in that case, zone must exist)
+     * 
+     * @param zoneName   the zone name - note: if zone does not exist then will currently return empty set
+     * @param type       the authority type to filter by or <code>null</code> for all authority types
      * @return the names of all authorities in a zone, optionally filtered by type
+     * 
+     * @see getAuthorities (paged)
      */
     @Auditable(parameters = {"zoneName", "type"})
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
@@ -407,7 +433,7 @@ public interface AuthorityService
     public Set<String> getDefaultZones();
     
     /**
-     * Search for authorities by pattern matching (* and ?) against the authority name. 
+     * Search for authorities by pattern matching (* and ?) against the authority name.
      * Note: This will use a search index to find the results (eg. via Lucene / SOLR).
      * 
      * @param type

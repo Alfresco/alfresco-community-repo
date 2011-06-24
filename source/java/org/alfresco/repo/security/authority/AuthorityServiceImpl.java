@@ -18,25 +18,28 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.Pair;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * The default implementation of the authority service.
@@ -48,8 +51,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
     private PersonService personService;
-
-    private NodeService nodeService;
     
     private TenantService tenantService;
 
@@ -80,11 +81,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public AuthorityServiceImpl()
     {
         super();
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
     
     public void setTenantService(TenantService tenantService)
@@ -150,7 +146,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             this.guestGroups = guestGroups;
         }
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasAdminAuthority()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
@@ -158,7 +157,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Determine whether the administrator role is mapped to this user or one of their groups
         return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.ADMINISTRATOR_AUTHORITY));
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public boolean isAdminAuthority(String authorityName)
     {
         String canonicalName = personService.getUserIdentifier(authorityName);
@@ -170,7 +172,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Determine whether the administrator role is mapped to this user or one of their groups
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.ADMINISTRATOR_AUTHORITY);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasGuestAuthority()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
@@ -178,7 +183,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Determine whether the guest role is mapped to this user or one of their groups
         return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.GUEST_AUTHORITY));
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public boolean isGuestAuthority(String authorityName)
     {
         String canonicalName = personService.getUserIdentifier(authorityName);
@@ -190,17 +198,24 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Determine whether the administrator role is mapped to this user or one of their groups
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.GUEST_AUTHORITY);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    // note: could be renamed (via deprecation) to getAuthoritiesForUser()
     public Set<String> getAuthorities()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
         return getAuthoritiesForUser(currentUserName);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getAuthoritiesForUser(String currentUserName)
     {
         Set<String> authorities = new HashSet<String>(64);
-
+        
         authorities.addAll(getContainingAuthorities(null, currentUserName, false));
         
         // Work out mapped roles
@@ -244,7 +259,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 }
             }
         }
-
+        
         // Give admin user's the ADMINISTRATOR authorities
         if (isAdminUser)
         {
@@ -262,51 +277,123 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         return authorities;
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    // see getAuthorities (paged)
     public Set<String> getAllAuthorities(AuthorityType type)
     {
-        Set<String> authorities = new HashSet<String>();
-        switch (type)
-        {
-        case ADMIN:
-            authorities.addAll(adminSet);
-            break;
-        case EVERYONE:
-            authorities.addAll(allSet);
-            break;
-        case GUEST:
-            authorities.addAll(guestSet);
-            break;
-        case GROUP:           
-            authorities.addAll(authorityDAO.getAllAuthorities(type));
-            break;
-        case OWNER:
-             break;
-        case ROLE:
-            authorities.addAll(authorityDAO.getAllAuthorities(type));
-            break;
-        case USER:
-            for (NodeRef personRef : personService.getAllPeople())
-            {
-                authorities.add(DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personRef,
-                        ContentModel.PROP_USERNAME)));
-            }
-            break;
-        default:
-            break;
-        }
+        List<String> auths = getAuthorities(type, null, null, false, false, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+        Set<String> authorities = new HashSet<String>(auths.size());
+        authorities.addAll(auths);
         return authorities;
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
+        if ((type == null) && (zoneName == null))
+        {
+            throw new IllegalArgumentException("Type and/or zoneName required - both cannot be null");
+        }
+        if (type != null)
+        {
+            switch (type)
+            {
+            case USER:
+            case GROUP:
+            case ROLE:
+                return authorityDAO.getAuthorities(type, zoneName, displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
+            case ADMIN:
+            case EVERYONE:
+            case GUEST:
+            case OWNER:
+            default:
+                 // others
+                 return getOtherAuthorities(type); // either singletons or empty - hence ignore zone/filter/sort/paging
+            }
+        }
+        
+        // type is null
+        return authorityDAO.getAuthorities(type, zoneName, displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
+    }
+    
+    private PagingResults<String> getOtherAuthorities(AuthorityType type)
+    {
+        final List<String> auths = new ArrayList<String>();
+        
+        switch (type)
+        {
+        case USER:
+        case GROUP:
+        case ROLE:
+            throw new UnsupportedOperationException("Unexpected authority type: "+type);
+        case ADMIN:
+            auths.addAll(adminSet);
+            break;
+        case EVERYONE:
+            auths.addAll(allSet);
+            break;
+        case GUEST:
+            auths.addAll(guestSet);
+            break;
+        case OWNER:
+             break;
+        default:
+            break;
+        }
+        
+        // spoof the page
+        return new PagingResults<String>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return null;
+            }
+            @Override
+            public List<String> getPage()
+            {
+                return auths;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return false;
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return new Pair<Integer, Integer>(auths.size(), auths.size());
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return true; // note: for now, assume ACL_ALLOW for "other" authorities (as per public-services-security.xml)
+            }
+        };
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public void addAuthority(String parentName, String childName)
     {
         addAuthority(Collections.singleton(parentName), childName);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void addAuthority(Collection<String> parentNames, String childName)
     {
         authorityDAO.addAuthority(parentNames, childName);
     }
-
+    
     private boolean containsMatch(Set<String> names, String name)
     {
         String baseName = this.tenantService.getBaseNameUser(name);
@@ -337,7 +424,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return false;
     }
-
+    
     private void checkTypeIsMutable(AuthorityType type)
     {
         if((type == AuthorityType.GROUP) || (type == AuthorityType.ROLE))
@@ -350,16 +437,25 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public String createAuthority(AuthorityType type, String shortName)
     {
         return createAuthority(type, shortName, shortName, getDefaultZones());
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void deleteAuthority(String name)
     {
         deleteAuthority(name, false);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void deleteAuthority(String name, boolean cascade)
     {
         AuthorityType type = AuthorityType.getAuthorityType(name);
@@ -374,37 +470,58 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         authorityDAO.deleteAuthority(name);
         permissionServiceSPI.deletePermissions(name);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getAllRootAuthorities(AuthorityType type)
     {
         return getAllRootAuthoritiesInZone(null, type);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
     {
         return authorityDAO.getContainedAuthorities(type, name, immediate);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
         return authorityDAO.getContainingAuthorities(type, name, immediate);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NodeRef getAuthorityNodeRef(String name)
     {
         return authorityDAO.getAuthorityNodeRefOrNull(name);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void removeAuthority(String parentName, String childName)
     {
         authorityDAO.removeAuthority(parentName, childName);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public boolean authorityExists(String name)
     {
        return authorityDAO.authorityExists(name);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
             Set<String> authorityZones)
     {
@@ -413,7 +530,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
         return name;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public String getAuthorityDisplayName(String name)
     {
         String displayName = authorityDAO.getAuthorityDisplayName(name);
@@ -423,57 +543,87 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return displayName;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void setAuthorityDisplayName(String authorityName, String authorityDisplayName)
     {
         AuthorityType type = AuthorityType.getAuthorityType(authorityName);
         checkTypeIsMutable(type);
         authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getAuthorityZones(String name)
     {
         return authorityDAO.getAuthorityZones(name);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public NodeRef getOrCreateZone(String zoneName)
     {
         return authorityDAO.getOrCreateZone(zoneName);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public NodeRef getZone(String zoneName)
     {
         return authorityDAO.getZone(zoneName);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    // see getAuthorities (paged)
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         return authorityDAO.getAllAuthoritiesInZone(zoneName, type);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void addAuthorityToZones(String authorityName, Set<String> zones)
     {
-        authorityDAO.addAuthorityToZones(authorityName,  zones);
+        authorityDAO.addAuthorityToZones(authorityName, zones);
         
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public void removeAuthorityFromZones(String authorityName, Set<String> zones)
     {
-        authorityDAO.removeAuthorityFromZones(authorityName,  zones);   
+        authorityDAO.removeAuthorityFromZones(authorityName, zones);
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getDefaultZones()
     {
       return DEFAULT_ZONES;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         return authorityDAO.getRootAuthorities(type, zoneName);
     }
-
-    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
-            String displayNamePattern, String zoneName)
+    
+    /**
+     * {@inheritDoc}
+     */
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate, String displayNamePattern, String zoneName)
     {
         if (type == null || type == AuthorityType.GROUP || type == AuthorityType.USER)
         {
@@ -484,20 +634,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             throw new UnsupportedOperationException();
         }
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthorityService#getName(org.alfresco.service.cmr.security.AuthorityType, java.lang.String)
+    
+    /**
+     * {@inheritDoc}
      */
     public String getName(AuthorityType type, String shortName)
     {
         return authorityDAO.getName(type, shortName);
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthorityService#getShortName(java.lang.String)
+    
+    /**
+     * {@inheritDoc}
      */
     public String getShortName(String name)
     {
         return authorityDAO.getShortName(name);
-    }        
+    }
 }

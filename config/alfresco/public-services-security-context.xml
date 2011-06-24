@@ -720,9 +720,9 @@
                 org.alfresco.service.cmr.security.AuthorityService.isAdminAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.isGuestAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorities=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesForUser=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesForUser=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.getAllAuthorities=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.findAuthorities=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.findAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorityNodeRef=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.createAuthority=ACL_METHOD.ROLE_ADMINISTRATOR

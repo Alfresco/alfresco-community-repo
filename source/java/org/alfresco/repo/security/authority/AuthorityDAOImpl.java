@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,11 @@ import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQuery;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -51,6 +57,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -59,10 +66,18 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.util.registry.NamedObjectRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
 {
+    private static Log logger = LogFactory.getLog(AuthorityDAOImpl.class);
+    
+    private static final String CANNED_QUERY_AUTHS_LIST = "authsGetAuthoritiesCannedQueryFactory"; // see authority-services-context.xml
+    
     private StoreRef storeRef;
 
     private NodeService nodeService;
@@ -91,10 +106,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
     private AclDAO aclDao;
-
+    
     private PolicyComponent policyComponent;
-
-
+    
+    private NamedObjectRegistry<CannedQueryFactory<AuthorityInfo>> cannedQueryRegistry;
+    
     public AuthorityDAOImpl()
     {
         super();
@@ -157,7 +173,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     {
         this.policyComponent = policyComponent;
     }
-
+    
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<AuthorityInfo>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
+    
     public boolean authorityExists(String name)
     {
         NodeRef ref = getAuthorityOrNull(name);
@@ -249,35 +271,167 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         authorityLookupCache.remove(cacheKey(name));
         userAuthorityCache.clear();
     }
-
-    public Set<String> getAllAuthorities(AuthorityType type)
+    
+    // Get authorities by type and/or zone (both cannot be null)
+    public PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
     {
-        Set<String> authorities = new TreeSet<String>();
-
-        // If all users are included, we use the person service to determine the complete set of names
-        if (type == null || type == AuthorityType.USER)
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
+        if ((type == null) && (zoneName == null))
         {
-            for (NodeRef nodeRef : personService.getAllPeople())
+            throw new IllegalArgumentException("Type and/or zoneName required - both cannot be null");
+        }
+        
+        if ((zoneName == null) && (type.equals(AuthorityType.USER)))
+        {
+            return getUserAuthoritiesImpl(displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
+        }
+        
+        NodeRef containerRef = null;
+        if (zoneName != null)
+        {
+            containerRef = getZone(zoneName);
+            if (containerRef == null)
             {
-                authorities.add(DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                        ContentModel.PROP_USERNAME)));
+                throw new UnknownAuthorityException("A zone was not found for " + zoneName); 
             }
         }
-
-        // Look under the authority container for non-person authorities
-        if (type != AuthorityType.USER)
+        else
         {
-            NodeRef container = getAuthorityContainer();
-            if (container != null)
+            containerRef = getAuthorityContainer();
+        }
+        
+        return getAuthoritiesImpl(type, containerRef, displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
+    }
+    
+    private PagingResults<String> getAuthoritiesImpl(AuthorityType type, NodeRef containerRef, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
+    {
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        
+        if (type != null)
+        {
+            switch (type)
             {
-                for (ChildAssociationRef childRef : nodeService.getChildAssocs(container,
-                        ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL, false))
+            case GROUP:
+            case ROLE:
+            case USER:
+                // drop through
+                break;
+            default:
+                throw new UnsupportedOperationException("Unexpected authority type: "+type);
+            }
+        }
+        
+        // get canned query
+        GetAuthoritiesCannedQueryFactory getAuthoritiesCannedQueryFactory = (GetAuthoritiesCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_AUTHS_LIST);
+        CannedQuery<AuthorityInfo> cq = getAuthoritiesCannedQueryFactory.getCannedQuery(type, containerRef, displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
+        
+        // execute canned query
+        final CannedQueryResults<AuthorityInfo> results = cq.execute();
+        
+        PagingResults<String> finalResults = new PagingResults<String>()
+            {
+                @Override
+                public String getQueryExecutionId()
                 {
-                    addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+                    return results.getQueryExecutionId();
                 }
-            }
+                @Override
+                public List<String> getPage()
+                {
+                    List<String> auths = new ArrayList<String>(results.getPageCount());
+                    for (AuthorityInfo authInfo : results.getPage())
+                    {
+                        auths.add(authInfo.getAuthorityName());
+                    }
+                    return auths;
+                }
+                @Override
+                public boolean hasMoreItems()
+                {
+                    return results.hasMoreItems();
+                }
+                @Override
+                public Pair<Integer, Integer> getTotalResultCount()
+                {
+                    return results.getTotalResultCount();
+                }
+                @Override
+                public boolean permissionsApplied()
+                {
+                    return results.permissionsApplied();
+                }
+            };
+        
+        if (start != null)
+        {
+            int cnt = finalResults.getPage().size();
+            int skipCount = pagingRequest.getSkipCount();
+            int maxItems = pagingRequest.getMaxItems();
+            boolean hasMoreItems = finalResults.hasMoreItems();
+            int pageNum = (skipCount / maxItems) + 1;
+            
+            logger.debug("getAuthoritiesByType: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [type="+type+",pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",filter="+displayNameFilter+"]");
         }
-        return authorities;
+        
+        return finalResults;
+    }
+    
+    // delegate to PersonService.getPeople
+    private PagingResults<String> getUserAuthoritiesImpl(String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
+    {
+        List<Pair<QName,String>> filter = null;
+        if (displayNameFilter != null)
+        {
+            filter = new ArrayList<Pair<QName,String>>();
+            filter.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, displayNameFilter));
+        }
+        
+        List<Pair<QName,Boolean>> sort = null;
+        if (sortByDisplayName)
+        {
+            sort = new ArrayList<Pair<QName,Boolean>>();
+            sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, sortAscending));
+        }
+        
+        final PagingPersonResults ppr = personService.getPeople(filter, true, sort, pagingRequest);
+        
+        List<NodeRef> result = ppr.getPage();
+        final List<String> auths = new ArrayList<String>(result.size());
+        
+        for (NodeRef personRef : result)
+        {
+            auths.add((String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME));
+        }
+        
+        return new PagingResults<String>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return ppr.getQueryExecutionId();
+            }
+            @Override
+            public List<String> getPage()
+            {
+                return auths;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return ppr.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return ppr.getTotalResultCount();
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return ppr.permissionsApplied();
+            }
+        };
     }
     
     public Set<String> getRootAuthorities(AuthorityType type, String zoneName)
@@ -295,6 +449,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
             String displayNamePattern, String zoneName)
     {
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        
         Pattern pattern = displayNamePattern == null ? null : Pattern.compile(SearchLanguageConversion.convert(
                 SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, displayNamePattern),
                 Pattern.CASE_INSENSITIVE);
@@ -306,6 +462,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             rootAuthorities = getRootAuthorities(type, zoneName);
             if (pattern == null)
             {
+                if (start != null)
+                {
+                    logger.debug("findAuthorities (rootAuthories): "+rootAuthorities.size()+" items in "+(System.currentTimeMillis()-start)+" msecs [type="+type+",zone="+zoneName+"]");
+                }
+                
                 return rootAuthorities;
             }
         }
@@ -404,7 +565,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         try
         {
             rs = searchService.query(sp);
-
+            
             for (ResultSetRow row : rs)
             {
                 NodeRef nodeRef = row.getNodeRef();
@@ -415,12 +576,18 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 addAuthorityNameIfMatches(authorities, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
                         .getProperty(nodeRef, idProp)), type, pattern);
             }
-
+            
             // If we asked for root authorities, we must do an intersection with the set of root authorities
             if (rootAuthorities != null)
             {
                 authorities.retainAll(rootAuthorities);
             }
+            
+            if (start != null)
+            {
+                logger.debug("findAuthorities: "+authorities.size()+" items in "+(System.currentTimeMillis()-start)+" msecs [type="+type+",zone="+zoneName+",parent="+parentAuthority+",immediate="+immediate+",filter="+displayNamePattern+"]");
+            }
+            
             return authorities;
         }
         finally
@@ -430,7 +597,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 rs.close();
             }
         }
-
     }
     
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
@@ -498,7 +664,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             Set<String> filteredAuthorities = new TreeSet<String>();
             for (String authority : authorities)
             {
-                addAuthorityNameIfMatches(filteredAuthorities, authority, type, null);
+                addAuthorityNameIfMatches(filteredAuthorities, authority, type);
             }
             return filteredAuthorities;
         }
@@ -544,8 +710,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
-    private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type,
-            Pattern pattern)
+    private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)
+    {
+        if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type))
+        {
+            authorities.add(authorityName);
+        }
+    }
+    
+    private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
     {
         if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type))
         {
@@ -603,7 +776,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     .getProperty(nodeRef, dictionaryService.isSubClass(nodeService.getType(nodeRef),
                             ContentModel.TYPE_AUTHORITY_CONTAINER) ? ContentModel.PROP_AUTHORITY_NAME
                             : ContentModel.PROP_USERNAME));
-            addAuthorityNameIfMatches(authorities, authorityName, type, null);
+            addAuthorityNameIfMatches(authorities, authorityName, type);
         }
         
         // Loop over children if we want immediate children or are in recursive mode
@@ -628,7 +801,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     String childName = car.getQName().getLocalName();
                     AuthorityType childType = AuthorityType.getAuthorityType(childName);
-                    addAuthorityNameIfMatches(authorities, childName, type, null);
+                    addAuthorityNameIfMatches(authorities, childName, type);
                     if (recursive && childType != AuthorityType.USER)
                     {
                         listAuthorities(type, car.getChildRef(), authorities, false, true, false);
@@ -838,21 +1011,17 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         return zones;
     }
-
+    
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {
-        Set<String> authorities = new TreeSet<String>();
         NodeRef zoneRef = getZone(zoneName);
-        if (zoneRef != null)
+        if (zoneRef == null)
         {
-            for (ChildAssociationRef childRef : nodeService.getChildAssocs(zoneRef, ContentModel.ASSOC_IN_ZONE, RegexQNamePattern.MATCH_ALL, false))
-            {
-                addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
-            }
+            Collections.emptySet();
         }
-        return authorities;
+        return new HashSet<String>(getAuthoritiesImpl(type, zoneRef, null, false, false, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage());
     }
-
+    
     public void addAuthorityToZones(String authorityName, Set<String> zones)
     {
         if ((zones != null) && (zones.size() > 0))
@@ -875,7 +1044,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
         }
     }
-
+    
     public void removeAuthorityFromZones(String authorityName, Set<String> zones)
     {
         if ((zones != null) && (zones.size() > 0))
@@ -912,7 +1081,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         Set<String> authorities = new TreeSet<String>();
         for (ChildAssociationRef childRef : childRefs)
         {
-            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
+            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type);
         }
         return authorities;
     }
@@ -920,7 +1089,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     // Listen out for person removals so that we can clear cached authorities
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        userAuthorityCache.remove(getAuthorityName(nodeRef));        
+        userAuthorityCache.remove(getAuthorityName(nodeRef));
     }
 
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)

@@ -875,6 +875,12 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         
         if (supportedDefinitions.size() == 0)
         {
+            if (returnedObject instanceof WrappedList<?>)
+            {
+                ((WrappedList<?>)returnedObject).setHasMoreItems(false);
+                ((WrappedList<?>)returnedObject).setPermissionsApplied(true);
+            }
+            
             return returnedObject;
         }
         

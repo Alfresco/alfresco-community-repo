@@ -21,6 +21,8 @@ package org.alfresco.repo.security.authority;
 import java.util.Collection;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 
@@ -77,14 +79,19 @@ public interface AuthorityDAO
      * @return
      */
     Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
-
+    
     /**
-     * Get all authorities by type
+     * Get authorities by type and/or zone
      * 
      * @param type
+     * @param zoneName
+     * @param displayNameFilter
+     * @param sortByDisplayName
+     * @param sortAscending
+     * @param pagingRequest
      * @return
      */
-    Set<String> getAllAuthorities(AuthorityType type);
+    PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest);
     
     /**
      * Test if an authority already exists.
@@ -211,11 +218,11 @@ public interface AuthorityDAO
      * @param zones
      */
     public void addAuthorityToZones(String authorityName, Set<String> zones);
-
+    
     /**
      * Remove an authority from zones.
      * @param authorityName
      * @param zones
      */
-    public void removeAuthorityFromZones(String authorityName, Set<String> zones);    
+    public void removeAuthorityFromZones(String authorityName, Set<String> zones);
 }

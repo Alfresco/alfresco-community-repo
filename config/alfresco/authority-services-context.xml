@@ -16,9 +16,6 @@
         <property name="personService">
             <ref bean="personService" />
         </property>
-        <property name="nodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
@@ -88,11 +85,24 @@
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
+        <property name="cannedQueryRegistry">
+            <ref bean="cannedQueryRegistry" />
+        </property>
         <property name="aclDAO">
             <ref bean="aclDAO" />
         </property>
-        
     </bean>
+    
+    <bean name="authsGetAuthoritiesCannedQueryFactory" class="org.alfresco.repo.security.authority.GetAuthoritiesCannedQueryFactory">
+        <property name="registry" ref="cannedQueryRegistry"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurityInterceptor" ref="AuthorityService_security"/>
+        <property name="methodService" ref="authorityService"/>
+        <property name="methodName" value="getAuthorities"/>
+   </bean>
     
     
     <!--  Expose the Authority service to Java script API ROOT Scopeable object called "groups" -->

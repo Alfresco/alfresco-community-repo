@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,9 +21,12 @@ package org.alfresco.repo.security.authority;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -33,6 +36,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.Pair;
 
 /**
  * The default implementation of the authority service.
@@ -176,7 +180,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         case ROLE:
             break;
         case USER:
-            for (NodeRef personRef : personService.getAllPeople())
+            for (NodeRef personRef : personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage())
             {
                 authorities.add(DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personRef,
                         ContentModel.PROP_USERNAME)));
@@ -186,6 +190,38 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
             break;
         }
         return authorities;
+    }
+    
+    public PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
+    {
+        return new PagingResults<String>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return null;
+            }
+            @Override
+            public List<String> getPage()
+            {
+                return Collections.<String>emptyList();
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return false;
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return null;
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return true;
+            }
+        };
     }
     
     public void addAuthority(String parentName, String childName)

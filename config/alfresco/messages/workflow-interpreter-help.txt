@@ -277,6 +277,7 @@
         task.<propqname>=<propvalue>     e.g. task.bpm:outcome=approve
         processId=<processId>
         processName=<processName>        e.g. processName=wf:review
+        workflowDefinitionName=<name>    e.g. workflowDefinitionName=activitiAdhoc
         processActive=true|false         e.g. processActive=true
         process.<propqname>=<propvalue>  e.g. process.initiator=admin
         orderBy=<orderBy>*               e.g. orderBy=TaskDue_Desc,TaskActor_Asc

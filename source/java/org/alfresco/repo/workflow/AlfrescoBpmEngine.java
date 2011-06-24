@@ -24,7 +24,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QNameCache;
 
 /**
  * @since 3.4.e

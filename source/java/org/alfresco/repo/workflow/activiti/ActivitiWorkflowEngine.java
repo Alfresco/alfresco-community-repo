@@ -1467,6 +1467,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 String processName = getProcessNameMTSafe(query.getProcessName());
                 taskQuery.processDefinitionKey(processName);
             }
+            
+            if (query.getWorkflowDefinitionName() != null)
+            {
+                String processName = getWorkflowDefinitionNameMTSafe(query.getWorkflowDefinitionName());
+                taskQuery.processDefinitionKey(processName);
+            }
 
             if (query.getActorId() != null)
             {
@@ -1531,6 +1537,21 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          else
          {
              processName = processNameQName.toPrefixString(namespaceService);
+         }
+         return processName;
+     }
+     
+     protected String getWorkflowDefinitionNameMTSafe(String name)
+     {
+         String processName = null;
+         if (tenantService.isEnabled())
+         {
+             String baseName = tenantService.getBaseName(name, true);
+             processName = tenantService.getName(baseName);
+         }
+         else
+         {
+             processName = name;
          }
          return processName;
      }
@@ -1674,6 +1695,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         if (query.getProcessName() != null)
         {
             String processName = getProcessNameMTSafe(query.getProcessName());
+            historicQuery.processDefinitionKey(processName);
+        }
+        
+        if (query.getWorkflowDefinitionName() != null)
+        {
+            String processName = getWorkflowDefinitionNameMTSafe(query.getWorkflowDefinitionName());
             historicQuery.processDefinitionKey(processName);
         }
 
@@ -1826,6 +1853,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 			}
 		}
 		
+		// Query by process name deprecated, but still implemented.
 		if(query.getProcessName() != null)
 		{
 			String processName = factory.mapQNameToName(query.getProcessName());
@@ -1834,6 +1862,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 				return false;
 			}
 		}
+		
+		if(query.getWorkflowDefinitionName() != null)
+        {
+            if(!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            {
+                return false;
+            }
+        }
     	
 		if(query.getTaskCustomProps() != null)
 		{

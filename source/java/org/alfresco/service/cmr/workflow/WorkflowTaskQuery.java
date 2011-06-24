@@ -42,6 +42,7 @@ public class WorkflowTaskQuery
     // process predicates
     private String processId;
     private QName processName;
+    private String workflowDefinitionName;
     private Boolean active = Boolean.TRUE;
     private Map<QName, Object> processCustomProps;
 
@@ -193,12 +194,32 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * Filters on the {@link WorkflowDefinition} name.
+     * Filters on the {@link WorkflowDefinition} name. When using Activiti,
+     * the method {@link #setWorkflowDefinitionName(String)} should be used
+     * instead of this method.
+     * 
      * @param processName
      */
     public void setProcessName(QName processName)
     {
         this.processName = processName;
+    }
+    
+    /**
+     * @return 
+     */
+    public String getWorkflowDefinitionName()
+    {
+        return workflowDefinitionName;
+    }
+    
+    /**
+     * Filters on the {@link WorkflowDefinition} name.
+     * @param workflowDefinitionName
+     */
+    public void setWorkflowDefinitionName(String workflowDefinitionName)
+    {
+        this.workflowDefinitionName = workflowDefinitionName;
     }
     
     /**

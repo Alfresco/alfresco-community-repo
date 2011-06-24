@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -69,6 +68,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * An interactive console for Workflows.
@@ -664,6 +664,10 @@ public class WorkflowInterpreter extends BaseInterpreter
                         else if (predicate[0].equals("processName"))
                         {
                             query.setProcessName(QName.createQName(predicate[1], namespaceService));
+                        }
+                        else if (predicate[0].equals("workflowDefinitionName"))
+                        {
+                            query.setWorkflowDefinitionName(predicate[1]);
                         }
                         else if (predicate[0].equals("processActive"))
                         {

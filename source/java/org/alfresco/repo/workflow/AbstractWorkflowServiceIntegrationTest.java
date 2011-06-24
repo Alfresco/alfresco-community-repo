@@ -961,11 +961,21 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         
+        // Test depricated method, using QName
         taskQuery.setProcessName(getAdhocProcessName());
         checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
         
         taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setProcessName(QName.createQName("dummyProcessName"));
+        checkNoTasksFoundUsingQuery(taskQuery);
+        
+        
+        // Test method, using String
+        taskQuery.setWorkflowDefinitionName(getAdhocProcessName().toPrefixString());
+        checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
+        
+        taskQuery = createWorkflowTaskQuery(state);
+        taskQuery.setWorkflowDefinitionName("dummyProcessName");
         checkNoTasksFoundUsingQuery(taskQuery);
     }
     

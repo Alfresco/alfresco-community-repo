@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.zip.ZipInputStream;
 
 import org.alfresco.model.ContentModel;
@@ -1601,6 +1601,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                         query.setProcessName(tenantService.getName(query.getProcessName()));
                     }
                     
+                    if ((query.getWorkflowDefinitionName() != null) && (tenantService.isEnabled()))
+                    {
+                        query.setWorkflowDefinitionName(tenantService.getName(query.getWorkflowDefinitionName()));
+                    }
+                    
                     Criteria criteria = createTaskQueryCriteria(session, query);
                     List<TaskInstance> tasks = criteria.list();
                     return getWorkflowTasks(tasks);
@@ -1912,6 +1917,25 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                 processName = query.getProcessName().toPrefixString(namespaceService);
             }
             
+            processDef.add(Restrictions.eq("name", processName));
+        }
+        
+        // Process definition name
+        if (query.getWorkflowDefinitionName() != null)
+        {
+            process = (process == null) ? root.createCriteria("processInstance") : process;
+            Criteria processDef = process.createCriteria("processDefinition");
+            
+            String processName = null;
+            if (tenantService.isEnabled())
+            {
+                String baseProcessName = tenantService.getBaseName(query.getWorkflowDefinitionName(), true);
+                processName = tenantService.getName(baseProcessName);
+            }
+            else
+            {
+                processName = query.getWorkflowDefinitionName();
+            }
             processDef.add(Restrictions.eq("name", processName));
         }
         

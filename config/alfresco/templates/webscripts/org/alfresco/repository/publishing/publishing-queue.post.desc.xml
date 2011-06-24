@@ -27,7 +27,13 @@
                   "timeZone": string,
                },
                "publishNodes": [string, ... ],
-               "unpublishNodes": [string, ... ]
+               "unpublishNodes": [string, ... ],
+               "statusUpdate":
+               {
+                  "message": string,
+                  "nodeRef": string,
+                  "channelNames": [string, ... ]
+               }
             }
             ]]>
          </type>

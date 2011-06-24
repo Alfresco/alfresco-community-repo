@@ -142,7 +142,7 @@ public class WebDAV
     public static final String HEADER_VALUE_SEPARATOR = ",";
     public static final String ZERO = "0";
     public static final String ONE = "1";
-    public static final String T = "T";
+    public static final String F = "F";
 
     // Strings used in WebDAV XML payload
     

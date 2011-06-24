@@ -37,7 +37,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
     // Request parameters
 
     protected String m_strDestinationPath;
-    protected boolean m_overwrite = false;
+    protected boolean m_overwrite = true;
 
     /**
      * Default constructor
@@ -137,9 +137,9 @@ public abstract class HierarchicalMethod extends WebDAVMethod
         // Check if the copy should overwrite an existing file
 
         String strOverwrite = m_request.getHeader(WebDAV.HEADER_OVERWRITE);
-        if (strOverwrite != null && strOverwrite.equals(WebDAV.T))
+        if (strOverwrite != null && strOverwrite.equals(WebDAV.F))
         {
-            m_overwrite = true;
+            m_overwrite = false;
         }
     }
 

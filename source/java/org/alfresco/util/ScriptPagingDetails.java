@@ -140,7 +140,8 @@ public class ScriptPagingDetails extends PagingRequest
         super.setSkipCount(skipCount);
     }
     
-    public void setQueryExecutionId(String queryExecutionId) {
+    public void setQueryExecutionId(String queryExecutionId)
+    {
         super.setQueryExecutionId(queryExecutionId);
     }
 }

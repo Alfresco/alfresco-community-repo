@@ -240,13 +240,6 @@
    </types>
 
    <aspects>
-   
-      <aspect name="pub:ContentRoot">
-         <title>Content Root Aspect</title>
-         <description>Applied to a node that represents the root of a delivery channel's content
-            hierarchy</description>
-      </aspect>
-
       <aspect name="pub:channelInfo">
          <title>Channel Info</title>
          <description>Applied to a node that exists within a Delivery Channel</description>

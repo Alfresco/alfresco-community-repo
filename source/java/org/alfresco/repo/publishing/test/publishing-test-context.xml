@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean class="org.alfresco.repo.publishing.test.TestChannelType1" parent="baseChannelType" />
+    <bean class="org.alfresco.repo.publishing.test.TestChannelType2" parent="baseChannelType" />
+    <bean class="org.alfresco.repo.publishing.test.TestChannelType3" parent="baseChannelType" />
+    
+    <bean class="org.alfresco.repo.publishing.test.SiteType" init-method="init">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="channelService" ref="channelService" />
+    </bean>
+</beans>

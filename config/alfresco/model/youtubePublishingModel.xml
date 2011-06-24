@@ -1,0 +1,64 @@
+<model name="youtube:publishingmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco YouTube Publishing Content Model</description>
+   <author>Alfresco</author>
+   <published>2011-06-15</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/publishing/1.0" prefix="pub" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/publishing/youtube/1.0" prefix="youtube" />
+   </namespaces>
+
+   <types>
+      <type name="youtube:DeliveryChannel">
+         <title>YouTube Delivery Channel</title>
+         <description>Node type used to represent YouTube delivery channels</description>
+         <parent>pub:DeliveryChannel</parent>
+         <mandatory-aspects>
+            <aspect>youtube:DeliveryChannelAspect</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+
+   <aspects>
+      <aspect name="youtube:DeliveryChannelAspect">
+         <title>YouTube Delivery Channel</title>
+         <description>Applied to a node that represents a YouTube delivery channel</description>
+         <properties>
+            <property name="youtube:username">
+               <title>YouTube User Name</title>
+               <type>d:text</type>
+               <multiple>false</multiple>
+            </property>
+            <property name="youtube:password">
+               <title>YouTube Password</title>
+               <type>d:text</type>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="youtube:AssetAspect">
+         <title>YouTube Asset</title>
+         <description>Applied to a node that has been published to YouTube</description>
+         <properties>
+            <property name="youtube:assetId">
+               <title>YouTube Video Id</title>
+               <type>d:text</type>
+           </property>
+           <property name="youtube:playerUrl">
+              <title>YouTube Player URL</title>
+              <type>d:text</type>
+           </property>
+        </properties>
+      </aspect>
+   </aspects>
+</model>

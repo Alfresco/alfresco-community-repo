@@ -93,7 +93,6 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     @Autowired
     private PublishEventAction action;
 
-    private NodeRef root;
     private NodeRef channel;
     private String eventId;
     private ChannelType channelType;
@@ -115,7 +114,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
         assertNotNull(publishedNode);
         assertTrue(nodeService.exists(publishedNode));
-        assertEquals(root, nodeService.getPrimaryParent(publishedNode).getParentRef());
+        assertEquals(channel, nodeService.getPrimaryParent(publishedNode).getParentRef());
         
         // Check published node type and aspects
         assertEquals(TYPE_CONTENT, nodeService.getType(publishedNode));
@@ -410,8 +409,6 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         channelService.createChannel(siteId, channelTypeId, channelName, null);
         
         this.channel = channelHelper.getChannelNodeForEnvironment(environment.getNodeRef(), channelName);
-        this.root = channelHelper.getChannelRootNode(channel);
-        assertNotNull(root);
     }
 
     @Override

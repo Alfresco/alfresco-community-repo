@@ -29,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -54,8 +55,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public abstract class AbstractPublishingIntegrationTest
 {
-    protected static final String environmentName = "live";
-
     protected static final String channelTypeId = "MockChannelType";
     
     @Resource(name="publishingObjectFactory")
@@ -83,12 +82,12 @@ public abstract class AbstractPublishingIntegrationTest
         
         this.siteId = GUID.generate();
         siteService.createSite("test", siteId,
-                "Test site created by ChannelServiceImplIntegratedTest",
-                "Test site created by ChannelServiceImplIntegratedTest",
+                "Site created by publishing test",
+                "Site created by publishing test",
                 SiteVisibility.PUBLIC);
         this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId, environmentName);
+        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
         this.queue = (PublishingQueueImpl) environment.getPublishingQueue();
     }
     
@@ -103,7 +102,6 @@ public abstract class AbstractPublishingIntegrationTest
         ChannelType channelType = mock(ChannelType.class);
         when(channelType.getId()).thenReturn(channelTypeId);
         when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
-        when(channelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
         return channelType;
     }
 

@@ -70,7 +70,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         super.setUp();
         when(mockedChannelType.getId()).thenReturn(channelTypeName);
         when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
-        when(mockedChannelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
 
         if (!channelTypeRegistered)
         {

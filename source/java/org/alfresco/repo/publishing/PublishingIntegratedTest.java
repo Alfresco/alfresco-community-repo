@@ -112,7 +112,6 @@ public class PublishingIntegratedTest
         channelTypeName = "MockedChannelType";
         when(mockedChannelType.getId()).thenReturn(channelTypeName);
         when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
-        when(mockedChannelType.getContentRootNodeType()).thenReturn(ContentModel.TYPE_FOLDER);
 
         if (channelService.getChannelType(channelTypeName)== null)
         {

@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-   <bean id="publishingService_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+    <bean id="publishingService_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
         <property name="models">
             <list>
                 <value>alfresco/model/publishingModel.xml</value>
@@ -10,7 +10,7 @@
         </property>
     </bean>
 
-   <!-- Bootstrap the publishing process definition -->
+    <!-- Bootstrap the publishing process definition -->
     <bean parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>
@@ -29,80 +29,80 @@
         </property>
     </bean>
 
-   <bean id="publishingResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-            <value>alfresco.messages.publishing-service</value>
-         </list>
-      </property>
-   </bean>
+    <bean id="publishingResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.publishing-service</value>
+            </list>
+        </property>
+    </bean>
 
-   <!--  Channel Service -->
-   <bean id="channelService" class="org.alfresco.repo.publishing.ChannelServiceImpl">
+    <!--  Channel Service -->
+    <bean id="channelService" class="org.alfresco.repo.publishing.ChannelServiceImpl">
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="nodeService" ref="NodeService" />
       <property name="siteService" ref="SiteService" />
-      <property name="environmentHelper" ref="environmentHelper" />
-      <property name="channelHelper" ref="channelHelper" />
-   </bean>
+        <property name="environmentHelper" ref="environmentHelper" />
+        <property name="channelHelper" ref="channelHelper" />
+    </bean>
 
-   <!--  Channel Type Implementations -->
-   <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
-      <property name="channelService" ref="channelService" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />
-   </bean>
-   
-   <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">
+    <!--  Channel Type Implementations -->
+    <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true">
+        <property name="channelService" ref="channelService" />
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+    </bean>
+
+    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">
       <property name="nodeService" ref="NodeService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="fileFolderService" ref="FileFolderService" />
-   </bean>
+    </bean>
 
-   <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
+    <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
       <property name="nodeService" ref="NodeService" />
       <property name="siteService" ref="SiteService" />
-      <property name="publishingEventHelper" ref="publishingEventHelper" />
-      <property name="channelHelper" ref="channelHelper" />
-   </bean>
+        <property name="publishingEventHelper" ref="publishingEventHelper" />
+        <property name="channelHelper" ref="channelHelper" />
+    </bean>
 
-   <bean id="publishingEventHelper" class="org.alfresco.repo.publishing.PublishingEventHelper">
+    <bean id="publishingEventHelper" class="org.alfresco.repo.publishing.PublishingEventHelper">
       <property name="nodeService" ref="NodeService" />
       <property name="contentService" ref="ContentService" />
-      <property name="serializer" ref="publishingPackageSerializer" />
-      <property name="workflowService" ref="WorkflowService" />
-      <property name="workflowEngineId" value="jbpm" />
-   </bean>
+        <property name="serializer" ref="publishingPackageSerializer" />
+        <property name="workflowService" ref="WorkflowService" />
+        <property name="workflowEngineId" value="jbpm" />
+    </bean>
 
-   <!--  Check Publishing Dependencies Action -->
-    <bean id="pub_checkPublishingDependencies" 
-        class="org.alfresco.repo.publishing.CheckPublishingDependenciesAction" />
+    <!--  Check Publishing Dependencies Action -->
+    <bean id="pub_checkPublishingDependencies" class="org.alfresco.repo.publishing.CheckPublishingDependenciesAction" />
 
-   <!--  Publish Event Action -->
-    <bean id="pub_publishEvent" class="org.alfresco.repo.publishing.PublishEventAction" >
-      <property name="publishingEventProcessor" ref="publishingEventProcessor" />
-   </bean>
-   
-   <!--  Publishing Event Processor -->
-   <bean id="publishingEventProcessor" class="org.alfresco.repo.publishing.PublishingEventProcessor">
-      <property name="channelHelper" ref="channelHelper" />
-      <property name="channelService" ref="channelService" />
-      <property name="publishingEventHelper" ref="publishingEventHelper" />
+    <!--  Publish Event Action -->
+    <bean id="pub_publishEvent" class="org.alfresco.repo.publishing.PublishEventAction">
+        <property name="publishingEventProcessor" ref="publishingEventProcessor" />
+    </bean>
+
+    <!--  Publishing Event Processor -->
+    <bean id="publishingEventProcessor" class="org.alfresco.repo.publishing.PublishingEventProcessor">
+        <property name="channelHelper" ref="channelHelper" />
+        <property name="channelService" ref="channelService" />
+        <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="nodeService" ref="NodeService" />
-      <property name="behaviourFilter" ref="policyBehaviourFilter" />
-   </bean>
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+    </bean>
 
-   <bean id="publishingObjectFactory" class="org.alfresco.repo.publishing.PublishingObjectFactory">
-      <property name="environmentHelper" ref="environmentHelper" />
-      <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
-      <property name="publishingEventHelper" ref="publishingEventHelper" />
-   </bean>
-   
-      <!--  Publishing Service -->
-   <bean id="publishingService" class="org.alfresco.repo.publishing.PublishServiceImpl">
-      <property name="environmentFactory" ref="publishingObjectFactory" />
-      <property name="publishingEventHelper" ref="publishingEventHelper" />
-   </bean>
-   
-   <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardPublishingPackageSerializer" />
+    <bean id="publishingObjectFactory" class="org.alfresco.repo.publishing.PublishingObjectFactory">
+        <property name="environmentHelper" ref="environmentHelper" />
+        <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
+        <property name="publishingEventHelper" ref="publishingEventHelper" />
+    </bean>
 
+    <!--  Publishing Service -->
+    <bean id="publishingService" class="org.alfresco.repo.publishing.PublishServiceImpl">
+        <property name="environmentFactory" ref="publishingObjectFactory" />
+        <property name="publishingEventHelper" ref="publishingEventHelper" />
+    </bean>
+
+    <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardPublishingPackageSerializer" />
+
+    <import resource="classpath:alfresco/youtube-publishing-context.xml" />
 </beans>

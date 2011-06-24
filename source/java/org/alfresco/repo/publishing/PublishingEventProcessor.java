@@ -171,8 +171,7 @@ public class PublishingEventProcessor
          ParameterCheck.mandatory("channel", channel);
          ParameterCheck.mandatory("snapshot", snapshot);
          
-         NodeRef root = channelHelper.getChannelRootNode(channel);
-         NodeRef publishedNode = createPublishedNode(root, snapshot);
+         NodeRef publishedNode = createPublishedNode(channel, snapshot);
          addAspects(publishedNode, snapshot.getAspects());
          NodeRef source = snapshot.getNodeRef();
          channelHelper.createMapping(source, publishedNode);

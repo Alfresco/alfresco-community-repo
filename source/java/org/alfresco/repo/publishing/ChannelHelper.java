@@ -20,7 +20,6 @@
 package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
-import static org.alfresco.repo.publishing.PublishingModel.ASPECT_CONTENT_ROOT;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_SOURCE;
 import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
@@ -65,8 +64,6 @@ import org.alfresco.util.collections.Function;
  */
 public class ChannelHelper
 {
-    private static final QName ROOT_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "root");
-
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
@@ -90,10 +87,6 @@ public class ChannelHelper
         ChildAssociationRef channelAssoc = 
             nodeService.createNode(parent, ASSOC_CONTAINS, channelQName, channelNodeType, props);
         NodeRef channelNode = channelAssoc.getChildRef();
-        
-        QName rootNodeType = channelType.getContentRootNodeType();
-        ChildAssociationRef rootAssoc = nodeService.createNode(channelNode, ASSOC_CONTAINS, ROOT_NAME, rootNodeType);
-        nodeService.addAspect(rootAssoc.getChildRef(), ASPECT_CONTENT_ROOT, null);
         return channelNode;
     }
 
@@ -134,17 +127,6 @@ public class ChannelHelper
         return getSingleValue(channelAssocs, true);
     }
     
-    public NodeRef getChannelRootNode(NodeRef channel)
-    {
-        List<ChildAssociationRef> rootAssocs = nodeService.getChildAssocs(channel, ASSOC_CONTAINS, ROOT_NAME);
-        NodeRef root = getSingleValue(rootAssocs, true);
-        if(root ==null || nodeService.hasAspect(root, ASPECT_CONTENT_ROOT)==false)
-        {
-            throw new IllegalStateException("All channels must have a root folder!");
-        }
-        return root;
-    }
-
     /**
      * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef in the specified channel and environment.
      * @param source
@@ -169,12 +151,11 @@ public class ChannelHelper
         List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(source, ASSOC_SOURCE, RegexQNamePattern.MATCH_ALL);
         if(parentAssocs != null)
         {
-            NodeRef root = getChannelRootNode(channel);
             for (ChildAssociationRef parentAssoc : parentAssocs)
             {
                 NodeRef publishedNode = parentAssoc.getParentRef();
                 NodeRef parent = nodeService.getPrimaryParent(publishedNode).getParentRef();
-                if(root.equals(parent))
+                if(channel.equals(parent))
                 {
                     return publishedNode;
                 }

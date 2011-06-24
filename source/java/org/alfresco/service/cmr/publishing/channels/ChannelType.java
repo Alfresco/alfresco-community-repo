@@ -36,7 +36,6 @@ public interface ChannelType
 {
     String getId();
     QName getChannelNodeType();
-    QName getContentRootNodeType();
     NodeFinder getNodeFinder();
     NodeFilter getNodeFilter();
     void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties);

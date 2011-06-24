@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/youtubePublishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="youtubePublishingHelper" class="org.alfresco.repo.publishing.youtube.YouTubePublishingHelper">
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="publish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubePublishAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="taggingService" ref="TaggingService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="youTubeHelper" ref="youtubePublishingHelper" />
+    </bean>
+
+    <bean id="unpublish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubeUnpublishAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="youTubeHelper" ref="youtubePublishingHelper" />
+    </bean>
+
+    <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" />
+
+
+</beans>

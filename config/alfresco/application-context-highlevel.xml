@@ -21,5 +21,8 @@
     <import resource="classpath:alfresco/opencmis-context.xml" />
     <import resource="classpath:alfresco/period-type-context.xml" />
     <import resource="classpath*:alfresco/node-locator-context.xml" />
+    <import resource="classpath*:alfresco/transfer-service-context.xml"/>
+    <import resource="classpath*:alfresco/web-publishing-context.xml" />
+    <import resource="classpath*:alfresco/social-publishing-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

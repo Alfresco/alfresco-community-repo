@@ -42,7 +42,6 @@ public interface PublishingModel
     public static final QName TYPE_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "PublishingEvent");
     public static final QName TYPE_PUBLISHING_CONNECTION = QName.createQName(NAMESPACE, "Connection");
     
-    public static final QName ASPECT_CONTENT_ROOT = QName.createQName(NAMESPACE, "ContentRoot");
     public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
     public static final QName ASPECT_PUBLISHED = QName.createQName(NAMESPACE, "published");
 

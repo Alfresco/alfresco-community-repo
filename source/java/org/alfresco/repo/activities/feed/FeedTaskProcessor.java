@@ -264,14 +264,9 @@ public abstract class FeedTaskProcessor
                     followers.put(activityPost.getUserId(), followerUsers);
                 }
                 recipients.addAll(followerUsers);
-                
-                if(recipients.size() == 0) {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("No recipients for activity post " + activityPost.getId() + ".");
-                    }
-                    return;
-                }
+
+                // Add the originator to recipients
+                recipients.add(activityPost.getUserId());
 
                 try 
                 { 

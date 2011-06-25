@@ -19,10 +19,10 @@
 package org.alfresco.service.cmr.activities;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 
 
 /**
@@ -67,6 +67,30 @@ public interface ActivityService extends ActivityPostService
      */
     @NotAuditable
     public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
+
+    
+    /**
+     * Retrieve user feed with optional site filter and optional user filters
+     * 
+     * Will return activities for users across all sites, or optionally for users for specified site.
+     * 
+     * User filters are:
+     * - all user activities   (excludeThisUser = false, excludeOtherUsers = false)
+     * - other user activities (excludeThisUser = true,  excludeOtherUsers = false)
+     * - my user activities    (excludeThisUser = false, excludeOtherUsers = true)
+     * note: if both excludes are true then no activities will be returned.
+     * 
+     * @param userId     - required
+     * @param format     - required
+     * @param siteId     - optional, if set then will filter by given siteId else return all sites
+     * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
+     * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
+     * @param userFilter         - if not NULL then will only return activities of users in this set
+     * @param actvityFilter      - if not NULL then will only return activities that are in this set
+     * @return list of JSON feed entries
+     */
+    @NotAuditable
+    public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter);
     
     /**
      * Retrieve user feed with optional site filter and optional user filters and optional min feed DB id
@@ -84,11 +108,37 @@ public interface ActivityService extends ActivityPostService
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
+     * @param onlyFollowing      - if TRUE then will only return activities of users this user follows
      * @param minFeedId - inclusive from min feed DB id, if -1 then return all available
      * @return list of JSON feed entries
      */
     @NotAuditable
     public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId);
+    
+    /**
+     * Retrieve user feed with optional site filter and optional user filters and optional min feed DB id
+     * 
+     * Will return activities for users across all sites, or optionally for users for specified site.
+     * 
+     * User filters are:
+     * - all user activities   (excludeThisUser = false, excludeOtherUsers = false)
+     * - other user activities (excludeThisUser = true,  excludeOtherUsers = false)
+     * - my user activities    (excludeThisUser = false, excludeOtherUsers = true)
+     * note: if both excludes are true then no activities will be returned.
+     * 
+     * @param userId     - required
+     * @param format     - required
+     * @param siteId     - optional, if set then will filter by given siteId else return all sites
+     * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
+     * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
+     * @param onlyFollowing      - if TRUE then will only return activities of users this user follows
+     * @param userFilter         - if not NULL then will only return activities of users in this set
+     * @param actvityFilter      - if not NULL then will only return activities that are in this set
+     * @param minFeedId - inclusive from min feed DB id, if -1 then return all available
+     * @return list of JSON feed entries
+     */
+    @NotAuditable
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId);
     
     /**
      * Retrieve site feed

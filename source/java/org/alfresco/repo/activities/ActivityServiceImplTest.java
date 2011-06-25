@@ -130,17 +130,17 @@ public class ActivityServiceImplTest extends BaseSpringTest
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, false);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, false, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", false, true);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", false, true, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, true);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, true, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());

@@ -75,7 +75,8 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
-        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems());
+        int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
+                : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
         List<SubscriptionNodeEntity> nodeList = (List<SubscriptionNodeEntity>) template.selectList(
@@ -219,7 +220,8 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
-        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems() + 1);
+        int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
+                : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
         List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Following", map,
@@ -256,7 +258,8 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("userNodeId", userPair.getFirst());
         map.put("false", Boolean.FALSE);
 
-        int maxItems = (pagingRequest.getMaxItems() < 0 ? Integer.MAX_VALUE - 1 : pagingRequest.getMaxItems() + 1);
+        int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
+                : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
         List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Followers", map,

@@ -21,6 +21,7 @@ package org.alfresco.repo.activities;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.activities.feed.cleanup.FeedCleaner;
@@ -167,7 +168,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
      */
     public List<String> getUserFeedEntries(String feedUserId, String format, String siteId)
     {
-        return getUserFeedEntries(feedUserId, format, siteId, false, false);
+        return getUserFeedEntries(feedUserId, format, siteId, false, false, null, null);
     }
     
     /* (non-Javadoc)
@@ -175,11 +176,19 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
      */
     public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers)
     {
+        return getUserFeedEntries(feedUserId, format, siteId,excludeThisUser, excludeOtherUsers, null, null);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean, java.util.Set<String>, java.util.Set<String>)
+     */
+    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter)
+    {
         List<String> activityFeedEntries = new ArrayList<String>();
         
         try
         {
-            List<ActivityFeedEntity> activityFeeds = getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, -1);
+            List<ActivityFeedEntity> activityFeeds = getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, userFilter, actvityFilter, -1);
             
             if (activityFeeds != null)
             {
@@ -200,6 +209,11 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     }
     
     public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId)
+    {
+        return getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, null, null, minFeedId);
+    }
+    
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId)
     {
         // NOTE: siteId is optional
         ParameterCheck.mandatoryString("feedUserId", feedUserId);
@@ -232,6 +246,14 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
+                if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType())) {
+                    continue;
+                }
+                
+                if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId())) {
+                    continue;
+                }
+                
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 result.add(activityFeed);
             }

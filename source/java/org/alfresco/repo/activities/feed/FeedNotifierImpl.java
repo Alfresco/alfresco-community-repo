@@ -19,9 +19,7 @@
 package org.alfresco.repo.activities.feed;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -397,7 +395,7 @@ public class FeedNotifierImpl implements FeedNotifier
         
         
         // own + others (note: template can be changed to filter out user's own activities if needed)
-        List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, FeedTaskProcessor.FEED_FORMAT_JSON, null, false, false, emailFeedDBID);
+        List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, FeedTaskProcessor.FEED_FORMAT_JSON, null, false, false, null, null, emailFeedDBID);
         
         if (feedEntries.size() > 0)
         {

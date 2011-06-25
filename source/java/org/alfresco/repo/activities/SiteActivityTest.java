@@ -302,7 +302,7 @@ public class SiteActivityTest extends TestCase
         {
             userId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
-        assertEquals(expectedCount, activityService.getUserFeedEntries(userId, "json", siteId, excludeThisUser, excludeOtherUsers).size());
+        assertEquals(expectedCount, activityService.getUserFeedEntries(userId, "json", siteId, excludeThisUser, excludeOtherUsers, null, null).size());
     }
     
     public void testUserFeedControls() throws Exception

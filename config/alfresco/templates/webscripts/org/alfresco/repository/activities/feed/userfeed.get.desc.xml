@@ -7,9 +7,9 @@
   <url>/api/activities/feed/user?s={siteId?}</url>
   <url>/api/activities/feed/user?s={siteId?}&amp;format=atomfeed</url>
   <url>/api/activities/feed/user?s={siteId?}&amp;format=json</url>
-  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}</url>
-  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;format=atomfeed</url>
-  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;format=json</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}&amp;format=atomfeed</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}&amp;format=json</url>
   <format default="atomfeed"></format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

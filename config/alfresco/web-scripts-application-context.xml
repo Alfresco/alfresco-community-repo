@@ -549,13 +549,13 @@
    <!-- Activity User Feed - to get activities feed for logged in user -->
    <bean id="webscript.org.alfresco.repository.activities.feed.userfeed.get" class="org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript" parent="webscript">
       <property name="activityService" ref="activityService"/>
-      <property name="authorityService" ref="AuthorityService"/>
+      <property name="subscriptionService" ref="SubscriptionService"/>
    </bean>
   
    <!-- Activity Admin Feed - to get activities feed for specified user -->
    <bean id="webscript.org.alfresco.repository.activities.feed.userfeed-admin.get" class="org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript" parent="webscript">
       <property name="activityService" ref="activityService"/>
-      <property name="authorityService" ref="AuthorityService"/>
+      <property name="subscriptionService" ref="SubscriptionService"/>
    </bean>
    
    <!-- Activity Site Feed - to get activities feed for given site, if private site then need to be a member or admin -->

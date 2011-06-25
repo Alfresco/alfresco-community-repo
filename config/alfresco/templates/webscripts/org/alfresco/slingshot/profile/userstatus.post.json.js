@@ -25,6 +25,10 @@ function main()
          model.success = true;
          model.userStatus = newStatus;
          model.userStatusTime = statusTime;
+         
+         var activity = {};
+         activity.status = newStatus;
+         activities.postActivity("org.alfresco.profile.status-changed", null, "profile", jsonUtils.toJSONString(activity));
       }
    }
 }

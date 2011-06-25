@@ -20,22 +20,26 @@ package org.alfresco.repo.web.scripts.activities.feed;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
+import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.util.JSONtoFmModel;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Java-backed WebScript to retrieve Activity User Feed
@@ -43,26 +47,27 @@ import org.json.JSONException;
 public class UserFeedRetrieverWebScript extends DeclarativeWebScript
 {
     private static final Log logger = LogFactory.getLog(UserFeedRetrieverWebScript.class);
-    
+
     // URL request parameter names
     public static final String PARAM_SITE_ID = "s";
     public static final String PARAM_EXCLUDE_THIS_USER = "exclUser";
     public static final String PARAM_EXCLUDE_OTHER_USERS = "exclOthers";
+    public static final String PARAM_ONLY_FOLLOWING = "following";
+    public static final String PARAM_ACTIVITY_FILTER = "activityFilter";
     
     private ActivityService activityService;
-    private AuthorityService authorityService;
+    private SubscriptionService subscriptionService;
     
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
     }
-   
-    public void setAuthorityService(AuthorityService authorityService)
+    
+    public void setSubscriptionService(SubscriptionService subscriptionService)
     {
-        this.authorityService = authorityService;
+        this.subscriptionService = subscriptionService;
     }
     
-   
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -76,7 +81,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             format = getDescription().getDefaultFormat();
         }
         
-        // process extension 
+        // process extension
         String extensionPath = req.getExtensionPath();
         String[] extParts = extensionPath == null ? new String[1] : extensionPath.split("/");
         
@@ -90,10 +95,12 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             throw new AlfrescoRuntimeException("Unexpected extension: " + extensionPath);
         }
         
-        // process arguments 
+        // process arguments
         String siteId = req.getParameter(PARAM_SITE_ID); // optional
         String exclThisUserStr = req.getParameter(PARAM_EXCLUDE_THIS_USER); // optional
         String exclOtherUsersStr = req.getParameter(PARAM_EXCLUDE_OTHER_USERS); // optional
+        String onlyFollowingStr = req.getParameter(PARAM_ONLY_FOLLOWING); // optional
+        String activityFilterStr = req.getParameter(PARAM_ACTIVITY_FILTER); // optional
         
         boolean exclThisUser = false;
         if ((exclThisUserStr != null) && (exclThisUserStr.equalsIgnoreCase("true") || exclThisUserStr.equalsIgnoreCase("t")))
@@ -107,9 +114,31 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             exclOtherUsers = true;
         }
         
+        Set<String> userFilter = null;
+        if ((onlyFollowingStr != null) && (onlyFollowingStr.equalsIgnoreCase("true") || onlyFollowingStr.equalsIgnoreCase("t")))
+        {
+            PagingFollowingResults following = subscriptionService.getFollowers(AuthenticationUtil.getRunAsUser(), new PagingRequest(-1, null));
+            if (following.getPage() != null)
+            {
+                userFilter = new HashSet<String>();
+                userFilter.addAll(following.getPage());
+            }
+        }
+        
+        Set<String> activityFilter = null;
+        if (activityFilterStr != null)
+        {
+            activityFilter = new HashSet<String>();
+            String[] activities = activityFilterStr.split(",");
+            for (String s : activities)
+            {
+                activityFilter.add(s);
+            }
+        }
+        
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
-           feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+            feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
         
         // map feed collection format to feed entry format (if not the same), eg.
@@ -117,7 +146,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         //     atom     -> atomentry
         if (format.equals("atomfeed") || format.equals("atom"))
         {
-           format = "atomentry";
+            format = "atomentry";
         }
         
         Map<String, Object> model = new HashMap<String, Object>();
@@ -127,7 +156,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
             
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
-            { 
+            {
                 model.put("feedEntries", feedEntries);
                 model.put("siteId", siteId);
             }
@@ -135,14 +164,14 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             {
                 List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
                 try
-                { 
+                {
                     for (String feedEntry : feedEntries)
                     {
                         activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
                     }
                 }
                 catch (JSONException je)
-                {    
+                {
                     throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
                 }
                 

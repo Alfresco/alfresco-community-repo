@@ -132,7 +132,14 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
             String[] activities = activityFilterStr.split(",");
             for (String s : activities)
             {
-                activityFilter.add(s);
+                if (s.trim().length() > 0)
+                {
+                    activityFilter.add(s.trim());
+                }
+            }
+            if (activityFilter.size() == 0)
+            {
+                activityFilter = null;
             }
         }
         
@@ -153,7 +160,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         
         try
         {
-            List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
+            List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers, userFilter, activityFilter);
             
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
             {

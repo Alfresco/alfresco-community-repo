@@ -20,6 +20,8 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,6 +167,7 @@ public class CommandServlet extends BaseServlet
          String returnPage = req.getParameter(ARG_RETURNPAGE);
          if (returnPage != null && returnPage.length() != 0)
          {
+            validateReturnPage(returnPage, req);
             if (logger.isDebugEnabled())
                logger.debug("Redirecting to specified return page: " + returnPage);
             
@@ -192,6 +195,37 @@ public class CommandServlet extends BaseServlet
       }
    }
 
+   /**
+    * ALF-9113 CommandServlet.java, line 179 (Header Manipulation)
+    * 
+    * Validates that the redirect page is within the current context.
+    * 
+    * Examples of valid redirect pages:
+    * <ul>
+    *   <li>/alfresco/faces/jsp/browse/browse.jsp</li>
+    *   <li>../../browse/browse.jsp</li>
+    * </ul>  
+    * 
+    * @param pageUrl
+    * @param req
+    * @throws MalformedURLException 
+    * @throws IllegalArgumentException
+    */
+   private void validateReturnPage(String pageUrl, HttpServletRequest req) throws MalformedURLException
+   {
+       if (pageUrl.indexOf(':') != -1)
+       {
+           // ':' only allowed in a URL as part of a scheme prefix
+           throw new IllegalArgumentException("The redirect URL doesn't support absolute URls");
+       }
+       // Evaluate it relative to the request URL and strip out .. and .
+       pageUrl = new URL(new URL(req.getRequestURL().toString()), pageUrl).getPath();
+       if (!pageUrl.startsWith(req.getContextPath()))
+       {
+           throw new IllegalArgumentException("The redirect URL must be in the same context.");
+       }
+   }
+   
    /**
     * Created the specified CommandProcessor instance. The name of the processor is looked up
     * in the client config, it should find a valid class impl and then create it. 

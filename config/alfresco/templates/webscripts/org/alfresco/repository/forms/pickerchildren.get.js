@@ -86,44 +86,23 @@ function main()
             rootNode = resolveNode(argsRootNode) || companyhome;
          }
 
-         var query = "+PARENT:\"" + parent.nodeRef + "\"";
+         var ignoreTypes = null;
          if (argsFilterType != null)
          {
-            // map short name to long name
-            var types =
-            {
-              'rma:dispositionSchedule': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionSchedule',
-              'rma:dispositionActionDefinition': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionActionDefinition',
-              'rma:dispositionAction': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAction',
-              'rma:hold':'{http://www.alfresco.org/model/recordsmanagement/1.0}hold',
-              'rma:transfer':'{http://www.alfresco.org/model/recordsmanagement/1.0}transfer',
-              'cm:thumbnail': '{http://www.alfresco.org/model/content/1.0}thumbnail'
-            };
-
-            var filterTypes = argsFilterType.split(',');
-            for (var i=0,len=filterTypes.length; i<len; i++)
-            {
-               var identifier = filterTypes[i];
-               if (types[identifier])
-               {
-                  query += " -TYPE:\"" + types[identifier] + "\"";
-               }
-            }
+            if (logger.isLoggingEnabled())
+               logger.log("ignoring types = " + argsFilterType);
+            
+            ignoreTypes = argsFilterType.split(',');
          }
 
-         // make sure we don't return system folders
-         query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-
-         if (logger.isLoggingEnabled())
-            logger.log("query = " + query);
-
-         var searchResults = search.luceneSearch(query, "@{http://www.alfresco.org/model/content/1.0}name", true);
+         // retrieve the children of this node
+         var childNodes = parent.childFileFolders(true, true, ignoreTypes, -1, -1, 0, "cm:name", true, null).getPage();
 
          // Ensure folders and folderlinks appear at the top of the list
          var containerResults = new Array(),
             contentResults = new Array();
 
-         for each (var result in searchResults)
+         for each (var result in childNodes)
          {
             if (result.isContainer || result.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
             {

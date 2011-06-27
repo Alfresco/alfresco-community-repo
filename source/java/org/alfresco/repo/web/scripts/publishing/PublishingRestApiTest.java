@@ -21,6 +21,13 @@ package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.CHANNEL_NAME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.CHANNEL_NAMES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.COMMENT;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.MESSAGE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.NODE_REF;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.PUBLISH_NODES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.STATUS_UPDATE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_PUBLISH;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_PUBLISH_STATUS_UPDATES;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_UNPUBLISH;
@@ -35,41 +42,60 @@ import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.SU
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.SUPPORTED_MIME_TYPES;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.TITLE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.URL;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.publishing.ChannelHelper;
 import org.alfresco.repo.publishing.ChannelServiceImpl;
+import org.alfresco.repo.publishing.EnvironmentHelper;
+import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.publishing.PublishingObjectFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.publishing.Environment;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
+import org.alfresco.service.cmr.publishing.PublishingEventFilter;
+import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -87,13 +113,16 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     
     private static final String CHANNELS_SITE_URL = "api/publishing/site/{0}/channels";
     private static final String CHANNELS_NODE_URL = "api/publishing/{0}/{1}/{2}/channels";
+    private static final String PUBLISHING_QUEUE_URL = "api/publishing/{0}/queue";
+
+    private static final String JSON = "application/json";
     
     private SiteService siteService;
     private FileFolderService fileFolderService;
-    private NodeService nodeService;
     private ChannelService channelService;
-    private RetryingTransactionHelper txHelper;
+    private ChannelHelper channelHelper;
     
+    private Environment environment;
     private NodeRef docLib;
     private String siteId;
 
@@ -184,6 +213,107 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkChannels(statusChannels, statusUpdateChannel);
     }
 
+
+    @SuppressWarnings("unchecked")
+    public void testPublishingQueuePost() throws Exception
+    {
+        // Create publish and status update channels.
+        Channel publishChannel = channelService.createChannel(siteId, publishAnyType, GUID.generate(), null);
+        Channel statusChannel = channelService.createChannel(siteId, statusUpdateType, GUID.generate(), null);
+
+        // Create some content.
+        NodeRef textNode = createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        String pubQueueUrl = MessageFormat.format(PUBLISHING_QUEUE_URL, siteId);
+        String jsonStr = "";
+        
+        // Post empty content.
+        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 500);
+        
+        String comment = "The comment";
+        String statusMessage = "The status message";
+
+        JSONObject json = buildJson(textNode, publishChannel, comment, statusMessage, statusChannel);
+        
+        jsonStr = json.toString();
+
+        // Post empty content.
+        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
+
+        PublishingEventFilter filter = environment.createPublishingEventFilter();
+        List<PublishingEvent> events = environment.getPublishingEvents(filter);
+        assertEquals(1, events.size());
+        PublishingEvent event = events.get(0);
+        assertEquals(publishChannel.getName(), event.getChannelName());
+        assertEquals(comment, event.getComment());
+        assertEquals(Status.SCHEDULED, event.getStatus());
+        
+        // Check Package
+        PublishingPackage pckg = event.getPackage();
+        Set<NodeRef> toPublish = pckg.getNodesToPublish();
+        assertEquals(1, toPublish.size());
+        assertTrue(toPublish.contains(textNode));
+        assertTrue(pckg.getNodesToUnpublish().isEmpty());
+        
+        // Check StatusUpdate
+        StatusUpdate statusUpdate = event.getStatusUpdate();
+        assertEquals(statusMessage, statusUpdate.getMessage());
+        assertEquals(textNode, statusUpdate.getNodeToLinkTo());
+        Set<String> channelNames = statusUpdate.getChannelNames();
+        assertEquals(1, channelNames.size());
+        assertTrue(channelNames.contains(statusChannel.getName()));
+        
+        // Wait for Publishing Event to execute asynchronously
+        Thread.sleep(2000);
+        
+        ChannelType publishAnyChannelType = channelService.getChannelType(publishAnyType);
+        ChannelType statusUpdateChannelType = channelService.getChannelType(statusUpdateType);
+        
+        NodeRef environmentNode = new NodeRef(environment.getId());
+        NodeRef mappedTextNode = channelHelper.mapSourceToEnvironment(textNode, environmentNode, publishChannel.getName());
+        
+        // Check publish is called.
+        verify(publishAnyChannelType)
+            .publish(eq(mappedTextNode), anyMap());
+
+        // Check updateStatus is called correctly.
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statusUpdateChannelType)
+        .updateStatus(captor.capture(), anyMap());
+        String actualStatusMessage = captor.getValue();
+        assertTrue(actualStatusMessage.startsWith(statusMessage));
+        
+        verify(statusUpdateChannelType, never()).publish(any(NodeRef.class), anyMap());
+        verify(publishAnyChannelType, never()).updateStatus(anyString(), anyMap());
+    }
+
+    private JSONObject buildJson(NodeRef node, Channel publishChannel,
+            String comment, String statusMessage,
+            Channel... statusChannels) throws JSONException
+    {
+        JSONObject json = new JSONObject();
+        json.put(CHANNEL_NAME, publishChannel.getName());
+        json.put(COMMENT, comment);
+        Collection<String> publishNodes = Collections.singleton(node.toString());
+        json.put(PUBLISH_NODES, publishNodes);
+        json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));
+        return json;
+    }
+
+    private JSONObject buildStatusUpdate(String message, NodeRef textNode, Channel... channels) throws JSONException
+    {
+        ArrayList<String> channelNames = new ArrayList<String>(channels.length);
+        for (Channel channel : channels)
+        {
+            channelNames.add(channel.getName());
+        }
+        JSONObject statusUpdate = new JSONObject();
+        statusUpdate.put(MESSAGE, message);
+        statusUpdate.put(NODE_REF, textNode.toString());
+        statusUpdate.put(CHANNEL_NAMES, channelNames);
+        return statusUpdate;
+    }
+
     private void checkChannels(JSONArray json, Channel... channels)throws Exception
     {
         assertEquals(channels.length, json.length());
@@ -192,7 +322,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
             checkContainsChannel(json, channel);
         }
     }
-
+    
     private void checkContainsChannel(JSONArray json, Channel channel) throws Exception
     {
         for (int i = 0; i < json.length(); i++)
@@ -321,12 +451,16 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         ChannelType channelType = channelService.getChannelType(channelTypeId);
         if(channelType != null)
         {
-            return channelType;
+            reset(channelType);
+            when(channelType.getId()).thenReturn(channelTypeId);
         }
-        channelType = mock(ChannelType.class);
-        when(channelType.getId()).thenReturn(channelTypeId);
+        else
+        {
+            channelType = mock(ChannelType.class);
+            when(channelType.getId()).thenReturn(channelTypeId);
+            channelService.register(channelType);
+        }
         when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
-        channelService.register(channelType);
         return channelType;
     }
 
@@ -339,9 +473,8 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.siteService = serviceRegistry.getSiteService();
         this.fileFolderService = serviceRegistry.getFileFolderService();
-        this.nodeService = serviceRegistry.getNodeService();
-        this.txHelper = serviceRegistry.getRetryingTransactionHelper();
         this.channelService = (ChannelService) ctx.getBean(ChannelServiceImpl.NAME);
+        this.channelHelper = (ChannelHelper) ctx.getBean(ChannelHelper.NAME);
         PublishingObjectFactory factory = (PublishingObjectFactory) ctx.getBean(PublishingObjectFactory.NAME);
 
         ChannelType publishAny = mockChannelType(publishAnyType);
@@ -362,8 +495,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
                 SiteVisibility.PUBLIC);
         this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        factory.createEnvironmentObject(siteId, environmentName);
-        
+        this.environment = factory.createEnvironmentObject(siteId, environmentName);
     }
     
     @Override

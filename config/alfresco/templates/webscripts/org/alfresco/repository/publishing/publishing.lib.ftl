@@ -28,7 +28,6 @@
          "title": "${type.title}",
          "url": "${type.url}",
          "channelNodeType": "${type.channelNodeType}",
-         "contentRootNodeType": "${type.contentRootNodeType}",
          "supportedContentTypes":
          <@iterateStringsJSON strings=type.supportedContentTypes />,
          "supportedMimeTypes":

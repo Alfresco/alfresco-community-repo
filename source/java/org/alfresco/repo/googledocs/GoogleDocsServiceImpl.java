@@ -453,11 +453,14 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     {
                         // Set the permission to the current acl
                         setGoogleResourcePermission(resource, authorityType, authorityName, aclRole);
-                    }
-                    
+                    }                    
                 }
             }
         }
+        
+        // Always make sure the owner has write permissions on the document 
+        String owner = ownableService.getOwner(nodeRef);
+        setGoogleResourcePermission(resource, AuthorityType.USER, owner, "writer");
     }
     
     /**

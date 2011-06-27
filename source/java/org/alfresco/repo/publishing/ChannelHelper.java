@@ -64,6 +64,8 @@ import org.alfresco.util.collections.Function;
  */
 public class ChannelHelper
 {
+    public static final String NAME = "channelHelper";
+
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;

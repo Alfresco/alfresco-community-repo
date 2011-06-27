@@ -19,13 +19,19 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_STATUS;
+import static org.alfresco.repo.publishing.PublishingModel.TYPE_PUBLISHING_EVENT;
+
 import java.util.List;
 
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This {@link ActionExecuter} checks the status of the publishing event
@@ -37,15 +43,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CheckPublishingDependenciesAction extends ActionExecuterAbstractBase
 {
-
+    private NodeService nodeService;
+    
     /**
     * {@inheritDoc}
     */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(Action action, NodeRef node)
     {
-        // TODO Implement execute method.
-        
+        QName nodeType = nodeService.getType(node);
+        if(TYPE_PUBLISHING_EVENT.equals(nodeType))
+        {
+            nodeService.setProperty(node, PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS);
+        }
     }
 
     /**
@@ -54,8 +64,14 @@ public class CheckPublishingDependenciesAction extends ActionExecuterAbstractBas
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        // TODO Implement parameter definitions.
-        
+        //NOOP
     }
 
+    /**
+     * @param nodeService the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 }

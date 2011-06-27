@@ -70,7 +70,7 @@
              <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                  <script>
                      var publishEventAction = actions.create("pub_publishEvent");
-                     publishEventAction.execute(bpm_package);
+                     publishEventAction.execute(pubwf_publishingEvent);
                  </script>
              </action>
         </event>

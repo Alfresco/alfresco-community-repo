@@ -72,6 +72,11 @@ public class PublishingQueueImpl implements PublishingQueue
     */
     public String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate)
     {
+        if(schedule == null)
+        {
+            schedule = Calendar.getInstance();
+            schedule.add(Calendar.SECOND, 1);
+        }
         try
         {
             NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelName, schedule, comment, statusUpdate);

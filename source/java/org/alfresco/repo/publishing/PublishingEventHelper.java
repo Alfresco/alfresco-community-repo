@@ -52,6 +52,7 @@ import java.util.TimeZone;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
@@ -69,7 +70,10 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -243,27 +247,36 @@ public class PublishingEventHelper
         return results;
     }
 
-    public List<NodeRef> findPublishingEventNodes(NodeRef queue, PublishingEventFilter filter)
+    public List<NodeRef> findPublishingEventNodes(final NodeRef queue, PublishingEventFilter filter)
     {
-        List<NodeRef> results = new ArrayList<NodeRef>();
         Set<String> ids = filter.getIds();
-        if(ids != null)
+        if(ids != null && ids.isEmpty() == false)
         {
-            for (String id : ids)
+            List<NodeRef> nodes = CollectionUtils.transform(ids, NodeUtils.toNodeRefQueitly());
+            // Filter out nodes that are not Publishing Events on the specified queue.
+            return CollectionUtils.filter(nodes, new Filter<NodeRef>()
             {
-                NodeRef eventNode = new NodeRef(id);
-                if (nodeService.exists(eventNode))
+                public Boolean apply(NodeRef node)
                 {
-                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(eventNode);
-                    if (parentAssoc.getParentRef().equals(queue)
-                            && ASSOC_PUBLISHING_EVENT.equals(parentAssoc.getTypeQName()))
+                    if(nodeService.exists(node))
                     {
-                        results.add(eventNode);
+                        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
+                        if (parentAssoc.getParentRef().equals(queue)
+                                && ASSOC_PUBLISHING_EVENT.equals(parentAssoc.getTypeQName()))
+                        {
+                            return true;
+                        }
                     }
+                    return false;
                 }
-            }
+            });
         }
-        return results;
+        else
+        {
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(queue,
+                    ASSOC_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+            return CollectionUtils.transform(assocs, NodeUtils.toChildRef());
+        }
     }
 
     public List<PublishingEvent> findPublishingEvents(NodeRef queue, PublishingEventFilter filter)

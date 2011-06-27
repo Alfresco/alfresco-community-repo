@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,7 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PagingPersonResults;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
@@ -296,25 +296,28 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             // define the query to find people by their first or last name
             String search = properties.getSearchCriteria();
             if (logger.isDebugEnabled())
-               logger.debug("Query term: " + search);
-   
-            PagingPersonResults people = properties.getPersonService().getPeople(
+            {
+               logger.debug("Query filter: " + search);
+            }
+            
+            List<PersonInfo> persons = properties.getPersonService().getPeople(
                   Utils.generatePersonFilter(search),
                   true,
                   Utils.generatePersonSort(),
                   new PagingRequest(Utils.getPersonMaxResults(), null)
-            );
-            List<NodeRef> nodes = people.getPage();
+            ).getPage();
             
             if (logger.isDebugEnabled())
-               logger.debug("Found " + nodes.size() + " users");
+            {
+               logger.debug("Found " + persons.size() + " users");
+            }
             
-            this.users = new ArrayList<Node>(nodes.size());
+            this.users = new ArrayList<Node>(persons.size());
             
-            for (NodeRef nodeRef : nodes)
+            for (PersonInfo person : persons)
             {
                // create our Node representation
-               MapNode node = new MapNode(nodeRef);
+               MapNode node = new MapNode(person.getNodeRef());
                
                // set data binding properties
                // this will also force initialisation of the props now during the UserTransaction
@@ -334,7 +337,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
                
                this.users.add(node);
             }
-   
+            
             // commit the transaction
             tx.commit();
          }

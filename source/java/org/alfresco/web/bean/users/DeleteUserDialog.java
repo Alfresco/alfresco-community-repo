@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,8 +33,8 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
@@ -129,27 +129,29 @@ public class DeleteUserDialog extends BaseDialogBean
             filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, search));
             
             if (logger.isDebugEnabled())
+            {
                logger.debug("Query filter: " + filter);
-
-            // Perform the search
-            PagingPersonResults people = getPersonService().getPeople(
+            }
+            
+            List<PersonInfo> persons = getPersonService().getPeople(
                   filter,
                   true,
                   Utils.generatePersonSort(),
                   new PagingRequest(Utils.getPersonMaxResults(), null)
-            );
-            List<NodeRef> nodes = people.getPage();
+            ).getPage();
             
             if (logger.isDebugEnabled())
-               logger.debug("Found " + nodes.size() + " users");
-
-            this.users = new ArrayList<Node>(nodes.size());
-
-            for (NodeRef nodeRef : nodes)
+            {
+               logger.debug("Found " + persons.size() + " users");
+            }
+            
+            this.users = new ArrayList<Node>(persons.size());
+            
+            for (PersonInfo person : persons)
             {
                // create our Node representation
-               MapNode node = new MapNode(nodeRef);
-
+               MapNode node = new MapNode(person.getNodeRef());
+               
                // set data binding properties
                // this will also force initialisation of the props now during the UserTransaction
                // it is much better for performance to do this now rather than during page bind
@@ -160,7 +162,7 @@ public class DeleteUserDialog extends BaseDialogBean
                {
                   props.put("homeSpace", homeFolderNodeRef);
                }
-
+               
                this.users.add(node);
             }
 

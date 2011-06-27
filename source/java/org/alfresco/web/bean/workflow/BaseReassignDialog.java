@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,13 +28,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -50,7 +48,12 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BaseReassignDialog extends BaseDialogBean
 {
-   private static final String MSG_SEARCH_MINIMUM = "picker_search_min";
+   /**
+     * 
+     */
+    private static final long serialVersionUID = 3392941403282035753L;
+    
+    private static final String MSG_SEARCH_MINIMUM = "picker_search_min";
    
    transient private WorkflowService workflowService;
    transient private PersonService personService;
@@ -144,23 +147,21 @@ public abstract class BaseReassignDialog extends BaseDialogBean
             maxResults = Utils.getPersonMaxResults();
          }
          
-         // Use lucene search to retrieve user details
-         PagingPersonResults people = getPersonService().getPeople(
+         List<PersonInfo> persons = getPersonService().getPeople(
                Utils.generatePersonFilter(contains.trim()),
                true,
                Utils.generatePersonSort(),
                new PagingRequest(maxResults, null)
-         );
-         List<NodeRef> nodes = people.getPage();
+         ).getPage();
          
-         ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
-         for (NodeRef personRef : nodes)
+         ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(persons.size());
+         for (PersonInfo person : persons)
          {
-            String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+            String username = person.getUserName();
             if (AuthenticationUtil.getGuestUserName().equals(username) == false)
             {
-               String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-               String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+               String firstName = person.getFirstName();
+               String lastName = person.getLastName();
                String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");
                SelectItem item = new SortableSelectItem(username, name + " [" + username + "]", lastName != null ? lastName : username);
                itemList.add(item);

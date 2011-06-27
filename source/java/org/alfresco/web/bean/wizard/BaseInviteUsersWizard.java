@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,9 +44,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -460,22 +460,21 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
                logger.debug("Using query filter to find users: " + filter);
             }
             
-            PagingPersonResults people = getPersonService().getPeople(
+            List<PersonInfo> persons = getPersonService().getPeople(
                   filter,
                   true,
                   Utils.generatePersonSort(),
                   new PagingRequest(maxResults, null)
-            );
-            List<NodeRef> nodes = people.getPage();
+            ).getPage();
             
-            results = new ArrayList<SelectItem>(nodes.size());
-            for (int index=0; index<nodes.size(); index++)
+            results = new ArrayList<SelectItem>(persons.size());
+            for (int index=0; index<persons.size(); index++)
             {
-               NodeRef personRef = nodes.get(index);
+               PersonInfo person = persons.get(index);
                
-               String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-               String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-               String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+               String firstName = person.getFirstName();
+               String lastName = person.getLastName();
+               String username = person.getUserName();
                if (username != null)
                {
                   String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");

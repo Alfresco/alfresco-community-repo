@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,8 +37,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.groups.GroupsDialog.UserAuthorityDetails;
@@ -206,22 +206,21 @@ public class AddUsersDialog extends BaseDialogBean
                String term = contains.trim();
                if (term.length() != 0)
                {
-                   PagingPersonResults people = getPersonService().getPeople(
+                   List<PersonInfo> persons = getPersonService().getPeople(
                         Utils.generatePersonFilter(contains.trim()),
                         true,
                         Utils.generatePersonSort(),
                         new PagingRequest(Utils.getPersonMaxResults(), null)
-                   );
-                   List<NodeRef> nodes = people.getPage();
+                   ).getPage();
                    
-                   ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
-                   for (NodeRef personRef : nodes)
+                   ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(persons.size());
+                   for (PersonInfo person : persons)
                    {
-                      String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+                      String username = person.getUserName();
                       if (AuthenticationUtil.getGuestUserName().equals(username) == false)
                       {
-                         String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                         String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+                         String firstName = person.getFirstName();
+                         String lastName = person.getLastName();
                          
                          // build a sensible label for display
                          String name = (firstName != null ? firstName : "") + ' ' + (lastName != null ? lastName : "");

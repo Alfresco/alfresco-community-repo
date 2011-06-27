@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,9 +44,9 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
@@ -254,21 +254,19 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
 
             if (filterIndex == 0)
             {
-                // Use lucene search to retrieve user details
-                PagingPersonResults people = getPersonService().getPeople(
+                List<PersonInfo> persons = getPersonService().getPeople(
                       Utils.generatePersonFilter(contains.trim()),
                       true,
                       Utils.generatePersonSort(),
                       new PagingRequest(Utils.getPersonMaxResults(), null)
-                );
-                List<NodeRef> nodes = people.getPage();
+                ).getPage();
                 
-                for (int index = 0; index < nodes.size(); index++)
+                for (int index = 0; index < persons.size(); index++)
                 {
-                    NodeRef personRef = nodes.get(index);
-                    String firstName = (String) getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                    String lastName = (String) getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-                    String username = (String) getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+                    PersonInfo person = persons.get(index);
+                    String firstName = person.getFirstName();
+                    String lastName = person.getLastName();
+                    String username = person.getUserName();
                     if (username != null)
                     {
                         SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);

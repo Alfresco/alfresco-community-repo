@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,8 +51,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -930,7 +930,6 @@ public abstract class BaseAssociationEditor extends UIInput
     * @param context Faces Context
     * @param contains The contains part of the query
     */
-   @SuppressWarnings("unchecked")
    protected void getAvailableOptions(FacesContext context, String contains)
    {
       AssociationDefinition assocDef = getAssociationDefinition(context);
@@ -1043,17 +1042,20 @@ public abstract class BaseAssociationEditor extends UIInput
             {
                maxResults = Utils.getPersonMaxResults();
             }
-
-            // Perform the search
-            PagingPersonResults people = Repository.getServiceRegistry(context).getPersonService().getPeople(
+            
+            List<PersonInfo> persons = Repository.getServiceRegistry(context).getPersonService().getPeople(
                   filter,
                   true,
                   sort,
                   new PagingRequest(maxResults, null)
-            );
+            ).getPage();
             
             // Save the results
-            List<NodeRef> nodes = people.getPage();
+            List<NodeRef> nodes = new ArrayList<NodeRef>(persons.size());
+            for (PersonInfo person : persons)
+            {
+                nodes.add(person.getNodeRef());
+            }
             this.availableOptions = nodes;
          }
          else

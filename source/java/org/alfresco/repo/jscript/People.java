@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -520,7 +521,12 @@ public final class People extends BaseScopableProcessorExtension implements Init
         if (filter == null || filter.length() == 0)
         {
             PagingRequest pagingRequest = new PagingRequest(maxResults, null);
-            people = personService.getPeople(null, true, null, pagingRequest).getPage().toArray();
+            List<PersonInfo> persons = personService.getPeople(null, true, null, pagingRequest).getPage();
+            people = new Object[persons.size()];
+            for (int i=0; i<people.length; i++)
+            {
+                people[i] = persons.get(i).getNodeRef();
+            }
         }
         else
         {
@@ -543,7 +549,12 @@ public final class People extends BaseScopableProcessorExtension implements Init
                     filterProps.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, propVal));
                     
                     PagingRequest pagingRequest = new PagingRequest(maxResults, null);
-                    people = personService.getPeople(filterProps, true, null, pagingRequest).getPage().toArray();
+                    List<PersonInfo> persons = personService.getPeople(filterProps, true, null, pagingRequest).getPage();
+                    people = new Object[persons.size()];
+                    for (int i=0; i<people.length; i++)
+                    {
+                        people[i] = persons.get(i).getNodeRef();
+                    }
                  }
                  else
                  {

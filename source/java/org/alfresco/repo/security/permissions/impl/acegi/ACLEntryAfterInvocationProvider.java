@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -956,6 +957,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     else if (BlogPostInfo.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = ((BlogPostInfo) nextObject).getNodeRef();
+                    }
+                    else if (PersonInfo.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((PersonInfo) nextObject).getNodeRef();
                     }
                     else if (Pair.class.isAssignableFrom(nextObject.getClass()))
                     {

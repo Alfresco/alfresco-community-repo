@@ -24,18 +24,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.util.Pair;
 
 /**
@@ -46,8 +44,6 @@ import org.alfresco.util.Pair;
 public class SimpleAuthorityServiceImpl implements AuthorityService
 {
     private PersonService personService;
-
-    private NodeService nodeService;
 
     private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
 
@@ -67,11 +63,6 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     public SimpleAuthorityServiceImpl()
     {
         super();
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setPersonService(PersonService personService)
@@ -180,10 +171,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         case ROLE:
             break;
         case USER:
-            for (NodeRef personRef : personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage())
+            for (PersonInfo person : personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage())
             {
-                authorities.add(DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personRef,
-                        ContentModel.PROP_USERNAME)));
+                authorities.add(person.getUserName());
             }
             break;
         default:

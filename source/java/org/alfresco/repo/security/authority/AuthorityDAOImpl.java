@@ -57,8 +57,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -394,14 +394,14 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, sortAscending));
         }
         
-        final PagingPersonResults ppr = personService.getPeople(filter, true, sort, pagingRequest);
+        final PagingResults<PersonInfo> ppr = personService.getPeople(filter, true, sort, pagingRequest);
         
-        List<NodeRef> result = ppr.getPage();
+        List<PersonInfo> result = ppr.getPage();
         final List<String> auths = new ArrayList<String>(result.size());
         
-        for (NodeRef personRef : result)
+        for (PersonInfo person : result)
         {
-            auths.add((String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME));
+            auths.add(person.getUserName());
         }
         
         return new PagingResults<String>()

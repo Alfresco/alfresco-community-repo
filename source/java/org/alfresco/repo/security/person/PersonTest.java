@@ -38,8 +38,8 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -53,9 +53,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -150,7 +150,7 @@ public class PersonTest extends TestCase
         pagingRequest = new PagingRequest(0, 1, null);
         pagingRequest.setRequestTotalCountMax(20000); // note: request total people count (up to max of 20000)
         
-        PagingPersonResults ppr = personService.getPeople(null, true, null, pagingRequest);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, null, pagingRequest);
         
         Pair<Integer, Integer> totalResultCount = ppr.getTotalResultCount();
         assertNotNull(totalResultCount);
@@ -165,9 +165,18 @@ public class PersonTest extends TestCase
     private void checkPeopleContain(String userName)
     {
         PagingRequest pagingRequest = new PagingRequest(0, 20000, null);
-        PagingPersonResults ppr = personService.getPeople(null, true, null, pagingRequest);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, null, pagingRequest);
         
-        assertTrue(ppr.getPage().contains(personService.getPerson(userName)));
+        boolean found = false;
+        for (PersonInfo person : ppr.getPage())
+        {
+            if (person.getUserName().equals(userName))
+            {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
     }
     
     public void xtestLazyHomeFolderCreation() throws Exception
@@ -555,8 +564,6 @@ public class PersonTest extends TestCase
 
     }
     
-    //TODO add getPeople tests here with filtering and (possibly) sorting ... !!
-    
     public void testPeopleFiltering()
     {
         personService.setCreateMissingPeople(false);
@@ -636,34 +643,34 @@ public class PersonTest extends TestCase
         
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
-        PagingPersonResults ppr = personService.getPeople(null, true, sort, pr);
-        List<NodeRef> results = ppr.getPage();
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, sort, pr);
+        List<PersonInfo> results = ppr.getPage();
         assertEquals(2, results.size());
-        assertEquals(p3, results.get(0));
-        assertEquals(p1, results.get(1));
+        assertEquals(p3, results.get(0).getNodeRef());
+        assertEquals(p1, results.get(1).getNodeRef());
         
         // page 2
         pr = new PagingRequest(2, 2, null);
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
-        assertEquals(p6, results.get(0));
-        assertEquals(p4, results.get(1));
+        assertEquals(p6, results.get(0).getNodeRef());
+        assertEquals(p4, results.get(1).getNodeRef());
         
         // page 3
         pr = new PagingRequest(4, 2, null);
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
-        assertEquals(p7, results.get(0));
-        assertEquals(p2, results.get(1));
+        assertEquals(p7, results.get(0).getNodeRef());
+        assertEquals(p2, results.get(1).getNodeRef());
         
         // page 4
         pr = new PagingRequest(6, 2, null);
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(1, results.size());
-        assertEquals(p5, results.get(0));
+        assertEquals(p5, results.get(0).getNodeRef());
     }
 
     private void testProperties(NodeRef nodeRef, String userName, String firstName, String lastName, String email, String orgId)

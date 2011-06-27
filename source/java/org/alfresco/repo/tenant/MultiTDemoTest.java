@@ -34,6 +34,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -63,6 +64,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -186,11 +188,11 @@ public class MultiTDemoTest extends TestCase
         
         logger.info("Create tenants");
         
-        Set<NodeRef> personRefs = personService.getAllPeople();
+        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
         //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
-        for (NodeRef personRef : personRefs)
+        for (PersonInfo person : persons)
         {
-            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            String userName = person.getUserName();
             for (final String tenantDomain : tenants)
             {
                 assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
@@ -518,11 +520,11 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Create demo users");
         
-        Set<NodeRef> personRefs = personService.getAllPeople();
+        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
         //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
-        for (NodeRef personRef : personRefs)
+        for (PersonInfo person : persons)
         {
-            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            String userName = person.getUserName();
             for (final String tenantDomain : tenants)
             {
                 assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));

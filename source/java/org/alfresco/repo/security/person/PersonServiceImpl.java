@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
@@ -45,9 +46,9 @@ import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
-import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -59,16 +60,16 @@ import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
-import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.admin.RepoUsageStatus;
+import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -83,7 +84,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -1159,17 +1159,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public Set<NodeRef> getAllPeople()
     {
-        PagingPersonResults pagingResults = getPeople(null, true, null, new PagingRequest(Integer.MAX_VALUE, null));
-        List<NodeRef> nodeRefs = pagingResults.getPage();
-        Set<NodeRef> refs = new HashSet<NodeRef>(nodeRefs.size());
-        refs.addAll(nodeRefs);
+        List<PersonInfo> personInfos = getPeople(null, true, null, new PagingRequest(Integer.MAX_VALUE, null)).getPage();
+        Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());
+        for (PersonInfo personInfo : personInfos)
+        {
+            refs.add(personInfo.getNodeRef());
+        }
         return refs;
     }
     
     /**
      * {@inheritDoc}
      */
-    public PagingPersonResults getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
@@ -1190,12 +1192,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             for (Pair<QName, String> filterProp : stringPropFilters)
             {
                 String filterStr = filterProp.getSecond();
-                if("*".equals(filterStr))
+                if ((filterStr == null) || (filterStr.equals("")) || (filterStr.equals("*")))
                 {
                    // The wildcard means no filtering is needed on this property
                    continue;
                 }
-                else if(filterStr.endsWith("*"))
+                else if (filterStr.endsWith("*"))
                 {
                    // The trailing * is implicit
                    filterStr = filterStr.substring(0, filterStr.length()-1);
@@ -1209,9 +1211,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query
-        CannedQueryResults<NodeRef> results = cq.execute();
+        final CannedQueryResults<NodeRef> results = cq.execute();
         
-        List<NodeRef> nodeRefs = null;
+        final List<NodeRef> nodeRefs;
         if (results.getPageCount() > 0)
         {
             nodeRefs = results.getPages().get(0);
@@ -1222,10 +1224,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         
         // set total count
-        Pair<Integer, Integer> totalCount = null;
+        final Pair<Integer, Integer> totalCount;
         if (pagingRequest.getRequestTotalCountMax() > 0)
         {
             totalCount = results.getTotalResultCount();
+        }
+        else
+        {
+            totalCount = null;
         }
         
         if (start != null)
@@ -1246,7 +1252,44 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
         
-        return new PagingPersonResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, results.getQueryExecutionId(), true);
+        final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+            personInfos.add(new PersonInfo(nodeRef, 
+                                           (String)props.get(ContentModel.PROP_USERNAME), 
+                                           (String)props.get(ContentModel.PROP_FIRSTNAME),
+                                           (String)props.get(ContentModel.PROP_LASTNAME)));
+        }
+        
+        return new PagingResults<PersonInfo>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
+            @Override
+            public List<PersonInfo> getPage()
+            {
+                return personInfos;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return results.permissionsApplied();
+            }
+        };
     }
     
     /**
@@ -1267,12 +1310,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         filterProps.add(new Pair<QName, String>(propertyKey, (String)propertyValue));
         
         PagingRequest pagingRequest = new PagingRequest(Integer.MAX_VALUE, null);
-        List<NodeRef> people = getPeople(filterProps, true, null, pagingRequest).getPage();
+        List<PersonInfo> personInfos = getPeople(filterProps, true, null, pagingRequest).getPage();
         
-        Set<NodeRef> result = new HashSet<NodeRef>(people.size());
-        result.addAll(people);
+        Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());
+        for (PersonInfo personInfo : personInfos)
+        {
+            refs.add(personInfo.getNodeRef());
+        }
         
-        return result;
+        return refs;
     }
 
     // Policies

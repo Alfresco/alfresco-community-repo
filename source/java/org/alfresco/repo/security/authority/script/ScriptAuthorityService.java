@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.ServiceRegistry;
@@ -33,8 +34,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PagingPersonResults;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
@@ -411,20 +412,17 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        }
        
        // Do the search
-       PagingPersonResults results = personService.getPeople(filter, true, sort, paging);
+       List<PersonInfo> people = personService.getPeople(filter, true, sort, paging).getPage();
        
        // Record the size of the results
-       paging.setTotalItems(results);
+       paging.setTotalItems(people.size());
        
        // Now wrap up the users
-       List<NodeRef> nodes = results.getPage();
-       ScriptUser[] users = new ScriptUser[nodes.size()];
+       ScriptUser[] users = new ScriptUser[people.size()];
        for (int i=0; i<users.length; i++)
        {
-          NodeRef node = nodes.get(i);
-          String username = (String)serviceRegistry.getNodeService().getProperty(
-                node, ContentModel.PROP_USERNAME);
-          users[i] = new ScriptUser(username, node, serviceRegistry, this.getScope());
+          PersonInfo person = people.get(i);
+          users[i] = new ScriptUser(person.getUserName(), person.getNodeRef(), serviceRegistry, this.getScope());
        }
        
        return users;

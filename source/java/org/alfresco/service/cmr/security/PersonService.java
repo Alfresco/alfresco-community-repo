@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -220,16 +221,60 @@ public interface PersonService
     public Set<NodeRef> getAllPeople();
     
     /**
+     * Data pojo to carry common person information
+     *
+     * @author janv
+     * @since 4.0
+     */
+    public class PersonInfo
+    {
+        private final NodeRef nodeRef;
+        private final String userName;
+        private final String firstName;
+        private final String lastName;
+        
+        public PersonInfo(NodeRef nodeRef, String userName, String firstName, String lastName)
+        {
+            this.nodeRef = nodeRef;
+            this.userName = userName;
+            this.firstName = firstName;
+            this.lastName = lastName;
+        }
+        
+        public NodeRef getNodeRef()
+        {
+            return nodeRef;
+        }
+        
+        public String getUserName()
+        {
+            return userName;
+        }
+        
+        public String getFirstName()
+        {
+            return firstName;
+        }
+        
+        public String getLastName()
+        {
+            return lastName;
+        }
+    }
+    
+    /**
      * Get paged list of people optionally filtered and/or sorted
      
      * @param filterProps       list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
      * @param filterIgnoreCase  true to ignore case when filtering, false to be case-sensitive when filtering
      * @param sortProps         sort property, eg. cm:username ascending
      * @param pagingRequest     skip, max + optional query execution id
+     * 
+     * @author janv
      * @since 4.0
      */
     @Auditable(parameters = {"stringPropFilters", "filterIgnoreCase", "sortProps", "pagingRequest"})
-    public PagingPersonResults getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+    public PagingResults<PersonInfo> getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
      * Get people filtered by the given property name/value pair

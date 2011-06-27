@@ -24,7 +24,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
-import org.alfresco.service.cmr.activities.ActivityPostService;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONException;
 import org.json.JSONStringer;
@@ -40,11 +40,11 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class BlogPostDelete extends AbstractBlogWebScript
 {
-    private ActivityPostService activityPostService;
+    private ActivityService activityService;
     
-    public void setActivityPostService(ActivityPostService activityPostService)
+    public void setActivityService(ActivityService activityService)
     {
-        this.activityPostService = activityPostService;
+        this.activityService = activityService;
     }
     
     @SuppressWarnings("deprecation")
@@ -92,7 +92,7 @@ public class BlogPostDelete extends AbstractBlogWebScript
         }
         if (data != null)
         {
-            activityPostService.postActivity("org.alfresco.blog.post-deleted", site, "blog", data);
+            activityService.postActivity("org.alfresco.blog.post-deleted", site, "blog", data);
         }
     }
 }

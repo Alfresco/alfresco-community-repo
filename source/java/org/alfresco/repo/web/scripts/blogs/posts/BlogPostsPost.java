@@ -28,7 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
-import org.alfresco.service.cmr.activities.ActivityPostService;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -51,12 +51,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class BlogPostsPost extends AbstractBlogWebScript
 {
     // Injected services
-    private ActivityPostService activityPostService;
+    private ActivityService activityService;
     private TaggingService taggingService;
     
-    public void setActivityPostService(ActivityPostService activityPostService)
+    public void setActivityService(ActivityService activityService)
     {
-        this.activityPostService = activityPostService;
+        this.activityService = activityService;
     }
     
     public void setTaggingService(TaggingService taggingService)
@@ -104,7 +104,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
             }
             if (data != null)
             {
-                activityPostService.postActivity("org.alfresco.blog.post-created", jsonPostParams.getSite(), "blog", data);
+                activityService.postActivity("org.alfresco.blog.post-created", jsonPostParams.getSite(), "blog", data);
             }
         }
         

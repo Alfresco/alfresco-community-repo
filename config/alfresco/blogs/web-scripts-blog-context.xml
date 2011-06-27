@@ -29,7 +29,7 @@
     <bean id="webscript.org.alfresco.repository.blogs.post.blog-post.delete"
           class="org.alfresco.repo.web.scripts.blogs.post.BlogPostDelete"
           parent="abstractBlogWebScript">
-        <property name="activityPostService" ref="activityPostService"/>
+        <property name="activityService" ref="activityService"/>
     </bean>
     
     <bean id="webscript.org.alfresco.repository.blogs.post.blog-post.get"
@@ -73,6 +73,6 @@
           class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsPost"
           parent="abstractBlogWebScript">
         <property name="taggingService" ref="TaggingService"/>
-        <property name="activityPostService" ref="activityPostService"/>
+        <property name="activityService" ref="activityService"/>
     </bean>
 </beans>

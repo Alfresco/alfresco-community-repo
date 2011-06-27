@@ -37,7 +37,6 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -55,13 +54,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -1201,7 +1199,10 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
         
-        // build an array of name filter tokens pre lowercased to test against person properties
+        // Build an array of name filter tokens pre lowercased to test against person properties
+        // We require that matching people have at least one match against one of these on
+        //  either their firstname or last name
+        // For groups, we require a match against the whole filter on the group name
         String[] nameFilters = new String[0];
         if (nameFilter != null && nameFilter.length() != 0)
         {
@@ -1292,7 +1293,10 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     }
 
     /**
-     * Helper to match name filters to Person properties
+     * Helper to match name filters to Person properties.
+     * 
+     * One of the user's firstname or lastname must match at least
+     *  one of the filters given.
      * 
      * @param filter
      * @param username
@@ -1302,41 +1306,31 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     {
         boolean addUser = false;
         
-        String query = "+TYPE:\"cm:person\" +@cm\\:userName:\"" + username + "\"";
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        searchParameters.setQuery(query);        
-        ResultSet resultSet = this.searchService.query(searchParameters);
         try
         {
-            if (resultSet.length() != 0)
-            {
-                ResultSetRow row = resultSet.getRow(0);
-                Map<String, Serializable> values = row.getValues();
-                String firstName = (String)values.get(ContentModel.PROP_FIRSTNAME.toString());
-                String lastName = (String)values.get(ContentModel.PROP_LASTNAME.toString());
-                
-                final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
-                final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
-                for (int i=0; i<nameFilters.length; i++)
-                {
-                    if (lowFirstName.indexOf(nameFilters[i]) != -1)
-                    {
-                        addUser = true;
-                        break;
-                    }
-                    else if (lowLastName.indexOf(nameFilters[i]) != -1)
-                    {
-                        addUser = true;
-                        break;
-                    }
-                }
-            }
+           NodeRef person = personService.getPerson(username, false);
+           String firstName = (String)nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
+           String lastName = (String)nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
+
+           final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
+           final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
+           for (int i=0; i<nameFilters.length; i++)
+           {
+              if (lowFirstName.indexOf(nameFilters[i]) != -1)
+              {
+                 addUser = true;
+                 break;
+              }
+              else if (lowLastName.indexOf(nameFilters[i]) != -1)
+              {
+                 addUser = true;
+                 break;
+              }
+           }
         }
-        finally
+        catch(NoSuchPersonException e)
         {
-            resultSet.close();
+           // Group references a deleted user, shouldn't normally happen
         }
         
         return addUser;

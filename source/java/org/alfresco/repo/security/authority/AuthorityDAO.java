@@ -56,11 +56,11 @@ public interface AuthorityDAO
      * Get contained authorities.
      * 
      * @param type
-     * @param name
+     * @param parentName the name of the containing authority
      * @param immediate
      * @return
      */
-    Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate);
+    Set<String> getContainedAuthorities(AuthorityType type, String parentName, boolean immediate);
 
     /**
      * Remove an authority.

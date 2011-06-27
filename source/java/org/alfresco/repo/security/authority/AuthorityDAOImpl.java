@@ -599,18 +599,20 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
     
-    public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
+    public Set<String> getContainedAuthorities(AuthorityType type, String parentName, boolean immediate)
     {
-        if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER))
+        AuthorityType parentAuthorityType = AuthorityType.getAuthorityType(parentName); 
+        if (parentAuthorityType == AuthorityType.USER)
         {
+            // Users never contain other authorities
             return Collections.<String> emptySet();
         }
         else
         {
-            NodeRef nodeRef = getAuthorityOrNull(name);
+            NodeRef nodeRef = getAuthorityOrNull(parentName);
             if (nodeRef == null)
             {
-                throw new UnknownAuthorityException("An authority was not found for " + name);
+                throw new UnknownAuthorityException("An authority was not found for " + parentName);
             }
             
             Set<String> authorities = new TreeSet<String>();

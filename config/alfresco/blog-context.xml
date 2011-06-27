@@ -2,8 +2,107 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
-    <!-- Blog Integration Service -->
+    <!-- Blog Service (Alfresco internal storage of blog-related content) -->
+    <bean id="BlogService" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.repo.blog.BlogService</value>
+       </property>
+       <property name="target">
+          <ref bean="blogService" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref local="BlogService_transaction" />
+             <idref bean="AuditMethodInterceptor" />
+             <idref bean="exceptionTranslator" />
+             <idref local="BlogService_security" />
+          </list>
+       </property>
+    </bean>
+   
+    <!-- Blog service transaction bean -->
+    <bean id="BlogService_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+       <property name="transactionManager">
+          <ref bean="transactionManager" />
+       </property>
+       <property name="transactionAttributes">
+          <props>
+             <prop key="*">${server.transaction.mode.default}</prop>
+          </props>
+       </property>
+    </bean>
+   
+    <bean id="BlogService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               <!-- ACL_NODE.0 means you need the following permissions on a NodeRef method-arg at index 0. -->
+               <!-- AFTER_ACL_NODE means you need the specified permissions on the return type,
+                                   type must be one of ChAssRef, FileInfo, NodeRef, StoreRef, ResultSet & Collections, arrays of same -->
+               org.alfresco.repo.blog.BlogService.getDrafts=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.repo.blog.BlogService.getPublished=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.repo.blog.BlogService.getPublishedExternally=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.repo.blog.BlogService.getMyDraftsAndAllPublished=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.repo.blog.BlogService.*=ACL_ALLOW
+            </value>
+        </property>
+    </bean>
+      
+    <!-- Blog Service base bean -->
+    <bean id="blogService" class="org.alfresco.repo.blog.BlogServiceImpl">
+       <property name="cannedQueryRegistry" ref="cannedQueryRegistry"/>
+       <property name="contentService" ref="ContentService"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="taggingService" ref="TaggingService"/>
+       
+       <property name="draftBlogPostsCannedQueryFactory" ref="getDraftBlogPostsCannedQueryFactory"/>
+       <property name="publishedBlogPostsCannedQueryFactory" ref="getPublishedBlogPostsCannedQueryFactory"/>
+       <property name="publishedExternallyBlogPostsCannedQueryFactory" ref="getPublishedExternallyBlogPostsCannedQueryFactory"/>
+       
+       <property name="draftsAndPublishedBlogPostsCannedQueryFactory" ref="getDraftsAndPublishedBlogPostsCannedQueryFactory"/>
+    </bean>
+    
+    <!-- Canned Queries -->
+    <!-- We currently need one CQFactory per CQ in order to support interception at each of the different methods -->
+    <!-- TODO Check with Jan/Derek -->
+    <bean name="parentBlogPostsCannedQueryFactory" abstract="true">
+        <property name="registry" ref="cannedQueryRegistry"/>
+        <property name="methodSecurityInterceptor" ref="BlogService_security"/>
+        <property name="methodService" ref="blogService"/>
+        <!-- Intentionally injecting the small 'n', undecorated NodeService. -->
+        <property name="rawNodeService" ref="nodeService"/>
+    </bean>
+    
+    <bean name="getDraftBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"
+          class="org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory">
+      <property name="methodName" value="getDrafts"/>
+    </bean>
+   
+    <bean name="getPublishedExternallyBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"
+          class="org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory">
+      <property name="methodName" value="getPublishedExternally"/>
+    </bean>
+    
+    <bean name="getPublishedBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"
+          class="org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory">
+      <property name="methodName" value="getPublished"/>
+    </bean>
+    
+    <bean name="getDraftsAndPublishedBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"
+          class="org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQueryFactory">
+      <property name="methodName" value="getMyDraftsAndAllPublished"/>
+      <property name="taggingService" ref="TaggingService"/>
+    </bean>
+    
+    
+    
+    
+    
+    <!-- Blog Integration Service (Integration with external blog hosting sites) -->
     
     <bean id="BlogIntegrationService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

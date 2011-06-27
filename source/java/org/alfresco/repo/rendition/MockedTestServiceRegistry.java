@@ -30,6 +30,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -321,6 +322,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     
     public RatingService getRatingService()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
+    public NodeLocatorService getNodeLocatorService()
     {
         // TODO Auto-generated method stub
         return null;

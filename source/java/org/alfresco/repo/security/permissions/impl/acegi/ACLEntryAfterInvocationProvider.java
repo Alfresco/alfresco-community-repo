@@ -39,6 +39,7 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.PagingResults;
 import org.alfresco.query.PermissionedResults;
+import org.alfresco.repo.blog.BlogPostInfo;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -952,6 +953,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((FileInfo) nextObject).getNodeRef();
                     }
+                    else if (BlogPostInfo.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((BlogPostInfo) nextObject).getNodeRef();
+                    }
                     else if (Pair.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = (NodeRef) ((Pair)nextObject).getSecond();
@@ -960,7 +965,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         throw new ACLEntryVoterException(
                                 "The specified parameter is not a collection of " +
-                                "NodeRefs, ChildAssociationRefs, FileInfos or Pair<Long, NodeRef>");
+                                "StoreRefs, NodeRefs, ChildAssociationRefs, FileInfos, BlogPostInfos or Pair<Long, NodeRef>");
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))

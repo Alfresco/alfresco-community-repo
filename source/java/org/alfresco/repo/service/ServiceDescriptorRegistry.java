@@ -28,6 +28,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -532,7 +533,16 @@ public class ServiceDescriptorRegistry
     {
         return (RatingService)getService(RATING_SERVICE);
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getNodeLocatorService()
+     */
+    public NodeLocatorService getNodeLocatorService() 
+    {
+        return (NodeLocatorService)getService(NODE_LOCATOR_SERVICE);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getInvitationService()
      */

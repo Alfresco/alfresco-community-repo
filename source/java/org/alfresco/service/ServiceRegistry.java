@@ -28,6 +28,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -136,6 +137,7 @@ public interface ServiceRegistry
     static final QName RENDITION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RenditionService");
     static final QName RATING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RatingService");
     static final QName REPO_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RepoAdminService");
+    static final QName NODE_LOCATOR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NodeLocatorService");
     
     // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
@@ -507,6 +509,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     RatingService getRatingService();
+    
+    /**
+     * Get the node locator service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    NodeLocatorService getNodeLocatorService();
     
     /**
      * Get the invitation service (or null if one is not provided)

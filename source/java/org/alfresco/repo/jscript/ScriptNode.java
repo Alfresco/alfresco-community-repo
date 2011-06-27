@@ -42,6 +42,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -63,7 +64,6 @@ import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -641,7 +641,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         PagingRequest pageRequest = new PagingRequest(skipOffset, maxItems, queryExecutionId);
         pageRequest.setRequestTotalCountMax(requestTotalCountMax);
         
-        PagingFileInfoResults pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, ignoreTypeQNames, sortProps, pageRequest);
+        PagingResults<FileInfo> pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, ignoreTypeQNames, sortProps, pageRequest);
         
         List<FileInfo> nodeInfos = pageOfNodeInfos.getPage();
         

@@ -28,15 +28,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
+import java.util.ResourceBundle.Control;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -49,7 +50,6 @@ import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -65,7 +65,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -351,7 +350,7 @@ public class FileFolderServiceImpl implements FileFolderService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
      */
-    public PagingFileInfoResults list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
@@ -359,7 +358,7 @@ public class FileFolderServiceImpl implements FileFolderService
         Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
         
         // execute query
-        CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, sortProps, pagingRequest);
+        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, sortProps, pagingRequest);
         
         List<NodeRef> nodeRefs = null;
         if (results.getPageCount() > 0)
@@ -372,21 +371,50 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         // set total count
-        Pair<Integer, Integer> totalCount = null;
+        final Pair<Integer, Integer> totalCount;
         if (pagingRequest.getRequestTotalCountMax() > 0)
         {
             totalCount = results.getTotalResultCount();
         }
+        else
+        {
+            totalCount = null;
+        }
         
-        boolean hasMoreItems = results.hasMoreItems();
-        
-        List<FileInfo> nodeInfos = new ArrayList<FileInfo>(nodeRefs.size());
+        final List<FileInfo> nodeInfos = new ArrayList<FileInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
             nodeInfos.add(toFileInfo(nodeRef, true));
         }
         
-        return new PagingFileInfoResultsImpl(nodeInfos, hasMoreItems, totalCount, results.getQueryExecutionId(), true);
+        return new PagingResults<FileInfo>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
+            @Override
+            public List<FileInfo> getPage()
+            {
+                return nodeInfos;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return results.permissionsApplied();
+            }
+        };
     }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)

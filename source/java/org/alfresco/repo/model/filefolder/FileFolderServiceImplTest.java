@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -51,7 +52,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -218,7 +218,7 @@ public class FileFolderServiceImplTest extends TestCase
         // sanity checks only (see also GetChildrenCannedQueryTest)
         
         PagingRequest pagingRequest = new PagingRequest(100, null);
-        PagingFileInfoResults pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());

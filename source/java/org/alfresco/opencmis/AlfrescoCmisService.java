@@ -45,6 +45,7 @@ import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -60,7 +61,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.PagingFileInfoResults;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -591,7 +591,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         PagingRequest pageRequest = new PagingRequest(skipCount.intValue(), maxItems.intValue(), null);
         pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO make this optional/configurable - affects whether numItems may be returned
         
-        PagingFileInfoResults pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, sortProps, pageRequest);
+        PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, sortProps, pageRequest);
         List<FileInfo> childrenList = pageOfNodeInfos.getPage();
         
         if (max > 0)

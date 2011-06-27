@@ -22,14 +22,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -62,7 +61,8 @@ public interface FileFolderService
      * @author janv
      * @since 4.0
      */
-    public PagingFileInfoResults list(NodeRef contextNodeRef,
+    @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreTypeQNames", "sortProps", "pagingRequest"})
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef,
                                       boolean files,
                                       boolean folders,
                                       Set<QName> ignoreTypeQNames,

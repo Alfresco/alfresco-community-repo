@@ -119,6 +119,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
 
     /* Services */
     private NodeService nodeService;
+    private NodeService directNodeService;
     private FileFolderService fileFolderService;
     private SearchService searchService;
     private NamespaceService namespaceService;
@@ -156,6 +157,14 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * Set the unprotected node service
+     */
+    public void setDirectNodeService(NodeService directNodeService)
+    {
+        this.directNodeService = directNodeService;
     }
 
     /**
@@ -299,6 +308,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "directNodeService", directNodeService);
         PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
@@ -379,7 +389,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
          * Check that the site does not already exist
          */
     	// Check to see if we already have a site of this name
-    	NodeRef existingSite = getSiteNodeRef(shortName);
+    	NodeRef existingSite = getSiteNodeRef(shortName, false);
     	if (existingSite != null)
     	{
     		// Throw an exception since we have a duplicate site name
@@ -429,7 +439,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 // Create the site's groups
                 String siteGroup = authorityService
                         .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
-                QName siteType = nodeService.getType(siteNodeRef);
+                QName siteType = directNodeService.getType(siteNodeRef);
                 Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
                 {
@@ -519,7 +529,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     private Map<QName, Serializable> getSiteCustomProperties(NodeRef siteNodeRef)
     {
         Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(4);
-        Map<QName, Serializable> properties = nodeService.getProperties(siteNodeRef);
+        Map<QName, Serializable> properties = directNodeService.getProperties(siteNodeRef);
         
         for (Map.Entry<QName, Serializable> entry : properties.entrySet())                
         {
@@ -613,7 +623,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                             NodeRef result = null;
                             
                             // Get the root 'sites' folder
-                            NodeRef rootNodeRef = nodeService.getRootNode(SITE_STORE);
+                            NodeRef rootNodeRef = directNodeService.getRootNode(SITE_STORE);
                             List<NodeRef> results = searchService.selectNodes(
                                     rootNodeRef,
                                     sitesXPath,
@@ -698,7 +708,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                     for (NodeRef site : results.getNodeRefs())
                     {
                         // Ignore any node type that is not a "site"
-                        QName siteClassName = this.nodeService.getType(site);
+                        QName siteClassName = this.directNodeService.getType(site);
                         if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
                         {
                             result.add(createSiteInfo(site));
@@ -723,7 +733,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 {
                     // Ignore any node type that is not a "site"
                     NodeRef site = assoc.getChildRef();
-                    QName siteClassName = this.nodeService.getType(site);
+                    QName siteClassName = this.directNodeService.getType(site);
                     if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
                     {            
                         result.add(createSiteInfo(site));
@@ -811,7 +821,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
             {
                 // Ignore any node that is not a "site" type
                 NodeRef site = assoc.getChildRef();
-                QName siteClassName = this.nodeService.getType(site);
+                QName siteClassName = this.directNodeService.getType(site);
                 if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
                 {
                     result.add(createSiteInfo(site));
@@ -833,22 +843,19 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     {
         SiteInfo siteInfo = null;
         
-        if (this.permissionService.hasPermission(siteNodeRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
-        {
-            // Get the properties
-            Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
-            String shortName = (String) properties.get(ContentModel.PROP_NAME);
-            String sitePreset = (String) properties.get(PROP_SITE_PRESET);
-            String title = (String) properties.get(ContentModel.PROP_TITLE);
-            String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
-    
-            // Get the visibility of the site
-            SiteVisibility visibility = getSiteVisibility(siteNodeRef);
-            
-            // Create and return the site information
-            Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
-            siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
-        }
+        // Get the properties
+        Map<QName, Serializable> properties = this.directNodeService.getProperties(siteNodeRef);
+        String shortName = (String) properties.get(ContentModel.PROP_NAME);
+        String sitePreset = (String) properties.get(PROP_SITE_PRESET);
+        String title = (String) properties.get(ContentModel.PROP_TITLE);
+        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
+
+        // Get the visibility of the site
+        SiteVisibility visibility = getSiteVisibility(siteNodeRef);
+        
+        // Create and return the site information
+        Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
+        siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
         
         return siteInfo;
     }
@@ -865,7 +872,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         SiteVisibility visibility = SiteVisibility.PRIVATE;
         
         // Get the visibility value stored in the repo
-        String visibilityValue = (String)this.nodeService.getProperty(siteNodeRef, SiteModel.PROP_SITE_VISIBILITY);
+        String visibilityValue = (String)this.directNodeService.getProperty(siteNodeRef, SiteModel.PROP_SITE_VISIBILITY);
         
         // To maintain backwards compatibility calculate the visibility from the permissions
         // if there is no value specified on the site node
@@ -964,7 +971,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     private NodeRef getSiteNodeRef(NodeRef nodeRef)
     {
         NodeRef siteNodeRef = null;        
-        QName nodeRefType = nodeService.getType(nodeRef);
+        QName nodeRefType = directNodeService.getType(nodeRef);
         if (dictionaryService.isSubClass(nodeRefType, TYPE_SITE) == true)
         {
             siteNodeRef = nodeRef;
@@ -989,12 +996,25 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
      */
     private NodeRef getSiteNodeRef(final String shortName)
     {
+        return getSiteNodeRef(shortName, true);
+    }
+    
+    /**
+     * Gets the site's node reference based on its short name
+     * 
+     * @param shortName    short name
+     * @param enforcePermissions should we ensure that we have access to this node?
+     * 
+     * @return NodeRef node reference
+     */
+    private NodeRef getSiteNodeRef(final String shortName, boolean enforcePermissions)
+    {
         final String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         NodeRef siteNodeRef = this.siteNodeRefs.get(cacheKey);
         if (siteNodeRef != null)
         {
             // test for existance - and remove from cache if no longer exists
-            if (!this.nodeService.exists(siteNodeRef))
+            if (!this.directNodeService.exists(siteNodeRef))
             {
                 this.siteNodeRefs.remove(cacheKey);
                 siteNodeRef = null;
@@ -1010,7 +1030,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 public NodeRef doWork() throws Exception
                 {
                     // the site "short name" directly maps to the cm:name property
-                    NodeRef siteNode = nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
+                    NodeRef siteNode = directNodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
                     
                     // cache the result if found - null results will be required to ensure new sites are found later
                     if (siteNode != null)
@@ -1021,7 +1041,16 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-        return siteNodeRef;
+        if (enforcePermissions)
+        {
+            return siteNodeRef == null
+                    || !this.permissionService.hasPermission(siteNodeRef, PermissionService.READ_PROPERTIES).equals(
+                            AccessStatus.ALLOWED) ? null : siteNodeRef;
+        }
+        else
+        {
+            return siteNodeRef;
+        }
     }
 
     /**
@@ -1037,7 +1066,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         }
         
         // Get the sites properties
-        Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
+        Map<QName, Serializable> properties = this.directNodeService.getProperties(siteNodeRef);
         
         // Update the properties of the site
         // Note: the site preset and short name should never be updated!
@@ -1111,7 +1140,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
-        final QName siteType = nodeService.getType(siteNodeRef);
+        final QName siteType = directNodeService.getType(siteNodeRef);
 
         // Delete the cached reference
         String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
@@ -1216,74 +1245,88 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         
         Map<String, String> members = new HashMap<String, String>(32);
 
-        QName siteType = nodeService.getType(siteNodeRef);
+        QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
+        Map<String, String> groupsToExpand = new HashMap<String, String>(32);
         for (String permission : permissions)
         {
             if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
             {
                 String groupName = getSiteRoleGroup(shortName, permission, true);
-                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
-                for (String user : users)
+                Set<String> authorities = this.authorityService.getContainedAuthorities(null, groupName, true);
+                for (String authority : authorities)
                 {
-                    boolean addUser = true;
-                    if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(user))
+                    switch (AuthorityType.getAuthorityType(authority))
                     {
-                        // found a filter - does it match person first/last name?
-                        addUser = matchPerson(nameFilters, user);
-                    }
-                    if (addUser)
-                    {
-                        // Add the user and their permission to the returned map
-                        members.put(user, permission);
-                        
-                        // break on max size limit reached
-                        if (members.size() == size) break;
-                    }
-                }
-                
-                Set<String> groups = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, groupName, true);
-                for (String group : groups)
-                {                    
-                    if (collapseGroups == false)
-                    {
-                        if (nameFilter != null && nameFilter.length() != 0)
+                    case USER:
+                        boolean addUser = true;
+                        if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(authority))
                         {
-                            // found a filter - does it match Group name part?
-                            if (group.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
+                            // found a filter - does it match person first/last name?
+                            addUser = matchPerson(nameFilters, authority);
+                        }
+                        if (addUser)
+                        {
+                            // Add the user and their permission to the returned map
+                            members.put(authority, permission);
+                            
+                            // break on max size limit reached
+                            if (members.size() == size) break;
+                        }
+                        break;
+                    case GROUP:
+                        if (collapseGroups)
+                        {
+                            if (!groupsToExpand.containsKey(authority))
                             {
-                                members.put(group, permission);
+                                groupsToExpand.put(authority, permission);
                             }
                         }
                         else
                         {
-                        	// No name filter add this group
-                        	members.put(group, permission);
-                        }
-                    }
-                    else
-                    {
-                        Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
-                        for (String subUser : subUsers)
-                        {
-                            boolean addUser = true;
-                            if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(subUser))
+                            if (nameFilter != null && nameFilter.length() != 0)
                             {
-                                // found a filter - does it match person first/last name?
-                                addUser = matchPerson(nameFilters, subUser);
-                            }
-                            if (addUser)
-                            {
-                                // Add the collapsed user into the members list if they do not already appear in the list 
-                                if (members.containsKey(subUser) == false)
+                                // found a filter - does it match Group name part?
+                                if (authority.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
                                 {
-                                    members.put(subUser, permission);
+                                    members.put(authority, permission);
                                 }
-                                
-                                // break on max size limit reached
-                                if (members.size() == size) break;
+                            }
+                            else
+                            {
+                                // No name filter add this group
+                                members.put(authority, permission);
                             }
                         }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (collapseGroups)
+        {
+            for (Map.Entry<String,String> entry : groupsToExpand.entrySet())
+            {                
+                Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, entry.getKey(), false);
+                for (String subUser : subUsers)
+                {
+                    boolean addUser = true;
+                    if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(subUser))
+                    {
+                        // found a filter - does it match person first/last name?
+                        addUser = matchPerson(nameFilters, subUser);
+                    }
+                    if (addUser)
+                    {
+                        // Add the collapsed user into the members list if they do not already appear in the list 
+                        if (members.containsKey(subUser) == false)
+                        {
+                            members.put(subUser, entry.getValue());
+                        }
+                        
+                        // break on max size limit reached
+                        if (members.size() == size) break;
                     }
                 }
             }         
@@ -1309,8 +1352,8 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         try
         {
            NodeRef person = personService.getPerson(username, false);
-           String firstName = (String)nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
-           String lastName = (String)nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
+           String firstName = (String)directNodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
+           String lastName = (String)directNodeService.getProperty(person, ContentModel.PROP_LASTNAME);
 
            final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
            final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
@@ -1399,7 +1442,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         }
         
         List<String> fullResult = new ArrayList<String>(5);
-        QName siteType = nodeService.getType(siteNodeRef);
+        QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> roles = this.permissionService.getSettablePermissions(siteType);
 
         // First use the authority's cached recursive group memberships to answer the question quickly
@@ -1455,7 +1498,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         { 
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
         }
-        QName siteType = nodeService.getType(siteNodeRef);
+        QName siteType = directNodeService.getType(siteNodeRef);
         return getSiteRoles(siteType);
     }
 
@@ -1710,7 +1753,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
             // Set the properties if they have been provided
             if (containerProperties != null)
             {
-                Map<QName, Serializable> props = this.nodeService
+                Map<QName, Serializable> props = this.directNodeService
                         .getProperties(containerNodeRef);
                 props.putAll(containerProperties);
                 this.nodeService.setProperties(containerNodeRef, props);
@@ -1764,7 +1807,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
         }
         
-        QName siteType = nodeService.getType(siteNodeRef);
+        QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = permissionService.getSettablePermissions(siteType);
         for (String permission : permissions)
         {
@@ -1894,9 +1937,9 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         NodeRef person = personService.getPerson(userName);
         if (person != null)
         {
-            memberFN = (String) nodeService.getProperty(person,
+            memberFN = (String) directNodeService.getProperty(person,
                     ContentModel.PROP_FIRSTNAME);
-            memberLN = (String) nodeService.getProperty(person,
+            memberLN = (String) directNodeService.getProperty(person,
                     ContentModel.PROP_LASTNAME);
         }
 

@@ -73,6 +73,7 @@
     
     <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
        <property name="nodeService" ref="NodeService"/>
+       <property name="directNodeService" ref="nodeService"/>
        <property name="fileFolderService" ref="FileFolderService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="namespaceService" ref="NamespaceService"/>

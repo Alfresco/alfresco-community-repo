@@ -85,8 +85,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /** Resolves placeholders in the property defaults. */
     private DefaultResolver defaultResolver = new DefaultResolver();
 
-    /** Has the state been started yet?. */
-    private boolean isStarted;
+    /** The lifecycle states. */
+    private enum RuntimeState {UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED};
+    
+    private RuntimeState runtimeState = RuntimeState.UNINITIALIZED;
 
     /** The state. */
     private PropertyBackedBeanState state;
@@ -280,7 +282,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     protected void doInit()
     {
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
-        if (this.state == null)
+        if (this.runtimeState == RuntimeState.UNINITIALIZED)
         {
             if (!hadWriteLock)
             {
@@ -289,10 +291,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             try
             {
-                if (this.state == null)
+                if (this.runtimeState == RuntimeState.UNINITIALIZED)
                 {
                     this.state = createInitialState();
                     applyDefaultOverrides(this.state);
+                    this.runtimeState = RuntimeState.STOPPED;
                     this.registry.register(this);
                 }
             }
@@ -412,7 +415,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected void destroy(boolean isPermanent)
     {
-        if (this.state != null)
+        if (this.runtimeState != RuntimeState.UNINITIALIZED)
         {
             boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
             if (!hadWriteLock)
@@ -422,11 +425,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             try
             {
-                if (this.state != null)
+                if (this.runtimeState != RuntimeState.UNINITIALIZED)
                 {
                     stop(false);
                     this.registry.deregister(this, isPermanent);
                     this.state = null;
+                    this.runtimeState = RuntimeState.UNINITIALIZED;
                 }
             }
             finally
@@ -484,11 +488,15 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             this.lock.writeLock().lock();
             try
             {
-                if (!this.isStarted)
+                // If we aren't started, reinitialize so that we pick up state changes from the database
+                switch (this.runtimeState)
                 {
-                    // Reinitialize so that we pick up state changes from the database
+                case PENDING_BROADCAST_START:
+                case STOPPED:
                     destroy(false);
-                    start(false);
+                    // fall through
+                case UNINITIALIZED:
+                    start(false);                
                 }
             }
             finally
@@ -502,8 +510,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             try
             {
                 // Completely destroy the state so that it will have to be reinitialized should the bean be put back in
-                // to
-                // use by this node
+                // to use by this node
                 destroy(false);
             }
             finally
@@ -555,6 +562,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         this.lock.writeLock().lock();
         try
         {
+            // Bring down the bean. The caller may have already broadcast this across the cluster
+            stop(false);
             doInit();
             this.state.setProperty(name, value);
         }
@@ -569,10 +578,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         this.lock.writeLock().lock();
         try
         {
-            // Bring down the bean across the cluster
-            stop(true);
+            // Bring down the bean. The caller may have already broadcast this across the cluster
+            stop(false);
             doInit();
-            
+
             Map<String, String> previousValues = new HashMap<String, String>(properties.size() * 2);
             try
             {
@@ -584,11 +593,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     this.state.setProperty(property, entry.getValue());
                     previousValues.put(property, previousValue);
                 }
-                
+
                 // Attempt to start locally
-                 start(false);
-                
-                // We still haven't broadcast the start - a persist is required first
+                start(false);
+
+                // We still haven't broadcast the start - a persist is required first so this will be done by the caller
             }
             catch (Exception e)
             {
@@ -637,12 +646,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected void start(boolean broadcast)
     {
-        if (broadcast)
-        {
-            this.registry.broadcastStart(this);
-        }
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
-        if (!this.isStarted)
+        if (this.runtimeState != RuntimeState.STARTED)
         {
             if (!hadWriteLock)
             {
@@ -651,11 +656,21 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             try
             {
-                if (!this.isStarted)
+                switch (this.runtimeState)
                 {
+                case UNINITIALIZED:
                     doInit();
+                    // fall through
+                case STOPPED:
                     this.state.start();
-                    this.isStarted = true;
+                    this.runtimeState = RuntimeState.PENDING_BROADCAST_START;
+                    // fall through
+                case PENDING_BROADCAST_START:
+                    if (broadcast)
+                    {
+                        this.registry.broadcastStart(this);
+                        this.runtimeState = RuntimeState.STARTED;
+                    }
                 }
             }
             finally
@@ -693,13 +708,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected void stop(boolean broadcast)
     {
-        if (broadcast)
-        {
-            this.registry.broadcastStop(this);
-        }
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
-        if (this.isStarted)
+        switch (this.runtimeState)
         {
+        case PENDING_BROADCAST_START:
+        case STARTED:
             if (!hadWriteLock)
             {
                 this.lock.readLock().unlock();
@@ -707,10 +720,17 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             try
             {
-                if (this.isStarted)
+                switch (this.runtimeState)
                 {
+                case STARTED:
+                    if (broadcast)
+                    {
+                        this.registry.broadcastStop(this);
+                    }
+                    // fall through
+                case PENDING_BROADCAST_START:
                     this.state.stop();
-                    this.isStarted = false;
+                    this.runtimeState = RuntimeState.STOPPED;
                 }
             }
             finally

@@ -25,7 +25,7 @@ import org.alfresco.repo.web.scripts.action.RunningActionRestApiTest;
 import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
 import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
 import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
-import org.alfresco.repo.web.scripts.blog.BlogServiceTest;
+import org.alfresco.repo.web.scripts.blogs.BlogServiceTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
 import org.alfresco.repo.web.scripts.discussion.DiscussionServiceTest;
 import org.alfresco.repo.web.scripts.forms.FormRestApiGet_Test;

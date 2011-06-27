@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.blog;
+package org.alfresco.repo.web.scripts.blogs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,21 +28,23 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONStringer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Unit Test to test Blog Web Script API
@@ -65,7 +68,12 @@ public class BlogServiceTest extends BaseWebScriptTest
 
     private static final String URL_BLOG_POST = "/api/blog/post/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/";
     private static final String URL_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/posts";
-    
+    private static final String URL_MY_DRAFT_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG +
+                                                          "/" + COMPONENT_BLOG + "/posts/mydrafts";
+    private static final String URL_MY_PUBLISHED_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG +
+                                                          "/" + COMPONENT_BLOG + "/posts/mypublished";
+
+
     private List<String> posts = new ArrayList<String>(5);
     private List<String> drafts = new ArrayList<String>(5);
 
@@ -279,19 +287,84 @@ public class BlogServiceTest extends BaseWebScriptTest
     
     public void testCreateDraftPost() throws Exception
     {
-    	String title = "test";
-    	String content = "test";
-    	JSONObject item = createPost(title, content, null, true, 200);
-    	
-    	// check that the values
-    	assertEquals(title, item.get("title"));
-    	assertEquals(content, item.get("content"));
-    	assertEquals(true, item.get("isDraft"));
-    	
-    	// check that other user doesn't have access to the draft
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	getPost(item.getString("name"), 404);
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
+        String title = "test";
+        String content = "test";
+        JSONObject item = createPost(title, content, null, true, 200);
+        
+        // check that the values
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(true, item.get("isDraft"));
+        
+        // check that other user doesn't have access to the draft
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(item.getString("name"), 404);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        
+        // Now we'll GET my-drafts to ensure that the post is there.
+        Response response = sendRequest(new GetRequest(URL_MY_DRAFT_BLOG_POSTS), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        assertTrue("Wrong number of posts", result.length() > 0);
+    }
+    
+    /**
+     * @since 4.0
+     */
+    public void testCreateDraftPostWithTagsAndComment() throws Exception
+    {
+        String[] tags = new String[]{"foo", "bar"};
+        String title = "test";
+        String content = "test";
+        JSONObject item = createPost(title, content, tags, true, 200);
+        
+        // check that the values
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(true, item.get("isDraft"));
+        JSONArray recoveredTags = (JSONArray)item.get("tags");
+        assertEquals("Tags size was wrong.", 2, recoveredTags.length());
+        List<String> recoveredTagsList = Arrays.asList(new String[]{recoveredTags.getString(0), recoveredTags.getString(1)});
+        assertEquals("Tags were wrong.", Arrays.asList(tags), recoveredTagsList);
+        
+        // comment on the blog post.
+        NodeRef blogPostNode = new NodeRef(item.getString("nodeRef"));
+        // Currently (mid-Swift dev) there is no Java CommentService, so we have to post a comment via the REST API.
+        String commentsPostUrl = "/api/node/" + blogPostNode.getStoreRef().getProtocol() +
+                                 "/" + blogPostNode.getStoreRef().getIdentifier() + "/" +
+                                 blogPostNode.getId() + "/comments";
+        
+        String jsonToPost = new JSONStringer().object()
+                                                  .key("title").value("Commented blog title")
+                                                  .key("content").value("Some content.")
+                                              .endObject().toString();
+                          
+        Response response = sendRequest(new PostRequest(commentsPostUrl, jsonToPost, "application/json"), 200);
+        
+        // check that other user doesn't have access to the draft
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(item.getString("name"), 404);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        
+        // Now we'll GET my-drafts to ensure that the post is there.
+        response = sendRequest(new GetRequest(URL_MY_DRAFT_BLOG_POSTS), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // Ensure it reports the tag correctly on GET.
+        JSONArray items = result.getJSONArray("items");
+        JSONArray tagsArray = items.getJSONObject(0).getJSONArray("tags");
+        assertEquals("Wrong number of tags", 2, tagsArray.length());
+        assertEquals("Tag wrong", tags[0], tagsArray.getString(0));
+        assertEquals("Tag wrong", tags[1], tagsArray.getString(1));
+        
+        // Ensure the comment count is accurate
+        assertEquals("Wrong comment count", 1, items.getJSONObject(0).getInt("commentCount"));
+        
+        // and that there is content at the commentsURL.
+        String commentsUrl = "/api" + items.getJSONObject(0).getString("commentsUrl");
+        response = sendRequest(new GetRequest(commentsUrl), 200);
+        
+        
+        // TODO Replies still not right in the Share UI.
     }
     
     public void testCreatePublishedPost() throws Exception
@@ -300,6 +373,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	String content = "content";
     	
     	JSONObject item = createPost(title, content, null, false, 200);
+        final String postName = item.getString("name");
     	
     	// check the values
     	assertEquals(title, item.get("title"));
@@ -310,6 +384,17 @@ public class BlogServiceTest extends BaseWebScriptTest
     	this.authenticationComponent.setCurrentUser(USER_TWO);
     	getPost(item.getString("name"), 200);
     	this.authenticationComponent.setCurrentUser(USER_ONE);
+    	
+        // Now we'll GET my-published to ensure that the post is there.
+        Response response = sendRequest(new GetRequest(URL_MY_PUBLISHED_BLOG_POSTS), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // we should have posts.size + drafts.size together
+        assertEquals(this.posts.size() + this.drafts.size(), result.getInt("total"));
+        
+        // Finally, we'll delete the blog-post to test the REST DELETE call.
+        response = sendRequest(new DeleteRequest(URL_BLOG_POST + postName), 200);
+
     }
     
     public void testCreateEmptyPost() throws Exception
@@ -401,7 +486,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals(this.posts.size(), result.getInt("total"));
     }
     
-    public void _testGetDrafts() throws Exception
+    public void testGetDrafts() throws Exception
     {
     	String url = URL_BLOG_POSTS + "/mydrafts";
     	Response response = sendRequest(new GetRequest(URL_BLOG_POSTS), 200);
@@ -419,7 +504,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	
     }
     
-    public void _testMyPublished() throws Exception
+    public void testMyPublished() throws Exception
     {
     	String url = URL_BLOG_POSTS + "/mypublished";
     	Response response = sendRequest(new GetRequest(url), 200);
@@ -501,8 +586,8 @@ public class BlogServiceTest extends BaseWebScriptTest
     				try {
 	    				for (int y=0; y < 3; y++)
 	    				{
-	    					_testPostTags();
-	    					_testClearTags();
+	    					off_testPostTags();
+	    					off_testClearTags();
 	    					
 	    				}
 	    				System.err.println("------------- SUCCEEDED ---------------");
@@ -540,7 +625,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	}
     }
     
-    public void _testPostTags() throws Exception
+    public void off_testPostTags() throws Exception
     {
     	String[] tags = { "first", "test" };
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
@@ -555,7 +640,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals("second", item.getJSONArray("tags").get(2));
     }
     
-    public void _testClearTags() throws Exception
+    public void off_testClearTags() throws Exception
     {
     	String[] tags = { "abc", "def"};
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);

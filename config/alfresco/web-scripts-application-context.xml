@@ -1018,6 +1018,13 @@
           parent="baseArchivedNodeWebScript">
     </bean>
     
+    
+    <!--                              -->
+    <!--      BlogService REST API    -->
+    <!--                              -->
+    <import resource="blogs/web-scripts-blog-context.xml"/>
+    
+    
     <!--                                   -->
     <!--      Workflow Service REST API    -->
     <!--                                   -->

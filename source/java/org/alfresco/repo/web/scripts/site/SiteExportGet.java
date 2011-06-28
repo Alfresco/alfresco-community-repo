@@ -201,8 +201,8 @@ public class SiteExportGet extends AbstractWebScript
         String siteGroup = buildSiteGroup(site);
         
         // Now get all people in the child groups
-        Set<String> siteUsers = authorityService.findAuthorities(
-                AuthorityType.USER, siteGroup, false, null, null);
+        Set<String> siteUsers = authorityService.getContainedAuthorities(
+                AuthorityType.USER, siteGroup, false);
         
         // Turn these all into NodeRefs
         List<NodeRef> peopleNodes = new ArrayList<NodeRef>(siteUsers.size());
@@ -239,8 +239,8 @@ public class SiteExportGet extends AbstractWebScript
         String siteGroup = buildSiteGroup(site);
         
         // Get all the child groups of the site (but not children of them)
-        Set<String> siteGroups = authorityService.findAuthorities(
-                AuthorityType.GROUP, siteGroup, true, null, null);
+        Set<String> siteGroups = authorityService.getContainedAuthorities(
+              AuthorityType.GROUP, siteGroup, true);
         
         // For each group, get all the people
         // (Flattens any intermediate groups)
@@ -248,8 +248,8 @@ public class SiteExportGet extends AbstractWebScript
         Map<String,List<String>> memberships = new HashMap<String, List<String>>();
         for(String group : siteGroups)
         {
-            Set<String> groupUsers = authorityService.findAuthorities(
-                    AuthorityType.USER, group, false, null, null);
+            Set<String> groupUsers = authorityService.getContainedAuthorities(
+                  AuthorityType.USER, group, false);
             
             for (String user : groupUsers)
             {
@@ -297,8 +297,8 @@ public class SiteExportGet extends AbstractWebScript
         
         // Identify all the users
         String siteGroup = buildSiteGroup(site);
-        Set<String> siteUsers = authorityService.findAuthorities(
-                AuthorityType.USER, siteGroup, false, null, null);
+        Set<String> siteUsers = authorityService.getContainedAuthorities(
+                AuthorityType.USER, siteGroup, false);
         
         // Now export them, and only them
         for (String user : siteUsers)

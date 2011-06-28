@@ -1319,9 +1319,9 @@
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
+        <property name="commentService" ref="CommentService"/>
+        <property name="rawNodeService" ref="nodeService"/> <!-- Intentional small 'n' -->
+        <property name="nodeService" ref="NodeService"/>    <!-- Intentional large 'N' -->
     </bean>
     <bean id="commentsRollupAspect" class="org.alfresco.repo.forum.CommentsRollupAspect" init-method="init">
        <property name="policyComponent" ref="policyComponent"/>

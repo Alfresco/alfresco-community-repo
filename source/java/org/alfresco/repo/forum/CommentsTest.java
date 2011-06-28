@@ -20,6 +20,7 @@
 package org.alfresco.repo.forum;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -32,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -62,6 +64,7 @@ public class CommentsTest
     private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();
     
     // Services
+    private static BehaviourFilter behaviourFilter;
     private static ContentService contentService;
     private static NodeService nodeService;
     private static Repository repositoryHelper;
@@ -76,6 +79,7 @@ public class CommentsTest
      */
     @BeforeClass public static void initTestsContext() throws Exception
     {
+        behaviourFilter = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         contentService = (ContentService)testContext.getBean("ContentService");
         nodeService = (NodeService)testContext.getBean("NodeService");
         repositoryHelper = (Repository)testContext.getBean("repositoryHelper");
@@ -209,6 +213,93 @@ public class CommentsTest
     }
     
     /**
+     * This test method tests that commented nodes from before Swift have their comment counts correctly rolled up.
+     * Nodes that were commented on in prior versions of Alfresco will not have commentCount rollups -
+     * neither the aspect nor the property defined within it. Alfresco lazily calculates commentCount rollups for these
+     * nodes. So they will appear to have a count of 0 (undefined, really) and will not be given the "(count)" UI decoration.
+     * Then when a comment is added (or removed), the comment count should be recalculated from scratch.
+     */
+    @Test public void testRollupOfPreSwiftNodes() throws Exception
+    {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    assertTrue("Not enough test docs for this test case", testDocs.size() >= 2);
+                    NodeRef node1 = testDocs.get(0);
+                    NodeRef node2 = testDocs.get(1);
+                    
+                    // We will simulate pre-Swift commenting by temporarily disabling the behaviours that add the aspect & do the rollups.
+                    behaviourFilter.disableBehaviour(ForumModel.TYPE_POST);
+                    
+                    for (NodeRef nr : new NodeRef[]{node1, node2})
+                    {
+                        // All test nodes initially do not have the commentsRollup aspect.
+                        assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
+                    }
+                    
+                    // Comment on each node - we need to save one comment noderef in order to delete it later.
+                    NodeRef commentOnNode1 = applyComment(node1, "Hello", true);
+                    applyComment(node1, "Bonjour", true);
+                    applyComment(node2, "Hola", true);
+                    applyComment(node2, "Bout ye?", true);
+                    
+                    // Check that the rollup comment counts are still not present. And re-enable the behaviours after we check.
+                    for (NodeRef nr : new NodeRef[]{node1, node2})
+                    {
+                        assertFalse("Test node had comments rollup aspect.", nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP));
+                    }
+                    behaviourFilter.enableBehaviour(ForumModel.TYPE_POST);
+                    
+                    // Now the addition or deletion of a comment, should trigger a recalculation of the comment rollup from scratch.
+                    applyComment(node2, "hello again");
+                    nodeService.deleteNode(commentOnNode1);
+                    assertCommentCountIs(node2, 3);
+                    assertCommentCountIs(node1, 1);
+                    
+                    return null;
+                }
+            });
+    }
+    
+    /**
+     * This test method tests that nodes whose commentCount is set to -1 have their commentCounts recalculated.
+     * This feature (see ALF-8498) is to allow customers to set their counts to -1 thus triggering a recount for that document.
+     */
+    @Test public void testTriggerCommentRecount() throws Exception
+    {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef testDoc = testDocs.get(0);
+                    applyComment(testDoc, "Hello 1");
+                    applyComment(testDoc, "Hello 2");
+                    applyComment(testDoc, "Hello 3");
+                    
+                    assertCommentCountIs(testDoc, 3);
+                    
+                    // We'll cheat and just set it to an arbitrary value.
+                    nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, 42);
+                    
+                    // It should have that value - even though it's wrong.
+                    assertCommentCountIs(testDoc, 42);
+                    
+                    // Now we'll set it to the trigger value -1.
+                    nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, ForumPostBehaviours.COUNT_TRIGGER_VALUE);
+                    
+                    // It should have the correct, recalculated value.
+                    assertCommentCountIs(testDoc, 3);
+                    
+                    return null;
+                }
+            });
+    }
+
+    
+    /**
      * This method asserts that the commentCount (rollup) is as specified for the given node.
      */
     private void assertCommentCountIs(NodeRef discussableNode, int expectedCount)
@@ -228,6 +319,11 @@ public class CommentsTest
         }
     }
     
+    private NodeRef applyComment(NodeRef nr, String comment)
+    {
+        return applyComment(nr, comment, false);
+    }
+
     /**
      * This method applies the specified comment to the specified node.
      * As there is no CommentService or DiscussionService, we mimic here what the comments REST API does,
@@ -235,9 +331,12 @@ public class CommentsTest
      * of the work for us. See comments.post.json.js for comparison.
      * @param nr nodeRef to comment on.
      * @param comment the text of the comment.
+     * @param suppressRollups if true, commentsRollup aspect will not be added.
      * @return the NodeRef of the fm:post comment node.
+     * 
+     * @see CommentsTest#testRollupOfPreSwiftNodes() for use of suppressRollups.
      */
-    private NodeRef applyComment(NodeRef nr, String comment)
+    private NodeRef applyComment(NodeRef nr, String comment, boolean suppressRollups)
     {
         // There is no CommentService, so we have to create the node structure by hand.
         // This is what happens within e.g. comment.put.json.js when comments are submitted via the REST API.
@@ -245,7 +344,7 @@ public class CommentsTest
         {
             nodeService.addAspect(nr, ForumModel.ASPECT_DISCUSSABLE, null);
         }
-        if (!nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP))
+        if (!nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP) && !suppressRollups)
         {
             nodeService.addAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
         }

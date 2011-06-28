@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- Comment Service (Management of Share comments) -->
+    <bean id="CommentService" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.repo.forum.CommentService</value>
+       </property>
+       <property name="target">
+          <ref bean="commentService" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref local="CommentService_transaction" />
+             <idref bean="AuditMethodInterceptor" />
+             <idref bean="exceptionTranslator" />
+             <idref local="CommentService_security" />
+          </list>
+       </property>
+    </bean>
+   
+    <!-- Comment service transaction bean -->
+    <bean id="CommentService_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+       <property name="transactionManager">
+          <ref bean="transactionManager" />
+       </property>
+       <property name="transactionAttributes">
+          <props>
+             <prop key="*">${server.transaction.mode.default}</prop>
+          </props>
+       </property>
+    </bean>
+   
+    <bean id="CommentService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor"/>
+    
+    <!-- Comment Service base bean -->
+    <bean id="commentService" class="org.alfresco.repo.forum.CommentServiceImpl">
+       <property name="nodeService" ref="NodeService"/>
+    </bean>
+</beans>

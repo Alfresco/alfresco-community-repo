@@ -18,12 +18,10 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQuery;
@@ -89,27 +87,12 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        Method method = null;
-        for (Method m : methodService.getClass().getMethods())
-        {
-            // note: currently matches first found
-            if (m.getName().equals(methodName))
-            {
-                method = m;
-                break;
-            }
-        }
-        
-        if (method == null)
-        {
-            throw new AlfrescoRuntimeException("Method not found: "+methodName);
-        }
-        
         // if not passed in (TODO or not in future cache) then generate a new query execution id
         String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
         
         final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(rawNodeService, taggingService,
-                                                                                  methodSecurityInterceptor, method, parameters, queryExecutionId);
+                                                                                  methodSecurityInterceptor, methodService, methodName,
+                                                                                  parameters, queryExecutionId);
         return (CannedQuery<BlogPostInfo>) cq;
     }
     

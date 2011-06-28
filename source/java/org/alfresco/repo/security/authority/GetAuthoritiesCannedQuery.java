@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.security.authority;
 
-import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,11 +56,12 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
             CannedQueryDAO cannedQueryDAO,
             TenantService tenantService,
             MethodSecurityInterceptor methodSecurityInterceptor,
-            Method method,
+            Object methodService,
+            String methodName,
             CannedQueryParameters params,
             String queryExecutionId)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, method);
+        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
         
         this.cannedQueryDAO = cannedQueryDAO;
         this.tenantService = tenantService;

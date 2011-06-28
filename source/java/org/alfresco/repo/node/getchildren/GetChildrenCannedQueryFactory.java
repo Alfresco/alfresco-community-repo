@@ -18,19 +18,17 @@
  */
 package org.alfresco.repo.node.getchildren;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -122,26 +120,10 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         
-        Method method = null;
-        for (Method m : methodService.getClass().getMethods())
-        {
-            // note: currently matches first found
-            if (m.getName().equals(methodName))
-            {
-                method = m;
-                break;
-            }
-        }
-        
-        if (method == null)
-        {
-            throw new AlfrescoRuntimeException("Method not found: "+methodName);
-        }
-        
         // if not passed in (TODO or not in future cache) then generate a new query execution id
         String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
         
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurityInterceptor, method, parameters, queryExecutionId);
+        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
     }
     
     /**

@@ -18,13 +18,11 @@
  */
 package org.alfresco.repo.blog;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQueryFactory;
@@ -85,25 +83,9 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        Method method = null;
-        for (Method m : methodService.getClass().getMethods())
-        {
-            // note: currently matches first found
-            if (m.getName().equals(methodName))
-            {
-                method = m;
-                break;
-            }
-        }
-        
-        if (method == null)
-        {
-            throw new AlfrescoRuntimeException("Method not found: "+methodName);
-        }
-        
         String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
         
-        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(rawNodeService, methodSecurityInterceptor, method, parameters, queryExecutionId);
+        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(rawNodeService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
         return (CannedQuery<BlogPostInfo>) cq;
     }
     

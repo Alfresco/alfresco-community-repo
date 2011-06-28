@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.blog;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,11 +54,12 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
     public GetBlogPostsCannedQuery(
             NodeService rawNodeService,
             MethodSecurityInterceptor methodSecurityInterceptor,
-            Method method,
+            Object methodService,
+            String methodName,
             CannedQueryParameters params,
             String queryExecutionId)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, method);
+        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
         this.rawNodeService = rawNodeService;
     }
     

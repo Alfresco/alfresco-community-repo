@@ -100,26 +100,10 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
     @Override
     public CannedQuery<AuthorityInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        Method method = null;
-        for (Method m : methodService.getClass().getMethods())
-        {
-            // note: currently matches first found
-            if (m.getName().equals(methodName))
-            {
-                method = m;
-                break;
-            }
-        }
-        
-        if (method == null)
-        {
-            throw new AlfrescoRuntimeException("Method not found: "+methodName);
-        }
-        
         // if not passed in (TODO or not in future cache) then generate a new query execution id
         String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
         
-        return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurityInterceptor, method, parameters, queryExecutionId);
+        return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
     }
     
     public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)

@@ -29,6 +29,7 @@ import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.context.security.SecureContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.PagingResults;
@@ -51,9 +52,25 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private Method method;
     
-    protected AbstractCannedQueryPermissions(CannedQueryParameters parameters, String queryExecutionId, MethodSecurityInterceptor methodSecurityInterceptor, Method method)
+    protected AbstractCannedQueryPermissions(CannedQueryParameters parameters, String queryExecutionId, MethodSecurityInterceptor methodSecurityInterceptor, Object methodService, String methodName)
     {
         super(parameters, queryExecutionId);
+        
+        Method method = null;
+        for (Method m : methodService.getClass().getMethods())
+        {
+            // note: currently matches first found
+            if (m.getName().equals(methodName))
+            {
+                method = m;
+                break;
+            }
+        }
+        
+        if (method == null)
+        {
+            throw new AlfrescoRuntimeException("Method not found: "+methodName);
+        }
         
         this.methodSecurityInterceptor = methodSecurityInterceptor;
         this.method = method;

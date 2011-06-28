@@ -19,7 +19,6 @@
 package org.alfresco.repo.node.getchildren;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,11 +104,12 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             NodePropertyHelper nodePropertyHelper,
             TenantService tenantService,
             MethodSecurityInterceptor methodSecurityInterceptor,
-            Method method,
+            Object methodService,
+            String methodName,
             CannedQueryParameters params,
             String queryExecutionId)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, method);
+        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
         
         this.nodeDAO = nodeDAO;
         this.qnameDAO = qnameDAO;

@@ -29,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -125,7 +126,7 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
             
             if (nextNodeIsAcceptable)
             {
-                filteredNodeRefs.add(new BlogPostInfoImpl(nextBlogNode, rawNodeService.getProperties(nextBlogNode)));
+                filteredNodeRefs.add(new BlogPostInfo(nextBlogNode, (String)rawNodeService.getProperty(nextBlogNode, ContentModel.PROP_NAME)));
             }
         }
         

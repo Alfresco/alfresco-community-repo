@@ -20,6 +20,7 @@ package org.alfresco.repo.blog;
 
 import java.util.Comparator;
 
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 

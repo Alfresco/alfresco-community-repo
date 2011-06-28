@@ -31,7 +31,7 @@ import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
-import org.alfresco.repo.blog.BlogPostInfo;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.service.cmr.repository.NodeRef;

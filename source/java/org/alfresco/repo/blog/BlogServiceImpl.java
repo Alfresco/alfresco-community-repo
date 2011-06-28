@@ -19,7 +19,6 @@
 package org.alfresco.repo.blog;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -192,28 +191,36 @@ public class BlogServiceImpl implements BlogService
     /**
      * This method creates a paged result set based on the supplied {@link PagingRequest} and {@link CannedQueryResults}.
      */
-    private PagingResults<BlogPostInfo> createPagedResults(PagingRequest pagingReq, CannedQueryResults<BlogPostInfo> results)
+    private PagingResults<BlogPostInfo> createPagedResults(PagingRequest pagingReq, final CannedQueryResults<BlogPostInfo> results)
     {
-        List<BlogPostInfo> nodeRefs = null;
-        if (results.getPageCount() > 0)
+        return new PagingResults<BlogPostInfo>()
         {
-            nodeRefs = results.getPages().get(0);
-        }
-        else
-        {
-            nodeRefs = Collections.emptyList();
-        }
-        
-        // set total count
-        Pair<Integer, Integer> totalCount = null;
-        if (pagingReq.getRequestTotalCountMax() > 0)
-        {
-            totalCount = results.getTotalResultCount();
-        }
-        
-        boolean hasMoreItems = results.hasMoreItems();
-        
-        return new PagingBlogPostInfoResultsImpl(nodeRefs, hasMoreItems, totalCount, results.getQueryExecutionId(), true);
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
+            @Override
+            public List<BlogPostInfo> getPage()
+            {
+                return results.getPage();
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return results.getTotalResultCount();
+            }
+            @Override
+            public boolean permissionsApplied()
+            {
+                return results.permissionsApplied();
+            }
+        };
     }
     
     /*

@@ -20,7 +20,7 @@ package org.alfresco.repo.blog.cannedqueries;
 
 import java.util.Comparator;
 
-import org.alfresco.repo.blog.BlogPostInfo;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 

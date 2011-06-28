@@ -39,7 +39,7 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.PagingResults;
 import org.alfresco.query.PermissionedResults;
-import org.alfresco.repo.blog.BlogPostInfo;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;

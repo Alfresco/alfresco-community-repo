@@ -20,6 +20,7 @@ package org.alfresco.repo.blog;
 
 import java.util.Date;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -119,4 +120,38 @@ public interface BlogService
      * @return <tt>true</tt> if it is a draft post, else <tt>false</tt>.
      */
     boolean isDraftBlogPost(NodeRef blogPostNode);
+    
+    /**
+     * A simple data object for storage of blog-related data.
+     * 
+     * @author Neil Mc Erlean
+     * @since 4.0
+     */
+    public class BlogPostInfo
+    {
+        private final NodeRef nodeRef;
+        private final String name;
+        
+        public BlogPostInfo(NodeRef nodeRef, String name)
+        {
+            this.nodeRef = nodeRef;
+            this.name = name;
+        }
+        /**
+         * Gets the NodeRef representing this blog-post.
+         */
+        public NodeRef getNodeRef()
+        {
+            return nodeRef;
+        }
+        
+        /**
+         * Gets the {@link ContentModel#PROP_NAME cm:name} of the blog post.
+         * @return
+         */
+        public String getName()
+        {
+            return name;
+        }
+    }
 }

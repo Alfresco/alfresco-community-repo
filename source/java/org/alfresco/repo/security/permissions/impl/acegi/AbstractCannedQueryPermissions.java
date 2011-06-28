@@ -76,7 +76,7 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         this.method = method;
     }
     
-    protected PagingResults<R> applyPostQueryPermissions(List<R> results, String authenticationToken, int requestedCount)
+    protected List<R> applyPostQueryPermissions(List<R> results, String authenticationToken, int requestedCount)
     {
         int requestTotalCountMax = getParameters().requestTotalResultCountMax();
         int maxChecks = (((requestTotalCountMax > 0) && (requestTotalCountMax > requestedCount)) ? requestTotalCountMax : requestedCount);
@@ -85,42 +85,9 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
     }
     
     @SuppressWarnings("unchecked")
-    protected PagingResults<R> applyPermissions(List<R> results, String authenticationToken, int maxChecks)
+    protected List<R> applyPermissions(List<R> results, String authenticationToken, int maxChecks)
     {
         long start = System.currentTimeMillis();
-        
-        // empty result
-        PagingResults<R> ret = new PagingResults<R>()
-        {
-            @Override
-            public String getQueryExecutionId()
-            {
-                return null;
-            }
-            
-            @Override
-            public Pair<Integer, Integer> getTotalResultCount()
-            {
-                return new Pair<Integer, Integer>(0, 0);
-            }
-            
-            @Override
-            public List<R> getPage()
-            {
-                return new ArrayList<R>(0);
-            }
-            
-            @Override
-            public boolean hasMoreItems()
-            {
-                return false;
-            }
-            
-            public boolean permissionsApplied()
-            {
-                return false;
-            }
-        };
         
         Context context = ContextHolder.getContext();
         if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
@@ -129,54 +96,18 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             {
                 logger.debug("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
             }
-            System.out.println("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
             
-            return ret; // empty result
+            return new WrappedList<R>(new ArrayList<R>(0), true, false); // empty result
         }
         
         Authentication authentication = (((SecureContext) context).getAuthentication());
         
         ConfigAttributeDefinition cad = methodSecurityInterceptor.getObjectDefinitionSource().getAttributes(new InternalMethodInvocation(method));
-        final WrappedList<R> wl = (WrappedList<R>)methodSecurityInterceptor.getAfterInvocationManager().decide(authentication, null, cad, new WrappedList<R>(results, maxChecks));
-        
-        // final result
-        ret = new PagingResults<R>()
-        {
-            @Override
-            public String getQueryExecutionId()
-            {
-                return null;
-            }
-            
-            @Override
-            public Pair<Integer, Integer> getTotalResultCount()
-            {
-                int count = wl.size();
-                return new Pair<Integer, Integer>(count, ((! wl.hasMoreItems()) ? count : null));
-            }
-            
-            @Override
-            public List<R> getPage()
-            {
-                return wl;
-            }
-            
-            @Override
-            public boolean hasMoreItems()
-            {
-                return wl.hasMoreItems(); // if hasMoreItems then implies cutoff
-            }
-            
-            @Override
-            public boolean permissionsApplied()
-            {
-                return wl.permissionsApplied();
-            }
-        };
+        List<R> ret  = (WrappedList<R>)methodSecurityInterceptor.getAfterInvocationManager().decide(authentication, null, cad, new WrappedList<R>(results, maxChecks));
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("applyPermissions: "+wl.size()+" items in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.trace("applyPermissions: "+ret.size()+" items in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
         return ret;

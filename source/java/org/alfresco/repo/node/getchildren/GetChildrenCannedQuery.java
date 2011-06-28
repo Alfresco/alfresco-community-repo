@@ -35,7 +35,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingResults;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.node.Node;
@@ -482,7 +481,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     }
     
     @Override
-    protected PagingResults<NodeRef> applyPostQueryPermissions(List<NodeRef> results, String authenticationToken, int requestedCount)
+    protected List<NodeRef> applyPostQueryPermissions(List<NodeRef> results, String authenticationToken, int requestedCount)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
@@ -495,11 +494,11 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         // note: assume user has read access to most/majority of the items hence pre-load up to max checks
         preload(results.subList(0, toIdx));
         
-        PagingResults<NodeRef> ret = super.applyPostQueryPermissions(results, authenticationToken, requestedCount);
+        List<NodeRef> ret = super.applyPostQueryPermissions(results, authenticationToken, requestedCount);
         
         if (start != null)
         {
-            logger.debug("Post-query perms: "+ret.getPage().size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Post-query perms: "+ret.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
         return ret;
@@ -699,9 +698,9 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             preload(nodeRefs);
             
             // TODO track total time for incremental permission checks ... and cutoff (eg. based on some config)
-            PagingResults<NodeRef> results = applyPermissions(nodeRefs, authenticationToken, nodeRefs.size());
+            List<NodeRef> results = applyPermissions(nodeRefs, authenticationToken, nodeRefs.size());
             
-            for (NodeRef nodeRef : results.getPage())
+            for (NodeRef nodeRef : results)
             {
                 // Call back
                 boolean more = resultsCallback.handle(nodeRef);

@@ -33,6 +33,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -174,7 +175,20 @@ public class BlogServiceImplTest
                     
                     for (NodeRef node : nodesToDelete)
                     {
-                        if (NODE_SERVICE.exists(node)) NODE_SERVICE.deleteNode(node);
+                        if (NODE_SERVICE.exists(node))
+                        {
+                            // st:site nodes can only be deleted via the SiteService
+                            if (NODE_SERVICE.getType(node).equals(SiteModel.TYPE_SITE))
+                            {
+                                
+                                SiteInfo siteInfo = SITE_SERVICE.getSite(node);
+                                SITE_SERVICE.deleteSite(siteInfo.getShortName());
+                            }
+                            else
+                            {
+                                NODE_SERVICE.deleteNode(node);
+                            }
+                        }
                     }
                     
                     return null;

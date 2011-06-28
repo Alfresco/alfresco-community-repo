@@ -36,8 +36,6 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.cmis.CMISResultSet;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.query.PagingResults;
 import org.alfresco.query.PermissionedResults;
 import org.alfresco.repo.blog.BlogPostInfo;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -257,47 +255,19 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (StoreRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Store access");
-                }
                 return decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject)).getStoreRef();
             }
             else if (NodeRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Node access");
-                }
                 return decide(authentication, object, config, (NodeRef) returnedObject);
             }
             else if (FileInfo.class.isAssignableFrom(returnedObject.getClass()))
             {
                 return decide(authentication, object, config, (FileInfo) returnedObject);
             }
-            else if (PagingResults.class.isAssignableFrom(returnedObject.getClass()))
+            else if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()) &&
-                    (! ((PermissionedResults)returnedObject).permissionsApplied()))
-                {
-                    throw new AlfrescoRuntimeException("Not implemented");
-                    /*
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Paging Results access");
-                    }
-                    return decide(authentication, object, config, ((PagingResults<?>) returnedObject);
-                    */
-                }
-                else
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Paging Results access - already checked permissions for " + object.getClass().getName());
-                    }
-                    
-                    return returnedObject;
-                }
+                return decide(authentication, object, config, (PermissionedResults) returnedObject);
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -486,7 +456,17 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         // the noderef was allowed
         return returnedObject;
     }
-
+    
+    private PermissionedResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionedResults returnedObject) throws AccessDeniedException
+    {
+        if (!returnedObject.permissionsApplied())
+        {
+            throw new UnsupportedOperationException("PermissionedResults must have permissionsApplied() == true.");
+        }
+        // This passes
+        return returnedObject;
+    }
+    
     @SuppressWarnings("rawtypes")
     private Pair decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Pair returnedObject) throws AccessDeniedException
     {
@@ -496,6 +476,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
+    @SuppressWarnings("rawtypes")
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
@@ -866,6 +847,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return new QueryEngineResults(answer);
     }
 
+    @SuppressWarnings("rawtypes")
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
     {
         if (returnedObject == null)
@@ -1045,14 +1027,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     @SuppressWarnings("rawtypes")
     private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject) throws AccessDeniedException
-
     {
+        // Assumption: value is not null
         BitSet incudedSet = new BitSet(returnedObject.length);
-
-        if (returnedObject == null)
-        {
-            return null;
-        }
 
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
@@ -1168,6 +1145,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz)
     {
         return (MethodInvocation.class.isAssignableFrom(clazz));

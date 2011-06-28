@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.blog.BlogPostInfo;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;

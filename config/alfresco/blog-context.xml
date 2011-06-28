@@ -68,7 +68,6 @@
     
     <!-- Canned Queries -->
     <!-- We currently need one CQFactory per CQ in order to support interception at each of the different methods -->
-    <!-- TODO Check with Jan/Derek -->
     <bean name="parentBlogPostsCannedQueryFactory" abstract="true">
         <property name="registry" ref="cannedQueryRegistry"/>
         <property name="methodSecurityInterceptor" ref="BlogService_security"/>

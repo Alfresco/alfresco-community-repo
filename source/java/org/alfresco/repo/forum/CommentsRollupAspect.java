@@ -19,7 +19,6 @@
 package org.alfresco.repo.forum;
 
 import org.alfresco.model.ForumModel;
-import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -35,6 +34,9 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Neil Mc Erlean
  * @since 4.0
+ * 
+ * @see ForumPostBehaviours#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+ *      for a {@link ForumModel#ASPECT_COMMENTS_ROLLUP}-related behaviour, which handles comment count recalculations.
  */
 public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolicy
 {
@@ -57,7 +59,7 @@ public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolic
     {
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
-                RenditionModel.ASPECT_RENDITIONED, 
+                ForumModel.ASPECT_COMMENTS_ROLLUP, 
                 new JavaBehaviour(this, "getCopyCallback"));
     }
     

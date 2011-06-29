@@ -27,6 +27,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface GoogleDocsService 
 {
+    /**
+     * Indicates whether the GoogleDocs service is enabled or not.
+     * @return  boolean true if enabled, false otherwise
+     */
+    boolean isEnabled();
+    
 	/**
 	 * Initialises the googles doc service, checking the provided credentials are correct.  This need
 	 * not be called manually since other service calls will initialise the service on demand, but it can 

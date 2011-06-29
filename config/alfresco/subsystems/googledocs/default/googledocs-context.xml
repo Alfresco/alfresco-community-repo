@@ -34,7 +34,8 @@
         <property name="permissionService" ref="PermissionService"/>  
         <property name="ownableService" ref="OwnableService"/>        
         <property name="authorityService" ref="AuthorityService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>       
+        <property name="dictionaryService" ref="DictionaryService"/>  
+        <property name="enabled" value="${googledocs.googleeditable.enabled}"/>     
         <property name="url" value="${googledocs.url}"/>
         <property name="downloadUrl" value="${googledocs.downloadurl}"/>     
         <property name="username" value="${googledocs.username}"/>
@@ -54,6 +55,5 @@
     	<property name="nodeService" ref="NodeService"/>
         <property name="contentService" ref="ContentService"/>
         <property name="dictionaryService" ref="DictionaryService"/>  	
-        <property name="enabled" value="${googledocs.googleeditable.enabled}"/>
     </bean>
 </beans>

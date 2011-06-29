@@ -57,9 +57,6 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
                                              CheckOutCheckInServicePolicies.OnCheckIn,
                                              NodeServicePolicies.BeforeDeleteNodePolicy
 {
-    /** Indicates whether behaviour is enabled or not */
-    boolean enabled = false;
-    
     /** Policy component */
     private PolicyComponent policyComponent;
     
@@ -74,14 +71,6 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
     
     /** Content service */
     private ContentService contentService;
-    
-    /**
-     * @param enabled   true if behaviour enabled, false otherwise
-     */
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
     
     /**
      * @param policyComponent   policy component
@@ -127,38 +116,35 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      * Initialise method
      */
     public void init()
-    {
-        if (enabled == true)
-        {
-            // GoogleEditable resource behaviours
-            policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
-                                               GoogleDocsModel.ASPECT_GOOGLEEDITABLE , 
-                                               new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));        
-            policyComponent.bindClassBehaviour(OnCheckOut.QNAME, 
-                                               GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
-                                               new JavaBehaviour(this, "onCheckOut", NotificationFrequency.FIRST_EVENT));
-           
-            // Google resource behaviours
-            policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
-                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
-                                               new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT));
-            policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
-                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
-                                               new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
-            policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
-                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE,
-                                               new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
-            
-            // Copy behaviours
-            this.policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-                    GoogleDocsModel.ASPECT_GOOGLEEDITABLE,
-                    new JavaBehaviour(this, "getGoogleEditableCopyCallback"));
-            this.policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-                    GoogleDocsModel.ASPECT_GOOGLERESOURCE,
-                    new JavaBehaviour(this, "getGoogleResourceCopyCallback"));
-        }
+    {        
+        // GoogleEditable resource behaviours
+        policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
+                                           GoogleDocsModel.ASPECT_GOOGLEEDITABLE , 
+                                           new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));        
+        policyComponent.bindClassBehaviour(OnCheckOut.QNAME, 
+                                           GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
+                                           new JavaBehaviour(this, "onCheckOut", NotificationFrequency.FIRST_EVENT));
+       
+        // Google resource behaviours
+        policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
+                                           GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
+                                           new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT));
+        policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
+                                           GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
+                                           new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
+        policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
+                                           GoogleDocsModel.ASPECT_GOOGLERESOURCE,
+                                           new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+        
+        // Copy behaviours
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                GoogleDocsModel.ASPECT_GOOGLEEDITABLE,
+                new JavaBehaviour(this, "getGoogleEditableCopyCallback"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                GoogleDocsModel.ASPECT_GOOGLERESOURCE,
+                new JavaBehaviour(this, "getGoogleResourceCopyCallback"));    
     }
 
     /**
@@ -166,7 +152,7 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (googleDocsService.isEnabled() == true && nodeService.exists(nodeRef) == true)
         {
             // Can only make cm:content descendant google editable
             QName type = nodeService.getType(nodeRef);
@@ -183,7 +169,7 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void onCheckOut(NodeRef workingCopy)
     {
-        if (nodeService.exists(workingCopy) == true  && isUpload() == false)
+        if (googleDocsService.isEnabled() == true && nodeService.exists(workingCopy) == true  && isUpload() == false)
         {   
             // Upload the content of the working copy to google docs
             googleDocsService.createGoogleDoc(workingCopy, GoogleDocsPermissionContext.SHARE_WRITE);
@@ -205,7 +191,8 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             Map<String, Serializable> versionProperties, String contentUrl,
             boolean keepCheckedOut)
     {
-        if (nodeService.exists(workingCopyNodeRef) == true && 
+        if (googleDocsService.isEnabled() == true && 
+            nodeService.exists(workingCopyNodeRef) == true && 
             nodeService.hasAspect(workingCopyNodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE) == true &&
             isUpload() == false)
         {
@@ -220,6 +207,18 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             ContentWriter writer = contentService.getWriter(workingCopyNodeRef, ContentModel.PROP_CONTENT, true);
             writer.putContent(is);
         }        
+    }    
+
+    /**
+     * @see org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn#onCheckIn(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void onCheckIn(NodeRef nodeRef)
+    {
+        if (googleDocsService.isEnabled() == true && nodeService.exists(nodeRef) == true)
+        {
+            nodeService.removeAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE);
+        }
     }
 
     /**
@@ -227,7 +226,9 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-       if (nodeService.exists(nodeRef) == true && isUpload() == false)
+       if (googleDocsService.isEnabled() == true &&
+           nodeService.exists(nodeRef) == true && 
+           isUpload() == false)
        {
           // Delete the associated google resource
           googleDocsService.deleteGoogleResource(nodeRef);
@@ -270,11 +271,5 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
         {
             return Collections.emptyMap();
         }
-    }
-
-    @Override
-    public void onCheckIn(NodeRef nodeRef)
-    {
-        nodeService.removeAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE);        
     }
 }

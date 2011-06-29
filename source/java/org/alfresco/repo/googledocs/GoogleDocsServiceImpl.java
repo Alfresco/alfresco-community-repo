@@ -106,12 +106,15 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
     
+    /** Indicates whether the GDoc integration is enabled or not */
+    private boolean enabled = false;
+    
     /** GoogleDoc base feed url */
     private String url = "http://docs.google.com/feeds/default/private/full";
     private String downloadUrl = "https://docs.google.com/feeds/download";
     
     /** Authentication credentials */
-    private boolean initialised = false;
+    private boolean initialised = false;    
     private String username;
     private String password;
     
@@ -246,6 +249,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setUsername(String username)
     {
         this.username = username;
+        this.initialised = false;
     }
 
     /**
@@ -254,6 +258,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setPassword(String password)
     {
         this.password = password;
+        this.initialised = false;
     }
     
     /**
@@ -262,6 +267,24 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setPermissionMap(Map<String, String> permissionMap)
     {
         this.permissionMap = permissionMap;
+    }
+    
+    /**
+     * Set whether the service is enabled or not.
+     * @param enabled   true if enabled, false otherwise
+     */
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+        this.initialised = false;
+    }
+    
+    /**
+     * @see org.alfresco.repo.googledocs.GoogleDocsService#isEnabled()
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
     }
 
     /**

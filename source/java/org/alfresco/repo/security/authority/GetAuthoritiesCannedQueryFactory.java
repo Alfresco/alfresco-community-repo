@@ -90,25 +90,18 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
     
     public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
     {
+        ParameterCheck.mandatory("containerRef", containerRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
-        if ((type == null) && (containerRef == null))
-        {
-            throw new IllegalArgumentException("Type and/or containerRef required - both cannot be null");
-        }
         
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
         
-        Long containerNodeId = null;
-        if (containerRef != null)
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(containerRef));
+        if (nodePair == null)
         {
-            Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(containerRef));
-            if (nodePair == null)
-            {
-                throw new InvalidNodeRefException("Container ref does not exist: " + containerRef, containerRef);
-            }
-            containerNodeId = nodePair.getFirst();
+            throw new InvalidNodeRefException("Container ref does not exist: " + containerRef, containerRef);
         }
+        
+        Long containerNodeId = nodePair.getFirst();
         
         // specific query params
         GetAuthoritiesCannedQueryParams paramBean = new GetAuthoritiesCannedQueryParams(type,

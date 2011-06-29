@@ -1019,7 +1019,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         NodeRef zoneRef = getZone(zoneName);
         if (zoneRef == null)
         {
-            Collections.emptySet();
+            return Collections.emptySet();
         }
         return new HashSet<String>(getAuthoritiesImpl(type, zoneRef, null, false, false, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage());
     }

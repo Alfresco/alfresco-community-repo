@@ -63,7 +63,7 @@ public class CommentServiceImpl implements CommentService
         
         NodeRef result = null;
         for (ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(descendantNodeRef);
-             parentAssoc != null;
+             parentAssoc != null && parentAssoc.getParentRef() != null;
              parentAssoc = nodeService.getPrimaryParent(parentAssoc.getParentRef()))
         {
             if (nodeService.hasAspect(parentAssoc.getParentRef(), ForumModel.ASPECT_DISCUSSABLE))

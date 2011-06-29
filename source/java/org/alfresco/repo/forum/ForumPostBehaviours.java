@@ -196,7 +196,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     {
         // We have a new or a deleted comment under a discussable node.
         // We need to find the fm:commentsCount ancestor to this comment node and adjust its commentCount
-        NodeRef discussableAncestor = commentService.getDiscussableAncestor(fmPostNode, ForumModel.TYPE_POST);
+        NodeRef discussableAncestor = commentService.getDiscussableAncestor(fmPostNode);
         
         if (discussableAncestor != null)
         {

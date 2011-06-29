@@ -49,27 +49,38 @@ public class CommentServiceImpl implements CommentService
     }
     
     @Override
-    public NodeRef getDiscussableAncestor(NodeRef descendantNodeRef, QName expectedNodeType)
+    public NodeRef getDiscussableAncestor(NodeRef descendantNodeRef)
     {
-        final QName actualNodeType = nodeService.getType(descendantNodeRef);
-        if (expectedNodeType != null && !actualNodeType.equals(expectedNodeType))
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Node ").append(descendantNodeRef)
-               .append(" is of type ").append(actualNodeType)
-               .append(", not ").append(expectedNodeType);
-            throw new AlfrescoRuntimeException(msg.toString());
-        }
+        // For "Share comments" i.e. fm:post nodes created via the Share commenting UI, the containment structure is as follows:
+        // fm:discussable
+        //    - fm:forum
+        //        - fm:topic
+        //            - fm:post
+        // For other fm:post nodes the ancestor structure may be slightly different. (cf. Share discussions, which don't have 'forum')
+        //
+        // In order to ensure that we only return the discussable ancestor relevant to Share comments, we'll climb the
+        // containment tree in a controlled manner.
+        // We could navigate up looking for the first fm:discussable ancestor, but that might not find the correct node - it could,
+        // for example, find a parent folder which was discussable.
         
         NodeRef result = null;
-        for (ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(descendantNodeRef);
-             parentAssoc != null && parentAssoc.getParentRef() != null;
-             parentAssoc = nodeService.getPrimaryParent(parentAssoc.getParentRef()))
+        if (nodeService.getType(descendantNodeRef).equals(ForumModel.TYPE_POST))
         {
-            if (nodeService.hasAspect(parentAssoc.getParentRef(), ForumModel.ASPECT_DISCUSSABLE))
+            NodeRef topicNode = nodeService.getPrimaryParent(descendantNodeRef).getParentRef();
+            
+            if (nodeService.getType(topicNode).equals(ForumModel.TYPE_TOPIC))
             {
-                result = parentAssoc.getParentRef();
-                break;
+                NodeRef forumNode = nodeService.getPrimaryParent(topicNode).getParentRef();
+                
+                if (nodeService.getType(forumNode).equals(ForumModel.TYPE_FORUM))
+                {
+                    NodeRef discussableNode = nodeService.getPrimaryParent(forumNode).getParentRef();
+                    
+                    if (nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+                    {
+                        result = discussableNode;
+                    }
+                }
             }
         }
         

@@ -38,12 +38,10 @@ public interface CommentService
      * {@link ForumModel#ASPECT_DISCUSSABLE fm:discussable} aspect.
      * 
      * @param descendantNodeRef The nodeRef which descends from the f:discussable node.
-     * @param expectedNodeType if not <tt>null</tt>, this is an assertion by calling code that the descendantNodeRef
-     *                           is of the specified type.
      * @return the fm:discussable ancestor if there is one, else <tt>null</tt>
      * @throws AlfrescoRuntimeException if the specified expectedNodeType is not correct.
      */
-    NodeRef getDiscussableAncestor(NodeRef descendantNodeRef, QName expectedNodeType);
+    NodeRef getDiscussableAncestor(NodeRef descendantNodeRef);
     
     /**
      * This method retrieves the {@link ForumModel#TYPE_TOPIC fm:topic} NodeRef which holds the Share comments for

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,7 +29,6 @@ import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
 import org.alfresco.repo.security.authority.DuplicateAuthorityTest;
 import org.alfresco.repo.security.authority.ExtendedPermissionServiceTest;
-import org.alfresco.repo.security.authority.SimpleAuthorityServiceTest;
 import org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthorityTest;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponentTest;
 import org.alfresco.repo.security.permissions.impl.PermissionServiceTest;
@@ -62,7 +61,6 @@ public class SecurityTestSuite extends TestSuite
         suite.addTestSuite(AuthorityServiceTest.class);
         suite.addTestSuite(DuplicateAuthorityTest.class);
         suite.addTestSuite(ExtendedPermissionServiceTest.class);
-        suite.addTestSuite(SimpleAuthorityServiceTest.class);
         suite.addTestSuite(LockOwnerDynamicAuthorityTest.class);
         suite.addTestSuite(AclDaoComponentTest.class);
         suite.addTestSuite(PermissionServiceTest.class);

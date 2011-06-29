@@ -3,7 +3,7 @@
 {
    "data": 
    {
-      urlLength: ${data.urlLength},
+      <#if data.urlLength??>urlLength: ${data.urlLength},</#if>
       "publishChannels":
       <@publishLib.channelsJSON channels=data.publishChannels />,
       "statusUpdateChannels":

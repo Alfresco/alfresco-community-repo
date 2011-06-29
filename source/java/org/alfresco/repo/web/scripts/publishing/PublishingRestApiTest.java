@@ -33,7 +33,6 @@ import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CA
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_UNPUBLISH;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CHANNEL_NODE_TYPE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CHANNEL_TYPE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CONTENT_ROOT_NODE_TYPE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.ICON;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.ID;
 import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.MAX_STATUS_LENGTH;
@@ -47,10 +46,10 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -65,8 +64,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.publishing.ChannelHelper;
 import org.alfresco.repo.publishing.ChannelServiceImpl;
-import org.alfresco.repo.publishing.EnvironmentHelper;
-import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.publishing.PublishingObjectFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -225,19 +222,18 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         NodeRef textNode = createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         String pubQueueUrl = MessageFormat.format(PUBLISHING_QUEUE_URL, siteId);
-        String jsonStr = "";
         
         // Post empty content.
-        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 500);
+        sendRequest(new PostRequest(pubQueueUrl, "", JSON), 500);
         
         String comment = "The comment";
         String statusMessage = "The status message";
 
         JSONObject json = buildJson(textNode, publishChannel, comment, statusMessage, statusChannel);
         
-        jsonStr = json.toString();
+        String jsonStr = json.toString();
 
-        // Post empty content.
+        // Post JSON content.
         sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
 
         PublishingEventFilter filter = environment.createPublishingEventFilter();
@@ -264,7 +260,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertTrue(channelNames.contains(statusChannel.getName()));
         
         // Wait for Publishing Event to execute asynchronously
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         
         ChannelType publishAnyChannelType = channelService.getChannelType(publishAnyType);
         ChannelType statusUpdateChannelType = channelService.getChannelType(statusUpdateType);
@@ -285,6 +281,19 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         verify(statusUpdateChannelType, never()).publish(any(NodeRef.class), anyMap());
         verify(publishAnyChannelType, never()).updateStatus(anyString(), anyMap());
+        
+        JSONObject status = json.optJSONObject(STATUS_UPDATE);
+        status.remove(NODE_REF);
+        jsonStr = json.toString();
+        
+        // Post JSON without NodeRef in status.
+        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
+        
+        json.remove(STATUS_UPDATE);
+        jsonStr = json.toString();
+        
+        // Post JSON without Status Update.
+        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
     }
 
     private JSONObject buildJson(NodeRef node, Channel publishChannel,
@@ -501,7 +510,14 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     @Override
     public void tearDown() throws Exception
     {
-        siteService.deleteSite(siteId);
+        try
+        {
+            siteService.deleteSite(siteId);
+        }
+        catch(Throwable t)
+        {
+            //NOOP
+        }
         super.tearDown();
     }
 }

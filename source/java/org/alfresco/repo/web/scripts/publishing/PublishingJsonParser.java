@@ -68,14 +68,14 @@ public class PublishingJsonParser
         return new JSONObject(new JSONTokener(jsonStr));
     }
     
-    public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws JSONException, ParseException
+    public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException
     {
         JSONObject json = getJson(jsonStr);
         String channelName = json.optString(CHANNEL_NAME);
         String comment = json.optString(COMMENT);
         Calendar schedule = getCalendar(json.optJSONObject(SCHEDULE));
         PublishingPackage publishingPackage = getPublishingPackage(queue, json);
-        StatusUpdate statusUpdate = getStatusUpdate(queue, json.getJSONObject(STATUS_UPDATE));
+        StatusUpdate statusUpdate = getStatusUpdate(queue, json.optJSONObject(STATUS_UPDATE));
         return queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, statusUpdate);
     }
     
@@ -88,7 +88,7 @@ public class PublishingJsonParser
         String message = json.optString(MESSAGE);
         NodeRef nodeToLinkTo = null;
         String nodeStr = json.optString(NODE_REF);
-        if(nodeStr!=null)
+        if(nodeStr!=null && nodeStr.isEmpty() == false)
         {
             nodeToLinkTo = new NodeRef(nodeStr);
         }

@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Get GoogleDocs Integration Status Information</shortname>
+   <description>
+      Get information about the GoogleDocs integration current status.
+   </description>
+   <url>/api/googledocs/status</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

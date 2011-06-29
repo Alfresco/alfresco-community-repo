@@ -1420,5 +1420,11 @@
          parent="webscript">
       <property name="nodeLocatorService" ref="nodeLocatorService"/>
    </bean>
+   
+   <!--  Google Doc API -->
+   <bean id="webscript.org.alfresco.repository.googledocs.status.get"
+         class="org.alfresco.repo.web.scripts.googledocs.Status"
+         parent="webscript">
+   </bean>
 
 </beans>

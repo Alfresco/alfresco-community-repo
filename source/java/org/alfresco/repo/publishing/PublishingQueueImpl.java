@@ -75,7 +75,6 @@ public class PublishingQueueImpl implements PublishingQueue
         if(schedule == null)
         {
             schedule = Calendar.getInstance();
-            schedule.add(Calendar.SECOND, 1);
         }
         try
         {

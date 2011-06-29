@@ -17,23 +17,29 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.service.cmr.publishing;
+package org.alfresco.repo.publishing.springsocial;
 
-import java.util.Set;
-
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.social.connect.ConnectionData;
 
 /**
- * @author Brian
+ * @author Nick Smith
+ * @since 4.0
  *
  */
-public interface PublishingEventFilter
+public class ConnectionSerializer
 {
-    PublishingEventFilter setIds(String... ids);
 
-    Set<String> getIds();
-
-    PublishingEventFilter setPublishedNodes(NodeRef... publishedNodes);
-    
-    Set<NodeRef> getPublishedNodes();
+    public ConnectionData deSerialize()
+    {
+        Long expireTime = null;
+        String refreshToken = null;
+        String secret = null;
+        String accessToken = null;
+        String providerId = null;
+        String imageUrl = null;
+        String profileUrl = null;
+        String providerUserId = null;
+        String displayName = null;
+        return new ConnectionData(providerId, providerUserId, displayName, profileUrl, imageUrl, accessToken, secret, refreshToken, expireTime);
+    }
 }

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Nick Smith
@@ -34,6 +35,7 @@ import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 public class PublishingEventFilterImpl implements PublishingEventFilter
 {
     private Set<String> ids = new HashSet<String>();
+    private Set<NodeRef> publishedNodes = new HashSet<NodeRef>();
     
     /**
     * {@inheritDoc}
@@ -53,6 +55,27 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     public Set<String> getIds()
     {
         return Collections.unmodifiableSet(ids);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public PublishingEventFilter setPublishedNodes(NodeRef... publishedNodes)
+    {
+        if(ids != null && publishedNodes.length>0)
+        {
+            this.publishedNodes.addAll(Arrays.asList(publishedNodes));
+        }
+        return this;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public Set<NodeRef> getPublishedNodes()
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
     
 }

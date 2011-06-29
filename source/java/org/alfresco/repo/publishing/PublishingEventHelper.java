@@ -31,16 +31,21 @@ import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_WORKFLOW_ID;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_CHANNEL_NAMES;
-import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_NODE_REF;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_MESSAGE;
+import static org.alfresco.repo.publishing.PublishingModel.PROP_STATUS_UPDATE_NODE_REF;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_SCHEDULED_PUBLISH_DATE;
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_PUBLISHING_EVENT;
+import static org.alfresco.util.collections.CollectionUtils.filter;
+import static org.alfresco.util.collections.CollectionUtils.isEmpty;
+import static org.alfresco.util.collections.CollectionUtils.toListOfStrings;
+import static org.alfresco.util.collections.CollectionUtils.transform;
+import static org.alfresco.util.collections.CollectionUtils.transformFlat;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -72,13 +77,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
+import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * @author Brian
@@ -182,7 +184,7 @@ public class PublishingEventHelper
 
     public List<PublishingEvent> getPublishingEvents(List<NodeRef> eventNodes)
     {
-        return Lists.transform(eventNodes, new Function<NodeRef, PublishingEvent>()
+        return transform(eventNodes, new Function<NodeRef, PublishingEvent>()
                 {
                     public PublishingEvent apply(NodeRef eventNode)
                     {
@@ -231,52 +233,88 @@ public class PublishingEventHelper
         if(statusUpdate != null)
         {
             props.put(PROP_STATUS_UPDATE_MESSAGE, statusUpdate.getMessage());
-            props.put(PROP_STATUS_UPDATE_NODE_REF, statusUpdate.getNodeToLinkTo().toString());
+            NodeRef statusNode = statusUpdate.getNodeToLinkTo();
+            if(statusNode != null)
+            {
+                props.put(PROP_STATUS_UPDATE_NODE_REF, statusNode.toString());
+            }
             props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusUpdate.getChannelNames());
         }
         return props;
     }
 
-    private Collection<String> mapNodesToStrings(Collection<NodeRef> nodes)
+    private List<String> mapNodesToStrings(Collection<NodeRef> nodes)
     {
-        Collection<String> results = new ArrayList<String>(nodes.size());
-        for (NodeRef node : nodes)
-        {
-            results.add(node.toString());
-        }
-        return results;
+        return toListOfStrings(nodes);
     }
 
     public List<NodeRef> findPublishingEventNodes(final NodeRef queue, PublishingEventFilter filter)
     {
-        Set<String> ids = filter.getIds();
-        if(ids != null && ids.isEmpty() == false)
+        List<NodeRef> eventNodes;
+        Set<NodeRef> publishedNodes = filter.getPublishedNodes();
+        if(isEmpty(publishedNodes) == false)
         {
-            List<NodeRef> nodes = CollectionUtils.transform(ids, NodeUtils.toNodeRefQueitly());
-            // Filter out nodes that are not Publishing Events on the specified queue.
-            return CollectionUtils.filter(nodes, new Filter<NodeRef>()
-            {
-                public Boolean apply(NodeRef node)
-                {
-                    if(nodeService.exists(node))
-                    {
-                        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
-                        if (parentAssoc.getParentRef().equals(queue)
-                                && ASSOC_PUBLISHING_EVENT.equals(parentAssoc.getTypeQName()))
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
+            eventNodes= getEventNodesForPublishedNodes(queue, publishedNodes);
         }
         else
         {
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(queue,
-                    ASSOC_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
-            return CollectionUtils.transform(assocs, NodeUtils.toChildRef());
+            eventNodes = getAllPublishingEventNodes(queue);
         }
+        Set<String> ids = filter.getIds();
+        if(isEmpty(ids) == false)
+        {
+            eventNodes = filterEventNodesById(eventNodes, ids);
+        }
+        return eventNodes;
+    }
+
+    private List<NodeRef> filterEventNodesById(Collection<NodeRef> eventNodes, final Collection<String> ids)
+    {
+        return filter(eventNodes, new Filter<NodeRef>()
+        {
+            public Boolean apply(NodeRef node)
+            {
+                return ids.contains(node.toString());
+            }
+        });
+    }
+
+    private List<NodeRef> getAllPublishingEventNodes(final NodeRef queue)
+    {
+        List<ChildAssociationRef> assocs =
+            nodeService.getChildAssocs(queue, ASSOC_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+        return transform(assocs, NodeUtils.toChildRef());
+    }
+
+    /**
+     * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish at least one of the specified <code>publishedNodes</code>. 
+     * @param queue
+     * @param publishedNodes
+     * @return
+     */
+    public List<NodeRef> getEventNodesForPublishedNodes(final NodeRef queue, NodeRef... publishedNodes)
+    {
+        return getEventNodesForPublishedNodes(queue, Arrays.asList(publishedNodes));
+    }
+
+    /**
+     * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish at least one of the specified <code>publishedNodes</code>. 
+     * @param queue
+     * @param publishedNodes
+     * @return
+     */
+    public List<NodeRef> getEventNodesForPublishedNodes(final NodeRef queue, Collection<NodeRef> publishedNodes)
+    {
+        Function<NodeRef, Collection<NodeRef>>  transformer = new Function<NodeRef, Collection<NodeRef>>()
+        {
+            public Collection<NodeRef> apply(NodeRef publishedNode)
+            {
+                List<ChildAssociationRef> assocs = nodeService.getChildAssocsByPropertyValue(queue, PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, publishedNode.toString());
+                return transform(assocs, NodeUtils.toChildRef());
+            }
+        };
+        List<NodeRef> nodes = transformFlat(publishedNodes, transformer);
+        return nodes;
     }
 
     public List<PublishingEvent> findPublishingEvents(NodeRef queue, PublishingEventFilter filter)
@@ -340,7 +378,16 @@ public class PublishingEventHelper
         return definition.getId();
     }
 
-    private Calendar getScheduledTime(Map<QName, Serializable> eventProperties)
+    public Calendar getScheduledTime(NodeRef eventNode)
+    {
+        if(eventNode == null)
+        {
+            return null;
+        }
+        return getScheduledTime(nodeService.getProperties(eventNode));
+    }
+
+    public Calendar getScheduledTime(Map<QName, Serializable> eventProperties)
     {
         Date time = (Date) eventProperties.get(PROP_PUBLISHING_EVENT_TIME);
         String timezone= (String) eventProperties.get(PROP_PUBLISHING_EVENT_TIME_ZONE);

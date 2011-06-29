@@ -19,20 +19,15 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_STATUS;
-import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME;
-import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE;
 
 import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
@@ -59,6 +54,7 @@ import org.alfresco.util.ParameterCheck;
  * by both the channel service and the publishing service.
  * 
  * @author Brian
+ * @author Nick Smith
  * 
  */
 public class EnvironmentHelper
@@ -249,36 +245,25 @@ public class EnvironmentHelper
         NodeRef queue = getPublishingQueue(environment.getNodeRef());
         Calendar nextPublishTime = null;
         NodeRef nextEventNode = null;
-        List<ChildAssociationRef> results = nodeService.getChildAssocsByPropertyValue( queue, 
-                PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, node.toString());
-        for (ChildAssociationRef childAssoc : results)
+        List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForPublishedNodes(queue, node);
+        for (NodeRef eventNode: eventNodes)
         {
-            NodeRef child = childAssoc.getChildRef();
-            if (isActiveEvent(child))
+            if (isActiveEvent(eventNode))
             {
-                Serializable eventChannel = nodeService.getProperty(child, PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL);
+                Map<QName, Serializable> props = nodeService.getProperties(eventNode);
+                Serializable eventChannel = props.get(PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL);
                 if(channelName.equals(eventChannel))
                 {
-                    Calendar schedule = getScheduledTime(child);
+                    Calendar schedule = publishingEventHelper.getScheduledTime(props);
                     if (nextPublishTime == null || schedule.before(nextPublishTime))
                     {
                         nextPublishTime = schedule;
-                        nextEventNode = child;
+                        nextEventNode = eventNode;
                     }
                 }
             }
         }
         return publishingEventHelper.getPublishingEvent(nextEventNode);
-    }
-
-    private Calendar getScheduledTime(NodeRef child)
-    {
-        Date time = (Date) nodeService.getProperty( child, PROP_PUBLISHING_EVENT_TIME);
-        String timeZone = (String) nodeService.getProperty( child,PROP_PUBLISHING_EVENT_TIME_ZONE);
-        Calendar schedule = Calendar.getInstance();
-        schedule.setTimeZone(TimeZone.getTimeZone(timeZone));
-        schedule.setTime(time);
-        return schedule;
     }
 
     private boolean isActiveEvent(NodeRef eventNode)

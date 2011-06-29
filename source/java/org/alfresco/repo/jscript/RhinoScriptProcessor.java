@@ -21,6 +21,7 @@ package org.alfresco.repo.jscript;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -321,7 +322,12 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 // load from classpath
                 String scriptClasspath = resource.substring(PATH_CLASSPATH.length());
-                InputStream stream = getClass().getClassLoader().getResource(scriptClasspath).openStream();
+                URL scriptResource = getClass().getClassLoader().getResource(scriptClasspath);
+                if (scriptResource == null)
+                {
+                    throw new AlfrescoRuntimeException("Unable to locate included script classpath resource: " + resource);
+                }
+                InputStream stream = scriptResource.openStream();
                 if (stream == null)
                 {
                     throw new AlfrescoRuntimeException("Unable to load included script classpath resource: " + resource);

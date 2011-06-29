@@ -49,7 +49,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -102,13 +102,10 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             CannedQueryDAO cannedQueryDAO,
             NodePropertyHelper nodePropertyHelper,
             TenantService tenantService,
-            MethodSecurityInterceptor methodSecurityInterceptor,
-            Object methodService,
-            String methodName,
-            CannedQueryParameters params,
-            String queryExecutionId)
+            MethodSecurityBean<NodeRef> methodSecurity,
+            CannedQueryParameters params)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
+        super(params, methodSecurity);
         
         this.nodeDAO = nodeDAO;
         this.qnameDAO = qnameDAO;
@@ -263,7 +260,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
             };
             
-            UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback, parameters.getAuthenticationToken());
+            UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback);
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
             
@@ -481,7 +478,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     }
     
     @Override
-    protected List<NodeRef> applyPostQueryPermissions(List<NodeRef> results, String authenticationToken, int requestedCount)
+    protected List<NodeRef> applyPostQueryPermissions(List<NodeRef> results, int requestedCount)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
@@ -494,7 +491,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         // note: assume user has read access to most/majority of the items hence pre-load up to max checks
         preload(results.subList(0, toIdx));
         
-        List<NodeRef> ret = super.applyPostQueryPermissions(results, authenticationToken, requestedCount);
+        List<NodeRef> ret = super.applyPostQueryPermissions(results, requestedCount);
         
         if (start != null)
         {
@@ -657,17 +654,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     private class UnsortedResultHandler implements CannedQueryDAO.ResultHandler<NodeEntity>
     {
         private final UnsortedChildQueryCallback resultsCallback;
-        private final String authenticationToken;
         
         private boolean more = true;
         
         private static final int BATCH_SIZE = 256 * 4;
         private final List<NodeRef> nodeRefs;
         
-        private UnsortedResultHandler(UnsortedChildQueryCallback resultsCallback, String authenticationToken)
+        private UnsortedResultHandler(UnsortedChildQueryCallback resultsCallback)
         {
             this.resultsCallback = resultsCallback;
-            this.authenticationToken = authenticationToken;
             
             nodeRefs = new LinkedList<NodeRef>(); 
         }
@@ -698,7 +693,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             preload(nodeRefs);
             
             // TODO track total time for incremental permission checks ... and cutoff (eg. based on some config)
-            List<NodeRef> results = applyPermissions(nodeRefs, authenticationToken, nodeRefs.size());
+            List<NodeRef> results = applyPermissions(nodeRefs, nodeRefs.size());
             
             for (NodeRef nodeRef : results)
             {

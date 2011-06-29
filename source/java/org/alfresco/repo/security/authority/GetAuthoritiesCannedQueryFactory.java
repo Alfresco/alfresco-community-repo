@@ -28,13 +28,12 @@ import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,10 +55,7 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
-    
-    private MethodSecurityInterceptor methodSecurityInterceptor;
-    private String methodName;
-    private Object methodService;
+    private MethodSecurityBean<AuthorityInfo> methodSecurity;
     
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -81,28 +77,15 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         this.tenantService = tenantService;
     }    
     
-    public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
+    public void setMethodSecurity(MethodSecurityBean<AuthorityInfo> methodSecurity)
     {
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
-    }
-    
-    public void setMethodName(String methodName)
-    {
-        this.methodName = methodName;
-    }
-    
-    public void setMethodService(Object methodService)
-    {
-        this.methodService = methodService;
+        this.methodSecurity = methodSecurity;
     }
     
     @Override
     public CannedQuery<AuthorityInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        // if not passed in (TODO or not in future cache) then generate a new query execution id
-        String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
-        
-        return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
+        return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurity, parameters);
     }
     
     public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
@@ -146,7 +129,7 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         }
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingRequest.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingRequest.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -171,8 +154,6 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
-        PropertyCheck.mandatory(this, "methodService", methodService);
-        PropertyCheck.mandatory(this, "methodName", methodName);
+        PropertyCheck.mandatory(this, "methodSecurity", methodSecurity);
     }
 }

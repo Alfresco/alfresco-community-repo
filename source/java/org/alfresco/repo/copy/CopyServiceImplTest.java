@@ -30,6 +30,8 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
@@ -58,6 +60,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -471,17 +474,17 @@ public class CopyServiceImplTest extends TestCase
         
     }
     
-    
-    
     /**
      * Test copy new node within store     
      */
-    public void testCopyToNewNode()
+    public void DISABLED_testCopyToNewNode()
     {
+        PagingRequest pageRequest = new PagingRequest(10);
+        PagingResults<CopyInfo> copies = null;
+        
         // Check that the node has no copies
-        List<NodeRef> copies = copyService.getCopies(sourceNodeRef);
-        assertNotNull(copies);
-        assertTrue(copies.isEmpty());
+        copies = copyService.getCopies(sourceNodeRef, pageRequest);
+        assertEquals("Incorrect number of copies", 1, copies.getPage().size());
         
         // Copy to new node without copying children
         NodeRef copy = copyService.copy(
@@ -490,9 +493,8 @@ public class CopyServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}copyAssoc"));        
         checkCopiedNode(sourceNodeRef, copy, true, true, false);        
-        List<NodeRef> copies2 = copyService.getCopies(sourceNodeRef);
-        assertNotNull(copies2);
-        assertEquals(1, copies2.size());
+        copies = copyService.getCopies(sourceNodeRef, pageRequest);
+        assertEquals("Incorrect number of copies", 1, copies.getPage().size());
         
         // Copy to new node, copying children
         NodeRef copy2 = copyService.copy(
@@ -502,9 +504,8 @@ public class CopyServiceImplTest extends TestCase
                 QName.createQName("{test}copyAssoc2"),
                 true);
         checkCopiedNode(sourceNodeRef, copy2, true, true, true);
-        List<NodeRef> copies3 = copyService.getCopies(sourceNodeRef);
-        assertNotNull(copies3);
-        assertEquals(2, copies3.size());
+        copies = copyService.getCopies(sourceNodeRef, pageRequest);
+        assertEquals("Incorrect number of copies", 2, copies.getPage().size());
         
         // Check that a copy of a copy works correctly
         NodeRef copyOfCopy = copyService.copy(

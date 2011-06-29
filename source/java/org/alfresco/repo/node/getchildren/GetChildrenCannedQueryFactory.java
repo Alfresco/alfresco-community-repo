@@ -27,16 +27,15 @@ import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,9 +60,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
     
-    private MethodSecurityInterceptor methodSecurityInterceptor;
-    private String methodName;
-    private Object methodService;
+    private MethodSecurityBean<NodeRef> methodSecurity;
     
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -100,30 +97,17 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         this.tenantService = tenantService;
     }    
     
-    public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
+    public void setMethodSecurity(MethodSecurityBean<NodeRef> methodSecurity)
     {
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
+        this.methodSecurity = methodSecurity;
     }
-    
-    public void setMethodName(String methodName)
-    {
-        this.methodName = methodName;
-    }
-    
-    public void setMethodService(Object methodService)
-    {
-        this.methodService = methodService;
-    }
-    
+
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         
-        // if not passed in (TODO or not in future cache) then generate a new query execution id
-        String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
-        
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
+        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, parameters);
     }
     
     /**
@@ -166,7 +150,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         }
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingRequest.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingRequest.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -198,11 +182,6 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
-        
-        //PropertyCheck.mandatory(this, "encryptionEngine", encryptionEngine);
-
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
-        PropertyCheck.mandatory(this, "methodService", methodService);
-        PropertyCheck.mandatory(this, "methodName", methodName);
+        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurity);
     }
 }

@@ -436,6 +436,14 @@
 
     <bean id="checkTxnAdvice" class="org.alfresco.repo.transaction.CheckTransactionAdvice" />
 
+    <!--
+      General-purpose registry for CannedQueryFactory instances.
+         Normally you would keep a registry per application area.
+    -->
+    <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+   
     <!--                        -->
     <!-- I18N                   -->
     <!--                        -->
@@ -1216,38 +1224,6 @@
         <property name="solrDAO" ref="solrDAO" />
     </bean>
 
-    <!--                 -->
-    <!-- Copy Service    -->
-    <!--                 -->
-
-    <!-- Note this uses the node service that enforces permissions so you can only copy what you can see -->
-
-    <bean id="copyService" class="org.alfresco.repo.copy.CopyServiceImpl" init-method="init">
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="ruleService">
-            <ref bean="ruleService" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-         <property name="publicServiceAccessService">
-            <ref bean="publicServiceAccessService" />
-        </property>
-        <property name="searchService">
-            <ref bean="ADMSearchService" />
-        </property>
-        <property name="internalNodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
-    </bean>
     <!--                           -->
     <!-- CheckOut/CheckIn Service  -->
     <!--                           -->

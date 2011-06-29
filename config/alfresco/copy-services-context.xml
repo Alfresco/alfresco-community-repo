@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Core and miscellaneous bean definitions -->
+<beans>
+
+    <bean id="copyServiceCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+
+    <bean name="copyCannedQueryFactoryBase" abstract="true">
+        <property name="registry" ref="copyServiceCannedQueryRegistry"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <!-- 
+        <property name="methodSecurityInterceptor" ref="CopyService_security"/>
+        <property name="methodService" ref="copyService"/>
+        -->
+    </bean>
+   
+    <bean   name="getCopiesCannedQueryFactory"
+            class="org.alfresco.repo.copy.query.GetCopiesCannedQueryFactory"
+            parent="copyCannedQueryFactoryBase">
+    </bean>
+   
+    <bean   name="getCopiedCannedQueryFactory"
+            class="org.alfresco.repo.copy.query.GetCopiesCannedQueryFactory"
+            parent="copyCannedQueryFactoryBase">
+    </bean>
+   
+    <!--                 -->
+    <!-- Copy Service    -->
+    <!--                 -->
+
+    <!-- Note this uses the node service that enforces permissions so you can only copy what you can see -->
+
+    <bean id="copyService" class="org.alfresco.repo.copy.CopyServiceImpl" init-method="init">
+        <property name="cannedQueryRegistry" ref="copyServiceCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="permissionService" ref="permissionService" />
+        <property name="publicServiceAccessService" ref="publicServiceAccessService" />
+        <property name="searchService" ref="ADMSearchService" />
+        <property name="internalNodeService" ref="mlAwareNodeService" />
+    </bean>
+    
+</beans>

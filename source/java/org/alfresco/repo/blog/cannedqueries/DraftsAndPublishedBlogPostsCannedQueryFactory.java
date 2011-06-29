@@ -29,11 +29,10 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -53,12 +52,15 @@ import org.alfresco.util.PropertyCheck;
  */
 public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<BlogPostInfo>
 {
-    private MethodSecurityInterceptor methodSecurityInterceptor;
-    private String methodName;
-    private Object methodService;
+    private MethodSecurityBean<BlogPostInfo> methodSecurity;
     private NodeService rawNodeService;
     private TaggingService taggingService;
     
+    public void setMethodSecurity(MethodSecurityBean<BlogPostInfo> methodSecurity)
+    {
+        this.methodSecurity = methodSecurity;
+    }
+
     public void setRawNodeService(NodeService nodeService)
     {
         this.rawNodeService = nodeService;
@@ -69,30 +71,13 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
         this.taggingService = taggingService;
     }
     
-    public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
-    {
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
-    }
-    
-    public void setMethodName(String methodName)
-    {
-        this.methodName = methodName;
-    }
-    
-    public void setMethodService(Object methodService)
-    {
-        this.methodService = methodService;
-    }
-    
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        // if not passed in (TODO or not in future cache) then generate a new query execution id
-        String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
-        
-        final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(rawNodeService, taggingService,
-                                                                                  methodSecurityInterceptor, methodService, methodName,
-                                                                                  parameters, queryExecutionId);
+        final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(
+                rawNodeService, taggingService,
+                methodSecurity,
+                parameters);
         return (CannedQuery<BlogPostInfo>) cq;
     }
     
@@ -112,7 +97,7 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingReq.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -142,7 +127,7 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
         }
         
         // page details
-        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems, CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
+        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems);
         return cqpd;
     }
     
@@ -151,8 +136,6 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
     {
         super.afterPropertiesSet();
         
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
-        PropertyCheck.mandatory(this, "methodService", methodService);
-        PropertyCheck.mandatory(this, "methodName", methodName);
+        PropertyCheck.mandatory(this, "methodSecurity", methodSecurity);
     }
 }

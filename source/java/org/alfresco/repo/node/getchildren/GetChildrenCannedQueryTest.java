@@ -47,7 +47,7 @@ import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -105,10 +105,10 @@ public class GetChildrenCannedQueryTest extends TestCase
     private Set<NodeRef> permHits = new HashSet<NodeRef>(100);
     private Set<NodeRef> permMisses = new HashSet<NodeRef>(100);
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void setUp() throws Exception
     {
@@ -138,9 +138,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         getChildrenCannedQueryFactory.setNodeDAO((NodeDAO)ctx.getBean("nodeDAO"));
         getChildrenCannedQueryFactory.setQnameDAO((QNameDAO)ctx.getBean("qnameDAO"));
         
-        getChildrenCannedQueryFactory.setMethodSecurityInterceptor((MethodSecurityInterceptor)ctx.getBean("FileFolderService_security"));
-        getChildrenCannedQueryFactory.setMethodService((Object)ctx.getBean("fileFolderService"));
-        getChildrenCannedQueryFactory.setMethodName("list");
+        getChildrenCannedQueryFactory.setMethodSecurity((MethodSecurityBean<NodeRef>)ctx.getBean("FileFolderService_security_list"));
         
         getChildrenCannedQueryFactory.afterPropertiesSet();
             

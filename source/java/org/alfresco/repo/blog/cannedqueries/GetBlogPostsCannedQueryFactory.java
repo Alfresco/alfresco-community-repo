@@ -31,12 +31,11 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -57,37 +56,23 @@ import org.alfresco.util.PropertyCheck;
  */
 public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<BlogPostInfo>
 {
-    private MethodSecurityInterceptor methodSecurityInterceptor;
-    private String methodName;
-    private Object methodService;
+    private MethodSecurityBean<BlogPostInfo> methodSecurity;
     private NodeService rawNodeService;
     
+    public void setMethodSecurity(MethodSecurityBean<BlogPostInfo> methodSecurity)
+    {
+        this.methodSecurity = methodSecurity;
+    }
+
     public void setRawNodeService(NodeService nodeService)
     {
         this.rawNodeService = nodeService;
     }
     
-    public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
-    {
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
-    }
-    
-    public void setMethodName(String methodName)
-    {
-        this.methodName = methodName;
-    }
-    
-    public void setMethodService(Object methodService)
-    {
-        this.methodService = methodService;
-    }
-    
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        String queryExecutionId = (parameters.getQueryExecutionId() == null ? super.getQueryExecutionId(parameters) : parameters.getQueryExecutionId());
-        
-        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(rawNodeService, methodSecurityInterceptor, methodService, methodName, parameters, queryExecutionId);
+        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(rawNodeService, methodSecurity, parameters);
         return (CannedQuery<BlogPostInfo>) cq;
     }
     
@@ -111,7 +96,7 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_CREATED, SortOrder.DESCENDING);
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingReq.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -136,7 +121,7 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         CannedQuerySortDetails cqsd = createCQSortDetails(BlogIntegrationModel.PROP_POSTED, SortOrder.DESCENDING);
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingReq.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -161,7 +146,7 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);
         
         // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, AuthenticationUtil.getRunAsUser(), requestTotalCountMax, pagingReq.getQueryExecutionId());
+        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
         
         // return canned query instance
         return getCannedQuery(params);
@@ -200,8 +185,6 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
     {
         super.afterPropertiesSet();
         
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
-        PropertyCheck.mandatory(this, "methodService", methodService);
-        PropertyCheck.mandatory(this, "methodName", methodName);
+        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurity);
     }
 }

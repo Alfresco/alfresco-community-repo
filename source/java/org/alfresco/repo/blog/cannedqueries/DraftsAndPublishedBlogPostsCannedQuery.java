@@ -32,7 +32,7 @@ import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -56,13 +56,10 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
     public DraftsAndPublishedBlogPostsCannedQuery(
             NodeService rawNodeService,
             TaggingService taggingService,
-            MethodSecurityInterceptor methodSecurityInterceptor,
-            Object methodService,
-            String methodName,
-            CannedQueryParameters params,
-            String queryExecutionId)
+            MethodSecurityBean<BlogPostInfo> methodSecurity,
+            CannedQueryParameters params)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
+        super(params, methodSecurity);
         this.rawNodeService = rawNodeService;
         this.taggingService = taggingService;
     }

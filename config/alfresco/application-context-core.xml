@@ -8,6 +8,7 @@
     <import resource="classpath:alfresco/st-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
     <import resource="classpath:alfresco/core-services-context.xml" />
+    <import resource="classpath:alfresco/copy-services-context.xml" />
     <import resource="classpath:alfresco/encryption-context.xml" />
     <import resource="classpath:alfresco/public-services-context.xml" />
     <import resource="classpath:alfresco/model-specific-services-context.xml" />

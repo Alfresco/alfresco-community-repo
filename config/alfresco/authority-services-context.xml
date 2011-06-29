@@ -99,9 +99,7 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-        <property name="methodSecurityInterceptor" ref="AuthorityService_security"/>
-        <property name="methodService" ref="authorityService"/>
-        <property name="methodName" value="getAuthorities"/>
+        <property name="methodSecurity" ref="AuthorityService_security_getAuthorities"/>
    </bean>
     
     

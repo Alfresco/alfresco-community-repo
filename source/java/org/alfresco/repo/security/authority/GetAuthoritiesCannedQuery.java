@@ -29,7 +29,7 @@ import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.Pair;
@@ -55,13 +55,10 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
     public GetAuthoritiesCannedQuery(
             CannedQueryDAO cannedQueryDAO,
             TenantService tenantService,
-            MethodSecurityInterceptor methodSecurityInterceptor,
-            Object methodService,
-            String methodName,
-            CannedQueryParameters params,
-            String queryExecutionId)
+            MethodSecurityBean<AuthorityInfo> methodSecurity,
+            CannedQueryParameters params)
     {
-        super(params, queryExecutionId, methodSecurityInterceptor, methodService, methodName);
+        super(params, methodSecurity);
         
         this.cannedQueryDAO = cannedQueryDAO;
         this.tenantService = tenantService;
@@ -164,10 +161,10 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
         return true;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected List<AuthorityInfo> applyPostQuerySorting(List<AuthorityInfo> results, CannedQuerySortDetails sortDetails)
     {
-        final List<Pair<String, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
+        final List<Pair<Object, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
         if (sortPairs.size() > 0)
         {
             // single sort option - authority display name (else authority name if former is null)

@@ -18,24 +18,17 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
-import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.context.security.SecureContext;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
-import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
-import org.alfresco.util.Pair;
-import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,47 +41,25 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQuery<R>
 {
     private Log logger = LogFactory.getLog(AbstractCannedQueryPermissions.class);
+
+    private MethodSecurityBean<R> methodSecurity;
     
-    private MethodSecurityInterceptor methodSecurityInterceptor;
-    private Method method;
-    
-    protected AbstractCannedQueryPermissions(CannedQueryParameters parameters, String queryExecutionId, MethodSecurityInterceptor methodSecurityInterceptor, Object methodService, String methodName)
+    protected AbstractCannedQueryPermissions(CannedQueryParameters parameters, MethodSecurityBean<R> methodSecurity)
     {
-        super(parameters, queryExecutionId);
-        
-        Method method = null;
-        for (Method m : methodService.getClass().getMethods())
-        {
-            // note: currently matches first found
-            if (m.getName().equals(methodName))
-            {
-                method = m;
-                break;
-            }
-        }
-        
-        if (method == null)
-        {
-            throw new AlfrescoRuntimeException("Method not found: "+methodName);
-        }
-        
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
-        this.method = method;
+        super(parameters);
+        this.methodSecurity = methodSecurity;
     }
     
-    protected List<R> applyPostQueryPermissions(List<R> results, String authenticationToken, int requestedCount)
+    protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
     {
         int requestTotalCountMax = getParameters().requestTotalResultCountMax();
         int maxChecks = (((requestTotalCountMax > 0) && (requestTotalCountMax > requestedCount)) ? requestTotalCountMax : requestedCount);
         
-        return applyPermissions(results, authenticationToken, maxChecks);
+        return applyPermissions(results, maxChecks);
     }
     
-    @SuppressWarnings("unchecked")
-    protected List<R> applyPermissions(List<R> results, String authenticationToken, int maxChecks)
+    protected List<R> applyPermissions(List<R> results, int maxChecks)
     {
-        long start = System.currentTimeMillis();
-        
         Context context = ContextHolder.getContext();
         if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
         {
@@ -99,57 +70,10 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             
             return new WrappedList<R>(new ArrayList<R>(0), true, false); // empty result
         }
-        
         Authentication authentication = (((SecureContext) context).getAuthentication());
         
-        ConfigAttributeDefinition cad = methodSecurityInterceptor.getObjectDefinitionSource().getAttributes(new InternalMethodInvocation(method));
-        List<R> ret  = (WrappedList<R>)methodSecurityInterceptor.getAfterInvocationManager().decide(authentication, null, cad, new WrappedList<R>(results, maxChecks));
-        
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("applyPermissions: "+ret.size()+" items in "+(System.currentTimeMillis()-start)+" msecs");
-        }
-        
-        return ret;
-    }
-    
-    class InternalMethodInvocation implements MethodInvocation 
-    {
-        Method method;
-        
-        public InternalMethodInvocation(Method method) 
-        {
-            this.method = method;
-        }
-        
-        protected InternalMethodInvocation() 
-        {
-            throw new UnsupportedOperationException();
-        }
-        
-        public Object[] getArguments() 
-        {
-            throw new UnsupportedOperationException();
-        }
-        
-        public Method getMethod() 
-        {
-            return this.method;
-        }
-        
-        public AccessibleObject getStaticPart() 
-        {
-            throw new UnsupportedOperationException();
-        }
-        
-        public Object getThis() 
-        {
-            throw new UnsupportedOperationException();
-        }
-        
-        public Object proceed() throws Throwable 
-        {
-            throw new UnsupportedOperationException();
-        }
+        List<R> resultsOut = methodSecurity.applyPermissions(results, authentication, maxChecks);
+        // Done
+        return resultsOut;
     }
 }

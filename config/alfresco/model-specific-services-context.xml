@@ -3,7 +3,12 @@
 
 <beans>
 
+   
    <!-- File/folder specific service -->
+
+   <bean id="fileFolderCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
 
    <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
@@ -14,7 +19,7 @@
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       
-      <property name="cannedQueryRegistry" ref="cannedQueryRegistry"/>
+      <property name="cannedQueryRegistry" ref="fileFolderCannedQueryRegistry"/>
       <property name="defaultListMaxResults" value="${system.filefolderservice.defaultListMaxResults}"/>
       
       <property name="systemNamespaces">
@@ -37,6 +42,18 @@
             <value>/${spaces.company_home.childname}/${spaces.wcm_deployed.childname}</value>
          </list>
       </property>
+   </bean>
+   
+   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+      <property name="registry" ref="fileFolderCannedQueryRegistry"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+      <property name="methodSecurity" ref="FileFolderService_security_list"/>
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >
@@ -137,20 +154,6 @@
            <value>org.alfresco.repo.imap.ImapService</value>
         </list>
      </property>
-   </bean>
-   
-   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
-      <property name="registry" ref="cannedQueryRegistry"/>
-      <property name="dictionaryService" ref="dictionaryService"/>
-      <property name="tenantService" ref="tenantService"/>
-      <property name="nodeDAO" ref="nodeDAO"/>
-      <property name="qnameDAO" ref="qnameDAO"/>
-      <property name="localeDAO" ref="localeDAO"/>
-      <property name="contentDataDAO" ref="contentDataDAO"/>
-      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-      <property name="methodSecurityInterceptor" ref="FileFolderService_security"/>
-      <property name="methodService" ref="fileFolderService"/>
-      <property name="methodName" value="list"/>
    </bean>
    
 </beans>

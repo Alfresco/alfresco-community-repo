@@ -270,61 +270,24 @@
     <!-- The person service.                                                -->
 
     <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl" init-method="init">
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="admSearchService" />
-        </property>
-        <property name="permissionServiceSPI">
-            <ref bean="permissionServiceImpl" />
-        </property>
-        <property name="authorityService">
-           <ref bean="authorityService" />
-        </property>
-        <property name="authenticationService">
-           <ref bean="authenticationService" />
-        </property>
-        <property name="dictionaryService">
-           <ref bean="dictionaryService" />
-        </property>
-        <property name="namespacePrefixResolver">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-        <property name="policyBehaviourFilter">
-            <ref bean="policyBehaviourFilter" />
-        </property>
-        <property name="personCache">
-            <ref bean="personCache" />
-        </property>
-        <property name="permissionsManager">
-            <ref bean="personServicePermissionsManager" />
-        </property>
-        <property name="cannedQueryRegistry">
-            <ref bean="cannedQueryRegistry" />
-        </property>
-        <property name="aclDAO">
-            <ref bean="aclDAO" />
-        </property>
-        <property name="homeFolderManager">
-            <ref bean="homeFolderManager" />
-        </property>
-        <property name="repoAdminService">
-            <ref bean="repoAdminService" />
-        </property>
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"/>
-        </property>
-        
+        <property name="transactionService" ref="transactionService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="tenantService" ref="tenantService"/>
+        <property name="searchService" ref="admSearchService" />
+        <property name="permissionServiceSPI" ref="permissionServiceImpl" />
+        <property name="authorityService" ref="authorityService" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="namespacePrefixResolver" ref="namespaceService" />
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
+        <property name="personCache" ref="personCache" />
+        <property name="permissionsManager" ref="personServicePermissionsManager" />
+        <property name="cannedQueryRegistry" ref="personServiceCannedQueryRegistry" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="homeFolderManager" ref="homeFolderManager" />
+        <property name="repoAdminService" ref="repoAdminService" />
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
         
         <!-- Configurable properties.                                 -->
         <!--                                                          -->
@@ -366,8 +329,12 @@
         </property>
     </bean>
     
+    <bean id="personServiceCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+
     <bean name="peopleGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
-        <property name="registry" ref="cannedQueryRegistry"/>
+        <property name="registry" ref="personServiceCannedQueryRegistry"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
@@ -375,9 +342,7 @@
         <property name="localeDAO" ref="localeDAO"/>
         <property name="contentDataDAO" ref="contentDataDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-        <property name="methodSecurityInterceptor" ref="PersonService_security"/>
-        <property name="methodService" ref="personService"/>
-        <property name="methodName" value="getPeople"/>
+        <property name="methodSecurity" ref="PersonService_security_getPeople"/>
     </bean>
    
     <bean name="personServicePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >

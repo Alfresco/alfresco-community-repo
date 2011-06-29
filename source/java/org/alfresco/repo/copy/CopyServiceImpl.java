@@ -30,6 +30,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQuery;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.CannedQueryParameters;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.copy.CopyBehaviourCallback.AssocCopySourceAction;
 import org.alfresco.repo.copy.CopyBehaviourCallback.AssocCopyTargetAction;
@@ -40,7 +46,6 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -67,6 +72,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -80,39 +86,32 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  */
 public class CopyServiceImpl implements CopyService
 {
-    /**
-     * The logger
-     */
     private static Log logger = LogFactory.getLog(ActionServiceImpl.class);
     
-    /** I18N labels */
-    private String COPY_OF_LABEL = "copy_service.copy_of_label";
+    /* Query names */
+    private static final String QUERY_FACTORY_GET_COPIES = "getCopiesCannedQueryFactory";
+    private static final String QUERY_FACTORY_GET_COPIED = "getCopiesCannedQueryFactory";
     
-    /** The node service */
+    /* I18N labels */
+    private static final String COPY_OF_LABEL = "copy_service.copy_of_label";
+    
+    /* Services */
     private NodeService nodeService;
     private NodeService internalNodeService;
-    
-    /** The dictionary service*/
+    private NamedObjectRegistry<CannedQueryFactory<CopyInfo>> cannedQueryRegistry;
     private DictionaryService dictionaryService;     
-    /** The search service */
     private SearchService searchService;
-    /** Policy component */
     private PolicyComponent policyComponent;
-    /** Rule service */
     private RuleService ruleService;
-    
     private PermissionService permissionService;
-    
     private PublicServiceAccessService publicServiceAccessService;
 
-    /** Policy delegates */
+    /* Policy delegates */
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyCompletePolicy> onCopyCompleteDelegate;
     private ClassPolicyDelegate<CopyServicePolicies.BeforeCopyPolicy> beforeCopyDelegate;
     
     /**
-     * Set the node service
-     * 
      * @param nodeService  the node service
      */
     public void setNodeService(NodeService nodeService)
@@ -121,8 +120,6 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
-     * Sets the internal node service
-     * 
      * @param internalNodeService    the internal node service
      */
     public void setInternalNodeService(NodeService internalNodeService) 
@@ -130,9 +127,12 @@ public class CopyServiceImpl implements CopyService
         this.internalNodeService = internalNodeService;
     }
     
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<CopyInfo>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+
     /**
-     * Sets the dictionary service
-     * 
      * @param dictionaryService  the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService) 
@@ -141,8 +141,6 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
-     * Sets the policy component
-     * 
      * @param policyComponent  the policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent) 
@@ -151,8 +149,6 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
-     * Sets the search service
-     * 
      * @param searchService     the search service
      */
     public void setSearchService(SearchService searchService)
@@ -161,8 +157,6 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
-     * Set the rule service
-     * 
      * @param ruleService  the rule service
      */
     public void setRuleService(RuleService ruleService)
@@ -382,6 +376,7 @@ public class CopyServiceImpl implements CopyService
         invokeCopyComplete(sourceNodeRef, targetNodeRef, false, copiedNodeRefs);         
     }
     
+    @Override
     public List<NodeRef> getCopies(NodeRef nodeRef)
     {
         List<NodeRef> copies = new ArrayList<NodeRef>();
@@ -409,6 +404,18 @@ public class CopyServiceImpl implements CopyService
         }
         
         return copies;
+    }
+    
+    @Override
+    public PagingResults<CopyInfo> getCopies(NodeRef nodeRef, PagingRequest pagingRequest)
+    {
+        CannedQueryFactory<CopyInfo> queryFactory = cannedQueryRegistry.getNamedObject(QUERY_FACTORY_GET_COPIES);
+        CannedQueryParameters params = new CannedQueryParameters(
+                nodeRef,
+                new CannedQueryPageDetails(pagingRequest),
+                null);
+        CannedQuery<CopyInfo> query = queryFactory.getCannedQuery(params);
+        return query.execute();
     }
 
     /**

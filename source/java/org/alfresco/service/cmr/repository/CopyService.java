@@ -20,8 +20,9 @@ package org.alfresco.service.cmr.repository;
 
 import java.util.List;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -163,8 +164,72 @@ public interface CopyService
      * 
      * @param nodeRef   the original node reference
      * @return          a list of copies, empty is none
+     * @deprecated      This method is too open-ended.  See {@link #getCopies(NodeRef, PagingRequest)}.
      */
     @Auditable(parameters = {"nodeRef"})
     public List<NodeRef> getCopies(NodeRef nodeRef);
     
+    /**
+     * Data pojo to carry information about node copies
+     * 
+     * @author Derek Hulley
+     * @since 4.0
+     */
+    public class CopyInfo
+    {
+        private final NodeRef nodeRef;
+        private final String name;
+        private final NodeRef parentNodeRef;
+        private final String parentName;
+        
+        public CopyInfo(NodeRef nodeRef, String name, NodeRef parentNodeRef, String parentName)
+        {
+            this.nodeRef = nodeRef;
+            this.name = name;
+            this.parentNodeRef = parentNodeRef;
+            this.parentName = parentName;
+        }
+
+        /**
+         * @return              the node copy
+         */
+        public NodeRef getNodeRef()
+        {
+            return nodeRef;
+        }
+
+        /**
+         * @return              the name of the node copy
+         */
+        public String getName()
+        {
+            return name;
+        }
+
+        /**
+         * @return              the parent of the node copy
+         */
+        public NodeRef getParentNodeRef()
+        {
+            return parentNodeRef;
+        }
+
+        /**
+         * @return              the name of the parent of the node copy
+         */
+        public String getParentName()
+        {
+            return parentName;
+        }
+    }
+    
+    /**
+     * Get the copies of a given node
+     * 
+     * @param nodeRef           the original node reference
+     * @param pagingRequest     page request details
+     * @return                  the page(s) of nodes that were copied from the given node
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public PagingResults<CopyInfo> getCopies(NodeRef nodeRef, PagingRequest pagingRequest);
 }

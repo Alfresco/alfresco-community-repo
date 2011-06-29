@@ -21,7 +21,6 @@ package org.alfresco.repo.blog;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -41,10 +40,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 
@@ -72,7 +69,6 @@ public class BlogServiceImpl implements BlogService
     private ContentService contentService;
     private NodeService nodeService;
     private PermissionService permissionService;
-    private TaggingService taggingService;
     
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<BlogPostInfo>> cannedQueryRegistry)
     {
@@ -114,25 +110,12 @@ public class BlogServiceImpl implements BlogService
         this.permissionService = permissionService;
     }
     
-    public void setTaggingService(TaggingService taggingService)
-    {
-        this.taggingService = taggingService;
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.blog.BlogService#isDraftBlogPost(org.alfresco.service.cmr.repository.NodeRef)
-     */
     @Override
     public boolean isDraftBlogPost(NodeRef blogPostNode)
     {
         return nodeService.getProperty(blogPostNode, ContentModel.PROP_PUBLISHED) == null;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.blog.BlogService#createBlogPost(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.List, boolean)
-     */
     @Override
     public ChildAssociationRef createBlogPost(NodeRef blogContainerNode, String blogTitle,
                                               String blogContent, boolean isDraft)
@@ -168,10 +151,6 @@ public class BlogServiceImpl implements BlogService
         return postNode;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.blog.BlogService#getMyDrafts(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.query.PagingRequest)
-     */
     @Override
     public PagingResults<BlogPostInfo> getDrafts(NodeRef blogContainerNode, String username, PagingRequest pagingReq)
     {
@@ -184,49 +163,8 @@ public class BlogServiceImpl implements BlogService
             
         // execute canned query
         CannedQueryResults<BlogPostInfo> results = cq.execute();
-            
-        return createPagedResults(pagingReq, results);
+        return results;
     }
-    
-    /**
-     * This method creates a paged result set based on the supplied {@link PagingRequest} and {@link CannedQueryResults}.
-     */
-    private PagingResults<BlogPostInfo> createPagedResults(PagingRequest pagingReq, final CannedQueryResults<BlogPostInfo> results)
-    {
-        return new PagingResults<BlogPostInfo>()
-        {
-            @Override
-            public String getQueryExecutionId()
-            {
-                return results.getQueryExecutionId();
-            }
-            @Override
-            public List<BlogPostInfo> getPage()
-            {
-                return results.getPage();
-            }
-            @Override
-            public boolean hasMoreItems()
-            {
-                return results.hasMoreItems();
-            }
-            @Override
-            public Pair<Integer, Integer> getTotalResultCount()
-            {
-                return results.getTotalResultCount();
-            }
-            @Override
-            public boolean permissionsApplied()
-            {
-                return results.permissionsApplied();
-            }
-        };
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.blog.BlogService#getPublishedExternally(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.query.PagingRequest)
-     */
     @Override
     public PagingResults<BlogPostInfo> getPublishedExternally(NodeRef blogContainerNode, PagingRequest pagingReq)
     {
@@ -239,14 +177,9 @@ public class BlogServiceImpl implements BlogService
             
         // execute canned query
         CannedQueryResults<BlogPostInfo> results = cq.execute();
-            
-        return createPagedResults(pagingReq, results);
+        return results;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.blog.BlogService#getPublished(org.alfresco.service.cmr.repository.NodeRef, java.util.Date, java.util.Date, java.lang.String, org.alfresco.query.PagingRequest)
-     */
     @Override
     public PagingResults<BlogPostInfo> getPublished(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
@@ -259,8 +192,7 @@ public class BlogServiceImpl implements BlogService
             
         // execute canned query
         CannedQueryResults<BlogPostInfo> results = cq.execute();
-            
-        return createPagedResults(pagingReq, results);
+        return results;
     }
     
     /**
@@ -279,10 +211,8 @@ public class BlogServiceImpl implements BlogService
             
         // execute canned query
         CannedQueryResults<BlogPostInfo> results = cq.execute();
-            
-        return createPagedResults(pagingReq, results);
+        return results;
     }
-    
     
     private String getUniqueChildName(NodeRef parentNode, String prefix)
     {
@@ -292,32 +222,32 @@ public class BlogServiceImpl implements BlogService
     
     /**
      * This method is taken from the previous JavaScript webscript controllers.
-     * @param blogPostNode
      */
     private void setOrUpdateReleasedAndUpdatedDates(NodeRef blogPostNode)
     {
-       // make sure the syndication aspect has been added
-       if (!nodeService.hasAspect(blogPostNode, ContentModel.ASPECT_SYNDICATION))
-       {
-           nodeService.addAspect(blogPostNode, ContentModel.ASPECT_SYNDICATION, null);
-       }
-       
-       // (re-)enable permission inheritance which got disable for draft posts
-       // only set if was previously draft - as only the owner/admin can do this
-       if (!permissionService.getInheritParentPermissions(blogPostNode))
-       {
-           permissionService.setInheritParentPermissions(blogPostNode, true);
-       }
-       
-       // check whether the published date has been set
-       if (nodeService.getProperty(blogPostNode, ContentModel.PROP_PUBLISHED) == null)
-       {
-           nodeService.setProperty(blogPostNode, ContentModel.PROP_PUBLISHED, new Date());
-       }
-       else
-       {
-           // set/update the updated date
-           nodeService.setProperty(blogPostNode, ContentModel.PROP_UPDATED, new Date());
-       }
+        // make sure the syndication aspect has been added
+        if (!nodeService.hasAspect(blogPostNode, ContentModel.ASPECT_SYNDICATION))
+        {
+            nodeService.addAspect(blogPostNode, ContentModel.ASPECT_SYNDICATION, null);
+        }
+
+        // (re-)enable permission inheritance which got disable for draft posts
+        // only set if was previously draft - as only the owner/admin can do
+        // this
+        if (!permissionService.getInheritParentPermissions(blogPostNode))
+        {
+            permissionService.setInheritParentPermissions(blogPostNode, true);
+        }
+
+        // check whether the published date has been set
+        if (nodeService.getProperty(blogPostNode, ContentModel.PROP_PUBLISHED) == null)
+        {
+            nodeService.setProperty(blogPostNode, ContentModel.PROP_PUBLISHED, new Date());
+        }
+        else
+        {
+            // set/update the updated date
+            nodeService.setProperty(blogPostNode, ContentModel.PROP_UPDATED, new Date());
+        }
     }
 }

@@ -58,17 +58,16 @@ public class AlfrescoModelGet extends AbstractWebScript
     private void handle(WebScriptRequest req, WebScriptResponse res) throws JSONException, IOException
     {
         // create map of template vars
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String modelName = templateVars.get("modelShortQName");
-        if(modelName == null)
+        String modelQName = req.getParameter("modelQName");
+        if(modelQName == null)
         {
             throw new WebScriptException(
                     Status.STATUS_BAD_REQUEST,
-                    "URL parameter 'modelShortQName' not provided.");
+                    "URL parameter 'modelQName' not provided.");
         }
 
-        ModelDefinition.XMLBindingType bindingType = ModelDefinition.XMLBindingType.SOLR;
-        AlfrescoModel model = solrTrackingComponent.getModel(QName.createQName(modelName, namespaceService));
+        ModelDefinition.XMLBindingType bindingType = ModelDefinition.XMLBindingType.DEFAULT;
+        AlfrescoModel model = solrTrackingComponent.getModel(QName.createQName(modelQName));
         res.setHeader("XAlfresco-modelChecksum", String.valueOf(model.getModelDef().getChecksum(bindingType)));
         model.getModelDef().toXML(bindingType, res.getOutputStream());
     }

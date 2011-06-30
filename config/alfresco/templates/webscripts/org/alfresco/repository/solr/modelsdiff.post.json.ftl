@@ -4,7 +4,7 @@
    [
       <#list diffs as diff>
           {
-             "name": <@solrLib.qNameJSON qName=diff.modelName/>,
+             "name": "${diff.modelName}",
              "type" : "${diff.type}",
              "oldChecksum": <#if diff.oldChecksum??>${diff.oldChecksum?c}<#else>null</#if>,
              "newChecksum": <#if diff.newChecksum??>${diff.newChecksum?c}<#else>null</#if>

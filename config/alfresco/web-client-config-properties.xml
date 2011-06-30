@@ -593,7 +593,7 @@
          <show-property name="bpm:taskId" />
          <show-property name="bpm:description" component-generator="TextAreaGenerator" read-only="true"/>
          <show-property name="wcmwf:label" read-only="true" />
-         <show-property name="wcmwf:launchDate" />
+         <show-property name="wcmwf:launchDate" read-only="true"/>
          <show-property name="wcmwf:autoDeploy" />
          <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
          <separator name="sep2" display-label-id="wf_review_status" component-generator="HeaderSeparatorGenerator" />

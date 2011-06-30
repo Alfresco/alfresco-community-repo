@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
@@ -160,6 +161,31 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     
     
     // Test helper methods
+    
+    private JSONObject getEntries(String username, String from) throws Exception
+    {
+       String url = URL_EVENTS_LIST + "?site=" + SITE_SHORT_NAME_CALENDAR;
+       if(username != null)
+       {
+          url = URL_USER_SITE_EVENTS_LIST;
+       }
+       if(from != null)
+       {
+          if(url.indexOf('/') > 0)
+          {
+             url += "&";
+          }
+          else
+          {
+             url += "?";
+          }
+          url += "from=" + from;
+       }
+       
+       Response response = sendRequest(new GetRequest(url), 200);
+       JSONObject result = new JSONObject(response.getContentAsString());
+       return result;
+    }
     
     private JSONObject getEntry(String name, int expectedStatus) throws Exception
     {
@@ -391,7 +417,51 @@ public class CalendarRestApiTest extends BaseWebScriptTest
      */
     public void testOverallListing() throws Exception
     {
+       JSONObject dates;
+       JSONArray entries;
        
+       // Initially, there are no events
+       dates = getEntries(null, null);
+       assertEquals(0, dates.length());
+       
+       
+       // Add two events in the past
+       createEntry(EVENT_TITLE_ONE, "Somewhere", "Thing 1", Status.STATUS_OK);
+       createEntry(EVENT_TITLE_TWO, "Somewhere", "Thing 2", Status.STATUS_OK);
+       
+       // Check again
+       dates = getEntries(null, null);
+       
+       // Should have two entries on the one day
+       assertEquals(1, dates.length());
+       assertEquals("6/29/2011", dates.names().getString(0));
+     
+       entries = dates.getJSONArray("6/29/2011");
+       assertEquals(2, entries.length());
+       assertEquals(EVENT_TITLE_ONE, entries.getJSONObject(0).getString("name"));
+       assertEquals(EVENT_TITLE_TWO, entries.getJSONObject(1).getString("name"));
+       
+       
+       // Add a third, on the next day
+       JSONObject entry = createEntry(EVENT_TITLE_THREE, "Where3", "Thing 3", Status.STATUS_OK);
+       String name3 = getNameFromEntry(entry);
+       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", Status.STATUS_OK);
+       
+       
+       // Check now, should have two days
+       dates = getEntries(null, null);
+       assertEquals(2, dates.length());
+       assertEquals("6/29/2011", dates.names().getString(0));
+       assertEquals("6/28/2011", dates.names().getString(1));
+       
+       entries = dates.getJSONArray("6/29/2011");
+       assertEquals(2, entries.length());
+       assertEquals(EVENT_TITLE_ONE, entries.getJSONObject(0).getString("name"));
+       assertEquals(EVENT_TITLE_TWO, entries.getJSONObject(1).getString("name"));
+       
+       entries = dates.getJSONArray("6/28/2011");
+       assertEquals(1, entries.length());
+       assertEquals(EVENT_TITLE_THREE, entries.getJSONObject(0).getString("name"));
     }
     
     /**
@@ -399,7 +469,78 @@ public class CalendarRestApiTest extends BaseWebScriptTest
      */
     public void testUserListing() throws Exception
     {
+       JSONObject result;
+       JSONArray events;
        
+       // Initially, there are no events
+       result = getEntries(null, null);
+       assertEquals(0, result.length());
+       
+       result = getEntries("admin", null);
+       events = result.getJSONArray("events");
+       assertEquals(0, events.length());
+       
+       // Add two events in the past
+       createEntry(EVENT_TITLE_ONE, "Somewhere", "Thing 1", Status.STATUS_OK);
+       createEntry(EVENT_TITLE_TWO, "Somewhere", "Thing 2", Status.STATUS_OK);
+       
+       // Check again
+       result = getEntries(null, null);
+       assertEquals(1, result.length());
+       
+       result = getEntries("admin", "2000/01/01"); // TODO From date shouldn't be needed...
+       events = result.getJSONArray("events");
+       assertEquals(2, events.length());
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(1).getString("title"));
+       
+       
+       // Add a third, on the next day
+       JSONObject entry = createEntry(EVENT_TITLE_THREE, "Where3", "Thing 3", Status.STATUS_OK);
+       String name3 = getNameFromEntry(entry);
+       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", Status.STATUS_OK);
+       
+       
+       // Check getting all of them
+       result = getEntries("admin", "2000/01/01"); // TODO From date shouldn't be needed...
+       events = result.getJSONArray("events");
+       assertEquals(3, events.length());
+       assertEquals(EVENT_TITLE_THREE, events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(1).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(2).getString("title"));
+       
+
+       // Now set a date filter to constrain
+       result = getEntries("admin", "2011/06/29");
+       events = result.getJSONArray("events");
+       assertEquals(2, events.length());
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(1).getString("title"));
+       
+       result = getEntries("admin", "2011/07/01");
+       events = result.getJSONArray("events");
+       assertEquals(0, events.length());
+       
+       
+       // Make it not site specific
+       Response response = sendRequest(new GetRequest(URL_USER_EVENTS_LIST + "?from=2000/01/01"), 200);
+       result = new JSONObject(response.getContentAsString());
+       events = result.getJSONArray("events");
+       assertEquals(3, events.length());
+       
+       
+       // Now hide the site, and remove the user from it, events will go
+       this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+       SiteInfo site = siteService.getSite(SITE_SHORT_NAME_CALENDAR);
+       site.setVisibility(SiteVisibility.PRIVATE);
+       siteService.updateSite(site);
+       siteService.removeMembership(SITE_SHORT_NAME_CALENDAR, USER_ONE);
+       this.authenticationComponent.setCurrentUser(USER_ONE);
+       
+       response = sendRequest(new GetRequest(URL_USER_EVENTS_LIST + "?from=2000/01/01"), 200);
+       result = new JSONObject(response.getContentAsString());
+       events = result.getJSONArray("events");
+       assertEquals(0, events.length());
     }
     
 }

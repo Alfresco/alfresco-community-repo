@@ -58,6 +58,7 @@
     <bean id="renditionDefinitionPersister" class="org.alfresco.repo.rendition.RenditionDefinitionPersisterImpl" >
         <property name="runtimeActionService" ref="actionService" />
         <property name="nodeService" ref="NodeService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean>
 
 	<bean id="renditionLocationResolver" class="org.alfresco.repo.rendition.StandardRenditionLocationResolverImpl" >

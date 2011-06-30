@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.tools.RenameUser;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -78,11 +79,6 @@ public class PersonTest extends TestCase
     private AuthorityService authorityService;
     private MutableAuthenticationDao authenticationDAO;
     private UserTransaction testTX;
-
-    public PersonTest()
-    {
-        super();
-    }
 
     public void setUp() throws Exception
     {
@@ -1388,4 +1384,79 @@ public class PersonTest extends TestCase
         personService.createPerson(properties);
         personService.notifyPerson(userName, "abc");
     }
+
+    public void testRenameUser() throws Exception
+    {
+        // Note: RenameUserTest contains unit tests.
+        
+        // End the Spring-managed txn
+        testTX.commit();
+
+        final String username = AuthenticationUtil.getAdminUserName();
+
+        final String oldUsername = GUID.generate();
+        final String newUsername = oldUsername+GUID.generate();
+        
+        // Create a person
+        final NodeRef person = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef>()
+                {
+                    public NodeRef execute() throws Throwable
+                    {
+                        // Tidy up failed runs
+                        if (personService.personExists(oldUsername))
+                        {
+                            personService.deletePerson(oldUsername);
+                        }
+                        if (personService.personExists(newUsername))
+                        {
+                            personService.deletePerson(newUsername);
+                        }
+
+                        // Generate a person node
+                        Map<QName, Serializable> properties = createDefaultProperties(oldUsername, "firstName", "lastName", "email@orgId", "orgId", null); 
+                        NodeRef person = personService.createPerson(properties);
+                        
+                        // Check the person exists
+                        assertEquals(oldUsername, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+                        assertEquals(person, personService.getPerson(oldUsername));
+                        assertFalse("new user should not exist yet", personService.personExists(newUsername));
+                        return person;
+                    }
+                }, false, true);
+        
+        // Run the RenameUser cmd line tool
+        //   - override exit so we don't and assert normal exit
+        //   - Don't ask for a password as we may not know it in a test
+        //   - call start rather than main to get correct instance
+        RenameUser renameUser = new RenameUser()
+        {
+            @Override
+            protected void exit(int status)
+            {
+                assertEquals("Tool exit status should be normal", 0, status);
+            }
+        };
+        renameUser.setLogin(false);
+        renameUser.start(new String[] {"-user", username, oldUsername, newUsername});
+        
+        // Check person has been renamed and the delete it.
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                String newUserName = (String) nodeService.getProperty(person, ContentModel.PROP_USERNAME);
+                assertEquals(newUsername, newUserName);
+  
+                // Check the person exists
+                assertEquals(newUsername, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+                assertEquals(person, personService.getPerson(newUsername));
+                assertFalse("old user should no longer exist", personService.personExists(oldUsername));
+
+                // Get rid of the test person
+                personService.deletePerson(newUsername);
+                return null;
+            }
+        }, false, true);
+    }	
 }

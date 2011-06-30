@@ -27,6 +27,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -59,6 +60,7 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     /* Injected services */
     private NodeService nodeService;
     private RuntimeActionService runtimeActionService;
+    private BehaviourFilter behaviourFilter;
 
     /**
      * Injects the NodeService bean.
@@ -79,7 +81,13 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     {
         this.runtimeActionService = runtimeActionService;
     }
-
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+    
+    
     public List<RenditionDefinition> loadRenditionDefinitions()
     {
         checkRenderingActionRootNodeExists();
@@ -147,12 +155,23 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     public void saveRenditionDefinition(RenditionDefinition renderingAction)
     {
         NodeRef actionNodeRef = findOrCreateActionNode(renderingAction);
-
-        // TODO Serialize using JSON content instead.
-        // The current serialization mechanism creates a complex content model
-        // structure which is verbose and a JSON-based approach using a simplified
-        // content model perhaps could offer performance improvements.
-        runtimeActionService.saveActionImpl(actionNodeRef, renderingAction);
+        
+        // ALF-9166 describes a problem whereby versionable saved rendition definition nodes cause problems on upgrade.
+        // This appears to be due to a rule defined on Company Home. The behaviour suppression below is a workaround for that issue.
+        try
+        {
+            behaviourFilter.disableBehaviour(actionNodeRef, ContentModel.ASPECT_VERSIONABLE);
+            
+            // TODO Serialize using JSON content instead.
+            // The current serialization mechanism creates a complex content model
+            // structure which is verbose and a JSON-based approach using a simplified
+            // content model perhaps could offer performance improvements.
+            runtimeActionService.saveActionImpl(actionNodeRef, renderingAction);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(actionNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
     }
     
     public void deleteRenditionDefinition(RenditionDefinition renderingAction)

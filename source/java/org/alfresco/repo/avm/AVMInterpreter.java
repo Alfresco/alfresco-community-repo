@@ -958,7 +958,7 @@ public class AVMInterpreter
 
     private static String[] getCSVArray(String valueString)
     {
-        String[] elements = valueString.split(",\\s+");
+        String[] elements = valueString.split(",");
 
         if (elements.length == 0)
         {

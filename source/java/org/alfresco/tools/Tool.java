@@ -220,9 +220,15 @@ public abstract class Tool
                 // Perform Tool behaviour
                 logInfo(getToolName());
                 initialiseRepository();
-                login();
+                if (toolContext.isLogin())
+                {
+                    login();
+                }
                 long loginTime = System.nanoTime();
-                logInfo("Time to login "+((loginTime - startTime)/1000000000f)+" seconds");
+                if (toolContext.isLogin())
+                {
+                    logInfo("Time to login "+((loginTime - startTime)/1000000000f)+" seconds");
+                }
                 status = execute();
                 long executeTime = System.nanoTime();
                 logInfo("Time to execute "+((executeTime - loginTime)/1000000000f)+" seconds");

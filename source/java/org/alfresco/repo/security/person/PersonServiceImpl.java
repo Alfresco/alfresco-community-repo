@@ -120,7 +120,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private static final String SYSTEM_USAGE_WARN_LIMIT_USERS_EXCEEDED_VERBOSE = "system.usage.err.limit_users_exceeded_verbose";
 
     private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
-    private static final String KEY_ALLOW_UID_UPDATE = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
+    public static final String KEY_ALLOW_UID_UPDATE = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
     private static final String KEY_USERS_CREATED = "PersonServiceImpl.KEY_USERS_CREATED";
 
     private StoreRef storeRef;
@@ -603,34 +603,25 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             public Object execute() throws Throwable
             {
-                try
+                if (duplicateMode.equalsIgnoreCase(SPLIT))
                 {
-                    policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
-                    
-                    if (duplicateMode.equalsIgnoreCase(SPLIT))
-                    {
                         logger.info("Splitting " + postTxnDuplicates.size() + " duplicate person objects.");
-                        // Allow UIDs to be updated in this transaction
-                        AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
-                        split(postTxnDuplicates);
+                    // Allow UIDs to be updated in this transaction
+                    AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
+                    split(postTxnDuplicates);
                         logger.info("Split " + postTxnDuplicates.size() + " duplicate person objects.");
-                    }
-                    else if (duplicateMode.equalsIgnoreCase(DELETE))
-                    {
-                        delete(postTxnDuplicates);
-                        logger.info("Deleted duplicate person objects");
-                    }
-                    else
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Duplicate person objects exist");
-                        }
-                    }
                 }
-                finally
+                else if (duplicateMode.equalsIgnoreCase(DELETE))
                 {
-                    policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_PERSON);
+                    delete(postTxnDuplicates);
+                    logger.info("Deleted duplicate person objects");
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Duplicate person objects exist");
+                    }
                 }
                 
                 // Done
@@ -644,7 +635,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         for (NodeRef nodeRef : toDelete)
         {
-            nodeService.deleteNode(nodeRef);
+            deletePerson(nodeRef);
         }
     }
 

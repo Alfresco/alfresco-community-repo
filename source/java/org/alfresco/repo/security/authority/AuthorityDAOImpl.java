@@ -44,7 +44,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
+import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1108,7 +1110,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         String authAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(idProp));
         if (!EqualsHelper.nullSafeEquals(authBefore, authAfter))
         {
-            if (authBefore.equalsIgnoreCase(authAfter))
+            if (AlfrescoTransactionSupport.getResource(PersonServiceImpl.KEY_ALLOW_UID_UPDATE) != null || authBefore.equalsIgnoreCase(authAfter))
             {
                 if (isAuthority)
                 {

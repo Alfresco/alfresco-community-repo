@@ -18,6 +18,10 @@
  */
 package org.alfresco.repo.solr;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,18 +32,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.CompiledModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.solr.AlfrescoModelDiff.TYPE;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.ModelDefinition.XMLBindingType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +58,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Component providing data for SOLR tracking
@@ -102,6 +111,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.dictionaryService = dictionaryService;
     }
 
+    
+    
+    public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
+    {
+        this.dictionaryDAO = dictionaryDAO;
+    }
+
     /**
      * Initialize
      */    
@@ -114,6 +130,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "ownableService", ownableService);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
     }
     
     @Override
@@ -581,6 +598,30 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             }
         }
 
+//        for(AlfrescoModelDiff diff : diffs)
+//        {
+//            if(diff.getType() != TYPE.REMOVED)
+//            {
+//                CompiledModel cm = ((DictionaryDAOImpl)dictionaryDAO).getCompiledModel(QName.createQName(diff.getModelName()));
+//                File file = TempFileProvider.createTempFile(cm.getM2Model().getChecksum(XMLBindingType.DEFAULT)+ cm.getM2Model().getNamespaces().get(0).getPrefix(), ".xml");
+//                FileOutputStream os;
+//                try
+//                {
+//                    os = new FileOutputStream(file);
+//                    cm.getM2Model().toXML(os);
+//                    os.flush();
+//                    os.close();
+//
+//                }
+//                catch (IOException e)
+//                {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//        }
+        
         return diffs;
     }
     

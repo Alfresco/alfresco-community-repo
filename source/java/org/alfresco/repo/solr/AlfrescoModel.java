@@ -15,7 +15,7 @@ public class AlfrescoModel
     protected AlfrescoModel(ModelDefinition modelDef)
     {
         this.modelDef = modelDef;
-        this.checksum = modelDef.getChecksum(ModelDefinition.XMLBindingType.SOLR);
+        this.checksum = modelDef.getChecksum(ModelDefinition.XMLBindingType.DEFAULT);
     }
 
     public ModelDefinition getModelDef()

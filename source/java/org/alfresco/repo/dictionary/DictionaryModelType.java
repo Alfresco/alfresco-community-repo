@@ -669,7 +669,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         }
                                         
                                         // Try and compile the model
-                                        CompiledModel compiledModel= m2Model.compile(dictionaryDAO, namespaceDAO);
+                                        CompiledModel compiledModel= m2Model.compile(dictionaryDAO, namespaceDAO, true);
                                         ModelDefinition modelDefinition = compiledModel.getModelDefinition();
                                         
                                         // Update the meta data for the model

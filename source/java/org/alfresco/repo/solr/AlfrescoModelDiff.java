@@ -16,12 +16,19 @@ public class AlfrescoModelDiff
         NEW, CHANGED, REMOVED;
     };
     
-    private QName modelName;
+    private String modelName;
     private TYPE type;
     private Long oldChecksum;
     private Long newChecksum;
 
-    public AlfrescoModelDiff(QName modelName, TYPE type, Long oldChecksum, Long newChecksum)
+    /**
+     * use full model name or it will be converted to the prefix form - as we are requesting the model it may not be on the other side - so the namespace is unknown.
+     * @param modelName
+     * @param type
+     * @param oldChecksum
+     * @param newChecksum
+     */
+    public AlfrescoModelDiff(String modelName, TYPE type, Long oldChecksum, Long newChecksum)
     {
         super();
         this.modelName = modelName;
@@ -29,8 +36,13 @@ public class AlfrescoModelDiff
         this.oldChecksum = oldChecksum;
         this.newChecksum = newChecksum;
     }
+    
+    public AlfrescoModelDiff(QName modelName, TYPE type, Long oldChecksum, Long newChecksum)
+    {
+       this(modelName.toString(), type, oldChecksum, newChecksum);
+    }
 
-    public QName getModelName()
+    public String getModelName()
     {
         return modelName;
     }

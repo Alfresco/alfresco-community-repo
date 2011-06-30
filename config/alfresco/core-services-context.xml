@@ -1222,6 +1222,7 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="solrDAO" ref="solrDAO" />
+         <property name="dictionaryDAO" ref="dictionaryDAO" />
     </bean>
 
     <!--                           -->

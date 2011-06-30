@@ -340,7 +340,7 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals("Unexpected number of changed models", 0, diffResults1.getChangedModels().size());
         assertEquals("Unexpected number of removed models", 0, diffResults1.getRemovedModels().size());
         AlfrescoModelDiff diff = diffResults1.getNewModels().get(0);
-        assertEquals("Unexpected model name change", QName.createQName(testModel.getName(), namespaceService), diff.getModelName());
+        assertEquals("Unexpected model name change", QName.createQName(testModel.getName(), namespaceService).toString(), diff.getModelName());
 
         // get current checksum for the test model
         Long testModelChecksum = tracker.getChecksum(QName.createQName(testModel.getName(), namespaceService));
@@ -359,7 +359,7 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals("Expected detection of changed testmodel", 1, changedModels.size());
 
         AlfrescoModelDiff changedModel = changedModels.get(0);
-        assertEquals("Unexpected changed model name", QName.createQName(testModel.getName(), namespaceService),
+        assertEquals("Unexpected changed model name", QName.createQName(testModel.getName(), namespaceService).toString(),
                 changedModel.getModelName());
         assertNotNull("", changedModel.getOldChecksum().longValue());
         assertEquals("Old checksum value is incorrect", testModelChecksum.longValue(), changedModel.getOldChecksum().longValue());
@@ -372,7 +372,7 @@ public class SOLRTrackingComponentTest extends TestCase
         ModelDiffResults diffResults3 = tracker.diff();
         List<AlfrescoModelDiff> removedModels = diffResults3.getRemovedModels();
         assertEquals("Expected 1 removed model", 1, removedModels.size());
-        QName removedModelName = removedModels.get(0).getModelName();
+        QName removedModelName = QName.createQName(removedModels.get(0).getModelName());
         String removedModelNamespace = removedModelName.getNamespaceURI();
         String removedModelLocalName = removedModelName.getLocalName();
         assertEquals("Removed model namespace is incorrect", "http://www.alfresco.org/model/solrtest/1.0", removedModelNamespace);
@@ -427,7 +427,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 if(diff.getType().equals(AlfrescoModelDiff.TYPE.NEW))
                 {
                     newModels.add(diff);
-                    trackedModels.put(diff.getModelName(), diff.getNewChecksum());
+                    trackedModels.put(QName.createQName(diff.getModelName()), diff.getNewChecksum());
                 }
                 else if(diff.getType().equals(AlfrescoModelDiff.TYPE.CHANGED))
                 {

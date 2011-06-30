@@ -130,15 +130,29 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         {
             throw new IllegalArgumentException("Query result offset must be zero or greater.");
         }
+        
+        // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
+        /*
         if (limit <= 0 || limit == Integer.MAX_VALUE)
         {
             throw new IllegalArgumentException("Query results must be constrained by a limit.");
         }
+        */
+        
         String query = makeQueryName(sqlNamespace, queryName);
         try
         {
-            RowBounds bounds = new RowBounds(offset, limit);
-            return (List<R>) template.selectList(query, parameterObj, bounds);
+            if ((offset == 0) && (limit == Integer.MAX_VALUE))
+            {
+                // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also above)
+                // http://code.google.com/p/mybatis/issues/detail?id=129
+                return (List<R>) template.selectList(query, parameterObj);
+            }
+            else
+            {
+                RowBounds bounds = new RowBounds(offset, limit);
+                return (List<R>) template.selectList(query, parameterObj, bounds);
+            }
         }
         catch (ClassCastException e)
         {

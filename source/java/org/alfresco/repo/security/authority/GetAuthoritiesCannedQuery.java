@@ -161,7 +161,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
         return true;
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked"})
     protected List<AuthorityInfo> applyPostQuerySorting(List<AuthorityInfo> results, CannedQuerySortDetails sortDetails)
     {
         final List<Pair<Object, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();

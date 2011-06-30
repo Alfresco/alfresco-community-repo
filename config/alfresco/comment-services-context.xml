@@ -39,4 +39,28 @@
     <bean id="commentService" class="org.alfresco.repo.forum.CommentServiceImpl">
        <property name="nodeService" ref="NodeService"/>
     </bean>
+
+    <!-- Policies/behaviours for forum-related nodes  -->
+    <bean id="discussableAspect" class="org.alfresco.repo.forum.DiscussableAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="fileFolderService">
+            <ref bean="fileFolderService" />
+        </property>
+    </bean>
+    <bean id="forumPostBehaviours" class="org.alfresco.repo.forum.ForumPostBehaviours" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="commentService" ref="CommentService"/>
+        <property name="rawNodeService" ref="nodeService"/> <!-- Intentional small 'n' -->
+        <property name="nodeService" ref="NodeService"/>    <!-- Intentional large 'N' -->
+    </bean>
+    <bean id="commentsRollupAspect" class="org.alfresco.repo.forum.CommentsRollupAspect" init-method="init">
+       <property name="policyComponent" ref="policyComponent"/>
+   </bean>
 </beans>

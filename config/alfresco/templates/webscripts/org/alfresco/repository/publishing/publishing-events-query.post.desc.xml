@@ -1,12 +1,17 @@
 <webscript>
    <shortname>Query Publishing Events</shortname>
    <description>Queries for Publishing Events on an Environment.</description>
-   <url>/api/publishing/{environment_id}/events/query</url>
+   <url>/api/publishing/{site_id}/{environment_id}/events/query</url>
+   <url>/api/publishing/{site_id}/events/query</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>
    <args>
+      <arg>
+         <shortname>site_id</shortname>
+         <description>The id of the site to query.</description>
+      </arg>
       <arg>
          <shortname>environment_id</shortname>
          <description>The id of the environment to query.</description>
@@ -38,7 +43,6 @@
                      "url": string,
                      "status": string,
                      "comment": string,
-                     "version": string,
                      "scheduledTime":
                      {
                         "dateTime": string,
@@ -51,8 +55,24 @@
                         "dateTime": string,
                         "format": string
                      },
-                     "publishNodes": [string, ... ],
-                     "unpublishNodes": [string, ... ],
+                     "publishNodes":
+                     [
+                        {
+                           "nodeRef": string,
+                           "name": string,
+                           "version": string
+                        },
+                        ...
+                      ],
+                     "unpublishNodes":
+                     [
+                        {
+                           "nodeRef": string,
+                           "name": string,
+                           "version": string
+                        },
+                        ...
+                     ]
                      "channel":
                      {
                         "url": string,

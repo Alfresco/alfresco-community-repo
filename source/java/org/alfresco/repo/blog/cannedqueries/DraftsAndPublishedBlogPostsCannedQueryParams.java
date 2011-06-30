@@ -20,38 +20,34 @@ package org.alfresco.repo.blog.cannedqueries;
 
 import java.util.Date;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-
 /**
  * Parameters for {@link DraftsAndPublishedBlogPostsCannedQuery}.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
  */
-public class DraftsAndPublishedBlogPostsCannedQueryParams
+public class DraftsAndPublishedBlogPostsCannedQueryParams extends BlogEntity
 {
-    private final NodeRef blogContainerNode;
     private final String cmCreator;
     private final Date createdFromDate;
     private final Date createdToDate;
     private final String tag;
     
-    public DraftsAndPublishedBlogPostsCannedQueryParams(NodeRef blogContainerNodeRef,
-                                         String cmCreator,
-                                         Date createdFromDate,
-                                         Date createdToDate,
-                                         String tag)
+    public DraftsAndPublishedBlogPostsCannedQueryParams(Long blogContainerNodeId,
+                                                        Long nameQNameId,
+                                                        Long publishedQNameId,
+                                                        Long contentTypeQNameId,
+                                                        String cmCreator,
+                                                        Date createdFromDate,
+                                                        Date createdToDate,
+                                                        String tag)
     {
-        this.blogContainerNode = blogContainerNodeRef;
+        super(blogContainerNodeId, nameQNameId, publishedQNameId, contentTypeQNameId, null, null);
+        
         this.cmCreator = cmCreator;
         this.createdFromDate = createdFromDate;
         this.createdToDate = createdToDate;
         this.tag = tag;
-    }
-    
-    public NodeRef getBlogContainerNode()
-    {
-        return blogContainerNode;
     }
     
     public String getCmCreator()

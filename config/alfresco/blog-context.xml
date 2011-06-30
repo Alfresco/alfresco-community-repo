@@ -93,8 +93,10 @@
     <!-- We currently need one CQFactory per CQ in order to support interception at each of the different methods -->
     <bean name="parentBlogPostsCannedQueryFactory" abstract="true">
         <property name="registry" ref="cannedQueryRegistry"/>
-        <!-- Intentionally injecting the small 'n', undecorated NodeService. -->
-        <property name="rawNodeService" ref="nodeService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
     </bean>
     
     <bean name="getDraftBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"

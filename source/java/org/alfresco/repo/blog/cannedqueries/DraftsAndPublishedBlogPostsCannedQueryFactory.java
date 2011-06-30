@@ -18,53 +18,30 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * A {@link CannedQueryFactory} for the creation of {@link DraftsAndPublishedBlogPostsCannedQuery}s.
  * 
- * Currently, this is implemented using calls to lower-level services, notably the {@link NodeService} rather
- * than database queries. This may change in the future.
- * 
+ * @author Neil Mc Erlean
  * @since 4.0
- * @author Neil Mc Erlean.
  */
-public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<BlogPostInfo>
+public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQueryFactory
 {
-    private MethodSecurityBean<BlogPostInfo> methodSecurity;
-    private NodeService rawNodeService;
     private TaggingService taggingService;
-    
-    public void setMethodSecurity(MethodSecurityBean<BlogPostInfo> methodSecurity)
-    {
-        this.methodSecurity = methodSecurity;
-    }
-
-    public void setRawNodeService(NodeService nodeService)
-    {
-        this.rawNodeService = nodeService;
-    }
     
     public void setTaggingService(TaggingService taggingService)
     {
@@ -75,7 +52,7 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
         final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(
-                rawNodeService, taggingService,
+                cannedQueryDAO, taggingService,
                 methodSecurity,
                 parameters);
         return (CannedQuery<BlogPostInfo>) cq;
@@ -89,7 +66,11 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
         
         //FIXME Need tenant service like for GetChildren?
-        DraftsAndPublishedBlogPostsCannedQueryParams paramBean = new DraftsAndPublishedBlogPostsCannedQueryParams(blogContainerNode,
+        DraftsAndPublishedBlogPostsCannedQueryParams paramBean = new DraftsAndPublishedBlogPostsCannedQueryParams(
+                                                                                    getNodeId(blogContainerNode),
+                                                                                    getQNameId(ContentModel.PROP_NAME),
+                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
+                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
                                                                                     byUser,
                                                                                     fromDate, toDate, tag);
         
@@ -101,41 +82,5 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractCanne
         
         // return canned query instance
         return getCannedQuery(params);
-}
-
-    private CannedQuerySortDetails createCQSortDetails(QName sortProp, SortOrder sortOrder)
-    {
-        CannedQuerySortDetails cqsd = null;
-        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>();
-        sortPairs.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
-        cqsd = new CannedQuerySortDetails(sortPairs);
-        return cqsd;
-    }
-
-    private CannedQueryPageDetails createCQPageDetails(PagingRequest pagingReq)
-    {
-        int skipCount = pagingReq.getSkipCount();
-        if (skipCount == -1)
-        {
-            skipCount = CannedQueryPageDetails.DEFAULT_SKIP_RESULTS;
-        }
-        
-        int maxItems = pagingReq.getMaxItems();
-        if (maxItems == -1)
-        {
-            maxItems  = CannedQueryPageDetails.DEFAULT_PAGE_SIZE;
-        }
-        
-        // page details
-        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems);
-        return cqpd;
-    }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        super.afterPropertiesSet();
-        
-        PropertyCheck.mandatory(this, "methodSecurity", methodSecurity);
     }
 }

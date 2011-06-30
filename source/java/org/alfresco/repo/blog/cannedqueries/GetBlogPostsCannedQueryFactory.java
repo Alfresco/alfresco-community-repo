@@ -18,61 +18,38 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * A {@link CannedQueryFactory} for various queries relating to {@link BlogPostInfo blog-posts}.
- * Currently, this is implemented using calls to lower-level services, notably the {@link NodeService} rather
- * than database queries. This may change in the future.
  * 
- * @author Neil Mc Erlean.
+ * @author Neil Mc Erlean
  * @since 4.0
  * 
  * @see BlogService#getDrafts(NodeRef, String, PagingRequest)
  * @see BlogService#getPublished(NodeRef, Date, Date, String, PagingRequest)
  */
-public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<BlogPostInfo>
+public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQueryFactory
 {
-    private MethodSecurityBean<BlogPostInfo> methodSecurity;
-    private NodeService rawNodeService;
-    
-    public void setMethodSecurity(MethodSecurityBean<BlogPostInfo> methodSecurity)
-    {
-        this.methodSecurity = methodSecurity;
-    }
-
-    public void setRawNodeService(NodeService nodeService)
-    {
-        this.rawNodeService = nodeService;
-    }
-    
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(rawNodeService, methodSecurity, parameters);
+        final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(cannedQueryDAO, methodSecurity, parameters);
+        
         return (CannedQuery<BlogPostInfo>) cq;
     }
     
@@ -85,12 +62,14 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         
         //FIXME Need tenant service like for GetChildren?
         boolean isPublished = false;
-        List<QName> requiredAspects = null;
-        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(blogContainerNode,
+        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
+                                                                                    getQNameId(ContentModel.PROP_NAME),
+                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
+                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
                                                                                     username,
                                                                                     isPublished,
                                                                                     null, null,
-                                                                                    requiredAspects);
+                                                                                    null, null);
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_CREATED, SortOrder.DESCENDING);
@@ -110,12 +89,24 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
         
         boolean isPublished = true;
-        List<QName> requiredAspects = Arrays.asList(new QName[]{BlogIntegrationModel.ASPECT_BLOG_POST});
-        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(blogContainerNode,
+        
+        Long blogIntAspectQNameId = getQNameId(BlogIntegrationModel.ASPECT_BLOG_POST);
+        if (blogIntAspectQNameId == null)
+        {
+            // possible if no blogs have ever been published externally
+            blogIntAspectQNameId = -1L; // run the query but should return empty results
+        }
+        
+        // published externally if it has the BLOG_POST aspect
+        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
+                                                                                    getQNameId(ContentModel.PROP_NAME),
+                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
+                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
                                                                                     null,
                                                                                     isPublished,
                                                                                     null, null,
-                                                                                    requiredAspects);
+                                                                                    blogIntAspectQNameId,
+                                                                                    getQNameId(BlogIntegrationModel.PROP_POSTED));
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(BlogIntegrationModel.PROP_POSTED, SortOrder.DESCENDING);
@@ -135,12 +126,14 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
         
         boolean isPublished = true;
-        List<QName> requiredAspects = null;
-        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(blogContainerNode,
+        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
+                                                                                    getQNameId(ContentModel.PROP_NAME),
+                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
+                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
                                                                                     byUser,
                                                                                     isPublished,
                                                                                     fromDate, toDate,
-                                                                                    requiredAspects);
+                                                                                    null, null);
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);
@@ -150,41 +143,5 @@ public class GetBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<B
         
         // return canned query instance
         return getCannedQuery(params);
-    }
-    
-    private CannedQuerySortDetails createCQSortDetails(QName sortProp, SortOrder sortOrder)
-    {
-        CannedQuerySortDetails cqsd = null;
-        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>();
-        sortPairs.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
-        cqsd = new CannedQuerySortDetails(sortPairs);
-        return cqsd;
-    }
-    
-    private CannedQueryPageDetails createCQPageDetails(PagingRequest pagingReq)
-    {
-        int skipCount = pagingReq.getSkipCount();
-        if (skipCount == -1)
-        {
-            skipCount = CannedQueryPageDetails.DEFAULT_SKIP_RESULTS;
-        }
-        
-        int maxItems = pagingReq.getMaxItems();
-        if (maxItems == -1)
-        {
-            maxItems  = CannedQueryPageDetails.DEFAULT_PAGE_SIZE;
-        }
-        
-        // page details
-        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems, CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
-        return cqpd;
-    }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        super.afterPropertiesSet();
-        
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurity);
     }
 }

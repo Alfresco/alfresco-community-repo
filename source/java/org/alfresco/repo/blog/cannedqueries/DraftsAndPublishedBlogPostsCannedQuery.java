@@ -21,24 +21,24 @@ package org.alfresco.repo.blog.cannedqueries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
+import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.PropertyBasedComparator;
+import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This is a {@link CannedQuery} for the rather particular 'get my drafts and all published' blog-post query.
@@ -50,81 +50,101 @@ import org.alfresco.util.Pair;
  */
 public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryPermissions<BlogPostInfo>
 {
-    private final NodeService rawNodeService;
+    private Log logger = LogFactory.getLog(getClass());
+    
+    private static final String QUERY_NAMESPACE = "alfresco.blog";
+    private static final String QUERY_SELECT_GET_BLOGS = "select_GetBlogsCannedQuery";
+    
+    private final CannedQueryDAO cannedQueryDAO;
     private final TaggingService taggingService;
     
     public DraftsAndPublishedBlogPostsCannedQuery(
-            NodeService rawNodeService,
+            CannedQueryDAO cannedQueryDAO,
             TaggingService taggingService,
             MethodSecurityBean<BlogPostInfo> methodSecurity,
             CannedQueryParameters params)
     {
         super(params, methodSecurity);
-        this.rawNodeService = rawNodeService;
+        this.cannedQueryDAO = cannedQueryDAO;
         this.taggingService = taggingService;
     }
     
     @Override
     protected List<BlogPostInfo> queryAndFilter(CannedQueryParameters parameters)
     {
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        
         Object paramBeanObj = parameters.getParameterBean();
         if (paramBeanObj == null)
             throw new NullPointerException("Null GetBlogPosts query params");
         
         DraftsAndPublishedBlogPostsCannedQueryParams paramBean = (DraftsAndPublishedBlogPostsCannedQueryParams) paramBeanObj;
-        
+        String requestedCreator = paramBean.getCmCreator();
         String requestedTag = paramBean.getTag();
         Date createdFromDate = paramBean.getCreatedFromDate();
         Date createdToDate = paramBean.getCreatedToDate();
         
-        List<ChildAssociationRef> childAssocs = getAllBlogNodes(paramBean.getBlogContainerNode());
+        // note: refer to SQL for specific DB filtering (eg.parent node and optionally blog integration aspect, etc)
+        List<BlogEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_BLOGS, paramBean, 0, Integer.MAX_VALUE);
         
-        List<BlogPostInfo> filteredNodeRefs = new ArrayList<BlogPostInfo>();
-        for (ChildAssociationRef chAssRef : childAssocs)
+        List<BlogEntity> filtered = new ArrayList<BlogEntity>(results.size());
+        for (BlogEntity result : results)
         {
-            NodeRef nextBlogNode = chAssRef.getChildRef();
-            
             // Is this next node in the list to be included in the results?
             boolean nextNodeIsAcceptable = true;
             
+            Date actualPublishedDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getPublishedDate());
+            
+            String actualCreator = result.getCreator();
+            Date actualCreatedDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getCreatedDate());
+            
             // Return all published Blog Posts
-            if (rawNodeService.getProperty(nextBlogNode, ContentModel.PROP_PUBLISHED) != null)
+            if (actualPublishedDate != null)
             {
                 // Intentionally empty
             }
             else
             {
                 // We're relying on cm:published being null below i.e. we are dealing with draft blog posts.
-                if (!rawNodeService.getProperty(nextBlogNode, ContentModel.PROP_CREATOR).equals(paramBean.getCmCreator()))
+                if (requestedCreator != null)
+                {
+                    if (! requestedCreator.equals(actualCreator))
+                    {
+                        nextNodeIsAcceptable = false;
+                    }
+                }
+                else
                 {
                     nextNodeIsAcceptable = false;
                 }
             }
             
             // Only return blogs created within the specified dates
-            Date actualCreatedDate = (Date) rawNodeService.getProperty(nextBlogNode, ContentModel.PROP_CREATED);
-            if (actualCreatedDate != null)
+            if ((createdFromDate != null) || (createdToDate != null))
             {
-                if (createdFromDate != null && actualCreatedDate.before(createdFromDate))
+                if (actualCreatedDate != null)
                 {
-                    nextNodeIsAcceptable = false;
-                }
-                if (createdToDate != null && actualCreatedDate.after(createdToDate))
-                {
-                    nextNodeIsAcceptable = false;
+                    if (createdFromDate != null && actualCreatedDate.before(createdFromDate))
+                    {
+                        nextNodeIsAcceptable = false;
+                    }
+                    if (createdToDate != null && actualCreatedDate.after(createdToDate))
+                    {
+                        nextNodeIsAcceptable = false;
+                    }
                 }
             }
             
+            // TODO review use-case and either remove or push-down
             // Only return blog posts tagged with the specified tag string.
-            if (requestedTag != null && !taggingService.getTags(nextBlogNode).contains(requestedTag))
+            if (requestedTag != null && !taggingService.getTags(result.getNode().getNodeRef()).contains(requestedTag))
             {
                 nextNodeIsAcceptable = false;
             }
             
-            
             if (nextNodeIsAcceptable)
             {
-                filteredNodeRefs.add(new BlogPostInfo(nextBlogNode, (String)rawNodeService.getProperty(nextBlogNode, ContentModel.PROP_NAME)));
+                filtered.add(result);
             }
         }
         
@@ -135,26 +155,26 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
             Pair<? extends Object, SortOrder> sortPair = sortPairs.get(0);
             
             QName sortProperty = (QName) sortPair.getFirst();
-            final PropertyBasedComparator createdDateComparator = new PropertyBasedComparator(sortProperty, rawNodeService);
-                
+            final PropertyBasedComparator comparator = new PropertyBasedComparator(sortProperty);
+            
             if (sortPair.getSecond() == SortOrder.DESCENDING)
             {
-                Collections.sort(filteredNodeRefs, Collections.reverseOrder(createdDateComparator));
+                Collections.sort(filtered, Collections.reverseOrder(comparator));
             }
         }
         
+        List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(filtered.size());
+        for (BlogEntity result : filtered)
+        {
+            blogPostInfos.add(new BlogPostInfo(result.getNodeRef(), result.getName()));
+        }
         
-        return filteredNodeRefs;
-    }
-    
-    private List<ChildAssociationRef> getAllBlogNodes(NodeRef containerNode)
-    {
-        final Set<QName> childNodeTypes = new HashSet<QName>();
-        childNodeTypes.add(ContentModel.TYPE_CONTENT);
+        if (start != null)
+        {
+            logger.debug("Base query: "+blogPostInfos.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+        }
         
-        // This will, of course, retrieve all the blog posts which may be a very long list.
-        List<ChildAssociationRef> childAssocs = rawNodeService.getChildAssocs(containerNode, childNodeTypes);
-        return childAssocs;
+        return blogPostInfos;
     }
     
     @Override

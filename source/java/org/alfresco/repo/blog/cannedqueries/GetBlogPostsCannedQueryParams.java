@@ -18,12 +18,7 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Parameter objects for {@link GetBlogPostsCannedQuery}.
@@ -31,40 +26,37 @@ import org.alfresco.service.namespace.QName;
  * @author Neil Mc Erlean
  * @since 4.0
  */
-public class GetBlogPostsCannedQueryParams
+public class GetBlogPostsCannedQueryParams extends BlogEntity
 {
-    private final NodeRef blogContainerNode;
     private final String cmCreator;
+    
     /**
      * <tt>true</tt> means the blog-posts should be cm:published, <tt>false</tt> means they should not.
      */
     private final boolean isPublished;
+    
     private final Date publishedFromDate;
     private final Date publishedToDate;
-    private final List<QName> requiredAspects;
+    private final Long blogIntAspectQNameId;
     
-    public GetBlogPostsCannedQueryParams(NodeRef blogContainerNodeRef,
+    public GetBlogPostsCannedQueryParams(Long blogContainerNodeId,
+                                         Long nameQNameId,
+                                         Long publishedQNameId,
+                                         Long contentTypeQNameId,
                                          String cmCreator,
                                          boolean isPublished,
                                          Date publishedFromDate,
                                          Date publishedToDate,
-                                         List<QName> requiredAspects)
+                                         Long blogIntAspectQNameId,
+                                         Long blogIntPostedQNameId)
     {
-        this.blogContainerNode = blogContainerNodeRef;
+        super(blogContainerNodeId, nameQNameId, publishedQNameId, contentTypeQNameId, blogIntAspectQNameId, blogIntPostedQNameId);
+        
         this.cmCreator = cmCreator;
         this.isPublished = isPublished;
         this.publishedFromDate = publishedFromDate;
         this.publishedToDate = publishedToDate;
-        if (requiredAspects == null)
-        {
-            requiredAspects = Collections.emptyList();
-        }
-        this.requiredAspects = requiredAspects;
-    }
-    
-    public NodeRef getBlogContainerNode()
-    {
-        return blogContainerNode;
+        this.blogIntAspectQNameId = blogIntAspectQNameId;
     }
     
     public String getCmCreator()
@@ -87,8 +79,8 @@ public class GetBlogPostsCannedQueryParams
         return publishedToDate;
     }
     
-    public List<QName> getRequiredAspects()
+    public Long getBlogIntAspectQNameId()
     {
-        return Collections.unmodifiableList(this.requiredAspects);
+        return blogIntAspectQNameId;
     }
 }

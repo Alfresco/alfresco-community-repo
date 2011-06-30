@@ -66,9 +66,14 @@ Inbound settings from iBatis
         <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
         <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
         
-        <!-- Node - used by Canned Queries -->
+        <!--GetChildren CQ (currently used by FileFolderService.list / PersonService.getPeople) -->
         <typeAlias alias="FilterSortNode" type="org.alfresco.repo.node.getchildren.FilterSortNodeEntity"/>
+        
+        <!-- Authority CQ -->
         <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>
+        
+        <!-- Blog CQ -->
+        <typeAlias alias="Blog" type="org.alfresco.repo.blog.cannedqueries.BlogEntity"/>
         
         <!-- Patch -->
         
@@ -180,6 +185,7 @@ Inbound settings from iBatis
         <!-- Canned queries -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/blog-common-SqlMap.xml"/>
     </mappers>
     
 </configuration>

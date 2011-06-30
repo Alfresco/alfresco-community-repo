@@ -18,17 +18,11 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -37,17 +31,13 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import com.sun.star.lang.IllegalArgumentException;
 
 /**
  * Unit Test to test the Calendaring Web Script API
@@ -185,21 +175,28 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        }
     }
     
+    /**
+     * Creates a 1 hour, non-all day event on the 29th of June
+     */
     private JSONObject createEntry(String name, String where, String description, 
           int expectedStatus)
     throws Exception
     {
+       String date = "2011/06/29";
+       String start = "12:00";
+       String end = "13:00";
+       
        JSONObject json = new JSONObject();
        json.put("site", SITE_SHORT_NAME_CALENDAR);
        json.put("what", name);
        json.put("where", where);
        json.put("desc", description);
-       json.put("from", "2011/06/29"); // TODO
-       json.put("to", "2011/06/29"); // TODO
-       json.put("fromdate", "Wednesday, 29 June 2011"); // TODO
-       json.put("todate", "Wednesday, 29 June 2011"); // TODO
-       json.put("start", "12:00"); // TODO
-       json.put("end", "13:00"); // TODO
+       json.put("from", date);
+       json.put("to", date);
+//       json.put("fromdate", "Wednesday, 29 June 2011"); // Not needed
+//       json.put("todate", "Wednesday, 29 June 2011"); // Not needed
+       json.put("start", start);
+       json.put("end", end);
        json.put("tags", "");
        json.put("docfolder", "");
        json.put("page", "calendar");
@@ -220,19 +217,26 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        }
     }
     
+    /**
+     * Updates the event to be a 2 hour, non-all day event on the 28th of June
+     */
     public JSONObject updateEntry(String name, String what, String where, String description, 
           int expectedStatus) throws Exception
     {
+       String date = "2011/06/28";
+       String start = "11:30";
+       String end = "13:30";
+       
        JSONObject json = new JSONObject();
        json.put("what", what);
        json.put("where", where);
        json.put("desc", description);
-       json.put("from", "2011/06/29"); // TODO
-       json.put("to", "2011/06/29"); // TODO
-       json.put("fromdate", "Wednesday, 29 June 2011"); // TODO
-       json.put("todate", "Wednesday, 29 June 2011"); // TODO
-       json.put("start", "12:00"); // TODO
-       json.put("end", "13:00"); // TODO
+       json.put("from", date);
+       json.put("to", date);
+//       json.put("fromdate", "Tuesday, 30 June 2011"); // Not needed
+//       json.put("todate", "Tuesday, 30 June 2011"); // Not needed
+       json.put("start", start);
+       json.put("end", end);
        json.put("tags", "");
        json.put("docfolder", "");
        json.put("page", "calendar");
@@ -305,7 +309,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        
        assertEquals(EVENT_TITLE_ONE, entry.getString("name"));
        assertEquals("Where", entry.getString("where"));
-       // TODO Check more
+       assertEquals("Thing", entry.getString("desc"));
+       assertEquals("2011-06-29", entry.getString("from")); // Different format!
+       assertEquals("2011-06-29", entry.getString("to")); // Different format!
+       assertEquals("12:00", entry.getString("start"));
+       assertEquals("13:00", entry.getString("end"));
+       assertEquals("", entry.getString("allday")); // Not false...
+       // No isoutlook on create/edit
        
        
        // Fetch
@@ -315,8 +325,14 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
        assertEquals(name, entry.getString("name"));
        assertEquals("Where", entry.getString("location")); // Not where...
-       assertEquals("Thing", entry.getString("description"));
-       // TODO Check more
+       assertEquals("Thing", entry.getString("description")); // Not desc...
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/29/2011", entry.getString("from"));
+       assertEquals("6/29/2011", entry.getString("to"));
+       assertEquals("12:00", entry.getString("start"));
+       assertEquals("13:00", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
        
        
        // Edit
@@ -325,7 +341,12 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(EVENT_TITLE_ONE, entry.getString("summary"));
        assertEquals("More Where", entry.getString("location"));
        assertEquals("More Thing", entry.getString("description"));
-       // TODO Check more
+       
+       // No from/to/start/end, does dtstart and dtend instead
+       assertEquals("2011-06-28T11:30", entry.getString("dtstart"));
+       assertEquals("2011-06-28T13:30", entry.getString("dtend"));
+       assertEquals("", entry.getString("allday"));
+       // No isoutlook on create/edit
        
        
        // Fetch
@@ -336,8 +357,17 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(name, entry.getString("name"));
        assertEquals("More Where", entry.getString("location")); // Not where...
        assertEquals("More Thing", entry.getString("description"));
-       // TODO Check more
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/28/2011", entry.getString("from"));
+       assertEquals("6/28/2011", entry.getString("to"));
+       assertEquals("11:30", entry.getString("start"));
+       assertEquals("13:30", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
 
+       
+       // TODO Make it a whole day event and check that
+       
        
        // Delete
        sendRequest(new DeleteRequest(URL_EVENT_BASE + name), Status.STATUS_NO_CONTENT);
@@ -347,8 +377,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entry = getEntry(EVENT_TITLE_ONE, Status.STATUS_OK);
        assertEquals(true, entry.has("error"));
        
+       
        // Can't delete again
        sendRequest(new DeleteRequest(URL_EVENT_BASE + name), Status.STATUS_NOT_FOUND);
+       
+       // Can't edit it when it's deleted
+       sendRequest(new PutRequest(URL_EVENT_BASE + name, "{}", "application/json"), Status.STATUS_OK);
+       assertEquals(true, entry.has("error"));
     }
     
     /**

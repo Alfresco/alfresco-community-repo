@@ -358,11 +358,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     return results.getTotalResultCount();
                 }
-                @Override
-                public boolean permissionsApplied()
-                {
-                    return results.permissionsApplied();
-                }
             };
         
         if (start != null)
@@ -427,11 +422,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             public Pair<Integer, Integer> getTotalResultCount()
             {
                 return ppr.getTotalResultCount();
-            }
-            @Override
-            public boolean permissionsApplied()
-            {
-                return ppr.permissionsApplied();
             }
         };
     }

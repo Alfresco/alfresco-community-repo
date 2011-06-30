@@ -48,9 +48,9 @@ import org.alfresco.repo.domain.node.ReferenceablePropertiesEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
+import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
-import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -156,7 +156,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         
         // Get sort details
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
         
         // Set sort / filter params
@@ -234,21 +234,9 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             // unsorted (apart from any implicit order) - note: permissions are applied during result handling to allow early cutoff
             
-            int requestedCount = parameters.getPageDetails().getResultsRequiredForPaging();
-            int requestTotalCountMax = getParameters().requestTotalResultCountMax();
+            final int requestedCount = parameters.getResultsRequired();
             
-            if ((requestTotalCountMax > 0) && (requestTotalCountMax > requestedCount))
-            {
-                requestedCount = requestTotalCountMax;
-            }
-            
-            if (requestedCount != Integer.MAX_VALUE)
-            {
-                requestedCount++; // add one for "hasMoreItems"
-            }
-            
-            final WrappedList<NodeRef> rawResult = new WrappedList<NodeRef>(new ArrayList<NodeRef>(100), requestedCount);
-            
+            final List<NodeRef> rawResult = new ArrayList<NodeRef>(Math.min(1000, requestedCount));
             UnsortedChildQueryCallback callback = new UnsortedChildQueryCallback()
             {
                 public boolean handle(NodeRef nodeRef)
@@ -256,7 +244,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                     rawResult.add(tenantService.getBaseName(nodeRef));
                     
                     // More results ?
-                    return (rawResult.size() < rawResult.getMaxChecks());
+                    return (rawResult.size() < requestedCount);
                 }
             };
             
@@ -265,7 +253,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             resultHandler.done();
             
             // permissions have been applied
-            result = new WrappedList<NodeRef>(rawResult.getWrapped(), true, (rawResult.size() == requestedCount));
+            result = PermissionCheckedValueMixin.create(rawResult);
         }
         
         if (start != null)
@@ -482,7 +470,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
-        int requestTotalCountMax = getParameters().requestTotalResultCountMax();
+        int requestTotalCountMax = getParameters().getTotalResultCountMax();
         int maxChecks = (((requestTotalCountMax > 0) && (requestTotalCountMax > requestedCount)) ? requestTotalCountMax : requestedCount);
         int cnt = results.size();
         
@@ -693,7 +681,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             preload(nodeRefs);
             
             // TODO track total time for incremental permission checks ... and cutoff (eg. based on some config)
-            List<NodeRef> results = applyPermissions(nodeRefs, nodeRefs.size());
+            List<NodeRef> results = applyPostQueryPermissions(nodeRefs, nodeRefs.size());
             
             for (NodeRef nodeRef : results)
             {

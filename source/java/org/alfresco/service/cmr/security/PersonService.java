@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -226,7 +227,7 @@ public interface PersonService
      * @author janv
      * @since 4.0
      */
-    public class PersonInfo
+    public class PersonInfo implements PermissionCheckValue
     {
         private final NodeRef nodeRef;
         private final String userName;
@@ -241,6 +242,7 @@ public interface PersonService
             this.lastName = lastName;
         }
         
+        @Override
         public NodeRef getNodeRef()
         {
             return nodeRef;

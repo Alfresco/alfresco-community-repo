@@ -63,10 +63,4 @@ public class PagingFollowingResultsImpl implements PagingFollowingResults
     {
         return null;
     }
-
-    @Override
-    public boolean permissionsApplied()
-    {
-        return false;
-    }
 }

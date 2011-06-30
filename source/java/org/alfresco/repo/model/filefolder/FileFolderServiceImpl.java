@@ -28,9 +28,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
-import java.util.ResourceBundle.Control;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -41,7 +41,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.repo.security.permissions.impl.acegi.WrappedList;
+import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -409,11 +409,6 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 return totalCount;
             }
-            @Override
-            public boolean permissionsApplied()
-            {
-                return results.permissionsApplied();
-            }
         };
     }
     
@@ -703,7 +698,7 @@ public class FileFolderServiceImpl implements FileFolderService
         List<FileInfo> results = toFileInfo(nodeRefs);
         
         // avoid re-applying permissions (for "list" canned queries)
-        return new WrappedList<FileInfo>(results, cq.permissionsApplied(), cq.hasMoreItems());
+        return PermissionCheckedValueMixin.create(results);
     }
     
     private Set<QName> buildTypes(boolean files, boolean folders, Set<QName> ignoreQNameTypes)

@@ -370,11 +370,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             {
                 return new Pair<Integer, Integer>(auths.size(), auths.size());
             }
-            @Override
-            public boolean permissionsApplied()
-            {
-                return true; // note: for now, assume ACL_ALLOW for "other" authorities (as per public-services-security.xml)
-            }
         };
     }
     

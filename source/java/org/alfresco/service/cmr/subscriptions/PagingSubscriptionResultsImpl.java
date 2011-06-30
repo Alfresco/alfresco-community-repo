@@ -64,10 +64,4 @@ public class PagingSubscriptionResultsImpl implements PagingSubscriptionResults
     {
         return null;
     }
-
-    @Override
-    public boolean permissionsApplied()
-    {
-        return false;
-    }
 }

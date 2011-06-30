@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -33,11 +34,12 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
-public interface FileInfo extends Serializable
+public interface FileInfo extends PermissionCheckValue, Serializable
 {
     /**
      * @return Returns a reference to the low-level node representing this file
      */
+    @Override
     public NodeRef getNodeRef();
     
     /**

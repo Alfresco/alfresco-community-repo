@@ -36,17 +36,16 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.cmis.CMISResultSet;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.query.PagingResults;
-import org.alfresco.query.PermissionedResults;
-import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.PermissionCheckCollection;
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
+import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
+import org.alfresco.repo.security.permissions.PermissionCheckedValue;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -57,7 +56,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -255,49 +253,22 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 }
                 return null;
             }
+            else if (PermissionCheckedValue.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                // The security provider was not already present
+                return decide(authentication, object, config, (PermissionCheckedValue) returnedObject);
+            }
+            else if (PermissionCheckValue.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                return decide(authentication, object, config, (PermissionCheckValue) returnedObject);
+            }
             else if (StoreRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Store access");
-                }
                 return decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject)).getStoreRef();
             }
             else if (NodeRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Node access");
-                }
                 return decide(authentication, object, config, (NodeRef) returnedObject);
-            }
-            else if (FileInfo.class.isAssignableFrom(returnedObject.getClass()))
-            {
-                return decide(authentication, object, config, (FileInfo) returnedObject);
-            }
-            else if (PagingResults.class.isAssignableFrom(returnedObject.getClass()))
-            {
-                if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()) &&
-                    (! ((PermissionedResults)returnedObject).permissionsApplied()))
-                {
-                    throw new AlfrescoRuntimeException("Not implemented");
-                    /*
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Paging Results access");
-                    }
-                    return decide(authentication, object, config, ((PagingResults<?>) returnedObject);
-                    */
-                }
-                else
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Paging Results access - already checked permissions for " + object.getClass().getName());
-                    }
-                    
-                    return returnedObject;
-                }
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -305,75 +276,34 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (ChildAssociationRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Child Association access");
-                }
                 return decide(authentication, object, config, (ChildAssociationRef) returnedObject);
             }
             else if (SolrJSONResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("SolrJSONResultSet - already checked permissions for " + object.getClass().getName());
-                }
                 return returnedObject;
             }
             else if (CMISResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("CMIS Result Set - already checked permissions for " + object.getClass().getName());
-                }
                 return returnedObject;
             }
             else if (PagingLuceneResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Result Set access");
-                }
                 return decide(authentication, object, config, (PagingLuceneResultSet) returnedObject);
             }
             else if (ResultSet.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Result Set access");
-                }
                 return decide(authentication, object, config, (ResultSet) returnedObject);
             }
             else if (QueryEngineResults.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Result Set access");
-                }
                 return decide(authentication, object, config, (QueryEngineResults) returnedObject);
             }
             else if (Collection.class.isAssignableFrom(returnedObject.getClass()))
             {
-                if (PermissionedResults.class.isAssignableFrom(returnedObject.getClass()) &&
-                        ((PermissionedResults)returnedObject).permissionsApplied())
-                {
-                    // Already checked - don't need to re-check (eg. WrappedList - used by unsorted GetChildren CQ)
-                    return returnedObject;
-                }
-                else
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Collection Access");
-                    }
-                    return decide(authentication, object, config, (Collection) returnedObject);
-                }
+                return decide(authentication, object, config, (Collection) returnedObject);
             }
             else if (returnedObject.getClass().isArray())
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Array Access");
-                }
                 return decide(authentication, object, config, (Object[]) returnedObject);
             }
             else
@@ -477,16 +407,22 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return false;
     }
 
-    private FileInfo decide(Authentication authentication, Object object, ConfigAttributeDefinition config, FileInfo returnedObject) throws AccessDeniedException
+    private PermissionCheckedValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckedValue returnedObject) throws AccessDeniedException
     {
-        // Filter check done later
-        NodeRef nodeRef = returnedObject.getNodeRef();
-        // this is virtually equivalent to the noderef
-        decide(authentication, object, config, nodeRef);
-        // the noderef was allowed
+        // This passes as it has already been filtered
+        // TODO: Get the filter that was applied and double-check
         return returnedObject;
     }
-
+    
+    private PermissionCheckValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckValue returnedObject) throws AccessDeniedException
+    {
+        // Get the wrapped value
+        NodeRef nodeRef = returnedObject.getNodeRef();
+        decide(authentication, object, config, nodeRef);
+        // This passes
+        return returnedObject;
+    }
+    
     @SuppressWarnings("rawtypes")
     private Pair decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Pair returnedObject) throws AccessDeniedException
     {
@@ -496,6 +432,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
+    @SuppressWarnings("rawtypes")
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
@@ -866,6 +803,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return new QueryEngineResults(answer);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
     {
         if (returnedObject == null)
@@ -874,68 +812,78 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
         
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
-        
-        if (supportedDefinitions.size() == 0)
-        {
-            if (returnedObject instanceof WrappedList<?>)
-            {
-                ((WrappedList<?>)returnedObject).setHasMoreItems(false);
-                ((WrappedList<?>)returnedObject).setPermissionsApplied(true);
-            }
-            
-            return returnedObject;
-        }
-        
-        Set<Object> removed = new HashSet<Object>();
-        
         if (log.isDebugEnabled())
         {
             log.debug("Entries are " + supportedDefinitions);
         }
         
-        // record search start time
+        if (supportedDefinitions.size() == 0)
+        {
+            return returnedObject;
+        }
+        
+        // Default to the system-wide values and we'll see if they need to be reduced
+        long targetResultCount = returnedObject.size(); 
+        int maxPermissionChecks = Integer.MAX_VALUE;
+        long maxPermissionCheckTimeMillis = this.maxPermissionCheckTimeMillis; 
+        if (returnedObject instanceof PermissionCheckCollection<?>)
+        {
+            PermissionCheckCollection permissionCheckCollection = (PermissionCheckCollection) returnedObject;
+            // Get values
+            targetResultCount = permissionCheckCollection.getTargetResultCount();
+            if (permissionCheckCollection.getCutOffAfterCount() > 0)
+            {
+                maxPermissionChecks = permissionCheckCollection.getCutOffAfterCount();
+            }
+            if (permissionCheckCollection.getCutOffAfterTimeMs() > 0)
+            {
+                maxPermissionCheckTimeMillis = permissionCheckCollection.getCutOffAfterTimeMs();
+            }
+        }
+        
+        // Start timer and counter for cut-off
+        boolean cutoff = false;
         long startTimeMillis = System.currentTimeMillis();
         int count = 0;
         
-        boolean cutoff = false;
+        // Keep values explicitly
+        List<Object> keepValues = new ArrayList<Object>(returnedObject.size());
         
-        int maxChecks = Integer.MAX_VALUE;
-        if ((returnedObject instanceof WrappedList<?>) && ((WrappedList<?>)returnedObject).getMaxChecks() > 0)
+        for (Object nextObject : returnedObject)
         {
-            maxChecks = ((WrappedList<?>)returnedObject).getMaxChecks();
-        }
-        
-        Iterator iterator = returnedObject.iterator();
-        while (iterator.hasNext())
-        {
-            Object nextObject = iterator.next();
-            
             // if the maximum result size or time has been exceeded, then we have to remove only
             long currentTimeMillis = System.currentTimeMillis();
             
-            // NOTE: for reference - the "maxPermissionChecks" has never been honoured by this loop (since previously the count was not being incremented)
-            if (count >= maxChecks || (currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            if (count >= targetResultCount)
             {
-                // just remove it
-                iterator.remove();
-                
-                if (! cutoff)
+                // We have enough results.  We stop without cutoff.
+                break;
+            }
+            else if (count >= maxPermissionChecks)
+            {
+                // We have been cut off by count
+                cutoff = true;
+                if (log.isDebugEnabled())
                 {
-                    cutoff = true;
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("decide (collection) cut-off: "+(count >= maxChecks ? " maxChecks="+maxChecks : " ")+((currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis ? " maxCheckTime="+maxPermissionCheckTimeMillis : ""));
-                    }
+                    log.debug("decide (collection) cut-off: " + count + " checks exceeded " + maxPermissionChecks + " checks");
                 }
-                
-                continue;
+                break;
+            }
+            else if ((currentTimeMillis - startTimeMillis) > maxPermissionCheckTimeMillis)
+            {
+                // We have been cut off by time
+                cutoff = true;
+                if (log.isDebugEnabled())
+                {
+                    log.debug("decide (collection) cut-off: " + (currentTimeMillis - startTimeMillis) + "ms exceeded " + maxPermissionCheckTimeMillis + "ms");
+                }
+                break;
             }
             
             boolean allowed = true;
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
                 NodeRef testNodeRef = null;
-                
                 if (cad.typeString.equals(AFTER_ACL_NODE))
                 {
                     if (StoreRef.class.isAssignableFrom(nextObject.getClass()))
@@ -950,27 +898,17 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) nextObject).getChildRef();
                     }
-                    else if (FileInfo.class.isAssignableFrom(nextObject.getClass()))
-                    {
-                        testNodeRef = ((FileInfo) nextObject).getNodeRef();
-                    }
-                    else if (BlogPostInfo.class.isAssignableFrom(nextObject.getClass()))
-                    {
-                        testNodeRef = ((BlogPostInfo) nextObject).getNodeRef();
-                    }
-                    else if (PersonInfo.class.isAssignableFrom(nextObject.getClass()))
-                    {
-                        testNodeRef = ((PersonInfo) nextObject).getNodeRef();
-                    }
                     else if (Pair.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = (NodeRef) ((Pair)nextObject).getSecond();
                     }
+                    else if (PermissionCheckValue.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((PermissionCheckValue) nextObject).getNodeRef();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException(
-                                "The specified parameter is not a collection of " +
-                                "StoreRefs, NodeRefs, ChildAssociationRefs, FileInfos, BlogPostInfos or Pair<Long, NodeRef>");
+                        throw new ACLEntryVoterException("The specified parameter is recognized: " + nextObject.getClass());
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
@@ -988,19 +926,18 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) nextObject).getParentRef();
                     }
-                    else if (FileInfo.class.isAssignableFrom(nextObject.getClass()))
-                    {
-                        testNodeRef = ((FileInfo) nextObject).getNodeRef();
-                    }
                     else if (Pair.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = (NodeRef) ((Pair)nextObject).getSecond();
                     }
+                    else if (PermissionCheckValue.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        NodeRef nodeRef = ((PermissionCheckValue) nextObject).getNodeRef();
+                        testNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException(
-                                "The specified parameter is not a collection of " +
-                                "NodeRefs, FileInfos, ChildAssociationRefs or Pair<Long, NodeRef>");
+                        throw new ACLEntryVoterException("The specified parameter is recognized: " + nextObject.getClass());
                     }
                 }
                 
@@ -1009,50 +946,54 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                 }
                 
-                if(isUnfiltered(testNodeRef))
+                if (isUnfiltered(testNodeRef))      // Null allows
                 {
-                    continue;
+                    continue;                       // Continue to next ConfigAttributeDefintion
                 }
                 
                 if (allowed && (testNodeRef != null) && (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED))
                 {
                     allowed = false;
+                    break;                          // No point evaluating more ConfigAttributeDefintions
                 }
             }
-            if (!allowed)
+            
+            // Failure or success, increase the count
+            count++;
+            
+            if (allowed)
             {
-                removed.add(nextObject);
+                keepValues.add(nextObject);
             }
-            else
+        }
+        // Work out how many were left unchecked (for whatever reason)
+        int sizeOriginal = returnedObject.size();
+        int checksRemaining = sizeOriginal - count;
+        // Note: There are use-cases where unmodifiable collections are passing through.
+        //       So make sure that the collection needs modification at all
+        if (keepValues.size() < sizeOriginal)
+        {
+            // There are values that need to be removed.  We have to modify the collection.
+            try
             {
-                count++;
+                returnedObject.clear();
+                returnedObject.addAll(keepValues);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                throw new AccessDeniedException("Permission-checked list must be modifiable", e);
             }
         }
-        for (Object toRemove : removed)
-        {
-            while (returnedObject.remove(toRemove))
-                ;
-        }
-        
-        if (returnedObject instanceof WrappedList<?>)
-        {
-            ((WrappedList<?>)returnedObject).setHasMoreItems(cutoff);
-            ((WrappedList<?>)returnedObject).setPermissionsApplied(true);
-        }
-        
-        return returnedObject;
+
+        // Attach the extra permission-check data to the collection
+        return PermissionCheckedCollectionMixin.create(returnedObject, cutoff, checksRemaining, sizeOriginal);
     }
 
     @SuppressWarnings("rawtypes")
     private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject) throws AccessDeniedException
-
     {
+        // Assumption: value is not null
         BitSet incudedSet = new BitSet(returnedObject.length);
-
-        if (returnedObject == null)
-        {
-            return null;
-        }
 
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
@@ -1082,17 +1023,17 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) current).getChildRef();
                     }
-                    else if (FileInfo.class.isAssignableFrom(current.getClass()))
-                    {
-                        testNodeRef = ((FileInfo) current).getNodeRef();
-                    }
                     else if (Pair.class.isAssignableFrom(current.getClass()))
                     {
                         testNodeRef = (NodeRef) ((Pair)current).getSecond();
                     }
+                    else if (PermissionCheckValue.class.isAssignableFrom(current.getClass()))
+                    {
+                        testNodeRef = ((PermissionCheckValue) current).getNodeRef();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
+                        throw new ACLEntryVoterException("The specified parameter is recognized: " + current.getClass());
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))
@@ -1109,17 +1050,18 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((ChildAssociationRef) current).getParentRef();
                     }
-                    else if (FileInfo.class.isAssignableFrom(current.getClass()))
-                    {
-                        testNodeRef = ((FileInfo) current).getNodeRef();
-                    }
                     else if (Pair.class.isAssignableFrom(current.getClass()))
                     {
                         testNodeRef = (NodeRef) ((Pair)current).getSecond();
                     }
+                    else if (PermissionCheckValue.class.isAssignableFrom(current.getClass()))
+                    {
+                        NodeRef nodeRef = ((PermissionCheckValue) current).getNodeRef();
+                        testNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                    }
                     else
                     {
-                        throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
+                        throw new ACLEntryVoterException("The specified parameter is recognized: " + current.getClass());
                     }
                 }
 
@@ -1168,6 +1110,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz)
     {
         return (MethodInvocation.class.isAssignableFrom(clazz));

@@ -20,12 +20,13 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Collection;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.permissions.PermissionCheckCollection.PermissionCheckCollectionMixin;
 import org.alfresco.util.PropertyCheck;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -119,8 +120,25 @@ public class MethodSecurityBean<R> implements InitializingBean
         }
     }
     
+    /**
+     * @see PermissionCheckCollectionMixin#create(Collection, int, long, int)
+     */
+    public Collection<R> applyPermissions(
+            Collection<R> toCheck,
+            Authentication authentication,
+            int targetResultCount)
+    {
+        return applyPermissions(toCheck, authentication, targetResultCount, Long.MAX_VALUE, Integer.MAX_VALUE);
+    }
+    
+    /**
+     * @see PermissionCheckCollectionMixin#create(Collection, int, long, int)
+     */
     @SuppressWarnings("unchecked")
-    public List<R> applyPermissions(List<R> results, Authentication authentication, int maxChecks)
+    public Collection<R> applyPermissions(
+            Collection<R> toCheck,
+            Authentication authentication,
+            int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
     {
         if (cad == null)
         {
@@ -129,14 +147,18 @@ public class MethodSecurityBean<R> implements InitializingBean
             {
                 logger.trace("applyPermissions ignored: " + this);
             }
-            return new WrappedList<R>(results, true, false);
+            return toCheck;
         }
+        // Wrap the collection to pass the information to the interceptor
+        Collection<R> wrappedToCheck = PermissionCheckCollectionMixin.create(
+                toCheck,
+                targetResultCount, cutOffAfterTimeMs, cutOffAfterCount);
         long start = System.currentTimeMillis();
-        List<R> ret = (WrappedList<R>) methodSecurityInterceptor.getAfterInvocationManager().decide(
+        Collection<R> ret = (Collection<R>) methodSecurityInterceptor.getAfterInvocationManager().decide(
                 authentication,
                 null,
                 cad,
-                new WrappedList<R>(results, maxChecks));
+                wrappedToCheck);
         if (logger.isTraceEnabled())
         {
             logger.trace("applyPermissions: " + ret.size() + " items in " + (System.currentTimeMillis() - start) + " msecs");

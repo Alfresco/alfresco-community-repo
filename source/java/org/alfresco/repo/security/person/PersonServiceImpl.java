@@ -1275,11 +1275,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 return totalCount;
             }
-            @Override
-            public boolean permissionsApplied()
-            {
-                return results.permissionsApplied();
-            }
         };
     }
     

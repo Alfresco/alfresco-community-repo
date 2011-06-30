@@ -243,6 +243,8 @@
             <value>${system.readpermissions.bulkfetchsize}</value>
         </property>
     </bean>
+    
+    <bean id="afterAclMarking" class="org.alfresco.repo.security.permissions.impl.acegi.MarkingAfterInvocationProvider" />
 
     <!-- Link up after method call security -->
 
@@ -250,6 +252,7 @@
         <property name="providers">
             <list>
                 <ref local="afterAcl"/>
+                <ref bean="afterAclMarking"/>
             </list>
         </property>
     </bean>

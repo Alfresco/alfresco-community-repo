@@ -498,7 +498,6 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertFalse(results.hasMoreItems());
-        assertTrue(results.permissionsApplied());
         
         List<NodeRef> nodeRefs = results.getPage();
         
@@ -516,7 +515,6 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         results = list(parentNodeRef, -1, -1, 0);
         assertFalse(results.hasMoreItems());
-        assertTrue(results.permissionsApplied());
         
         nodeRefs = results.getPage();
         
@@ -767,7 +765,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             totalCount = results.getTotalResultCount().getFirst();
         }
         
-        return new PagingNodeRefResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, false, true);
+        return new PagingNodeRefResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, false);
     }
     
     private class PagingNodeRefResultsImpl implements PagingResults<NodeRef>
@@ -775,18 +773,16 @@ public class GetChildrenCannedQueryTest extends TestCase
         private List<NodeRef> nodeRefs;
         
         private boolean hasMorePages; 
-        private boolean permissionsApplied;
         
         private Integer totalResultCount; // null => not requested (or unknown)
         private Boolean isTotalResultCountCutoff; // null => unknown
         
-        public PagingNodeRefResultsImpl(List<NodeRef> nodeRefs, boolean hasMorePages, Integer totalResultCount, Boolean isTotalResultCountCutoff, boolean permissionsApplied)
+        public PagingNodeRefResultsImpl(List<NodeRef> nodeRefs, boolean hasMorePages, Integer totalResultCount, Boolean isTotalResultCountCutoff)
         {
             this.nodeRefs = nodeRefs;
             this.hasMorePages = hasMorePages;
             this.totalResultCount= totalResultCount;
             this.isTotalResultCountCutoff = isTotalResultCountCutoff;
-            this.permissionsApplied = permissionsApplied;
         }
         
         public List<NodeRef> getPage()
@@ -797,11 +793,6 @@ public class GetChildrenCannedQueryTest extends TestCase
         public boolean hasMoreItems()
         {
             return hasMorePages;
-        }
-        
-        public boolean permissionsApplied()
-        {
-            return permissionsApplied;
         }
         
         public Pair<Integer, Integer> getTotalResultCount()

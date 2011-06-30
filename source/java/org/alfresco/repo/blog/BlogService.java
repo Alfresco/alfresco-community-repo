@@ -23,6 +23,7 @@ import java.util.Date;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
@@ -127,7 +128,7 @@ public interface BlogService
      * @author Neil Mc Erlean
      * @since 4.0
      */
-    public class BlogPostInfo
+    public class BlogPostInfo implements PermissionCheckValue
     {
         private final NodeRef nodeRef;
         private final String name;
@@ -140,6 +141,7 @@ public interface BlogService
         /**
          * Gets the NodeRef representing this blog-post.
          */
+        @Override
         public NodeRef getNodeRef()
         {
             return nodeRef;

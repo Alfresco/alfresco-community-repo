@@ -33,6 +33,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.PermissionCheckCollection.PermissionCheckCollectionMixin;
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionTest;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -466,7 +467,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
         assertEquals(answer, nodeService.getPrimaryParent(systemNodeRef));
     }
-
+    
     public void testBasicAllowNullResultSet() throws Exception
     {
         runAs("andy");
@@ -721,6 +722,17 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         assertEquals(4, answerArray.length);
         answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
         assertEquals(4, answerArray.length);
+        
+        // Check cut-offs
+        answerCollection = (Collection<?>) methodCollection.invoke(
+                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 1, 0, 0) });
+        assertEquals(1, answerCollection.size());
+        answerCollection = (Collection<?>) methodCollection.invoke(
+                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 0, 2) });
+        assertEquals(2, answerCollection.size());
+        answerCollection = (Collection<?>) methodCollection.invoke(
+                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 1, 0) });
+        assertTrue("Too many results: " + answerCollection.size(), answerCollection.size() < 5);        // Only 1ms to do the check
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED));
 

@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
@@ -29,6 +29,8 @@ import net.sf.acegisecurity.context.security.SecureContext;
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
+import org.alfresco.repo.security.permissions.PermissionCheckedCollection;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,15 +52,8 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         this.methodSecurity = methodSecurity;
     }
     
+    @Override
     protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
-    {
-        int requestTotalCountMax = getParameters().requestTotalResultCountMax();
-        int maxChecks = (((requestTotalCountMax > 0) && (requestTotalCountMax > requestedCount)) ? requestTotalCountMax : requestedCount);
-        
-        return applyPermissions(results, maxChecks);
-    }
-    
-    protected List<R> applyPermissions(List<R> results, int maxChecks)
     {
         Context context = ContextHolder.getContext();
         if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
@@ -67,13 +62,40 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             {
                 logger.debug("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
             }
-            
-            return new WrappedList<R>(new ArrayList<R>(0), true, false); // empty result
+            return Collections.emptyList();
         }
         Authentication authentication = (((SecureContext) context).getAuthentication());
         
-        List<R> resultsOut = methodSecurity.applyPermissions(results, authentication, maxChecks);
+        List<R> resultsOut = (List<R>) methodSecurity.applyPermissions(results, authentication, requestedCount);
         // Done
         return resultsOut;
+    }
+
+    /**
+     * Overrides the default implementation to check for the permission data
+     * that will allow a good guess as to the maximum number of results in
+     * the event of a permission-based cut-off.
+     */
+    @Override
+    protected Pair<Integer, Integer> getTotalResultCount(List<R> results)
+    {
+        // Start with the simplest
+        int size = results.size();
+        int possibleSize = size;
+        
+        if (results instanceof PermissionCheckedCollection)
+        {
+            @SuppressWarnings("unchecked")
+            PermissionCheckedCollection<R> pcc = (PermissionCheckedCollection<R>) results;
+            if (pcc.isCutOff())
+            {
+                // We didn't get all the results processed, so make a guess
+                double successRatio = (double)size/(double)pcc.sizeOriginal();
+                int possiblyMissed = (int) (pcc.sizeUnchecked() * successRatio);
+                possibleSize = size + possiblyMissed;
+            }
+        }
+        // Done
+        return new Pair<Integer, Integer>(size, possibleSize);
     }
 }

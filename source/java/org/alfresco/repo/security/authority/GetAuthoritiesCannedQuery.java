@@ -208,7 +208,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
     @Override
     protected boolean isApplyPostQueryPermissions()
     {
-        return true;
+        return false;
     }
     
     private interface QueryCallback

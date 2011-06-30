@@ -320,9 +320,14 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             try
             {
-                // load from classpath
+                // Load from classpath
                 String scriptClasspath = resource.substring(PATH_CLASSPATH.length());
                 URL scriptResource = getClass().getClassLoader().getResource(scriptClasspath);
+                if (scriptResource == null && scriptClasspath.startsWith("/"))
+                {
+                    // The Eclipse classloader prefers alfresco/foo to /alfresco/foo, try that
+                    scriptResource = getClass().getClassLoader().getResource(scriptClasspath.substring(1));
+                }
                 if (scriptResource == null)
                 {
                     throw new AlfrescoRuntimeException("Unable to locate included script classpath resource: " + resource);

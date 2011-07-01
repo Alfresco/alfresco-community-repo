@@ -164,6 +164,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
     @SuppressWarnings({ "unchecked"})
     protected List<AuthorityInfo> applyPostQuerySorting(List<AuthorityInfo> results, CannedQuerySortDetails sortDetails)
     {
+        @SuppressWarnings("rawtypes")
         final List<Pair<Object, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
         if (sortPairs.size() > 0)
         {
@@ -203,12 +204,6 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
         }
         
         return (authName.toLowerCase().startsWith(nameFilterLower));
-    }
-    
-    @Override
-    protected boolean isApplyPostQueryPermissions()
-    {
-        return false;
     }
     
     private interface QueryCallback

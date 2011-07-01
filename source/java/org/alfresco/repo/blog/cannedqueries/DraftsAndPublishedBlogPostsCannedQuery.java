@@ -183,10 +183,4 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
         // No post-query sorting. It's done within the queryAndFilter() method above.
         return false;
     }
-    
-    @Override
-    protected boolean isApplyPostQueryPermissions()
-    {
-        return true;
-    }
 }

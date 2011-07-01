@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import java.util.Collections;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
@@ -52,17 +51,32 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         this.methodSecurity = methodSecurity;
     }
     
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * By default, the is a permission checking class.  Override the method if you wish to
+     * switch the behaviour at runtime.
+     * 
+     * @return      <tt>true</tt> always
+     */
+    @Override
+    protected boolean isApplyPostQueryPermissions()
+    {
+        return true;
+    }
+
     @Override
     protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
     {
         Context context = ContextHolder.getContext();
         if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
         {
+            // This indicates that we have come via the internal service methods
             if (logger.isDebugEnabled())
             {
-                logger.debug("Unexpected context: "+(context == null ? "null" : context.getClass())+" - "+Thread.currentThread().getId());
+                logger.debug("Ignoring post-query permissions.  The secure context is empty: " + this);
             }
-            return Collections.emptyList();
+            return results;
         }
         Authentication authentication = (((SecureContext) context).getAuthentication());
         

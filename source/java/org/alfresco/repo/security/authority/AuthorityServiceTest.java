@@ -32,9 +32,12 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import net.sf.acegisecurity.AuthenticationCredentialsNotFoundException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -370,6 +373,31 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.hasAdminAuthority());
         Set<String> authorities = authorityService.getAuthorities();
         assertEquals("Unexpected result: " + authorities, 4 + (SITE_CNT*2), authorityService.getAuthorities().size());
+    }
+    
+    public void testNoUser()
+    {
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, "DEFAULT");
+
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        PagingResults<String> results = pubAuthorityService.getAuthorities(
+                AuthorityType.GROUP, null, null, true, true, new PagingRequest(10));
+        AuthenticationUtil.clearCurrentSecurityContext();
+        try
+        {
+            pubAuthorityService.getAuthorities(
+                    AuthorityType.GROUP, null, null, true, true, new PagingRequest(10));
+            fail("Public AuthorityService should reject unauthorized use.");
+        }
+        catch (AuthenticationCredentialsNotFoundException e)
+        {
+            // Expected
+        }
+        PagingResults<String> resultsCheck = authorityService.getAuthorities(
+                AuthorityType.GROUP, null, null, true, true, new PagingRequest(10));
+        assertEquals(
+                "Unauthorized use of private service should work just like 'admin'",
+                results.getPage().size(), resultsCheck.getPage().size());
     }
     
     public void testAuthorities()

@@ -273,6 +273,12 @@ public class BlogServiceImplTest
                 Date date1 = (Date) NODE_SERVICE.getProperty(nodeRef1, property);
                 Date date2 = (Date) NODE_SERVICE.getProperty(nodeRef2, property);
                 
+                // Equal dates are applicable to either sort order
+                if (date1.equals(date2))
+                {
+                    continue;
+                }
+                
                 if (ascendingOrder)
                 {
                     assertTrue("BlogPosts not asc-sorted by " + property + ". Error at index " + i, date1.before(date2));

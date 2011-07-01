@@ -131,21 +131,16 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
             throw new IllegalArgumentException("Query result offset must be zero or greater.");
         }
         
-        // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
-        /*
-        if (limit <= 0 || limit == Integer.MAX_VALUE)
+        if (limit <= 0)
         {
-            throw new IllegalArgumentException("Query results must be constrained by a limit.");
+            throw new IllegalArgumentException("Query results limit must be greater than zero.");
         }
-        */
         
         String query = makeQueryName(sqlNamespace, queryName);
         try
         {
             if ((offset == 0) && (limit == Integer.MAX_VALUE))
             {
-                // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also above)
-                // http://code.google.com/p/mybatis/issues/detail?id=129
                 return (List<R>) template.selectList(query, parameterObj);
             }
             else
@@ -182,13 +177,10 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
             throw new IllegalArgumentException("Query result offset must be zero or greater.");
         }
         
-        // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
-        /*
-        if (limit <= 0 || limit == Integer.MAX_VALUE)
+        if (limit <= 0)
         {
-            throw new IllegalArgumentException("Query results must be constrained by a limit.");
+            throw new IllegalArgumentException("Query results limit must be greater than zero.");
         }
-        */
         
         String query = makeQueryName(sqlNamespace, queryName);
         ResultHandlerTranslator<R> resultHandler = new ResultHandlerTranslator<R>(handler);
@@ -200,8 +192,6 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
             
             if ((offset == 0) && (limit == Integer.MAX_VALUE))
             {
-                // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also above)
-                // http://code.google.com/p/mybatis/issues/detail?id=129
                 template.select(query, parameterObj, resultHandler);
             }
             else

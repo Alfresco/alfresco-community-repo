@@ -72,7 +72,8 @@ public interface CannedQueryDAO
      * @param queryName             the name of the query e.g. <b>select_userCount</b>
      * @param parameterObj          the values to drive the selection (may be <tt>null</tt> if not required)
      * @param offset                the number of results to skip
-     * @param limit                 the maximum number of results to retrieve
+     * @param limit                 the maximum number of results to retrieve or <code>Integer.MAX_VALUE</code>
+     *                              for no limit
      * @return                      the list of results
      */
     <R> List<R> executeQuery(
@@ -87,7 +88,8 @@ public interface CannedQueryDAO
      * @param queryName             the name of the query e.g. <b>select_userCount</b>
      * @param parameterObj          the values to drive the selection (may be <tt>null</tt> if not required)
      * @param offset                the number of results to skip
-     * @param limit                 the maximum number of results to retrieve
+     * @param limit                 the maximum number of results to retrieve or <code>Integer.MAX_VALUE</code>
+     *                              for no limit
      * @return                      the list of results
      */
     <R> void executeQuery(

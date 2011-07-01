@@ -233,15 +233,16 @@ public class CannedQueryDAOTest extends TestCase
         {
             // Expected
         }
-        try
-        {
-            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, Integer.MAX_VALUE);
-            fail("Illegal parameter not detected");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+// TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
+//        try
+//        {
+//            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, Integer.MAX_VALUE);
+//            fail("Illegal parameter not detected");
+//        }
+//        catch (IllegalArgumentException e)
+//        {
+//            // Expected
+//        }
     }
     
     public void testExecute_ListMimetypes() throws Throwable

@@ -179,12 +179,12 @@ public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractCanned
             else if (comparableProperty.equals(ContentModel.PROP_CREATED))
             {
                 prop1 = nr1.getCreatedDate();
-                prop1 = nr2.getCreatedDate();
+                prop2 = nr2.getCreatedDate();
             }
             else if (comparableProperty.equals(BlogIntegrationModel.PROP_POSTED))
             {
                 prop1 = nr1.getPostedDate();
-                prop1 = nr2.getPostedDate();
+                prop2 = nr2.getPostedDate();
             }
             else
             {

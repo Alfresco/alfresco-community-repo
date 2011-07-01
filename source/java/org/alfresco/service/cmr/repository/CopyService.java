@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -226,10 +227,26 @@ public interface CopyService
     /**
      * Get the copies of a given node
      * 
-     * @param nodeRef           the original node reference
-     * @param pagingRequest     page request details
-     * @return                  the page(s) of nodes that were copied from the given node
+     * @param originalNodeRef           the original node reference
+     * @param pagingRequest             page request details
+     * @return                          the page(s) of nodes that were copied from the given node
      */
     @Auditable(parameters = {"nodeRef"})
-    public PagingResults<CopyInfo> getCopies(NodeRef nodeRef, PagingRequest pagingRequest);
+    public PagingResults<CopyInfo> getCopies(NodeRef originalNodeRef, PagingRequest pagingRequest);
+    
+    /**
+     * Get the copies of a given node
+     * 
+     * @param originalNodeRef           the original node reference
+     * @param copyParentNodeRef         only find copies that are homed in this node
+     * @param copyNodeAspectsToIgnore   only find copies that <b>don't</b> have these aspects
+     * @param pagingRequest             page request details
+     * @return                          the page(s) of nodes that were copied from the given node
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public PagingResults<CopyInfo> getCopies(
+            NodeRef originalNodeRef,
+            NodeRef copyParentNodeRef,
+            Set<QName> copyNodeAspectsToIgnore,
+            PagingRequest pagingRequest);
 }

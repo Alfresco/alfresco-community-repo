@@ -177,17 +177,6 @@
         
     </resultMap>
     
-    <resultMap id="result_AuthorityInfo" type="AuthorityInfo">
-        
-        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        
-        <result property="authorityDisplayName" column="authority_display_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="authorityName" column="authority_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        
-        <association property="node" resultMap="alfresco.node.result_Node"/>
-        
-    </resultMap>
-  
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -978,24 +967,6 @@
                 </foreach>
             </if>
         <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
-    </select>
-    
-    <!-- GetAuthorities - note: take advantage of fact that authority name is also on child assoc (including "username" for users, eg. getAllAuthoritiesInZone) -->
-    <select id="select_GetAuthoritiesCannedQuery" parameterType="AuthorityInfo" resultMap="result_AuthorityInfo">
-       select
-            childNode.id             as id,
-            childStore.protocol      as protocol,
-            childStore.identifier    as identifier,
-            childNode.uuid           as uuid,
-            adn.string_value         as authority_display_name,
-            assoc.qname_localname    as authority_name <!-- see note -->
-        from
-            alf_child_assoc assoc
-            join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
-            left join alf_node_properties adn on (adn.node_id = childNode.id and adn.qname_id = #{authorityDisplayNameQNameId})
-        where
-            assoc.parent_node_id = #{parentNodeId}
     </select>
     
     <select id="select_ChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">

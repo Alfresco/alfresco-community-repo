@@ -50,7 +50,7 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
 {
     private Log logger = LogFactory.getLog(getClass());
     
-    private static final String QUERY_NAMESPACE = "alfresco.blog";
+    private static final String QUERY_NAMESPACE = "alfresco.query.blogs";
     private static final String QUERY_SELECT_GET_BLOGS = "select_GetBlogsCannedQuery";
     
     private final CannedQueryDAO cannedQueryDAO;

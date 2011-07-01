@@ -46,7 +46,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
 {
     private Log logger = LogFactory.getLog(getClass());
     
-    private static final String QUERY_NAMESPACE = "alfresco.node";
+    private static final String QUERY_NAMESPACE = "alfresco.query.authorities";
     private static final String QUERY_SELECT_GET_AUTHORITIES = "select_GetAuthoritiesCannedQuery";
     
     private CannedQueryDAO cannedQueryDAO;

@@ -407,11 +407,26 @@ public class CopyServiceImpl implements CopyService
     }
     
     @Override
-    public PagingResults<CopyInfo> getCopies(NodeRef nodeRef, PagingRequest pagingRequest)
+    public PagingResults<CopyInfo> getCopies(NodeRef originalNodeRef, PagingRequest pagingRequest)
     {
         CannedQueryFactory<CopyInfo> queryFactory = cannedQueryRegistry.getNamedObject(QUERY_FACTORY_GET_COPIES);
         CannedQueryParameters params = new CannedQueryParameters(
-                nodeRef,
+                originalNodeRef,
+                new CannedQueryPageDetails(pagingRequest),
+                null);
+        CannedQuery<CopyInfo> query = queryFactory.getCannedQuery(params);
+        return query.execute();
+    }
+
+    @Override
+    public PagingResults<CopyInfo> getCopies(
+            NodeRef originalNodeRef,
+            NodeRef copyParentNodeRef, Set<QName> copyNodeAspectsToIgnore,
+            PagingRequest pagingRequest)
+    {
+        CannedQueryFactory<CopyInfo> queryFactory = cannedQueryRegistry.getNamedObject(QUERY_FACTORY_GET_COPIES);
+        CannedQueryParameters params = new CannedQueryParameters(
+                originalNodeRef,
                 new CannedQueryPageDetails(pagingRequest),
                 null);
         CannedQuery<CopyInfo> query = queryFactory.getCannedQuery(params);

@@ -75,6 +75,9 @@ Inbound settings from iBatis
         <!-- Blog CQ -->
         <typeAlias alias="Blog" type="org.alfresco.repo.blog.cannedqueries.BlogEntity"/>
         
+        <!-- Copy CQ -->
+        <typeAlias alias="CopyParameters" type="org.alfresco.repo.copy.query.CopyParametersEntity"/>
+        
         <!-- Patch -->
         
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -140,7 +143,7 @@ Inbound settings from iBatis
         <typeAlias alias="AVMNodeProperty" type="org.alfresco.repo.domain.avm.AVMNodePropertyEntity"/>
         <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
         
-        <!-- Canned Queries -->
+        <!-- Canned Queries Test -->
         
         <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -185,7 +188,9 @@ Inbound settings from iBatis
         <!-- Canned queries -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
-        <mapper resource="alfresco/ibatis/#resource.dialect#/blog-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
     </mappers>
     
 </configuration>

@@ -73,7 +73,7 @@ public interface CannedQueryDAO
      * @param parameterObj          the values to drive the selection (may be <tt>null</tt> if not required)
      * @param offset                the number of results to skip
      * @param limit                 the maximum number of results to retrieve
-     * @return                      
+     * @return                      the list of results
      */
     <R> List<R> executeQuery(
             String sqlNamespace, String queryName, Object parameterObj,
@@ -88,7 +88,7 @@ public interface CannedQueryDAO
      * @param parameterObj          the values to drive the selection (may be <tt>null</tt> if not required)
      * @param offset                the number of results to skip
      * @param limit                 the maximum number of results to retrieve
-     * @return                      
+     * @return                      the list of results
      */
     <R> void executeQuery(
             String sqlNamespace,

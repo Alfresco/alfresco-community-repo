@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.LocalFileState;
 import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -261,7 +262,7 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
       // Create a dummy file state
           
       if ( super.getFileState() == null)
-          setFileState(new FileState(getFullName(), false));
+          setFileState(new LocalFileState(getFullName(), false));
       return super.getFileState();
     }
 }

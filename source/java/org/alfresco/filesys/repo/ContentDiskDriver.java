@@ -39,6 +39,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -590,7 +591,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // Register the device context
         
-        registerContext(context);
+        registerContext(context, null);
         
         // Return the context for this shared filesystem
         
@@ -606,13 +607,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * WARNING: side effect, will commit or roll back current user transaction context.
      * 
      * @param ctx the context
+     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
     //  MER TODO - transaction handling in registerContext needs changing
     @Override
-    public void registerContext(DeviceContext ctx) throws DeviceContextException
+    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException
     {
-        super.registerContext(ctx);
+        super.registerContext(ctx, serverConfig);
 
         ContentContext context = (ContentContext)ctx;
 
@@ -750,7 +752,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Enable file state caching
         
         context.enableStateCache( true);
-        context.getStateCache().setCaseSensitive( false);
         
         // Initialize the I/O control handler
         

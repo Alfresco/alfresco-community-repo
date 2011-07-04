@@ -25,6 +25,7 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -399,13 +400,25 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
      * shares. In this base class, we initialize all desktop actions.
      * 
      * @param ctx the context
+     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
-    public void registerContext(DeviceContext ctx) throws DeviceContextException
+    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException
     {
         if (ctx instanceof AlfrescoContext)
         {
-            ((AlfrescoContext) ctx).initialize(this);
+            // Enable a standalone state cache on the filesystem
+            
+            AlfrescoContext alfCtx = (AlfrescoContext) ctx;
+            
+            if ( serverConfig != null) {
+	            alfCtx.setServerConfigurationBean( serverConfig);
+	            alfCtx.enableStateCache( true);
+            }
+
+            // Initialize the filesystem
+            
+            alfCtx.initialize(this);
         }
     }
     

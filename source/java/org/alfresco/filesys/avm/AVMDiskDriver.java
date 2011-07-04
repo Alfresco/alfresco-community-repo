@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -417,7 +418,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         }
         
         // Register the context bean
-        registerContext(context);
+        registerContext(context, null);
         
         // Return the context for this shared filesystem            
         return context;
@@ -428,13 +429,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * device.
      * 
      * @param context the device context
+     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
     @Override
-    public void registerContext(DeviceContext ctx)
+    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig)
             throws DeviceContextException
     {
-        super.registerContext(ctx);        
+        super.registerContext(ctx, serverConfig);        
 
         AVMContext context = (AVMContext)ctx;
         // Use the system user as the authenticated context for the filesystem initialization

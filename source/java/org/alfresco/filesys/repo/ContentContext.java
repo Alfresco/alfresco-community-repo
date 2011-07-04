@@ -374,6 +374,9 @@ public class ContentContext extends AlfrescoContext
         // Call the base class
         
         super.startFilesystem(share);
+
+        if ( getStateCache() != null)
+        	getStateCache().setCaseSensitive( false);
         
         // Find the thread pool via the configuration
         

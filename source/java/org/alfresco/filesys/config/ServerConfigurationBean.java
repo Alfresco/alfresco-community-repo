@@ -1627,7 +1627,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // the new filesystem
 
                         ExtendedDiskInterface filesysDriver = getAvmDiskInterface();
-                        filesysDriver.registerContext(filesystem);
+                        filesysDriver.registerContext(filesystem, this);
 
                         // Create the shared filesystem
 
@@ -1656,7 +1656,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                         ExtendedDiskInterface filesysDriver = getRepoDiskInterface();
                         ContentContext filesysContext = (ContentContext) filesystem;
-                        filesysDriver.registerContext(filesystem);
+                        filesysDriver.registerContext(filesystem, this);
 
                         // Check if an access control list has been specified
 

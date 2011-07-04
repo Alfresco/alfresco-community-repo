@@ -24,12 +24,21 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.config.GlobalDesktopActionConfigBean;
+import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.alfresco.jlan.server.config.CoreServerConfigSection;
+import org.alfresco.jlan.server.config.InvalidConfigurationException;
+import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
+import org.alfresco.jlan.server.filesys.cache.StandaloneFileStateCache;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Alfresco Filesystem Context Class
@@ -74,6 +83,10 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     
     private IOControlHandler m_ioHandler;
 
+    // Server configuration
+    
+    private ServerConfigurationBean m_serverConfig;
+    
     // Debug flags
     //
     // Requires the logger to be enabled for debug output
@@ -105,6 +118,15 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public void setDisableChangeNotification(boolean disableChangeNotification)
     {
         enableChangeHandler(!disableChangeNotification);
+    }
+    
+    /**
+     * Set the server configuration
+     * 
+     * @param srvConfig ServerConfigurationBean
+     */
+    public void setServerConfigurationBean( ServerConfigurationBean srvConfig) {
+    	m_serverConfig = srvConfig;
     }
     
     /**
@@ -423,5 +445,58 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public final boolean hasDebug(int flg)
     {
     	return (m_debug & flg) != 0 ? true : false;
+    }
+    
+    /**
+     * Start the filesystem
+     * 
+     * @param share DiskSharedDevice
+     * @exception DeviceContextException
+     */
+    public void startFilesystem(DiskSharedDevice share)
+        throws DeviceContextException {
+
+        // Call the base class
+        
+        super.startFilesystem(share);
+    }    
+
+    /**
+     * Enable the state cache
+     * 
+     * @param ena boolean
+     */
+    public void enableStateCache( boolean ena) {
+
+    	// Check if the server configuration has been set
+    	
+    	if ( m_serverConfig == null)
+        	throw new AlfrescoRuntimeException( "Failed to set standalone file state cache for share " + getShareName());
+    	
+    	// Check if we are enabling the state cache
+    	
+    	if ( ena == true && getStateCache() == null) {
+    		
+	        // Set the state cache, use a hard coded standalone cache for now
+	
+	        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) m_serverConfig.getConfigSection( FilesystemsConfigSection.SectionName);
+	
+	        if ( filesysConfig != null) {
+	        	
+	        	try {
+	        		
+		        	// Create a standalone state cache
+		        	
+		        	StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+		        	standaloneCache.initializeCache( new GenericConfigElement( ""), m_serverConfig);
+		        	
+		        	filesysConfig.addFileStateCache( getDeviceName(), standaloneCache);
+		        	setStateCache( standaloneCache);
+	        	}
+	        	catch ( InvalidConfigurationException ex) {
+	        		throw new AlfrescoRuntimeException( "Failed to initialize standalone state cache for " + getDeviceName());
+	        	}
+	        }
+    	}
     }
 }

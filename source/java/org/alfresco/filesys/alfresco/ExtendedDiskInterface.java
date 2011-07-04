@@ -18,6 +18,7 @@
  */
 package org.alfresco.filesys.alfresco;
 
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
@@ -33,7 +34,8 @@ public interface ExtendedDiskInterface extends DiskInterface
      * 
      * @param context
      *            the device context
+     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
-    public void registerContext(DeviceContext ctx) throws DeviceContextException;
+    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException;
 }

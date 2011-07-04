@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.calendar;
 
+import java.util.Date;
+
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.site.SiteInfo;
 
@@ -31,29 +33,30 @@ import org.alfresco.service.cmr.site.SiteInfo;
  */
 public interface CalendarService {
    /**
-    * Creates a new {@link CalendarEntry} in the repository for the
-    *  specified site.
+    * Creates a new {@link CalendarEntry} for the given site, but 
+    *  doesn't save it to the repository.
     *  
-    * @return The System Assigned Name for the new entry 
+    * @return The newly cre 
     */
    @NotAuditable
-   String createCalendarEntry(SiteInfo site, CalendarEntry entry);
+   CalendarEntry createCalendarEntry(String siteShortName, String eventTitle,
+         String eventDescription, Date from, Date to);
    
    /**
-    * Updates an existing {@link CalendarEntry} in the repository
+    * Saves a {@link CalendarEntry} in the repository.
     */
    @NotAuditable
-   void updateCalendarEntry(SiteInfo site, CalendarEntry entry);
+   void saveCalendarEntry(CalendarEntry entry);
    
    /**
     * Deletes an existing {@link CalendarEntry} from the repository
     */
    @NotAuditable
-   void deleteCalendarEntry(SiteInfo site, CalendarEntry entry);
+   void deleteCalendarEntry(CalendarEntry entry);
    
    /**
     * Retrieves an existing {@link CalendarEntry} from the repository
     */
    @NotAuditable
-   CalendarEntry getCalendarEntry(SiteInfo site, String name);
+   CalendarEntry getCalendarEntry(String siteShortName, String entryName);
 }

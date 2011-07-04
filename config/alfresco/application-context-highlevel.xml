@@ -9,6 +9,7 @@
     <import resource="classpath*:alfresco/office-addin-context.xml"/>
     <import resource="classpath*:alfresco/portlets-context.xml"/>
     <import resource="classpath:alfresco/blog-context.xml"/>
+    <import resource="classpath:alfresco/calendar-services-context.xml"/>
     <import resource="classpath:alfresco/comment-services-context.xml"/>
     <import resource="classpath:alfresco/rating-services-context.xml"/>
     <import resource="classpath:alfresco/rendition-services-context.xml"/>

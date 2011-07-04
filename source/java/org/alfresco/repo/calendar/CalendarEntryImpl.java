@@ -58,31 +58,54 @@ import org.alfresco.util.registry.NamedObjectRegistry;
 public class CalendarEntryImpl implements CalendarEntry
 {
     private NodeRef nodeRef;
-    private NodeService nodeService;
+    private NodeRef parentNodeRef;
+    private Map<QName,Serializable> properties;
     
     /**
-     * Creates an empty Calendar Entry
+     * Creates an empty Calendar Entry, to be stored in the
+     *  given parent
      */
-    public CalendarEntryImpl()
-    {}
+    public CalendarEntryImpl(NodeRef parentNodeRef)
+    {
+       this.parentNodeRef = parentNodeRef;
+       this.properties = new HashMap<QName, Serializable>();
+    }
     
     /**
      * Wraps an existing Calendar Entry node
      */
-    public CalendarEntryImpl(NodeRef nodeRef, NodeService nodeService)
+    public CalendarEntryImpl(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName,Serializable> properties)
     {
        this.nodeRef = nodeRef;
-       this.nodeService = nodeService;
+       this.parentNodeRef = parentNodeRef;
+       this.properties = properties;
     }
     
-    protected void recordStorageDetails(NodeRef nodeRef, NodeService nodeService)
+    protected void recordStorageDetails(NodeRef nodeRef)
     {
        this.nodeRef = nodeRef;
-       this.nodeService = nodeService;
     }
 
+    /**
+     * Returns the NodeRef of the parent where this calendar entry
+     *  lives, or will live
+     */
+    public NodeRef getParentNodeRef() 
+    {
+       return parentNodeRef;
+    }
+
+    /**
+     * Returns the current set of properties
+     */
+    public Map<QName,Serializable> getProperties()
+    {
+       return properties;
+    }
+    
     @Override
-    public NodeRef getNodeRef() {
+    public NodeRef getNodeRef() 
+    {
        return nodeRef;
     }
     
@@ -110,9 +133,8 @@ public class CalendarEntryImpl implements CalendarEntry
     }
 
     @Override
-    public void setDescription() {
+    public void setDescription(String description) {
        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -122,17 +144,35 @@ public class CalendarEntryImpl implements CalendarEntry
     }
 
     @Override
+    public void setStart(Date start) {
+       // TODO Auto-generated method stub
+       
+    }
+    
+    @Override
     public Date getEnd() {
        // TODO Auto-generated method stub
        return null;
     }
 
     @Override
+    public void setEnd(Date end) {
+       // TODO Auto-generated method stub
+       
+    }
+    
+    @Override
     public String getLocation() {
        // TODO Auto-generated method stub
        return null;
     }
     
+    @Override
+    public void setLocation(String location) {
+       // TODO Auto-generated method stub
+
+    }
+
     @Override
     public List<String> getTags() {
        // TODO Auto-generated method stub

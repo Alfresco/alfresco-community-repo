@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Calendar Service -->
+   <bean id="CalendarService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.calendar.CalendarService</value>
+      </property>
+      <property name="target">
+         <ref bean="calendarService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="CalendarService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref local="CalendarService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Calendar service transaction bean -->
+   <bean id="CalendarService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Calendar service security bean -->
+   <bean id="CalendarService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Calendar Service base bean -->
+	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="taggingService" ref="TaggingService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="transactionService" ref="transactionService" />
+	</bean>
+
+</beans>

@@ -59,19 +59,17 @@ public interface CalendarEntry extends Serializable {
    /**
     * Sets the Description of the event
     */
-   void setDescription();
+   void setDescription(String description);
    
    /**
     * @return the Location of the event
     */
    String getLocation();
-   
-   // TODO More setters
-   
+
    /**
-    * @return the Tags associated with the event 
+    * Sets the Location of the event
     */
-   List<String> getTags();
+   void setLocation(String location);
    
    /**
     * @return the Start date and time
@@ -79,11 +77,26 @@ public interface CalendarEntry extends Serializable {
    Date getStart();
    
    /**
+    * Sets the event start date and time
+    */
+   void setStart(Date start);
+   
+   /**
     * @return the End date and time
     */
    Date getEnd();
 
-   // TODO All Date
+   /**
+    * Sets the event end date and time
+    */
+   void setEnd(Date end);
+   
+   /**
+    * @return the Tags associated with the event 
+    */
+   List<String> getTags();
+   
+   // TODO All Day events
    
    // TODO Doc folder
    

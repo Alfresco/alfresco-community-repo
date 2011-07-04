@@ -7,7 +7,7 @@
       {
          "id":${entry.id?c},
          "application":"${entry.application}",
-         "user":"<#if entry.user??>${entry.user}<#else>null</#if>",
+         "user":<#if entry.user??>"${entry.user}"<#else>null</#if>,
          "time":"${xmldate(entry.time)}",
          "values":
          <#if entry.values??>

@@ -802,7 +802,9 @@
     
     <!-- GET IMAP SERVER STATUS -->
     <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">
-      <property name="imapServerEnabled"><value>${imap.server.enabled}</value></property>
+        <property name="imapService">
+            <ref bean="ImapService" />
+        </property>
     </bean>
 
     <!--  Comment API supporting bean -->

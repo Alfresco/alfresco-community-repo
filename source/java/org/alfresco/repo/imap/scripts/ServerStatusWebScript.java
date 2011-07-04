@@ -20,17 +20,21 @@ package org.alfresco.repo.imap.scripts;
 
 import java.io.IOException;
 
+import org.alfresco.repo.imap.ImapService;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+/**
+ * Shows the availability of the IMAP server via web script request.
+ */
 public class ServerStatusWebScript extends AbstractWebScript
 {
-    private boolean imapServerEnabled;
+    private ImapService imapService;
 
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        if (imapServerEnabled)
+        if (imapService.getImapServerEnabled())
         {
             res.getWriter().write("enabled");
         }
@@ -42,9 +46,9 @@ public class ServerStatusWebScript extends AbstractWebScript
         res.getWriter().close();
     }
 
-    public void setImapServerEnabled(boolean imapServerEnabled)
+    public void setImapService(ImapService imapService)
     {
-        this.imapServerEnabled = imapServerEnabled;
+        this.imapService = imapService;
     }
 
 }

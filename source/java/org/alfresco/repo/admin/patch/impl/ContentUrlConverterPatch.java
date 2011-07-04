@@ -22,6 +22,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.patch.AbstractPatch;
@@ -39,6 +40,7 @@ import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -101,7 +103,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
     
     // Lock as per patching
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
-    private static VmShutdownListener shutdownListener = new VmShutdownListener("ContentUrlConverterPatch");
     
     private RegistryService registryService;
     private JobLockService jobLockService;
@@ -255,7 +256,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
             logger.info(report);
         }
     }
-
+    
     /**
      * Gets a set of work to do and executes it within this transaction.  If kicked off via a job,
      * the task will exit before completion, on the assumption that it will be kicked off at regular
@@ -278,7 +279,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
             return I18NUtil.getMessage("patch.convertContentUrls.bypassingPatch");
         }
         
-        boolean completed = false;
         // Lock in proportion to the batch size (0.1s per node or 0.8 min per 500) 
         String lockToken = getLock(batchSize*100L);
         if (lockToken == null)
@@ -294,16 +294,32 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 throw new RuntimeException("Unable to get job lock during patch execution.  Only one server should perform the upgrade.");
             }
         }
+        // Use a flag to keep track of the running job
+        final AtomicBoolean running = new AtomicBoolean(true);
+        jobLockService.refreshLock(lockToken, LOCK, batchSize*100, new JobLockRefreshCallback()
+        {
+            @Override
+            public boolean isActive()
+            {
+                return running.get();
+            }
+            @Override
+            public void lockReleased()
+            {
+                running.set(false);
+            }
+        });
+        boolean completed = false;
         try
         {
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.start"));
             
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.adm.start"));
-            boolean admCompleted = applyADM(lockToken);
+            boolean admCompleted = applyADMLooping(running);
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.avm.start"));
-            boolean avmCompleted = applyAVM(lockToken);
+            boolean avmCompleted = applyAVMLooping(running);
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.store.start", contentStore));
-            boolean urlLiftingCompleted = applyUrlLifting(lockToken);
+            boolean urlLiftingCompleted = applyUrlLifting(running);
             
             completed = admCompleted && avmCompleted && urlLiftingCompleted;
         }
@@ -316,7 +332,8 @@ public class ContentUrlConverterPatch extends AbstractPatch
         }
         finally
         {
-            jobLockService.releaseLock(lockToken, LOCK);
+            // The lock will self-release if answer isActive in the negative
+            running.set(false);
         }
         
         if (completed)
@@ -346,21 +363,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         }
     }
     
-    /**
-     * Attempts to get the lock.  If it fails, the current transaction is marked for rollback.
-     * 
-     * @return          Returns the lock token
-     */
-    private void refreshLock(String lockToken, long time)
-    {
-        if (lockToken == null)
-        {
-            throw new IllegalArgumentException("Must provide existing lockToken");
-        }
-        jobLockService.refreshLock(lockToken, LOCK, time);
-    }
-    
-    private boolean applyADM(final String lockToken)
+    private boolean applyADMLooping(final AtomicBoolean running)
     {
         RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
         {
@@ -370,10 +373,8 @@ public class ContentUrlConverterPatch extends AbstractPatch
             }
         };
         boolean done = false;
-        while (true && !shutdownListener.isVmShuttingDown())
+        while (running.get())
         {
-            refreshLock(lockToken, batchSize*100L);
-            
             done = transactionHelper.doInTransaction(callback, false, true);
             if (done)
             {
@@ -467,7 +468,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         return false;
     }
     
-    private boolean applyAVM(final String lockToken)
+    private boolean applyAVMLooping(final AtomicBoolean running)
     {
         RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
         {
@@ -477,10 +478,8 @@ public class ContentUrlConverterPatch extends AbstractPatch
             }
         };
         boolean done = false;
-        while (true && !shutdownListener.isVmShuttingDown())
+        while (running.get())
         {
-            refreshLock(lockToken, batchSize*100L);
-            
             done = transactionHelper.doInTransaction(callback, false, true);
             if (done)
             {
@@ -565,19 +564,19 @@ public class ContentUrlConverterPatch extends AbstractPatch
         return false;
     }
     
-    private boolean applyUrlLifting(final String lockToken) throws Exception
+    private boolean applyUrlLifting(final AtomicBoolean running) throws Exception
     {
         RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
         {
             public Boolean execute() throws Throwable
             {
-                return applyUrlLiftingInTxn(lockToken);
+                return applyUrlLiftingInTxn(running);
             }
         };
         return transactionHelper.doInTransaction(callback, false, true);
     }
     
-    private boolean applyUrlLiftingInTxn(final String lockToken) throws Exception
+    private boolean applyUrlLiftingInTxn(final AtomicBoolean running) throws Exception
     {
         // Check the store
         if (!contentStore.isWriteSupported())
@@ -613,8 +612,9 @@ public class ContentUrlConverterPatch extends AbstractPatch
             private int allCount = 0;
             public void handle(String contentUrl)
             {
-                if (shutdownListener.isVmShuttingDown())
+                if (!running.get())
                 {
+                    // Either VM shutdown or lock release.  Either way, bug out.
                     throw new VmShutdownListener.VmShutdownException();
                 }
                 
@@ -643,8 +643,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 allCount++;
                 if (allCount % batchSize == 0)
                 {
-                    // Update our lock
-                    refreshLock(lockToken, batchSize*100L);
                     if (totalSize < 0)
                     {
                         // Report

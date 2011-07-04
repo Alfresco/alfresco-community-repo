@@ -2048,33 +2048,15 @@
                 <ref bean="patch.updateDmPermissions" />
             </list>
         </property>
-        <property name="registryService">
-            <ref bean="registryService"/>
-        </property>
-        <property name="jobLockService">
-            <ref bean="jobLockService"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="controlDAO">
-            <ref bean="controlDAO"/>
-        </property>
-        <property name="contentDataDAO">
-            <ref bean="contentDataDAO"/>
-        </property>
-        <property name="contentStore">
-            <ref bean="fileContentStore"/>
-        </property>
-        <property name="threadCount">
-            <value>${system.content.contentUrlConverter.threadCount}</value>
-        </property>
-        <property name="batchSize">
-            <value>${system.content.contentUrlConverter.batchSize}</value>
-        </property>
-        <property name="runAsScheduledJob">
-            <value>${system.content.contentUrlConverter.runAsScheduledJob}</value>
-        </property>
+        <property name="registryService" ref="registryService"/>
+        <property name="jobLockService" ref="jobLockService"/>
+        <property name="patchDAO" ref="patchDAO"/>
+        <property name="controlDAO" ref="controlDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="contentStore" ref="fileContentStore"/>
+        <property name="threadCount" value="${system.content.contentUrlConverter.threadCount}" />
+        <property name="batchSize" value="${system.content.contentUrlConverter.batchSize}" />
+        <property name="runAsScheduledJob" value="${system.content.contentUrlConverter.runAsScheduledJob}" />
     </bean>
 
     <bean id="patch.db-V3.4-authority-unique-idx" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">

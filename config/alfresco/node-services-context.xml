@@ -175,6 +175,11 @@
             <value>${version.store.version2Store}</value>
          </list>
       </property>
+      <property name="propertiesToIgnore">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}source</value>
+         </list>
+      </property>	  
    </bean>
 
    <!-- node indexing for ADM -->

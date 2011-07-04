@@ -82,7 +82,7 @@ public interface Version2Model extends VersionBaseModel
     public static final String PROP_FROZEN_CREATED = "frozenCreated";
     public static final QName PROP_QNAME_FROZEN_CREATED = QName.createQName(NAMESPACE_URI, PROP_FROZEN_CREATED);
     
-    public static final String PROP_FROZEN_MODIFIER = "frozenModifer";
+    public static final String PROP_FROZEN_MODIFIER = "frozenModifier";
     public static final QName PROP_QNAME_FROZEN_MODIFIER = QName.createQName(NAMESPACE_URI, PROP_FROZEN_MODIFIER);
     
     public static final String PROP_FROZEN_MODIFIED = "frozenModified";

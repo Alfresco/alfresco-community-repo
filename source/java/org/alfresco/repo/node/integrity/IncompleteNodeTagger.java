@@ -77,6 +77,7 @@ public class IncompleteNodeTagger
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private List<String> storesToIgnore = new ArrayList<String>(0);
+    private Set<QName> propertiesToIgnore = new HashSet<QName>();
     
     public IncompleteNodeTagger()
     {
@@ -113,6 +114,19 @@ public class IncompleteNodeTagger
     public void setStoresToIgnore(List<String> storesToIgnore)
     {
         this.storesToIgnore = storesToIgnore;
+    }
+
+    /**
+     * @param propertiesToIgnore        a list of property fully-qualified names to ignore
+     */
+    public void setPropertiesToIgnore(List<String> propertiesToIgnore)
+    {
+        this.propertiesToIgnore = new HashSet<QName>();
+        for (String qnameStr : propertiesToIgnore)
+        {
+            QName qname = QName.createQName(qnameStr);
+            this.propertiesToIgnore.add(qname);
+        }
     }
 
     /**
@@ -493,6 +507,11 @@ public class IncompleteNodeTagger
     {
         for (PropertyDefinition propertyDef : propertyDefs)
         {
+            if (propertiesToIgnore.contains(propertyDef.getName()))
+            {
+                continue;
+            }
+            
             if (!propertyDef.isMandatory())
             {
                 // The property isn't mandatory in any way

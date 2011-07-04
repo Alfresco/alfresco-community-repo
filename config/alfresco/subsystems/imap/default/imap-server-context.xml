@@ -7,9 +7,6 @@
         <property name="service">
             <ref bean="imapService"/>
         </property>
-        <property name="imapServerEnabled">
-            <value>${imap.server.enabled}</value>
-        </property>
     </bean>
 
     <bean id="imapServer" class="org.alfresco.repo.imap.AlfrescoImapServer">
@@ -173,6 +170,9 @@
         </property>
         <property name="mimetypeService">
             <ref bean="mimetypeService" />
+        </property>
+        <property name="imapServerEnabled">
+            <value>${imap.server.enabled}</value>
         </property>
     </bean>
     

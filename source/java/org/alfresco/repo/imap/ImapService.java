@@ -279,5 +279,11 @@ public interface ImapService
             NodeRef messageFile,
             MimeMessage originalMessage)
             throws IOException, MessagingException;
-  
+
+    /**
+     * Determines whether the IMAP server is enabled.
+     * 
+     * @return true if enabled
+     */
+    public boolean getImapServerEnabled();  
 }

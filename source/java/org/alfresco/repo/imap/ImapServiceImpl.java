@@ -147,6 +147,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
 
+    private boolean imapServerEnabled = false;
+
     static
     {
         qNameToFlag = new HashMap<QName, Flags.Flag>();
@@ -175,22 +177,16 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public static class ImapServiceBootstrap extends AbstractLifecycleBean
     {
         private ImapServiceImpl service;
-        private boolean imapServerEnabled;
 
         public void setService(ImapServiceImpl service)
         {
             this.service = service;
         }
 
-        public void setImapServerEnabled(boolean imapServerEnabled)
-        {
-            this.imapServerEnabled = imapServerEnabled;
-        }
-
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
-            if (imapServerEnabled)
+            if (service.getImapServerEnabled())
             {
                 service.startup();
             }
@@ -199,7 +195,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
-            if (imapServerEnabled)
+            if (service.getImapServerEnabled())
             {
                 service.shutdown();
             }
@@ -303,6 +299,16 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public void setExtractAttachmentsEnabled(boolean extractAttachmentsEnabled)
     {
         this.extractAttachmentsEnabled = extractAttachmentsEnabled;
+    }
+
+    public void setImapServerEnabled(boolean enabled)
+    {
+        this.imapServerEnabled = enabled;
+    }
+    
+    public boolean getImapServerEnabled()
+    {
+        return this.imapServerEnabled;
     }
 
     // ---------------------- Lifecycle Methods ------------------------------

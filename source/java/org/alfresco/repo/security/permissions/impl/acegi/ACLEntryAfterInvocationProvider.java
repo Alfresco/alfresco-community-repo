@@ -43,8 +43,8 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
-import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue;
+import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -908,7 +908,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     }
                     else
                     {
-                        throw new ACLEntryVoterException("The specified parameter is recognized: " + nextObject.getClass());
+                        throw new ACLEntryVoterException("The specified parameter is not recognized: " + nextObject.getClass());
                     }
                 }
                 else if (cad.typeString.equals(AFTER_ACL_PARENT))

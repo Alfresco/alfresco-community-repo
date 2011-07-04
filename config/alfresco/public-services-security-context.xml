@@ -899,6 +899,47 @@
             </value>
         </property>
     </bean>
+    
+    <!-- ============ -->
+    <!-- Site Service -->
+    <!-- ============ -->
+    
+    <bean id="SiteService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.service.cmr.site.SiteService.cleanSitePermissions=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.createContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.createSite=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.deleteSite=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.getMembersRole=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getSite=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.getSiteGroup=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getSiteRoleGroup=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getSiteRoles=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getSiteRoot=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.hasContainer=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.hasCreateSitePermissions=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.isMember=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.listMembers=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.listSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.removeMembership=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.setMembership=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.updateSite=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="SiteService_security_listSites" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="SiteService_security" />
+        <property name="service" value="org.alfresco.service.cmr.site.SiteService" />
+        <property name="methodName" value="listSites" />
+    </bean>
+    
 
     <!-- ======================== -->
     <!-- Repository Admin Service -->

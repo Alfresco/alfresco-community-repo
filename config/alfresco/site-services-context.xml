@@ -29,7 +29,7 @@
                 <idref local="SiteService_transaction"/>
                 <idref bean="AuditMethodInterceptor"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="SiteService_security"/>
+                <idref bean="SiteService_security"/>
             </list>
         </property>
     </bean>
@@ -46,8 +46,21 @@
         </property>
     </bean>
     
-    <!-- Site service security bean -->
-    <bean id="SiteService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="siteCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+    </bean>
+    
+    <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="SiteService_security_listSites"/>
+    </bean>
     
     
      <!-- I18N -->   
@@ -94,6 +107,7 @@
        <property name="sysAdminParams" ref="sysAdminParams"/>
        <property name="behaviourFilter" ref="policyBehaviourFilter" />
        <property name="sitesPermissionsCleaner" ref="sitesPermissionsCleaner"/>
+       <property name="cannedQueryRegistry" ref="siteCannedQueryRegistry"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

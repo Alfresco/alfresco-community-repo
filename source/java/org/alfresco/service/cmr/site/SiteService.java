@@ -22,12 +22,16 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Site service fundamental API.
@@ -119,6 +123,19 @@ public interface SiteService
      */
     @NotAuditable
     List<SiteInfo> listSites(String userName);
+    
+    /**
+     * This method returns {@link PagingResults paged result sets} of {@link SiteInfo} objects, which should be
+     * more efficient than the unpaged methods also available on this interface.
+     * 
+     * @param filterProps property filters
+     * @param sortProps sorting options
+     * @param pagingRequest paging options
+     * 
+     * @return a page of SiteInfo objects.
+     * @since 4.0
+     */
+    PagingResults<SiteInfo> listSites(List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
      * Gets site information based on the short name of a site.

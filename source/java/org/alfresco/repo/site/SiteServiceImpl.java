@@ -33,8 +33,18 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQuery;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropString;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -67,9 +77,10 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -137,6 +148,8 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     private SysAdminParams sysAdminParams;
     private BehaviourFilter behaviourFilter;
     private SitesPermissionCleaner sitesPermissionsCleaner;
+    
+    private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
 
 
     /**
@@ -295,8 +308,15 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     {
         this.sitesPermissionsCleaner = sitesPermissionsCleaner;
     }
-
-
+    
+    /**
+     * Set the registry of {@link CannedQueryFactory canned queries}
+     */
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
     public Comparator<String> getRoleComparator()
     {
         return roleComparator;
@@ -662,8 +682,18 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String, java.lang.String, int)
      */
-    public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter, int size)
+    public List<SiteInfo> listSites(final String nameFilter, final String sitePresetFilter, int size)
     {
+        // Implementation note: The behaviour of this method depends on what parameter values are passed in.
+        //
+        // If there is a non-null, non-empty nameFilter String, then it is wrapped in *s, e.g. "*foo*" and that expression
+        // is matched against cm:name in a Lucene query.
+        // sitePresetFilters are treated as exact matches, i.e. "foo" will search for st:sitePreset.equals("foo").
+        //
+        // Therefore we are able to handle searches: (nameFilter = null, sitePresetFilter = "foo", size = {int})
+        // as GetChildrenCannedQueries.
+        // However GCCQs do not support the 'contains' match that would be required for nameFilter - for performance reasons.
+        
         List<SiteInfo> result;
         
         NodeRef siteRoot = getSiteRoot();
@@ -673,23 +703,39 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         }
         else
         {
-            if (nameFilter != null && nameFilter.length() != 0 || sitePresetFilter != null && sitePresetFilter.length() > 0)
+            final boolean nameFilterHasValue = nameFilter != null && nameFilter.length() != 0;
+            final boolean sitePresetFilterHasValue = sitePresetFilter != null && sitePresetFilter.length() > 0;
+            
+            // If nameFilter is not specified, we can use a GetChildrenCannedQuery.
+            if ( !nameFilterHasValue)
             {
-                // get the sites that match the specified names
+                List<Pair<QName, Boolean>> sortProps = null;
+                
+                PagingRequest pagingRequest = new PagingRequest(size == 0 ? Integer.MAX_VALUE : size);
+                List<FilterProp> filterProps = new ArrayList<FilterProp>(1);
+                if (sitePresetFilterHasValue)
+                {
+                    filterProps.add(new FilterPropString(SiteModel.PROP_SITE_PRESET, sitePresetFilter, FilterTypeString.EQUALS));
+                }
+                PagingResults<SiteInfo> allSites = listSites(filterProps, sortProps, pagingRequest);
+                result = allSites.getPage();
+            }
+            // FIXME Otherwise we need a different approach. Currently we search with Lucene, but this may change.
+            else
+            {
+                final NodeRef siteRoot1 = getSiteRoot();
+                
                 StringBuilder query = new StringBuilder(128);
-                query.append("+PARENT:\"").append(siteRoot.toString())
+                query.append("+PARENT:\"").append(siteRoot1.toString())
                      .append("\" +(");
                 
-                if (nameFilter != null && nameFilter.length() > 0)
-                {
-                    String escNameFilter = AbstractLuceneQueryParser.escape(nameFilter.replace('"', ' '));
+                String escNameFilter = AbstractLuceneQueryParser.escape(nameFilter.replace('"', ' '));
                 
-                    query.append(" @cm\\:name:\"*" + escNameFilter + "*\"")
-                    .append(" @cm\\:title:\"" + escNameFilter + "\"")
-                    .append(" @cm\\:description:\"" + escNameFilter + "\"");
-                }
-
-                if (sitePresetFilter != null && sitePresetFilter.length() > 0)
+                query.append(" @cm\\:name:\"*" + escNameFilter + "*\"")
+                .append(" @cm\\:title:\"" + escNameFilter + "\"")
+                .append(" @cm\\:description:\"" + escNameFilter + "\"");
+                
+                if (sitePresetFilterHasValue)
                 {
                     String escPresetFilter = AbstractLuceneQueryParser.escape(sitePresetFilter.replace('"', ' '));
                     query.append(" @st\\:sitePreset:\"" + escPresetFilter + "\"");
@@ -698,7 +744,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 query.append(")");
                 
                 ResultSet results = this.searchService.query(
-                        siteRoot.getStoreRef(),
+                        siteRoot1.getStoreRef(),
                         SearchService.LANGUAGE_LUCENE,
                         query.toString(),
                         null);                        
@@ -720,26 +766,6 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 finally
                 {
                     results.close();
-                }
-            }
-            else
-            {
-                // Get ALL sites - this may be a very slow operation if there are many sites...
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
-                        siteRoot, ContentModel.ASSOC_CONTAINS,
-                        RegexQNamePattern.MATCH_ALL);
-                result = new ArrayList<SiteInfo>(assocs.size());
-                for (ChildAssociationRef assoc : assocs)
-                {
-                    // Ignore any node type that is not a "site"
-                    NodeRef site = assoc.getChildRef();
-                    QName siteClassName = this.directNodeService.getType(site);
-                    if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
-                    {            
-                        result.add(createSiteInfo(site));
-                        // break on max size limit reached
-                        if (result.size() == size) break;
-                    }
                 }
             }
         }
@@ -769,6 +795,75 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         {
             return listSitesImpl(userName);
         }
+    }
+    
+    /**
+     * This method uses {@link CannedQuery canned queries} to retrieve {@link SiteModel#TYPE_SITE st:site} NodeRefs
+     * with support for {@link PagingRequest result paging}.
+     */
+    @Override
+    public PagingResults<SiteInfo> listSites(List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
+        // Only search for "st:site" nodes.
+        final Set<QName> searchTypeQNames = new HashSet<QName>(1);
+        searchTypeQNames.add(SiteModel.TYPE_SITE);
+        
+        // get canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("siteGetChildrenCannedQueryFactory");
+        
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(getSiteRoot(), searchTypeQNames,
+                                                                                                         filterProps, sortProps, pagingRequest);
+        
+        // execute canned query
+        final CannedQueryResults<NodeRef> results = cq.execute();
+        
+        // Now convert the CannedQueryResults<NodeRef> into a more useful PagingResults<SiteInfo>
+        List<NodeRef> nodeRefs = Collections.emptyList();
+        if (results.getPageCount() > 0)
+        {
+            nodeRefs = results.getPages().get(0);
+        }
+        
+        // set total count
+        final Pair<Integer, Integer> totalCount;
+        if (pagingRequest.getRequestTotalCountMax() > 0)
+        {
+            totalCount = results.getTotalResultCount();
+        }
+        else
+        {
+            totalCount = null;
+        }
+        
+        final List<SiteInfo> siteInfos = new ArrayList<SiteInfo>(nodeRefs.size());
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            siteInfos.add(createSiteInfo(nodeRef));
+        }
+        
+        return new PagingResults<SiteInfo>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
+            @Override
+            public List<SiteInfo> getPage()
+            {
+                return siteInfos;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
+            }
+        };
     }
     
     private List<SiteInfo> listSitesImpl(String userName)
@@ -808,6 +903,9 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         {
             List<String> siteList = new ArrayList<String>(siteNames);
             // ensure we do not trip over the getChildrenByName() 1000 item API limit!
+            //
+            // Note the implicit assumption here: that the specified user is not a member of > 1000 sites
+            // If the user IS a member of more than 1000 sites, then a truncated list of sites will be returned.
             if (siteList.size() > 1000)
             {
                 siteList = siteList.subList(0, 1000);

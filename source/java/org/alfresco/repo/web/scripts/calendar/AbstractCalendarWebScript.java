@@ -18,10 +18,18 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.repo.model.Repository;
+import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author Nick Burch
@@ -33,6 +41,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     protected Repository repository;
     protected NodeService nodeService;
     protected SiteService siteService;
+    protected CalendarService calendarService;
     
     public void setRepository(Repository repository)
     {
@@ -48,4 +57,55 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     {
         this.siteService = siteService;
     }
+    
+    public void setCalendarService(CalendarService calendarService)
+    {
+        this.calendarService = calendarService;
+    }
+    
+    /**
+     * Equivalent of <i>jsonError</i> in the old JavaScript controllers
+     */
+    protected Map<String,Object> buildError(String message)
+    {
+       HashMap<String, Object> model = new HashMap<String, Object>();
+       model.put("error", message);
+       return model;
+    }
+    
+    @Override
+    protected Map<String, Object> executeImpl(WebScriptRequest req,
+          Status status, Cache cache) 
+    {
+       Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+       if(templateVars == null)
+       {
+          return buildError("No parameters supplied");
+       }
+       
+       String siteName = templateVars.get("site");
+       if(siteName == null)
+       {
+          siteName = req.getParameter("site");
+       }
+       if(siteName == null)
+       {
+          return buildError("No site given");
+       }
+       
+       SiteInfo site = siteService.getSite(siteName);
+       if(site == null)
+       {
+          return buildError("Could not find site: " + siteName);
+       }
+       
+       // Event name is optional
+       String eventName = templateVars.get("eventname");
+       
+       // Have the real work done
+       return executeImpl(site, eventName, req, status, cache); 
+    }
+    
+    protected abstract Map<String, Object> executeImpl(SiteInfo site, 
+          String eventName, WebScriptRequest req, Status status, Cache cache);
 }

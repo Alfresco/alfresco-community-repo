@@ -107,7 +107,7 @@ public class InvokeCommand extends BaseAjaxCommand
             // all the objects in the session to find the bean we want.
             
             String beanNameSuffix = "?" + variableName;
-            Enumeration enumNames = request.getSession().getAttributeNames();
+            Enumeration<?> enumNames = request.getSession().getAttributeNames();
             while (enumNames.hasMoreElements())
             {
                String name = (String)enumNames.nextElement();
@@ -156,35 +156,56 @@ public class InvokeCommand extends BaseAjaxCommand
             public Object execute() throws Throwable
             {
                // invoke the method
-               method.invoke(beanFinal);
-               return null;
+               try
+               {
+                  method.invoke(beanFinal);
+                  return null;
+               }
+               // Let's prevent RuntimeExceptions being wrapped twice by unwrapping InvocationTargetExceptions
+               catch (InvocationTargetException e)
+               {
+                  if (e.getCause() != null)
+                  {
+                     throw e.getCause();
+                  }
+                  throw e;
+               }
             }
          };
          txnHelper.doInTransaction(callback);
       }
-      catch (Throwable err)
+      catch (EvaluationException e)
       {
-         if (err instanceof EvaluationException)
+         Throwable err = e.getCause();
+         if (err == null)
          {
-            final Throwable cause = ((EvaluationException)err).getCause();
-            if (cause != null)
+            logger.error("Failed to execute method " + expression + ": " + e.getMessage(), e);
+            throw e;
+         }
+         else
+         {
+            logger.error("Failed to execute method " + expression + ": " + err.getMessage(), err);
+            if (err instanceof RuntimeException)
             {
-               err = cause;
+               throw (RuntimeException)err;
+            }
+            else
+            {
+               throw new AlfrescoRuntimeException("Failed to execute method " + expression + ": " + err.getMessage(), err);            
             }
          }
-         else if (err instanceof InvocationTargetException)
-         {
-            final Throwable cause = ((InvocationTargetException)err).getCause();
-            if (cause != null)
-            {
-               err = cause;
-            }
-         }
+      }
+      catch (RuntimeException err)
+      {
 
-         logger.error("Failed to execute method " + expression + ": " + err.getMessage(),
-                      err);
-         throw new AlfrescoRuntimeException("Failed to execute method " + expression + 
-                ": " + err.getMessage(), err);
+         logger.error("Failed to execute method " + expression + ": " + err.getMessage(), err);
+         throw err;
+      }
+      catch (Exception err)
+      {
+
+         logger.error("Failed to execute method " + expression + ": " + err.getMessage(), err);
+         throw new AlfrescoRuntimeException("Failed to execute method " + expression + ": " + err.getMessage(), err);
       }
 
       // force the output back to the client

@@ -166,6 +166,21 @@ public class XFormsBean implements Serializable
       {
          return this.formInstanceDataName;
       }
+
+      public Schema2XForms getSchema2XForms()
+      {
+         return this.schema2XForms;
+      }
+
+      public ChibaBean getChibaBean()
+      {
+          return this.chibaBean;
+      }
+
+      public List<XMLEvent> getEventLog()
+      {
+          return this.eventLog;
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -182,6 +197,15 @@ public class XFormsBean implements Serializable
    private Lock readLock = rwLock.readLock();
    
    public static String BEAN_NAME = "XFormsBean";
+   
+   public XFormsSession getXformsSession()
+   {
+       if (this.xformsSession == null)
+       {
+           throw new IllegalStateException("Incomplete user session. Please restart the form.");
+       }
+       return this.xformsSession;
+   }
    
    /**
     * @param schema2XFormsProperties the schema2XFormsProperties to set.
@@ -332,7 +356,7 @@ public class XFormsBean implements Serializable
       readLock.lock();
       try
       {
-         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final ChibaBean chibaBean = this.getXformsSession().getChibaBean();
          final Node xformsDocument = chibaBean.getXMLContainer();
          XMLUtil.print(xformsDocument, out);
       }
@@ -358,7 +382,7 @@ public class XFormsBean implements Serializable
       writeLock.lock();
       try
       {
-         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final ChibaBean chibaBean = this.getXformsSession().getChibaBean();
 
          if (chibaBean.getContainer().lookup(id) instanceof Upload)
          {
@@ -397,7 +421,7 @@ public class XFormsBean implements Serializable
             final int index = Integer.parseInt((String)requestParameters.get(id));
             if (LOGGER.isDebugEnabled())
                LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
-            final ChibaBean chibaBean = this.xformsSession.chibaBean;
+            final ChibaBean chibaBean = this.getXformsSession().getChibaBean();
             chibaBean.updateRepeatIndex(id, index);
          }
          final ResponseWriter out = context.getResponseWriter();
@@ -425,7 +449,7 @@ public class XFormsBean implements Serializable
       writeLock.lock();
       try
       {
-         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final ChibaBean chibaBean = this.getXformsSession().getChibaBean();
          chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
          
          final ResponseWriter out = context.getResponseWriter();
@@ -452,7 +476,7 @@ public class XFormsBean implements Serializable
             context.getExternalContext().getRequest();
          final Document result = XMLUtil.parse(request.getInputStream());
          this.handleSubmit(result);
-         final Document instanceData = this.xformsSession.getFormInstanceData();
+         final Document instanceData = this.getXformsSession().getFormInstanceData();
          final ResponseWriter out = context.getResponseWriter();
          XMLUtil.print(instanceData, out, false);
          out.close();
@@ -465,7 +489,7 @@ public class XFormsBean implements Serializable
 
    public void handleSubmit(Node result)
    {
-      final Document instanceData = this.xformsSession.getFormInstanceData();
+      final Document instanceData = this.getXformsSession().getFormInstanceData();
       Element documentElement = instanceData.getDocumentElement();
       if (documentElement != null)
       {
@@ -497,16 +521,16 @@ public class XFormsBean implements Serializable
       writeLock.lock();
       try
       {
-         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final ChibaBean chibaBean = this.getXformsSession().getChibaBean();
          final RepeatItem from = (RepeatItem)chibaBean.getContainer().lookup(fromItemId);
          if (from == null)
          {
-            throw new NullPointerException("unable to find source repeat item " + fromItemId);
+            throw new IllegalArgumentException("unable to find source repeat item " + fromItemId);
          }
          final RepeatItem to = (RepeatItem)chibaBean.getContainer().lookup(toItemId);
          if (to == null)
          {
-            throw new NullPointerException("unable to find destination repeat item " + toItemId);
+            throw new IllegalArgumentException("unable to find destination repeat item " + toItemId);
          }
 
          this.swapRepeatItems(from, to);
@@ -683,7 +707,7 @@ public class XFormsBean implements Serializable
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
       
-      for (XMLEvent xfe : this.xformsSession.eventLog)
+      for (XMLEvent xfe : this.getXformsSession().getEventLog())
       {
          final String type = xfe.getType();
          if (LOGGER.isDebugEnabled())
@@ -724,7 +748,7 @@ public class XFormsBean implements Serializable
 			LOGGER.debug("performing full revalidate");
 			try
 			{
-			   final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
+			   final Model model = this.getXformsSession().getChibaBean().getContainer().getDefaultModel();
 			   final Instance instance = model.getDefaultInstance();
 			   model.getValidator().validate(instance, "/", new DefaultValidatorMode());
 			   final Iterator<ModelItem> it = instance.iterateModelItems("/");
@@ -785,7 +809,7 @@ public class XFormsBean implements Serializable
       throws FormBuilderException
    {
       String path = null;
-      if (this.xformsSession.form.isWebForm())
+      if (this.getXformsSession().getForm().isWebForm())
       {
          path = this.getCurrentAVMPath();
       }
@@ -812,7 +836,7 @@ public class XFormsBean implements Serializable
          XFormsBean.rewriteInlineURIs(schemaDocument, path);
          final String rootElementName = this.xformsSession.form.getSchemaRootElementName();
          final Pair<Document, XSModel> result = 
-            this.xformsSession.schema2XForms.buildXForm(this.xformsSession.formInstanceData, 
+            this.getXformsSession().getSchema2XForms().buildXForm(this.getXformsSession().getFormInstanceData(), 
                                                         schemaDocument,
                                                         rootElementName,
                                                         resourceBundle);

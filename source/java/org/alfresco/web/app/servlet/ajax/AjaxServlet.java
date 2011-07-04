@@ -81,7 +81,7 @@ public class AjaxServlet extends BaseServlet
       // dump the request headers
       if (headersLogger.isDebugEnabled())
       {
-         final Enumeration headers = request.getHeaderNames();
+         final Enumeration<?> headers = request.getHeaderNames();
          while (headers.hasMoreElements())
          {
             final String name = (String)headers.nextElement();
@@ -190,9 +190,15 @@ public class AjaxServlet extends BaseServlet
          {
             msg = cause.toString();
          }
-         
-         // send the error
-         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+         // ALF-9036. We need to trap incomplete sessions
+         if (cause instanceof IllegalStateException)
+         {
+             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, cause.getMessage());
+         }
+         else
+         {
+             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+         }
       }
       else
       {

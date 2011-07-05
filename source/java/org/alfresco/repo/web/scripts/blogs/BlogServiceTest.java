@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.blogs;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -321,9 +322,9 @@ public class BlogServiceTest extends BaseWebScriptTest
         assertEquals(title, item.get("title"));
         assertEquals(content, item.get("content"));
         assertEquals(true, item.get("isDraft"));
-        JSONArray recoveredTags = (JSONArray)item.get("tags");
-        assertEquals("Tags size was wrong.", 2, recoveredTags.length());
-        List<String> recoveredTagsList = Arrays.asList(new String[]{recoveredTags.getString(0), recoveredTags.getString(1)});
+        JSONArray reportedTags = (JSONArray)item.get("tags");
+        assertEquals("Tags size was wrong.", 2, reportedTags.length());
+        List<String> recoveredTagsList = Arrays.asList(new String[]{reportedTags.getString(0), reportedTags.getString(1)});
         assertEquals("Tags were wrong.", Arrays.asList(tags), recoveredTagsList);
         
         // comment on the blog post.
@@ -364,7 +365,20 @@ public class BlogServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(commentsUrl), 200);
         
         
-        // TODO Replies still not right in the Share UI.
+        // Now get blog-post by tag.
+        // 1. No such tag
+        response = sendRequest(new GetRequest(URL_BLOG_POSTS + "?tag=NOSUCHTAG"), 200);
+        result = new JSONObject(response.getContentAsString());
+        
+        assertEquals(0, result.getInt("total"));
+        
+        // tag created above
+        response = sendRequest(new GetRequest(URL_BLOG_POSTS + "?tag=foo"), 200);
+        result = new JSONObject(response.getContentAsString());
+        
+        assertEquals(1, result.getInt("total"));
+        
+        //TODO More assertions on recovered node.
     }
     
     public void testCreatePublishedPost() throws Exception

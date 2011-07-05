@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,6 +52,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class BlogPostsPost extends AbstractBlogWebScript
 {
+    private static final Log log = LogFactory.getLog(BlogPostsPost.class);
+
     // Injected services
     private ActivityService activityService;
     private TaggingService taggingService;
@@ -203,6 +207,18 @@ public class BlogPostsPost extends AbstractBlogWebScript
         String titleParam = jsonParams.getTitle() == null ? "" : jsonParams.getTitle();
         String contentParam = jsonParams.getContent() == null ? "" : jsonParams.getContent();
         boolean isDraftParam = jsonParams.getIsDraft() == null ? false : Boolean.parseBoolean(jsonParams.getIsDraft());
+        
+        if (log.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Creating blog-post '").append(titleParam).append("'");
+            if (isDraftParam)
+            {
+                msg.append(" DRAFT");
+            }
+            log.debug(msg.toString());
+        }
+        
         List<String> tagsParam = new ArrayList<String>();
         if (jsonParams.getTags() != null)
         {

@@ -33,13 +33,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class BlogPostsGet extends AbstractGetBlogWebScript
 {
-
     @SuppressWarnings("deprecation")
     @Override
-    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, String tag, PagingRequest pagingReq)
+    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         // This intentionally uses the deprecated method in the foundation service.
         // In fact the method is there specifically for this class.
-        return blogService.getMyDraftsAndAllPublished(node, fromDate, toDate, tag, pagingReq);
+        
+        return blogService.getMyDraftsAndAllPublished(node, fromDate, toDate, pagingReq);
     }
 }

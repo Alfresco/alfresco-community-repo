@@ -32,6 +32,8 @@ import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -42,6 +44,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
 {
+    private static final Log log = LogFactory.getLog(AbstractGetBlogWebScript.class);
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -82,7 +86,14 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         // fetch and assign the data
         PagingResults<BlogPostInfo> blogPostList = getBlogPostList(node, fromDate, toDate,
                                           tag, pagingReq);
-
+                                          
+        if (log.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Retrieved ").append(blogPostList.getPage().size()).append(" blog posts in page.");
+            log.debug(msg.toString());
+        }
+        
         createFtlModel(req, model, node, pagingReq, blogPostList);
         
         return model;
@@ -158,9 +169,22 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
      */
     private PagingResults<BlogPostInfo> getBlogPostList(NodeRef node, Date fromDate, Date toDate, String tag, PagingRequest pagingReq)
     {
-        PagingResults<BlogPostInfo> results = getBlogResultsImpl(node, fromDate, toDate, tag, pagingReq);
-        return results;
+        // Currently we only support CannedQuery-based gets without tags:
+        if (tag == null || tag.trim().isEmpty())
+        {
+            return getBlogResultsImpl(node, fromDate, toDate, pagingReq);
+        }
+        // and tag-based Lucene searches with no other query params
+        else if (fromDate == null && toDate == null)
+        {
+            return blogService.findTaggedBlogPosts(node, tag, pagingReq);
+        }
+        // But we might change the below to use a Lucene query.
+        else
+        {
+            throw new UnsupportedOperationException("Cannot get BlogPosts with both tags and date limits.");
+        }
     }
     
-    protected abstract PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, String tag, PagingRequest pagingReq);
+    protected abstract PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq);
 }

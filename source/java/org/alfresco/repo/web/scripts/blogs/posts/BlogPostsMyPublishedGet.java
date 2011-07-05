@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class BlogPostsMyPublishedGet extends AbstractGetBlogWebScript
 {
     @Override
-    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, String tag, PagingRequest pagingReq)
+    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
         return blogService.getPublished(node, fromDate, toDate, fullyAuthenticatedUser, pagingReq);

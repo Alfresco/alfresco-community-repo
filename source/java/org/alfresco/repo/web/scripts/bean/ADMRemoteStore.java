@@ -332,6 +332,10 @@ public class ADMRemoteStore extends BaseRemoteStore
                     logger.debug("createDocument: " + fileInfo.toString());
             }
         }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
         catch (FileExistsException feeErr)
         {
             res.setStatus(Status.STATUS_CONFLICT);
@@ -645,16 +649,31 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         // remap the path into the appropriate Sites or site relative folder location
         // by first matching the path to appropriate user or site regex
+        final boolean debug = logger.isDebugEnabled();
         String userId = null;
         String siteName = null;
         Matcher matcher;
-        if ((matcher = USER_PATTERN_1.matcher(path)).matches())
+        if (debug)
         {
-            userId = matcher.group(1);
-        }
-        else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
-        {
-            userId = matcher.group(1);
+            // user data is stored directly under the Sites folder along with
+            // other generic config files - there is actually no need to match
+            // anything other than site specific config other than for debug
+            if ((matcher = USER_PATTERN_1.matcher(path)).matches())
+            {
+                userId = matcher.group(1);
+            }
+            else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
+            {
+                userId = matcher.group(1);
+            }
+            else if ((matcher = SITE_PATTERN_1.matcher(path)).matches())
+            {
+                siteName = matcher.group(1);
+            }
+            else if ((matcher = SITE_PATTERN_2.matcher(path)).matches())
+            {
+                siteName = matcher.group(1);
+            }
         }
         else if ((matcher = SITE_PATTERN_1.matcher(path)).matches())
         {
@@ -666,16 +685,9 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
         
         NodeRef surfConfigRef = null;
-        if (userId != null)
+        if (siteName != null)
         {
-            if (logger.isDebugEnabled())
-                logger.debug("...resolved user path id: " + userId);
-            surfConfigRef = getSurfConfigNodeRef(getRootNodeRef(), create);
-        }
-        else if (siteName != null)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("...resolved site path id: " + siteName);
+            if (debug) logger.debug("...resolved site path id: " + siteName);
             NodeRef siteRef = getSiteNodeRef(siteName);
             if (siteRef != null)
             {
@@ -684,8 +696,17 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
         else
         {
-            if (logger.isDebugEnabled())
-                logger.debug("...resolved to generic path.");
+            if (debug)
+            {
+                if (userId != null)
+                {
+                    logger.debug("...resolved user path id: " + userId);
+                }
+                else
+                {
+                    logger.debug("...resolved to generic path.");
+                }
+            }
             surfConfigRef = getSurfConfigNodeRef(getRootNodeRef(), create);
         }
         return surfConfigRef;

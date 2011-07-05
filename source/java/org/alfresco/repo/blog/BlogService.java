@@ -102,7 +102,6 @@ public interface BlogService
      * @param blogContainerNode the container node for blog posts (under the site).
      * @param fromDate          an inclusive date limit for the results (more recent than).
      * @param toDate            an inclusive date limit for the results (before).
-     * @param tag               if specified, only returns posts tagged with this tag.
      * @param pagingReq     an object defining the paging parameters for the result set.
      * 
      * @return a {@link PagingResults} object containing some or all of the results (subject to paging).
@@ -111,9 +110,21 @@ public interface BlogService
      * 
      * @deprecated This method is a domain-specific query used by the Blog REST API and is not considered suitable for general use.
      */
-    PagingResults<BlogPostInfo> getMyDraftsAndAllPublished(NodeRef blogContainerNode, Date fromDate, Date toDate,
-                                                      String tag, PagingRequest pagingReq);
+    PagingResults<BlogPostInfo> getMyDraftsAndAllPublished(NodeRef blogContainerNode, Date fromDate, Date toDate, PagingRequest pagingReq);
     
+    /**
+     * Finds blog posts by the specified user tagged with the given tag string.
+     * 
+     * @param blogContainerNode the container node for blog posts (under the site).
+     * @param tag               tag string.
+     * @param pagingReq         an object defining the paging parameters for the result set.
+     * 
+     * @return a {@link PagingResults} object containing some or all of the results (subject to paging).
+     * 
+     * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
+     */
+    PagingResults<BlogPostInfo> findTaggedBlogPosts(NodeRef blogContainerNode, String tag, PagingRequest pagingReq);
+
     /**
      * Returns true if the specified blog-post node is a 'draft' blog post.
      * 

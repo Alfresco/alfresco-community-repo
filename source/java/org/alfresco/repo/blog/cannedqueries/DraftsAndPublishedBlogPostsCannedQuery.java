@@ -56,17 +56,14 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
     private static final String QUERY_SELECT_GET_BLOGS = "select_GetBlogsCannedQuery";
     
     private final CannedQueryDAO cannedQueryDAO;
-    private final TaggingService taggingService;
     
     public DraftsAndPublishedBlogPostsCannedQuery(
             CannedQueryDAO cannedQueryDAO,
-            TaggingService taggingService,
             MethodSecurityBean<BlogPostInfo> methodSecurity,
             CannedQueryParameters params)
     {
         super(params, methodSecurity);
         this.cannedQueryDAO = cannedQueryDAO;
-        this.taggingService = taggingService;
     }
     
     @Override
@@ -80,7 +77,6 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
         
         DraftsAndPublishedBlogPostsCannedQueryParams paramBean = (DraftsAndPublishedBlogPostsCannedQueryParams) paramBeanObj;
         String requestedCreator = paramBean.getCmCreator();
-        String requestedTag = paramBean.getTag();
         Date createdFromDate = paramBean.getCreatedFromDate();
         Date createdToDate = paramBean.getCreatedToDate();
         
@@ -133,13 +129,6 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
                         nextNodeIsAcceptable = false;
                     }
                 }
-            }
-            
-            // TODO review use-case and either remove or push-down
-            // Only return blog posts tagged with the specified tag string.
-            if (requestedTag != null && !taggingService.getTags(result.getNode().getNodeRef()).contains(requestedTag))
-            {
-                nextNodeIsAcceptable = false;
             }
             
             if (nextNodeIsAcceptable)

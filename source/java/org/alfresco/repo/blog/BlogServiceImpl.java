@@ -19,8 +19,10 @@
 package org.alfresco.repo.blog;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -39,9 +41,14 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 
@@ -69,6 +76,7 @@ public class BlogServiceImpl implements BlogService
     private ContentService contentService;
     private NodeService nodeService;
     private PermissionService permissionService;
+    private SearchService searchService;
     
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<BlogPostInfo>> cannedQueryRegistry)
     {
@@ -108,6 +116,11 @@ public class BlogServiceImpl implements BlogService
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
     }
     
     @Override
@@ -199,7 +212,7 @@ public class BlogServiceImpl implements BlogService
      * @deprecated
      */
     @Override
-    public PagingResults<BlogPostInfo> getMyDraftsAndAllPublished(NodeRef blogContainerNode, Date createdFrom, Date createdTo, String tag, PagingRequest pagingReq)
+    public PagingResults<BlogPostInfo> getMyDraftsAndAllPublished(NodeRef blogContainerNode, Date createdFrom, Date createdTo, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
@@ -207,7 +220,7 @@ public class BlogServiceImpl implements BlogService
         // get canned query
         pagingReq.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        DraftsAndPublishedBlogPostsCannedQuery cq = (DraftsAndPublishedBlogPostsCannedQuery)draftsAndPublishedBlogPostsCannedQueryFactory.getCannedQuery(blogContainerNode, createdFrom, createdTo, currentUser, tag, pagingReq);
+        DraftsAndPublishedBlogPostsCannedQuery cq = (DraftsAndPublishedBlogPostsCannedQuery)draftsAndPublishedBlogPostsCannedQueryFactory.getCannedQuery(blogContainerNode, createdFrom, createdTo, currentUser, pagingReq);
             
         // execute canned query
         CannedQueryResults<BlogPostInfo> results = cq.execute();
@@ -249,5 +262,71 @@ public class BlogServiceImpl implements BlogService
             // set/update the updated date
             nodeService.setProperty(blogPostNode, ContentModel.PROP_UPDATED, new Date());
         }
+    }
+    
+    @Override
+    public PagingResults<BlogPostInfo> findTaggedBlogPosts(
+            NodeRef blogContainerNode, String tag, PagingRequest pagingReq)
+    {
+        StringBuilder luceneQuery = new StringBuilder();
+        luceneQuery.append("+TYPE:\"").append(ContentModel.TYPE_CONTENT).append("\" ")
+                   .append("+PARENT:\"").append(blogContainerNode.toString()).append("\" ")
+                   .append("+PATH:\"/cm:taggable/cm:").append(ISO9075.encode(tag)).append("/member\"");
+        
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(blogContainerNode.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery(luceneQuery.toString());
+        sp.addSort(ContentModel.PROP_PUBLISHED.toString(), false);
+        ResultSet luceneResults = null;
+        PagingResults<BlogPostInfo> results = null;
+        try
+        {
+            luceneResults = searchService.query(sp);
+            final ResultSet finalLuceneResults = luceneResults;
+            
+            results = new PagingResults<BlogPostInfo>()
+            {
+                
+                @Override
+                public List<BlogPostInfo> getPage()
+                {
+                    List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs();
+                    List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(nodeRefs.size());
+                    for (NodeRef nodeRef : nodeRefs)
+                    {
+                        blogPostInfos.add(new BlogPostInfo(nodeRef, (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
+                    }
+                    return blogPostInfos;
+                }
+                
+                @Override
+                public String getQueryExecutionId()
+                {
+                    return null;
+                }
+                
+                @Override
+                public Pair<Integer, Integer> getTotalResultCount()
+                {
+                    int size = finalLuceneResults.getNodeRefs().size();
+                    //FIXME Impl
+                    return new Pair<Integer, Integer>(size, size);
+                }
+                
+                @Override
+                public boolean hasMoreItems()
+                {
+                    return finalLuceneResults.hasMore();
+                }
+            };
+        }
+        finally
+        {
+            if (luceneResults != null) luceneResults.close();
+        }
+        
+        
+        return results;
     }
 }

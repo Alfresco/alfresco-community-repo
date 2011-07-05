@@ -81,6 +81,7 @@
        <property name="contentService" ref="ContentService"/>
        <property name="nodeService" ref="NodeService"/>
        <property name="permissionService" ref="PermissionService"/>
+       <property name="searchService" ref="SearchService"/>
        
        <property name="draftBlogPostsCannedQueryFactory" ref="getDraftBlogPostsCannedQueryFactory"/>
        <property name="publishedBlogPostsCannedQueryFactory" ref="getPublishedBlogPostsCannedQueryFactory"/>
@@ -117,7 +118,6 @@
     <bean name="getDraftsAndPublishedBlogPostsCannedQueryFactory" parent="parentBlogPostsCannedQueryFactory"
           class="org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQueryFactory">
       <property name="methodSecurity" ref="BlogService_security_getMyDraftsAndAllPublished"/>
-      <property name="taggingService" ref="TaggingService"/>
     </bean>
     
     <!-- Blog Integration Service (Integration with external blog hosting sites) -->

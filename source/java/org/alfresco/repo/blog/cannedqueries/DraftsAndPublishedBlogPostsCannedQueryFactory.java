@@ -30,7 +30,6 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -41,24 +40,17 @@ import org.alfresco.util.ParameterCheck;
  */
 public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQueryFactory
 {
-    private TaggingService taggingService;
-    
-    public void setTaggingService(TaggingService taggingService)
-    {
-        this.taggingService = taggingService;
-    }
-    
     @Override
     public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
     {
         final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(
-                cannedQueryDAO, taggingService,
+                cannedQueryDAO,
                 methodSecurity,
                 parameters);
         return (CannedQuery<BlogPostInfo>) cq;
     }
     
-    public CannedQuery<BlogPostInfo> getCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, String tag, PagingRequest pagingReq)
+    public CannedQuery<BlogPostInfo> getCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
@@ -72,7 +64,7 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogP
                                                                                     getQNameId(ContentModel.PROP_PUBLISHED),
                                                                                     getQNameId(ContentModel.TYPE_CONTENT),
                                                                                     byUser,
-                                                                                    fromDate, toDate, tag);
+                                                                                    fromDate, toDate);
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);

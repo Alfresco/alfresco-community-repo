@@ -31,7 +31,6 @@ public class DraftsAndPublishedBlogPostsCannedQueryParams extends BlogEntity
     private final String cmCreator;
     private final Date createdFromDate;
     private final Date createdToDate;
-    private final String tag;
     
     public DraftsAndPublishedBlogPostsCannedQueryParams(Long blogContainerNodeId,
                                                         Long nameQNameId,
@@ -39,15 +38,13 @@ public class DraftsAndPublishedBlogPostsCannedQueryParams extends BlogEntity
                                                         Long contentTypeQNameId,
                                                         String cmCreator,
                                                         Date createdFromDate,
-                                                        Date createdToDate,
-                                                        String tag)
+                                                        Date createdToDate)
     {
         super(blogContainerNodeId, nameQNameId, publishedQNameId, contentTypeQNameId, null, null);
         
         this.cmCreator = cmCreator;
         this.createdFromDate = createdFromDate;
         this.createdToDate = createdToDate;
-        this.tag = tag;
     }
     
     public String getCmCreator()
@@ -63,10 +60,5 @@ public class DraftsAndPublishedBlogPostsCannedQueryParams extends BlogEntity
     public Date getCreatedToDate()
     {
         return createdToDate;
-    }
-
-    public String getTag()
-    {
-        return tag;
     }
 }

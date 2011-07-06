@@ -21,36 +21,12 @@ package org.alfresco.repo.calendar;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.query.CannedQueryFactory;
-import org.alfresco.query.CannedQueryResults;
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
-import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQuery;
-import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQueryFactory;
-import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQuery;
-import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
-import org.alfresco.service.cmr.calendar.CalendarService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.registry.NamedObjectRegistry;
 
 /**
  * @author Nick Burch (based on existing webscript controllers in the REST API)
@@ -94,7 +70,19 @@ public class CalendarEntryImpl extends CalendarEntryDTO
     protected static Map<QName,Serializable> toNodeProperties(CalendarEntry entry)
     {
        Map<QName,Serializable> properties = new HashMap<QName, Serializable>();
-       // TODO
+       properties.put(CalendarModel.PROP_WHAT, entry.getTitle());
+       properties.put(CalendarModel.PROP_DESCRIPTION, entry.getDescription());
+       properties.put(CalendarModel.PROP_WHERE, entry.getLocation());
+       properties.put(CalendarModel.PROP_FROM_DATE, entry.getStart());
+       properties.put(CalendarModel.PROP_TO_DATE, entry.getEnd());
+       properties.put(CalendarModel.PROP_RECURRENCE_RULE, entry.getRecurrenceRule());
+       properties.put(CalendarModel.PROP_RECURRENCE_LAST_MEETING, entry.getLastRecurrence());
+       properties.put(CalendarModel.PROP_IS_OUTLOOK, entry.isOutlook());
+       properties.put(CalendarModel.PROP_OUTLOOK_UID, entry.getOutlookUID());
+     
+//     properties.put(CalendarModel.PROP_COLOR, entry.getColor();
+      
+       // TODO Tags, doc folders
        
        return properties;
     }
@@ -104,7 +92,19 @@ public class CalendarEntryImpl extends CalendarEntryDTO
      */
     protected static void populate(CalendarEntry entry, Map<QName,Serializable> properties)
     {
-       // TODO
+       entry.setTitle((String)properties.get(CalendarModel.PROP_WHAT));
+       entry.setLocation((String)properties.get(CalendarModel.PROP_WHERE));
+       entry.setDescription((String)properties.get(CalendarModel.PROP_DESCRIPTION));
+       entry.setStart((Date)properties.get(CalendarModel.PROP_FROM_DATE));
+       entry.setEnd((Date)properties.get(CalendarModel.PROP_TO_DATE));
+       entry.setRecurrenceRule((String)properties.get(CalendarModel.PROP_RECURRENCE_RULE));
+       entry.setLastRecurrence((Date)properties.get(CalendarModel.PROP_RECURRENCE_LAST_MEETING));
+       entry.setOutlook((Boolean)properties.get(CalendarModel.PROP_IS_OUTLOOK));
+       entry.setOutlookUID((String)properties.get(CalendarModel.PROP_OUTLOOK_UID));
+
+       //entry.setColor(properties.get(CalendarModel.PROP_COLOR));
+       
+       // TODO Tags, doc folders
     }
     
     /**

@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.calendar;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +40,10 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    private String location;
    private Date start;
    private Date end;
+   private String recurrenceRule;
+   private Date lastRecurrence;
+   private boolean isOutlook = false;
+   private String outlookUID;
    private List<String> tags;
    
    /**
@@ -158,6 +163,72 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    }
    
    /**
+    * Gets the event recurrence rule.
+    */
+   public String getRecurrenceRule()
+   {
+      return recurrenceRule;
+   }
+   
+   /**
+    * Sets the event recurrence rule
+    */
+   public void setRecurrenceRule(String recurrenceRule)
+   {
+      this.recurrenceRule = recurrenceRule;
+   }
+   
+   /**
+    * Gets the date of the last instance of this recurring event
+    */
+   public Date getLastRecurrence()
+   {
+      return lastRecurrence;
+   }
+   
+   /**
+    * Sets the date of the last instance of this recurring event
+    */
+   public void setLastRecurrence(Date lastRecurrence)
+   {
+      this.lastRecurrence = lastRecurrence;
+   }
+   
+   /**
+    * Is this an outlook based event?
+    */
+   public boolean isOutlook()
+   {
+      return isOutlook;
+   }
+   
+   /**
+    * Sets if this is an outlook based event or not
+    */
+   public void setOutlook(boolean outlook)
+   {
+      this.isOutlook = outlook;
+   }
+   
+   /**
+    * Gets the UID used by Outlook for this event.
+    * See {@link CalendarEntry#isOutlook()}
+    */
+   public String getOutlookUID()
+   {
+      return outlookUID;
+   }
+   
+   /**
+    * Sets the UID used by Outlook for this event.
+    * When a UID is set, normally the isOutlook flag is set too.
+    */
+   public void setOutlookUID(String outlookUID)
+   {
+      this.outlookUID = outlookUID;
+   }
+   
+   /**
     * @return the Tags associated with the event 
     */
    public List<String> getTags()
@@ -166,11 +237,45 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
       return tags;
    }
    
-   // TODO All Day events
-   
    // TODO Doc folder
    
-   // TODO Recurrence
-   
-   // TODO Is Outlook
+   /**
+    * Does the given {@link CalendarEntry} define an all-day
+    *  event?
+    * An All Day Event is defined as one starting at midnight
+    *  on a day, and ending at midnight.
+    *  
+    * For a single day event, the start and end dates should be
+    *  the same, and the times for both are midnight.
+    * For a multi day event, the start and end times are midnight,
+    *  for the first and last days respectively.
+    * TODO Timezones! 
+    */
+   public static boolean isAllDay(CalendarEntry entry)
+   {
+      if(entry.getStart() == null || entry.getEnd() == null)
+      {
+         // One or both dates is missing
+         return false;
+      }
+      
+      Calendar start = Calendar.getInstance();
+      Calendar end = Calendar.getInstance();
+      start.setTime(entry.getStart());
+      end.setTime(entry.getEnd());
+      
+      if(start.get(Calendar.HOUR_OF_DAY) == 0 &&
+         start.get(Calendar.MINUTE) == 0 &&
+         start.get(Calendar.SECOND) == 0 &&
+         end.get(Calendar.HOUR_OF_DAY) == 0 &&
+         end.get(Calendar.MINUTE) == 0 &&
+         end.get(Calendar.SECOND) == 0)
+      {
+         // Both midnight, counts as all day
+         return true;
+      }
+      
+      // In any other case, it isn't an all-day
+      return false;
+   }
 }

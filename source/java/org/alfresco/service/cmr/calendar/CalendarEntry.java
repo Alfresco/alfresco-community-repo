@@ -93,15 +93,53 @@ public interface CalendarEntry extends Serializable, PermissionCheckValue {
    void setEnd(Date end);
    
    /**
-    * @return the Tags associated with the event 
+    * Gets the event recurrence rule.
+    * TODO Define these
     */
-   List<String> getTags();
+   String getRecurrenceRule();
    
-   // TODO All Day events
+   /**
+    * Sets the event recurrence rule
+    * TODO Define these
+    */
+   void setRecurrenceRule(String recurrenceRule);
+   
+   /**
+    * Gets the date of the last instance of this recurring event
+    */
+   Date getLastRecurrence();
+   
+   /**
+    * Sets the date of the last instance of this recurring event
+    */
+   void setLastRecurrence(Date lastRecurrence);
+   
+   /**
+    * Is this an outlook based event?
+    */
+   boolean isOutlook();
+   
+   /**
+    * Sets if this is an outlook based event or not
+    */
+   void setOutlook(boolean outlook);
+   
+   /**
+    * Gets the UID used by Outlook for this event.
+    * See {@link CalendarEntry#isOutlook()}
+    */
+   String getOutlookUID();
+   
+   /**
+    * Sets the UID used by Outlook for this event.
+    * When a UID is set, normally the isOutlook flag is set too.
+    */
+   void setOutlookUID(String outlookUID);
    
    // TODO Doc folder
    
-   // TODO Recurrence
-   
-   // TODO Is Outlook
+   /**
+    * @return the Tags associated with the event 
+    */
+   List<String> getTags();
 }

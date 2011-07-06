@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CalendarServiceImpl implements CalendarService
 {
-    private static final String CALENDAR_COMPONENT = "calendar";
+    protected static final String CALENDAR_COMPONENT = "calendar";
    
     /**
      *  For backwards compatibility with pre-Swift, we are asking the query to give us an accurate total count of how many

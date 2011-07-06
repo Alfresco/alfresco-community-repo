@@ -19,6 +19,7 @@
 package org.alfresco.repo.calendar;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -72,6 +73,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class CalendarServiceImplTest
 {
+    private static final String TEST_SITE_PREFIX = "CalendarSiteTest";
 
     private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();
     
@@ -138,6 +140,8 @@ public class CalendarServiceImplTest
        entry = new CalendarEntryDTO(
              "Title", "Description", "Location", new Date(1), new Date(1234)
        );
+       entry.setOutlook(true);
+       entry.setOutlookUID("12345LookOut!");
        
        // Can't be got until saved
        assertEquals(null, entry.getSystemName());
@@ -158,24 +162,163 @@ public class CalendarServiceImplTest
        entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
        
        // Ensure it got a noderef, and the correct site
-       // TODO
-       testNodesToTidy.add(entry.getNodeRef());
+       assertNotNull(entry.getNodeRef());
+       assertNotNull(entry.getSystemName());
        
-       // TODO
+       NodeRef container = NODE_SERVICE.getPrimaryParent(entry.getNodeRef()).getParentRef();
+       NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
+       assertEquals(CALENDAR_SITE.getNodeRef(), site);
+       
+       
+       // Check the details on the object
+       assertEquals("Title", entry.getTitle());
+       assertEquals("Description", entry.getDescription());
+       assertEquals("Location", entry.getLocation());
+       assertEquals(1, entry.getStart().getTime());
+       assertEquals(1234, entry.getEnd().getTime());
+       assertEquals(null, entry.getRecurrenceRule());
+       assertEquals(null, entry.getLastRecurrence());
+       assertEquals(true, entry.isOutlook());
+       assertEquals("12345LookOut!", entry.getOutlookUID());
+       
+       
+       // Fetch it, and check the details
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());
+       assertEquals("Title", entry.getTitle());
+       assertEquals("Description", entry.getDescription());
+       assertEquals("Location", entry.getLocation());
+       assertEquals(1, entry.getStart().getTime());
+       assertEquals(1234, entry.getEnd().getTime());
+       assertEquals(null, entry.getRecurrenceRule());
+       assertEquals(null, entry.getLastRecurrence());
+       assertEquals(true, entry.isOutlook());
+       assertEquals("12345LookOut!", entry.getOutlookUID());
+       
+       
+       // Mark it as done with
+       testNodesToTidy.add(entry.getNodeRef());
     }
     
     @Test public void createUpdateDeleteEntry() throws Exception
     {
-       // TODO
+       CalendarEntry entry;
+       
+       
+       // Create an entry
+       entry = new CalendarEntryDTO(
+             "Title", "Description", "Location", new Date(1), new Date(1234)
+       );
+       entry.setOutlook(true);
+       entry.setOutlookUID("12345LookOut!");
+       entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       
+       
+       // Check it
+       assertEquals("Title", entry.getTitle());
+       assertEquals("Description", entry.getDescription());
+       assertEquals("Location", entry.getLocation());
+       assertEquals(1, entry.getStart().getTime());
+       assertEquals(1234, entry.getEnd().getTime());
+       assertEquals(null, entry.getRecurrenceRule());
+       assertEquals(null, entry.getLastRecurrence());
+       assertEquals(true, entry.isOutlook());
+       assertEquals("12345LookOut!", entry.getOutlookUID());
+       
+       
+       // Change it
+       entry.setTitle("New Title");
+       entry.setStart(new Date(1234567));
+       entry.setEnd(new Date(1294567));
+       entry.setRecurrenceRule("1w");
+       entry.setLastRecurrence(new Date(1234567));
+       entry.setOutlook(false);
+       entry.setOutlookUID(null);
+       
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       
+       // Fetch, and check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());
+       assertEquals("New Title", entry.getTitle());
+       assertEquals("Description", entry.getDescription());
+       assertEquals("Location", entry.getLocation());
+       assertEquals(1234567, entry.getStart().getTime());
+       assertEquals(1294567, entry.getEnd().getTime());
+       assertEquals("1w", entry.getRecurrenceRule());
+       assertEquals(1234567, entry.getLastRecurrence().getTime());
+       assertEquals(false, entry.isOutlook());
+       assertEquals(null, entry.getOutlookUID());
+       
+       
+       // Delete it
+       CALENDAR_SERVICE.deleteCalendarEntry(entry);
+       
+       // Check it went
+       assertEquals(null, CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName()));
+       
+       
+       // Finally, check the all day flag detection
+       Calendar c = Calendar.getInstance();
+       c.set(Calendar.HOUR_OF_DAY, 0);
+       c.set(Calendar.MINUTE, 0);
+       c.set(Calendar.SECOND, 0);
+       c.set(Calendar.MILLISECOND, 0);
+       
+       // Neither start nor end are at midnight to start
+       assertEquals(false, CalendarEntryDTO.isAllDay(entry));
+       
+       // Set the start to midnight
+       entry.setStart(c.getTime());
+       assertEquals(false, CalendarEntryDTO.isAllDay(entry));
+       
+       // And end, will then count as all day
+       entry.setEnd(c.getTime());
+       assertEquals(true, CalendarEntryDTO.isAllDay(entry));
     }
     
     /**
      * Ensures that when we try to write an entry to the
-     *  container of a new site, it is correctly setup for us
+     *  container of a new site, it is correctly setup for us.
+     * This test does it's own transactions
      */
     @Test public void newContainerSetup() throws Exception
     {
-       // TODO
+       final String TEST_SITE_NAME = "CalendarTestNewTestSite";
+       
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+       {
+          @Override
+          public Void execute() throws Throwable
+          {
+             if(SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
+             {
+                SITE_SERVICE.deleteSite(TEST_SITE_NAME);
+             }
+             SITE_SERVICE.createSite(
+                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC
+             );
+
+             // Won't have the container to start with
+             assertFalse(SITE_SERVICE.hasContainer(TEST_SITE_NAME, CalendarServiceImpl.CALENDAR_COMPONENT));
+
+             // Create a calendar entry
+             CalendarEntry entry = new CalendarEntryDTO(
+                   "Title", "Description", "Location", new Date(1), new Date(1234)
+             );
+             CALENDAR_SERVICE.createCalendarEntry(TEST_SITE_NAME, entry);
+
+             // It will now exist
+             assertTrue(SITE_SERVICE.hasContainer(TEST_SITE_NAME, CalendarServiceImpl.CALENDAR_COMPONENT));
+
+             // It'll be a tag scope too
+             NodeRef container = SITE_SERVICE.getContainer(TEST_SITE_NAME, CalendarServiceImpl.CALENDAR_COMPONENT);
+             assertTrue(TAGGING_SERVICE.isTagScope(container));
+
+             // Tidy up
+             SITE_SERVICE.deleteSite(TEST_SITE_NAME);
+             return null;
+          }
+       });
     }
     
     @Test public void calendarListing() throws Exception
@@ -190,7 +333,7 @@ public class CalendarServiceImplTest
               @Override
               public SiteInfo execute() throws Throwable
               {
-                  SiteInfo site = SITE_SERVICE.createSite("CalendarSiteTest", CalendarServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
+                  SiteInfo site = SITE_SERVICE.createSite(TEST_SITE_PREFIX, CalendarServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                                           "test site title", "test site description", SiteVisibility.PUBLIC);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;

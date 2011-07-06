@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.calendar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +45,7 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    private Date lastRecurrence;
    private boolean isOutlook = false;
    private String outlookUID;
-   private List<String> tags;
+   private List<String> tags = new ArrayList<String>();
    
    /**
     * Creates an empty {@link CalendarEntry}, which can be populated
@@ -233,7 +234,6 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
     */
    public List<String> getTags()
    {
-      // TODO Immutable?
       return tags;
    }
    

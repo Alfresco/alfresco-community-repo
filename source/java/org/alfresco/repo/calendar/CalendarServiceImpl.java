@@ -19,7 +19,12 @@
 package org.alfresco.repo.calendar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -177,6 +182,54 @@ public class CalendarServiceImpl implements CalendarService
           return container;
        }
     }
+    
+    private void handleTags(CalendarEntry entry)
+    {
+       NodeRef nodeRef = entry.getNodeRef();
+       
+       List<String> currentTags = taggingService.getTags(nodeRef);
+       List<String> newTags = entry.getTags();
+       
+       if(currentTags.size() == 0 && newTags.size() == 0)
+       {
+          // No tags, easy
+          return;
+       }
+
+       // Figure out what (if anything) changed
+       Set<String> toAdd = new HashSet<String>(newTags);
+       Set<String> toDel = new HashSet<String>(currentTags);
+       for(String tag : currentTags)
+       {
+          if(toAdd.contains(tag))
+          {
+             toAdd.remove(tag);
+          }
+       }
+       for(String tag : newTags)
+       {
+          if(toDel.contains(tag))
+          {
+             toDel.remove(tag);
+          }
+       }
+       
+       if(toDel.size() == 0 && toAdd.size() == 0)
+       {
+          // No changes
+       }
+       
+       // Make the changes
+       taggingService.clearTags(nodeRef);
+       for(String tag : toDel)
+       {
+          taggingService.removeTag(nodeRef, tag);
+       }
+       for(String tag : toAdd)
+       {
+          taggingService.addTag(nodeRef, tag);
+       }
+    }
 
     @Override
     public CalendarEntry getCalendarEntry(String siteShortName, String entryName) 
@@ -193,6 +246,7 @@ public class CalendarServiceImpl implements CalendarService
        {
           CalendarEntryImpl entry = new CalendarEntryImpl(event, entryName);
           entry.populate(nodeService.getProperties(event));
+          entry.setTags(taggingService.getTags(event));
           return entry;
        }
        return null;
@@ -212,8 +266,10 @@ public class CalendarServiceImpl implements CalendarService
        // Turn the entry into properties
        Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
        
-       // Generate a name
-       String name = "123.ics"; // TODO
+       // Generate a unique name
+       // (Should be unique, but will retry for a new one if not)
+       String name = (new Date()).getTime() + "-" + 
+                     Math.round(Math.random()*10000) + ".ics";
        properties.put(ContentModel.PROP_NAME, name);
        
        // Add the entry
@@ -236,7 +292,13 @@ public class CalendarServiceImpl implements CalendarService
        {
           entryImpl = new CalendarEntryImpl(nodeRef, name);
           entryImpl.populate(properties);
+          entryImpl.setTags(entry.getTags());
        }
+       
+       // Tag it
+       handleTags(entryImpl);
+             
+       // All done
        return entryImpl;
     }
 
@@ -251,6 +313,9 @@ public class CalendarServiceImpl implements CalendarService
        
        // Update the existing one
        nodeService.setProperties(entry.getNodeRef(), properties);
+       
+       // Update tags
+       handleTags(entry);
        
        // Nothing changed
        return entry;

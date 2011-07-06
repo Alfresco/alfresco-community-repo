@@ -321,6 +321,115 @@ public class CalendarServiceImplTest
        });
     }
     
+    @Test public void tagging() throws Exception
+    {
+       CalendarEntry entry;
+       final String TAG_1 = "calendar_tag_1";
+       final String TAG_2 = "calendar_tag_2";
+       final String TAG_3 = "calendar_tag_3";
+       
+       // Create one without tagging
+       entry = new CalendarEntryDTO(
+             "Title", "Description", "Location", new Date(1), new Date(1234)
+       );
+       entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       
+       // Check
+       assertEquals(0, entry.getTags().size());
+       
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(0, entry.getTags().size());
+       
+       
+       // Update it to have tags
+       entry.getTags().add(TAG_1);
+       entry.getTags().add(TAG_2);
+       entry.getTags().add(TAG_1);
+       assertEquals(3, entry.getTags().size());
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       // Check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(2, entry.getTags().size());
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(true, entry.getTags().contains(TAG_2));
+       assertEquals(false, entry.getTags().contains(TAG_3));
+       
+       
+       // Update it to have different tags
+       entry.getTags().remove(TAG_2);
+       entry.getTags().add(TAG_3);
+       entry.getTags().add(TAG_1);
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       // Check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(2, entry.getTags().size());
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(false, entry.getTags().contains(TAG_2));
+       assertEquals(true, entry.getTags().contains(TAG_3));
+
+       
+       // Update it to have no tags
+       entry.getTags().clear();
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       // Check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(0, entry.getTags().size());
+
+       
+       // Update it to have tags again
+       entry.getTags().add(TAG_1);
+       entry.getTags().add(TAG_2);
+       entry.getTags().add(TAG_3);
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       // Check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(3, entry.getTags().size());
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(true, entry.getTags().contains(TAG_2));
+       assertEquals(true, entry.getTags().contains(TAG_3));
+       
+       // Tidy
+       CALENDAR_SERVICE.deleteCalendarEntry(entry);
+       
+       
+       // Create an event with tags
+       entry = new CalendarEntryDTO(
+             "Title", "Description", "Location", new Date(1), new Date(1234)
+       );
+       entry.getTags().add(TAG_1);
+       entry.getTags().add(TAG_1);
+       entry.getTags().add(TAG_2);
+       entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       
+       // Check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(2, entry.getTags().size());
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(true, entry.getTags().contains(TAG_2));
+       assertEquals(false, entry.getTags().contains(TAG_3));
+       
+       
+       // Update it to have different tags
+       entry.getTags().remove(TAG_2);
+       entry.getTags().add(TAG_3);
+       entry.getTags().add(TAG_1);
+       CALENDAR_SERVICE.updateCalendarEntry(entry);
+       
+       // Check 
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       assertEquals(2, entry.getTags().size());
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(false, entry.getTags().contains(TAG_2));
+       assertEquals(true, entry.getTags().contains(TAG_3));
+       
+       // Tidy
+       CALENDAR_SERVICE.deleteCalendarEntry(entry);
+    }
+    
     @Test public void calendarListing() throws Exception
     {
        // TODO

@@ -21,6 +21,7 @@ package org.alfresco.repo.calendar;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
@@ -99,7 +100,9 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        entry.setEnd((Date)properties.get(CalendarModel.PROP_TO_DATE));
        entry.setRecurrenceRule((String)properties.get(CalendarModel.PROP_RECURRENCE_RULE));
        entry.setLastRecurrence((Date)properties.get(CalendarModel.PROP_RECURRENCE_LAST_MEETING));
-       entry.setOutlook((Boolean)properties.get(CalendarModel.PROP_IS_OUTLOOK));
+       
+       Boolean isOutlook = (Boolean)properties.get(CalendarModel.PROP_IS_OUTLOOK);
+       entry.setOutlook(isOutlook == null ? false : isOutlook);
        entry.setOutlookUID((String)properties.get(CalendarModel.PROP_OUTLOOK_UID));
 
        //entry.setColor(properties.get(CalendarModel.PROP_COLOR));
@@ -113,5 +116,14 @@ public class CalendarEntryImpl extends CalendarEntryDTO
     protected void populate(Map<QName,Serializable> properties)
     {
        populate(this, properties);
+    }
+    
+    /**
+     * Sets the list of tags for the entry 
+     */
+    protected void setTags(List<String> tags)
+    {
+       super.getTags().clear();
+       super.getTags().addAll(tags);
     }
 }

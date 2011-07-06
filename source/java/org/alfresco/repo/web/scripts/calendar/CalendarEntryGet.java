@@ -52,19 +52,33 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
          return buildError("Could not find event: " + eventName);
       }
       
+      // Build the object
+      Map<String, Object> result = new HashMap<String, Object>();
+      result.put("name", entry.getSystemName());
+      result.put("what", entry.getTitle());
+      result.put("description", entry.getDescription());
+      result.put("location", entry.getLocation());
+      result.put("from", entry.getStart());
+      result.put("to", entry.getEnd());
+      result.put("tags", entry.getTags());
+      result.put("isoutlook", entry.isOutlook());
+      result.put("outlookuid", entry.getOutlookUID());
+      result.put("allday", CalendarEntryDTO.isAllDay(entry));
+      result.put("recurrence", null); // TODO
+      result.put("docfolder", null); // TODO
+      
+      // Replace nulls with blank strings for the JSON
+      for(String key : result.keySet())
+      {
+         if(result.get(key) == null)
+         {
+            result.put(key, "");
+         }
+      }
+      
+      // All done
       Map<String, Object> model = new HashMap<String, Object>();
-      model.put("name", entry.getSystemName());
-      model.put("what", entry.getTitle());
-      model.put("description", entry.getDescription());
-      model.put("location", entry.getLocation());
-      model.put("from", entry.getStart());
-      model.put("to", entry.getEnd());
-      model.put("tags", entry.getTags());
-      model.put("isoutlook", entry.isOutlook());
-      model.put("outlookuid", entry.getOutlookUID());
-      model.put("allday", CalendarEntryDTO.isAllDay(entry));
-      model.put("recurrence", null); // TODO
-      model.put("docfolder", null); // TODO
+      model.put("result", result);
       return model;
    }
 }

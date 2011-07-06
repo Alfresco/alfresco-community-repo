@@ -61,8 +61,13 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
      */
     protected Map<String,Object> buildError(String message)
     {
+       HashMap<String, Object> result = new HashMap<String, Object>();
+       result.put("error", message);
+       
        HashMap<String, Object> model = new HashMap<String, Object>();
        model.put("error", message);
+       model.put("result", result);
+       
        return model;
     }
     
@@ -76,7 +81,12 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           return buildError("No parameters supplied");
        }
        
-       String siteName = templateVars.get("site");
+       // Get the site short name. Try quite hard to do so...
+       String siteName = templateVars.get("siteid");
+       if(siteName == null)
+       {
+          siteName = templateVars.get("site");
+       }
        if(siteName == null)
        {
           siteName = req.getParameter("site");
@@ -86,6 +96,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           return buildError("No site given");
        }
        
+       // Grab the requested site
        SiteInfo site = siteService.getSite(siteName);
        if(site == null)
        {

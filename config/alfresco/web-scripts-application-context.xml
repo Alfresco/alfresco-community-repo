@@ -1444,7 +1444,7 @@
    </bean>
 
    <!-- Fetches the details of one Calendar Event -->
-   <bean id="webscript.org.alfresco.repository.slingshot.calendar.event.get"
+   <bean id="webscript.org.alfresco.slingshot.calendar.event.get"
          class="org.alfresco.repo.web.scripts.calendar.CalendarEntryGet"
          parent="abstractCalendarWebScript">
    </bean>

@@ -838,7 +838,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
                 DataTypeDefinition dataType = propertyDef.getDataType();
-                String analyserClassName = dataType.getAnalyserClassName();
+                String analyserClassName = propertyDef.resolveAnalyserClassName();
                 isDateTime = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
             }
         }

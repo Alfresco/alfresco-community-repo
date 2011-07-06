@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -292,5 +293,30 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     public boolean isTargetMany()
     {
         return targetMany;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getAnalyserResourceBundleName()
+     */
+    @Override
+    public String getAnalyserResourceBundleName()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#resolveAnalyserClassName(java.lang.String, java.util.Locale, java.lang.ClassLoader)
+     */
+    @Override
+    public String resolveAnalyserClassName(Locale locale)
+    {
+        return null;
+    }
+    
+    @Override
+    public String resolveAnalyserClassName()
+    {
+        return null;
     }
 }

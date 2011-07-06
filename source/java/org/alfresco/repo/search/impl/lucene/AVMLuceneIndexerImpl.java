@@ -748,8 +748,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             isText = propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT);
             if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
             {
-                DataTypeDefinition dataType = propertyDef.getDataType();
-                String analyserClassName = dataType.getAnalyserClassName();
+                String analyserClassName = propertyDef.resolveAnalyserClassName();
                 isDateTime = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
             }
         }

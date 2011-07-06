@@ -383,7 +383,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                     else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
                                     {
                                         DataTypeDefinition dataType = propertyDef.getDataType();
-                                        String analyserClassName = dataType.getAnalyserClassName();
+                                        String analyserClassName = propertyDef.resolveAnalyserClassName();
                                         if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
                                         {
                                             field = field + ".sort";

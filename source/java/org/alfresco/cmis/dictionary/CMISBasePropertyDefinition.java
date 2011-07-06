@@ -171,7 +171,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
                     break;
                 case TRUE:
                 default:
-                    String analyserClassName = propDef.getDataType().getAnalyserClassName();
+                    String analyserClassName = propDef.resolveAnalyserClassName();
                     if(propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
                     {
                         orderable = true;

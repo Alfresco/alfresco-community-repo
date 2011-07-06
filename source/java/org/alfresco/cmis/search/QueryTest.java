@@ -41,12 +41,12 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService;
 import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.cmis.mapping.BaseTypeIdProperty;
@@ -81,7 +81,6 @@ import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
@@ -90,14 +89,14 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.ISO9075;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.alfresco.util.CachingDateFormat;
-import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -235,7 +234,7 @@ public class QueryTest extends BaseCMISTest
         super.setUp();
         
         DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.DATETIME);
-        String analyserClassName = dataType.getAnalyserClassName();
+        String analyserClassName = dataType.resolveAnalyserClassName();
         usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
 
         f0 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Folder 0", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();

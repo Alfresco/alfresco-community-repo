@@ -190,7 +190,7 @@ public class RepoDictionaryDAOTest extends TestCase
         assertEquals("Assoc1 Description", assocDef.getDescription());
         QName datatype = QName.createQName(TEST_URL, "datatype");
         DataTypeDefinition datatypeDef = service.getDataType(datatype);
-        assertEquals("Datatype Analyser", datatypeDef.getAnalyserClassName());
+        assertEquals("alfresco/model/dataTypeAnalyzers", datatypeDef.getAnalyserResourceBundleName());
     }
     
     public void testConstraints()

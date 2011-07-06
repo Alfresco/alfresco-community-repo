@@ -4607,7 +4607,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
         PropertyDefinition propertyDef = dictionaryService.getProperty(QName.createQName(TEST_NAMESPACE, "datetime-ista"));
         DataTypeDefinition dataType = propertyDef.getDataType();
-        String analyserClassName = dataType.getAnalyserClassName();
+        String analyserClassName = propertyDef.resolveAnalyserClassName();
         boolean usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
 
         Date date = new Date();

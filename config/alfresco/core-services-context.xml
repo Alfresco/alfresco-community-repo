@@ -1120,6 +1120,9 @@
         <property name="dictionaryRegistryCache">
             <ref bean="compiledModelsCache"/>
         </property>
+        <property name="defaultAnalyserResourceBundleName">
+            <value>alfresco/model/dataTypeAnalyzers</value>
+        </property>
     </bean>
 
     <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">
@@ -1188,7 +1191,6 @@
         </property>
         <property name="labels">
             <list>
-                <value>alfresco/model/dataTypeAnalyzers</value>
                 <value>alfresco/messages/system-model</value>
                 <value>alfresco/messages/dictionary-model</value>
                 <value>alfresco/messages/content-model</value>

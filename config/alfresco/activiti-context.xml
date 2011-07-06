@@ -41,6 +41,7 @@
         <property name="dataSource" ref="wrappedDataSource" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="databaseSchemaUpdate" value="${db.schema.update}" />
+        <property name="databaseSchemaDataSource" ref="dataSource" />
         <property name="history" value="full" />
         <property name="jobExecutorActivate" value="true" />
 

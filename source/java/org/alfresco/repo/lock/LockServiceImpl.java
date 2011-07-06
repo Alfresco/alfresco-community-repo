@@ -427,7 +427,7 @@ public class LockServiceImpl implements LockService,
         {
             // Get the current lock owner
             String currentUserRef = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
-            String owner = ownableService.getOwner(nodeRef);
+
             if (currentUserRef != null)
             {
                 Date expiryDate = (Date)this.nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE);
@@ -442,17 +442,12 @@ public class LockServiceImpl implements LockService,
                     {
                         result = LockStatus.LOCK_OWNER;
                     }
-                    else if ((owner != null) && owner.equals(userName))
-                    {
-                        result = LockStatus.LOCK_OWNER;
-                    }
                     else
                     {
                         result = LockStatus.LOCKED;
                     }
                 }
             }
-
         }
         return result;
 

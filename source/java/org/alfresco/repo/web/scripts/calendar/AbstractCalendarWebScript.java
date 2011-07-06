@@ -21,7 +21,6 @@ package org.alfresco.repo.web.scripts.calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -38,15 +37,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
     // Injected services
-    protected Repository repository;
     protected NodeService nodeService;
     protected SiteService siteService;
     protected CalendarService calendarService;
-    
-    public void setRepository(Repository repository)
-    {
-        this.repository = repository;
-    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -108,4 +101,5 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
           String eventName, WebScriptRequest req, Status status, Cache cache);
+    
 }

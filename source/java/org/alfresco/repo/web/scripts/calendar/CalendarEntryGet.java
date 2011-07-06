@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -59,10 +60,11 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       model.put("from", entry.getStart());
       model.put("to", entry.getEnd());
       model.put("tags", entry.getTags());
-      model.put("allday", null); // TODO
-      model.put("docfolder", null); // TODO
+      model.put("isoutlook", entry.isOutlook());
+      model.put("outlookuid", entry.getOutlookUID());
+      model.put("allday", CalendarEntryDTO.isAllDay(entry));
       model.put("recurrence", null); // TODO
-      model.put("isoutlook", null); // TODO
+      model.put("docfolder", null); // TODO
       return model;
    }
 }

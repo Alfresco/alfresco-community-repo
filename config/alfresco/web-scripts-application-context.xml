@@ -1429,4 +1429,24 @@
          parent="webscript">
    </bean>
 
+
+   <!--                                        -->
+   <!--      Slingshot Calendar REST API       -->
+   <!--                                        -->
+   
+   <!-- abstract calendar web script -->
+   <bean id="abstractCalendarWebScript"
+          class="org.alfresco.repo.web.scripts.calendar.AbstractCalendarWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="calendarService" ref="CalendarService"/>
+   </bean>
+
+   <!-- Fetches the details of one Calendar Event -->
+   <bean id="webscript.org.alfresco.repository.slingshot.calendar.event.get"
+         class="org.alfresco.repo.web.scripts.calendar.CalendarEntryGet"
+         parent="abstractCalendarWebScript">
+   </bean>
+   
 </beans>

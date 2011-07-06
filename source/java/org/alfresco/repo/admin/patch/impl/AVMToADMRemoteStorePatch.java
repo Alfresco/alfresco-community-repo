@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -402,18 +403,18 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             }
             
             // ensure folders exist down to the specified parent
+            List<String> folderPath = pathElements.subList(0, pathElements.size() - 1);
             NodeRef parentFolder = null;
             Pair<String, NodeRef> lastFolderCache = this.lastFolderCache.get();
-            String folderKey = (siteName != null) ? siteName + path : path;
+            String folderKey = (siteName != null) ? siteName + folderPath.toString() : folderPath.toString();
             if (folderKey.equals(lastFolderCache.getFirst()))
             {
                 // found match to last used folder NodeRef
-                if (debug) logger.debug("...cache hit - matched last folder reference.");
+                if (debug) logger.debug("...cache hit - matched last folder reference: " + folderKey);
                 parentFolder = lastFolderCache.getSecond();
             }
             if (parentFolder == null)
             {
-                List<String> folderPath = pathElements.subList(0, pathElements.size() - 1);
                 try
                 {
                     parentFolder = FileFolderUtil.makeFolders(
@@ -436,32 +437,43 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 lastFolderCache.setSecond(parentFolder);
             }
             
-            if (userId != null)
+            try
             {
-                // run as the appropriate user id to execute
-                final NodeRef parentFolderRef = parentFolder;
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                if (userId != null)
                 {
-                    public Void doWork() throws Exception
+                    // run as the appropriate user id to execute
+                    final NodeRef parentFolderRef = parentFolder;
+                    AuthenticationUtil.runAs(new RunAsWork<Void>()
                     {
-                        // create new node and perform writer content copy of the content from the AVM to the DM store
-                        FileInfo fileInfo = fileFolderService.create(
-                                parentFolderRef, avmNode.getName(), ContentModel.TYPE_CONTENT);
-                        ContentWriter writer = contentService.getWriter(
-                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                        writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
-                        return null;
-                    }
-                }, userId);
+                        public Void doWork() throws Exception
+                        {
+                            // create new node and perform writer content copy of the content from the AVM to the DM store
+                            FileInfo fileInfo = fileFolderService.create(
+                                    parentFolderRef, avmNode.getName(), ContentModel.TYPE_CONTENT);
+                            ContentWriter writer = contentService.getWriter(
+                                    fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                            writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
+                            return null;
+                        }
+                    }, userId);
+                }
+                else
+                {
+                    // create new node and perform writer content copy of the content from the AVM to the DM store
+                    FileInfo fileInfo = fileFolderService.create(
+                            parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
+                    ContentWriter writer = contentService.getWriter(
+                            fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
+                }
             }
-            else
+            catch (InvalidNodeRefException refErr)
             {
-                // create new node and perform writer content copy of the content from the AVM to the DM store
-                FileInfo fileInfo = fileFolderService.create(
-                        parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
-                ContentWriter writer = contentService.getWriter(
-                        fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
+                // this occurs if a different thread running a separate txn has not yet created a folder
+                // that we expected to exist - save a reference to this path to retry it again later
+                logger.warn("Parent folder does not exist yet: " + refErr.getNodeRef() + " for path: " + avmNode.getPath() +
+                            " - as another txn is busy, will retry later.");
+                retryPaths.put(avmNode.getPath(), avmNode);
             }
         }
     }
@@ -535,6 +547,10 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             {
                 if (debug) logger.debug("...adding path: " + n.getPath());
                 paths.put(n.getPath(), n);
+                if (paths.size() % 10000 == 0)
+                {
+                    logger.info("Collected " + paths.size() + " AVM paths...");
+                }
             }
             else if (n.isDirectory())
             {

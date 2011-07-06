@@ -2691,11 +2691,6 @@
         </property>
         <property name="bootstrapViews">
             <map>
-                <entry key="avm">
-                    <props>
-                        <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/AVM.zip</prop>
-                    </props>
-                </entry>
                 <entry key="users">
                     <props>
                         <prop key="location">alfresco/bootstrap/team-sample-sites/swsdp/Users.acp</prop>
@@ -2862,6 +2857,23 @@
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
         </property>
+    </bean>
+    
+    <!-- AVM Remote Store to ADM Remote Store migration patch -->
+    <bean id="patch.avmToAdmRemoteStore" class="org.alfresco.repo.admin.patch.impl.AVMToADMRemoteStorePatch" parent="basePatch">
+        <property name="id"><value>patch.avmToAdmRemoteStore</value></property>
+        <property name="description"><value>patch.avmToAdmRemoteStore.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5011</value></property>
+        <property name="targetSchema"><value>5012</value></property><!-- TODO: set this correctly before commit! -->
+        <property name="requiresTransaction"><value>false</value></property>
+        
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="contentService" ref="contentService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="avmService" ref="AVMService" />
+        <property name="avmStore"><value>sitestore</value></property>
+        <property name="avmRootPath"><value>/alfresco/site-data</value></property>
     </bean>
     
 </beans>

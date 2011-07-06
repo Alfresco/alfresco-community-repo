@@ -21,6 +21,7 @@ package org.alfresco.repo.calendar;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -133,20 +135,31 @@ public class CalendarServiceImplTest
        
        
        // Create one
-       entry = CALENDAR_SERVICE.createCalendarEntry(
-             CALENDAR_SITE.getShortName(), "Title",
-             "Description", new Date(1), new Date(1234)
+       entry = new CalendarEntryDTO(
+             "Title", "Description", "Location", new Date(1), new Date(1234)
        );
        
        // Can't be got until saved
        assertEquals(null, entry.getSystemName());
        assertEquals(null, entry.getNodeRef());
        
-       // But we do know where it'll go
-       assertNotNull( ((CalendarEntryImpl)entry).getParentNodeRef() );
+       
+       // Can't call update yet
+       try
+       {
+          CALENDAR_SERVICE.updateCalendarEntry(entry);
+          fail("Shouldn't be able to update a brand new entry");
+       }
+       catch(IllegalArgumentException e)
+       {}
 
        
        // Have it saved
+       entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       
+       // Ensure it got a noderef, and the correct site
+       // TODO
+       testNodesToTidy.add(entry.getNodeRef());
        
        // TODO
     }

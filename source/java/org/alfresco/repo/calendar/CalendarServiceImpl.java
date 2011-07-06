@@ -19,9 +19,9 @@
 package org.alfresco.repo.calendar;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -97,30 +97,33 @@ public class CalendarServiceImpl implements CalendarService
        {
           if(create)
           {
+             if(transactionService.isReadOnly())
+             {
+                throw new AlfrescoRuntimeException(
+                      "Unable to create the calendar container from a read only transaction"
+                );
+             }
+             
              // Have the site container created
              if(logger.isDebugEnabled())
              {
                 logger.debug("Creating " + CALENDAR_COMPONENT + " container in site " + siteShortName);
              }
              
-             NodeRef container = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
-                public NodeRef doWork() throws Exception
+             NodeRef container = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() 
                 {
-                   return transactionService.getRetryingTransactionHelper().doInTransaction(
-                       new RetryingTransactionCallback<NodeRef>() {
-                           public NodeRef execute() throws Throwable {
-                              // Create the site container
-                              NodeRef container = siteService.createContainer(
-                                    siteShortName, CALENDAR_COMPONENT, null, null
-                              );
-                              
-                              // Done
-                              return container;
-                           }
-                       }, false, true
-                   );
-                }
-             }, AuthenticationUtil.getSystemUserName());
+                   public NodeRef doWork() throws Exception
+                   {
+                      // Create the site container
+                      NodeRef container = siteService.createContainer(
+                            siteShortName, CALENDAR_COMPONENT, null, null
+                      );
+   
+                      // Done
+                      return container;
+                   }
+                }, AuthenticationUtil.getSystemUserName()
+             );
              
              if(logger.isDebugEnabled())
              {
@@ -176,7 +179,8 @@ public class CalendarServiceImpl implements CalendarService
     }
 
     @Override
-    public CalendarEntry getCalendarEntry(String siteShortName, String entryName) {
+    public CalendarEntry getCalendarEntry(String siteShortName, String entryName) 
+    {
        NodeRef container = getSiteCalendarContainer(siteShortName, false);
        if(container == null)
        {
@@ -187,55 +191,78 @@ public class CalendarServiceImpl implements CalendarService
        NodeRef event = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, entryName);
        if(event != null)
        {
-          return new CalendarEntryImpl(event, container, nodeService.getProperties(event));
+          CalendarEntryImpl entry = new CalendarEntryImpl(event, entryName);
+          entry.populate(nodeService.getProperties(event));
+          return entry;
        }
        return null;
     }
 
     @Override
-    public CalendarEntry createCalendarEntry(String siteShortName,
-          String eventTitle, String eventDescription, Date eventStart, Date eventEnd) {
+    public CalendarEntry createCalendarEntry(String siteShortName, CalendarEntry entry) 
+    {
+       if(entry.getNodeRef() != null)
+       {
+          throw new IllegalArgumentException("Can't call create for a calendar entry that was previously persisted");
+       }
+       
+       // Grab the location to store in
        NodeRef container = getSiteCalendarContainer(siteShortName, true);
        
-       CalendarEntry entry = new CalendarEntryImpl(container);
-       entry.setTitle(eventTitle);
-       entry.setDescription(eventDescription);
-       entry.setStart(eventStart);
-       entry.setEnd(eventEnd);
+       // Turn the entry into properties
+       Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
+       
+       // Generate a name
+       String name = "123.ics"; // TODO
+       properties.put(ContentModel.PROP_NAME, name);
+       
+       // Add the entry
+       NodeRef nodeRef = nodeService.createNode(
+             container,
+             ContentModel.ASSOC_CONTAINS,
+             QName.createQName(name),
+             CalendarModel.TYPE_EVENT,
+             properties
+       ).getChildRef();
+       
+       // Record it's details
+       CalendarEntryImpl entryImpl;
+       if(entry instanceof CalendarEntryImpl)
+       {
+          entryImpl = (CalendarEntryImpl)entry;
+          entryImpl.recordStorageDetails(nodeRef, name);
+       }
+       else
+       {
+          entryImpl = new CalendarEntryImpl(nodeRef, name);
+          entryImpl.populate(properties);
+       }
+       return entryImpl;
+    }
+
+    @Override
+    public CalendarEntry updateCalendarEntry(CalendarEntry entry) {
+       Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
+       
+       if(entry.getNodeRef() == null)
+       {
+          throw new IllegalArgumentException("Can't update a calendar entry that was never persisted, call create instead");
+       }
+       
+       // Update the existing one
+       nodeService.setProperties(entry.getNodeRef(), properties);
+       
+       // Nothing changed
        return entry;
     }
 
     @Override
-    public void saveCalendarEntry(CalendarEntry entry) {
-       CalendarEntryImpl entryImpl = (CalendarEntryImpl)entry;
-       Map<QName,Serializable> properties = entryImpl.getProperties();
-       
+    public void deleteCalendarEntry(CalendarEntry entry) {
        if(entry.getNodeRef() == null)
        {
-          // Generate a name
-          String name = "123.ics"; // TODO
-          properties.put(ContentModel.PROP_NAME, name);
-          
-          // Add the entry
-          NodeRef nodeRef = nodeService.createNode(
-                entryImpl.getParentNodeRef(),
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(name),
-                CalendarModel.TYPE_EVENT,
-                properties
-          ).getChildRef();
-          entryImpl.recordStorageDetails(nodeRef);
+          throw new IllegalArgumentException("Can't delete a calendar entry that was never persisted");
        }
-       else
-       {
-          // Update the existing one
-          nodeService.setProperties(entry.getNodeRef(), properties);
-       }
-    }
 
-    @Override
-    public void deleteCalendarEntry(CalendarEntry entry) {
-       // TODO Auto-generated method stub
-
+       nodeService.deleteNode(entry.getNodeRef());
     }
 }

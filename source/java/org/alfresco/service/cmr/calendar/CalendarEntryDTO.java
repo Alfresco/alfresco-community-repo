@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -31,71 +30,141 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch
  * @since 4.0
  */
-public interface CalendarEntry extends Serializable, PermissionCheckValue {
+public class CalendarEntryDTO implements CalendarEntry, Serializable {
+   private NodeRef nodeRef;
+   private String systemName;
+   
+   private String title;
+   private String description;
+   private String location;
+   private Date start;
+   private Date end;
+   private List<String> tags;
+   
+   /**
+    * Creates an empty {@link CalendarEntry}, which can be populated
+    *  with set calls.
+    */
+   public CalendarEntryDTO()
+   {}
+   
+   /**
+    * Creates a {@link CalendarEntry} with common properties.
+    */
+   public CalendarEntryDTO(String title, String description, 
+         String location, Date start, Date end)
+   {
+      this.title = title;
+      this.description = description;
+      this.location = location;
+      this.start = start;
+      this.end = end;
+   }
+   
    /**
     * @return the NodeRef of the underlying calendar entry
     */
-   NodeRef getNodeRef();
+   public NodeRef getNodeRef() 
+   {
+      return nodeRef;
+   }
    
    /**
     * @return the System generated name for the event
     */
-   String getSystemName();
+   public String getSystemName() 
+   {
+      return systemName;
+   }
    
    /**
     * @return the Title ("what") of the event
     */
-   String getTitle();
+   public String getTitle() 
+   {
+      return title;
+   }
    
    /**
     * Sets the Title ("what") of the event
     */
-   void setTitle(String title);
+   public void setTitle(String title)
+   {
+      this.title = title;
+   }
    
    /**
     * @return the Description of the event
     */
-   String getDescription();
+   public String getDescription()
+   {
+      return description;
+   }
    
    /**
     * Sets the Description of the event
     */
-   void setDescription(String description);
+   public void setDescription(String description)
+   {
+      this.description = description;
+   }
    
    /**
     * @return the Location of the event
     */
-   String getLocation();
+   public String getLocation()
+   {
+      return location;
+   }
 
    /**
     * Sets the Location of the event
     */
-   void setLocation(String location);
+   public void setLocation(String location)
+   {
+      this.location = location;
+   }
    
    /**
     * @return the Start date and time
     */
-   Date getStart();
+   public Date getStart()
+   {
+      return start;
+   }
    
    /**
     * Sets the event start date and time
     */
-   void setStart(Date start);
+   public void setStart(Date start)
+   {
+      this.start = start;
+   }
    
    /**
     * @return the End date and time
     */
-   Date getEnd();
+   public Date getEnd()
+   {
+      return end;
+   }
 
    /**
     * Sets the event end date and time
     */
-   void setEnd(Date end);
+   public void setEnd(Date end)
+   {
+      this.end = end;
+   }
    
    /**
     * @return the Tags associated with the event 
     */
-   List<String> getTags();
+   public List<String> getTags()
+   {
+      // TODO Immutable?
+      return tags;
+   }
    
    // TODO All Day events
    

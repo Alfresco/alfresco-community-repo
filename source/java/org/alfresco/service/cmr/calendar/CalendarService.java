@@ -33,20 +33,22 @@ import org.alfresco.service.cmr.site.SiteInfo;
  */
 public interface CalendarService {
    /**
-    * Creates a new {@link CalendarEntry} for the given site, but 
-    *  doesn't save it to the repository.
+    * Stores a new {@link CalendarEntry} into the given site.
+    * The concrete class {@link CalendarEntryDTO} can be used
+    *  to create a {@link CalendarEntry} instance for this.
     *  
-    * @return The newly cre 
+    * @return The newly created CalendarEntry
     */
    @NotAuditable
-   CalendarEntry createCalendarEntry(String siteShortName, String eventTitle,
-         String eventDescription, Date from, Date to);
+   CalendarEntry createCalendarEntry(String siteShortName, CalendarEntry entry);
    
    /**
-    * Saves a {@link CalendarEntry} in the repository.
+    * Updates an existing {@link CalendarEntry} in the repository.
+    *  
+    * @return The updated CalendarEntry
     */
    @NotAuditable
-   void saveCalendarEntry(CalendarEntry entry);
+   CalendarEntry updateCalendarEntry(CalendarEntry entry);
    
    /**
     * Deletes an existing {@link CalendarEntry} from the repository

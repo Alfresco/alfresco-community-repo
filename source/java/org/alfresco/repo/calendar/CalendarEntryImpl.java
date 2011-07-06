@@ -36,6 +36,7 @@ import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -55,54 +56,26 @@ import org.alfresco.util.registry.NamedObjectRegistry;
  * @author Nick Burch (based on existing webscript controllers in the REST API)
  * @since 4.0
  */
-public class CalendarEntryImpl implements CalendarEntry
+public class CalendarEntryImpl extends CalendarEntryDTO
 {
     private NodeRef nodeRef;
-    private NodeRef parentNodeRef;
-    private Map<QName,Serializable> properties;
-    
-    /**
-     * Creates an empty Calendar Entry, to be stored in the
-     *  given parent
-     */
-    public CalendarEntryImpl(NodeRef parentNodeRef)
-    {
-       this.parentNodeRef = parentNodeRef;
-       this.properties = new HashMap<QName, Serializable>();
-    }
+    private String systemName;
     
     /**
      * Wraps an existing Calendar Entry node
      */
-    public CalendarEntryImpl(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName,Serializable> properties)
+    protected CalendarEntryImpl(NodeRef nodeRef, String systemName)
     {
        this.nodeRef = nodeRef;
-       this.parentNodeRef = parentNodeRef;
-       this.properties = properties;
+       this.systemName = systemName;
     }
     
-    protected void recordStorageDetails(NodeRef nodeRef)
+    protected void recordStorageDetails(NodeRef nodeRef, String systemName)
     {
        this.nodeRef = nodeRef;
+       this.systemName = systemName;
     }
 
-    /**
-     * Returns the NodeRef of the parent where this calendar entry
-     *  lives, or will live
-     */
-    public NodeRef getParentNodeRef() 
-    {
-       return parentNodeRef;
-    }
-
-    /**
-     * Returns the current set of properties
-     */
-    public Map<QName,Serializable> getProperties()
-    {
-       return properties;
-    }
-    
     @Override
     public NodeRef getNodeRef() 
     {
@@ -110,72 +83,35 @@ public class CalendarEntryImpl implements CalendarEntry
     }
     
     @Override
-    public String getSystemName() {
-       // TODO Auto-generated method stub
-       return null;
+    public String getSystemName() 
+    {
+       return systemName;
     }
-
-    @Override
-    public String getTitle() {
-       // TODO Auto-generated method stub
-       return null;
-    }
-
-    @Override
-    public void setTitle(String title) {
-       // TODO Auto-generated method stub
-
-    }
-    @Override
-    public String getDescription() {
-       // TODO Auto-generated method stub
-       return null;
-    }
-
-    @Override
-    public void setDescription(String description) {
-       // TODO Auto-generated method stub
-    }
-
-    @Override
-    public Date getStart() {
-       // TODO Auto-generated method stub
-       return null;
-    }
-
-    @Override
-    public void setStart(Date start) {
-       // TODO Auto-generated method stub
+    
+    /**
+     * Builds up the node properties for a given Calendar Entry
+     */
+    protected static Map<QName,Serializable> toNodeProperties(CalendarEntry entry)
+    {
+       Map<QName,Serializable> properties = new HashMap<QName, Serializable>();
+       // TODO
        
+       return properties;
     }
     
-    @Override
-    public Date getEnd() {
-       // TODO Auto-generated method stub
-       return null;
-    }
-
-    @Override
-    public void setEnd(Date end) {
-       // TODO Auto-generated method stub
-       
+    /**
+     * Populates a Calendar Entry from the given node properties
+     */
+    protected static void populate(CalendarEntry entry, Map<QName,Serializable> properties)
+    {
+       // TODO
     }
     
-    @Override
-    public String getLocation() {
-       // TODO Auto-generated method stub
-       return null;
-    }
-    
-    @Override
-    public void setLocation(String location) {
-       // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public List<String> getTags() {
-       // TODO Auto-generated method stub
-       return null;
+    /**
+     * Populates this entry from the given node properties
+     */
+    protected void populate(Map<QName,Serializable> properties)
+    {
+       populate(this, properties);
     }
 }

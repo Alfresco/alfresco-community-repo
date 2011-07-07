@@ -21,14 +21,10 @@ package org.alfresco.repo.web.scripts.calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
@@ -64,8 +60,8 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       result.put("isoutlook", entry.isOutlook());
       result.put("outlookuid", entry.getOutlookUID());
       result.put("allday", CalendarEntryDTO.isAllDay(entry));
+      result.put("docfolder", entry.getSharePointDocFolder());
       result.put("recurrence", null); // TODO
-      result.put("docfolder", null); // TODO
       
       // Replace nulls with blank strings for the JSON
       for(String key : result.keySet())

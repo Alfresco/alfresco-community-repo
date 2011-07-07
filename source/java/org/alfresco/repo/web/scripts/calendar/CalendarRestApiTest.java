@@ -360,6 +360,14 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("13:00", entry.getString("end"));
        assertEquals("false", entry.getString("allday"));
        
+       // Check the new style dates too
+//       assertEquals("2011-06-29T12:00:00Z", entry.getJSONObject("startAt").get("iso8601")); // TODO Needs TZ going in
+       assertEquals("6/29/2011", entry.getJSONObject("startAt").get("legacyDate"));
+       assertEquals("12:00", entry.getJSONObject("startAt").get("legacyTime"));
+//       assertEquals("2011-06-29T13:00:00Z", entry.getJSONObject("endAt").get("iso8601")); // TODO Needs TZ going in
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").get("legacyDate"));
+       assertEquals("13:00", entry.getJSONObject("endAt").get("legacyTime"));
+       
        
        // Edit
        entry = updateEntry(name, EVENT_TITLE_ONE, "More Where", "More Thing", Status.STATUS_OK);

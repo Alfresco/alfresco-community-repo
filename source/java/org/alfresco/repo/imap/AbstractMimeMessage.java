@@ -55,11 +55,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Arseny Kovalchuk
  */
 public abstract class AbstractMimeMessage extends MimeMessage
-{
-    /** Used if imapHelper.getDefaultFromAddress is not set */
-    protected static final String DEFAULT_EMAIL_FROM = "alfresco@alfresco.org";
-    protected static final String DEFAULT_EMAIL_TO = DEFAULT_EMAIL_FROM;
-    
+{    
     protected static int MAX_RETRIES = 1;
 
     private Log logger = LogFactory.getLog(AbstractMimeMessage.class);
@@ -133,53 +129,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
         // setHeader(X_ALF_SERVER_UID, imapService.getAlfrescoServerUID());
     }
 
-    /**
-     * Builds the InternetAddress from the Content Author name if provided. If name not specified, it takes Content Creator name. If content creator does not exists, the default
-     * from address will be returned.
-     * 
-     * @param contentAuthor The content author full name.
-     * @return Generated InternetAddress[] array.
-     * @throws AddressException
-     */
-    protected InternetAddress[] buildSenderFromAddress() throws AddressException
-    {
-        // Generate FROM address (Content author)
-        InternetAddress[] addressList = null;
-        Map<QName, Serializable> properties = messageFileInfo.getProperties();
-        String prop = (String) properties.get(ContentModel.PROP_AUTHOR);
-        String defaultFromAddress = imapService.getDefaultFromAddress();
-        defaultFromAddress = defaultFromAddress == null ? DEFAULT_EMAIL_FROM : defaultFromAddress;
-        try
-        {
-
-            if (prop != null)
-            {
-                StringBuilder contentAuthor = new StringBuilder();
-                contentAuthor.append("\"").append(prop).append("\" <").append(defaultFromAddress).append(">");
-                addressList = InternetAddress.parse(contentAuthor.toString());
-            }
-            else
-            {
-                prop = (String) properties.get(ContentModel.PROP_CREATOR);
-                if (prop != null)
-                {
-                    StringBuilder creator = new StringBuilder();
-                    creator.append("\"").append(prop).append("\" <").append(defaultFromAddress).append(">");
-                    addressList = InternetAddress.parse(creator.toString());
-                }
-                else
-                {
-                    throw new AddressException(I18NUtil.getMessage("imap.server.error.properties_dont_exist"));
-                }
-            }
-        }
-        catch (AddressException e)
-        {
-            addressList = InternetAddress.parse(DEFAULT_EMAIL_FROM);
-        }
-        return addressList;
-    }
-
+  
     /**
      * Returns {@link FileInfo} object representing message in Alfresco.
      * 
@@ -228,43 +178,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
                 createEmailTemplateModel(messageFileInfo.getNodeRef()));
     }
 
-    /**
-     * TODO USE CASE 2: "The To/addressee will be the first email alias found in the parent folders or a default one (TBD)".
-     * It seems to be more informative as alike {@code <user>@<current.domain>}...
-     * 
-     * @return Generated TO address {@code <user>@<current.domain>}
-     * @throws AddressException
-     */
-    protected InternetAddress[] buildRecipientToAddress() throws AddressException
-    {
-        InternetAddress[] result = null;
-        String defaultEmailTo = null;
-        final String escapedUserName = AuthenticationUtil.getFullyAuthenticatedUser().replaceAll("[/,\\,@]", ".");
-        final String userDomain = DEFAULT_EMAIL_TO.split("@")[1];
-        defaultEmailTo = escapedUserName + "@" + userDomain;
-        try
-        {
-            result = InternetAddress.parse(defaultEmailTo);
-        }
-        catch (AddressException e)
-        {
-            logger.error(String.format("Wrong email address '%s'.", defaultEmailTo), e);
-            result = InternetAddress.parse(DEFAULT_EMAIL_TO);
-        }
-        return result;
-    }
 
-    protected void addFromInternal(String addressesString) throws MessagingException
-    {
-        if (addressesString != null)
-        {
-            addFrom(InternetAddress.parse(addressesString));
-        }
-        else
-        {
-            addFrom(new Address[] { new InternetAddress(DEFAULT_EMAIL_FROM) });
-        }
-    }
 
     /**
      * Builds default email template model for TemplateProcessor
@@ -325,7 +239,5 @@ public abstract class AbstractMimeMessage extends MimeMessage
     protected void updateMessageID() throws MessagingException
     {
         setHeader("Message-ID", this.messageFileInfo.getNodeRef().getId());
-    }
-
-    
+    }   
 }

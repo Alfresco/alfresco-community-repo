@@ -20,6 +20,8 @@ package org.alfresco.repo.imap;
 
 import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFIX;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -111,7 +113,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private static final String ERROR_FOLDER_ALREADY_EXISTS = "imap.server.error.folder_already_exist";
     private static final String ERROR_MAILBOX_NAME_IS_MANDATORY = "imap.server.error.mailbox_name_is_mandatory";
     private static final String ERROR_CANNOT_GET_A_FOLDER = "imap.server.error.cannot_get_a_folder";
-
+    private static final String ERROR_CANNOT_PARSE_DEFAULT_EMAIL = "imap.server.error.cannot_parse_default_email";
+    
     private static final String CHECKED_NODES = "imap.flaggable.aspect.checked.list";
     private static final String FAVORITE_SITES = "imap.favorite.sites.list";
     private static final String UIDVALIDITY_LISTENER_ALREADY_BOUND = "imap.uidvalidity.already.bound";
@@ -139,6 +142,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private Set<NodeRef> ignoreExtractionFolders;
 
     private String defaultFromAddress;
+    private String defaultToAddress;
     private String repositoryTemplatePath;
     private boolean extractAttachmentsEnabled = true;
 
@@ -261,6 +265,16 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
         this.defaultFromAddress = defaultFromAddress;
     }
+    
+    public String getDefaultToAddress()
+    {
+        return defaultToAddress;
+    }
+
+    public void setDefaultToAddress(String defaultToAddress)
+    {
+        this.defaultToAddress = defaultToAddress;
+    }
 
     public String getWebApplicationContextUrl()
     {
@@ -324,9 +338,33 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         PropertyCheck.mandatory(this, "permissionService", permissionService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         PropertyCheck.mandatory(this, "defaultFromAddress", defaultFromAddress);
+        PropertyCheck.mandatory(this, "defaultToAddress", defaultToAddress);
         PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
+        
+        // be sure that a default e-mail is correct
+        try
+        {
+            InternetAddress.parse(defaultFromAddress);
+        }
+        catch (AddressException ex)
+        {
+            throw new AlfrescoRuntimeException(
+                    ERROR_CANNOT_PARSE_DEFAULT_EMAIL,
+                    new Object[] {defaultFromAddress});
+        }
+        
+        try
+        {
+            InternetAddress.parse(defaultToAddress);
+        }
+        catch (AddressException ex)
+        {
+            throw new AlfrescoRuntimeException(
+                    ERROR_CANNOT_PARSE_DEFAULT_EMAIL,
+                    new Object[] {defaultToAddress});
+        }
     }
 
     public void startup()

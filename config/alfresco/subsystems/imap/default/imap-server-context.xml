@@ -162,6 +162,9 @@
         <property name="defaultFromAddress">
             <value>${imap.mail.from.default}</value>
         </property>
+        <property name="defaultToAddress">
+            <value>${imap.mail.to.default}</value>
+        </property>
         <property name="repositoryTemplatePath">
             <value>${spaces.store}/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</value>
         </property>

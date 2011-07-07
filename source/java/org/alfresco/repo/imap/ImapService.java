@@ -228,6 +228,11 @@ public interface ImapService
      * @return Default From addreses
      */
     public String getDefaultFromAddress();
+    
+    /**
+     * @return Default To addreses
+     */
+    public String getDefaultToAddress();
 
     /**
      * @return Path to the folder containing templates, that will be used for generating body of message in VIRTUAL and MIXED views.

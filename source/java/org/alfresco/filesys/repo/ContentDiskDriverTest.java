@@ -47,10 +47,14 @@ import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
+import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.NetworkFileServer;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.filesys.config.ServerConfigurationBean;
+
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
@@ -190,91 +194,41 @@ public class ContentDiskDriverTest extends TestCase
 //        txn.getStatus();
 //        txn.rollback();
     }
-     
-    /**
-     * Test create context.
-     * 
-     * Must have "store" and "rootPath"
-     */
-    public void testCreateContext() throws Exception
-    {
-        logger.debug("testCreateContext");
-        
-        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
-        
-        GenericConfigElement store =  new GenericConfigElement("store");
-        store.setValue(STORE_NAME);
-        cfg1.addChild(store);
-        
-        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
-        rootPath.setValue(ROOT_PATH);
-        cfg1.addChild(rootPath);
-        
-        /**
-         * Step 1: Call create context and expect it to succeed
-         */
-        DeviceContext context = driver.createContext(SHARE_NAME, cfg1);
-       
-        assertTrue (context instanceof ContentContext);
-        assertNotNull (context);
-        
-        ContentContext ctx = (ContentContext)context;
-        
-        assertEquals("Device name wrong", SHARE_NAME, ctx.getDeviceName());
-        assertEquals("Root Path wrong", ROOT_PATH, ctx.getRootPath());
-        
-        context.CloseContext();
-        
-        /**
-         *  Step 2: Negative test - missing store property
-         */
-        try
-        {
-            GenericConfigElement cfg2 =  new GenericConfigElement("filesystem");
-            cfg2.addChild(rootPath);
-            driver.createContext(SHARE_NAME, cfg2);
-            fail("missing store not detected");
-        }
-        catch (DeviceContextException de)
-        {
-            // expect to go here
-        }
-        
-        /**
-         *  Step 3: Negative test - missing rootPath property
-         */
-        try
-        {
-            GenericConfigElement cfg2 =  new GenericConfigElement("filesystem");
-            cfg2.addChild(store);
-            driver.createContext(SHARE_NAME, cfg2);
-            fail("missing store not detected");
-        }
-        catch (DeviceContextException de)
-        {
-            // expect to go here
-        }
-    }
+
 
     private DiskSharedDevice getDiskSharedDevice() throws DeviceContextException
     {
         ServerConfiguration scfg = new ServerConfiguration("testServer");
-        TestServer testServer = new TestServer("testServer", scfg);
-        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
-    
-        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
-           
-        GenericConfigElement store =  new GenericConfigElement("store");
-        store.setValue(STORE_NAME);
-        cfg1.addChild(store);
-    
-        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
-        rootPath.setValue(ROOT_PATH);
-        cfg1.addChild(rootPath);
-    
-        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
-      
-        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
+        
+        FilesystemsConfigSection fcfg = new FilesystemsConfigSection(scfg);
+        
+//        TestServer testServer = new TestServer("testServer", scfg);
+//        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+//    
+//        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
+//           
+//        GenericConfigElement store =  new GenericConfigElement("store");
+//        store.setValue(STORE_NAME);
+//        cfg1.addChild(store);
+//    
+//        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
+//        rootPath.setValue(ROOT_PATH);
+//        cfg1.addChild(rootPath);
+//    
+//        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
+//      
+//        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
+        
+        ContentContext ctx = new ContentContext( "testContext", STORE_NAME, ROOT_PATH, repositoryHelper.getCompanyHome());
+        
+        ServerConfigurationBean scb = new ServerConfigurationBean("testServer");
+        
+        scb.addConfigSection(fcfg);
+        ctx.setServerConfigurationBean(scb);
+        ctx.enableStateCache(true);
+        
+        DiskSharedDevice share = new DiskSharedDevice("test", driver, ctx);
+
         
         return share;
     }
@@ -289,7 +243,9 @@ public class ContentDiskDriverTest extends TestCase
         TestServer testServer = new TestServer("testServer", scfg);
         SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
+        
         TreeConnection testConnection = testServer.getTreeConnection(share);
+
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         
         class TestContext
@@ -304,7 +260,7 @@ public class ContentDiskDriverTest extends TestCase
            */
         int openAction = FileAction.CreateNotExist;
         
-        final String FILE_NAME="testCreateFile.new";
+        final String FILE_NAME="testCreateFile2.new";
         final String FILE_PATH="\\"+FILE_NAME;
                   
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
@@ -390,20 +346,26 @@ public class ContentDiskDriverTest extends TestCase
         ServerConfiguration scfg = new ServerConfiguration("testServer");
         TestServer testServer = new TestServer("testServer", scfg);
         SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+
         
-        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
-                
-        GenericConfigElement store =  new GenericConfigElement("store");
-        store.setValue(STORE_NAME);
-        cfg1.addChild(store);
-        
-        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
-        rootPath.setValue(ROOT_PATH);
-        cfg1.addChild(rootPath);
-        
-        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
-        
-        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
+//        ServerConfiguration scfg = new ServerConfiguration("testServer");
+//        TestServer testServer = new TestServer("testServer", scfg);
+//        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+//        
+//        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
+//                
+//        GenericConfigElement store =  new GenericConfigElement("store");
+//        store.setValue(STORE_NAME);
+//        cfg1.addChild(store);
+//        
+//        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
+//        rootPath.setValue(ROOT_PATH);
+//        cfg1.addChild(rootPath);
+//        
+//        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
+//        
+//        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
         TreeConnection testConnection = testServer.getTreeConnection(share);
         
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -788,6 +750,7 @@ public class ContentDiskDriverTest extends TestCase
         SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
         final TreeConnection testConnection = testServer.getTreeConnection(share);
+
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         
         final String FILE_PATH1=TEST_ROOT_DOS_PATH + "\\SourceFile1.new";
@@ -926,6 +889,7 @@ public class ContentDiskDriverTest extends TestCase
         SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
         final TreeConnection testConnection = testServer.getTreeConnection(share);
+        
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
         final String FILE_PATH1=TEST_ROOT_DOS_PATH + "\\SourceFile1.new";
@@ -1037,6 +1001,7 @@ public class ContentDiskDriverTest extends TestCase
         final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
         final TreeConnection testConnection = testServer.getTreeConnection(share);
+        
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
 
         /**
@@ -2067,7 +2032,7 @@ public class ContentDiskDriverTest extends TestCase
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
               
         int openAction = FileAction.CreateNotExist;
-        String FILE_PATH="\\testCreateFile.new";
+        String FILE_PATH="\\testDeleteFile.new";
           
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 

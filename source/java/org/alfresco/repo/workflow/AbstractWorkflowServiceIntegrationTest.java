@@ -592,7 +592,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         workflowService.updateTask(theTask.getId(), params, null, null);
         
         // Test all query features for running tasks
-        checkTaskQueryInProgress(workflowInstanceId, theTask);
+        checkTaskQueryInProgress(workflowInstanceId, theTask, workflowInstanceId);
 
         // Test all query features for the start-task
         checkTaskQueryStartTaskCompleted(workflowInstanceId, startTask);
@@ -637,6 +637,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 	protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) {
 		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
 		taskQuery.setActive(false);
+		taskQuery.setProcessId(workflowInstanceId);
 		
 		List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
         assertNotNull(tasks);
@@ -644,30 +645,30 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         
         taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
 		taskQuery.setActive(true);
+		taskQuery.setProcessId(workflowInstanceId);
 		checkNoTasksFoundUsingQuery(taskQuery);
 	}
 
-	protected void checkTaskQueryTaskCompleted(String workflowInstanceId,
-			WorkflowTask theTask, WorkflowTask startTask) 
+	protected void checkTaskQueryTaskCompleted(String workflowInstanceId, WorkflowTask theTask, WorkflowTask startTask) 
 	{
 		List<String> expectedTasks = Arrays.asList(theTask.getId(), startTask.getId());
         checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
         
         // Adhoc task should only be returned
         QName taskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhocTask");
-        checkTaskNameQuery(taskName, Arrays.asList(theTask.getId()), WorkflowTaskState.COMPLETED, null);
+        checkTaskNameQuery(taskName, Arrays.asList(theTask.getId()), WorkflowTaskState.COMPLETED, workflowInstanceId);
 
         // Completed adhocTask is assigned to USER2
         checkActorIdQuery(USER2, Arrays.asList(theTask.getId()), WorkflowTaskState.COMPLETED, null);
         
         // Workflow is still active, both tasks will be returned
-        checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
+        checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
        
         // Both tasks have custom property set
         checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
 	}
 
-	protected void checkTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask)
+	protected void checkTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask, String workflowInstanceId2)
     {
 		List<String> expectedTasks = Arrays.asList(expectedTask.getId());
 		
@@ -677,7 +678,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         QName taskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhocTask");
         checkTaskNameQuery(taskName, expectedTasks, WorkflowTaskState.IN_PROGRESS, null);
         checkActorIdQuery(USER2, expectedTasks, WorkflowTaskState.IN_PROGRESS, null);
-        checkIsActiveQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS, null);
+        checkIsActiveQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS, workflowInstanceId);
         checkTaskPropsQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS, null);
         checkProcessPropsQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS);
     }
@@ -691,7 +692,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 	    QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
 	    checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, null);
 	    checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, null);
-	    checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
+	    checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
 	    checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
 	}
     
@@ -890,8 +891,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkNoTasksFoundUsingQuery(taskQuery);
     }
     
-    protected void checkIsActiveQuery(List<String> expectedTaskIds, WorkflowTaskState state,
-    		String optionalProcessId)
+    protected void checkIsActiveQuery(List<String> expectedTaskIds, WorkflowTaskState state, String optionalProcessId)
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setActive(true);

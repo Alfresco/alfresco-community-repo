@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
-import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,30 +34,75 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the slingshot calendar event.post webscript.
+ * This class is the controller for the slingshot calendar event.put webscript.
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public class CalendarEntryPost extends AbstractCalendarWebScript
+public class CalendarEntryPut extends AbstractCalendarWebScript
 {
-   private static Log logger = LogFactory.getLog(CalendarEntryPost.class);
+   private static Log logger = LogFactory.getLog(CalendarEntryPut.class);
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
-      CalendarEntry entry = new CalendarEntryDTO();
+      CalendarEntry entry = calendarService.getCalendarEntry(
+            site.getShortName(), eventName
+      );
+      
+      if(entry == null)
+      {
+         return buildError("Could not find event: " + eventName);
+      }
       
       // TODO Handle All Day events properly, including timezones
       boolean isAllDay = false;
 
       try
       {
+         // Doc folder is a bit special
+         String docFolder = json.getString("docfolder");
+         
+         if(entry.getRecurrenceRule() != null)
+         {
+            // TODO Handle editing recurring rules
+            // Needs stuff with ignored events
+/*
+       var prop = new Array();
+       var fromParts = params.date.split("-");
+       prop["ia:date"] = new Date(fromParts[0],fromParts[1] - 1,fromParts[2]);
+       editedEvent.createNode(null, "ia:ignoreEvent", prop, "ia:ignoreEventList");
+
+       var timestamp = new Date().getTime();
+       var random = Math.round(Math.random() * 10000);
+
+       event = eventsFolder.createNode(timestamp + "-" + random + ".ics", "ia:calendarEvent");
+       event.properties["ia:isOutlook"] = true;
+
+ */
+            
+            // TODO Special doc folder stuff
+            if("*NOT_CHANGE*".equals(docFolder))
+            {
+               // TODO
+            }
+         }
+         
+         // Doc folder is a bit special
+         if("*NOT_CHANGE*".equals(docFolder))
+         {
+            // Nothing to change
+         }
+         else
+         {
+            entry.setSharePointDocFolder(docFolder);
+         }
+            
+         
          // Grab the properties
          entry.setTitle(getOrNull(json, "what"));
          entry.setDescription(getOrNull(json, "desc"));
          entry.setLocation(getOrNull(json, "where"));
-         entry.setSharePointDocFolder(getOrNull(json, "docfolder"));
          
          // Handle the dates
          isAllDay = extractDates(entry, json);
@@ -66,6 +110,8 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
          // Handle tags
          if(json.has("tags"))
          {
+            entry.getTags().clear();
+            
             StringTokenizer st = new StringTokenizer(json.getString("tags"), " ");
             while(st.hasMoreTokens())
             {
@@ -84,8 +130,8 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       }
       
       
-      // Have it added
-      entry = calendarService.createCalendarEntry(site.getShortName(), entry);
+      // Have it edited
+      entry = calendarService.updateCalendarEntry(entry);
       
       
       // Generate the activity feed for this
@@ -98,7 +144,7 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
          activity.put("page", req.getParameter("page") + dateOpt);
          
          activityService.postActivity(
-               "org.alfresco.calendar.event-created",
+               "org.alfresco.calendar.event-updated",
                site.getShortName(),
                CALENDAR_SERVICE_ACTIVITY_APP_NAME,
                activity.toString()
@@ -113,15 +159,15 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       
       // Build the return object
       Map<String, Object> result = new HashMap<String, Object>();
-      result.put("name", entry.getTitle());
-      result.put("desc", entry.getDescription());
-      result.put("where", entry.getLocation());
-      result.put("from", entry.getStart());
-      result.put("to", entry.getEnd());
+      result.put("summary", entry.getTitle());
+      result.put("description", entry.getDescription());
+      result.put("location", entry.getLocation());
+      result.put("dtstart", entry.getStart());
+      result.put("dtend", entry.getEnd());
       result.put("uri", "calendar/event/" + site.getShortName() + "/" +
                         entry.getSystemName() + dateOpt);
       
-      result.put("tags", entry.getTags());
+      result.put("tags", generateTagString(entry));
       result.put("allday", isAllDay);
       result.put("docfolder", entry.getSharePointDocFolder());
       
@@ -138,5 +184,24 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("result", result);
       return model;
+   }
+   
+   /**
+    * We use lists for tags internally, and the other webscripts
+    *  return arrays too. This one is different, and it needs to 
+    *  a single space separated string. This does the conversion
+    */
+   protected String generateTagString(CalendarEntry entry)
+   {
+      StringBuffer sb = new StringBuffer();
+      if(entry.getTags() != null)
+      {
+         for(String tag : entry.getTags())
+         {
+            if(sb.length() > 0) sb.append(' ');
+            sb.append(tag);
+         }
+      }
+      return sb.toString();
    }
 }

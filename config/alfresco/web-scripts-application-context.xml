@@ -1466,6 +1466,12 @@
          parent="abstractCalendarWebScript">
    </bean>
 
+   <!-- Edits an existing Calendar Event from the site calendar -->
+   <bean id="webscript.org.alfresco.slingshot.calendar.event.put"
+         class="org.alfresco.repo.web.scripts.calendar.CalendarEntryPut"
+         parent="abstractCalendarWebScript">
+   </bean>
+
    <!-- Removes a Calendar Event from the site calendar -->
    <bean id="webscript.org.alfresco.slingshot.calendar.event.delete"
          class="org.alfresco.repo.web.scripts.calendar.CalendarEntryDelete"

@@ -379,7 +379,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // No from/to/start/end, does dtstart and dtend instead
        assertEquals("2011-06-28T11:30", entry.getString("dtstart"));
        assertEquals("2011-06-28T13:30", entry.getString("dtend"));
-       assertEquals("", entry.getString("allday"));
+       assertEquals("false", entry.getString("allday"));
        // No isoutlook on create/edit
        
        

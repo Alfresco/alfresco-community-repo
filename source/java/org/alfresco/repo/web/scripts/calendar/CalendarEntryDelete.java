@@ -71,7 +71,7 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
       {
          // Get the date to be ignored
          Map<QName,Serializable> props = new HashMap<QName, Serializable>();
-         Date date = extractDate(req.getParameter("date"));
+         Date date = parseDate(req.getParameter("date"));
          props.put(CalendarModel.PROP_IGNORE_EVENT_DATE, date);
          
          // Create a child node of the event

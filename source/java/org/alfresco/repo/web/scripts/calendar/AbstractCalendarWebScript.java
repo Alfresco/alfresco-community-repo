@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -79,7 +80,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
      * Gets the date from the String, trying the various formats
      *  (New and Legacy) until one works...
      */
-    protected Date extractDate(String date)
+    protected Date parseDate(String date)
     {
        // Is there one at all?
        if(date == null || date.length() == 0)
@@ -124,6 +125,51 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 
        // We don't know what it is, object
        throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid date '" + date + "'");
+    }
+    
+    /**
+     * Extracts the Start and End details, along with the All Day flag
+     *  from the JSON, and returns if the event is all day or not
+     */
+    protected boolean extractDates(CalendarEntry entry, JSONObject json) throws JSONException
+    {
+       boolean isAllDay = false;
+       
+       if(json.has("startAt") && json.has("endAt"))
+       {
+          // New style ISO8601 dates
+          entry.setStart(parseDate(json.getString("startAt")));
+          entry.setEnd(parseDate(json.getString("endAt")));
+          if(json.has("allday"))
+          {
+             // TODO Handle All Day events properly, including timezones
+             isAllDay = true;
+          }
+       }
+       else if(json.has("allday"))
+       {
+          // Old style all-day event
+          entry.setStart(parseDate(getOrNull(json, "from")));
+          entry.setEnd(parseDate(getOrNull(json, "to")));
+          isAllDay = true;
+       }
+       else
+       {
+          // Old style regular event
+          entry.setStart(parseDate(json.getString("from") + " " + json.getString("start")));
+          entry.setEnd(parseDate(json.getString("to") + " " + json.getString("end")));
+       }
+       
+       return isAllDay;
+    }
+    
+    protected String getOrNull(JSONObject json, String key) throws JSONException
+    {
+       if(json.has(key))
+       {
+          return json.getString(key);
+       }
+       return null;
     }
     
     /**

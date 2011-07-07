@@ -24,6 +24,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -38,7 +39,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
       CalendarEntry entry = calendarService.getCalendarEntry(
             site.getShortName(), eventName
       );

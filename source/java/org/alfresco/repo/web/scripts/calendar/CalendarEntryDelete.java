@@ -24,12 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.calendar.CalendarModel;
-import org.alfresco.repo.calendar.CalendarServiceImpl;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -57,7 +55,7 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
 
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
       CalendarEntry entry = calendarService.getCalendarEntry(
             site.getShortName(), eventName
       );
@@ -93,16 +91,15 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
       // Record this in the activity feed
       try
       {
-         JSONObject json = new JSONObject();
-         json.put("siteid", site.getShortName());
-         json.put("eventname", entry.getSystemName());
-         json.put("date", ISO8601DateFormat.format(entry.getStart()));
+         JSONObject activity = new JSONObject();
+         activity.put("title", entry.getTitle());
+         activity.put("page", req.getParameter("page"));
          
          activityService.postActivity(
                "org.alfresco.calendar.event-deleted",
                site.getShortName(),
                CALENDAR_SERVICE_ACTIVITY_APP_NAME,
-               json.toString()
+               activity.toString()
          );
       }
       catch(Exception e)

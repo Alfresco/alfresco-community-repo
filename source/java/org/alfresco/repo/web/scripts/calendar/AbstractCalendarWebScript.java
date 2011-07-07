@@ -18,15 +18,23 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ISO8601DateFormat;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -73,16 +81,49 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
      */
     protected Date extractDate(String date)
     {
-       // Try as ISO8601
+       // Is there one at all?
+       if(date == null || date.length() == 0)
+       {
+          return null;
+       }
        
-       // Try YYYY/MM/DD 
+       // Try as ISO8601
+       try
+       {
+          return ISO8601DateFormat.parse(date);
+       }
+       catch(Exception e) {}
+       
+       // Try YYYY/MM/DD
+       SimpleDateFormat slashtime = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+       SimpleDateFormat slash = new SimpleDateFormat("yyyy/MM/dd");
+       try
+       {
+          return slashtime.parse(date);
+       }
+       catch(ParseException e) {}
+       try
+       {
+          return slash.parse(date);
+       }
+       catch(ParseException e) {}
        
        // Try YYYY-MM-DD
-       
-       
-       
-       // TODO Implement
-       return null;
+       SimpleDateFormat dashtime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+       SimpleDateFormat dash = new SimpleDateFormat("yyyy-MM-dd");
+       try
+       {
+          return dashtime.parse(date);
+       }
+       catch(ParseException e) {}
+       try
+       {
+          return dash.parse(date);
+       }
+       catch(ParseException e) {}
+
+       // We don't know what it is, object
+       throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid date '" + date + "'");
     }
     
     /**
@@ -128,6 +169,26 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           }
        }
        
+       
+       // Parse the JSON, if supplied
+       JSONObject json = null;
+       if(MimetypeMap.MIMETYPE_JSON.equals( req.getContentType() ))
+       {
+          try
+          {
+             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+          }
+          catch(IOException io)
+          {
+             return buildError("Invalid JSON: " + io.getMessage());
+          }
+          catch(JSONException je)
+          {
+             return buildError("Invalid JSON: " + je.getMessage());
+          }
+       }
+       
+       
        // Get the site short name. Try quite hard to do so...
        String siteName = templateVars.get("siteid");
        if(siteName == null)
@@ -137,6 +198,21 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        if(siteName == null)
        {
           siteName = req.getParameter("site");
+       }
+       if(siteName == null && json != null)
+       {
+          try
+          {
+             if(json.has("siteid"))
+             {
+                siteName = json.getString("siteid");
+             }
+             else if(json.has("site"))
+             {
+                siteName = json.getString("site");
+             }
+          }
+          catch(JSONException e) {}
        }
        if(siteName == null)
        {
@@ -170,10 +246,11 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        String eventName = templateVars.get("eventname");
        
        // Have the real work done
-       return executeImpl(site, eventName, req, status, cache); 
+       return executeImpl(site, eventName, req, json, status, cache); 
     }
     
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
-          String eventName, WebScriptRequest req, Status status, Cache cache);
+          String eventName, WebScriptRequest req, JSONObject json, 
+          Status status, Cache cache);
     
 }

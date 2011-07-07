@@ -340,7 +340,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("2011-06-29", entry.getString("to")); // Different format!
        assertEquals("12:00", entry.getString("start"));
        assertEquals("13:00", entry.getString("end"));
-       assertEquals("", entry.getString("allday")); // Not false...
+       assertEquals("false", entry.getString("allday"));
        // No isoutlook on create/edit
        
        

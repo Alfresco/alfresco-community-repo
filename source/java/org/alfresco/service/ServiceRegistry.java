@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationService;
@@ -138,6 +139,7 @@ public interface ServiceRegistry
     static final QName RATING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RatingService");
     static final QName REPO_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RepoAdminService");
     static final QName NODE_LOCATOR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "nodeLocatorService");
+    static final QName CALENDAR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CalendarService");
     
     // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
@@ -516,6 +518,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     NodeLocatorService getNodeLocatorService();
+    
+    /**
+     * Get the calendar service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    CalendarService getCalendarService();
     
     /**
      * Get the invitation service (or null if one is not provided)

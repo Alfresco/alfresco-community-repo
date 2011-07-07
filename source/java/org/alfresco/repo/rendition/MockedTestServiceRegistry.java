@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationService;
@@ -329,6 +330,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     
     public NodeLocatorService getNodeLocatorService()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
+    public CalendarService getCalendarService()
     {
         // TODO Auto-generated method stub
         return null;

@@ -19,11 +19,11 @@
 
 package org.alfresco.repo.publishing;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class MutablePublishingPackageImpl implements MutablePublishingPackage
 {
     private final TransferManifestNodeFactory transferManifestNodeFactory;
-    private final List<PublishingPackageEntry> entries = new ArrayList<PublishingPackageEntry>();
+    private final Map<NodeRef, PublishingPackageEntry> entryMap = new HashMap<NodeRef, PublishingPackageEntry>();
     private final Set<NodeRef> nodesToPublish = new HashSet<NodeRef>();
     private final Set<NodeRef> nodesToUnpublish= new HashSet<NodeRef>();
     
@@ -71,7 +71,7 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
             TransferManifestNode payload = transferManifestNodeFactory.createTransferManifestNode(nodeRef, null);
             if (TransferManifestNormalNode.class.isAssignableFrom(payload.getClass()))
             {
-                entries.add(new PublishingPackageEntryImpl(true, nodeRef, (TransferManifestNormalNode) payload));
+                entryMap.put(nodeRef, new PublishingPackageEntryImpl(true, nodeRef, (TransferManifestNormalNode) payload));
             }
         }
         nodesToPublish.addAll(nodesToAdd);
@@ -92,7 +92,7 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     {
         for (NodeRef nodeRef : nodesToRemove)
         {
-            entries.add(new PublishingPackageEntryImpl(false, nodeRef, null));
+            entryMap.put(nodeRef, new PublishingPackageEntryImpl(false, nodeRef, null));
         }
         nodesToUnpublish.addAll(nodesToRemove);
     }
@@ -103,7 +103,7 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     @Override
     public Collection<PublishingPackageEntry> getEntries()
     {
-        return entries;
+        return entryMap.values();
     }
 
     /**
@@ -122,5 +122,14 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     public Set<NodeRef> getNodesToUnpublish()
     {
         return nodesToUnpublish;
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public Map<NodeRef, PublishingPackageEntry> getEntryMap()
+    {
+        return entryMap;
     }
 }

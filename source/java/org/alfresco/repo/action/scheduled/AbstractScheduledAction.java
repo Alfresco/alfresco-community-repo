@@ -657,7 +657,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
         SECOND second;
 
-        Pair(FIRST first, SECOND second)
+        public Pair(FIRST first, SECOND second)
         {
             this.first = first;
             this.second = second;

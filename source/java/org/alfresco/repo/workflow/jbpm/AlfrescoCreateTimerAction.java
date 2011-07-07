@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -55,11 +56,18 @@ public class AlfrescoCreateTimerAction extends CreateTimerAction
         if (dueDateExpression.startsWith("#{"))
         {
             Object result = JbpmExpressionEvaluator.evaluate(dueDateExpression, executionContext);
-            if (!(result instanceof Date))
+            if (result instanceof Date)
+            {
+                dueDate = (Date)result;
+            }
+            else if(result instanceof Calendar)
+            {
+                dueDate = ((Calendar)result).getTime();
+            }
+            else
             {
                 throw new WorkflowException("duedate expression must evaluate to a date");
             }
-            dueDate = (Date)result;
         }
         else
         {

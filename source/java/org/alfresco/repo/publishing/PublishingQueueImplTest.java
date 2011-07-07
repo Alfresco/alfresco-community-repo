@@ -129,7 +129,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertEquals(1, paths.size());
         Map<QName, Serializable> props = workflowService.getPathProperties(paths.get(0).getId());
         assertEquals(eventNode, props.get(PROP_WF_PUBLISHING_EVENT));
-        assertEquals(schedule.getTime(), props.get(PROP_WF_SCHEDULED_PUBLISH_DATE));
+        assertEquals(schedule, props.get(PROP_WF_SCHEDULED_PUBLISH_DATE));
     }
 
     public void testScheduleNewPublishingEventWithStatusUpdate() throws Exception

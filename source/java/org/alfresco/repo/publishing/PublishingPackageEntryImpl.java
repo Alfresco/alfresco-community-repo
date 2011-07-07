@@ -74,6 +74,7 @@ class PublishingPackageEntryImpl implements PublishingPackageEntry
       */
     public NodeSnapshot getSnapshot()
     {
-        return new NodeSnapshotTransferImpl(payload);
+        //TODO Add versioning information.
+        return new NodeSnapshotTransferImpl(payload, null);
     }
 }

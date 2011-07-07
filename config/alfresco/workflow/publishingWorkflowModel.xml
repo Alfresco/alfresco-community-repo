@@ -24,8 +24,7 @@
                     <mandatory>true</mandatory>
                 </property>
                 <property name="pubwf:scheduledPublishDate">
-                    <type>d:datetime</type>
-                    <mandatory>true</mandatory>
+                    <type>d:any</type>
                 </property>
             </properties>
         </type>

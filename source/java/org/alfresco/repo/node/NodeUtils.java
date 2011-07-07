@@ -19,9 +19,13 @@
 
 package org.alfresco.repo.node;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
 import org.alfresco.util.collections.Function;
 
@@ -43,6 +47,11 @@ public abstract class NodeUtils
         };
     }
 
+    public static List<NodeRef> toNodeRefs(Collection<String> nodeIds)
+    {
+        return CollectionUtils.transform(nodeIds, toNodeRef());
+    }
+
     public static Function<ChildAssociationRef, NodeRef> toChildRef()
     {
         return new Function<ChildAssociationRef, NodeRef>()
@@ -54,6 +63,11 @@ public abstract class NodeUtils
         };
     }
     
+    public static List<NodeRef> toChildRefs(Collection<ChildAssociationRef> assocRefs)
+    {
+        return CollectionUtils.transform(assocRefs, toChildRef());
+    }
+
     public static Function<ChildAssociationRef, NodeRef> toParentRef()
     {
         return new Function<ChildAssociationRef, NodeRef>()
@@ -63,6 +77,11 @@ public abstract class NodeUtils
                 return value.getParentRef();
             }
         };
+    }
+    
+    public static List<NodeRef> toParentRefs(Collection<ChildAssociationRef> assocRefs)
+    {
+        return CollectionUtils.transform(assocRefs, toParentRef());
     }
 
     public static Function<String, NodeRef> toNodeRefQueitly()
@@ -90,6 +109,5 @@ public abstract class NodeUtils
             }
         };
     }
-    
     
 }

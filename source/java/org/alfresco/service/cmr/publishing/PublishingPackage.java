@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.publishing;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -30,6 +31,7 @@ public interface PublishingPackage
      * @return The collection of publishing package entries. Never <code>null</code>.
      */
     Collection<PublishingPackageEntry> getEntries();
+    Map<NodeRef,PublishingPackageEntry> getEntryMap();
     Set<NodeRef> getNodesToPublish();
     Set<NodeRef> getNodesToUnpublish();
 }

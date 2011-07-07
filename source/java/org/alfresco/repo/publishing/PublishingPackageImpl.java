@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public class PublishingPackageImpl implements PublishingPackage

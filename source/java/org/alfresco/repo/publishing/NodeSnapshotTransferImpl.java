@@ -39,14 +39,15 @@ import org.alfresco.service.namespace.QName;
 public class NodeSnapshotTransferImpl implements NodeSnapshot
 {
     private final TransferManifestNormalNode transferNode; 
-
+    private final String version;
+    
     /**
      * @param transferNode
      */
-    public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode)
+    public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode, String version)
     {
-        super();
         this.transferNode = transferNode;
+        this.version = version;
     }
 
     /* (non-Javadoc)
@@ -119,5 +120,14 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     public QName getType()
     {
         return transferNode.getType();
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public String getVersion()
+    {
+        return version;
     }
 }

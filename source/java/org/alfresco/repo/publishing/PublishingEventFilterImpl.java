@@ -20,6 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,8 +35,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class PublishingEventFilterImpl implements PublishingEventFilter
 {
-    private Set<String> ids = new HashSet<String>();
-    private Set<NodeRef> publishedNodes = new HashSet<NodeRef>();
+    private Set<String> ids = Collections.emptySet();
+    private Set<NodeRef> publishedNodes = Collections.emptySet();
+    private Set<NodeRef> unpublishedNodes = Collections.emptySet();
     
     /**
     * {@inheritDoc}
@@ -44,11 +46,23 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     {
         if(ids != null && ids.length>0)
         {
-            this.ids.addAll(Arrays.asList(ids));
+            this.ids = new HashSet<String>(Arrays.asList(ids));
         }
         return this;
     }
     
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public PublishingEventFilter setIds(Collection<String> ids)
+    {
+        if(ids != null && ids.isEmpty() == false)
+        {
+            this.ids = new HashSet<String>(ids);
+        }
+        return this;
+    }
     /**
     * {@inheritDoc}
     */
@@ -62,20 +76,63 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     */
     public PublishingEventFilter setPublishedNodes(NodeRef... publishedNodes)
     {
-        if(ids != null && publishedNodes.length>0)
+        if(publishedNodes != null && publishedNodes.length>0)
         {
-            this.publishedNodes.addAll(Arrays.asList(publishedNodes));
+            this.publishedNodes = new HashSet<NodeRef>(Arrays.asList(publishedNodes));
         }
         return this;
     }
-
+    
+    /**
+    * {@inheritDoc}
+    */
+    public PublishingEventFilter setPublishedNodes(Collection<NodeRef> publishedNodes)
+    {
+        if(publishedNodes != null && publishedNodes.isEmpty() == false)
+        {
+            this.publishedNodes = new HashSet<NodeRef>(publishedNodes);
+        }
+        return this;
+    }
+    
     /**
     * {@inheritDoc}
     */
     public Set<NodeRef> getPublishedNodes()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.unmodifiableSet(publishedNodes);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public PublishingEventFilter setUnpublishedNodes(NodeRef... unpublishedNodes)
+    {
+        if(unpublishedNodes != null && unpublishedNodes.length>0)
+        {
+            this.unpublishedNodes = new HashSet<NodeRef>(Arrays.asList(unpublishedNodes));
+        }
+        return this;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public PublishingEventFilter setUnpublishedNodes(Collection<NodeRef> unpublishedNodes)
+    {
+        if(unpublishedNodes != null && unpublishedNodes.isEmpty() == false)
+        {
+            this.unpublishedNodes = new HashSet<NodeRef>(unpublishedNodes);
+        }
+        return this;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public Set<NodeRef> getUnpublishedNodes()
+    {
+        return Collections.unmodifiableSet(unpublishedNodes);
+    }
+
 }

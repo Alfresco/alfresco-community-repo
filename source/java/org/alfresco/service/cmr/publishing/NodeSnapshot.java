@@ -84,4 +84,9 @@ public interface NodeSnapshot
      * @return A set of QName objects, each identifying an aspect that is applied to the node
      */
     Set<QName> getAspects();
+    
+    /**
+     * @return the version of the node when the snapshot was taken.
+     */
+    String getVersion();
 }

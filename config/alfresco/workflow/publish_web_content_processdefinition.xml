@@ -6,8 +6,15 @@
 
     <start-state name="start">
         <task name="pubwf:startPublish" />
-        <transition name="" to="waitForScheduledTime" />
+        <transition name="" to="checkForScheduledTime" />
     </start-state>
+
+    <decision name="checkForScheduledTime">
+        <transition name="toCheckDependencies" to="checkDependencies">
+             <condition>#{pubwf_scheduledPublishDate == null}</condition>
+        </transition>
+        <transition name="toWaitForScheduledTime" to="waitForScheduledTime" />
+    </decision>
     
     <task-node name="waitForScheduledTime" end-tasks="true" >
         <task name="pubwf:wait" >

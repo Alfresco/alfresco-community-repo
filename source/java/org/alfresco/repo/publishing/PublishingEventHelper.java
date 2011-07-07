@@ -348,8 +348,7 @@ public class PublishingEventHelper
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(PROP_WF_PUBLISHING_EVENT, eventNode);
         parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
-        //TODO Will this handle the timezone?
-        parameters.put(PROP_WF_SCHEDULED_PUBLISH_DATE, scheduledTime.getTime());
+        parameters.put(PROP_WF_SCHEDULED_PUBLISH_DATE, scheduledTime);
         
         //Start workflow
         WorkflowPath path = workflowService.startWorkflow(getPublshingWorkflowDefinitionId(), parameters);

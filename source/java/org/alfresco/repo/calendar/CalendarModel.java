@@ -48,4 +48,8 @@ public interface CalendarModel
     /** Ignored Event */
     public static final QName TYPE_IGNORE_EVENT = QName.createQName(CALENDAR_MODEL_URL, "ignoreEvent");
     public static final QName PROP_IGNORE_EVENT_DATE = QName.createQName(CALENDAR_MODEL_URL, "date");
+    
+    /** SharePoint Event */
+    public static final QName ASPECT_DOC_FOLDERED = QName.createQName(CALENDAR_MODEL_URL, "docFoldered");
+    public static final QName PROP_DOC_FOLDER = QName.createQName(CALENDAR_MODEL_URL, "docFolder");
 }

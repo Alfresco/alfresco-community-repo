@@ -43,6 +43,7 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    private Date end;
    private String recurrenceRule;
    private Date lastRecurrence;
+   private String sharePointDocFolder;
    private boolean isOutlook = false;
    private String outlookUID;
    private List<String> tags = new ArrayList<String>();
@@ -228,7 +229,25 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    {
       this.outlookUID = outlookUID;
    }
-   
+
+   /**
+    * Gets the SharePoint "Doc Folder" for the event. 
+    * Only used for SharePoint based events
+    */
+   public String getSharePointDocFolder() 
+   {
+      return sharePointDocFolder;
+   }
+
+   /**
+    * Sets the SharePoint "Doc Folder" for the event. 
+    * Only used for SharePoint based events
+    */
+   public void setSharePointDocFolder(String docFolder) 
+   {
+      this.sharePointDocFolder = docFolder;
+   }
+
    /**
     * @return the Tags associated with the event 
     */
@@ -236,8 +255,6 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    {
       return tags;
    }
-   
-   // TODO Doc folder
    
    /**
     * Does the given {@link CalendarEntry} define an all-day

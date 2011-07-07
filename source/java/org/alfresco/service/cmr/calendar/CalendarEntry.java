@@ -136,7 +136,17 @@ public interface CalendarEntry extends Serializable, PermissionCheckValue {
     */
    void setOutlookUID(String outlookUID);
    
-   // TODO Doc folder
+   /**
+    * Gets the SharePoint "Doc Folder" for the event. 
+    * Only used for SharePoint based events
+    */
+   String getSharePointDocFolder();
+   
+   /**
+    * Sets the SharePoint "Doc Folder" for the event. 
+    * Only used for SharePoint based events
+    */
+   void setSharePointDocFolder(String docFolder);
    
    /**
     * @return the Tags associated with the event 

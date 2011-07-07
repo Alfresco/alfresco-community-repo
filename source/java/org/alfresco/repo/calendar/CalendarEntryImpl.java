@@ -80,6 +80,7 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        properties.put(CalendarModel.PROP_RECURRENCE_LAST_MEETING, entry.getLastRecurrence());
        properties.put(CalendarModel.PROP_IS_OUTLOOK, entry.isOutlook());
        properties.put(CalendarModel.PROP_OUTLOOK_UID, entry.getOutlookUID());
+       properties.put(CalendarModel.PROP_DOC_FOLDER, entry.getSharePointDocFolder());
      
 //     properties.put(CalendarModel.PROP_COLOR, entry.getColor();
       
@@ -100,6 +101,7 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        entry.setEnd((Date)properties.get(CalendarModel.PROP_TO_DATE));
        entry.setRecurrenceRule((String)properties.get(CalendarModel.PROP_RECURRENCE_RULE));
        entry.setLastRecurrence((Date)properties.get(CalendarModel.PROP_RECURRENCE_LAST_MEETING));
+       entry.setSharePointDocFolder((String)properties.get(CalendarModel.PROP_DOC_FOLDER));
        
        Boolean isOutlook = (Boolean)properties.get(CalendarModel.PROP_IS_OUTLOOK);
        entry.setOutlook(isOutlook == null ? false : isOutlook);

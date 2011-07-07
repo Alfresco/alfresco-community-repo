@@ -19,13 +19,47 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
-import static org.alfresco.util.collections.CollectionUtils.*;
+import static org.alfresco.repo.web.scripts.WebScriptUtil.buildCalendarModel;
+import static org.alfresco.repo.web.scripts.WebScriptUtil.buildDateModel;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH_STATUS_UPDATES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_UNPUBLISH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NODE_TYPE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_TYPE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATED_TIME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATOR;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ICON;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ID;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MAX_STATUS_LENGTH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NAME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NODEREF;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISH_NODES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SCHEDULED_TIME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_CONTENT_TYPES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_MIME_TYPES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.TITLE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.UNPUBLISH_NODES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.VERSION;
+import static org.alfresco.util.collections.CollectionUtils.toListOfStrings;
+import static org.alfresco.util.collections.CollectionUtils.transform;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -39,26 +73,47 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class PublishingModelBuilder
 {
-    // General Keys
-    public static final String ID = "id";
-    public static final String URL = "url";
-    public static final String ICON = "icon";
-    public static final String TITLE = "title";
-
-    // Channel Type Keys
-    public static final String CHANNEL_NODE_TYPE = "channelNodeType";
-    public static final String CONTENT_ROOT_NODE_TYPE = "contentRootNodeType";
-    public static final String SUPPORTED_CONTENT_TYPES = "supportedContentTypes";
-    public static final String SUPPORTED_MIME_TYPES = "supportedMimeTypes";
-    public static final String CAN_PUBLISH = "canPublish";
-    public static final String CAN_PUBLISH_STATUS_UPDATES = "canPublishStatusUpdates";
-    public static final String CAN_UNPUBLISH = "canUnpublish";
-    public static final String MAX_STATUS_LENGTH = "maxStatusLength";
-
-    // Channel Keys
-    public static final String NAME = "name";
-    public static final String CHANNEL_TYPE = "channelType";
     
+    public Map<String, Object> buildPublishingEvent(PublishingEvent event, ChannelService channelService, String siteId)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put(ID, event.getId());
+        model.put(URL, getUrl(event));
+        model.put(STATUS, event.getStatus().name());
+        model.put(COMMENT, event.getComment());
+        model.put(SCHEDULED_TIME, buildCalendarModel(event.getScheduledTime()));
+        model.put(CREATOR, event.getCreator());
+        model.put(CREATED_TIME, buildDateModel(event.getCreatedTime()));
+        
+        model.put(PUBLISH_NODES, buildNodes(event.getPackage(), true));
+        model.put(UNPUBLISH_NODES, buildNodes(event.getPackage(), false));
+        
+        String channelName = event.getChannelName();
+        Channel channel = channelService.getChannel(siteId, channelName);
+        if(channel!= null)
+        {
+            model.put(CHANNEL, buildChannel(channel));
+        }
+        else
+        {
+            model.put(CHANNEL_TYPE, channelName);
+        }
+        return model;
+    }    
+
+    public List<Map<String, Object>> buildPublishingEvents(List<PublishingEvent> events,
+            final ChannelService channelService,
+            final String siteId)
+    {
+        return transform(events, new Function<PublishingEvent, Map<String, Object>>()
+        {
+            public Map<String, Object> apply(PublishingEvent event)
+            {
+                return buildPublishingEvent(event, channelService, siteId);
+            }
+        });
+    }
+
     public Map<String, Object> buildChannel(Channel channel)
     {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -102,11 +157,16 @@ public class PublishingModelBuilder
         return model;
     }
     
+    public static String getUrl(PublishingEvent event)
+    {
+        return "api/publishing/events/"+URLEncoder.encode(event.getId());
+    }
+
     public static String getUrl(ChannelType type)
     {
         return "api/publishing/channelTypes/"+URLEncoder.encode(type.getId());
     }
-
+    
     public static String getUrl(Channel channel)
     {
         NodeRef node = channel.getNodeRef();
@@ -122,6 +182,43 @@ public class PublishingModelBuilder
     private String toString(boolean b)
     {
         return Boolean.toString(b);
+    }
+
+
+    private List<Map<String, Object>> buildNodes(PublishingPackage pckg, boolean isPublish)
+    {
+        Collection<NodeRef> nodes = isPublish ? pckg.getNodesToPublish() : pckg.getNodesToUnpublish();
+        return buildNodes(pckg, nodes);
+    }
+
+    private List<Map<String, Object>> buildNodes(PublishingPackage pckg, Collection<NodeRef> nodes)
+    {
+        List<Map<String, Object>> results = new ArrayList<Map<String,Object>>(nodes.size());
+        Map<NodeRef, PublishingPackageEntry> entryMap = pckg.getEntryMap();
+        for (NodeRef node : nodes)
+        {
+            PublishingPackageEntry entry = entryMap.get(node);
+            results.add(buildPackageEntry(entry));
+        }
+        return results;
+    }
+
+    private Map<String, Object> buildPackageEntry(PublishingPackageEntry entry)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        NodeSnapshot snapshot = entry.getSnapshot();
+        model.put(NODEREF, snapshot.getNodeRef().toString());
+        String version = snapshot.getVersion();
+        if(version!=null && version.isEmpty())
+        {
+            model.put(VERSION, version);
+        }
+        String name = (String) snapshot.getProperties().get(ContentModel.PROP_NAME);
+        if(name != null && name.isEmpty() == false)
+        {
+            model.put(NAME, name);
+        }
+        return model;
     }
 
 }

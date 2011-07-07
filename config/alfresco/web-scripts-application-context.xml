@@ -1114,6 +1114,16 @@
           class="org.alfresco.repo.web.scripts.publishing.PublishingQueuePost"
           parent="webscript">
         <property name="publishingService" ref="publishingService" />
+        <property name="channelService" ref="channelService" />
+        <property name="defaultEnvironmentId" value="${publishing.default.environment}" />
+    </bean>
+
+    <!-- Post Publishing Events Query web script -->
+    <bean id="webscript.org.alfresco.repository.publishing.publishing-events-query.post"
+          class="org.alfresco.repo.web.scripts.publishing.PUblishingEventsQueryPost"
+          parent="webscript">
+        <property name="publishingService" ref="publishingService" />
+        <property name="channelService" ref="channelService" />
         <property name="defaultEnvironmentId" value="${publishing.default.environment}" />
     </bean>
 

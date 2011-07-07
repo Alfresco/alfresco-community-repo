@@ -21,26 +21,36 @@ package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.CHANNEL_NAME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.CHANNEL_NAMES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.COMMENT;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.MESSAGE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.NODE_REF;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.PUBLISH_NODES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingJsonParser.STATUS_UPDATE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_PUBLISH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_PUBLISH_STATUS_UPDATES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CAN_UNPUBLISH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CHANNEL_NODE_TYPE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.CHANNEL_TYPE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.ICON;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.ID;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.MAX_STATUS_LENGTH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.NAME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.SUPPORTED_CONTENT_TYPES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.SUPPORTED_MIME_TYPES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.TITLE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingModelBuilder.URL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH_STATUS_UPDATES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_UNPUBLISH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAMES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NODE_TYPE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_TYPE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATED_TIME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATOR;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ICON;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ID;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MAX_STATUS_LENGTH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MESSAGE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NAME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NODE_REF;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISHING_CHANNELS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISH_NODES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SCHEDULED_TIME;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS_UPDATE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS_UPDATE_CHANNELS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_CONTENT_TYPES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_MIME_TYPES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.TITLE;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.UNPUBLISH_NODES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL_LENGTH;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.VERSION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
@@ -52,11 +62,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -64,16 +79,23 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.publishing.ChannelHelper;
 import org.alfresco.repo.publishing.ChannelServiceImpl;
+import org.alfresco.repo.publishing.PublishServiceImpl;
 import org.alfresco.repo.publishing.PublishingObjectFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.Environment;
+import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
+import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -84,6 +106,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -111,12 +134,14 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private static final String CHANNELS_SITE_URL = "api/publishing/site/{0}/channels";
     private static final String CHANNELS_NODE_URL = "api/publishing/{0}/{1}/{2}/channels";
     private static final String PUBLISHING_QUEUE_URL = "api/publishing/{0}/queue";
+    private static final String PUBLISHING_EVENT_QUERY_URL = "api/publishing/{0}/events/query";
 
     private static final String JSON = "application/json";
     
     private SiteService siteService;
     private FileFolderService fileFolderService;
     private ChannelService channelService;
+    private PublishingService publishingService;
     private ChannelHelper channelHelper;
     
     private Environment environment;
@@ -141,10 +166,10 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         JSONObject data = getJsonData(response);
         
         //TODO Fix hard coding.
-        assertEquals(20, data.getInt(ChannelsGet.URL_LENGTH));
-        JSONArray publishingChannels = data.getJSONArray(ChannelsGet.PUBLISHING_CHANNELS);
+        assertEquals(20, data.getInt(URL_LENGTH));
+        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
         assertEquals(0, publishingChannels.length());
-        JSONArray statusChannels = data.getJSONArray(ChannelsGet.STATUS_UPDATE_CHANNELS);
+        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         assertEquals(0, statusChannels.length());
         
         Channel publishAnyChannel = createChannel(publishAnyType);
@@ -156,9 +181,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         data = getJsonData(response);
         
         //TODO Fix hard coding.
-        assertEquals(20, data.getInt(ChannelsGet.URL_LENGTH));
-        publishingChannels = data.getJSONArray(ChannelsGet.PUBLISHING_CHANNELS);
-        statusChannels = data.getJSONArray(ChannelsGet.STATUS_UPDATE_CHANNELS);
+        assertEquals(20, data.getInt(URL_LENGTH));
+        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         
         checkChannels(publishingChannels, publishAnyChannel);
         checkChannels(statusChannels, statusUpdateChannel);
@@ -168,9 +193,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         data = getJsonData(response);
 
         //TODO Fix hard coding.
-        assertEquals(20, data.getInt(ChannelsGet.URL_LENGTH));
-        publishingChannels = data.getJSONArray(ChannelsGet.PUBLISHING_CHANNELS);
-        statusChannels = data.getJSONArray(ChannelsGet.STATUS_UPDATE_CHANNELS);
+        assertEquals(20, data.getInt(URL_LENGTH));
+        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         
         checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
         checkChannels(statusChannels, statusUpdateChannel);
@@ -187,10 +212,10 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         JSONObject data = getJsonData(response);
         
         //TODO Fix hard coding.
-        assertEquals(20, data.getInt(ChannelsGet.URL_LENGTH));
-        JSONArray publishingChannels = data.getJSONArray(ChannelsGet.PUBLISHING_CHANNELS);
+        assertEquals(20, data.getInt(URL_LENGTH));
+        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
         assertEquals(0, publishingChannels.length());
-        JSONArray statusChannels = data.getJSONArray(ChannelsGet.STATUS_UPDATE_CHANNELS);
+        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         assertEquals(0, statusChannels.length());
         
         Channel publishAnyChannel = createChannel(publishAnyType);
@@ -202,14 +227,13 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         data = getJsonData(response);
         
         //TODO Fix hard coding.
-        assertEquals(20, data.getInt(ChannelsGet.URL_LENGTH));
-        publishingChannels = data.getJSONArray(ChannelsGet.PUBLISHING_CHANNELS);
-        statusChannels = data.getJSONArray(ChannelsGet.STATUS_UPDATE_CHANNELS);
+        assertEquals(20, data.getInt(URL_LENGTH));
+        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         
         checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
         checkChannels(statusChannels, statusUpdateChannel);
     }
-
 
     @SuppressWarnings("unchecked")
     public void testPublishingQueuePost() throws Exception
@@ -224,7 +248,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String pubQueueUrl = MessageFormat.format(PUBLISHING_QUEUE_URL, siteId);
         
         // Post empty content.
-        sendRequest(new PostRequest(pubQueueUrl, "", JSON), 500);
+        sendRequest(new PostRequest(pubQueueUrl, "", JSON), 400);
         
         String comment = "The comment";
         String statusMessage = "The status message";
@@ -296,6 +320,171 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
     }
 
+    public void testPublishingEventsQueryPostPublishedNode() throws Exception
+    {
+        Channel publishChannel = createChannel(publishAnyType);
+        NodeRef textNode1 = createContentNode("plain1.txt", "This is some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        NodeRef textNode2 = createContentNode("plain2.txt", "This is some more plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        
+        String badQueryUrl = MessageFormat.format(PUBLISHING_EVENT_QUERY_URL, "foo");
+         
+        // Post empty string with bad site name.
+        sendRequest(new PostRequest(badQueryUrl, "", JSON), 500);
+
+        String queryUrl = MessageFormat.format(PUBLISHING_EVENT_QUERY_URL, siteId);
+
+        // Post empty string with correct site name.
+        Response response = sendRequest(new PostRequest(queryUrl, "", JSON), 200);
+        
+        // SHould return all events (currently none).
+        JSONArray data = getDataArray(response);
+        assertEquals(0, data.length());
+        
+        // Create publishing event for textNode1.
+        PublishingQueue queue = environment.getPublishingQueue();
+        MutablePublishingPackage pckg1 = queue.createPublishingPackage();
+        pckg1.addNodesToPublish(textNode1);
+        StatusUpdate statusUpdate = null;
+        String comment = "This is a comment";
+        Calendar schedule = Calendar.getInstance();
+        schedule.add(Calendar.YEAR, 1);
+        
+        String event1Id = queue.scheduleNewEvent(pckg1, publishChannel.getName(), schedule, comment, statusUpdate);
+        
+        // Query for all events.
+        response = sendRequest(new PostRequest(queryUrl, "", JSON), 200);
+        data = getDataArray(response);
+        checkContainsEvents(data, event1Id);
+        
+        JSONObject json = new JSONObject();
+        json.put(PUBLISH_NODES, Arrays.asList(textNode1.toString()));
+        
+        // Query for events on textNode1.
+        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
+        data = getDataArray(response);
+        checkContainsEvents(data, event1Id);
+        
+        json = new JSONObject();
+        json.put(PUBLISH_NODES, Arrays.asList(textNode2.toString()));
+        
+        // Query for events on textNode2.
+        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
+        data = getDataArray(response);
+        assertEquals(0, data.length());
+        
+        json = new JSONObject();
+        json.put(PUBLISH_NODES, Arrays.asList(textNode1.toString(), textNode2.toString()));
+        
+        // Query for events on both textNode1 and textNode2.
+        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
+        data = getDataArray(response);
+        checkContainsEvent(data, event1Id);
+    }
+    
+    private void checkContainsEvents(JSONArray data, String... eventIds) throws Exception
+    {
+        assertEquals(eventIds.length, data.length());
+        for (String eventId : eventIds)
+        {
+            checkContainsEvent(data, eventId);
+        }
+    }
+
+    private void checkContainsEvent(JSONArray data, String eventId) throws Exception
+    {
+        for (int i = 0; i < data.length(); i++)
+        {
+            JSONObject json = data.optJSONObject(i);
+            if(eventId.equals(json.optString(ID)))
+            {
+                PublishingEvent event = publishingService.getPublishingEvent(eventId);
+                checkJsonEvent(event, json);
+                return;
+            }
+        }
+        fail("Failed to find Publishing Event: " + eventId);
+    }
+
+    private void checkJsonEvent(PublishingEvent event, JSONObject json) throws Exception
+    {
+        String url = "api/publishing/events/" + URLEncoder.encode(event.getId());
+        assertEquals(url, json.getString(URL));
+        
+        assertEquals(event.getStatus().name(), json.getString(STATUS));
+        
+        assertEquals(event.getComment(), json.optString(COMMENT));
+        checkCalendar(event.getScheduledTime(), json.optJSONObject(SCHEDULED_TIME));
+        assertEquals(event.getCreator(), json.getString(CREATOR));
+        checkDate(event.getCreatedTime(), json.getJSONObject(CREATED_TIME));
+        
+        PublishingPackage pckg = event.getPackage();
+        checkContainsNodes(pckg, json.getJSONArray(PUBLISH_NODES), true);
+        checkContainsNodes(pckg, json.getJSONArray(UNPUBLISH_NODES), false);
+        
+        Channel channel = channelService.getChannel(siteId, event.getChannelName());
+        checkChannel(json.optJSONObject(CHANNEL), channel);
+    }
+
+    private void checkContainsNodes(PublishingPackage pckg, JSONArray json, boolean isPublish) throws JSONException
+    {
+        Collection<NodeRef> nodes = isPublish ? pckg.getNodesToPublish() : pckg.getNodesToUnpublish();
+        checkContainsNodes(nodes, pckg.getEntryMap(), json);
+    }
+
+    private void checkContainsNodes(Collection<NodeRef> nodes, Map<NodeRef, PublishingPackageEntry> entryMap, JSONArray json) throws JSONException
+    {
+        assertEquals(nodes.size(), json.length());
+        for (NodeRef node : nodes)
+        {
+            checkContainsNode(entryMap.get(node), json);
+        }
+    }
+
+    private void checkContainsNode(PublishingPackageEntry entry, JSONArray jsonArray) throws JSONException
+    {
+        String nodeId = entry.getNodeRef().toString();
+        for (int i = 0; i < jsonArray.length(); i++)
+        {
+            JSONObject json = jsonArray.getJSONObject(i);
+            if(nodeId.equals(json.getString(NODE_REF)))
+            {
+                checkNode(entry, json);
+                return;
+            }
+        }
+        fail("NodeRef was not found!");
+    }
+
+    private void checkNode(PublishingPackageEntry entry, JSONObject json) throws JSONException
+    {
+        NodeSnapshot snapshot = entry.getSnapshot();
+        String version = snapshot.getVersion();
+        if(version != null && version.isEmpty() == false)
+        {
+            assertEquals(version, json.getString(VERSION));
+        }
+        String name = (String) snapshot.getProperties().get(ContentModel.PROP_NAME);
+        if(name != null && name.isEmpty() == false)
+        {
+            assertEquals(name, json.getString(NAME));
+        }
+    }
+
+    private void checkCalendar(Calendar calendar, JSONObject json) throws JSONException
+    {
+        checkDate(calendar.getTime(), json);
+        String timeZone = calendar.getTimeZone().getID();
+        assertEquals(timeZone, json.getString(WebScriptUtil.TIME_ZONE));
+    }
+
+    private void checkDate(Date date, JSONObject json) throws JSONException
+    {
+        assertEquals(WebScriptUtil.ISO8601, json.getString(WebScriptUtil.FORMAT));
+        String dateStr = json.getString(WebScriptUtil.DATE_TIME);
+        Date actualDate = ISO8601DateFormat.parse(dateStr);
+        assertEquals(date, actualDate);
+    }
+
     private JSONObject buildJson(NodeRef node, Channel publishChannel,
             String comment, String statusMessage,
             Channel... statusChannels) throws JSONException
@@ -303,6 +492,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         JSONObject json = new JSONObject();
         json.put(CHANNEL_NAME, publishChannel.getName());
         json.put(COMMENT, comment);
+        Calendar schedule = Calendar.getInstance();
+        schedule.add(Calendar.SECOND, 1);
+        json.put(SCHEDULED_TIME, WebScriptUtil.buildCalendarModel(schedule));
         Collection<String> publishNodes = Collections.singleton(node.toString());
         json.put(PUBLISH_NODES, publishNodes);
         json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));
@@ -417,14 +609,27 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
     private JSONObject getJsonData(Response response) throws Exception
     {
-        String jsonStr = response.getContentAsString();
-        assertNotNull("The JSON is null!", jsonStr);
-        JSONObject json = new JSONObject(jsonStr);
+        JSONObject json = getJson(response);
         JSONObject data = json.getJSONObject("data");
         assertNotNull("Data was null!", data);
         return data;
     }
 
+    public JSONArray getDataArray(Response response) throws Exception
+    {
+        JSONObject json = getJson(response);
+        JSONArray data = json.getJSONArray("data");
+        assertNotNull("Data was null!", data);
+        return data;
+    }
+
+    private JSONObject getJson(Response response) throws UnsupportedEncodingException, JSONException
+    {
+        String jsonStr = response.getContentAsString();
+        assertNotNull("The JSON is null!", jsonStr);
+        return new JSONObject(jsonStr);
+    }
+    
     private NodeRef createContentNode(String name, File theContent, String mimetype)
     {
         NodeRef source = fileFolderService.create(docLib, name, TYPE_CONTENT).getNodeRef();
@@ -483,6 +688,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         this.siteService = serviceRegistry.getSiteService();
         this.fileFolderService = serviceRegistry.getFileFolderService();
         this.channelService = (ChannelService) ctx.getBean(ChannelServiceImpl.NAME);
+        this.publishingService= (PublishingService) ctx.getBean(PublishServiceImpl.NAME);
         this.channelHelper = (ChannelHelper) ctx.getBean(ChannelHelper.NAME);
         PublishingObjectFactory factory = (PublishingObjectFactory) ctx.getBean(PublishingObjectFactory.NAME);
 
@@ -510,6 +716,20 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     @Override
     public void tearDown() throws Exception
     {
+        //FInd all events
+        PublishingEventFilter filter = environment.createPublishingEventFilter();
+        List<PublishingEvent> events = environment.getPublishingEvents(filter);
+        for (PublishingEvent event : events)
+        {
+            try
+            {
+                publishingService.cancelPublishingEvent(event.getId());
+            }
+            catch(Throwable t)
+            {
+                //NOOP
+            }
+        }
         try
         {
             siteService.deleteSite(siteId);

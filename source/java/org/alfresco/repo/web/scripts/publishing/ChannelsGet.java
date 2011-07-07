@@ -19,12 +19,18 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISHING_CHANNELS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SITE_ID;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS_UPDATE_CHANNELS;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL_LENGTH;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,17 +47,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ChannelsGet extends DeclarativeWebScript
 {
-    public static final String SITE_ID = "site_id";
-    public static final String STORE_PROTOCOL = "store_protocol";
-    public static final String STORE_ID = "store_id";
-    public static final String NODE_ID = "node_id";
-
-    // Model Keys
-    public static final String DATA_KEY = "data";
-    public static final String URL_LENGTH = "urlLength";
-    public static final String PUBLISHING_CHANNELS = "publishChannels";
-    public static final String STATUS_UPDATE_CHANNELS = "statusUpdateChannels";
-    
+    private final PublishingModelBuilder builder = new PublishingModelBuilder();
     private ChannelService channelService;
 
     /**
@@ -59,13 +55,6 @@ public class ChannelsGet extends DeclarativeWebScript
     */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        PublishingModelBuilder builder = new PublishingModelBuilder();
-        return buildModel(builder, req, status, cache);
-    }
-
-    private Map<String, Object> buildModel(PublishingModelBuilder builder,
-            WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         String siteId = params.get(SITE_ID);
@@ -79,7 +68,7 @@ public class ChannelsGet extends DeclarativeWebScript
         }
         else
         {
-            NodeRef node = getNodeRef(params);
+            NodeRef node = WebScriptUtil.getNodeRef(params);
             if(node == null)
             {
                 String msg = "Either a Site ID or valid NodeRef must be specified!";
@@ -96,33 +85,7 @@ public class ChannelsGet extends DeclarativeWebScript
         
         model.put(PUBLISHING_CHANNELS, builder.buildChannels(publishingChannels));
         model.put(STATUS_UPDATE_CHANNELS, builder.buildChannels(statusUpdateChannels));
-        return createBaseModel(model);
-    }
-
-    private NodeRef getNodeRef(Map<String, String> params)
-    {
-        String protocol = params.get(STORE_PROTOCOL);
-        String storeId= params.get(STORE_ID);
-        String nodeId= params.get(NODE_ID);
-        if(protocol == null || storeId == null || nodeId==null )
-        {
-            return null;
-        }
-        return new NodeRef(protocol, storeId, nodeId);
-    }
-
-    protected Map<String, Object> createBaseModel(Map<String, Object> result)
-    {
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put(DATA_KEY, result);
-        return model;
-    }
-    
-    protected Map<String, Object> createBaseModel(List<Map<String, Object>> results)
-    {
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put(DATA_KEY, results);
-        return model;
+        return WebScriptUtil.createBaseModel(model);
     }
 
     /**

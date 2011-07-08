@@ -25,6 +25,10 @@
 		<property name="personService" ref="PersonService" />
 		<property name="activityService" ref="activityService" />
 		<property name="authorityService" ref="AuthorityService" />
+		<property name="actionService" ref="ActionService" />
+		<property name="searchService" ref="SearchService" />
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="fileFolderService" ref="FileFolderService" />
 	</bean>
 
 </beans>

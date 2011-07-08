@@ -19,16 +19,27 @@
 package org.alfresco.repo.subscriptions;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.domain.subscriptions.SubscriptionsDAO;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
@@ -37,10 +48,12 @@ import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
 import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 public class SubscriptionServiceImpl implements SubscriptionService
 {
@@ -54,9 +67,12 @@ public class SubscriptionServiceImpl implements SubscriptionService
     private static final String FOLLOWER_FIRSTNAME = "followerFirstName";
     private static final String FOLLOWER_LASTNAME = "followerLastName";
     private static final String FOLLOWER_USERNAME = "followerUserName";
+    private static final String FOLLOWER_JOBTITLE = "followerJobTitle";
     private static final String USER_FIRSTNAME = "userFirstName";
     private static final String USER_LASTNAME = "userLastName";
     private static final String USER_USERNAME = "userUserName";
+    private static final String FOLLOWING_COUNT = "followingCount";
+    private static final String FOLLOWER_COUNT = "followerCount";
 
     private static final String SUBSCRIBER_FIRSTNAME = "subscriberFirstName";
     private static final String SUBSCRIBER_LASTNAME = "subscriberLastName";
@@ -68,6 +84,10 @@ public class SubscriptionServiceImpl implements SubscriptionService
     protected PersonService personService;
     protected ActivityService activityService;
     protected AuthorityService authorityService;
+    protected ActionService actionService;
+    protected SearchService searchService;
+    protected NamespaceService namespaceService;
+    protected FileFolderService fileFolderService;
 
     /**
      * Sets the subscriptions DAO.
@@ -107,6 +127,38 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public final void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    /**
+     * Sets the action service.
+     */
+    public final void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
+
+    /**
+     * Set the search service.
+     */
+    public final void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    /**
+     * Set the namespace service.
+     */
+    public final void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * Set the fileFolder service.
+     */
+    public final void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     @Override
@@ -215,9 +267,10 @@ public class SubscriptionServiceImpl implements SubscriptionService
 
         if (userId.equalsIgnoreCase(AuthenticationUtil.getRunAsUser()))
         {
-            String activityDataJSON = null;
             try
             {
+                String activityDataJSON = null;
+
                 NodeRef followerNode = personService.getPerson(userId, false);
                 NodeRef userNode = personService.getPerson(userToFollow, false);
                 JSONObject activityData = new JSONObject();
@@ -229,13 +282,23 @@ public class SubscriptionServiceImpl implements SubscriptionService
                 activityData.put(USER_FIRSTNAME, nodeService.getProperty(userNode, ContentModel.PROP_FIRSTNAME));
                 activityData.put(USER_LASTNAME, nodeService.getProperty(userNode, ContentModel.PROP_LASTNAME));
                 activityDataJSON = activityData.toString();
+
+                activityService.postActivity(ActivityType.SUBSCRIPTIONS_FOLLOW, null, ACTIVITY_TOOL, activityDataJSON);
+
             } catch (JSONException je)
             {
                 // log error, subsume exception
                 logger.error("Failed to get activity data: " + je);
             }
 
-            activityService.postActivity(ActivityType.SUBSCRIPTIONS_FOLLOW, null, ACTIVITY_TOOL, activityDataJSON);
+            try
+            {
+                sendFollowingMail(userId, userToFollow);
+            } catch (Exception e)
+            {
+                // log error, subsume exception
+                logger.error("Failed to send following email: " + e);
+            }
         }
     }
 
@@ -378,5 +441,106 @@ public class SubscriptionServiceImpl implements SubscriptionService
         {
             throw new IllegalArgumentException("Only user nodes supported!");
         }
+    }
+
+    /**
+     * Sends an email to the person that is followed.
+     */
+    protected void sendFollowingMail(String userId, String userToFollow)
+    {
+        NodeRef followerNode = personService.getPerson(userId, false);
+        NodeRef userNode = personService.getPerson(userToFollow, false);
+
+        Serializable emailFeedDisabled = nodeService.getProperty(userNode, ContentModel.PROP_EMAIL_FEED_DISABLED);
+        if (emailFeedDisabled instanceof Boolean && ((Boolean) emailFeedDisabled).booleanValue())
+        {
+            // this user doesn't want to be notified
+            return;
+        }
+
+        Serializable emailAddress = nodeService.getProperty(userNode, ContentModel.PROP_EMAIL);
+        if (emailAddress == null)
+        {
+            // we can't send an email without email address
+            return;
+        }
+
+        NodeRef templateNodeRef = getEmailTemplateRef();
+        if (templateNodeRef == null)
+        {
+            // we can't send an email without template
+            return;
+        }
+
+        // compile the mail subject
+        String followerFullName = (nodeService.getProperty(followerNode, ContentModel.PROP_FIRSTNAME) + " " + nodeService
+                .getProperty(followerNode, ContentModel.PROP_LASTNAME)).trim();
+        String subjectText = I18NUtil.getMessage("subscription.notification.email.subject", followerFullName);
+
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(FOLLOWER_USERNAME, userId);
+        model.put(FOLLOWER_FIRSTNAME, nodeService.getProperty(followerNode, ContentModel.PROP_FIRSTNAME));
+        model.put(FOLLOWER_LASTNAME, nodeService.getProperty(followerNode, ContentModel.PROP_LASTNAME));
+        model.put(FOLLOWER_JOBTITLE, nodeService.getProperty(followerNode, ContentModel.PROP_JOBTITLE));
+        model.put(USER_USERNAME, userToFollow);
+        model.put(USER_FIRSTNAME, nodeService.getProperty(userNode, ContentModel.PROP_FIRSTNAME));
+        model.put(USER_LASTNAME, nodeService.getProperty(userNode, ContentModel.PROP_LASTNAME));
+        model.put(FOLLOWING_COUNT, -1);
+        try
+        {
+            model.put(FOLLOWING_COUNT, getFollowingCount(userId));
+        } catch (Exception e)
+        {
+        }
+        model.put(FOLLOWER_COUNT, -1);
+        try
+        {
+            model.put(FOLLOWER_COUNT, getFollowersCount(userId));
+        } catch (Exception e)
+        {
+        }
+
+        Action mail = actionService.createAction(MailActionExecuter.NAME);
+
+        mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subjectText);
+        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
+        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) model);
+
+        actionService.executeAction(mail, null);
+    }
+
+    /**
+     * Returns the NodeRef of the email template or <code>null</code> if the
+     * template coudln't be found.
+     */
+    protected NodeRef getEmailTemplateRef()
+    {
+        // Find the following email template
+        String xpath = "app:company_home/app:dictionary/app:email_templates/app:following/cm:following-email.html.ftl";
+        try
+        {
+            NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, xpath, null, namespaceService, false);
+            if (nodeRefs.size() > 1)
+            {
+                logger.error("Found too many email templates using: " + xpath);
+                nodeRefs = Collections.singletonList(nodeRefs.get(0));
+            } else if (nodeRefs.size() == 0)
+            {
+                logger.error("Cannot find the email template using " + xpath);
+                return null;
+            }
+            // Now localise this
+            NodeRef base = nodeRefs.get(0);
+            NodeRef local = fileFolderService.getLocalizedSibling(base);
+            return local;
+        } catch (SearcherException e)
+        {
+            logger.error("Cannot find the email template!", e);
+        }
+
+        return null;
     }
 }

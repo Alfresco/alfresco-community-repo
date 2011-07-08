@@ -472,6 +472,7 @@
                 <value>alfresco.messages.jbpm-engine-messages</value>
                 <value>alfresco.messages.activiti-engine-messages</value>
                 <value>alfresco.messages.wdr-messages</value>
+                <value>alfresco.messages.subscription-service</value>
             </list>
         </property>
     </bean>

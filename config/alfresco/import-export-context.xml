@@ -526,6 +526,11 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
                 <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/following-email-templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
                     <prop key="location">alfresco/templates/rss_templates.acp</prop>
                     <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>

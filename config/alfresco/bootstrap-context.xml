@@ -162,6 +162,13 @@
         </property>
     </bean>
 
+    <!-- node indexing for ADM -->
+    <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer">
+        <property name="disabled">
+            <value>${index.tracking.disableInTransactionIndexing}</value>
+        </property>
+    </bean>
+
     <!-- Bootstrap the AVM -->
     <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
        <property name="avmLockingAwareService">

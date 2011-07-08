@@ -182,16 +182,6 @@
       </property>	  
    </bean>
 
-   <!-- node indexing for ADM -->
-   <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer">
-      <property name="disabled">
-         <value>${index.tracking.disableInTransactionIndexing}</value>
-      </property>
-      <property name="indexer">
-         <ref bean="indexerComponent" />
-      </property>
-   </bean>
-
    <!-- Node cleanup -->
    <bean id="nodeCleanupRegistry" class="org.alfresco.repo.node.cleanup.NodeCleanupRegistry" />
    <bean id="nodeCleanupBase" abstract="true" init-method="register">

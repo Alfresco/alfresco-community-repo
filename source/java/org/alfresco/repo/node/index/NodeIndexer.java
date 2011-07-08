@@ -18,42 +18,35 @@
  */
 package org.alfresco.repo.node.index;
 
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Passes index information to the index services.
  * 
  * @author Derek Hulley
  */
-@SuppressWarnings("unused")
-public class NodeIndexer
+public class NodeIndexer extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(NodeIndexer.class);
     
     /** the component to index the node hierarchy */
     private Indexer indexer;
+    /** ready to use or not */
+    private volatile boolean started;
     /** enabled or disabled */
     private boolean enabled;
     
     public NodeIndexer()
     {
+        started = false;
         enabled = true;
-    }
-    
-    /**
-     * @param indexer the indexer that will be index
-     */
-    public void setIndexer(Indexer indexer)
-    {
-        this.indexer = indexer;
     }
     
     /**
@@ -71,6 +64,20 @@ public class NodeIndexer
         this.enabled = enabled;
     }
     
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        // Dig the indexer out of the context
+        indexer = (Indexer) super.getApplicationContext().getBean("indexerComponent");
+        started = true;
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        started = false;
+    }
+    
     public void indexDeleteStore(StoreRef storeRef)
     {
         if (logger.isDebugEnabled())
@@ -82,7 +89,7 @@ public class NodeIndexer
 
     public void indexCreateNode(ChildAssociationRef childAssocRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {
@@ -94,7 +101,7 @@ public class NodeIndexer
 
     public void indexUpdateNode(NodeRef nodeRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {
@@ -106,7 +113,7 @@ public class NodeIndexer
 
     public void indexDeleteNode(ChildAssociationRef childAssocRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {
@@ -118,7 +125,7 @@ public class NodeIndexer
 
     public void indexCreateChildAssociation(ChildAssociationRef childAssocRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {
@@ -130,7 +137,7 @@ public class NodeIndexer
 
     public void indexDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {
@@ -142,7 +149,7 @@ public class NodeIndexer
     
     public void indexUpdateChildAssociation(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        if (enabled)
+        if (enabled && started)
         {
             if (logger.isDebugEnabled())
             {

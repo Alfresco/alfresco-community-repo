@@ -89,10 +89,14 @@
    "title": "${type.title}",
    "url": "${type.url}",
    <#if type.channelNodeType??>"channelNodeType": "${type.channelNodeType}",</#if>
+   <#if type.supportedContentTypes?? >
    "supportedContentTypes":
    <@iterateStringsJSON strings=type.supportedContentTypes />,
+   </#if>
+   <#if type.supportedMimeTypes?? >
    "supportedMimeTypes":
    <@iterateStringsJSON strings=type.supportedMimeTypes/>,
+   </#if>
    "canPublish": ${type.canPublish},
    "canPublishStatusUpdates": ${type.canPublishStatusUpdates},
    "canUnpublish": ${type.canUnpublish},

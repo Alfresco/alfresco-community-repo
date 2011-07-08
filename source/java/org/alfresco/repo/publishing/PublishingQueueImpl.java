@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.VersionService;
 
 /**
  * @author Brian
@@ -41,6 +42,7 @@ public class PublishingQueueImpl implements PublishingQueue
     private final static String MSG_FAILED_TO_CREATE_PUBLISHING_EVENT = "publishing-create-event-failed";
     private NodeRef nodeRef;
     private TransferManifestNodeFactory transferManifestNodeFactory;
+    private VersionService versionService;
     private PublishingEventHelper publishingEventHelper;
 
     /**
@@ -48,7 +50,7 @@ public class PublishingQueueImpl implements PublishingQueue
     */
         public MutablePublishingPackage createPublishingPackage()
     {
-        return new MutablePublishingPackageImpl(transferManifestNodeFactory);
+        return new MutablePublishingPackageImpl(transferManifestNodeFactory, versionService);
     }
 
     /**
@@ -110,4 +112,11 @@ public class PublishingQueueImpl implements PublishingQueue
         this.publishingEventHelper = publishingEventHelper;
     }
 
+    /**
+     * @param versionService the versionService to set
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
 }

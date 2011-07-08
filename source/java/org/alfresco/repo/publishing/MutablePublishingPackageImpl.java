@@ -26,12 +26,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 
 /**
  * @author Brian
@@ -40,6 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class MutablePublishingPackageImpl implements MutablePublishingPackage
 {
+    private final VersionService versionService;
     private final TransferManifestNodeFactory transferManifestNodeFactory;
     private final Map<NodeRef, PublishingPackageEntry> entryMap = new HashMap<NodeRef, PublishingPackageEntry>();
     private final Set<NodeRef> nodesToPublish = new HashSet<NodeRef>();
@@ -48,9 +50,11 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
      * @param transferManifestNodeFactory
      */
-    public MutablePublishingPackageImpl(TransferManifestNodeFactory transferManifestNodeFactory)
+    public MutablePublishingPackageImpl(TransferManifestNodeFactory transferManifestNodeFactory,
+            VersionService versionService)
     {
         this.transferManifestNodeFactory = transferManifestNodeFactory;
+        this.versionService = versionService;
     }
 
     /**
@@ -68,10 +72,17 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     {
         for (NodeRef nodeRef : nodesToAdd)
         {
-            TransferManifestNode payload = transferManifestNodeFactory.createTransferManifestNode(nodeRef, null);
+            Version version = versionService.createVersion(nodeRef, null);
+            String versionLabel = null;
+            if(version != null)
+            {
+                versionLabel = version.getVersionLabel();
+            }
+            TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(nodeRef, null);
             if (TransferManifestNormalNode.class.isAssignableFrom(payload.getClass()))
             {
-                entryMap.put(nodeRef, new PublishingPackageEntryImpl(true, nodeRef, (TransferManifestNormalNode) payload));
+                PublishingPackageEntryImpl publishingPackage = new PublishingPackageEntryImpl(true, nodeRef, payload, versionLabel);
+                entryMap.put(nodeRef, publishingPackage);
             }
         }
         nodesToPublish.addAll(nodesToAdd);
@@ -92,7 +103,7 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     {
         for (NodeRef nodeRef : nodesToRemove)
         {
-            entryMap.put(nodeRef, new PublishingPackageEntryImpl(false, nodeRef, null));
+            entryMap.put(nodeRef, new PublishingPackageEntryImpl(false, nodeRef, null, null));
         }
         nodesToUnpublish.addAll(nodesToRemove);
     }

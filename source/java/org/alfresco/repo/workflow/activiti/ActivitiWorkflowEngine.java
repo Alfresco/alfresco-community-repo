@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -99,9 +98,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Filter;
-import org.alfresco.util.collections.Function;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.parsers.DOMParser;
@@ -1779,208 +1775,138 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 }
      }
      
-    private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
-    {
-        List<WorkflowTask> startTasks = Collections.emptyList();
-        String taskId = query.getTaskId();
-        if (taskId != null)
-        {
-            String localTaskId = createLocalId(taskId);
-            if (localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
-            {
-                String processId = localTaskId.substring(ActivitiConstants.START_TASK_PREFIX.length());
-                WorkflowTask startTask = getVirtualStartTaskForProcessInstance(processId);
-                startTasks = Arrays.asList(startTask);
-            }
-        }
-        else
-        {
-            QName taskName = query.getTaskName();
-            if(taskName != null)
-            {
-                startTasks = getStartTasksWithName(taskName);
-            }
-        }
-        return filterStartTasks(startTasks, query);
-    }
+     private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
+     {
+         List<WorkflowTask> startTasks =  new ArrayList<WorkflowTask>();
 
-    private List<WorkflowTask> getStartTasksWithName(final QName taskName)
-    {
-        List<WorkflowDefinition> definitions = getDefinitionsWithStartTaskName(taskName);
-        return CollectionUtils.transformFlat(definitions, new Function<WorkflowDefinition, Collection<WorkflowTask>>()
-        {
-            public Collection<WorkflowTask> apply(WorkflowDefinition definition)
-            {
-                List<String> instanceIds = getInstanceIds(definition.getId());
-                return CollectionUtils.transform(instanceIds, toStartTask());
-            }
-        });
-    }
-
-    private List<String> getInstanceIds(String definitionId)
-    {
-        String localDefId = createLocalId(definitionId);
-        List<String> ids = getHistoricInstanceIds(localDefId);
-        List<String> runtimeIds = getRuntimeInstanceIds(localDefId);
-        ids.addAll(runtimeIds);
-        return ids;
-    }
-
-    private List<String> getRuntimeInstanceIds(String efinitionId)
-    {
-        List<ProcessInstance> runtimeInstances = getRuntimeProcessInstances(efinitionId);
-        return CollectionUtils.transform(runtimeInstances, new Function<ProcessInstance, String>()
-        {
-            public String apply(ProcessInstance instance)
-            {
-                return createGlobalId(instance.getId());
-            }
-        });
-    }
-
-    private List<String> getHistoricInstanceIds(String efinitionId)
-    {
-        List<HistoricProcessInstance> historicInstances = getHistoricProcessInstances(efinitionId);
-        return CollectionUtils.transform(historicInstances, new Function<HistoricProcessInstance, String>()
-        {
-            public String apply(HistoricProcessInstance instance)
-            {
-                return createGlobalId(instance.getId());
-            }
-        });
-    }
-
-    private Function<String, WorkflowTask> toStartTask()
-    {
-        return new Function<String, WorkflowTask>()
-        {
-            public WorkflowTask apply(String id)
-            {
-                return getStartTask(id);
-            }
-        };
-    }
-    
-    private List<WorkflowDefinition> getDefinitionsWithStartTaskName(final QName name)
-    {
-        List<WorkflowDefinition> definitions = getAllDefinitions();
-        return CollectionUtils.filter(definitions, new Filter<WorkflowDefinition>()
-        {
-            public Boolean apply(WorkflowDefinition definition)
-            {
-                QName startTaskName = definition.getStartTaskDefinition().getMetadata().getName();
-                return startTaskName.equals(name);
-            }
-        });
-    }
+         String processInstanceId = null;
+         String taskId = query.getTaskId();
+         if(taskId != null )
+         {
+             String localTaskId = createLocalId(taskId);
+             if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+             processInstanceId = localTaskId.substring(ActivitiConstants.START_TASK_PREFIX.length());
+         }
+         else
+         {
+             String processId = query.getProcessId();
+             if(processId != null)
+             {
+                 // Start task for a specific process
+                 processInstanceId = createLocalId(processId);
+             }
+         }
+         
+         // Only return start-task when a process or task id is set
+         if(processInstanceId != null)
+         {
+             // Extract processInstanceId
+             WorkflowTask workflowTask = getVirtualStartTaskForProcessInstance(processInstanceId);
+             if(workflowTask != null)
+             {
+            	boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
+            	if(startTaskMatches)
+            	{
+            		startTasks.add(workflowTask);
+            	}
+             }
+         }
+         return startTasks;
+     }
+         
      
-    private List<WorkflowTask> filterStartTasks(List<WorkflowTask> tasks, final WorkflowTaskQuery query)
-    {
-        return CollectionUtils.filter(tasks, new Filter<WorkflowTask>()
+    private boolean isStartTaskMatching(WorkflowTask workflowTask,
+			WorkflowTaskQuery query) {
+	
+    	if(query.isActive() != null)
+    	{
+    		if(query.isActive() && !workflowTask.getPath().isActive()) 
+    		{
+    			return false;
+    		}
+    		if(!query.isActive() && workflowTask.getPath().isActive()) 
+    		{
+    			return false;
+    		}
+    	}
+    	
+    	if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
+    	{
+    		return false;
+    	}
+    	
+    	if(query.getProcessCustomProps() != null)
+    	{
+    		// Get properties for process instance, based on path of start task, which is process-instance
+    		Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
+    		if(!checkPropertiesPresent(query.getProcessCustomProps(), props))
+    		{
+    			return false;
+    		}
+    	}
+    		
+		if(query.getProcessId() != null)
+		{
+			if(!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
+			{
+				return false;
+			}
+		}
+		
+		// Query by process name deprecated, but still implemented.
+		if(query.getProcessName() != null)
+		{
+			String processName = factory.mapQNameToName(query.getProcessName());
+			if(!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+			{
+				return false;
+			}
+		}
+		
+		if(query.getWorkflowDefinitionName() != null)
         {
-            public Boolean apply(WorkflowTask workflowTask)
+            if(!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
             {
-                return isMatchingStartTask(workflowTask, query);
+                return false;
             }
-
-
-        });
-
+        }
+    	
+		if(query.getTaskCustomProps() != null)
+		{
+			if(!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
+    		{
+    			return false;
+    		}
+		}
+		
+		if(query.getTaskId() != null)
+		{
+			if(!query.getTaskId().equals(workflowTask.getId()))
+			{
+				return false;
+			}
+		}
+		
+		if(query.getTaskName() != null)
+		{
+			if(!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
+			{
+				return false;
+			}
+		}
+		
+		if(query.getTaskState() != null)
+		{
+			if(!query.getTaskState().equals(workflowTask.getState()))
+			{
+				return false;
+			}
+		}
+		
+    	// If we fall through, start task matches the query
+    	return true;
     }
     
-    private Boolean isMatchingStartTask(WorkflowTask workflowTask, WorkflowTaskQuery query)
-    {
-        String queryProcessId = query.getProcessId();
-        if (queryProcessId != null)
-        {
-            if (!queryProcessId.equals(workflowTask.getPath().getInstance().getId()))
-            {
-                return false;
-            }
-        }
-
-        Boolean queryIsActive = query.isActive();
-        if (queryIsActive != null)
-        {
-            if (queryIsActive != workflowTask.getPath().isActive())
-            {
-                return false;
-            }
-        }
-
-        String queryActorId = query.getActorId();
-        if (queryActorId != null && !queryActorId.equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
-        {
-            return false;
-        }
-
-        if (query.getProcessCustomProps() != null)
-        {
-            // Get properties for process instance, based on path of start task,
-            // which is process-instance
-            Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
-            if (!checkPropertiesPresent(query.getProcessCustomProps(), props))
-            {
-                return false;
-            }
-        }
-
-        // Query by process name deprecated, but still implemented.
-        QName queryProcessName = query.getProcessName();
-        if (queryProcessName != null)
-        {
-            String processName = factory.mapQNameToName(queryProcessName);
-            if (!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
-            {
-                return false;
-            }
-        }
-
-        if (query.getWorkflowDefinitionName() != null)
-        {
-            if (!query.getWorkflowDefinitionName().equals(
-                    workflowTask.getPath().getInstance().getDefinition().getName()))
-            {
-                return false;
-            }
-        }
-
-        if (query.getTaskCustomProps() != null)
-        {
-            if (!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
-            {
-                return false;
-            }
-        }
-
-        if (query.getTaskId() != null)
-        {
-            if (!query.getTaskId().equals(workflowTask.getId()))
-            {
-                return false;
-            }
-        }
-
-        if (query.getTaskName() != null)
-        {
-            if (!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
-            {
-                return false;
-            }
-        }
-
-        if (query.getTaskState() != null)
-        {
-            if (!query.getTaskState().equals(workflowTask.getState()))
-            {
-                return false;
-            }
-        }
-
-        // If we fall through, start task matches the query
-        return true;
-    }
-
     private boolean checkPropertiesPresent(Map<QName, Object> expectedProperties, Map<QName, Serializable> props)
     {
     	for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
@@ -2112,32 +2038,22 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
         if(Boolean.FALSE.equals(isActive)==false)
         {
-            List<ProcessInstance> activeInstances = getRuntimeProcessInstances(processDefId);
+            List<ProcessInstance> activeInstances = runtimeService.createProcessInstanceQuery()
+                .processDefinitionId(processDefId)
+                .list();
             List<WorkflowInstance> activeResults = typeConverter.convert(activeInstances);
             results.addAll(activeResults);
         }
         if(Boolean.TRUE.equals(isActive)==false)
         {
-            List<HistoricProcessInstance> completedInstances = getHistoricProcessInstances(processDefId);
+            List<HistoricProcessInstance> completedInstances = historyService.createHistoricProcessInstanceQuery()
+                .processDefinitionId(processDefId)
+                .finished()
+                .list();
             List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
             results.addAll(completedResults);
         }
         return results;
-    }
-
-    private List<HistoricProcessInstance> getHistoricProcessInstances(String processDefId)
-    {
-        return historyService.createHistoricProcessInstanceQuery()
-            .processDefinitionId(processDefId)
-            .finished()
-            .list();
-    }
-
-    private List<ProcessInstance> getRuntimeProcessInstances(String processDefId)
-    {
-        return runtimeService.createProcessInstanceQuery()
-            .processDefinitionId(processDefId)
-            .list();
     }
 
     /**

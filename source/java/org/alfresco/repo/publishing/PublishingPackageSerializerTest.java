@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -128,7 +129,8 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
     public void testSerializer() throws Exception
     {
         TransferManifestNodeFactory mockTMNFactory = mock(TransferManifestNodeFactory.class);
-        MutablePublishingPackageImpl packageImpl = new MutablePublishingPackageImpl(mockTMNFactory);
+        VersionService mockVersionService = mock(VersionService.class);
+        MutablePublishingPackageImpl packageImpl = new MutablePublishingPackageImpl(mockTMNFactory, mockVersionService);
 
        when(mockTMNFactory.createTransferManifestNode(any(NodeRef.class), any(TransferDefinition.class)))
                .thenReturn(normalNode1);

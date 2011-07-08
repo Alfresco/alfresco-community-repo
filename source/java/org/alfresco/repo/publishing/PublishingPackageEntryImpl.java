@@ -37,12 +37,16 @@ class PublishingPackageEntryImpl implements PublishingPackageEntry
     private final boolean publish; 
     private final NodeRef nodeRef;
     private final TransferManifestNormalNode payload;
+    private final String version;
     
-    public PublishingPackageEntryImpl(boolean publish, NodeRef nodeRef, TransferManifestNormalNode payload)
+    public PublishingPackageEntryImpl(boolean publish,
+            NodeRef nodeRef, TransferManifestNormalNode payload,
+            String version)
     {
         this.publish = publish;
         this.nodeRef = nodeRef;
         this.payload = payload;
+        this.version = version;
     }
     
     /**
@@ -75,6 +79,6 @@ class PublishingPackageEntryImpl implements PublishingPackageEntry
     public NodeSnapshot getSnapshot()
     {
         //TODO Add versioning information.
-        return new NodeSnapshotTransferImpl(payload, null);
+        return new NodeSnapshotTransferImpl(payload, version);
     }
 }

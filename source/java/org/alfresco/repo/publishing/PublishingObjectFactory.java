@@ -27,6 +27,7 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.VersionService;
 
 /**
  * @author Brian
@@ -39,6 +40,7 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
     private EnvironmentHelper environmentHelper;
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private PublishingEventHelper publishingEventHelper;
+    private VersionService versionService;
     
     /**
      * @param environmentHelper the environmentHelper to set
@@ -64,6 +66,14 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
         this.publishingEventHelper = publishingEventHelper;
     }
 
+    /**
+     * @param versionService the versionService to set
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.publishing.EnvironmentFactory#createEnvironmentObject(java.lang.String, java.lang.String)
      */
@@ -124,6 +134,7 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
         publishingQueue.setNodeRef(queueNode);
         publishingQueue.setTransferManifestNodeFactory(transferManifestNodeFactory);
         publishingQueue.setPublishingEventHelper(publishingEventHelper);
+        publishingQueue.setVersionService(versionService);
         return publishingQueue;
     }
 

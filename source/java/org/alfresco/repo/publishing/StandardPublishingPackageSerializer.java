@@ -149,7 +149,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         @Override
         public void processTransferManifestNode(TransferManifestNormalNode node)
         {
-            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(true, node.getNodeRef(), node));
+            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(true, node.getNodeRef(), node, null));
         }
 
         /* (non-Javadoc)
@@ -158,7 +158,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         @Override
         public void processTransferManifestNode(TransferManifestDeletedNode node)
         {
-            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(false, node.getNodeRef(), null));
+            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(false, node.getNodeRef(), null, null));
         }
 
         /* (non-Javadoc)

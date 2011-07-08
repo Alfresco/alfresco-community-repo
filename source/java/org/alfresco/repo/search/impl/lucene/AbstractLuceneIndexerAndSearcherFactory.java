@@ -42,8 +42,6 @@ import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.NodeBulkLoader;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
-import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -89,8 +87,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private int queryMaxClauses;
 
     private int indexerBatchSize;
-
-    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
 
     protected Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
 
@@ -224,14 +220,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     }
 
     
-    /**
-     * @param avmSnapShotTriggeredIndexingMethodInterceptor the avmSnapShotTriggeredIndexingMethodInterceptor to set
-     */
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
-    {
-        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -1939,12 +1927,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         for (int i = storeRefs.size() - 1; i >= 0; i--)
         {
             StoreRef currentStore = storeRefs.get(i);
-            
-            if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(currentStore.getIdentifier()) == IndexMode.UNINDEXED)
-            {
-                // ALF-5722 fix
-                continue;
-            }
             
             if (currentLockWork == null)
             {

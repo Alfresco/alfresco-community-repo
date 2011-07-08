@@ -21,13 +21,13 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -46,24 +46,16 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory implements SupportsBackgroundIndexing
 {
-    //private static Log s_logger = LogFactory.getLog(AVMLuceneIndexerAndSearcherFactory.class);
-    
     private DictionaryService dictionaryService;
-
     private NamespaceService nameSpaceService;
-
     private ContentService contentService;
-
     private AVMService avmService;
-
     private AVMSyncService avmSyncService;
-
     private NodeService nodeService;
-
     private ContentStore contentStore;
-
     private FullTextSearchIndexer fullTextSearchIndexer;
-    
+    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
+
     public AVMLuceneIndexerAndSearcherFactory()
     {
         //s_logger.error("Creating AVMLuceneIndexerAndSearcherFactory");
@@ -71,7 +63,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     
     /**
      * Set the dictionary service
-     * @param dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -80,7 +71,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the name space service
-     * @param nameSpaceService
      */
     public void setNameSpaceService(NamespaceService nameSpaceService)
     {
@@ -89,7 +79,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the content service
-     * @param contentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -98,7 +87,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the AVM service
-     * @param avmService
      */
     public void setAvmService(AVMService avmService)
     {
@@ -107,7 +95,6 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the AVM sync service
-     * @param avmSyncService
      */
     public void setAvmSyncService(AVMSyncService avmSyncService)
     {
@@ -116,24 +103,28 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the node service
-     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
-    
-    
     /**
      * Set the content service
-     * @param contentStore
      */
     public void setContentStore(ContentStore contentStore)
     {
         this.contentStore = contentStore;
     }
     
+    /**
+     * @param avmSnapShotTriggeredIndexingMethodInterceptor the avmSnapShotTriggeredIndexingMethodInterceptor to set
+     */
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    {
+        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
+    }
+
     @Override
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
     {
@@ -156,6 +147,11 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         for(AVMStoreDescriptor storeDesc : stores)
         {
             StoreRef storeRef = AVMNodeConverter.ToStoreRef(storeDesc.getName());
+            if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier()) == IndexMode.UNINDEXED)
+            {
+                // ALF-5722 fix
+                continue;
+            }
             storeRefs.add(storeRef);
         }
         return storeRefs;

@@ -657,9 +657,6 @@
     </bean>
 
     <bean id="abstractLuceneIndexerAndSearcherFactory" abstract="true">
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
-        </property>
         <property name="indexRootLocation">
             <value>${dir.indexes}</value>
         </property>
@@ -889,6 +886,9 @@
         </property>
         <property name="threadPoolExecutor">
             <ref bean="indexThreadPoolExecutor"></ref>
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
         </property>
     </bean>
 

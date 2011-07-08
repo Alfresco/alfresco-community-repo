@@ -2032,7 +2032,8 @@ public class ContentDiskDriverTest extends TestCase
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
               
         int openAction = FileAction.CreateNotExist;
-        String FILE_PATH="\\testDeleteFile.new";
+        final String FILE_NAME="testDeleteFileViaNodeService.new";
+        final String FILE_PATH="\\" + FILE_NAME;
           
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 
@@ -2052,7 +2053,7 @@ public class ContentDiskDriverTest extends TestCase
                 file.close();
                 
                 NodeRef companyHome = repositoryHelper.getCompanyHome();
-                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, "testCreateFile.new");
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
                 assertNotNull("can't find new node", newNode);
              
                      
@@ -2072,7 +2073,7 @@ public class ContentDiskDriverTest extends TestCase
 
                 
                 NodeRef companyHome = repositoryHelper.getCompanyHome();
-                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, "testCreateFile.new");
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
                 assertNotNull("can't find new node", newNode);
                 nodeService.deleteNode(newNode);
                 return null;

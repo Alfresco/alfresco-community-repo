@@ -88,12 +88,16 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
     * {@inheritDoc}
     */
     @Override
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
-        super.setUp();
+        super.onSetUp();
+        channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
+
         ChannelType channelType = mockChannelType();
-        
-        channelService.register(channelType);
+        if (channelService.getChannelType(channelType.getId()) == null)
+        {
+            channelService.register(channelType);
+        }
         channelService.createChannel(siteId, channelTypeId, channel1Name, null);
         channelService.createChannel(siteId, channelTypeId, channel2Name, null);
     }

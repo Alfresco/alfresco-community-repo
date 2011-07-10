@@ -65,9 +65,11 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
 
     @Before
     @Override
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
-        super.setUp();
+        super.onSetUp();
+        channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
+        environmentHelper = (EnvironmentHelper) getApplicationContext().getBean("environmentHelper");
         when(mockedChannelType.getId()).thenReturn(channelTypeName);
         when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
 

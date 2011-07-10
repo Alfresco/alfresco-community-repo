@@ -49,31 +49,19 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-@Transactional
-public class PublishingIntegratedTest
+public class PublishingIntegratedTest extends BaseSpringTest
 {
     private static String channelName = "Test Channel - Name";
 
-    @Autowired
-    protected ApplicationContext applicationContext;
     protected ServiceRegistry serviceRegistry;
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected NodeService nodeService;
@@ -92,7 +80,7 @@ public class PublishingIntegratedTest
      * @throws java.lang.Exception
      */
     @Before
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         serviceRegistry.getAuthenticationService().authenticate("admin", "admin".toCharArray());

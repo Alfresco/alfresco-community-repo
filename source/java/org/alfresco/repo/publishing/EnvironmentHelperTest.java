@@ -40,6 +40,13 @@ public class EnvironmentHelperTest extends AbstractPublishingIntegrationTest
     @Resource(name="environmentHelper")
     private EnvironmentHelper environmentHelper;
 
+    @Override
+    public void onSetUp() throws Exception
+    {
+        super.onSetUp();
+        environmentHelper = (EnvironmentHelper) getApplicationContext().getBean("environmentHelper");
+    }
+
     @Test
     public void testGetEnvironments() throws Exception
     {

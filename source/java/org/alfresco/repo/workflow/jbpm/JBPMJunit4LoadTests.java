@@ -2,21 +2,16 @@ package org.alfresco.repo.workflow.jbpm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -25,7 +20,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -33,20 +27,9 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.jbpm.JbpmContext;
-import org.junit.After;
+import org.alfresco.util.BaseSpringTest;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springmodules.workflow.jbpm31.JbpmCallback;
-import org.springmodules.workflow.jbpm31.JbpmTemplate;
 
 /**
  * This test shows a performance benefit from a usage of direct queries
@@ -56,9 +39,7 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  * @author arsenyko
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-public class JBPMJunit4LoadTests
+public class JBPMJunit4LoadTests extends BaseSpringTest
 {
     
     private static String WORKFLOW_NAME = "jbpm$wf:adhoc";
@@ -68,24 +49,23 @@ public class JBPMJunit4LoadTests
     private static List<String> workflowIds = null;
     private static NodeRef rootNode = null;
     
-    @Resource(name=ServiceRegistry.SERVICE_REGISTRY)
     private ServiceRegistry serviceRegistry;
     private RetryingTransactionHelper retryingTransactionHelper;
     private static NodeService nodeService;
     private static WorkflowService workflowService;
     private FileFolderService fileFolderService;
     
-    @Resource(name="repositoryHelper")
     private Repository repositoryHelper;
     
-    @Resource(name="jbpm_engine")
     private JBPMEngine jbpmEngine;
     
     private NodeRef companyHomeNodeRef;
     
-    @Before
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
+        serviceRegistry = (ServiceRegistry) getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
+        repositoryHelper = (Repository) getApplicationContext().getBean("repositoryHelper");
+        jbpmEngine = (JBPMEngine) getApplicationContext().getBean("jbpm_engine");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
@@ -231,8 +211,7 @@ public class JBPMJunit4LoadTests
     }
     */
     
-    @After
-    public void tearDown() throws Exception
+    public void onTearDown() throws Exception
     {
         System.out.println(" -------------- ");
     }

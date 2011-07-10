@@ -23,7 +23,12 @@ import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.annotation.Resource;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -35,32 +40,22 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Nick Smith
  * @since 4.0
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-@Transactional
-public abstract class AbstractPublishingIntegrationTest
+public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
 {
     protected static final String channelTypeId = "MockChannelType";
     
-    @Resource(name="publishingObjectFactory")
     protected PublishingObjectFactory factory;
     
-    @Resource(name="ServiceRegistry")
     protected ServiceRegistry serviceRegistry;
     
     protected SiteService siteService;
@@ -72,13 +67,21 @@ public abstract class AbstractPublishingIntegrationTest
     protected EnvironmentImpl environment;
     protected NodeRef docLib;
 
+    protected UserTransaction transaction;
+
     @Before
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
+        factory = (PublishingObjectFactory) getApplicationContext().getBean("publishingObjectFactory");
+        serviceRegistry = (ServiceRegistry) getApplicationContext().getBean("ServiceRegistry");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         this.siteService = serviceRegistry.getSiteService();
         this.fileFolderService = serviceRegistry.getFileFolderService();
         this.nodeService = serviceRegistry.getNodeService();
+        
+        transaction = serviceRegistry.getTransactionService().getUserTransaction();
+        transaction.begin();
+        transaction.setRollbackOnly();
         
         this.siteId = GUID.generate();
         siteService.createSite("test", siteId,
@@ -92,9 +95,25 @@ public abstract class AbstractPublishingIntegrationTest
     }
     
     @After
-    public void tearDown()
+    public void onTearDown()
     {
         siteService.deleteSite(siteId);
+        try
+        {
+            if (transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+            {
+                transaction.rollback();
+            }
+            else
+            {
+                transaction.commit();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     protected ChannelType mockChannelType()

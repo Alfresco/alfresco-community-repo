@@ -75,10 +75,10 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
      */
     @Before
     @Override
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
-        super.setUp();
-        
+        super.onSetUp();
+        serializer = (StandardPublishingPackageSerializer) getApplicationContext().getBean("publishingPackageSerializer");
         normalNode1 = new TransferManifestNormalNode();
         normalNode1.setAccessControl(null);
 

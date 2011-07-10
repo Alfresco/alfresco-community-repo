@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,30 +58,25 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Brian
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:alfresco/application-context.xml" })
-public class YouTubeTest
+public class YouTubeTest extends BaseSpringTest
 {
-    @javax.annotation.Resource(name = "ServiceRegistry")
     protected ServiceRegistry serviceRegistry;
-
     protected SiteService siteService;
     protected FileFolderService fileFolderService;
     protected NodeService nodeService;
-
     protected String siteId;
     protected PublishingQueueImpl queue;
     protected EnvironmentImpl environment;
     protected NodeRef docLib;
 
-    @javax.annotation.Resource(name = "channelService")
     private ChannelService channelService;
     
     private RetryingTransactionHelper transactionHelper;
 
-    @Before
-    public void setUp() throws Exception
+    public void onSetUp() throws Exception
     {
+        serviceRegistry = (ServiceRegistry) getApplicationContext().getBean("ServiceRegistry");
+        channelService = (ChannelService) getApplicationContext().getBean("channelService"); 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         siteService = serviceRegistry.getSiteService();
         fileFolderService = serviceRegistry.getFileFolderService();
@@ -93,16 +89,15 @@ public class YouTubeTest
         docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
     }
 
-    @Test
     public void testBlank()
     {
         
     }
     
     //Note that this test isn't normally run, as it requires valid YouTube credentials.
-    //To run it, add the Test annotation and set the appropriate YouTube credentials where the
+    //To run it, remove the initial 'x' from the method name and set the appropriate YouTube credentials where the
     //text "YOUR_USER_NAME" and "YOUR_PASSWORD" appear.
-    public void testYouTubePublishAndUnpublishActions() throws Exception
+    public void xtestYouTubePublishAndUnpublishActions() throws Exception
     {
         final NodeRef vidNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {

@@ -64,6 +64,11 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
 
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
+        if (!subscriptionService.isActive())
+        {
+            throw new WebScriptException(404, "Subscription service is disabled!");
+        }
+
         try
         {
             String userId = req.getServiceMatch().getTemplateVars().get("userid");
@@ -88,10 +93,10 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             }
         } catch (SubscriptionsDisabledException sde)
         {
-            throw new WebScriptException(400, "Subscription service is disabled!", sde);
+            throw new WebScriptException(404, "Subscription service is disabled!", sde);
         } catch (NoSuchPersonException nspe)
         {
-            throw new WebScriptException(400, "Unknown user '" + nspe.getUserName() + "'!", nspe);
+            throw new WebScriptException(404, "Unknown user '" + nspe.getUserName() + "'!", nspe);
         } catch (PrivateSubscriptionListException psle)
         {
             throw new WebScriptException(403, "Subscription list is private!", psle);

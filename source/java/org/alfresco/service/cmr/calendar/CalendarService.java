@@ -20,8 +20,9 @@ package org.alfresco.service.cmr.calendar;
 
 import java.util.Date;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
  * The Calendar service.
@@ -61,4 +62,25 @@ public interface CalendarService {
     */
    @NotAuditable
    CalendarEntry getCalendarEntry(String siteShortName, String entryName);
+
+   /**
+    * Retrieves all {@link CalendarEntry} instances in the repository
+    *  for the given site.
+    */
+   @NotAuditable
+   PagingResults<CalendarEntry> listCalendarEntries(String siteShortName, PagingRequest paging);
+
+   /**
+    * Retrieves all {@link CalendarEntry} instances in the repository
+    *  for the given sites.
+    */
+   @NotAuditable
+   PagingResults<CalendarEntry> listCalendarEntries(String[] siteShortNames, PagingRequest paging);
+
+   /**
+    * Retrieves all {@link CalendarEntry} instances in the repository
+    *  for the given sites, between the specified date range
+    */
+   @NotAuditable
+   PagingResults<CalendarEntry> listCalendarEntries(String[] siteShortNames, Date from, Date to, PagingRequest paging);
 }

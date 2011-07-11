@@ -42,7 +42,9 @@
 	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
+        <property name="searchService" ref="SearchService" /> <!-- TODO Temp -->
         <property name="taggingService" ref="TaggingService"/>
+        <property name="fileFolderService" ref="FileFolderService" /> <!-- TODO Temp -->
         <property name="permissionService" ref="PermissionService"/>
         <property name="transactionService" ref="transactionService" />
 	</bean>

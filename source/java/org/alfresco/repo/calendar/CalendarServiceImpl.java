@@ -28,17 +28,23 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,7 +70,9 @@ public class CalendarServiceImpl implements CalendarService
     
     private NodeService nodeService;
     private SiteService siteService;
+    private SearchService searchService; // TODO Temp only
     private TaggingService taggingService;
+    private FileFolderService fileFolderService; // TODO Temp only
     private PermissionService permissionService;
     private TransactionService transactionService;
     
@@ -78,9 +86,25 @@ public class CalendarServiceImpl implements CalendarService
         this.siteService = siteService;
     }
     
+    /**
+     * TODO Temp only
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+    
     public void setTaggingService(TaggingService taggingService)
     {
         this.taggingService = taggingService;
+    }
+    
+    /**
+     * TODO Temp only
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
     
     public void setPermissionService(PermissionService permissionService)
@@ -329,5 +353,84 @@ public class CalendarServiceImpl implements CalendarService
        }
 
        nodeService.deleteNode(entry.getNodeRef());
+    }
+
+    /**
+     * TODO Switch to delegating 
+     */
+    @Override
+    public PagingResults<CalendarEntry> listCalendarEntries(
+          String siteShortName, PagingRequest paging) 
+    {
+       // TODO Switch to this
+       //return listCalendarEntries(new String[] { siteShortName }, paging);
+       
+       NodeRef container = getSiteCalendarContainer(siteShortName, false);
+       if(container == null)
+       {
+          // No events
+          return null;
+       }
+       
+       // Ask the file folder service
+       List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName, Boolean>>();
+       sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_FROM_DATE, true)); 
+       sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_TO_DATE, true)); 
+       PagingResults<FileInfo> results = fileFolderService.list(container, true, false, null, sort, paging);
+       return wrap(results);
+    }
+
+    @Override
+    public PagingResults<CalendarEntry> listCalendarEntries(
+          String[] siteShortNames, PagingRequest paging) 
+    {
+       // TODO Use search for now
+       return null;
+    }
+    
+    @Override
+    public PagingResults<CalendarEntry> listCalendarEntries(
+          String[] siteShortNames, Date from, Date to, PagingRequest paging) 
+    {
+       // TODO Use search for now
+       return null;
+    }
+    
+    /**
+     * TODO Temp hack!
+     */
+    private PagingResults<CalendarEntry> wrap(final PagingResults<FileInfo> results)
+    {
+       return new PagingResults<CalendarEntry>()
+       {
+           @Override
+           public String getQueryExecutionId()
+           {
+               return results.getQueryExecutionId();
+           }
+           @Override
+           public List<CalendarEntry> getPage()
+           {
+               List<CalendarEntry> entries = new ArrayList<CalendarEntry>();
+               for(FileInfo file : results.getPage())
+               {
+                  CalendarEntryImpl entry = new CalendarEntryImpl(file.getNodeRef(), file.getName());
+                  entry.populate(nodeService.getProperties(file.getNodeRef()));
+                  entry.setTags(taggingService.getTags(file.getNodeRef()));
+                  entries.add(entry);
+               }
+               return entries;
+           }
+           @Override
+           public boolean hasMoreItems()
+           {
+               return results.hasMoreItems();
+           }
+           @Override
+           public Pair<Integer, Integer> getTotalResultCount()
+           {
+               return results.getTotalResultCount();
+           }
+       };
     }
 }

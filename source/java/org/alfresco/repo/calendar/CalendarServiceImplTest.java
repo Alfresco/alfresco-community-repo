@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +32,6 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -41,10 +39,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -53,10 +48,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -430,7 +422,55 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.deleteCalendarEntry(entry);
     }
     
-    @Test public void calendarListing() throws Exception
+    /**
+     * Simplest tests for listing on just one site, with no filtering 
+     */
+    @Test public void calendarSingleSiteListing() throws Exception
+    {
+       PagingRequest paging = new PagingRequest(10);
+       
+       // Nothing to start
+       PagingResults<CalendarEntry> results = 
+          CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+       
+       // Add a few
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
+       ));
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
+       ));
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleC", "Description", "Location", new Date(1302435000), new Date(1302442200)
+       ));
+       
+       // Check now
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(3, results.getPage().size());
+       assertEquals("TitleA", results.getPage().get(0).getTitle());
+       assertEquals("TitleB", results.getPage().get(1).getTitle());
+       assertEquals("TitleC", results.getPage().get(2).getTitle());
+       
+       // Add one more, before those, and drop the page size 
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleD", "Description", "Location", new Date(1302417000), new Date(1302420600)
+       ));
+       
+       paging = new PagingRequest(3);
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(3, results.getPage().size());
+       assertEquals("TitleD", results.getPage().get(0).getTitle());
+       assertEquals("TitleA", results.getPage().get(1).getTitle());
+       assertEquals("TitleB", results.getPage().get(2).getTitle());
+       
+       paging = new PagingRequest(3, 3);
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(1, results.getPage().size());
+       assertEquals("TitleC", results.getPage().get(0).getTitle());
+    }
+
+    @Test public void calendarMultiSiteListing() throws Exception
     {
        // TODO
     }

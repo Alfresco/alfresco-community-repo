@@ -32,18 +32,7 @@
       <aspect name="youtube:DeliveryChannelAspect">
          <title>YouTube Delivery Channel</title>
          <description>Applied to a node that represents a YouTube delivery channel</description>
-         <properties>
-            <property name="youtube:username">
-               <title>YouTube User Name</title>
-               <type>d:text</type>
-               <multiple>false</multiple>
-            </property>
-            <property name="youtube:password">
-               <title>YouTube Password</title>
-               <type>d:text</type>
-               <multiple>false</multiple>
-            </property>
-         </properties>
+         <parent>pub:UserPasswordDeliveryChannelAspect</parent>
       </aspect>
 
       <aspect name="youtube:AssetAspect">

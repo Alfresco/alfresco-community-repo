@@ -32,6 +32,7 @@ import static org.alfresco.model.ContentModel.PROP_LONGITUDE;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -55,6 +56,7 @@ import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -338,7 +340,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         publishNode(source, status);
         
         String expMessage = message + url;
-        verify(channelType, times(1)).updateStatus(eq(expMessage), anyMap());
+        verify(channelType, times(1)).updateStatus(any(Channel.class), eq(expMessage), anyMap());
     }
 
     private NodeRef publishNode(NodeRef source)

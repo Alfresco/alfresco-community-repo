@@ -161,6 +161,7 @@ public class ChannelServiceImpl implements ChannelService
         }
         actualProps.put(ContentModel.PROP_NAME, name);
         actualProps.put(PROP_CHANNEL_TYPE_ID, channelType.getId());
+        actualProps.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.FALSE);
         NodeRef channelNode = channelHelper.createChannelNode(channelContainer, channelType, name, actualProps);
         Channel channel = channelHelper.buildChannelObject(channelNode, this);
 

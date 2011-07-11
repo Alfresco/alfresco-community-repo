@@ -26,7 +26,10 @@
         <property name="youTubeHelper" ref="youtubePublishingHelper" />
     </bean>
 
-    <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" />
+    <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" >
+        <property name="actionService" ref="ActionService" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
 
 
 </beans>

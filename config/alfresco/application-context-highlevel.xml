@@ -26,6 +26,7 @@
     <import resource="classpath*:alfresco/transfer-service-context.xml"/>
     <import resource="classpath*:alfresco/web-publishing-context.xml" />
     <import resource="classpath*:alfresco/youtube-publishing-context.xml" />
-    <import resource="classpath*:alfresco/social-publishing-context.xml" />
+    <import resource="classpath*:alfresco/twitter-publishing-context.xml" />
+    <import resource="classpath*:alfresco/slideshare-publishing-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

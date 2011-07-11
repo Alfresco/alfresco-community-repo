@@ -111,7 +111,7 @@ public class ChannelImpl implements Channel
     @Override
     public void updateStatus(String status)
     {
-        channelType.updateStatus(status, getProperties());
+        channelType.updateStatus(this, status, getProperties());
     }
 
 }

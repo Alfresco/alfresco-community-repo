@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/twitterPublishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="twitterDeliveryChannelType" class="org.alfresco.repo.publishing.twitter.TwitterChannelType" parent="baseChannelType" >
+        <property name="nodeService" ref="NodeService" />
+        <property name="publishingHelper" ref="twitterPublishingHelper" />
+    </bean>
+
+    <bean id="twitterPublishingHelper" class="org.alfresco.repo.publishing.twitter.TwitterPublishingHelper">
+        <property name="nodeService" ref="NodeService" />
+        <property name="connectionFactory">
+            <bean class="org.springframework.social.twitter.connect.TwitterConnectionFactory">
+                <constructor-arg value="H6xYrEbF7sgGz9eL5s6uA" />
+                <constructor-arg value="JXydqZec0g4Va3mEl1sY2odlYNnyokS5TWy3C1sNVIg" />
+            </bean>
+        </property>
+    </bean>
+
+</beans>

@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.publishing.youtube;
+package org.alfresco.repo.publishing.twitter;
 
 import org.alfresco.service.namespace.QName;
 
@@ -25,16 +25,14 @@ import org.alfresco.service.namespace.QName;
  * @author Brian
  *
  */
-public interface YouTubePublishingModel
+public interface TwitterPublishingModel
 {
-    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/youtube/1.0";
-    public static final String PREFIX = "youtube";
+    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/twitter/1.0";
+    public static final String PREFIX = "twitter";
     
     public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
 
-    public static final QName ASPECT_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannelAspect");
-    
     public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
     public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
-    public static final QName PROP_PLAYER_URL = QName.createQName(NAMESPACE, "playerUrl");
+    public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
 }

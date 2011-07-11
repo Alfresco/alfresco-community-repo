@@ -44,6 +44,7 @@ public interface PublishingModel
     
     public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
     public static final QName ASPECT_PUBLISHED = QName.createQName(NAMESPACE, "published");
+    public static final QName ASPECT_OAUTH1_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "OAuth1DeliveryChannelAspect");
 
     public static final QName PROP_CHANNEL = QName.createQName(NAMESPACE, "channel");
     public static final QName PROP_CHANNEL_TYPE = QName.createQName(NAMESPACE, "channelType");
@@ -60,6 +61,13 @@ public interface PublishingModel
     public static final QName PROP_STATUS_UPDATE_CHANNEL_NAMES = QName.createQName(NAMESPACE, "statusUpdateChannelNames");
     public static final QName PROP_STATUS_UPDATE_NODE_REF = QName.createQName(NAMESPACE, "statusUpdateNodeRef");
     public static final QName PROP_STATUS_UPDATE_MESSAGE = QName.createQName(NAMESPACE, "statusUpdateMessage");
+    public static final QName PROP_AUTHORISATION_COMPLETE = QName.createQName(NAMESPACE, "authorisationComplete");
+    public static final QName PROP_OAUTH1_TOKEN_VALUE = QName.createQName(NAMESPACE, "oauth1TokenValue");
+    public static final QName PROP_OAUTH1_TOKEN_SECRET = QName.createQName(NAMESPACE, "oauth1TokenSecret");
+    public static final QName PROP_CHANNEL_USERNAME = QName.createQName(NAMESPACE, "channelUsername");
+    public static final QName PROP_CHANNEL_PASSWORD = QName.createQName(NAMESPACE, "channelPassword");
+    
+    
     // Publishing Connection Properties
     public static final QName PROP_ACCOUNT_ID= QName.createQName(NAMESPACE, "accountId");
     public static final QName PROP_PROVIDER_ID= QName.createQName(NAMESPACE, "providerId");

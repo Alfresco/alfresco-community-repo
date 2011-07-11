@@ -16,51 +16,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.youtube;
+package org.alfresco.repo.publishing.slideshare;
 
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.util.Pair;
 
-import com.google.gdata.client.youtube.YouTubeService;
+import com.benfante.jslideshare.SlideShareAPI;
+import com.benfante.jslideshare.SlideShareAPIFactory;
 
-public class YouTubePublishingHelper
+public class SlideSharePublishingHelper
 {
-    private static final Log log = LogFactory.getLog(YouTubePublishingHelper.class);
     private NodeService nodeService;
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
 
-    public YouTubeService getYouTubeServiceForNode(NodeRef publishNode)
+    public SlideShareAPI getSlideShareApi()
     {
-        YouTubeService service = null;
+        return SlideShareAPIFactory.getSlideShareAPI("hhjh", "oijkl");
+    }
+    
+    
+    public Pair<String, String> getSlideShareCredentialsForNode(NodeRef publishNode)
+    {
+        Pair<String, String> result = null;
         if (nodeService.exists(publishNode))
         {
             NodeRef parent = nodeService.getPrimaryParent(publishNode).getParentRef();
-            if (nodeService.hasAspect(parent, YouTubePublishingModel.ASPECT_DELIVERY_CHANNEL))
+            if (nodeService.hasAspect(parent, SlideSharePublishingModel.ASPECT_DELIVERY_CHANNEL))
             {
-                String youtubeUsername = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME);
-                String youtubePassword = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD);
-                service = new YouTubeService("Alfresco Kickoff Demo",
-                        "AI39si71pRNHkfExcTpqcZewDtI4GHWuPAXyRPL2Xq-RQUBWlE1bqn77ANXEL5lZUWFDz6ZlS_XWCw8hlr2BJY1TnC-EMs4e4g");
-                try
+                String username = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME);
+                String password = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD);
+                if (username != null && password != null)
                 {
-                    service.setUserCredentials(youtubeUsername, youtubePassword);
-                }
-                catch (Exception e)
-                {
-                    service = null;
-                    log.error("Failed to connect to YouTube", e);
+                    result = new Pair<String, String>(username, password);
                 }
             }
         }
-        return service;
+        return result;
     }
 
 }

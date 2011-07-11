@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/slidesharePublishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="slidesharePublishingHelper" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishingHelper">
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="publish_slideshare" parent="action-executer" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="taggingService" ref="TaggingService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="slideShareHelper" ref="slidesharePublishingHelper" />
+    </bean>
+
+    <bean id="slideshareDeliveryChannelType" class="org.alfresco.repo.publishing.slideshare.SlideShareChannelType" parent="baseChannelType" >
+        <property name="actionService" ref="ActionService" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+
+</beans>

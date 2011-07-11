@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.publishing.EnvironmentImpl;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -104,8 +105,8 @@ public class YouTubeTest extends BaseSpringTest
             public NodeRef execute() throws Throwable
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                props.put(YouTubePublishingModel.PROP_USERNAME, "YOUR_USER_NAME");
-                props.put(YouTubePublishingModel.PROP_PASSWORD, "YOUR_PASSWORD");
+                props.put(PublishingModel.PROP_CHANNEL_USERNAME, "demochilledpenguin");
+                props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "D3moChilledPenguin");
                 Channel channel = channelService.createChannel(siteId, YouTubeChannelType.ID, "YouTubeChannel", props);
 
                 NodeRef channelNode = channel.getNodeRef();

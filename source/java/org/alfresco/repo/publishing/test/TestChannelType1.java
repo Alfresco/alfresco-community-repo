@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
@@ -112,9 +113,16 @@ public class TestChannelType1 extends AbstractChannelType
     }
 
     @Override
-    public void updateStatus(String status, Map<QName, Serializable> properties)
+    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
     {
         //Deliberately blank
+    }
+
+    @Override
+    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

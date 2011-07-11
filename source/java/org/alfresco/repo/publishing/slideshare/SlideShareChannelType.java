@@ -16,13 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.youtube;
+package org.alfresco.repo.publishing.slideshare;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -31,11 +33,30 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
-public class YouTubeChannelType extends AbstractChannelType
+public class SlideShareChannelType extends AbstractChannelType
 {
-    public final static String ID = "youtube";
+    public final static String ID = "slideshare";
+    private final static Set<String> DEFAULT_MIME_TYPES = new TreeSet<String>(); 
+
     private NodeService nodeService;
     private ActionService actionService;
+    private Set<String> permittedMimeTypes = Collections.unmodifiableSet(DEFAULT_MIME_TYPES);
+    
+    static
+    {
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_PPT);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_PDF);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_PRESENTATION);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_IWORK_KEYNOTE);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_IWORK_PAGES);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_TEXT_CSV);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_EXCEL);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING);
+        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET);
+    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -45,6 +66,15 @@ public class YouTubeChannelType extends AbstractChannelType
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+
+    public void setPermittedMimeTypes(Set<String> permittedMimeTypes)
+    {
+        if (permittedMimeTypes == null)
+        {
+            permittedMimeTypes = Collections.emptySet();
+        }
+        this.permittedMimeTypes = Collections.unmodifiableSet(permittedMimeTypes);
     }
 
     @Override
@@ -62,13 +92,13 @@ public class YouTubeChannelType extends AbstractChannelType
     @Override
     public boolean canUnpublish()
     {
-        return true;
+        return false;
     }
 
     @Override
     public QName getChannelNodeType()
     {
-        return YouTubePublishingModel.TYPE_DELIVERY_CHANNEL;
+        return SlideSharePublishingModel.TYPE_DELIVERY_CHANNEL;
     }
 
     @Override
@@ -86,21 +116,20 @@ public class YouTubeChannelType extends AbstractChannelType
     @Override
     public Set<String> getSupportedMimetypes()
     {
-        return Collections.emptySet();
+        return permittedMimeTypes;
     }
 
     @Override
     public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
     {
-        Action youtubePublishAction = actionService.createAction(YouTubePublishAction.NAME);
-        actionService.executeAction(youtubePublishAction, nodeToPublish);
+        Action publishAction = actionService.createAction(SlideSharePublishAction.NAME);
+        actionService.executeAction(publishAction, nodeToPublish);
     }
 
     @Override
     public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
     {
-        Action youtubeUnpublishAction = actionService.createAction(YouTubeUnpublishAction.NAME);
-        actionService.executeAction(youtubeUnpublishAction, nodeToUnpublish);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -113,9 +142,9 @@ public class YouTubeChannelType extends AbstractChannelType
     public String getNodeUrl(NodeRef node)
     {
         String url = null;
-        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, YouTubePublishingModel.ASPECT_ASSET))
+        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET))
         {
-            url = (String)nodeService.getProperty(node, YouTubePublishingModel.PROP_PLAYER_URL);
+            url = (String)nodeService.getProperty(node, SlideSharePublishingModel.PROP_PLAYER_URL);
         }
         return url;
     }

@@ -40,7 +40,7 @@ public interface ChannelType
     NodeFilter getNodeFilter();
     void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties);
     void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties);
-    void updateStatus(String status, Map<QName, Serializable> properties);
+    void updateStatus(Channel channel, String status, Map<QName, Serializable> properties);
     
     boolean canPublish();
     boolean canUnpublish();
@@ -50,4 +50,8 @@ public interface ChannelType
     Set<QName> getSupportedContentTypes();
     String getNodeUrl(NodeRef node);
     int getMaximumStatusLength();
+    
+    String getAuthorisationUrl(Channel channel, String callbackUrl);
+    public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
+            Map<String, String[]> callbackParams);
 }

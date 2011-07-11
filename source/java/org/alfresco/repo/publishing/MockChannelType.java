@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -91,7 +92,7 @@ public class MockChannelType extends AbstractChannelType
     * {@inheritDoc}
     */
     @Override
-    public void updateStatus(String status, Map<QName, Serializable> properties)
+    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
     {
         //NOOP
     }
@@ -147,6 +148,12 @@ public class MockChannelType extends AbstractChannelType
     public String getNodeUrl(NodeRef node)
     {
         return null;
+    }
+
+    @Override
+    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    {
+        return "";
     }
 
 }

@@ -420,7 +420,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             addBeanFactoryPostProcessor(configurer);
 
             // Add all the post processors of the parent, e.g. to make sure system placeholders get expanded properly
-            for (Object postProcessor : getParent().getBeansOfType(BeanFactoryPostProcessor.class).values())
+            for (Object postProcessor : getParent().getBeansOfType(BeanFactoryPostProcessor.class, false, false).values())
             {
                 addBeanFactoryPostProcessor((BeanFactoryPostProcessor) postProcessor);
             }

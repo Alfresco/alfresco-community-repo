@@ -40,12 +40,16 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -85,6 +89,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -92,7 +98,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl implements SiteServiceInternal, SiteModel
+public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeServicePolicies.OnRestoreNodePolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
@@ -148,6 +154,7 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     private SysAdminParams sysAdminParams;
     private BehaviourFilter behaviourFilter;
     private SitesPermissionCleaner sitesPermissionsCleaner;
+    private PolicyComponent policyComponent;
     
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
 
@@ -288,6 +295,11 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
+    
+    public void setPolicyComponent(PolicyComponent policyComponent) 
+    {
+        this.policyComponent = policyComponent;
+    }
 
     public void setRoleComparator(Comparator<String> roleComparator)
     {
@@ -339,6 +351,26 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         PropertyCheck.mandatory(this, "taggingService", taggingService);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "sitesXPath", sitesXPath);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        this.policyComponent.bindClassBehaviour(
+                OnRestoreNodePolicy.QNAME,
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "onRestoreNode"));
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
 
     /*
@@ -405,9 +437,6 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         // Remove spaces from shortName
         final String shortName = passedShortName.replaceAll(" ", "");
         
-        /**
-         * Check that the site does not already exist
-         */
     	// Check to see if we already have a site of this name
     	NodeRef existingSite = getSiteNodeRef(shortName, false);
     	if (existingSite != null)
@@ -444,6 +473,27 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         // Clear the sites inherited permissions
         this.permissionService.setInheritParentPermissions(siteNodeRef, false);
 
+        // Create the relevant groups and assign permissions
+        setupSitePermissions(siteNodeRef, shortName, visibility, null);
+
+        // Return created site information
+        Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
+        SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
+        return siteInfo;
+    }
+    
+    /**
+     * Setup the Site permissions.
+     * <p>
+     * Creates the top-level site group, plus all the Role groups required for users of the site.
+     * 
+     * @param siteNodeRef
+     * @param shortName
+     * @param visibility
+     */
+    private void setupSitePermissions(
+            final NodeRef siteNodeRef, final String shortName, final SiteVisibility visibility, final Map<String, Set<String>> memberships)
+    {
         // Get the current user
         final String currentUser = authenticationContext.getCurrentUserName();
         
@@ -455,10 +505,10 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 Set<String> shareZones = new HashSet<String>(2, 1.0f);
                 shareZones.add(AuthorityService.ZONE_APP_SHARE);
                 shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
-            	
+                
                 // Create the site's groups
-                String siteGroup = authorityService
-                        .createAuthority(AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
+                String siteGroup = authorityService.createAuthority(
+                        AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
                 QName siteType = directNodeService.getType(siteNodeRef);
                 Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
@@ -467,11 +517,21 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                     String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
                             shortName, permission, false), shortName, shareZones);
                     authorityService.addAuthority(siteGroup, permissionGroup);
-
+                    
+                    // add any supplied memberships to it
+                    String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
+                    if (memberships != null && memberships.containsKey(siteRoleGroup))
+                    {
+                        for (String authority : memberships.get(siteRoleGroup))
+                        {
+                            authorityService.addAuthority(siteRoleGroup, authority);
+                        }
+                    }
+                    
                     // Assign the group the relevant permission on the site
                     permissionService.setPermission(siteNodeRef, permissionGroup, permission, true);
                 }
-
+                
                 // Set the memberships details
                 // - give all authorities site consumer if site is public
                 // - give all authorities read properties if site is moderated
@@ -481,20 +541,20 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 if (SiteVisibility.PUBLIC.equals(visibility) == true &&
                     permissions.contains(SITE_CONSUMER))
                 {
-                	// From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
-                	// GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4 admins
-                	// can change the value of property site.public.group via JMX/properties files
-                	// to be another group of their choosing.
-                	// This then is the group that is given SiteConsumer access to newly created sites.
-                	final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
-                	
-					boolean groupExists = authorityService.authorityExists(sitePublicGroup);
-                	if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !groupExists)
-                	{
-                		// If the group does not exist, we cannot create the site.
-                		throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
-                	}
-                	
+                    // From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
+                    // GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4 admins
+                    // can change the value of property site.public.group via JMX/properties files
+                    // to be another group of their choosing.
+                    // This then is the group that is given SiteConsumer access to newly created sites.
+                    final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
+                    
+                    boolean groupExists = authorityService.authorityExists(sitePublicGroup);
+                    if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !groupExists)
+                    {
+                        // If the group does not exist, we cannot create the site.
+                        throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
+                    }
+                    
                     permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true &&
@@ -506,19 +566,18 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
                         PermissionService.READ_PERMISSIONS, true);
-                authorityService.addAuthority(getSiteRoleGroup(shortName,
-                        SiteModel.SITE_MANAGER, true), currentUser);
+                if (memberships == null)
+                {
+                    // add the default site manager authority
+                    authorityService.addAuthority(getSiteRoleGroup(shortName,
+                            SiteModel.SITE_MANAGER, true), currentUser);
+                }
 
                 // Return nothing
                 return null;
             }
 
         }, AuthenticationUtil.getSystemUserName());
-
-        // Return created site information
-        Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
-        SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
-        return siteInfo;
     }
 
     /**
@@ -1238,51 +1297,78 @@ public class SiteServiceImpl implements SiteServiceInternal, SiteModel
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
-        final QName siteType = directNodeService.getType(siteNodeRef);
-
+        final QName siteType = this.directNodeService.getType(siteNodeRef);
+        
         // Delete the cached reference
         String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         this.siteNodeRefs.remove(cacheKey);
         
-        // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
-        // in order to allow site deletion only via this service. Share calls this service for deletion.
-        //
-        // See ALF-7888 for some background on this issue
-        behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
-        try
-        {
-            // Delete the site node, marking it as "not to be archived" on the way.
-            // The site node will be permanently deleted.
-            
-            this.nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
-            this.nodeService.deleteNode(siteNodeRef);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
-        }
-
+        // Collection for recording the group memberships present on the site 
+        final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
+        
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
                 // Delete the master site group
-                authorityService.deleteAuthority(getSiteGroup(shortName, true), false);
-                
-                // Iterate over the role related groups and delete then
-                Set<String> permissions = permissionService.getSettablePermissions(siteType);
-                for (String permission : permissions)
+                final String siteGroup = getSiteGroup(shortName, true);
+                if (authorityService.authorityExists(siteGroup))
                 {
-                    String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
-                    authorityService.deleteAuthority(siteRoleGroup);
+                    authorityService.deleteAuthority(siteGroup, false);
+                    
+                    // Iterate over the role related groups and delete then
+                    Set<String> permissions = permissionService.getSettablePermissions(siteType);
+                    for (String permission : permissions)
+                    {
+                        String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
+                        
+                        // Collect up the memberships so we can potentially restore them later
+                        Set<String> groupUsers = authorityService.getContainedAuthorities(null, siteRoleGroup, true);
+                        groupsMemberships.put(siteRoleGroup, groupUsers);
+                        
+                        // Delete the site role group
+                        authorityService.deleteAuthority(siteRoleGroup);
+                    }
                 }
                 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
         
+        // Save the group memberships so we can use them later
+        this.nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
+        
+        // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
+        // in order to allow site deletion only via this service. Share calls this service for deletion.
+        //
+        // See ALF-7888 for some background on this issue
+        this.behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        try
+        {
+            this.nodeService.deleteNode(siteNodeRef);
+        }
+        finally
+        {
+            this.behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        }
+        
         logger.debug("site deleted :" + shortName);
+    }
+    
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    public void onRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        // regenerate the groups for the site when it is restored from the Archive store
+        NodeRef siteRef = childAssocRef.getChildRef();
+        setupSitePermissions(
+                siteRef,
+                (String)directNodeService.getProperty(siteRef, ContentModel.PROP_NAME),
+                getSiteVisibility(siteRef),
+                (Map<String, Set<String>>)directNodeService.getProperty(siteRef, QName.createQName(null, "memberships")));
     }
 
     /**

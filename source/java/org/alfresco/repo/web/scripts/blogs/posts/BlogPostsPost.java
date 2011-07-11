@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.apache.commons.logging.Log;
@@ -225,7 +225,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
             tagsParam.addAll(jsonParams.getTags());
         }
         
-        ChildAssociationRef newPostNode = blogService.createBlogPost(blogNode, titleParam, contentParam, isDraftParam);
+        BlogPostInfo newPostNode = blogService.createBlogPost(blogNode, titleParam, contentParam, isDraftParam);
         
         // Ignore empty string tags
         List<String> nonEmptyTags = new ArrayList<String>();
@@ -238,10 +238,10 @@ public class BlogPostsPost extends AbstractBlogWebScript
         }
         if (!nonEmptyTags.isEmpty())
         {
-            taggingService.setTags(newPostNode.getChildRef(), nonEmptyTags);
+            taggingService.setTags(newPostNode.getNodeRef(), nonEmptyTags);
         }
         
-        return newPostNode.getChildRef();
+        return newPostNode.getNodeRef();
     }
     
     /**

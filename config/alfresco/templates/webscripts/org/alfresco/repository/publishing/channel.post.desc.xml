@@ -1,0 +1,57 @@
+<webscript>
+   <shortname>Create a publishing channel</shortname>
+   <description><![CDATA[
+   Create a new publishing channel using the supplied information.
+   <br />
+   <dl>
+   <dt>channelType</dt><dd>mandatory - the type of delivery channel to create</dd>
+   <dt>siteId</dt> <dd>mandatory - the Share site with which the new delivery channel is to be associated</dd>
+   <dt>channelName</dt> <dd>mandatory - the name of the new delivery channel</dd>
+   </dl>
+   Returns three pieces of informtation:
+   <br />
+   <dl>
+   <dt>channelId</dt><dd>the identifier of the new publishing channel</dd>
+   <dt>pollUrl</dt> <dd>The URL to poll to discover whether the channel has been authorised</dd>
+   <dt>authoriseUrl</dt> <dd>The URL to send the user to in order for them to authorise access to the channel</dd>
+   </dl>
+   
+   ]]></description>
+   <description></description>
+   <url>/api/publishing/channel</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>siteId</shortname>
+         <description>The id of the site to create a delivery channel on.</description>
+      </arg>
+      <arg>
+         <shortname>channelType</shortname>
+         <description>The identifier of the type of delivery channel to create.</description>
+      </arg>
+      <arg>
+         <shortname>channelName</shortname>
+         <description>The name of the channel that is to be created.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "channelId": string,
+                  "pollUrl": string,
+                  "authoriseUrl": string
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

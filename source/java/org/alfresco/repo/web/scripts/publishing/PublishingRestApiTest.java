@@ -299,12 +299,12 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Check updateStatus is called correctly.
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(statusUpdateChannelType)
-        .updateStatus(captor.capture(), anyMap());
+        .updateStatus(any(Channel.class), captor.capture(), anyMap());
         String actualStatusMessage = captor.getValue();
         assertTrue(actualStatusMessage.startsWith(statusMessage));
         
         verify(statusUpdateChannelType, never()).publish(any(NodeRef.class), anyMap());
-        verify(publishAnyChannelType, never()).updateStatus(anyString(), anyMap());
+        verify(publishAnyChannelType, never()).updateStatus(any(Channel.class), anyString(), anyMap());
         
         JSONObject status = json.optJSONObject(STATUS_UPDATE);
         status.remove(NODE_REF);

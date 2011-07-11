@@ -1,0 +1,48 @@
+<webscript>
+   <shortname>Authorisation status check for a new publishing channel</shortname>
+   <description><![CDATA[
+   Used to check whether a specified publishing channel has been authorised by the target
+   service provider. The returned "authStatus" value is one of:
+   <ul>
+   <li>PENDING - we haven't finished the necessary exchanges with the service provider yet.</li>
+   <li>REJECTED - our request to authorise the channel has been rejected. The channel creation has failed.</li>
+   <li>AUTHORISED - the channel has been authorised and is now ready to be used.</li>
+   </ul>
+   ]]></description>
+   <description></description>
+   <url>/api/publishing/channel/{store_protocol}/{store_id}/{node_id}/authstatus</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_protocol</shortname>
+         <description>The protocol of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The identifier of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>node_id</shortname>
+         <description>The identifier of the node that represents the relevant publishing channel.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "channelId": string,
+                  "authStatus": string
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

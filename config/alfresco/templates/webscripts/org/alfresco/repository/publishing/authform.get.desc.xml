@@ -1,0 +1,25 @@
+<webscript>
+   <shortname>Channel Authorisation Form</shortname>
+   <description><![CDATA[
+   Used to obtain a form to provide credentials to publish to a channel. 
+   ]]></description>
+   <url>/api/publishing/channel/{store_protocol}/{store_id}/{node_id}/authform</url>
+   <format default="html"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_protocol</shortname>
+         <description>The protocol of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The identifier of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>node_id</shortname>
+         <description>The identifier of the node that represents the relevant publishing channel.</description>
+      </arg>
+   </args>
+</webscript>

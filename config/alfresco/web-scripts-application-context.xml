@@ -1118,6 +1118,33 @@
         <property name="defaultEnvironmentId" value="${publishing.default.environment}" />
     </bean>
 
+    <bean id="webscript.org.alfresco.repository.publishing.channel.post"
+          class="org.alfresco.repo.web.scripts.publishing.ChannelPostWebScript"
+          parent="webscript">
+        <property name="channelService" ref="channelService" />
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.publishing.authcallback.get" 
+            class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
+            parent="webscript">
+        <property name="nodeService" ref="NodeService" />
+        <property name="channelService" ref="channelService" />
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.publishing.authstatus.get" 
+            class="org.alfresco.repo.web.scripts.publishing.AuthStatusGetWebScript"
+            parent="webscript">
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.publishing.authform.post" 
+            class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
+            parent="webscript">
+        <property name="nodeService" ref="NodeService" />
+        <property name="channelService" ref="channelService" />
+    </bean>
+
+
     <!-- Post Publishing Events Query web script -->
     <bean id="webscript.org.alfresco.repository.publishing.publishing-events-query.post"
           class="org.alfresco.repo.web.scripts.publishing.PUblishingEventsQueryPost"
@@ -1432,7 +1459,7 @@
          parent="webscript">
       <property name="nodeLocatorService" ref="nodeLocatorService"/>
    </bean>
-   
+
    <!--  Google Doc API -->
    <bean id="webscript.org.alfresco.repository.googledocs.status.get"
          class="org.alfresco.repo.web.scripts.googledocs.Status"

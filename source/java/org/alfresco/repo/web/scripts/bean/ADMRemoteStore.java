@@ -407,7 +407,9 @@ public class ADMRemoteStore extends BaseRemoteStore
         
         try
         {
-            this.nodeService.deleteNode(fileInfo.getNodeRef());
+            final NodeRef fileRef = fileInfo.getNodeRef();
+            this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TEMPORARY, null);
+            this.nodeService.deleteNode(fileRef);
             if (logger.isDebugEnabled())
                 logger.debug("deleteDocument: " + fileInfo.toString());
         }

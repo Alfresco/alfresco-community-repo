@@ -609,7 +609,26 @@
             <value>5</value>
         </property>
     </bean>
-
+    
+	<bean id="lucene.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoLuceneQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+    
+    <bean id="lucene.xpath" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoXPathQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
 	
 	<bean id="lucene.fts.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoFtsQueryLanguage" >
         <property name="queryEngine">

@@ -373,6 +373,17 @@ public class ADMLuceneCategoryTest extends TestCase
         indexer.commit();
     }
 
+    private ADMLuceneSearcherImpl buildSearcher()
+    {
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        return searcher;
+    }
+    
     /**
      * Test multiple categories
      * @throws Exception
@@ -384,12 +395,7 @@ public class ADMLuceneCategoryTest extends TestCase
         tx.begin();
         buildBaseIndex();
         
-        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-        
-        searcher.setNodeService(nodeService);
-        searcher.setDictionaryService(dictionaryService);
-        searcher.setTenantService(tenantService);
-        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        ADMLuceneSearcherImpl searcher = buildSearcher();
         ResultSet results;
         
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\" AND (PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\")", null);
@@ -411,12 +417,7 @@ public class ADMLuceneCategoryTest extends TestCase
         tx.begin();
         buildBaseIndex();
         
-        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-        
-        searcher.setNodeService(nodeService);
-        searcher.setDictionaryService(dictionaryService);
-        searcher.setTenantService(tenantService);
-        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        ADMLuceneSearcherImpl searcher = buildSearcher();
         ResultSet results;
         
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion\"", null);
@@ -580,12 +581,7 @@ public class ADMLuceneCategoryTest extends TestCase
         tx.begin();
         buildBaseIndex();
         
-        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-        
-        searcher.setNodeService(nodeService);
-        searcher.setDictionaryService(dictionaryService);
-        searcher.setTenantService(tenantService);
-        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        ADMLuceneSearcherImpl searcher = buildSearcher();
         
         ResultSet 
         

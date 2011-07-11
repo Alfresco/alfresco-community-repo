@@ -269,231 +269,23 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         {
             parameterisedQueryString = searchParameters.getQuery();
         }
+        // TODO: add another property so the set query is not changed ...
+        // May be good to return the query as run ??
+        searchParameters.setQuery(parameterisedQueryString);
 
-        if (searchParameters.getLanguage().equalsIgnoreCase(SearchService.LANGUAGE_LUCENE))
+        LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
+        if (language != null)
         {
-            try
-            {
-
-                Operator defaultOperator;
-                if (searchParameters.getDefaultOperator() == SearchParameters.AND)
-                {
-                    defaultOperator = LuceneQueryParser.AND_OPERATOR;
-                }
-                else
-                {
-                    defaultOperator = LuceneQueryParser.OR_OPERATOR;
-                }
-
-                ClosingIndexSearcher searcher = getSearcher(indexer);
-                Query query = LuceneQueryParser.parse(parameterisedQueryString, searchParameters.getDefaultFieldName(), new LuceneAnalyser(getDictionaryService(),
-                        searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
-                        namespacePrefixResolver, getDictionaryService(), tenantService, defaultOperator, searchParameters, getLuceneConfig().getDefaultMLSearchAnalysisMode(), searcher.getIndexReader());
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("Query is " + query.toString());
-                }
-                if (searcher == null)
-                {
-                    // no index return an empty result set
-                    return new EmptyResultSet();
-                }
-
-                Hits hits;
-
-                boolean requiresPostSort = false;
-                if (searchParameters.getSortDefinitions().size() > 0)
-                {
-                    int index = 0;
-                    SortField[] fields = new SortField[searchParameters.getSortDefinitions().size()];
-                    for (SearchParameters.SortDefinition sd : searchParameters.getSortDefinitions())
-                    {
-                        switch (sd.getSortType())
-                        {
-                        case FIELD:
-                            Locale sortLocale = getLocale(searchParameters);
-                            String field = sd.getField();
-                            if (field.startsWith("@"))
-                            {
-                                field = expandAttributeFieldName(field);
-                                PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
-
-                                if(propertyDef == null)
-                                {   
-                                    if(field.endsWith(".size"))
-                                    {
-                                        propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1, field.length()-5)));
-                                        if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-                                        {
-                                            throw new SearcherException("Order for .size only supported on content properties");
-                                        }
-                                    }
-                                    else if (field.endsWith(".mimetype"))
-                                    {
-                                        propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1, field.length()-9)));
-                                        if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-                                        {
-                                            throw new SearcherException("Order for .mimetype only supported on content properties");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // nothing
-                                    }
-                                }
-                                else
-                                {
-                                    if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-                                    {
-                                        throw new SearcherException("Order on content properties is not curently supported");
-                                    }
-                                    
-                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
-                                    {
-                                        if(propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                                        {
-                                            // use field as is
-                                        }
-                                        else
-                                        {
-
-                                            String noLocalField = field+".no_locale";
-                                            for (Object current : searcher.getIndexReader().getFieldNames(FieldOption.INDEXED))
-                                            {
-                                                String currentString = (String) current;
-                                                if (currentString.equals(noLocalField))
-                                                {
-                                                    field = noLocalField;
-                                                }
-                                            }
-                                            
-                                            if(!field.endsWith(".no_locale"))
-                                            {
-                                                field = findSortField(searchParameters, searcher, field, sortLocale);
-                                            }
-                                        }
-                                    }
-                                    
-                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-                                    {
-                                      
-                                        field = findSortField(searchParameters, searcher, field, sortLocale);
-
-                                    }
-                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
-                                    {
-                                        DataTypeDefinition dataType = propertyDef.getDataType();
-                                        String analyserClassName = propertyDef.resolveAnalyserClassName();
-                                        if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
-                                        {
-                                            field = field + ".sort";
-                                        }
-                                        else
-                                        {
-                                            requiresPostSort = true;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if (LuceneUtils.fieldHasTerm(searcher.getReader(), field))
-                            {
-                                fields[index++] = new SortField(field, sortLocale, !sd.isAscending());
-                            }
-                            else
-                            {
-                                fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());
-                            }
-                            break;
-                        case DOCUMENT:
-                            fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());
-                            break;
-                        case SCORE:
-                            fields[index++] = new SortField(null, SortField.SCORE, !sd.isAscending());
-                            break;
-                        }
-
-                    }
-                    hits = searcher.search(query, new Sort(fields));
-
-                }
-                else
-                {
-                    hits = searcher.search(query);
-                }
-
-                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
-                rs = new PagingLuceneResultSet(rs, searchParameters, nodeService);
-                if (getLuceneConfig().getPostSortDateTime() && requiresPostSort)
-                {
-                    ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
-                    return sorted;
-                }
-                else
-                {
-                    return rs;
-                }
-            }
-            catch (ParseException e)
-            {
-                throw new SearcherException("Failed to parse query: " + parameterisedQueryString, e);
-            }
-            catch (IOException e)
-            {
-                throw new SearcherException("IO exception during search", e);
-            }
-        }
-        else if (searchParameters.getLanguage().equalsIgnoreCase(SearchService.LANGUAGE_XPATH))
-        {
-            try
-            {
-                XPathReader reader = new XPathReader();
-                LuceneXPathHandler handler = new LuceneXPathHandler();
-                handler.setNamespacePrefixResolver(namespacePrefixResolver);
-                handler.setDictionaryService(getDictionaryService());
-                // TODO: Handler should have the query parameters to use in
-                // building its lucene query
-                // At the moment xpath style parameters in the PATH
-                // expression are not supported.
-                reader.setXPathHandler(handler);
-                reader.parse(parameterisedQueryString);
-                Query query = handler.getQuery();
-                Searcher searcher = getSearcher(null);
-                if (searcher == null)
-                {
-                    // no index return an empty result set
-                    return new EmptyResultSet();
-                }
-                Hits hits = searcher.search(query);
-                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, getLuceneConfig());
-                rs = new PagingLuceneResultSet(rs, searchParameters, nodeService);
-                return rs;
-            }
-            catch (SAXPathException e)
-            {
-                throw new SearcherException("Failed to parse query: " + searchParameters.getQuery(), e);
-            }
-            catch (IOException e)
-            {
-                throw new SearcherException("IO exception during search", e);
-            }
+            return language.executeQuery(searchParameters, this);
         }
         else
         {
-            LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
-            if (language != null)
-            {
-                return language.executeQuery(searchParameters, this);
-            }
-            else
-            {
-                throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
-            }
-        }
+            throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
+        }        
     }
 
 
-    private Locale getLocale(SearchParameters searchParameters)
+    Locale getLocale(SearchParameters searchParameters)
     {
         List<Locale> locales = searchParameters.getLocales();
         if (((locales == null) || (locales.size() == 0)))
@@ -510,7 +302,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         return sortLocale;
     }
     
-    private String findSortField(SearchParameters searchParameters, ClosingIndexSearcher searcher, String field, Locale sortLocale)
+    String findSortField(SearchParameters searchParameters, ClosingIndexSearcher searcher, String field, Locale sortLocale)
     {
         // find best field match
 
@@ -864,7 +656,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
     }
 
-    private String expandAttributeFieldName(String field)
+    String expandAttributeFieldName(String field)
     {
         String fieldName = field;
         // Check for any prefixes and expand to the full uri

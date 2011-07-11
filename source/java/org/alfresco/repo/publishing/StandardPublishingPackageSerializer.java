@@ -22,6 +22,7 @@ package org.alfresco.repo.publishing;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -41,22 +43,18 @@ import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.xml.sax.SAXException;
 
 /**
  * @author Brian
- * 
+ * @author Nick Smith
  */
 public class StandardPublishingPackageSerializer implements PublishingPackageSerializer
 {
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.publishing.PublishingPackageSerializer#deserialize(
-     * java.io.Reader)
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+      */
     public PublishingPackage deserialize(InputStream input) throws Exception
     {
         SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
@@ -69,14 +67,9 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
         return publishingPackage;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.publishing.PublishingPackageSerializer#serialize(org
-     * .alfresco.service.cmr.publishing.PublishingPackage, java.io.Writer)
-     */
-    @Override
+    /**
+     * {@inheritDoc}
+      */
     public void serialize(PublishingPackage publishingPackage, OutputStream output) throws Exception
     {
         try
@@ -96,7 +89,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
             transferManifestWriter.writeTransferManifestHeader(header);
             for (PublishingPackageEntry entry : entries)
             {
-                if (PublishingPackageEntryImpl.class.isAssignableFrom(entry.getClass()))
+                if (entry instanceof PublishingPackageEntryImpl)
                 {
                     PublishingPackageEntryImpl entryImpl = (PublishingPackageEntryImpl)entry;
                     transferManifestWriter.writeTransferManifestNode(entryImpl.getPayload());
@@ -118,13 +111,12 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
 
     /**
      * @author Brian
+     * @author Nick Smith
      *
      */
     public static class PublishingPackageDeserializer implements TransferManifestProcessor
     {
         Map<NodeRef,PublishingPackageEntry> entries = new HashMap<NodeRef,PublishingPackageEntry>();
-        
-        
         
         /**
          * @return the entries
@@ -134,46 +126,43 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
             return entries;
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#endTransferManifest()
+        /**
+        * {@inheritDoc}
          */
-        @Override
         public void endTransferManifest()
         {
             //NOOP
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifestNode(org.alfresco.repo.transfer.manifest.TransferManifestNormalNode)
-         */
-        @Override
+        /**
+         * {@inheritDoc}
+          */
         public void processTransferManifestNode(TransferManifestNormalNode node)
         {
-            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(true, node.getNodeRef(), node, null));
+            Map<QName, Serializable> props = node.getProperties();
+            String version = (String) props.get(ContentModel.PROP_VERSION_LABEL);
+            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(true, node.getNodeRef(), node, version));
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifestNode(org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode)
-         */
-        @Override
+        /**
+         * {@inheritDoc}
+          */
         public void processTransferManifestNode(TransferManifestDeletedNode node)
         {
             entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(false, node.getNodeRef(), null, null));
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifiestHeader(org.alfresco.repo.transfer.manifest.TransferManifestHeader)
-         */
-        @Override
+        /**
+         * {@inheritDoc}
+          */
         public void processTransferManifiestHeader(TransferManifestHeader header)
         {
             //NOOP
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest()
-         */
-        @Override
+        /**
+         * {@inheritDoc}
+          */
         public void startTransferManifest()
         {
             //NOOP

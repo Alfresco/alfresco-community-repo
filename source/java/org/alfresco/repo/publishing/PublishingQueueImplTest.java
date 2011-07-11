@@ -19,10 +19,7 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.alfresco.model.ContentModel.PROP_VERSION_LABEL;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_WORKFLOW_ID;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_WF_SCHEDULED_PUBLISH_DATE;
@@ -34,8 +31,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -75,6 +70,8 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         NodeRef firstNode = createContent("First");
         NodeRef secondNode = createContent("second");
         
+        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
+        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
         MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
 
@@ -86,6 +83,10 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         schedule.add(Calendar.HOUR, 2);
         
         this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, null);
+        
+        //Check schedule triggered versioning.
+        Serializable version = nodeService.getProperty(firstNode, PROP_VERSION_LABEL);
+        assertNotNull(version);
         
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         assertEquals(eventId, event.getId());
@@ -119,6 +120,10 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 //        assertEquals(1, toUnpublish.size());
 //        assertTrue(toUnpublish.contains(thirdNode));
         
+        // Check the correct version is recorded in the entry.
+        PublishingPackageEntry entry = publishingPackage.getEntryMap().get(firstNode);
+        assertEquals(version, entry.getSnapshot().getVersion());
+        
         NodeRef eventNode = new NodeRef(eventId);
         String wfId = (String) nodeService.getProperty(eventNode, PROP_PUBLISHING_EVENT_WORKFLOW_ID);
         
@@ -131,6 +136,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertEquals(schedule, props.get(PROP_WF_SCHEDULED_PUBLISH_DATE));
     }
 
+    @Test
     public void testScheduleNewPublishingEventWithStatusUpdate() throws Exception
     {
         NodeRef firstNode = createContent("First");
@@ -138,22 +144,22 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         List<String> channelNames = Arrays.asList("Channel1", "Channel2", "Channel3" );
         String message = "The message";
-        queue.createStatusUpdate(message, secondNode, channelNames);
+        StatusUpdate update = queue.createStatusUpdate(message, secondNode, channelNames);
         
         // Publish an event with the StatusUpdate
         MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, null);
+        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, update);
 
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
-        StatusUpdate update = event.getStatusUpdate();
-//        assertEquals(message, update.getMessage());
-//        assertEquals(secondNode, update.getNodeToLinkTo());
-//        Set<String> names = update.getChannelNames();
-//        assertEquals(3, names.size());
-//        assertTrue(names.containsAll(channelNames));
+        StatusUpdate actualUpdate = event.getStatusUpdate();
+        assertEquals(message, actualUpdate.getMessage());
+        assertEquals(secondNode, actualUpdate.getNodeToLinkTo());
+        Set<String> names = actualUpdate.getChannelNames();
+        assertEquals(3, names.size());
+        assertTrue(names.containsAll(channelNames));
     }
     
     private NodeRef createContent(String name)

@@ -132,6 +132,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private static final int maxStatusLength = 100;
     
     private static final String CHANNELS_SITE_URL = "api/publishing/site/{0}/channels";
+    private static final String CHANNEL_TYPES_URL = "api/publishing/channel-types";
     private static final String CHANNELS_NODE_URL = "api/publishing/{0}/{1}/{2}/channels";
     private static final String PUBLISHING_QUEUE_URL = "api/publishing/{0}/queue";
     private static final String PUBLISHING_EVENT_QUERY_URL = "api/publishing/{0}/events/query";
@@ -381,6 +382,37 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkContainsEvent(data, event1Id);
     }
     
+    public void testChannelTypesGet() throws Exception
+    {
+        Response response = sendRequest(new GetRequest(CHANNEL_TYPES_URL), 200);
+        JSONArray data = getDataArray(response);
+        checkChannelTypes(data, channelService.getChannelTypes());
+    }
+    
+    private void checkChannelTypes(JSONArray data, List<ChannelType> channelTypes) throws Exception
+    {
+        assertEquals(channelTypes.size(), data.length());
+        for (ChannelType type : channelTypes)
+        {
+            checkContainsChannelType(data, type);
+        }
+    }
+
+    private void checkContainsChannelType(JSONArray data, ChannelType type) throws Exception
+    {
+        String typeId = type.getId();
+        for (int i = 0; i < data.length(); i++)
+        {
+            JSONObject json = data.optJSONObject(i);
+            if(typeId.equals(json.optString(ID)))
+            {
+                checkChannelType(json, type);
+                return;
+            }
+        }
+        fail("Failed to find Channel Type: " + typeId);
+    }
+
     private void checkContainsEvents(JSONArray data, String... eventIds) throws Exception
     {
         assertEquals(eventIds.length, data.length());

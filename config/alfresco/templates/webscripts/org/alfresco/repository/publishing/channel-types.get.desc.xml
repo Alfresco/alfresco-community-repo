@@ -1,0 +1,40 @@
+<webscript>
+   <shortname>Get Publishing Channels</shortname>
+   <description>Get the publishing channels for a Share Site.or specified NodeRef</description>
+   <url>/api/publishing/channel-types</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  [
+                     {
+                        "id": string,
+                        "title": string,
+                        "url": string,
+                        "channelNodeType": string,
+                        "contentRootNodeType": string,
+                        "supportedContentTypes": [string, ...],
+                        "supportedMimeTypes": [string, ...],
+                        "canPublish": boolean,
+                        "canPublishStatusUpdates": boolean,
+                        "canUnpublish": boolean,
+                        "maxStatusLength": number,
+                        "icon": string
+                     },
+                     ...
+                  ]
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

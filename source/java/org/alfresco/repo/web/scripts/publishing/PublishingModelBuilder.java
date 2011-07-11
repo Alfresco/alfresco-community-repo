@@ -157,6 +157,17 @@ public class PublishingModelBuilder
         return model;
     }
     
+    public List<Map<String, Object>> buildChannelTypes(List<ChannelType> types)
+    {
+        return transform(types, new Function<ChannelType, Map<String, Object>>()
+        {
+            public Map<String, Object> apply(ChannelType value)
+            {
+                return buildChannelType(value);
+            }
+        });
+    }
+
     public static String getUrl(PublishingEvent event)
     {
         return "api/publishing/events/"+URLEncoder.encode(event.getId());
@@ -209,7 +220,7 @@ public class PublishingModelBuilder
         NodeSnapshot snapshot = entry.getSnapshot();
         model.put(NODEREF, snapshot.getNodeRef().toString());
         String version = snapshot.getVersion();
-        if(version!=null && version.isEmpty())
+        if(version!=null && version.isEmpty()==false)
         {
             model.put(VERSION, version);
         }

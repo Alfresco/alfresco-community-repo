@@ -1109,6 +1109,13 @@
         <property name="channelService" ref="channelService" />
     </bean>
 
+    <!-- Get Channel Types web script -->
+    <bean id="webscript.org.alfresco.repository.publishing.channel-types.get"
+          class="org.alfresco.repo.web.scripts.publishing.ChannelTypesGet"
+          parent="webscript">
+        <property name="channelService" ref="channelService" />
+    </bean>
+
     <!-- Post Event to a Publishing Queue web script -->
     <bean id="webscript.org.alfresco.repository.publishing.publishing-queue.post"
           class="org.alfresco.repo.web.scripts.publishing.PublishingQueuePost"

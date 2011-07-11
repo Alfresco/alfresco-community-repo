@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.subscriptions;
 
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -29,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Florian Mueller
  * @since 4.0
  */
-public interface SubscriptionService
+public interface SubscriptionService extends ActivateableBean
 {
     // --- subscription ---
 
@@ -204,5 +205,5 @@ public interface SubscriptionService
      * Returns if subscription are enabled for this system.
      */
     @NotAuditable
-    boolean subscriptionsEnabled();
+    boolean isActive();
 }

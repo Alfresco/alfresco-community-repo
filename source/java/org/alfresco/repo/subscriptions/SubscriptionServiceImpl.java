@@ -89,6 +89,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
     protected NamespaceService namespaceService;
     protected FileFolderService fileFolderService;
 
+    protected boolean active;
+
     /**
      * Sets the subscriptions DAO.
      */
@@ -159,6 +161,11 @@ public class SubscriptionServiceImpl implements SubscriptionService
     public final void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+
+    public final void setActive(boolean active)
+    {
+        this.active = active;
     }
 
     @Override
@@ -352,9 +359,9 @@ public class SubscriptionServiceImpl implements SubscriptionService
     }
 
     @Override
-    public boolean subscriptionsEnabled()
+    public boolean isActive()
     {
-        return true;
+        return active;
     }
 
     /**
@@ -362,7 +369,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
      */
     protected void checkEnabled()
     {
-        if (!subscriptionsEnabled())
+        if (!isActive())
         {
             throw new SubscriptionsDisabledException("subscription_service.err.disabled");
         }

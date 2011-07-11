@@ -67,6 +67,7 @@ public class CalendarEntryImpl extends CalendarEntryDTO
     
     /**
      * Builds up the node properties for a given Calendar Entry
+     * Doesn't handle tags, those must be done in the service itself.
      */
     protected static Map<QName,Serializable> toNodeProperties(CalendarEntry entry)
     {
@@ -84,13 +85,12 @@ public class CalendarEntryImpl extends CalendarEntryDTO
      
 //     properties.put(CalendarModel.PROP_COLOR, entry.getColor();
       
-       // TODO Tags, doc folders
-       
        return properties;
     }
     
     /**
-     * Populates a Calendar Entry from the given node properties
+     * Populates a Calendar Entry from the given node properties.
+     * Doesn't handle tags, those must be done in the service itself.
      */
     protected static void populate(CalendarEntry entry, Map<QName,Serializable> properties)
     {
@@ -108,12 +108,11 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        entry.setOutlookUID((String)properties.get(CalendarModel.PROP_OUTLOOK_UID));
 
        //entry.setColor(properties.get(CalendarModel.PROP_COLOR));
-       
-       // TODO Tags, doc folders
     }
     
     /**
      * Populates this entry from the given node properties
+     * Doesn't handle tags, those are done in the service itself.
      */
     protected void populate(Map<QName,Serializable> properties)
     {

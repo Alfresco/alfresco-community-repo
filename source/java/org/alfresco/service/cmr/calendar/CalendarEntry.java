@@ -94,18 +94,19 @@ public interface CalendarEntry extends Serializable, PermissionCheckValue {
    
    /**
     * Gets the event recurrence rule.
-    * TODO Define these
+    * This needs to be in the SharePoint/Outlook format of
+    *  FREQ=...;INTERVAL=...;BY...=...;COUNT=...
     */
    String getRecurrenceRule();
    
    /**
-    * Sets the event recurrence rule
-    * TODO Define these
+    * Sets the event recurrence rule, in SharePoint/Outlook format
     */
    void setRecurrenceRule(String recurrenceRule);
    
    /**
-    * Gets the date of the last instance of this recurring event
+    * Gets the date of the last instance of this recurring event,
+    * i.e. the last date up until which recurrances will occur.
     */
    Date getLastRecurrence();
    

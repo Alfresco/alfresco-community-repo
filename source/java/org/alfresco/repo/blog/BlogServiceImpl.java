@@ -130,10 +130,10 @@ public class BlogServiceImpl implements BlogService
     }
     
     @Override
-    public ChildAssociationRef createBlogPost(NodeRef blogContainerNode, String blogTitle,
+    public BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle,
                                               String blogContent, boolean isDraft)
     {
-        String nodeName = getUniqueChildName(blogContainerNode, "post");
+        final String nodeName = getUniqueChildName(blogContainerNode, "post");
         
         // we simply create a new file inside the blog folder
         Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>();
@@ -161,7 +161,7 @@ public class BlogServiceImpl implements BlogService
             setOrUpdateReleasedAndUpdatedDates(postNode.getChildRef());
         }
         
-        return postNode;
+        return new BlogPostInfo(postNode.getChildRef(), nodeName);
     }
     
     @Override

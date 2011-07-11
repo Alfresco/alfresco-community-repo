@@ -24,7 +24,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 
@@ -48,11 +47,11 @@ public interface BlogService
      * @param blogContent       text/html content of the blog post.
      * @param isDraft           <tt>true</tt> if the blog post is a draft post, else <tt>false</tt>.
      * 
-     * @return The {@link ChildAssociationRef} of the newly created blog post.
+     * @return The {@link BlogPostInfo} of the newly created blog post.
      * 
      * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
      */
-    ChildAssociationRef createBlogPost(NodeRef blogContainerNode, String blogTitle,
+    BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle,
                                        String blogContent, boolean isDraft);
     
     /**
@@ -124,7 +123,7 @@ public interface BlogService
      * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
      */
     PagingResults<BlogPostInfo> findTaggedBlogPosts(NodeRef blogContainerNode, String tag, PagingRequest pagingReq);
-
+    
     /**
      * Returns true if the specified blog-post node is a 'draft' blog post.
      * 

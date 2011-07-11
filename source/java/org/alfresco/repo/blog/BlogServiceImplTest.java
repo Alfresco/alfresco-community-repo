@@ -39,7 +39,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -209,10 +208,10 @@ public class BlogServiceImplTest
                     
                     for (int i = 0; i < arbitraryNumberGreaterThanPageSize; i++)
                     {
-                        ChildAssociationRef newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "title_" + i, "Hello world", true);
+                        BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "title_" + i, "Hello world", true);
                         
-                        results.add(newBlogPost.getChildRef());
-                        testNodesToTidy.add(newBlogPost.getChildRef());
+                        results.add(newBlogPost.getNodeRef());
+                        testNodesToTidy.add(newBlogPost.getNodeRef());
                     }
                     
                     return results;
@@ -301,11 +300,11 @@ public class BlogServiceImplTest
                 @Override
                 public NodeRef execute() throws Throwable
                 {
-                    ChildAssociationRef newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "draftWithTag", "Hello world", true);
-                    TAGGING_SERVICE.addTags(newBlogPost.getChildRef(), tags);
-                    testNodesToTidy.add(newBlogPost.getChildRef());
+                    BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "draftWithTag", "Hello world", true);
+                    TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), tags);
+                    testNodesToTidy.add(newBlogPost.getNodeRef());
                     
-                    return newBlogPost.getChildRef();
+                    return newBlogPost.getNodeRef();
                 }
             });
         
@@ -343,13 +342,13 @@ public class BlogServiceImplTest
                 @Override
                 public Pair<NodeRef, NodeRef> execute() throws Throwable
                 {
-                    ChildAssociationRef newDraftBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "adminDraft", "", true);
-                    testNodesToTidy.add(newDraftBlogPost.getChildRef());
+                    BlogPostInfo newDraftBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "adminDraft", "", true);
+                    testNodesToTidy.add(newDraftBlogPost.getNodeRef());
                     
-                    ChildAssociationRef newPublishedBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "adminPublished", "", false);
-                    testNodesToTidy.add(newPublishedBlogPost.getChildRef());
+                    BlogPostInfo newPublishedBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "adminPublished", "", false);
+                    testNodesToTidy.add(newPublishedBlogPost.getNodeRef());
                     
-                    return new Pair<NodeRef, NodeRef>(newDraftBlogPost.getChildRef(), newPublishedBlogPost.getChildRef());
+                    return new Pair<NodeRef, NodeRef>(newDraftBlogPost.getNodeRef(), newPublishedBlogPost.getNodeRef());
                 }
             });
         
@@ -361,13 +360,13 @@ public class BlogServiceImplTest
                 @Override
                 public Pair<NodeRef, NodeRef> execute() throws Throwable
                 {
-                    ChildAssociationRef newDraftBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "userDraft", "", true);
-                    testNodesToTidy.add(newDraftBlogPost.getChildRef());
+                    BlogPostInfo newDraftBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "userDraft", "", true);
+                    testNodesToTidy.add(newDraftBlogPost.getNodeRef());
                     
-                    ChildAssociationRef newPublishedBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "userPublished", "", false);
-                    testNodesToTidy.add(newPublishedBlogPost.getChildRef());
+                    BlogPostInfo newPublishedBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "userPublished", "", false);
+                    testNodesToTidy.add(newPublishedBlogPost.getNodeRef());
                     
-                    return new Pair<NodeRef, NodeRef>(newDraftBlogPost.getChildRef(), newPublishedBlogPost.getChildRef());
+                    return new Pair<NodeRef, NodeRef>(newDraftBlogPost.getNodeRef(), newPublishedBlogPost.getNodeRef());
                 }
             });
         
@@ -433,11 +432,11 @@ public class BlogServiceImplTest
                     
                     for (int i = 0; i < numberOfPosts; i++)
                     {
-                        ChildAssociationRef newBlogPost =
+                        BlogPostInfo newBlogPost =
                                 BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "date-specific-post" + i, "", false);
-                        testNodesToTidy.add(newBlogPost.getChildRef());
+                        testNodesToTidy.add(newBlogPost.getNodeRef());
                         
-                        results.add(newBlogPost.getChildRef());
+                        results.add(newBlogPost.getNodeRef());
                     }
                     
                     return results;

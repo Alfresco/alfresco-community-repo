@@ -18,16 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -69,16 +63,8 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
       // Special case for "deleting" an instance of a recurring event 
       if(req.getParameter("date") != null && entry.getRecurrenceRule() != null)
       {
-         // Get the date to be ignored
-         Map<QName,Serializable> props = new HashMap<QName, Serializable>();
-         Date date = parseDate(req.getParameter("date"));
-         props.put(CalendarModel.PROP_IGNORE_EVENT_DATE, date);
-         
-         // Create a child node of the event
-         nodeService.createNode(
-               entry.getNodeRef(), CalendarModel.ASSOC_IGNORE_EVENT_LIST,
-               QName.createQName(GUID.generate()), CalendarModel.TYPE_IGNORE_EVENT, props
-         );
+         // Have an ignored event generated
+         createIgnoreEvent(req, entry);
          
          // Mark as ignored
          status.setCode(Status.STATUS_NO_CONTENT, "Recurring entry ignored");

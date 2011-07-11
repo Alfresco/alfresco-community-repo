@@ -19,19 +19,24 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -195,6 +200,27 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        model.put("result", result);
        
        return model;
+    }
+    
+    /**
+     * For an event that is a recurring event, have an ignored child event
+     *  generated for it
+     */
+    protected NodeRef createIgnoreEvent(WebScriptRequest req, CalendarEntry parent)
+    {
+       // Get the date to be ignored
+       Map<QName,Serializable> props = new HashMap<QName, Serializable>();
+       Date date = parseDate(req.getParameter("date"));
+       props.put(CalendarModel.PROP_IGNORE_EVENT_DATE, date);
+       
+       // Create a child node of the event
+       NodeRef ignored = nodeService.createNode(
+             parent.getNodeRef(), CalendarModel.ASSOC_IGNORE_EVENT_LIST,
+             QName.createQName(GUID.generate()), CalendarModel.TYPE_IGNORE_EVENT, props
+       ).getChildRef();
+       
+       // No further setup is needed
+       return ignored;
     }
     
     @Override

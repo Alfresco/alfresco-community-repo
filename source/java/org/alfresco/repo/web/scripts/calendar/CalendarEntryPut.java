@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,29 +64,24 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          // Doc folder is a bit special
          String docFolder = json.getString("docfolder");
          
-         if(entry.getRecurrenceRule() != null)
+         // Editing recurring events is special and a little bit odd...
+         if(entry.getRecurrenceRule() != null && !json.has("recurrenceRule"))
          {
-            // TODO Handle editing recurring rules
-            // Needs stuff with ignored events
-/*
-       var prop = new Array();
-       var fromParts = params.date.split("-");
-       prop["ia:date"] = new Date(fromParts[0],fromParts[1] - 1,fromParts[2]);
-       editedEvent.createNode(null, "ia:ignoreEvent", prop, "ia:ignoreEventList");
-
-       var timestamp = new Date().getTime();
-       var random = Math.round(Math.random() * 10000);
-
-       event = eventsFolder.createNode(timestamp + "-" + random + ".ics", "ia:calendarEvent");
-       event.properties["ia:isOutlook"] = true;
-
- */
+            // Have an ignored event generated
+            // Will allow us to override this one instance
+            createIgnoreEvent(req, entry);
             
-            // TODO Special doc folder stuff
+            // Create a new entry for this one case
+            CalendarEntry newEntry = new CalendarEntryDTO();
+            newEntry.setOutlook(true);
+            
             if("*NOT_CHANGE*".equals(docFolder))
             {
-               // TODO
+               newEntry.setSharePointDocFolder(entry.getSharePointDocFolder());
             }
+            
+            // From here on, "edit" the new version
+            entry = newEntry;
          }
          
          // Doc folder is a bit special
@@ -106,6 +102,32 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          
          // Handle the dates
          isAllDay = extractDates(entry, json);
+         
+         // Recurring properties, only changed if keys present
+         if (json.has("recurrenceRule"))
+         {
+            if (json.isNull("recurrenceRule"))
+            {
+               entry.setRecurrenceRule(null);
+            }
+            else
+            {
+               entry.setRecurrenceRule(json.getString("recurrenceRule"));
+            }
+         }
+         if (json.has("recurrenceLastMeeting"))
+         {
+            if (json.isNull("recurrenceLastMeeting"))
+            {
+               entry.setLastRecurrence(null);
+            }
+            else
+            {
+               entry.setLastRecurrence(
+                     parseDate(json.getString("recurrenceLastMeeting"))
+               );
+            }
+         }
          
          // Handle tags
          if(json.has("tags"))

@@ -23,6 +23,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -53,6 +54,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
+    private NodeService nodeService;
     private SiteService siteService;
     
     private static final String USER_ONE = "UserOneSecondToo";
@@ -82,6 +84,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         
         // Authenticate as user
@@ -246,8 +249,8 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     /**
      * Updates the event to be a 2 hour, non-all day event on the 28th of June
      */
-    public JSONObject updateEntry(String name, String what, String where, String description, 
-          int expectedStatus) throws Exception
+    private JSONObject updateEntry(String name, String what, String where, String description, 
+          boolean withRecurrence, int expectedStatus) throws Exception
     {
        String date = "2011/06/28";
        String start = "11:30";
@@ -266,6 +269,12 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("tags", "");
        json.put("docfolder", "");
        json.put("page", "calendar");
+       
+       if(withRecurrence)
+       {
+          json.put("recurrenceRule", "FREQ=WEEKLY;INTERVAL=2;BYDAY=WE,FR");
+          json.put("recurrenceLastMeeting", "2011-09-11");
+       }
        
        Response response = sendRequest(new PutRequest(URL_EVENT_BASE + name, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
@@ -370,7 +379,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        
        
        // Edit
-       entry = updateEntry(name, EVENT_TITLE_ONE, "More Where", "More Thing", Status.STATUS_OK);
+       entry = updateEntry(name, EVENT_TITLE_ONE, "More Where", "More Thing", false, Status.STATUS_OK);
        assertEquals("Error found " + entry.toString(), false, entry.has("error"));
        assertEquals(EVENT_TITLE_ONE, entry.getString("summary"));
        assertEquals("More Where", entry.getString("location"));
@@ -401,6 +410,31 @@ public class CalendarRestApiTest extends BaseWebScriptTest
 
        
        // TODO Make it a whole day event and check that
+       
+       
+       // Make it recurring
+       entry = updateEntry(name, EVENT_TITLE_ONE, "More Where", "More Thing", true, Status.STATUS_OK);       
+       
+       // Fetch
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("More Where", entry.getString("location")); // Not where...
+       assertEquals("More Thing", entry.getString("description"));
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/28/2011", entry.getString("from"));
+       assertEquals("6/28/2011", entry.getString("to"));
+       assertEquals("11:30", entry.getString("start"));
+       assertEquals("13:30", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       assertEquals(
+             "Occurs every 2 weeks on Wednesday, Friday, effective " +
+             "28-Jun-2011 until 11-Sep-2011 from 11:30 to 13:30", 
+             entry.getString("recurrence")
+       );
        
        
        // Delete
@@ -453,7 +487,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // Add a third, on the next day
        JSONObject entry = createEntry(EVENT_TITLE_THREE, "Where3", "Thing 3", Status.STATUS_OK);
        String name3 = getNameFromEntry(entry);
-       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", Status.STATUS_OK);
+       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", false, Status.STATUS_OK);
        
        
        // Check now, should have two days
@@ -506,7 +540,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // Add a third, on the next day
        JSONObject entry = createEntry(EVENT_TITLE_THREE, "Where3", "Thing 3", Status.STATUS_OK);
        String name3 = getNameFromEntry(entry);
-       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", Status.STATUS_OK);
+       updateEntry(name3, EVENT_TITLE_THREE, "More Where 3", "More Thing 3", false, Status.STATUS_OK);
        
        
        // Check getting all of them

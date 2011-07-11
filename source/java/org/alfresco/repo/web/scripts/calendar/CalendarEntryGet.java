@@ -18,13 +18,20 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -37,6 +44,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CalendarEntryGet extends AbstractCalendarWebScript
 {
+   private static Log logger = LogFactory.getLog(CalendarEntryGet.class);
+   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
@@ -62,7 +71,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       result.put("outlookuid", entry.getOutlookUID());
       result.put("allday", CalendarEntryDTO.isAllDay(entry));
       result.put("docfolder", entry.getSharePointDocFolder());
-      result.put("recurrence", null); // TODO
+      result.put("recurrence", buildRecurrenceString(entry));
       
       // Replace nulls with blank strings for the JSON
       for(String key : result.keySet())
@@ -77,5 +86,142 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("result", result);
       return model;
+   }
+   
+   /**
+    * This method replicates the pre-existing behaviour for recurring events. 
+    * Rather than try to render the text for them on the client, we instead
+    *  statically render the description text here on the server.
+    * When we properly support recurring events in the client (and not just
+    *  for SharePoint ones), this can be replaced.
+    */
+   protected String buildRecurrenceString(CalendarEntry event)
+   {
+      // If there's no recurrence rules, then there's nothing to do
+      String recurrence = event.getRecurrenceRule();
+      if(recurrence == null || recurrence.trim().length() == 0)
+      {
+         return null;
+      }
+      
+      // Get our days of the week, in the current locale
+      DateFormatSymbols dates = new DateFormatSymbols(I18NUtil.getLocale());
+      String[] weekdays = dates.getWeekdays();
+      
+      // And map them based on the outlook two letter codes
+      Map<String,String> days = new HashMap<String, String>();
+      days.put("SU", weekdays[Calendar.SUNDAY]);
+      days.put("MO", weekdays[Calendar.MONDAY]);
+      days.put("TU", weekdays[Calendar.TUESDAY]);
+      days.put("WE", weekdays[Calendar.WEDNESDAY]);
+      days.put("Th", weekdays[Calendar.THURSDAY]);
+      days.put("FR", weekdays[Calendar.FRIDAY]);
+      days.put("SA", weekdays[Calendar.SATURDAY]);
+      
+      // Turn the string into a useful map
+      Map<String,String> params = new HashMap<String, String>();
+      for(String rule : recurrence.split(";"))
+      {
+         String[] parts = rule.split("=");
+         if(parts.length != 2)
+         {
+            logger.warn("Invalid rule '" + rule + "' in recurrence: " + recurrence);
+         }
+         else
+         {
+            params.put(parts[0], parts[1]);
+         }
+      }
+      
+      // To hold our result
+      StringBuffer text = new StringBuffer();
+      
+      // Handle the different frequencies
+      if(params.containsKey("FREQ"))
+      {
+         String freq = params.get("FREQ");
+         String interval = params.get("INTERVAL");
+         if(interval == null)
+         {
+            interval = "1";
+         }
+         
+         if ("WEEKLY".equals(freq))
+         {
+            if ("1".equals(interval))
+            {
+               text.append("Occurs each week on ");
+            }
+            else
+            {
+               text.append("Occurs every " + interval + " weeks on ");
+            }
+            
+            for(String day : params.get("BYDAY").split(","))
+            {
+               text.append(days.get(day));
+               text.append(", ");
+            }
+         }
+         else if ("DAILY".equals(freq))
+         {
+            text.append("Occurs every day ");
+         }
+         else if ("MONTHLY".equals(freq))
+         {
+            if (params.get("BYMONTHDAY") != null)
+            {
+               text.append("Occurs day " + params.get("BYMONTHDAY"));
+            }
+            else if (params.get("BYSETPOS") != null)
+            {
+               text.append("Occurs the ");
+               text.append(days.get(params.get("BYSETPOS")));
+            }
+            text.append(" of every " + interval + " month(s) ");
+         }
+         else if ("YEARLY".equals(freq))
+         {
+            if (params.get("BYMONTHDAY") != null)
+            {
+               text.append("Occurs every " + params.get("BYMONTHDAY"));
+               text.append("." + params.get("BYMONTH") + " ");
+            }
+            else
+            {
+              text.append("Occurs the ");
+              text.append(days.get(params.get("BYSETPOS")));
+              text.append(" of " +  params.get("BYMONTH") + " month ");
+            }
+         }
+         else
+         {
+            logger.warn("Unsupported recurrence frequency " + freq);
+         }
+      }
+      
+      // And the rest
+      DateFormat dFormat = SimpleDateFormat.getDateInstance(
+            SimpleDateFormat.MEDIUM, I18NUtil.getLocale()
+      );
+      DateFormat tFormat = SimpleDateFormat.getTimeInstance(
+            SimpleDateFormat.SHORT, I18NUtil.getLocale()
+      );
+      text.append("effective " + dFormat.format(event.getStart()));
+      
+      if (params.containsKey("COUNT"))
+      {
+         // Nothing to do, is already handled in the recurrence date 
+      }
+      if (event.getLastRecurrence() != null)
+      {
+         text.append(" until " + dFormat.format(event.getLastRecurrence()));
+      }
+      
+      text.append(" from " + tFormat.format(event.getStart()));
+      text.append(" to " + tFormat.format(event.getEnd()));
+      
+      // All done
+      return text.toString();
    }
 }

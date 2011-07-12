@@ -235,6 +235,16 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         
         List<ActivityFeedEntity> result = new ArrayList<ActivityFeedEntity>();
         
+        // avoid DB calls if filters are empty
+        if(actvityFilter != null && actvityFilter.isEmpty())
+        {
+            return result;
+        }
+        if(userFilter != null && userFilter.isEmpty())
+        {
+            return result;
+        }
+        
         try
         {
             if (siteId != null)

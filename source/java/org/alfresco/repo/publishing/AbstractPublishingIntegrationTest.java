@@ -43,6 +43,7 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
+import org.mockito.Mockito;
 
 /**
  * @author Nick Smith
@@ -118,9 +119,14 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
     protected ChannelType mockChannelType()
     {
         ChannelType channelType = mock(ChannelType.class);
+        mockChannelTypeBehaviour(channelType);
+        return channelType;
+    }
+
+    protected void mockChannelTypeBehaviour(ChannelType channelType)
+    {
         when(channelType.getId()).thenReturn(channelTypeId);
         when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
-        return channelType;
     }
 
 }

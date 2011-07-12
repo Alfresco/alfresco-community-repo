@@ -166,7 +166,7 @@ public class PublishingEventHelperTest
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void xtestCreateNode() throws Exception
+    public void testCreateNode() throws Exception
     {
         // Mock serializer since this behaviour is already tested in PublishingPackageSerializerTest.
         ContentWriter writer = mock(ContentWriter.class);

@@ -19,11 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 import static org.alfresco.model.ContentModel.ASPECT_GEOGRAPHIC;
 import static org.alfresco.model.ContentModel.ASPECT_TEMPORARY;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
@@ -67,6 +62,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -139,7 +135,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertEquals(publishEventNode, assocs.get(0).getChildRef());
     }
 
-    public void xtestUpdatePublishedNode() throws Exception
+    public void testUpdatePublishedNode() throws Exception
     {
         // Create content node without aspects
         NodeRef source = createContentNode(contentNodeName, content);
@@ -152,8 +148,8 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
         // Verify properties set correctly.
         Map<QName, Serializable> publishedProps = nodeService.getProperties(publishedNode);
-        assertNull(publishedProps.containsKey(PROP_LATITUDE));
-        assertNull(publishedProps.containsKey(PROP_LONGITUDE));
+        assertFalse(publishedProps.containsKey(PROP_LATITUDE));
+        assertFalse(publishedProps.containsKey(PROP_LONGITUDE));
         assertEquals(contentNodeName, publishedProps.get(PROP_NAME));
         assertEquals(content, readContent(source));
         
@@ -235,7 +231,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     }
     
     @SuppressWarnings("unchecked")
-    public void xtestChannelTypePublishIsCalledOnUpdate() throws Exception
+    public void testChannelTypePublishIsCalledOnUpdate() throws Exception
     {
         // Create content node with appropriate aspects added.
         NodeRef source = createContentNode(contentNodeName, content);
@@ -327,7 +323,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     }
     
     @SuppressWarnings("unchecked")
-    public void xtestStatusUpdate() throws Exception
+    public void testStatusUpdate() throws Exception
     {
         NodeRef source = createContentNode(contentNodeName, content);
         
@@ -336,6 +332,8 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         StatusUpdate status = queue.createStatusUpdate(message, source, channelName);
         
         String url = "http://test/url";
+        when(channelType.getNodeUrl(any(NodeRef.class))).thenReturn(url);
+        when(channelType.canPublishStatusUpdates()).thenReturn(true);
         
         publishNode(source, status);
         
@@ -413,6 +411,11 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         {
             this.channelType = mockChannelType();
             channelService.register(channelType);
+        }
+        else
+        {
+            Mockito.reset(channelType);
+            mockChannelTypeBehaviour(channelType);
         }
         channelService.createChannel(siteId, channelTypeId, channelName, null);
         

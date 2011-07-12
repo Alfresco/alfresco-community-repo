@@ -92,12 +92,8 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
         };
     }
 
-    public void testBlank() throws Exception
-    {
-    }
-    
     @Test
-    public void xtestProcessTimers() throws Exception
+    public void testProcessTimers() throws Exception
     {
         final Calendar scheduledTime = Calendar.getInstance();
         scheduledTime.add(Calendar.SECOND, 5);
@@ -127,7 +123,7 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
     }
 
     @Test
-    public void xtestProcessPublishPath() throws Exception
+    public void testProcessPublishPath() throws Exception
     {
         // Set Status to IN_PROGRESS
         nodeService.setProperty(event, PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());

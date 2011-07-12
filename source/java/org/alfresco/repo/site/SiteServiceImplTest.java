@@ -690,9 +690,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Delete the site
         this.siteService.deleteSite(siteShortName);
         assertNull(this.siteService.getSite(siteShortName));
-        // See ALF-7888. Deleted sites should go straight to /dev/null (via the SiteService)
         NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(siteInfo.getNodeRef());
-        assertFalse("Deleted sites should not appear in the Trash.", nodeService.exists(archivedNodeRef));
+        assertTrue("Deleted sites can be recovered from the Trash.", nodeService.exists(archivedNodeRef));
         
         // Ensure that all the related site groups are deleted
         assertFalse(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));

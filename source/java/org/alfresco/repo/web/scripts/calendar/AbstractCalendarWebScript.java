@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -54,6 +55,11 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
+    
+    /**
+     * When no maximum or paging info is given, what should we use?
+     */
+    protected static final int MAX_QUERY_ENTRY_COUNT = 1000;
    
     // Injected services
     protected NodeService nodeService;
@@ -175,6 +181,18 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           return json.getString(key);
        }
        return null;
+    }
+    
+    /**
+     * Builds up a listing Paging request, either using the defaults or
+     *  the paging options specified
+     */
+    protected PagingRequest buildPagingRequest(WebScriptRequest req)
+    {
+       // TODO Check the request for standard paging options
+       PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
+       paging.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
+       return paging;
     }
     
     /**

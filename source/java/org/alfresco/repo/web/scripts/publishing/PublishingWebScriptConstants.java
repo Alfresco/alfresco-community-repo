@@ -28,7 +28,6 @@ public interface PublishingWebScriptConstants
 {
     // URL Template Keys.
     public static final String SITE_ID = "site_id";
-    public static final String ENVIRONMENT_ID = "environment_id";
 
     // General Model Keys
     public static final String ID = "id";

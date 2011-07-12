@@ -1,7 +1,6 @@
 <webscript>
    <shortname>Post Content to Publishing Queue</shortname>
    <description>Place a new Publishing Event on the Publishing Queue for the specified Environment.</description>
-   <url>/api/publishing/{site_id}/{environment_id}/queue</url>
    <url>/api/publishing/{site_id}/queue</url>
    <format default="json"/>
    <authentication>user</authentication>
@@ -11,10 +10,6 @@
       <arg>
          <shortname>site_id</shortname>
          <description>The id of the site to publish to.</description>
-      </arg>
-      <arg>
-         <shortname>environment_id</shortname>
-         <description>The id of the environment to publish to. If unspecified the default environment is used.</description>
       </arg>
    </args>
    <requests>

@@ -19,7 +19,6 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ENVIRONMENT_ID;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SITE_ID;
 
 import java.util.Map;
@@ -58,21 +57,15 @@ public abstract class PublishingEnvironmentWebScript extends DeclarativeWebScrip
             String msg = "A Site ID must be specified!";
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
         }
-        String environmentId = params.get(ENVIRONMENT_ID);
-        if(environmentId == null)
+        if (defaultEnvironmentId == null)
         {
-            if(defaultEnvironmentId == null)
-            {
-                String msg = "An Environment ID must be specified!";
-                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-            }
-            environmentId = defaultEnvironmentId;
+            String msg = "An Environment ID must be specified!";
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
         }
-        
-        Environment environment = publishingService.getEnvironment(siteId, environmentId);
+        Environment environment = publishingService.getEnvironment(siteId, defaultEnvironmentId);
         if(environment == null)
         {
-            String msg = "Environment " +environmentId + " does not exist in site " +siteId;
+            String msg = "Environment " + defaultEnvironmentId + " does not exist in site " +siteId;
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
         }
         return new Pair<String, Environment>(siteId, environment);

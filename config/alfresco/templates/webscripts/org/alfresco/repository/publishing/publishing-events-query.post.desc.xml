@@ -1,7 +1,6 @@
 <webscript>
    <shortname>Query Publishing Events</shortname>
    <description>Queries for Publishing Events on an Environment.</description>
-   <url>/api/publishing/{site_id}/{environment_id}/events/query</url>
    <url>/api/publishing/{site_id}/events/query</url>
    <format default="json"/>
    <authentication>user</authentication>
@@ -11,10 +10,6 @@
       <arg>
          <shortname>site_id</shortname>
          <description>The id of the site to query.</description>
-      </arg>
-      <arg>
-         <shortname>environment_id</shortname>
-         <description>The id of the environment to query.</description>
       </arg>
    </args>
    <requests>

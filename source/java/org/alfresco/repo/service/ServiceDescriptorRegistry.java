@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -542,6 +543,15 @@ public class ServiceDescriptorRegistry
     public NodeLocatorService getNodeLocatorService() 
     {
         return (NodeLocatorService)getService(NODE_LOCATOR_SERVICE);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getBlogService()
+     */
+    public BlogService getBlogService() 
+    {
+        return (BlogService)getService(BLOG_SERVICE);
     }
     
     /*

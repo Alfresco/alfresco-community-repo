@@ -5,7 +5,7 @@
     <!-- Blog Service (Alfresco internal storage of blog-related content) -->
     <bean id="BlogService" class="org.springframework.aop.framework.ProxyFactoryBean">
        <property name="proxyInterfaces">
-          <value>org.alfresco.repo.blog.BlogService</value>
+          <value>org.alfresco.service.cmr.blog.BlogService</value>
        </property>
        <property name="target">
           <ref bean="blogService" />
@@ -15,7 +15,7 @@
              <idref local="BlogService_transaction" />
              <idref bean="AuditMethodInterceptor" />
              <idref bean="exceptionTranslator" />
-             <idref local="BlogService_security" />
+             <idref bean="BlogService_security" />
           </list>
        </property>
     </bean>
@@ -32,46 +32,30 @@
           </props>
        </property>
     </bean>
-   
-    <bean id="BlogService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
-        <property name="objectDefinitionSource">
-            <value>
-               <!-- ACL_NODE.0 means you need the following permissions on a NodeRef method-arg at index 0. -->
-               <!-- AFTER_ACL_NODE means you need the specified permissions on the return type,
-                                   type must be one of ChAssRef, FileInfo, NodeRef, StoreRef, ResultSet & Collections, arrays of same -->
-               org.alfresco.repo.blog.BlogService.getDrafts=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
-               org.alfresco.repo.blog.BlogService.getPublished=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
-               org.alfresco.repo.blog.BlogService.getPublishedExternally=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
-               org.alfresco.repo.blog.BlogService.getMyDraftsAndAllPublished=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
-               org.alfresco.repo.blog.BlogService.*=ACL_ALLOW
-            </value>
-        </property>
-    </bean>
-      
+    
+    
+    
     <bean id="BlogService_security_getDrafts" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="BlogService_security" />
-        <property name="service" value="org.alfresco.repo.blog.BlogService" />
+        <property name="service" value="org.alfresco.service.cmr.blog.BlogService" />
         <property name="methodName" value="getDrafts" />
     </bean>
 
     <bean id="BlogService_security_getPublished" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="BlogService_security" />
-        <property name="service" value="org.alfresco.repo.blog.BlogService" />
+        <property name="service" value="org.alfresco.service.cmr.blog.BlogService" />
         <property name="methodName" value="getPublished" />
     </bean>
 
     <bean id="BlogService_security_getPublishedExternally" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="BlogService_security" />
-        <property name="service" value="org.alfresco.repo.blog.BlogService" />
+        <property name="service" value="org.alfresco.service.cmr.blog.BlogService" />
         <property name="methodName" value="getPublishedExternally" />
     </bean>
 
     <bean id="BlogService_security_getMyDraftsAndAllPublished" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="BlogService_security" />
-        <property name="service" value="org.alfresco.repo.blog.BlogService" />
+        <property name="service" value="org.alfresco.service.cmr.blog.BlogService" />
         <property name="methodName" value="getMyDraftsAndAllPublished" />
     </bean>
 

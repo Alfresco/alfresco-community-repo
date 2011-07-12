@@ -25,10 +25,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.publishing.Environment;
+import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
-import org.alfresco.util.Pair;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -45,9 +44,8 @@ public abstract class PublishingEnvironmentWebScript extends DeclarativeWebScrip
 
     protected PublishingService publishingService;
     protected ChannelService channelService;
-    private String defaultEnvironmentId;
     
-    protected Pair<String, Environment> getSiteAndEnvironment(WebScriptRequest req)
+    protected String getSiteId(WebScriptRequest req)
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         String siteId = params.get(SITE_ID);
@@ -57,26 +55,18 @@ public abstract class PublishingEnvironmentWebScript extends DeclarativeWebScrip
             String msg = "A Site ID must be specified!";
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
         }
-        if (defaultEnvironmentId == null)
-        {
-            String msg = "An Environment ID must be specified!";
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-        }
-        Environment environment = publishingService.getEnvironment(siteId, defaultEnvironmentId);
-        if(environment == null)
-        {
-            String msg = "Environment " + defaultEnvironmentId + " does not exist in site " +siteId;
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-        }
-        return new Pair<String, Environment>(siteId, environment);
+        return siteId;
     }
     
-    /**
-     * @param defaultEnvironmentId the defaultEnvironmentId to set
-     */
-    public void setDefaultEnvironmentId(String defaultEnvironmentId)
+    protected PublishingQueue getQueue(WebScriptRequest req)
     {
-        this.defaultEnvironmentId = defaultEnvironmentId;
+        String siteId = getSiteId(req);
+        return getQueue(siteId);
+    }
+
+    protected PublishingQueue getQueue(String siteId)
+    {
+        return publishingService.getPublishingQueue(siteId);
     }
     
     /**

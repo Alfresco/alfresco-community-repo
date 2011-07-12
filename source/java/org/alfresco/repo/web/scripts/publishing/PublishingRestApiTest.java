@@ -79,6 +79,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.publishing.ChannelHelper;
 import org.alfresco.repo.publishing.ChannelServiceImpl;
+import org.alfresco.repo.publishing.EnvironmentImpl;
 import org.alfresco.repo.publishing.PublishServiceImpl;
 import org.alfresco.repo.publishing.PublishingObjectFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -86,7 +87,6 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
@@ -125,7 +125,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class PublishingRestApiTest extends BaseWebScriptTest
 {
-    private static final String environmentName = "live";
     private static final String publishPdfType = "publishPdfForTest";
     private static final String publishAnyType = "publishAnyForTest";
     private static final String statusUpdateType = "statusUpdateForTest";
@@ -144,10 +143,11 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private ChannelService channelService;
     private PublishingService publishingService;
     private ChannelHelper channelHelper;
+    private PublishingQueue queue;
     
-    private Environment environment;
     private NodeRef docLib;
     private String siteId;
+    private EnvironmentImpl environment;
 
     public void testGetChannelsForNode() throws Exception
     {
@@ -261,8 +261,8 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Post JSON content.
         sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
 
-        PublishingEventFilter filter = environment.createPublishingEventFilter();
-        List<PublishingEvent> events = environment.getPublishingEvents(filter);
+        PublishingEventFilter filter = queue.createPublishingEventFilter();
+        List<PublishingEvent> events = queue.getPublishingEvents(filter);
         assertEquals(1, events.size());
         PublishingEvent event = events.get(0);
         assertEquals(publishChannel.getName(), event.getChannelName());
@@ -342,7 +342,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertEquals(0, data.length());
         
         // Create publishing event for textNode1.
-        PublishingQueue queue = environment.getPublishingQueue();
         MutablePublishingPackage pckg1 = queue.createPublishingPackage();
         pckg1.addNodesToPublish(textNode1);
         StatusUpdate statusUpdate = null;
@@ -742,15 +741,16 @@ public class PublishingRestApiTest extends BaseWebScriptTest
                 SiteVisibility.PUBLIC);
         this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        this.environment = factory.createEnvironmentObject(siteId, environmentName);
+        this.environment = factory.createEnvironmentObject(siteId);
+        this.queue = environment.getPublishingQueue();
     }
     
     @Override
     public void tearDown() throws Exception
     {
         //FInd all events
-        PublishingEventFilter filter = environment.createPublishingEventFilter();
-        List<PublishingEvent> events = environment.getPublishingEvents(filter);
+        PublishingEventFilter filter = queue.createPublishingEventFilter();
+        List<PublishingEvent> events = queue.getPublishingEvents(filter);
         for (PublishingEvent event : events)
         {
             try

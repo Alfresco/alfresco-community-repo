@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.node.NodeUtils;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
@@ -71,20 +70,20 @@ public class PublishingJsonParser
         return new JSONObject();
     }
     
-    public List<PublishingEvent> query(Environment environment, String content) throws JSONException
+    public List<PublishingEvent> query(PublishingQueue queue, String content) throws JSONException
     {
         JSONObject json = getJson(content);
-        PublishingEventFilter filter = buildFilter(environment, json);
-        return environment.getPublishingEvents(filter);
+        PublishingEventFilter filter = buildFilter(queue, json);
+        return queue.getPublishingEvents(filter);
     }
 
-    private PublishingEventFilter buildFilter(Environment environment, JSONObject json)
+    private PublishingEventFilter buildFilter(PublishingQueue queue, JSONObject json)
     {
         List<NodeRef> publishNodes = toNodes(json.optJSONArray(PUBLISH_NODES));
         List<NodeRef> unpublishNodes = toNodes(json.optJSONArray(UNPUBLISH_NODES));
         List<String> ids = JsonUtils.toListOfStrings(json.optJSONArray(IDS));
 
-        PublishingEventFilter filter = environment.createPublishingEventFilter()
+        PublishingEventFilter filter = queue.createPublishingEventFilter()
             .setIds(ids)
             .setPublishedNodes(publishNodes)
             .setUnpublishedNodes(unpublishNodes);

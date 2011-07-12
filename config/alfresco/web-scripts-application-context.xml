@@ -1122,9 +1122,9 @@
           parent="webscript">
         <property name="publishingService" ref="publishingService" />
         <property name="channelService" ref="channelService" />
-        <property name="defaultEnvironmentId" value="${publishing.default.environment}" />
     </bean>
 
+    <!-- Create a new Channel web script -->
     <bean id="webscript.org.alfresco.repository.publishing.channel.post"
           class="org.alfresco.repo.web.scripts.publishing.ChannelPostWebScript"
           parent="webscript">
@@ -1158,7 +1158,6 @@
           parent="webscript">
         <property name="publishingService" ref="publishingService" />
         <property name="channelService" ref="channelService" />
-        <property name="defaultEnvironmentId" value="${publishing.default.environment}" />
     </bean>
 
     <!--                                   -->

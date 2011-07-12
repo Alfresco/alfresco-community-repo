@@ -24,10 +24,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.WebScriptUtil;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
-import org.alfresco.util.Pair;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -46,10 +44,8 @@ public class PublishingQueuePost extends PublishingEnvironmentWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Pair<String, Environment> siteAndEnvironment = getSiteAndEnvironment(req);
-        String siteId = siteAndEnvironment.getFirst();
-        Environment environment = siteAndEnvironment.getSecond();
-        PublishingQueue queue = environment.getPublishingQueue();
+        String siteId = getSiteId(req);
+        PublishingQueue queue = getQueue(siteId);
         
         String content = null;
         try

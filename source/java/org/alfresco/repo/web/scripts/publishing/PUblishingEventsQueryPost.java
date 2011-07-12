@@ -25,9 +25,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.WebScriptUtil;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.util.Pair;
+import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -46,14 +45,13 @@ public class PUblishingEventsQueryPost extends PublishingEnvironmentWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Pair<String, Environment> siteAndEnvironment = getSiteAndEnvironment(req);
-        String siteId = siteAndEnvironment.getFirst();
-        Environment environment = siteAndEnvironment.getSecond();
+        String siteId = getSiteId(req);
+        PublishingQueue queue = getQueue(siteId);
         String content = null;
         try
         {
             content = WebScriptUtil.getContent(req);
-            List<PublishingEvent> events = jsonParser.query(environment, content);
+            List<PublishingEvent> events = jsonParser.query(queue, content);
             List<Map<String, Object>> model = builder.buildPublishingEvents(events, channelService, siteId);
             return WebScriptUtil.createBaseModel(model);
         }

@@ -160,30 +160,36 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * <p>
      * If no filters are specified then all the available sites are returned.
      * 
-     * @param nameFilter        name filter
+     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
+     *                          OR cm:description CONTAIN the filter string will be returned.
      * @param sitePresetFilter  site preset filter
-     * @return Site[]           a list of the site filtered as appropriate             
+     * @return Site[]           a list of the site filtered as appropriate
+     * 
+     * @see SiteService#findSites(String, String, int) for a description of the limitations of this method.
      */
-    public Site[] listSites(String nameFilter, String sitePresetFilter)
+    public Site[] listSites(String filter, String sitePresetFilter)
     {
-        return listSites(nameFilter, sitePresetFilter, 0);
+        return listSites(filter, sitePresetFilter, 0);
     }
     
     /**
      * List the sites available in the repository.  The returned list can optionally be filtered by name and site
      * preset.
-     * <p>
+     * <p/>
      * If no filters are specified then all the available sites are returned.
      * 
-     * @param nameFilter        name filter
+     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
+     *                          OR cm:description CONTAIN the filter string will be returned.
      * @param sitePresetFilter  site preset filter
      * @param size              max results size crop if >0
      * 
-     * @return Site[]           a list of the site filtered as appropriate             
+     * @return Site[]           a list of the site filtered as appropriate
+     * 
+     * @see SiteService#findSites(String, String, int) for a description of the limitations of this method.
      */
-    public Site[] listSites(String nameFilter, String sitePresetFilter, int size)
+    public Site[] listSites(String filter, String sitePresetFilter, int size)
     {
-        List<SiteInfo> siteInfos = this.siteService.listSites(nameFilter, sitePresetFilter, size);
+        List<SiteInfo> siteInfos = this.siteService.findSites(filter, sitePresetFilter, size);
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
         for (SiteInfo siteInfo : siteInfos)
         {

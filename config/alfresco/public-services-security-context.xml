@@ -914,6 +914,7 @@
                org.alfresco.service.cmr.site.SiteService.createContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.createSite=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.deleteSite=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.findSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getMembersRole=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getSite=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties

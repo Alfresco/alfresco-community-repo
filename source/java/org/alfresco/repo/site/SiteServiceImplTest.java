@@ -76,8 +76,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static final String TEST_SITE_PRESET = "testSitePreset";
     private static final String TEST_SITE_PRESET_2 = "testSitePreset2";
-    private static final String TEST_TITLE = "This is my title";
-    private static final String TEST_DESCRIPTION = "This is my description";
+    private static final String TEST_TITLE = "TitleTest This is my title";
+    private static final String TEST_DESCRIPTION = "DescriptionTest This is my description";
     
     private static final String USER_ONE = "UserOne_SiteServiceImplTest";
     private static final String USER_TWO = "UserTwo_SiteServiceImplTest";
@@ -398,10 +398,18 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     /**
-     * Test listSite methods.
+     * Test listSite and findSites methods.
+     * <p/>
+     * Note that {@link SiteService#findSites(String, int)} offers eventually consistent results and therefore may
+     * exhibit changed behaviour if Lucene is switched off or is replaced by SOLR.
+     * {@link SiteService#listSites(List, List, org.alfresco.query.PagingRequest)} and the other listSites methods
+     * should offer consistent, accurate result sets.
      */
     public void testListSites() throws Exception
     {
+        // We'll match against the first few letter of TEST_TITLE in various listSites() tests below.
+        final String testTitlePrefix = TEST_TITLE.substring(0, 9);
+        
         List<SiteInfo> sites = this.siteService.listSites(null, null);
         assertNotNull("sites list was null.", sites);
         final int preexistingSitesCount = sites.size();
@@ -417,23 +425,33 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
         assertEquals(preexistingSitesCount + 5, sites.size());
+        List<SiteInfo> sitesFromFind = this.siteService.findSites(null, null, 100);
+        assertEquals(preexistingSitesCount + 5, sitesFromFind.size());
         
-        // Get sites by matching name
-        sites = this.siteService.listSites("One", null);
+        // Get sites by matching name - as of 4.0 listSites only supports STARTS WITH matches
+        sites = this.siteService.listSites("mySiteO", null);
         assertNotNull(sites);
-        assertEquals("Matched wrong number of sites named 'One'", 1, sites.size());
+        assertEquals("Matched wrong number of sites named 'mySiteO*'", 1, sites.size());
+        // However 'findSites' allows CONTAINS matching.
+        sitesFromFind = this.siteService.findSites("One", null, 100);
+        assertEquals("Matched wrong number of sites named 'One'", 1, sitesFromFind.size());
         
         // Get sites by matching title
-        sites = this.siteService.listSites("title", null);
+        sites = this.siteService.listSites(testTitlePrefix, null);
         assertNotNull(sites);
-        assertEquals("Matched wrong number of sites named 'title'", 5, sites.size());
+        assertEquals("Matched wrong number of sites starting with '" + testTitlePrefix + "'", 5, sites.size());
+        sitesFromFind = this.siteService.findSites("title", null, 100);
+        assertEquals("Matched wrong number of sites containing 'title'", 5, sitesFromFind.size());
 
         // Get sites by matching description
         sites = this.siteService.listSites("description", null);
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites named 'description'", 5, sites.size());
+        sitesFromFind = this.siteService.findSites("description", null, 100);
+        assertEquals("Matched wrong number of sites named 'description'", 5, sitesFromFind.size());
         
         // Get sites by matching sitePreset - see ALF-5620
+        // SiteService.findSites does not support finding by sitePreset and so is not tested here.
         sites = this.siteService.listSites(null, TEST_SITE_PRESET);
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites with PRESET", 2, sites.size());
@@ -496,16 +514,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * Test list sites with a name filter
          */
-        sites = this.siteService.listSites("One", null, 10);
+        sites = this.siteService.listSites("mySiteOne", null, 10);
         assertNotNull(sites);
         assertEquals(1, sites.size());
+        sitesFromFind = this.siteService.findSites("One", null, 100);
+        assertEquals(1, sitesFromFind.size());
         
         /**
-         * Search for partial match on more titles - matches word "Site"
+         * Search for partial match on more titles - matches word "Site".
          */
-        sites = this.siteService.listSites("ite", null, 10);
-        assertNotNull(sites);
-        assertEquals(5, sites.size());    
+        sitesFromFind = this.siteService.findSites("ite", null, 100);
+        assertEquals(5, sitesFromFind.size());
         
         /**
          * Now Switch to User Two and do the same sort of searching.
@@ -516,9 +535,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * As User Two Search for partial match on more titles - matches word "Site" - should not find private sites
          */
-        sites = this.siteService.listSites("ite", null, 10);
-        assertNotNull(sites);
-        assertEquals(4, sites.size()); 
+        sitesFromFind = this.siteService.findSites("ite", null, 100);
+        assertEquals(4, sitesFromFind.size());
         for (SiteInfo site : sites)
         {
         	String shortName = site.getShortName();
@@ -555,9 +573,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * As User Three Search for partial match on more titles - matches word "Site" - should not find private and moderated sites
          */
-        sites = this.siteService.listSites("ite", null, 10);
-        assertNotNull(sites);
-        assertEquals(3, sites.size()); 
+        sitesFromFind = this.siteService.findSites("ite", null, 100);
+        assertEquals(3, sitesFromFind.size());
         for (SiteInfo site : sites)
         {
         	String shortName = site.getShortName();
@@ -579,7 +596,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         	}
         	else if (shortName.equals("mySiteFive") == true)
         	{
-        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
+        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
         	}
         	else
         	{

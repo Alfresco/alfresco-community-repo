@@ -22,13 +22,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -95,25 +95,56 @@ public interface SiteService
     boolean hasCreateSitePermissions();
     
     /**
-     * List the available sites.  This list can optionally be filtered by site name and/or site preset.
+     * This method will find all {@link SiteInfo sites} available to the currently authenticated user based on
+     * the specified site filter, site preset filter and result set size.
+     * The filter parameter will match any sites whose {@link ContentModel#PROP_NAME cm:name}, {@link ContentModel#PROP_TITLE cm:title}
+     * or {@link ContentModel#PROP_DESCRIPTION cm:description} <i>contain</i> the specified string (ignoring case).
+     * <p/>
+     * Note that this method uses <a href="http://wiki.alfresco.com/wiki/Search">Alfresco Full Text Search</a> to retrieve results
+     * and depending on server Lucene, SOLR configuration may only offer eventually consistent results.
      * 
-     * @param nameFilter            name filter
-     * @param sitePresetFilter      site preset filter
+     * @param filter Any supplied filter will be wrapped in asterisks (e.g. '*foo*') and used to match the sites' cm:name, cm:title or cm:description.
+     * @param sitePresetFilter a site preset filter name to match against.
+     * @param size this parameter specifies a maximum result set size.
+     * @return Site objects for all matching sites up to the maximum result size.
+     * 
+     * @since 4.0
+     */
+    @NotAuditable
+    List<SiteInfo> findSites(String filter, String sitePresetFilter, int size);
+    
+    /**
+     * List the available sites.  This list can optionally be filtered by site name/title/description and/or site preset.
+     * <p/>
+     * Note: Starting with Alfresco 4.0, the filter parameter will only match sites whose {@link ContentModel#PROP_NAME cm:name} or
+     * {@link ContentModel#PROP_TITLE cm:title} or {@link ContentModel#PROP_DESCRIPTION cm:description} <i>start with</i>
+     * the specified string (ignoring case). The listing of sites whose cm:names (or titles or descriptions) <i>contain</i> the
+     * specified string is no longer supported. To retrieve sites whose cm:names etc contain a substring, {@link SiteService#findSites(String, String, int)}
+     * should be used instead.
+     * 
+     * @param filter                filter (sites whose cm:name, cm:title or cm:description START WITH filter)
+     * @param sitePresetFilter      site preset filter (sites whose preset EQUALS sitePresetFilter)
      * @param size                  list maximum size or zero for all
      * @return List<SiteInfo>       list of site information
      */
     @NotAuditable
-    List<SiteInfo> listSites(String nameFilter, String sitePresetFilter, int size);
+    List<SiteInfo> listSites(String filter, String sitePresetFilter, int size);
     
     /**
-     * List the available sites.  This list can optionally be filtered by site name and/or site preset.
+     * List the available sites.  This list can optionally be filtered by site name/title/description and/or site preset.
+     * <p/>
+     * Note: Starting with Alfresco 4.0, the filter parameter will only match sites whose {@link ContentModel#PROP_NAME cm:name} or
+     * {@link ContentModel#PROP_TITLE cm:title} or {@link ContentModel#PROP_DESCRIPTION cm:description} <i>start with</i>
+     * the specified string (ignoring case). The listing of sites whose cm:names (or titles or descriptions) <i>contain</i> the
+     * specified string is no longer supported. To retrieve sites whose cm:names etc contain a substring, {@link SiteService#findSites(String, String, int)}
+     * should be used instead.
      * 
-     * @param nameFilter            name filter
+     * @param filter                filter
      * @param sitePresetFilter      site preset filter
      * @return List<SiteInfo>       list of site information
      */
     @NotAuditable
-    List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
+    List<SiteInfo> listSites(String filter, String sitePresetFilter);
     
     /**
      * List all the sites that the specified user has a explicit membership to.
@@ -126,7 +157,8 @@ public interface SiteService
     
     /**
      * This method returns {@link PagingResults paged result sets} of {@link SiteInfo} objects, which should be
-     * more efficient than the unpaged methods also available on this interface.
+     * more efficient than the unpaged methods also available on this interface. It is also guaranteed to return
+     * fully consistent results.
      * 
      * @param filterProps property filters
      * @param sortProps sorting options

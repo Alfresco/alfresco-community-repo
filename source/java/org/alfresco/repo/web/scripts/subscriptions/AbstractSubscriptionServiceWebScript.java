@@ -66,7 +66,8 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
     {
         if (!subscriptionService.isActive())
         {
-            throw new WebScriptException(404, "Subscription service is disabled!");
+            res.setStatus(404);
+            return;
         }
 
         try

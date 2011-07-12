@@ -117,7 +117,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         Set<String> userFilter = null;
         if ((onlyFollowingStr != null) && (onlyFollowingStr.equalsIgnoreCase("true") || onlyFollowingStr.equalsIgnoreCase("t")))
         {
-            PagingFollowingResults following = subscriptionService.getFollowers(AuthenticationUtil.getRunAsUser(), new PagingRequest(-1, null));
+            PagingFollowingResults following = subscriptionService.getFollowing(AuthenticationUtil.getRunAsUser(), new PagingRequest(-1, null));
             if (following.getPage() != null)
             {
                 userFilter = new HashSet<String>();
